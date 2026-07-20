@@ -445,7 +445,13 @@
         .debit-card__row {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
+        }
+
+        .debit-card__logo {
+            width: auto;
+            height: 30px;
+            display: block;
         }
 
         .debit-card__brand {
@@ -516,14 +522,14 @@
         .quick-action__icon {
             width: 56px;
             height: 56px;
-            border-radius: 12px;
-            background: #f0f4f8;
+            border-radius: var(--bp-radius-sm);
+            background: var(--bp-secondary-bg);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--bp-text-primary);
+            color: var(--bp-brand-support);
             transition: background 0.15s ease, transform 0.12s ease;
-            font-size: 28px;
+            font-size: 26px;
         }
 
         .quick-action:hover .quick-action__icon {
@@ -712,10 +718,10 @@
             z-index: 60;
             display: flex;
             justify-content: center;
-            background: var(--bp-surface-page);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border-top: 1px solid var(--bp-border-elevated);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border-top: 1px solid rgba(15, 38, 92, 0.06);
             padding: 8px 8px calc(16px + env(safe-area-inset-bottom, 16px));
         }
 
@@ -1402,22 +1408,141 @@
             margin: 4px 0 16px;
         }
 
-        /* La tarjeta "real": proporción de tarjeta física, flota con spring */
+        /* La tarjeta "real": la imagen ocupa todo, sin padding, flota con spring */
         .cd-card {
-            aspect-ratio: 16 / 10;
-            border-radius: 20px;
-            background:
-                radial-gradient(circle at 30% 110%, rgba(255, 170, 0, 0.55), transparent 55%),
-                radial-gradient(circle at 85% -10%, rgba(255, 250, 210, 0.9), transparent 50%),
-                var(--bp-surface-brand);
-            padding: 28px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            border-radius: 16px;
+            padding: 0;
             color: var(--bp-text-brand);
             box-shadow: 0 18px 40px rgba(15, 38, 92, 0.28), 0 6px 16px rgba(255, 200, 0, 0.3);
             position: relative;
             overflow: hidden;
+            line-height: 0;
+        }
+
+        .cd-card__img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 16px;
+        }
+
+        /* Pista de deslizar para revelar */
+        .cd-card__hint {
+            position: absolute;
+            left: 50%;
+            bottom: 12px;
+            transform: translateX(-50%);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(15, 38, 92, 0.55);
+            color: #fff;
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+            padding: 5px 11px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1;
+            white-space: nowrap;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .cd-card__hint .material-symbols-rounded { font-size: 15px; }
+
+        .cd-card.revealed .cd-card__hint,
+        .cd-card.verifying .cd-card__hint { opacity: 0; }
+
+        /* Overlay de verificación / datos sensibles */
+        .cd-card__reveal {
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            background: linear-gradient(150deg, #0f265c 0%, #1a3a7d 100%);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            line-height: normal;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .cd-card.verifying .cd-card__reveal,
+        .cd-card.revealed .cd-card__reveal {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .cd-verify {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            text-align: center;
+        }
+
+        .cd-card.verifying .cd-verify { display: flex; }
+
+        .cd-verify__icon {
+            font-size: 44px;
+            animation: cdPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes cdPulse {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        .cd-verify__text { font-size: 14px; font-weight: 600; }
+
+        .cd-data {
+            display: none;
+            flex-direction: column;
+            gap: 18px;
+            width: 100%;
+            position: relative;
+        }
+
+        .cd-card.revealed .cd-data { display: flex; }
+
+        .cd-data__close {
+            position: absolute;
+            top: -8px;
+            right: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .cd-data__close:active { background: rgba(255, 255, 255, 0.3); }
+
+        .cd-data__row { display: flex; gap: 36px; }
+
+        .cd-data__label {
+            display: block;
+            font-size: 11px;
+            opacity: 0.7;
+            margin-bottom: 4px;
+            letter-spacing: 0.3px;
+        }
+
+        .cd-data__value {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            font-variant-numeric: tabular-nums;
         }
 
         .card-detail.open .cd-card {
@@ -1817,6 +1942,48 @@
         .page.hidden {
             display: none;
         }
+
+        /* ---------- Responsive / escritorio ---------- */
+        @media (min-width: 600px) {
+            body {
+                background: #dfe3ea;
+            }
+
+            /* Columna tipo app centrada con marco sutil */
+            #home-page.page {
+                background: var(--bp-surface-page);
+                min-height: 100vh;
+                box-shadow: 0 0 60px rgba(15, 38, 92, 0.14);
+            }
+
+            .header {
+                border-radius: 0;
+            }
+
+            /* Login y detalle también centrados en la columna */
+            .login-screen__container,
+            .cd-inner {
+                max-width: 480px;
+            }
+
+            /* Nav inferior alineado a la columna, no a todo el ancho */
+            .nav-bar {
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+                width: 100%;
+                max-width: 480px;
+                border-left: 1px solid rgba(15, 38, 92, 0.06);
+                border-right: 1px solid rgba(15, 38, 92, 0.06);
+            }
+
+            /* En escritorio no hay giroscopio: el hover del mouse basta */
+            .debit-card { cursor: pointer; }
+        }
+
+        @media (min-width: 900px) {
+            body { background: #d5dae3; }
+        }
     </style>
 </head>
 <body>
@@ -1977,9 +2144,9 @@
                         <div class="debit-card__shine"></div>
                         <div class="debit-card__content">
                             <div class="debit-card__row">
-                                <img src="./assets/bp-brand-logo--blue.svg" alt="BP" style="width: 40px; height: 40px;">
+                                <img class="debit-card__logo" src="./assets/bp-brand-logo--blue.svg" alt="Banco Pichincha">
                                 <svg class="debit-card__visa" width="48" height="16" viewBox="0 0 48 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M31.3769 0C32.8715 0 34.0722 0.336247 35.0062 0.687372L34.3244 3.96801C32.5876 3.14227 31.0554 3.2003 30.5005 3.27618C29.3791 3.42645 28.8675 4.01711 28.8545 4.57058C28.817 6.39613 34.3057 6.62228 34.2898 10.7063C34.2754 13.9245 31.6104 16 27.5371 16C25.8017 15.9836 24.1283 15.6087 23.2246 15.1787L23.9265 11.788C24.8273 12.2224 25.9602 12.7967 27.909 12.7655C29.026 12.7476 30.2194 12.2894 30.231 11.2509C30.2367 10.5724 29.7294 10.0859 28.2188 9.32713C26.7487 8.58769 24.7971 7.34387 24.8245 5.11512C24.8461 2.10378 27.5429 0 31.3769 0ZM44.8694 0.282685L48 15.759H44.4125L43.9426 13.4484H38.9685L38.1584 15.759H34.088L39.9068 1.41789C40.1817 0.742169 40.7923 0.297935 41.5194 0.28307L41.5571 0.282685H44.8694ZM23.7665 0.282685L20.5595 15.759H16.6808L19.8893 0.282685H23.7665ZM6.69221 0.282685C7.53252 0.282685 8.28923 0.859959 8.48093 1.85977L10.114 10.8164L14.1512 0.282685H18.2245L11.9402 15.759H7.84097L4.74782 3.40859C4.56045 2.64832 4.39757 2.36861 3.8268 2.04873C2.89424 1.52501 1.35487 1.03552 0 0.732007L0.0922467 0.282685H6.69221ZM42.1265 4.46346L40.0841 10.2749H43.3012L42.1265 4.46346Z" fill="white"/>
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M31.3769 0C32.8715 0 34.0722 0.336247 35.0062 0.687372L34.3244 3.96801C32.5876 3.14227 31.0554 3.2003 30.5005 3.27618C29.3791 3.42645 28.8675 4.01711 28.8545 4.57058C28.817 6.39613 34.3057 6.62228 34.2898 10.7063C34.2754 13.9245 31.6104 16 27.5371 16C25.8017 15.9836 24.1283 15.6087 23.2246 15.1787L23.9265 11.788C24.8273 12.2224 25.9602 12.7967 27.909 12.7655C29.026 12.7476 30.2194 12.2894 30.231 11.2509C30.2367 10.5724 29.7294 10.0859 28.2188 9.32713C26.7487 8.58769 24.7971 7.34387 24.8245 5.11512C24.8461 2.10378 27.5429 0 31.3769 0ZM44.8694 0.282685L48 15.759H44.4125L43.9426 13.4484H38.9685L38.1584 15.759H34.088L39.9068 1.41789C40.1817 0.742169 40.7923 0.297935 41.5194 0.28307L41.5571 0.282685H44.8694ZM23.7665 0.282685L20.5595 15.759H16.6808L19.8893 0.282685H23.7665ZM6.69221 0.282685C7.53252 0.282685 8.28923 0.859959 8.48093 1.85977L10.114 10.8164L14.1512 0.282685H18.2245L11.9402 15.759H7.84097L4.74782 3.40859C4.56045 2.64832 4.39757 2.36861 3.8268 2.04873C2.89424 1.52501 1.35487 1.03552 0 0.732007L0.0922467 0.282685H6.69221ZM42.1265 4.46346L40.0841 10.2749H43.3012L42.1265 4.46346Z" fill="#0f265c"/>
                                 </svg>
                             </div>
                             <div>
@@ -2187,13 +2354,42 @@
             </div>
             <h1 class="cd-title">Débito Internacional</h1>
 
-            <div class="cd-card">
-                <img src="./assets/card-debit.png" alt="Tarjeta de débito internacional" style="width: 100%; height: auto; border-radius: 16px; display: block;">
+            <div class="cd-card" id="cd-card">
+                <img class="cd-card__img" src="./assets/card-debit.png" alt="Tarjeta de débito internacional">
+                <div class="cd-card__hint">
+                    <span class="material-symbols-rounded">swipe_up</span>
+                    Desliza para ver datos
+                </div>
+                <div class="cd-card__reveal" id="cd-reveal" aria-hidden="true">
+                    <div class="cd-verify">
+                        <span class="material-symbols-rounded cd-verify__icon">fingerprint</span>
+                        <span class="cd-verify__text">Verificando identidad…</span>
+                    </div>
+                    <div class="cd-data">
+                        <button class="cd-data__close" id="cd-data-close" aria-label="Ocultar datos">
+                            <span class="material-symbols-rounded">visibility_off</span>
+                        </button>
+                        <div class="cd-data__item">
+                            <span class="cd-data__label">Número de tarjeta</span>
+                            <span class="cd-data__value">4532 1234 5678 1234</span>
+                        </div>
+                        <div class="cd-data__row">
+                            <div class="cd-data__item">
+                                <span class="cd-data__label">Vence</span>
+                                <span class="cd-data__value">08/29</span>
+                            </div>
+                            <div class="cd-data__item">
+                                <span class="cd-data__label">CVV</span>
+                                <span class="cd-data__value">123</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="cd-content">
                 <div class="cd-actions">
-                    <button class="quick-action" data-action="Ver datos">
+                    <button class="quick-action" id="cd-ver-datos" type="button">
                         <span class="quick-action__icon"><span class="material-symbols-rounded">visibility</span></span>
                         <span class="quick-action__label">Ver datos</span>
                     </button>
@@ -2621,14 +2817,15 @@
         // ---------- Detalle de tarjeta (estilo Apple Wallet) ----------
         const cardDetail = document.getElementById('card-detail');
 
+        const cdInner = cardDetail.querySelector('.cd-inner');
+        const cdCard = document.getElementById('cd-card');
+
         function openCardDetail() {
+            hideCardData();
             cardDetail.classList.add('open');
             cardDetail.scrollTop = 0;
             document.body.style.overflow = 'hidden';
         }
-
-        const cdInner = cardDetail.querySelector('.cd-inner');
-        const cdCard = cardDetail.querySelector('.cd-card');
 
         function closeCardDetail() {
             if (!cardDetail.classList.contains('open') || cardDetail.classList.contains('closing')) return;
@@ -2639,45 +2836,86 @@
                 cdInner.style.opacity = '';
                 cdInner.style.transition = '';
                 document.body.style.overflow = '';
+                hideCardData();
             }, 300);
         }
 
-        // Arrastrar la tarjeta hacia abajo cierra la vista (como Apple Wallet)
-        let cdStartY = null, cdDelta = 0;
+        // ----- Revelar datos sensibles con biometría simulada -----
+        let cardRevealed = false, verifying = false;
+
+        function revealCardData() {
+            if (cardRevealed || verifying) return;
+            verifying = true;
+            cdCard.classList.add('verifying');
+            showToast('Verificando identidad…');
+            setTimeout(() => {
+                verifying = false;
+                cardRevealed = true;
+                cdCard.classList.remove('verifying');
+                cdCard.classList.add('revealed');
+                showToast('Identidad verificada ✓');
+            }, 1600);
+        }
+
+        function hideCardData() {
+            cardRevealed = false;
+            verifying = false;
+            cdCard.classList.remove('revealed', 'verifying');
+        }
+
+        document.getElementById('cd-ver-datos').addEventListener('click', revealCardData);
+        document.getElementById('cd-data-close').addEventListener('click', hideCardData);
+
+        // Arrastrar la tarjeta: abajo = cerrar (Apple Wallet), arriba = ver datos
+        let cdStartY = null, cdRaw = 0;
+
+        function cdSnapBack() {
+            cdInner.style.transition = 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.25s ease';
+            cdInner.style.transform = '';
+            cdInner.style.opacity = '';
+            setTimeout(() => { cdInner.style.transition = ''; }, 380);
+        }
 
         cdCard.addEventListener('pointerdown', e => {
+            if (e.target.closest('.cd-data__close')) return;
             cdStartY = e.clientY;
-            cdDelta = 0;
+            cdRaw = 0;
             cardDetail.classList.add('dragging');
             cdCard.setPointerCapture(e.pointerId);
         });
 
         cdCard.addEventListener('pointermove', e => {
             if (cdStartY === null) return;
-            cdDelta = Math.max(0, e.clientY - cdStartY);
-            cdInner.style.transform = `translateY(${cdDelta}px)`;
-            cdInner.style.opacity = String(Math.max(0.4, 1 - cdDelta / 600));
+            cdRaw = e.clientY - cdStartY;
+            // sólo desplazamos para cerrar cuando arrastramos hacia abajo y no hay datos revelados
+            if (cdRaw > 0 && !cardRevealed) {
+                cdInner.style.transform = `translateY(${cdRaw}px)`;
+                cdInner.style.opacity = String(Math.max(0.4, 1 - cdRaw / 600));
+            }
         });
 
         cdCard.addEventListener('pointerup', () => {
             if (cdStartY === null) return;
             cardDetail.classList.remove('dragging');
+            const raw = cdRaw;
             cdStartY = null;
-            if (cdDelta > 120) {
+            if (raw < -60 && !cardRevealed) {
+                cdSnapBack();
+                revealCardData();
+            } else if (raw > 120 && !cardRevealed) {
                 closeCardDetail();
             } else {
-                // vuelve a su lugar con spring
-                cdInner.style.transition = 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.25s ease';
-                cdInner.style.transform = '';
-                cdInner.style.opacity = '';
-                setTimeout(() => { cdInner.style.transition = ''; }, 380);
+                cdSnapBack();
             }
         });
 
         card.addEventListener('click', openCardDetail);
         document.getElementById('cd-back').addEventListener('click', closeCardDetail);
         window.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && cardDetail.classList.contains('open')) closeCardDetail();
+            if (e.key === 'Escape' && cardDetail.classList.contains('open')) {
+                if (cardRevealed) { hideCardData(); return; }
+                closeCardDetail();
+            }
         });
 
         // ---------- Stories (visor tipo Instagram) ----------
