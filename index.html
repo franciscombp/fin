@@ -126,7 +126,7 @@
             justify-content: space-between;
             align-items: center;
             height: 56px;
-            padding: 0 16px;
+            padding: 0 24px;
         }
 
         .profile-story {
@@ -184,7 +184,7 @@
         .tabs {
             display: flex;
             gap: 8px;
-            padding: 16px 16px 16px 24px;
+            padding: 16px 24px;
             overflow-x: auto;
             scrollbar-width: none;
         }
@@ -230,7 +230,7 @@
 
         /* ---------- Secciones ---------- */
         .section {
-            padding: 8px 16px 16px;
+            padding: 8px 24px 16px;
         }
 
         .section__title {
@@ -1024,7 +1024,7 @@
 
         /* Vistas placeholder (Solicitudes, Beneficios, etc.) */
         .placeholder-view {
-            padding: 24px 16px;
+            padding: 24px;
         }
 
         .placeholder-view h1 {
@@ -1499,7 +1499,7 @@
         .cd-inner {
             max-width: 480px;
             margin: 0 auto;
-            padding: 8px 16px 40px;
+            padding: 8px 24px 40px;
         }
 
         .cd-top {
@@ -1509,9 +1509,10 @@
             height: 56px;
         }
 
+        /* Título de pantalla (nivel superior de la jerarquía) */
         .cd-title {
-            font-size: 26px;
-            font-weight: 600;
+            font-size: 24px;
+            font-weight: 700;
             margin: 4px 0 16px;
         }
 
@@ -1768,10 +1769,11 @@
             margin-top: 24px;
         }
 
+        /* Subtítulo = título de sección (misma jerarquía que Destacado) */
         .cd-subtitle {
-            font-size: 16px;
-            font-weight: 700;
-            margin: 24px 0 12px;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 24px 0 8px;
         }
 
         .cd-subs {
@@ -1866,7 +1868,9 @@
             display: none;
             flex-direction: column;
             background: var(--bp-surface-page);
-            overflow-y: auto;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden; /* toda la pantalla visible sin scroll */
         }
 
         .login-screen.active {
@@ -1874,12 +1878,12 @@
         }
 
         .login-screen__header {
+            flex: 0 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 16px;
+            padding: 12px 24px;
             background: var(--bp-surface-page);
-            border-bottom: 1px solid var(--bp-border-divider);
         }
 
         .login-screen__header-logo {
@@ -1899,10 +1903,18 @@
             align-items: center;
         }
 
-        /* Parte superior (gris): título + ilustración */
+        /* Parte superior (gris): título + ilustración. Crece y encoge para caber. */
         .login-screen__top {
-            padding: 12px 20px 24px;
+            flex: 1 1 auto;
+            min-height: 0;
+            padding: 4px 24px 20px;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            overflow: hidden;
         }
 
         .login-screen__title {
@@ -1911,13 +1923,14 @@
             text-align: center;
             color: var(--bp-text-primary);
             line-height: 1.3;
-            margin-bottom: 20px;
+            flex: 0 0 auto;
         }
 
         .login-screen__illustration {
+            flex: 1 1 auto;
+            min-height: 90px;
             width: 100%;
             max-width: 320px;
-            aspect-ratio: 16 / 11;
             background: linear-gradient(135deg, #e9edf3 0%, #dfe4ec 100%);
             border-radius: 16px;
             display: flex;
@@ -1930,34 +1943,89 @@
 
         /* Parte inferior (blanca): acciones + botones */
         .login-screen__panel {
-            flex: 1;
+            flex: 0 0 auto;
             background: var(--bp-surface-container);
             border-radius: 24px 24px 0 0;
             box-shadow: 0 -8px 30px rgba(15, 38, 92, 0.06);
-            padding: 24px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+            padding: 20px 24px calc(16px + env(safe-area-inset-bottom, 0px));
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 16px;
         }
 
-        /* Grid de acciones: 2 anchas arriba + 4 normales, mismo estilo que Destacado */
+        /* Destacados del login: etiqueta arriba, ícono abajo (2 columnas) */
+        .login-features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .login-feature {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+            min-height: 104px;
+            padding: 16px;
+            border: none;
+            border-radius: var(--bp-radius-md);
+            background: var(--bp-secondary-bg);
+            cursor: pointer;
+            font-family: inherit;
+            text-align: left;
+            transition: background 0.15s ease, transform 0.1s ease;
+        }
+
+        .login-feature:active { transform: scale(0.98); background: var(--bp-selection-bg-active-subtle); }
+
+        .login-feature__label {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--bp-text-primary);
+        }
+
+        .login-feature__icon {
+            font-size: 28px;
+            line-height: 1;
+            color: var(--bp-text-brand);
+        }
+
+        .login-feature__icon--deuna {
+            font-weight: 800;
+            font-style: italic;
+            color: var(--bp-text-interactive);
+        }
+
+        /* Acciones: 4 columnas, mismo estilo que Destacado */
         .login-qa {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 20px 8px;
+            gap: 16px 8px;
         }
 
-        .login-qa--wide {
-            grid-column: span 2;
+        /* Badge "Nuevo" sobre el ícono */
+        .quick-action__icon { position: relative; }
+        .badge-new {
+            position: absolute;
+            top: -6px;
+            right: -8px;
+            background: var(--bp-surface-brand);
+            color: var(--bp-text-brand);
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 999px;
+            line-height: 1.2;
+            white-space: nowrap;
         }
 
         .login-screen__buttons {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
             width: 100%;
-            margin-top: auto;
         }
 
         .login-button {
@@ -2094,9 +2162,6 @@
                 border-right: 1px solid rgba(15, 38, 92, 0.06);
             }
 
-            /* Un poco más de aire horizontal en secciones */
-            .section { padding-left: 20px; padding-right: 20px; }
-
             /* En escritorio no hay giroscopio: el hover del mouse basta */
             .debit-card { cursor: pointer; }
         }
@@ -2140,30 +2205,35 @@
 
         <!-- Parte inferior: acciones + botones (fondo blanco) -->
         <div class="login-screen__panel">
+            <!-- Destacados: etiqueta arriba, ícono abajo -->
+            <div class="login-features">
+                <button class="login-feature" data-action="Cobrar con QR">
+                    <span class="login-feature__label">Cobrar con QR</span>
+                    <span class="login-feature__icon"><span class="material-symbols-rounded">qr_code_2</span></span>
+                </button>
+                <button class="login-feature" data-action="Pagar con QR">
+                    <span class="login-feature__label">Pagar con QR</span>
+                    <span class="login-feature__icon login-feature__icon--deuna">d!</span>
+                </button>
+            </div>
+
+            <!-- Acciones rápidas (mismo estilo que Destacado) -->
             <div class="login-qa">
-                <button class="quick-action login-qa--wide" data-action="Cobrar con QR">
-                    <span class="quick-action__icon"><span class="material-symbols-rounded">qr_code_2</span></span>
-                    <span class="quick-action__label">Cobrar con QR</span>
-                </button>
-                <button class="quick-action login-qa--wide" data-action="Pagar con QR">
-                    <span class="quick-action__icon"><span class="material-symbols-rounded">qr_code_scanner</span></span>
-                    <span class="quick-action__label">Pagar con QR</span>
-                </button>
-                <button class="quick-action" data-action="Transferir">
+                <button class="quick-action" data-action="Transferir dinero">
                     <span class="quick-action__icon"><span class="material-symbols-rounded">send_money</span></span>
-                    <span class="quick-action__label">Transferir</span>
+                    <span class="quick-action__label">Transferir<br>dinero</span>
                 </button>
                 <button class="quick-action" data-action="Retirar sin tarjeta">
-                    <span class="quick-action__icon"><span class="material-symbols-rounded">atm</span></span>
-                    <span class="quick-action__label">Retirar</span>
+                    <span class="quick-action__icon"><span class="material-symbols-rounded">payments</span></span>
+                    <span class="quick-action__label">Retirar sin<br>tarjeta</span>
                 </button>
-                <button class="quick-action" data-action="Pagar">
-                    <span class="quick-action__icon"><span class="material-symbols-rounded">credit_card</span></span>
-                    <span class="quick-action__label">Pagar</span>
+                <button class="quick-action" data-action="Pagar transporte">
+                    <span class="quick-action__icon"><span class="material-symbols-rounded">directions_transit</span></span>
+                    <span class="quick-action__label">Pagar<br>transporte</span>
                 </button>
                 <button class="quick-action" data-action="Verificar pago">
-                    <span class="quick-action__icon"><span class="material-symbols-rounded">verified_user</span></span>
-                    <span class="quick-action__label">Verificar</span>
+                    <span class="quick-action__icon"><span class="badge-new">Nuevo</span><span class="material-symbols-rounded">verified_user</span></span>
+                    <span class="quick-action__label">Verificar<br>pago</span>
                 </button>
             </div>
 
