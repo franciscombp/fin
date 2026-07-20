@@ -353,7 +353,7 @@
         .debit-card {
             position: relative;
             width: 100%;
-            height: 148px;
+            height: 112px;
             border-radius: var(--bp-radius-sm);
             background: var(--bp-surface-brand);
             border: none;
@@ -467,7 +467,7 @@
             position: relative;
             z-index: 2;
             height: 100%;
-            padding: 16px;
+            padding: 14px 16px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -1253,7 +1253,25 @@
 
         .content-loader {
             display: none;
-            padding: 8px 16px;
+            padding: 8px 24px;
+        }
+
+        /* Vista previa que asoma durante el swipe entre secciones */
+        .swipe-peek {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 90px;
+            top: 128px;
+            opacity: 0;
+            pointer-events: none;
+            overflow: hidden;
+            will-change: transform, opacity;
+            z-index: 45;
+        }
+
+        .swipe-peek .content-loader {
+            display: block;
         }
 
         .view[data-view="0"].is-loading .section {
@@ -2113,6 +2131,56 @@
             display: none;
         }
 
+        /* ---------- Página genérica (push, estilo nativo) ---------- */
+        .push-page {
+            position: fixed;
+            inset: 0;
+            z-index: 300;
+            background: var(--bp-surface-page);
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.34s cubic-bezier(0.32, 0.72, 0, 1);
+            visibility: hidden;
+            box-shadow: -12px 0 30px rgba(15, 38, 92, 0.14);
+        }
+
+        .push-page.open {
+            transform: translateX(0);
+            visibility: visible;
+        }
+
+        .push-page__inner {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 8px 24px 40px;
+        }
+
+        .push-page__top {
+            display: flex;
+            align-items: center;
+            height: 56px;
+        }
+
+        .push-page__hero {
+            height: 150px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #fff4c2 0%, var(--bp-surface-brand) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bp-text-brand);
+            margin-bottom: 8px;
+        }
+
+        .push-page__hero .material-symbols-rounded { font-size: 56px; }
+
+        /* Contenido del push: sube con stagger al abrir */
+        .push-page.open .push-page__hero,
+        .push-page.open .section {
+            animation: cardRise 0.4s cubic-bezier(0.25, 0.8, 0.35, 1) backwards;
+        }
+        .push-page.open .section { animation-delay: 0.08s; }
+
         /* ---------- Responsive: tablet y escritorio ----------
            Disposición propuesta: la app se muestra como una columna central de
            ancho fijo (una "app" centrada) sobre un fondo de marca con marco
@@ -2292,6 +2360,15 @@
         </header>
 
         <main id="views">
+        <!-- Vista previa (skeleton) que asoma al hacer swipe entre secciones -->
+        <div class="swipe-peek" id="swipe-peek" aria-hidden="true">
+            <div class="content-loader">
+                <div class="skeleton skeleton--balance"></div>
+                <div class="skeleton skeleton--actions"></div>
+                <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
+                <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
+            </div>
+        </div>
         <div class="view active" data-view="0">
         <!-- Skeleton mientras "carga" el contenido -->
         <div class="content-loader" aria-hidden="true">
@@ -2684,6 +2761,29 @@
         </div>
     </div>
 
+    <!-- Página genérica (push) para acciones rápidas -->
+    <div class="push-page" id="push-page" role="dialog" aria-modal="true">
+        <div class="push-page__inner">
+            <div class="push-page__top">
+                <button class="icon-button" id="push-back" aria-label="Volver">
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </button>
+            </div>
+            <h1 class="cd-title" id="push-title">Acción</h1>
+            <div class="push-page__hero">
+                <span class="material-symbols-rounded" id="push-hero-icon">bolt</span>
+            </div>
+            <div class="section" style="padding-left:0; padding-right:0;">
+                <div class="section__title"><h2>Detalles</h2></div>
+                <div class="card">
+                    <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
+                    <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
+                </div>
+                <button class="login-button login-button--primary" id="push-cta" style="margin-top:8px;">Continuar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Visor de stories -->
     <div class="story-viewer" id="story-viewer" role="dialog" aria-modal="true" aria-label="Stories">
         <div class="story-progress" id="story-progress"></div>
@@ -2720,10 +2820,72 @@
             toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
         }
 
-        // Cualquier elemento con data-action muestra feedback
+        // ---------- Página genérica (push) ----------
+        const pushPage = document.getElementById('push-page');
+        const pushTitle = document.getElementById('push-title');
+        const pushHeroIcon = document.getElementById('push-hero-icon');
+        // Íconos por acción para el hero
+        const pushIcons = {
+            'Pagar con QR': 'qr_code_scanner', 'Cobrar con QR': 'qr_code_2',
+            'Transferir dinero': 'send_money', 'Transferir': 'send_money',
+            'Recibir dinero': 'control_point_duplicate', 'Pagar servicios': 'emoji_objects',
+            'Pagar tarjeta': 'credit_card', 'Retirar sin tarjeta': 'payments',
+            'Recargar celular': 'smartphone', 'Más acciones': 'apps',
+            'Pagar transporte': 'directions_transit', 'Verificar pago': 'verified_user'
+        };
+
+        function openPushPage(title) {
+            pushTitle.textContent = title;
+            pushHeroIcon.textContent = pushIcons[title] || 'bolt';
+            pushPage.classList.add('open');
+            pushPage.scrollTop = 0;
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePushPage() {
+            pushPage.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('push-back').addEventListener('click', closePushPage);
+        window.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && pushPage.classList.contains('open')) closePushPage();
+        });
+        document.getElementById('push-cta').addEventListener('click', () => {
+            showToast('Función de demostración');
+            closePushPage();
+        });
+        // Deslizar desde el borde izquierdo para volver (gesto nativo)
+        pushPage.addEventListener('touchstart', e => {
+            if (!pushPage.classList.contains('open')) return;
+            if (e.touches[0].clientX > 40) { pushPage._edge = false; return; }
+            pushPage._edge = true;
+            pushPage._sx = e.touches[0].clientX;
+        }, { passive: true });
+        pushPage.addEventListener('touchmove', e => {
+            if (!pushPage._edge) return;
+            const dx = Math.max(0, e.touches[0].clientX - pushPage._sx);
+            pushPage.style.transition = 'none';
+            pushPage.style.transform = `translateX(${dx}px)`;
+        }, { passive: true });
+        pushPage.addEventListener('touchend', e => {
+            if (!pushPage._edge) return;
+            pushPage._edge = false;
+            pushPage.style.transition = '';
+            pushPage.style.transform = '';
+            const dx = e.changedTouches[0].clientX - pushPage._sx;
+            if (dx > 90) closePushPage();
+        });
+
+        // Cualquier elemento con data-action da feedback.
+        // Las acciones rápidas y destacados abren la página genérica (push).
         document.querySelectorAll('[data-action]').forEach(el => {
             el.addEventListener('click', (e) => {
-                showToast(el.dataset.action);
+                if (el.matches('.quick-action, .login-feature')) {
+                    openPushPage(el.dataset.action);
+                } else {
+                    showToast(el.dataset.action);
+                }
                 // ripple effect visual: toma el color propio del elemento
                 // (blanco en promos de color, azul en links, etc.) en vez de un azul fijo
                 const ripple = document.createElement('div');
@@ -2804,23 +2966,86 @@
             tab.addEventListener('click', () => activateSectionTab(tab));
         });
 
-        // Swipe horizontal en Inicio → navega entre secciones (Destacado, Cuentas, …)
+        /* Swipe horizontal en Inicio: arrastre en vivo entre secciones.
+           El contenido sigue al dedo y la siguiente sección (skeleton) asoma
+           por el borde, para que la navegación se sienta como un swipe real. */
         const home0 = document.querySelector('.view[data-view="0"]');
-        let swX = 0, swY = 0, swOn = false;
+        const peek = document.getElementById('swipe-peek');
+        const EASE = 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)';
+        let sw = { x: 0, y: 0, axis: null, on: false, dx: 0 };
+
+        function curIdx() {
+            const i = sectionTabs.findIndex(t => t.classList.contains('active'));
+            return i < 0 ? 0 : i;
+        }
+        function canGo(dx) {
+            const i = curIdx();
+            return dx < 0 ? i < sectionTabs.length - 1 : i > 0;
+        }
+
+        function placePeek(dx) {
+            if (!canGo(dx)) { peek.style.opacity = '0'; return; }
+            // alinea el peek justo debajo del header (sea cual sea su alto)
+            const hb = document.querySelector('.header').getBoundingClientRect().bottom;
+            peek.style.top = Math.max(0, hb) + 'px';
+            const w = home0.offsetWidth;
+            peek.style.transition = 'none';
+            peek.style.opacity = '1';
+            peek.style.transform = `translateX(${(dx < 0 ? w : -w) + dx}px)`;
+        }
+
+        function resetSwipe() {
+            home0.style.transition = EASE;
+            home0.style.transform = '';
+            peek.style.transition = EASE + ', opacity 0.2s ease';
+            peek.style.opacity = '0';
+            peek.style.transform = `translateX(${peek._sign < 0 ? home0.offsetWidth : -home0.offsetWidth}px)`;
+            setTimeout(() => { home0.style.transition = ''; }, 320);
+        }
+
         home0.addEventListener('touchstart', e => {
-            // No interferir con la tarjeta, las pestañas ni los botones
-            if (e.target.closest('.debit-card, .tabs, button, a')) { swOn = false; return; }
-            swOn = true;
-            swX = e.touches[0].clientX;
-            swY = e.touches[0].clientY;
+            if (e.target.closest('.debit-card, .tabs, button, a')) { sw.on = false; return; }
+            sw = { x: e.touches[0].clientX, y: e.touches[0].clientY, axis: null, on: true, dx: 0 };
         }, { passive: true });
-        home0.addEventListener('touchend', e => {
-            if (!swOn) return;
-            swOn = false;
-            const t = e.changedTouches[0];
-            const dx = t.clientX - swX, dy = t.clientY - swY;
-            if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.4) {
-                moveSection(dx < 0 ? 1 : -1); // izquierda = siguiente
+
+        home0.addEventListener('touchmove', e => {
+            if (!sw.on) return;
+            const dx = e.touches[0].clientX - sw.x;
+            const dy = e.touches[0].clientY - sw.y;
+            if (!sw.axis && Math.hypot(dx, dy) > 12) sw.axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+            if (sw.axis !== 'x') return;
+            e.preventDefault(); // evita el scroll vertical durante el swipe horizontal
+            let d = dx;
+            if (!canGo(dx)) d = dx * 0.35; // resistencia en los extremos
+            sw.dx = d;
+            peek._sign = dx;
+            home0.style.transition = 'none';
+            home0.style.transform = `translateX(${d}px)`;
+            placePeek(d);
+        }, { passive: false });
+
+        home0.addEventListener('touchend', () => {
+            if (!sw.on || sw.axis !== 'x') { sw.on = false; return; }
+            sw.on = false;
+            const dx = sw.dx;
+            if (Math.abs(dx) > 70 && canGo(dx)) {
+                const w = home0.offsetWidth;
+                const sign = dx < 0 ? -1 : 1;
+                // completa el deslizamiento: el contenido sale y el peek entra
+                home0.style.transition = EASE;
+                home0.style.transform = `translateX(${sign * w}px)`;
+                peek.style.transition = EASE;
+                peek.style.transform = 'translateX(0)';
+                setTimeout(() => {
+                    home0.style.transition = 'none';
+                    home0.style.transform = '';
+                    peek.style.opacity = '0';
+                    void home0.offsetWidth;
+                    home0.style.transition = '';
+                    moveSection(dx < 0 ? 1 : -1); // cambia tab + carga skeleton→contenido
+                }, 300);
+            } else {
+                resetSwipe();
             }
         }, { passive: true });
 
