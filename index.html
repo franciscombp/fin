@@ -3658,14 +3658,19 @@
             if (!cardDetail.classList.contains('open') || cardDetail.classList.contains('closing')) return;
             hideCardData(); // vuelve al frente antes de encoger
             cardDetail.classList.remove('scrolled');
-            // el contenido se desvanece primero; la tarjeta encoge de vuelta
+            // el contenido se desvanece primero; la tarjeta encoge de vuelta.
+            // NO reseteamos el scroll aquí (eso causaba el salto): se hace al final.
             cardDetail.classList.add('closing', 'morphing');
-            cardDetail.scrollTop = 0;
 
-            const to = morphToFeatured();
-            cdCard.style.transformOrigin = 'top left';
-            cdCard.style.transition = `transform 0.44s ${MORPH_EASE}`;
-            cdCard.style.transform = to || 'scale(0.9)';
+            // Sólo hacemos el morph si la tarjeta está a la vista; si se hizo
+            // scroll y quedó fuera, se cierra con un simple desvanecimiento.
+            const rect = cdCard.getBoundingClientRect();
+            const inView = rect.bottom > 48 && rect.top < window.innerHeight - 48;
+            if (inView) {
+                cdCard.style.transformOrigin = 'top left';
+                cdCard.style.transition = `transform 0.44s ${MORPH_EASE}`;
+                cdCard.style.transform = morphToFeatured() || 'scale(0.94)';
+            }
 
             setTimeout(() => {
                 cardDetail.classList.remove('open', 'closing', 'morphing');
@@ -3675,6 +3680,7 @@
                 cdInner.style.transform = '';
                 cdInner.style.opacity = '';
                 cdInner.style.transition = '';
+                cardDetail.scrollTop = 0; // reset ya oculto (sin salto)
                 document.body.style.overflow = '';
                 hideCardData();
             }, 450);
