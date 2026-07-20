@@ -43,6 +43,12 @@
         }
 
         :root {
+            --bp-surface-page: #ffffff;
+            --bp-surface-container: #f8fafc;
+            --bp-surface-brand: #fcd000;
+            --bp-text-primary: #0f265c;
+            --bp-text-secondary: #646873;
+            --bp-text-helper: #9ca3af;
             --bp-text-brand: #0f265c;
             --bp-text-interactive: #276db6;
             --bp-selection-bg-active: #0f265c;
@@ -1588,6 +1594,27 @@
             font-variant-numeric: tabular-nums;
         }
 
+        /* ---------- Loading Spinner ---------- */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(15, 38, 92, 0.2);
+            border-top-color: #0f265c;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        .login-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
         /* ---------- Login Screen ---------- */
         .login-screen {
             position: fixed;
@@ -1702,10 +1729,13 @@
             <h1 class="login-screen__title">Banca Móvil</h1>
             <p class="login-screen__subtitle">Vive la alegría de tu dinero de forma segura</p>
             <div class="login-screen__buttons">
-                <button class="login-button login-button--primary" id="btn-login-biometric">
-                    <span class="material-symbols-rounded" style="display: none;">fingerprint</span>
-                    Ingresar con Huella
-                </button>
+                <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                    <button class="login-button login-button--primary" id="btn-login-biometric">
+                        <span class="material-symbols-rounded" style="display: none;">fingerprint</span>
+                        Ingresar con Huella
+                    </button>
+                    <div class="loading-spinner" id="loading-spinner" style="display: none;"></div>
+                </div>
                 <button class="login-button login-button--secondary" id="btn-login-other">
                     Otro método
                 </button>

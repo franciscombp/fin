@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnLoginBiometric = document.getElementById('btn-login-biometric');
   const btnLoginOther = document.getElementById('btn-login-other');
   const btnLogout = document.getElementById('btn-logout');
+  const loadingSpinner = document.getElementById('loading-spinner');
 
   function showHome() {
     loginScreen.classList.remove('active');
@@ -28,10 +29,16 @@ document.addEventListener('DOMContentLoaded', () => {
     btnLoginBiometric.addEventListener('click', () => {
       btnLoginBiometric.disabled = true;
       btnLoginBiometric.textContent = 'Autenticando...';
+      if (loadingSpinner) {
+        loadingSpinner.style.display = 'block';
+      }
       setTimeout(() => {
         showHome();
         btnLoginBiometric.disabled = false;
         btnLoginBiometric.textContent = 'Ingresar con Huella';
+        if (loadingSpinner) {
+          loadingSpinner.style.display = 'none';
+        }
       }, 1500);
     });
   }
