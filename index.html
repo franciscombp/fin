@@ -1573,6 +1573,38 @@
             line-height: 0;
         }
 
+        /* Destello diagonal sobre la tarjeta del detalle (igual que Destacado) */
+        .cd-shine {
+            position: absolute;
+            top: -50%;
+            left: 0;
+            width: 90px;
+            height: 200%;
+            transform: rotate(24deg) translateX(-160px);
+            background: linear-gradient(90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.55) 45%,
+                rgba(255, 255, 255, 0.75) 50%,
+                rgba(255, 255, 255, 0.55) 55%,
+                rgba(255, 255, 255, 0) 100%);
+            filter: blur(3px);
+            pointer-events: none;
+            opacity: 0;
+            will-change: transform, opacity;
+            animation: cdShineSweep 6s cubic-bezier(0.4, 0, 0.2, 1) 1s infinite;
+        }
+
+        @keyframes cdShineSweep {
+            0% { transform: rotate(24deg) translateX(-160px); opacity: 0; }
+            8% { opacity: 1; }
+            22% { opacity: 1; }
+            38%, 100% { transform: rotate(24deg) translateX(560px); opacity: 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .cd-shine { animation: none; }
+        }
+
         .cd-face--back {
             position: absolute;
             inset: 0;
@@ -1717,6 +1749,9 @@
             font-weight: 700;
             letter-spacing: 1px;
             font-variant-numeric: tabular-nums;
+            -webkit-user-select: text;
+            user-select: text;
+            cursor: text;
         }
 
         /* Apertura/cierre por "extrapolación": la tarjeta se anima con JS
@@ -2142,7 +2177,10 @@
             background: var(--bp-surface-page);
             overflow-y: auto;
             transform: translateX(100%);
-            transition: transform 0.34s cubic-bezier(0.32, 0.72, 0, 1);
+            /* la visibilidad cambia DESPUÉS de la transición al cerrar, para
+               que el deslizamiento de salida sí se anime (no se corte de golpe) */
+            transition: transform 0.36s cubic-bezier(0.32, 0.72, 0, 1),
+                        visibility 0s linear 0.36s;
             visibility: hidden;
             box-shadow: -12px 0 30px rgba(15, 38, 92, 0.14);
         }
@@ -2150,6 +2188,21 @@
         .push-page.open {
             transform: translateX(0);
             visibility: visible;
+            transition: transform 0.36s cubic-bezier(0.32, 0.72, 0, 1),
+                        visibility 0s;
+        }
+
+        /* Apertura "creciendo" desde el botón (quick actions) */
+        .push-page.grow {
+            transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                        opacity 0.28s ease,
+                        visibility 0s;
+        }
+
+        .push-page.grow.closing-grow {
+            transition: transform 0.32s cubic-bezier(0.4, 0, 1, 1),
+                        opacity 0.26s ease,
+                        visibility 0s linear 0.32s;
         }
 
         .push-page__inner {
@@ -2723,6 +2776,7 @@
                     <!-- Frente: imagen de la tarjeta -->
                     <div class="cd-face cd-face--front">
                         <img class="cd-card__img" src="./assets/card-debit.png" alt="Tarjeta de débito internacional">
+                        <div class="cd-shine"></div>
                         <div class="cd-card__hint">
                             <span class="material-symbols-rounded">swipe</span>
                             Desliza para ver datos
@@ -2993,18 +3047,53 @@
             'Cuenta PRINCIPAL': 'account_balance_wallet'
         };
 
-        function openPushPage(title) {
+        function openPushPage(title, originEl) {
             pushTitle.textContent = title;
             pushTopbarTitle.textContent = title;
             pushHeroIcon.textContent = pushIcons[title] || 'bolt';
-            pushPage.classList.remove('scrolled');
+            pushPage.classList.remove('scrolled', 'grow', 'closing-grow');
             pushPage.scrollTop = 0;
-            pushPage.classList.add('open');
             document.body.style.overflow = 'hidden';
+
+            if (originEl) {
+                // Crece desde el botón (transform-origin en su centro)
+                const r = originEl.getBoundingClientRect();
+                pushPage.style.transformOrigin = `${(r.left + r.width / 2).toFixed(0)}px ${(r.top + r.height / 2).toFixed(0)}px`;
+                pushPage.classList.add('grow');
+                pushPage.style.transition = 'none';
+                pushPage.style.transform = 'scale(0.5)';
+                pushPage.style.opacity = '0';
+                pushPage.style.visibility = 'visible';
+                void pushPage.offsetWidth; // reflow
+                pushPage.style.transition = '';
+                pushPage.classList.add('open');
+                pushPage.style.transform = 'scale(1)';
+                pushPage.style.opacity = '1';
+            } else {
+                // Deslizamiento nativo desde la derecha
+                pushPage.classList.add('open');
+            }
         }
 
         function closePushPage() {
-            pushPage.classList.remove('open');
+            if (!pushPage.classList.contains('open')) return;
+            if (pushPage.classList.contains('grow')) {
+                // Encoge de vuelta hacia el botón
+                pushPage.classList.add('closing-grow');
+                pushPage.style.transform = 'scale(0.5)';
+                pushPage.style.opacity = '0';
+                const done = e => {
+                    if (e && e.propertyName !== 'transform') return;
+                    pushPage.removeEventListener('transitionend', done);
+                    pushPage.classList.remove('open', 'grow', 'closing-grow');
+                    pushPage.style.transition = pushPage.style.transform = pushPage.style.opacity = '';
+                    pushPage.style.transformOrigin = pushPage.style.visibility = '';
+                };
+                pushPage.addEventListener('transitionend', done);
+                setTimeout(done, 380); // fallback
+            } else {
+                pushPage.classList.remove('open'); // desliza de salida (visibility con delay)
+            }
             document.body.style.overflow = '';
         }
 
@@ -3024,7 +3113,7 @@
             pushPage._sx = e.touches[0].clientX;
         }, { passive: true });
         pushPage.addEventListener('touchmove', e => {
-            if (!pushPage._edge) return;
+            if (!pushPage._edge || pushPage.classList.contains('grow')) return;
             const dx = Math.max(0, e.touches[0].clientX - pushPage._sx);
             pushPage.style.transition = 'none';
             pushPage.style.transform = `translateX(${dx}px)`;
@@ -3043,7 +3132,7 @@
         document.querySelectorAll('[data-action]').forEach(el => {
             el.addEventListener('click', (e) => {
                 if (el.matches('.quick-action, .login-feature')) {
-                    openPushPage(el.dataset.action);
+                    openPushPage(el.dataset.action, el); // crece desde el botón
                 } else {
                     showToast(el.dataset.action);
                 }
@@ -3743,10 +3832,10 @@
                 return;
             }
 
-            // Tap simple: regresa a la pantalla anterior (morph inverso).
-            // El swipe horizontal o el botón "Ver datos" revelan los datos.
+            // Tap simple: si los datos están revelados NO se cierra (para poder
+            // seleccionar/copiar). Con el frente visible, regresa a la anterior.
             flipSnap();
-            closeCardDetail();
+            if (!cardRevealed) closeCardDetail();
         });
 
         cdCard.addEventListener('pointercancel', () => {
