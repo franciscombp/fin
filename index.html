@@ -514,13 +514,14 @@
         .quick-action__icon {
             width: 56px;
             height: 56px;
-            border-radius: 8px;
-            background: var(--bp-secondary-bg);
+            border-radius: 12px;
+            background: #f0f4f8;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--bp-brand-support);
+            color: var(--bp-text-primary);
             transition: background 0.15s ease, transform 0.12s ease;
+            font-size: 28px;
         }
 
         .quick-action:hover .quick-action__icon {
@@ -682,8 +683,10 @@
             transform: scale(0.97);
         }
 
-        .promo--1 { background: linear-gradient(160deg, #b31237 0%, #7a0930 60%, #4a0523 100%); }
-        .promo--2 { background: linear-gradient(160deg, #0f7a4d 0%, #0b5f3c 60%, #073d27 100%); }
+        .promo--1 { background: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ff8c42 100%); }
+        .promo--2 { background: linear-gradient(135deg, #1e7f3a 0%, #26a041 50%, #34c759 100%); }
+        .promo--3 { background: linear-gradient(135deg, #d946ef 0%, #f43f5e 50%, #fb7185 100%); }
+        .promo--4 { background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 50%, #10b981 100%); }
 
         .promo span {
             position: relative;
@@ -707,7 +710,7 @@
             z-index: 60;
             display: flex;
             justify-content: center;
-            background: var(--bp-surface-fixed);
+            background: var(--bp-surface-page);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             border-top: 1px solid var(--bp-border-elevated);
@@ -1629,57 +1632,145 @@
             display: flex;
         }
 
+        .login-screen__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--bp-surface-page);
+            border-bottom: 1px solid var(--bp-border-divider);
+        }
+
+        .login-screen__header-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .login-screen__header-logo svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .login-screen__header-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--bp-text-primary);
+        }
+
+        .login-screen__header-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .login-screen__header-action {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: var(--bp-text-primary);
+            font-size: 11px;
+            cursor: pointer;
+        }
+
         .login-screen__container {
             flex: 1;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
+            padding: 24px 16px;
             max-width: 480px;
             margin: 0 auto;
             width: 100%;
+            overflow-y: auto;
         }
 
-        .login-screen__logo {
-            width: 160px;
-            height: 160px;
-            margin-bottom: 40px;
-            background: var(--bp-surface-brand);
-            border-radius: 24px;
+        .login-screen__content {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--bp-text-brand);
-            box-shadow: 0 8px 24px rgba(15, 38, 92, 0.15);
-            animation: logoBounce 0.8s ease-out;
-        }
-
-        .login-screen__logo svg {
-            width: 80px;
-            height: 80px;
-            color: var(--bp-text-brand);
-        }
-
-        @keyframes logoBounce {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+            flex-direction: column;
+            gap: 24px;
         }
 
         .login-screen__title {
-            font-size: 32px;
+            font-size: 20px;
             font-weight: 700;
             text-align: center;
-            margin-bottom: 16px;
+            color: var(--bp-text-primary);
+            line-height: 1.3;
+        }
+
+        .login-screen__illustration {
+            width: 100%;
+            max-width: 300px;
+            height: 240px;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e8ecf1 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            color: var(--bp-text-helper);
+            font-size: 14px;
+        }
+
+        .login-screen__features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .login-feature {
+            background: #f8fafc;
+            border: 1px solid var(--bp-border-divider);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .login-feature__icon {
+            font-size: 24px;
             color: var(--bp-text-primary);
         }
 
-        .login-screen__subtitle {
-            font-size: 16px;
+        .login-feature__label {
+            font-size: 13px;
             color: var(--bp-text-secondary);
-            text-align: center;
-            margin-bottom: 48px;
-            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        .login-screen__actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .login-action {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-size: 11px;
+            color: var(--bp-text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .login-action:active {
+            background: #eff2f7;
+            transform: scale(0.95);
+        }
+
+        .login-action__icon {
+            font-size: 20px;
+            color: var(--bp-text-primary);
         }
 
         .login-screen__buttons {
@@ -1711,12 +1802,14 @@
         }
 
         .login-button--secondary {
-            background: var(--bp-selection-bg-active);
-            color: white;
+            background: transparent;
+            color: var(--bp-text-secondary);
+            font-size: 14px;
+            font-weight: 500;
         }
 
         .login-button--secondary:active {
-            transform: scale(0.97);
+            opacity: 0.7;
         }
 
         .page.hidden {
@@ -1727,26 +1820,79 @@
 <body>
     <!-- Login Screen -->
     <div class="login-screen active" id="login-screen">
-        <div class="login-screen__container">
-            <div class="login-screen__logo">
-                <svg width="80" height="80" viewBox="0 0 129 28" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: brightness(0) invert(1);">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M27.43 0V27.9999H9.18404C4.10351 27.9999 0 23.8112 0 18.6251L0 0L27.43 0ZM22.8624 4.6625H13.7272V8.8762L18.7345 8.8762V13.9875H22.8624V4.6625Z" fill="currentColor"/>
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M22.864 4.66666L13.7288 4.66666V8.88036H18.736V13.9917H22.864V4.66666Z" fill="currentColor"/>
+        <!-- Header -->
+        <div class="login-screen__header">
+            <div class="login-screen__header-logo">
+                <svg width="32" height="32" viewBox="0 0 129 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="32" height="32" fill="#FCD000" rx="4"/>
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M27.43 0V27.9999H9.18404C4.10351 27.9999 0 23.8112 0 18.6251L0 0L27.43 0ZM22.8624 4.6625H13.7272V8.8762L18.7345 8.8762V13.9875H22.8624V4.6625Z" fill="#0F265C" transform="scale(0.25) translate(0,0)"/>
                 </svg>
+                <span class="login-screen__header-text">BANCO<br>PICHINCHA</span>
             </div>
-            <h1 class="login-screen__title">Banca Móvil</h1>
-            <p class="login-screen__subtitle">Vive la alegría de tu dinero de forma segura</p>
-            <div class="login-screen__buttons">
-                <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-                    <button class="login-button login-button--primary" id="btn-login-biometric">
-                        <span class="material-symbols-rounded" style="display: none;">fingerprint</span>
-                        Ingresar con Huella
-                    </button>
-                    <div class="loading-spinner" id="loading-spinner" style="display: none;"></div>
+            <div class="login-screen__header-actions">
+                <a href="#" class="login-screen__header-action" title="Clave digital">
+                    <span class="material-symbols-rounded" style="font-size: 20px;">vpn_key</span>
+                    <span>Clave digital</span>
+                </a>
+                <a href="#" class="login-screen__header-action" title="Soporte">
+                    <span class="material-symbols-rounded" style="font-size: 20px;">headset_mic</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="login-screen__container">
+            <div class="login-screen__content">
+                <h1 class="login-screen__title">¡Vive la alegría del Mundial con La Tri!</h1>
+
+                <!-- Illustration placeholder -->
+                <div class="login-screen__illustration">
+                    [Ilustración aquí]
                 </div>
-                <button class="login-button login-button--secondary" id="btn-login-other">
-                    Otro método
-                </button>
+
+                <!-- Features -->
+                <div class="login-screen__features">
+                    <div class="login-feature">
+                        <div class="login-feature__icon"><span class="material-symbols-rounded">qr_code</span></div>
+                        <div class="login-feature__label">Cobrar con QR</div>
+                    </div>
+                    <div class="login-feature">
+                        <div class="login-feature__icon" style="color: var(--bp-text-primary); font-weight: 700;">d/</div>
+                        <div class="login-feature__label">Pagar con QR</div>
+                    </div>
+                </div>
+
+                <!-- Quick actions -->
+                <div class="login-screen__actions">
+                    <button class="login-action" data-action="Transferir">
+                        <span class="material-symbols-rounded login-action__icon">send_money</span>
+                        <span>Transferir</span>
+                    </button>
+                    <button class="login-action" data-action="Retirar">
+                        <span class="material-symbols-rounded login-action__icon">atm</span>
+                        <span>Retirar sin tarjeta</span>
+                    </button>
+                    <button class="login-action" data-action="Pagar">
+                        <span class="material-symbols-rounded login-action__icon">credit_card</span>
+                        <span>Pagar</span>
+                    </button>
+                    <button class="login-action" data-action="Verificar">
+                        <span class="material-symbols-rounded login-action__icon">verified_user</span>
+                        <span>Verificar pago</span>
+                    </button>
+                </div>
+
+                <!-- Login buttons -->
+                <div class="login-screen__buttons">
+                    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                        <button class="login-button login-button--primary" id="btn-login-biometric">
+                            Ingresar
+                        </button>
+                        <div class="loading-spinner" id="loading-spinner" style="display: none;"></div>
+                    </div>
+                    <button class="login-button login-button--secondary" id="btn-login-other">
+                        Otro método de ingreso
+                    </button>
+                </div>
             </div>
         </div>
     </div>
