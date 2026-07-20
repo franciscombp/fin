@@ -311,9 +311,15 @@
 
         .amount {
             font-size: 32px;
-            font-weight: 600;
+            font-weight: 700;
             letter-spacing: 0.5px;
             font-variant-numeric: tabular-nums;
+            transition: opacity 0.18s ease, filter 0.22s ease;
+        }
+
+        .amount.is-masking {
+            opacity: 0;
+            filter: blur(8px);
         }
 
         .icon-switch {
@@ -347,8 +353,8 @@
         .debit-card {
             position: relative;
             width: 100%;
-            height: 200px;
-            border-radius: 14px;
+            height: 148px;
+            border-radius: var(--bp-radius-sm);
             background: var(--bp-surface-brand);
             border: none;
             cursor: pointer;
@@ -357,9 +363,8 @@
             text-align: left;
             font-family: inherit;
             transform-style: preserve-3d;
-            transition: transform 0.15s ease-out, box-shadow 0.3s ease;
+            transition: transform 0.15s ease-out;
             will-change: transform;
-            box-shadow: 0 6px 20px rgba(255, 200, 0, 0.35);
         }
 
         /* Capa de resplandores (reacciona al giroscopio / mouse) */
@@ -462,7 +467,7 @@
             position: relative;
             z-index: 2;
             height: 100%;
-            padding: 22px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -477,7 +482,7 @@
 
         .debit-card__logo {
             width: auto;
-            height: 24px;
+            height: 18px;
             display: block;
         }
 
@@ -505,24 +510,24 @@
         }
 
         .debit-card__visa {
-            width: 52px;
-            height: 18px;
+            width: 42px;
+            height: 14px;
             display: inline-block;
         }
 
         .debit-card__label {
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 600;
-            letter-spacing: 0.4px;
+            letter-spacing: 0.3px;
             text-transform: uppercase;
             opacity: 0.8;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
 
         .debit-card__number {
-            font-size: 21px;
+            font-size: 15px;
             font-weight: 700;
-            letter-spacing: 3px;
+            letter-spacing: 1.5px;
             font-variant-numeric: tabular-nums;
         }
 
@@ -990,11 +995,11 @@
         }
 
         .view.enter-right {
-            animation: viewFromRight 0.32s cubic-bezier(0.25, 0.8, 0.35, 1);
+            animation: viewFromRight 0.45s cubic-bezier(0.25, 0.8, 0.35, 1);
         }
 
         .view.enter-left {
-            animation: viewFromLeft 0.32s cubic-bezier(0.25, 0.8, 0.35, 1);
+            animation: viewFromLeft 0.45s cubic-bezier(0.25, 0.8, 0.35, 1);
         }
 
         @keyframes viewFromRight {
@@ -1005,6 +1010,16 @@
         @keyframes viewFromLeft {
             from { opacity: 0; transform: translateX(-40px); }
             to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Carga simulada de vistas con contenido real: aparece tras un instante */
+        .view.is-loading-view .section {
+            animation: viewLoadReveal 0.85s ease;
+        }
+
+        @keyframes viewLoadReveal {
+            0%, 55% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
         /* Vistas placeholder (Solicitudes, Beneficios, etc.) */
@@ -1529,7 +1544,6 @@
             overflow: hidden;
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
-            box-shadow: 0 18px 40px rgba(15, 38, 92, 0.28), 0 6px 16px rgba(255, 200, 0, 0.3);
         }
 
         .cd-face--front {
@@ -1683,53 +1697,27 @@
             font-variant-numeric: tabular-nums;
         }
 
-        /* Apertura: el contenido sube y la tarjeta hace "pop" desde la de destacados */
-        .card-detail.open .cd-inner {
-            animation: cdInnerIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+        /* Apertura/cierre por "extrapolación": la tarjeta se anima con JS
+           (FLIP) desde/hacia la tarjeta de Destacados. El resto del contenido
+           (encabezado, título, acciones) sólo se desvanece. */
+        .cd-top,
+        .cd-title,
+        .cd-content {
+            transition: opacity 0.3s ease;
         }
 
-        @keyframes cdInnerIn {
-            from { opacity: 0; transform: translateY(28px); }
-            to   { opacity: 1; transform: translateY(0); }
+        .card-detail.morphing .cd-top,
+        .card-detail.morphing .cd-title,
+        .card-detail.morphing .cd-content {
+            opacity: 0;
         }
 
-        .card-detail.open .cd-card {
-            animation:
-                cdCardPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both,
-                cdFloat 4.5s ease-in-out 0.7s infinite;
-        }
-
-        @keyframes cdCardPop {
-            from { opacity: 0; transform: scale(0.9); }
-            to   { opacity: 1; transform: scale(1); }
-        }
-
-        /* Levitación continua: la tarjeta "flota" */
-        @keyframes cdFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-7px); }
-        }
-
-        /* Cierre: el contenido baja y se desvanece */
         .card-detail.closing {
-            animation: cdFadeOut 0.3s ease forwards;
-        }
-
-        .card-detail.closing .cd-inner {
-            animation: cdInnerOut 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
+            animation: cdFadeOut 0.4s ease forwards;
         }
 
         @keyframes cdFadeOut {
             to { opacity: 0; }
-        }
-
-        @keyframes cdInnerOut {
-            to { opacity: 0; transform: translateY(28px) scale(0.98); }
-        }
-
-        /* Pausa la levitación mientras se arrastra/gira */
-        .card-detail.dragging .cd-card {
-            animation-play-state: paused;
         }
 
         .cd-card__row {
@@ -1769,15 +1757,6 @@
             background: var(--bp-text-brand);
             opacity: 0.5;
         }
-
-        /* Contenido debajo de la tarjeta: sube en stagger */
-        .card-detail.open .cd-content > * {
-            animation: cardRise 0.45s cubic-bezier(0.25, 0.8, 0.35, 1) backwards;
-        }
-
-        .card-detail.open .cd-content > *:nth-child(1) { animation-delay: 0.15s; }
-        .card-detail.open .cd-content > *:nth-child(2) { animation-delay: 0.22s; }
-        .card-detail.open .cd-content > *:nth-child(3) { animation-delay: 0.3s; }
 
         .cd-actions {
             display: grid;
@@ -2732,16 +2711,48 @@
         simulateLoad(1000);
 
         // ---------- Tabs: cada cambio simula una carga con skeleton ----------
+        const sectionTabs = [...document.querySelectorAll('.tabs .tab')].filter(t => !t.dataset.action);
+
+        function activateSectionTab(tab) {
+            if (!tab || tab.dataset.action) return;
+            const wasActive = tab.classList.contains('active');
+            document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            tab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            if (!wasActive) simulateLoad();
+        }
+
+        function moveSection(dir) {
+            let idx = sectionTabs.findIndex(t => t.classList.contains('active'));
+            if (idx < 0) idx = 0;
+            const nx = idx + dir;
+            if (nx < 0 || nx >= sectionTabs.length) return;
+            activateSectionTab(sectionTabs[nx]);
+        }
+
         document.querySelectorAll('.tabs .tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                if (tab.dataset.action) return;
-                const wasActive = tab.classList.contains('active');
-                document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                tab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-                if (!wasActive) simulateLoad();
-            });
+            tab.addEventListener('click', () => activateSectionTab(tab));
         });
+
+        // Swipe horizontal en Inicio → navega entre secciones (Destacado, Cuentas, …)
+        const home0 = document.querySelector('.view[data-view="0"]');
+        let swX = 0, swY = 0, swOn = false;
+        home0.addEventListener('touchstart', e => {
+            // No interferir con la tarjeta, las pestañas ni los botones
+            if (e.target.closest('.debit-card, .tabs, button, a')) { swOn = false; return; }
+            swOn = true;
+            swX = e.touches[0].clientX;
+            swY = e.touches[0].clientY;
+        }, { passive: true });
+        home0.addEventListener('touchend', e => {
+            if (!swOn) return;
+            swOn = false;
+            const t = e.changedTouches[0];
+            const dx = t.clientX - swX, dy = t.clientY - swY;
+            if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+                moveSection(dx < 0 ? 1 : -1); // izquierda = siguiente
+            }
+        }, { passive: true });
 
         // ---------- Bottom nav + transiciones entre vistas ----------
         const views = document.querySelectorAll('.view');
@@ -2759,6 +2770,18 @@
             document.querySelector('.tabs').classList.toggle('is-hidden', index !== 0);
             document.querySelector('.profile-story').classList.toggle('is-hidden', index !== 0);
             window.scrollTo({ top: 0 });
+            // Simula el tiempo de carga con skeleton
+            if (index === 0) simulateLoad(900);
+            else loadView(next);
+        }
+
+        // Estado de carga genérico (skeleton) para vistas con contenido real
+        function loadView(view) {
+            const content = view.querySelector('.section');
+            if (!content) return; // vistas que ya son sólo skeleton
+            view.classList.add('is-loading-view');
+            clearTimeout(view._loadTimer);
+            view._loadTimer = setTimeout(() => view.classList.remove('is-loading-view'), 850);
         }
 
         navItems.forEach((item, index) => {
@@ -2796,10 +2819,16 @@
         const balanceToggle = document.getElementById('balance-toggle');
         const balanceIcon = document.getElementById('balance-toggle-icon');
         const balanceValue = balance.textContent;
+        const balanceMasked = '$ ****,**';
         let hidden = false;
         balanceToggle.addEventListener('click', () => {
             hidden = !hidden;
-            balance.textContent = hidden ? '$ ••••••' : balanceValue;
+            // Anima el cambio: desenfoca/desvanece, cambia el texto y reaparece
+            balance.classList.add('is-masking');
+            setTimeout(() => {
+                balance.textContent = hidden ? balanceMasked : balanceValue;
+                balance.classList.remove('is-masking');
+            }, 180);
             balanceIcon.textContent = hidden ? 'visibility_off' : 'visibility';
             balanceToggle.setAttribute('aria-label', hidden ? 'Mostrar saldo' : 'Ocultar saldo');
             balanceToggle.setAttribute('aria-pressed', String(hidden));
@@ -3029,24 +3058,67 @@
         const cdCard = document.getElementById('cd-card');
         const cdFlip = document.getElementById('cd-flip');
 
+        const featCard = document.getElementById('debit-card');
+
+        // Calcula el transform (FLIP) que lleva cdCard hasta la tarjeta de Destacados
+        function morphToFeatured() {
+            const feat = featCard.getBoundingClientRect();
+            const rect = cdCard.getBoundingClientRect();
+            if (!rect.width || !feat.width) return '';
+            const sx = feat.width / rect.width;
+            const sy = feat.height / rect.height;
+            const dx = feat.left - rect.left;
+            const dy = feat.top - rect.top;
+            return `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+        }
+
         function openCardDetail() {
             hideCardData();
             cardDetail.classList.add('open');
             cardDetail.scrollTop = 0;
             document.body.style.overflow = 'hidden';
+
+            // Extrapolación: la tarjeta arranca en la posición/tamaño de Destacados
+            const from = morphToFeatured();
+            if (from) {
+                cardDetail.classList.add('morphing');
+                cdCard.style.transformOrigin = 'top left';
+                cdCard.style.transition = 'none';
+                cdCard.style.transform = from;
+                requestAnimationFrame(() => requestAnimationFrame(() => {
+                    cdCard.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)';
+                    cdCard.style.transform = 'none';
+                    cardDetail.classList.remove('morphing');
+                }));
+                setTimeout(() => {
+                    cdCard.style.transition = '';
+                    cdCard.style.transform = '';
+                    cdCard.style.transformOrigin = '';
+                }, 520);
+            }
         }
 
         function closeCardDetail() {
             if (!cardDetail.classList.contains('open') || cardDetail.classList.contains('closing')) return;
-            cardDetail.classList.add('closing');
+            hideCardData(); // vuelve al frente antes de encoger
+            cardDetail.classList.add('closing', 'morphing');
+
+            const to = morphToFeatured();
+            cdCard.style.transformOrigin = 'top left';
+            cdCard.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+            cdCard.style.transform = to || 'scale(0.9)';
+
             setTimeout(() => {
-                cardDetail.classList.remove('open', 'closing');
+                cardDetail.classList.remove('open', 'closing', 'morphing');
+                cdCard.style.transition = '';
+                cdCard.style.transform = '';
+                cdCard.style.transformOrigin = '';
                 cdInner.style.transform = '';
                 cdInner.style.opacity = '';
                 cdInner.style.transition = '';
                 document.body.style.overflow = '';
                 hideCardData();
-            }, 300);
+            }, 400);
         }
 
         // ----- Revelar datos sensibles con biometría (WebAuthn) -----
@@ -3201,8 +3273,10 @@
                 return;
             }
 
-            // Un tap simple no hace nada: sólo el swipe o el botón "Ver datos" revelan
+            // Tap simple: regresa a la pantalla anterior (morph inverso).
+            // El swipe horizontal o el botón "Ver datos" revelan los datos.
             flipSnap();
+            closeCardDetail();
         });
 
         cdCard.addEventListener('pointercancel', () => {
