@@ -125,14 +125,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const debitCard = document.getElementById('debit-card');
     if (!debitCard) return;
 
-    let hasPermission = false;
-    let alpha = 0, beta = 0, gamma = 0;
+    let gyroActive = false;
     let isFlipped = false;
+    let curX = 0, curY = 0;
+    let targetX = 0, targetY = 0;
+    const SHINE_FROM = -80;
+    const SHINE_TO = 360;
 
     const handleOrientation = (event) => {
-      alpha = event.alpha || 0;
-      beta = Math.max(-30, Math.min(30, event.beta || 0));
-      gamma = Math.max(-30, Math.min(30, event.gamma || 0));
+      if (event.gamma === null && event.beta === null) return;
+      gyroActive = true;
+      // Solo gamma (inclinación izq/der) para el shine inverso
+      targetX = Math.max(-1, Math.min(1, (event.gamma || 0) / 40));
+      targetY = 0;
     };
 
     const requestPermission = async () => {
@@ -140,14 +145,12 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           const permission = await DeviceOrientationEvent.requestPermission();
           if (permission === 'granted') {
-            hasPermission = true;
             window.addEventListener('deviceorientation', handleOrientation);
           }
         } catch (err) {
           console.log('Gyroscope permission denied');
         }
       } else if (typeof DeviceOrientationEvent !== 'undefined') {
-        hasPermission = true;
         window.addEventListener('deviceorientation', handleOrientation);
       }
     };
@@ -162,66 +165,62 @@ document.addEventListener('DOMContentLoaded', () => {
     debitCard.addEventListener('click', (e) => {
       e.preventDefault();
       isFlipped = !isFlipped;
-      const baseTransform = isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)';
-      debitCard.style.transform = `perspective(1000px) ${baseTransform}`;
+      const baseTransform = isFlipped ? 'perspective(1000px) rotateY(180deg)' : 'perspective(1000px) rotateY(0deg)';
+      debitCard.style.transform = baseTransform;
     });
 
-    let ticking = false;
-    const tick = () => {
-      if (!hasPermission) {
-        // Auto-rotating animation when no permission
-        const rotX = (Math.sin(Date.now() / 3000) * 8);
-        const rotY = (Math.cos(Date.now() / 2500) * 12);
-        const baseRotation = isFlipped ? `rotateY(180deg) rotateX(${rotX}deg)` : `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
-        debitCard.style.transform = `perspective(1000px) ${baseRotation}`;
+    const shineEl = debitCard.querySelector('.debit-card__shine');
 
-        const shine = debitCard.querySelector('.debit-card__shine');
-        if (shine && !isFlipped) {
-          const shinePos = ((Date.now() % 8000) / 8000) * 440 - 80;
-          shine.style.setProperty('--shine-pos', `${shinePos}px`);
+    const tick = () => {
+      // Smooth interpolation to prevent jitter
+      curX += (targetX - curX) * 0.12;
+      const effectiveY = gyroActive ? 0 : targetY;
+      curY += (effectiveY - curY) * 0.12;
+
+      debitCard.style.setProperty('--gx', curX.toFixed(4));
+      debitCard.style.setProperty('--gy', curY.toFixed(4));
+
+      if (gyroActive) {
+        // Gyroscope mode: only horizontal shine movement
+        debitCard.style.transform = isFlipped ? 'perspective(1000px) rotateY(180deg) scale(1)' : 'perspective(1000px) scale(1)';
+        if (shineEl && !isFlipped) {
+          shineEl.classList.add('gyro-controlled');
+          // Inverse shine: when tilted right (targetX > 0), shine goes left
+          const shinePos = SHINE_FROM + ((-curX + 1) / 2) * (SHINE_TO - SHINE_FROM);
+          shineEl.style.setProperty('--shine-pos', `${shinePos.toFixed(1)}px`);
         }
       } else {
-        // Gyroscope-controlled rotation (beta = tilt forward/back, gamma = tilt left/right)
-        const rotX = (beta / 30) * 15;
-        const rotY = (gamma / 30) * 15;
-        const baseRotation = isFlipped ? `rotateY(180deg) rotateX(${rotX}deg)` : `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
-        debitCard.style.transform = `perspective(1000px) ${baseRotation}`;
+        // Desktop/mouse mode: 3D rotation
+        if (!isFlipped) {
+          const tiltX = curX * 4;
+          const tiltY = curY * -4;
+          debitCard.style.transform = `perspective(1000px) rotateY(${tiltX}deg) rotateX(${tiltY}deg) scale(1)`;
 
-        const shine = debitCard.querySelector('.debit-card__shine');
-        if (shine && !isFlipped) {
-          // Inverse shine effect: when tilted right (gamma > 0), shine goes left
-          const shinePos = ((30 - gamma) / 60) * 440 - 80;
-          shine.style.setProperty('--shine-pos', `${shinePos}px`);
-          shine.classList.add('gyro-controlled');
+          if (shineEl) {
+            const shinePos = SHINE_FROM + ((curX + 1) / 2) * (SHINE_TO - SHINE_FROM);
+            shineEl.style.setProperty('--shine-pos', `${shinePos.toFixed(1)}px`);
+          }
         }
       }
-      ticking = false;
+      requestAnimationFrame(tick);
     };
 
-    const scheduleFrame = () => {
-      if (!ticking) {
-        requestAnimationFrame(tick);
-        ticking = true;
-      }
-    };
-
-    scheduleFrame();
-    setInterval(scheduleFrame, 50);
+    requestAnimationFrame(tick);
 
     // Mouse fallback
     debitCard.addEventListener('mousemove', (e) => {
-      if (hasPermission || isFlipped) return;
+      if (gyroActive) return;
       const rect = debitCard.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width;
       const y = (e.clientY - rect.top) / rect.height;
-      const rotY = (x - 0.5) * 30;
-      const rotX = (y - 0.5) * 20;
-      debitCard.style.transform = `perspective(1000px) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+      targetX = (x - 0.5) * 2;
+      targetY = (y - 0.5) * 2;
     });
 
     debitCard.addEventListener('mouseleave', () => {
-      if (!hasPermission && !isFlipped) {
-        debitCard.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
+      if (!gyroActive) {
+        targetX = 0;
+        targetY = 0;
       }
     });
   }
