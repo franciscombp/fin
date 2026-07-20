@@ -1525,21 +1525,16 @@
         .cd-inner {
             max-width: 480px;
             margin: 0 auto;
-            padding: 8px 24px 40px;
+            padding: 0 24px 40px;
         }
 
-        .cd-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 56px;
-        }
-
-        /* Título de pantalla (nivel superior de la jerarquía) */
+        /* Título grande de pantalla (se colapsa a la barra al hacer scroll) */
         .cd-title {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 700;
+            line-height: 1.2;
             margin: 4px 0 16px;
+            transition: opacity 0.2s ease;
         }
 
         /* La tarjeta "real": flip 3D (frente = imagen, reverso = datos) */
@@ -1726,16 +1721,16 @@
 
         /* Apertura/cierre por "extrapolación": la tarjeta se anima con JS
            (FLIP) desde/hacia la tarjeta de Destacados. El resto del contenido
-           (encabezado, título, acciones) sólo se desvanece. */
-        .cd-top,
+           (título, acciones) sólo se desvanece. */
         .cd-title,
-        .cd-content {
-            transition: opacity 0.3s ease;
+        .cd-content,
+        .card-detail .detail-topbar {
+            transition: opacity 0.28s ease;
         }
 
-        .card-detail.morphing .cd-top,
         .card-detail.morphing .cd-title,
-        .card-detail.morphing .cd-content {
+        .card-detail.morphing .cd-content,
+        .card-detail.morphing .detail-topbar {
             opacity: 0;
         }
 
@@ -2160,13 +2155,7 @@
         .push-page__inner {
             max-width: 480px;
             margin: 0 auto;
-            padding: 8px 24px 40px;
-        }
-
-        .push-page__top {
-            display: flex;
-            align-items: center;
-            height: 56px;
+            padding: 0 24px 40px;
         }
 
         .push-page__hero {
@@ -2181,6 +2170,68 @@
         }
 
         .push-page__hero .material-symbols-rounded { font-size: 56px; }
+
+        #push-cta { margin-top: 8px; }
+
+        /* ---------- Cabecera colapsable estilo iOS/Airbnb ---------- */
+        .detail-topbar {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: transparent;
+            transition: background 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .detail-topbar__row {
+            max-width: 480px;
+            margin: 0 auto;
+            height: 56px;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .detail-topbar__title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--bp-text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+
+        /* Estado colapsado: barra con fondo translúcido + título compacto */
+        .push-page.scrolled .detail-topbar,
+        .card-detail.scrolled .detail-topbar {
+            background: var(--bp-surface-fixed);
+            -webkit-backdrop-filter: blur(14px) saturate(180%);
+            backdrop-filter: blur(14px) saturate(180%);
+            box-shadow: 0 1px 0 rgba(15, 38, 92, 0.08);
+        }
+
+        .push-page.scrolled .detail-topbar__title,
+        .card-detail.scrolled .detail-topbar__title {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Título grande que se desvanece al colapsar */
+        .detail-title {
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin: 0 0 16px;
+            transition: opacity 0.2s ease;
+        }
+
+        .push-page.scrolled .detail-title,
+        .card-detail.scrolled .cd-title {
+            opacity: 0;
+        }
 
         /* Contenido del push: sube con stagger al abrir */
         .push-page.open .push-page__hero,
@@ -2652,15 +2703,19 @@
 
     <!-- Detalle de tarjeta (estilo Apple Wallet) -->
     <div class="card-detail" id="card-detail" role="dialog" aria-modal="true" aria-label="Detalle de tarjeta">
-        <div class="cd-inner">
-            <div class="cd-top">
+        <!-- Cabecera fija que colapsa el título al hacer scroll -->
+        <div class="detail-topbar" id="cd-topbar">
+            <div class="detail-topbar__row">
                 <button class="icon-button" id="cd-back" aria-label="Volver">
                     <span class="material-symbols-rounded">arrow_back</span>
                 </button>
-                <button class="icon-button" data-action="Ajustes de tarjeta" aria-label="Ajustes">
+                <span class="detail-topbar__title">Débito Internacional</span>
+                <button class="icon-button" data-action="Ajustes de tarjeta" aria-label="Ajustes" style="margin-left:auto;">
                     <span class="material-symbols-rounded">settings</span>
                 </button>
             </div>
+        </div>
+        <div class="cd-inner">
             <h1 class="cd-title">Débito Internacional</h1>
 
             <div class="cd-card" id="cd-card">
@@ -2764,6 +2819,49 @@
                         </span>
                         <span class="sub-item__price">$ 159,99</span>
                     </button>
+                    <button class="sub-item" data-action="YouTube Premium">
+                        <span class="sub-item__logo" style="background:#FF0000;"><span class="material-symbols-rounded">play_arrow</span></span>
+                        <span class="sub-item__info">
+                            <span class="sub-item__name">YouTube Premium</span>
+                            <div class="sub-item__meta">Se renueva el 9 de octubre</div>
+                        </span>
+                        <span class="sub-item__price">$ 11,99</span>
+                    </button>
+                    <button class="sub-item" data-action="iCloud+">
+                        <span class="sub-item__logo" style="background:#3693f3;"><span class="material-symbols-rounded">cloud</span></span>
+                        <span class="sub-item__info">
+                            <span class="sub-item__name">iCloud+</span>
+                            <div class="sub-item__meta">Se renueva el 14 de octubre</div>
+                        </span>
+                        <span class="sub-item__price">$ 2,99</span>
+                    </button>
+                    <button class="sub-item" data-action="Gympass">
+                        <span class="sub-item__logo" style="background:#f76800;"><span class="material-symbols-rounded">exercise</span></span>
+                        <span class="sub-item__info">
+                            <span class="sub-item__name">Gympass</span>
+                            <div class="sub-item__meta">Se renueva el 20 de octubre</div>
+                        </span>
+                        <span class="sub-item__price">$ 39,99</span>
+                    </button>
+                </div>
+
+                <h2 class="cd-subtitle">Beneficios de tu tarjeta</h2>
+                <div class="cd-subs">
+                    <button class="sub-item" data-action="Millas">
+                        <span class="sub-item__logo" style="background:var(--bp-selection-bg-active);"><span class="material-symbols-rounded">flight</span></span>
+                        <span class="sub-item__info"><span class="sub-item__name">Acumula millas</span><span class="sub-item__meta">1 milla por cada $1</span></span>
+                        <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
+                    </button>
+                    <button class="sub-item" data-action="Seguro de compras">
+                        <span class="sub-item__logo" style="background:#0f7a4d;"><span class="material-symbols-rounded">verified_user</span></span>
+                        <span class="sub-item__info"><span class="sub-item__name">Seguro de compras</span><span class="sub-item__meta">Protección 90 días</span></span>
+                        <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
+                    </button>
+                    <button class="sub-item" data-action="Salas VIP">
+                        <span class="sub-item__logo" style="background:#8e44ad;"><span class="material-symbols-rounded">weekend</span></span>
+                        <span class="sub-item__info"><span class="sub-item__name">Salas VIP aeropuerto</span><span class="sub-item__meta">2 accesos al año</span></span>
+                        <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -2771,24 +2869,36 @@
 
     <!-- Página genérica (push) para acciones rápidas -->
     <div class="push-page" id="push-page" role="dialog" aria-modal="true">
-        <div class="push-page__inner">
-            <div class="push-page__top">
+        <!-- Cabecera fija que colapsa el título al hacer scroll (estilo iOS) -->
+        <div class="detail-topbar" id="push-topbar">
+            <div class="detail-topbar__row">
                 <button class="icon-button" id="push-back" aria-label="Volver">
                     <span class="material-symbols-rounded">arrow_back</span>
                 </button>
+                <span class="detail-topbar__title" id="push-topbar-title"></span>
             </div>
-            <h1 class="cd-title" id="push-title">Acción</h1>
+        </div>
+        <div class="push-page__inner">
+            <h1 class="detail-title" id="push-title">Acción</h1>
             <div class="push-page__hero">
                 <span class="material-symbols-rounded" id="push-hero-icon">bolt</span>
             </div>
-            <div class="section" style="padding-left:0; padding-right:0;">
-                <div class="section__title"><h2>Detalles</h2></div>
+
+            <section class="section" style="padding-left:0; padding-right:0;">
+                <div class="section__title"><h2>Resumen</h2></div>
                 <div class="card">
-                    <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-                    <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
+                    <div class="sub-item"><span class="sub-item__logo" style="background:var(--bp-selection-bg-active);"><span class="material-symbols-rounded">schedule</span></span><span class="sub-item__info"><span class="sub-item__name">Disponible</span><span class="sub-item__meta">Actualizado hoy</span></span><span class="sub-item__price">$ 1.906,04</span></div>
+                    <div class="sub-item"><span class="sub-item__logo" style="background:#1e9e5a;"><span class="material-symbols-rounded">trending_up</span></span><span class="sub-item__info"><span class="sub-item__name">Ingresos del mes</span><span class="sub-item__meta">Mayo 2026</span></span><span class="sub-item__price">$ 2.430,00</span></div>
+                    <div class="sub-item"><span class="sub-item__logo" style="background:#f76800;"><span class="material-symbols-rounded">trending_down</span></span><span class="sub-item__info"><span class="sub-item__name">Gastos del mes</span><span class="sub-item__meta">Mayo 2026</span></span><span class="sub-item__price">$ 1.284,45</span></div>
                 </div>
-                <button class="login-button login-button--primary" id="push-cta" style="margin-top:8px;">Continuar</button>
-            </div>
+            </section>
+
+            <section class="section" style="padding-left:0; padding-right:0;">
+                <div class="section__title"><h2>Movimientos</h2><button class="section__link" data-action="Ver todos">Ver todos</button></div>
+                <div class="card" id="push-movs"></div>
+            </section>
+
+            <button class="login-button login-button--primary" id="push-cta">Continuar</button>
         </div>
     </div>
 
@@ -2828,10 +2938,50 @@
             toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
         }
 
+        /* ---------- Cabecera colapsable (título grande → barra fija) ---------- */
+        function setupCollapsingHeader(container, bigTitle, topbar) {
+            const onScroll = () => {
+                const barH = topbar.offsetHeight;
+                const t = bigTitle.getBoundingClientRect();
+                const c = container.getBoundingClientRect();
+                container.classList.toggle('scrolled', (t.bottom - c.top) < barH - 6);
+            };
+            container.addEventListener('scroll', onScroll, { passive: true });
+            return onScroll;
+        }
+
         // ---------- Página genérica (push) ----------
         const pushPage = document.getElementById('push-page');
         const pushTitle = document.getElementById('push-title');
+        const pushTopbarTitle = document.getElementById('push-topbar-title');
         const pushHeroIcon = document.getElementById('push-hero-icon');
+        const pushMovs = document.getElementById('push-movs');
+        setupCollapsingHeader(pushPage, pushTitle, document.getElementById('push-topbar'));
+
+        // Movimientos de ejemplo para dar contenido (y poder hacer scroll)
+        const movData = [
+            ['shopping_cart', 'Supermaxi', 'Hoy · 10:24', '-$ 48,30', '#276db6'],
+            ['local_cafe', 'Sweet & Coffee', 'Hoy · 08:12', '-$ 4,75', '#7a4a2b'],
+            ['directions_bus', 'Recarga transporte', 'Ayer · 19:40', '-$ 5,00', '#0f7a4d'],
+            ['account_balance', 'Transferencia recibida', 'Ayer · 15:03', '+$ 320,00', '#1e9e5a'],
+            ['bolt', 'Empresa Eléctrica', '12 may · 09:00', '-$ 24,80', '#f76800'],
+            ['smartphone', 'Recarga Claro', '11 may · 21:15', '-$ 10,00', '#c0392b'],
+            ['restaurant', 'La Petite', '10 may · 21:48', '-$ 62,10', '#8e44ad'],
+            ['fitness_center', 'Smart Fit', '10 may · 07:30', '-$ 29,90', '#276db6'],
+            ['local_gas_station', 'Primax', '9 may · 18:22', '-$ 40,00', '#e67e22'],
+            ['redeem', 'Cashback', '8 may · 12:00', '+$ 6,04', '#1e9e5a'],
+            ['shopping_bag', 'De Prati', '7 may · 16:41', '-$ 89,90', '#2c3e50'],
+            ['movie', 'Cinemark', '6 may · 20:10', '-$ 14,50', '#c0392b']
+        ];
+        function renderMovs() {
+            pushMovs.innerHTML = movData.map(m => `
+                <button class="sub-item" data-action="${m[1]}">
+                    <span class="sub-item__logo" style="background:${m[4]};"><span class="material-symbols-rounded">${m[0]}</span></span>
+                    <span class="sub-item__info"><span class="sub-item__name">${m[1]}</span><span class="sub-item__meta">${m[2]}</span></span>
+                    <span class="sub-item__price" style="color:${m[3][0] === '+' ? '#1e9e5a' : 'var(--bp-text-primary)'};">${m[3]}</span>
+                </button>`).join('');
+        }
+        renderMovs();
         // Íconos por acción para el hero
         const pushIcons = {
             'Pagar con QR': 'qr_code_scanner', 'Cobrar con QR': 'qr_code_2',
@@ -2845,9 +2995,11 @@
 
         function openPushPage(title) {
             pushTitle.textContent = title;
+            pushTopbarTitle.textContent = title;
             pushHeroIcon.textContent = pushIcons[title] || 'bolt';
-            pushPage.classList.add('open');
+            pushPage.classList.remove('scrolled');
             pushPage.scrollTop = 0;
+            pushPage.classList.add('open');
             document.body.style.overflow = 'hidden';
         }
 
@@ -3159,13 +3311,16 @@
             // En modo giroscopio, solo movimiento horizontal
             const effectiveY = gyroActive ? 0 : targetY;
             curY += (effectiveY - curY) * 0.12;
-            card.style.setProperty('--gx', curX.toFixed(4));
+            // En giroscopio el resplandor es INVERSO al giro: la luz queda fija
+            // en el "mundo" y el reflejo se desplaza al contrario (más físico).
+            const gx = gyroActive ? -curX : curX;
+            card.style.setProperty('--gx', gx.toFixed(4));
             card.style.setProperty('--gy', curY.toFixed(4));
             if (gyroActive) {
-                // Sin tilt 3D; el shine sigue al dispositivo de izq a der
+                // Sin tilt 3D; el shine se mueve al contrario del dispositivo
                 card.style.transform = `scale(1)`;
                 shineEl.classList.add('gyro-controlled');
-                const shinePos = SHINE_FROM + ((curX + 1) / 2) * (SHINE_TO - SHINE_FROM);
+                const shinePos = SHINE_FROM + ((-curX + 1) / 2) * (SHINE_TO - SHINE_FROM);
                 shineEl.style.setProperty('--shine-pos', `${shinePos.toFixed(1)}px`);
             } else {
                 const tiltX = curX * 4;
@@ -3361,6 +3516,7 @@
         const cdInner = cardDetail.querySelector('.cd-inner');
         const cdCard = document.getElementById('cd-card');
         const cdFlip = document.getElementById('cd-flip');
+        setupCollapsingHeader(cardDetail, cardDetail.querySelector('.cd-title'), document.getElementById('cd-topbar'));
 
         const featCard = document.getElementById('debit-card');
 
@@ -3376,8 +3532,12 @@
             return `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
         }
 
+        // Curva tipo iOS para el morph
+        const MORPH_EASE = 'cubic-bezier(0.32, 0.72, 0, 1)';
+
         function openCardDetail() {
             hideCardData();
+            cardDetail.classList.remove('scrolled');
             cardDetail.classList.add('open');
             cardDetail.scrollTop = 0;
             document.body.style.overflow = 'hidden';
@@ -3389,27 +3549,33 @@
                 cdCard.style.transformOrigin = 'top left';
                 cdCard.style.transition = 'none';
                 cdCard.style.transform = from;
+                // fuerza el layout antes de animar hacia su lugar
                 requestAnimationFrame(() => requestAnimationFrame(() => {
-                    cdCard.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)';
+                    cdCard.style.transition = `transform 0.52s ${MORPH_EASE}`;
                     cdCard.style.transform = 'none';
+                    // el contenido se desvanece hacia adentro un pelín después,
+                    // para que la tarjeta "lidere" el movimiento (más realista)
                     cardDetail.classList.remove('morphing');
                 }));
                 setTimeout(() => {
                     cdCard.style.transition = '';
                     cdCard.style.transform = '';
                     cdCard.style.transformOrigin = '';
-                }, 520);
+                }, 560);
             }
         }
 
         function closeCardDetail() {
             if (!cardDetail.classList.contains('open') || cardDetail.classList.contains('closing')) return;
             hideCardData(); // vuelve al frente antes de encoger
+            cardDetail.classList.remove('scrolled');
+            // el contenido se desvanece primero; la tarjeta encoge de vuelta
             cardDetail.classList.add('closing', 'morphing');
+            cardDetail.scrollTop = 0;
 
             const to = morphToFeatured();
             cdCard.style.transformOrigin = 'top left';
-            cdCard.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+            cdCard.style.transition = `transform 0.44s ${MORPH_EASE}`;
             cdCard.style.transform = to || 'scale(0.9)';
 
             setTimeout(() => {
@@ -3422,7 +3588,7 @@
                 cdInner.style.transition = '';
                 document.body.style.overflow = '';
                 hideCardData();
-            }, 400);
+            }, 450);
         }
 
         // ----- Revelar datos sensibles con biometría (WebAuthn) -----
