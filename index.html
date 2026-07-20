@@ -1601,6 +1601,13 @@
             38%, 100% { transform: rotate(24deg) translateX(560px); opacity: 0; }
         }
 
+        /* En modo giroscopio el barrido automático se pausa y la posición
+           la controla el dispositivo (igual que la tarjeta de Destacados) */
+        .cd-shine.gyro-controlled {
+            animation: none;
+            opacity: 0.9;
+        }
+
         @media (prefers-reduced-motion: reduce) {
             .cd-shine { animation: none; }
         }
@@ -3085,12 +3092,20 @@
                 const done = e => {
                     if (e && e.propertyName !== 'transform') return;
                     pushPage.removeEventListener('transitionend', done);
+                    // Desactiva la transición ANTES de quitar clases: así la
+                    // reversión al estado base (translateX(100%)) es instantánea
+                    // y no se mezcla una segunda animación de slide con la escala.
+                    pushPage.style.transition = 'none';
                     pushPage.classList.remove('open', 'grow', 'closing-grow');
-                    pushPage.style.transition = pushPage.style.transform = pushPage.style.opacity = '';
-                    pushPage.style.transformOrigin = pushPage.style.visibility = '';
+                    pushPage.style.transform = '';
+                    pushPage.style.opacity = '';
+                    pushPage.style.transformOrigin = '';
+                    pushPage.style.visibility = '';
+                    void pushPage.offsetWidth; // reflow con transición desactivada
+                    pushPage.style.transition = ''; // restaura para la próxima
                 };
                 pushPage.addEventListener('transitionend', done);
-                setTimeout(done, 380); // fallback
+                setTimeout(done, 400); // fallback
             } else {
                 pushPage.classList.remove('open'); // desliza de salida (visibility con delay)
             }
@@ -3392,8 +3407,11 @@
             typeof DeviceOrientationEvent.requestPermission === 'function';
 
         const shineEl = document.querySelector('.debit-card__shine');
+        const cdShineEl = document.querySelector('.cd-shine');
         // Rango del barrido del shine (coincide con --shine-from / --shine-to)
         const SHINE_FROM = -80, SHINE_TO = 360;
+        // Rango del shine de la tarjeta del detalle (coincide con cdShineSweep)
+        const CD_SHINE_FROM = -160, CD_SHINE_TO = 560;
 
         function tick() {
             curX += (targetX - curX) * 0.12;
@@ -3409,8 +3427,14 @@
                 // Sin tilt 3D; el shine se mueve al contrario del dispositivo
                 card.style.transform = `scale(1)`;
                 shineEl.classList.add('gyro-controlled');
-                const shinePos = SHINE_FROM + ((-curX + 1) / 2) * (SHINE_TO - SHINE_FROM);
-                shineEl.style.setProperty('--shine-pos', `${shinePos.toFixed(1)}px`);
+                const inv = (-curX + 1) / 2; // 0..1 inverso al giro
+                shineEl.style.setProperty('--shine-pos', `${(SHINE_FROM + inv * (SHINE_TO - SHINE_FROM)).toFixed(1)}px`);
+                // Mismo control (inverso) para el shine de la tarjeta del detalle
+                if (cdShineEl) {
+                    cdShineEl.classList.add('gyro-controlled');
+                    const cdPos = CD_SHINE_FROM + inv * (CD_SHINE_TO - CD_SHINE_FROM);
+                    cdShineEl.style.transform = `rotate(24deg) translateX(${cdPos.toFixed(1)}px)`;
+                }
             } else {
                 const tiltX = curX * 4;
                 const tiltY = curY * -4;
