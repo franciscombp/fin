@@ -32,18 +32,36 @@ document.addEventListener('DOMContentLoaded', () => {
   // Home oculto hasta autenticarse
   if (homePage) homePage.classList.add('hidden');
 
-  // Login biométrico (simulado)
+  // Login biométrico real (WebAuthn) con fallback simulado
   if (btnLoginBiometric) {
-    btnLoginBiometric.addEventListener('click', () => {
+    btnLoginBiometric.addEventListener('click', async () => {
+      const original = btnLoginBiometric.textContent;
       btnLoginBiometric.disabled = true;
-      btnLoginBiometric.textContent = 'Autenticando...';
       if (loadingSpinner) loadingSpinner.style.display = 'inline-block';
-      setTimeout(() => {
+
+      try {
+        const auth = window.BPAuth;
+        if (auth && auth.supported && await auth.platformAvailable()) {
+          // Biometría real del dispositivo (Touch ID / Face ID / Windows Hello / huella)
+          btnLoginBiometric.textContent = auth.hasCredential()
+            ? 'Verificando huella…'
+            : 'Registrando huella…';
+          await auth.verify();
+        } else {
+          // Sin autenticador de plataforma: caemos al simulado
+          btnLoginBiometric.textContent = 'Autenticando...';
+          await new Promise(r => setTimeout(r, 1500));
+        }
         showHome();
+      } catch (err) {
+        // El usuario canceló o el autenticador falló
+        console.warn('Biometría cancelada/fallida:', err);
+        alert('No se pudo verificar tu identidad. Inténtalo de nuevo.');
+      } finally {
         btnLoginBiometric.disabled = false;
-        btnLoginBiometric.textContent = 'Ingresar';
+        btnLoginBiometric.textContent = original || 'Ingresar';
         if (loadingSpinner) loadingSpinner.style.display = 'none';
-      }, 2000);
+      }
     });
   }
 
