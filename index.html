@@ -227,10 +227,13 @@
             font-weight: 600;
         }
 
+        /* Los links usan --link-color (por defecto el azul interactivo) para que
+           cualquier sección/elemento pueda darles un color propio con
+           style="--link-color: ..." o color: y el hover/anillo lo respeten. */
         .section__link {
             border: none;
             background: transparent;
-            color: var(--bp-text-interactive);
+            color: var(--link-color, var(--bp-text-interactive));
             font-size: 14px;
             font-weight: 600;
             font-family: inherit;
@@ -240,8 +243,10 @@
             transition: background 0.15s ease;
         }
 
+        /* El tinte del hover deriva del color actual del link, no de un azul fijo */
         .section__link:hover {
             background: var(--bp-status-info-bg-subtle);
+            background: color-mix(in srgb, currentColor 12%, transparent);
         }
 
         /* ---------- Card contenedora ---------- */
@@ -453,7 +458,7 @@
 
         .debit-card__logo {
             width: auto;
-            height: 30px;
+            height: 20px;
             display: block;
         }
 
@@ -481,20 +486,24 @@
         }
 
         .debit-card__visa {
-            width: 48px;
-            height: 16px;
+            width: 44px;
+            height: 15px;
             display: inline-block;
         }
 
         .debit-card__label {
-            font-size: 14px;
-            font-weight: 500;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            opacity: 0.8;
+            margin-bottom: 5px;
         }
 
         .debit-card__number {
-            font-size: 14px;
-            font-weight: 600;
-            letter-spacing: 1px;
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: 2.5px;
             font-variant-numeric: tabular-nums;
         }
 
@@ -821,6 +830,11 @@
         .section__link:focus-visible,
         .profile-story:focus-visible {
             box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--bp-border-focus);
+        }
+
+        /* Links con color propio: el anillo de foco sigue ese color */
+        .section__link:focus-visible {
+            box-shadow: 0 0 0 2px #fff, 0 0 0 4px currentColor;
         }
 
         /* Toast de feedback */
@@ -1411,15 +1425,51 @@
             margin: 4px 0 16px;
         }
 
-        /* La tarjeta "real": la imagen ocupa todo, sin padding, flota con spring */
+        /* La tarjeta "real": flip 3D (frente = imagen, reverso = datos) */
         .cd-card {
-            border-radius: 16px;
-            padding: 0;
-            color: var(--bp-text-brand);
-            box-shadow: 0 18px 40px rgba(15, 38, 92, 0.28), 0 6px 16px rgba(255, 200, 0, 0.3);
+            perspective: 1600px;
             position: relative;
+            border-radius: 16px;
+            cursor: pointer;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .cd-flip {
+            position: relative;
+            width: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+            will-change: transform;
+        }
+
+        .cd-card.revealed .cd-flip { transform: rotateY(180deg); }
+
+        .cd-face {
+            border-radius: 16px;
             overflow: hidden;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            box-shadow: 0 18px 40px rgba(15, 38, 92, 0.28), 0 6px 16px rgba(255, 200, 0, 0.3);
+        }
+
+        .cd-face--front {
+            position: relative;
             line-height: 0;
+        }
+
+        .cd-face--back {
+            position: absolute;
+            inset: 0;
+            transform: rotateY(180deg);
+            background: linear-gradient(150deg, #0f265c 0%, #1a3a7d 100%);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            line-height: normal;
         }
 
         .cd-card__img {
@@ -1429,7 +1479,7 @@
             border-radius: 16px;
         }
 
-        /* Pista de deslizar para revelar */
+        /* Pista de girar para revelar */
         .cd-card__hint {
             position: absolute;
             left: 50%;
@@ -1457,35 +1507,20 @@
         .cd-card.revealed .cd-card__hint,
         .cd-card.verifying .cd-card__hint { opacity: 0; }
 
-        /* Overlay de verificación / datos sensibles */
-        .cd-card__reveal {
+        /* Overlay de verificación biométrica sobre el frente */
+        .cd-verify {
             position: absolute;
             inset: 0;
             border-radius: 16px;
-            background: linear-gradient(150deg, #0f265c 0%, #1a3a7d 100%);
+            background: rgba(15, 38, 92, 0.85);
             color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            line-height: normal;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .cd-card.verifying .cd-card__reveal,
-        .cd-card.revealed .cd-card__reveal {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .cd-verify {
             display: none;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             gap: 12px;
             text-align: center;
+            line-height: normal;
         }
 
         .cd-card.verifying .cd-verify { display: flex; }
@@ -1502,20 +1537,18 @@
 
         .cd-verify__text { font-size: 14px; font-weight: 600; }
 
+        /* Reverso: datos sensibles */
         .cd-data {
-            display: none;
+            display: flex;
             flex-direction: column;
             gap: 18px;
             width: 100%;
-            position: relative;
         }
-
-        .cd-card.revealed .cd-data { display: flex; }
 
         .cd-data__close {
             position: absolute;
-            top: -8px;
-            right: 0;
+            top: 14px;
+            right: 14px;
             width: 36px;
             height: 36px;
             border-radius: 50%;
@@ -1590,14 +1623,7 @@
             to { opacity: 0; transform: translateY(24px); }
         }
 
-        /* Arrastre para cerrar (drag-to-dismiss desde la tarjeta) */
-        .cd-card {
-            touch-action: none;
-            cursor: grab;
-        }
-
-        .cd-card:active { cursor: grabbing; }
-
+        /* Pausa la levitación mientras se arrastra/gira */
         .card-detail.dragging .cd-card {
             animation-play-state: paused;
         }
@@ -1946,27 +1972,42 @@
             display: none;
         }
 
-        /* ---------- Responsive / escritorio ---------- */
-        @media (min-width: 600px) {
+        /* ---------- Responsive: tablet y escritorio ----------
+           Disposición propuesta: la app se muestra como una columna central de
+           ancho fijo (una "app" centrada) sobre un fondo de marca con marco
+           sutil. Todas las superficies de nivel superior (home, login y detalle)
+           y el nav comparten la misma columna para una experiencia consistente. */
+        @media (min-width: 700px) {
             body {
-                background: #dfe3ea;
+                background:
+                    radial-gradient(1200px 600px at 50% -10%, #eaf0f8 0%, transparent 60%),
+                    linear-gradient(180deg, #e2e7ef 0%, #d3d9e4 100%);
+                background-attachment: fixed;
             }
 
-            /* Columna tipo app centrada con marco sutil */
+            /* Columna central compartida */
+            #home-page.page,
+            .login-screen,
+            .card-detail {
+                width: 100%;
+                max-width: 480px;
+                margin: 0 auto;
+            }
+
+            /* Home: columna con marco lateral */
             #home-page.page {
                 background: var(--bp-surface-page);
                 min-height: 100vh;
-                box-shadow: 0 0 60px rgba(15, 38, 92, 0.14);
+                box-shadow: 0 0 0 1px rgba(15, 38, 92, 0.05), 0 24px 70px rgba(15, 38, 92, 0.16);
             }
 
-            .header {
-                border-radius: 0;
-            }
-
-            /* Login y detalle también centrados en la columna */
-            .login-screen__container,
-            .cd-inner {
-                max-width: 480px;
+            /* Overlays fijos centrados a la misma columna */
+            .login-screen,
+            .card-detail {
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+                box-shadow: 0 0 0 1px rgba(15, 38, 92, 0.05), 0 24px 70px rgba(15, 38, 92, 0.16);
             }
 
             /* Nav inferior alineado a la columna, no a todo el ancho */
@@ -1980,12 +2021,21 @@
                 border-right: 1px solid rgba(15, 38, 92, 0.06);
             }
 
+            /* Un poco más de aire horizontal en secciones */
+            .section { padding-left: 20px; padding-right: 20px; }
+
             /* En escritorio no hay giroscopio: el hover del mouse basta */
             .debit-card { cursor: pointer; }
         }
 
-        @media (min-width: 900px) {
-            body { background: #d5dae3; }
+        /* Tablet en horizontal / escritorio amplio: más contraste de fondo */
+        @media (min-width: 1024px) {
+            body {
+                background:
+                    radial-gradient(1000px 520px at 50% 0%, #eef3fa 0%, transparent 55%),
+                    linear-gradient(180deg, #dee3ec 0%, #ccd3df 100%);
+                background-attachment: fixed;
+            }
         }
     </style>
 </head>
@@ -2358,32 +2408,38 @@
             <h1 class="cd-title">Débito Internacional</h1>
 
             <div class="cd-card" id="cd-card">
-                <img class="cd-card__img" src="./assets/card-debit.png" alt="Tarjeta de débito internacional">
-                <div class="cd-card__hint">
-                    <span class="material-symbols-rounded">swipe_up</span>
-                    Desliza para ver datos
-                </div>
-                <div class="cd-card__reveal" id="cd-reveal" aria-hidden="true">
-                    <div class="cd-verify">
-                        <span class="material-symbols-rounded cd-verify__icon">fingerprint</span>
-                        <span class="cd-verify__text">Verificando identidad…</span>
+                <div class="cd-flip" id="cd-flip">
+                    <!-- Frente: imagen de la tarjeta -->
+                    <div class="cd-face cd-face--front">
+                        <img class="cd-card__img" src="./assets/card-debit.png" alt="Tarjeta de débito internacional">
+                        <div class="cd-card__hint">
+                            <span class="material-symbols-rounded">gesture</span>
+                            Desliza o toca para ver datos
+                        </div>
+                        <div class="cd-verify">
+                            <span class="material-symbols-rounded cd-verify__icon">fingerprint</span>
+                            <span class="cd-verify__text">Verificando identidad…</span>
+                        </div>
                     </div>
-                    <div class="cd-data">
+                    <!-- Reverso: datos sensibles -->
+                    <div class="cd-face cd-face--back">
                         <button class="cd-data__close" id="cd-data-close" aria-label="Ocultar datos">
                             <span class="material-symbols-rounded">visibility_off</span>
                         </button>
-                        <div class="cd-data__item">
-                            <span class="cd-data__label">Número de tarjeta</span>
-                            <span class="cd-data__value">4532 1234 5678 1234</span>
-                        </div>
-                        <div class="cd-data__row">
+                        <div class="cd-data">
                             <div class="cd-data__item">
-                                <span class="cd-data__label">Vence</span>
-                                <span class="cd-data__value">08/29</span>
+                                <span class="cd-data__label">Número de tarjeta</span>
+                                <span class="cd-data__value">4532 1234 5678 1234</span>
                             </div>
-                            <div class="cd-data__item">
-                                <span class="cd-data__label">CVV</span>
-                                <span class="cd-data__value">123</span>
+                            <div class="cd-data__row">
+                                <div class="cd-data__item">
+                                    <span class="cd-data__label">Vence</span>
+                                    <span class="cd-data__value">08/29</span>
+                                </div>
+                                <div class="cd-data__item">
+                                    <span class="cd-data__label">CVV</span>
+                                    <span class="cd-data__value">123</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2490,15 +2546,17 @@
         document.querySelectorAll('[data-action]').forEach(el => {
             el.addEventListener('click', (e) => {
                 showToast(el.dataset.action);
-                // ripple effect visual
-                const rect = el.getBoundingClientRect();
+                // ripple effect visual: toma el color propio del elemento
+                // (blanco en promos de color, azul en links, etc.) en vez de un azul fijo
                 const ripple = document.createElement('div');
                 ripple.style.cssText = `
                     position: fixed;
                     width: 40px;
                     height: 40px;
                     border-radius: 50%;
-                    background: rgba(47, 122, 191, 0.4);
+                    background: currentColor;
+                    color: ${getComputedStyle(el).color};
+                    opacity: 0.35;
                     pointer-events: none;
                     left: ${e.clientX}px;
                     top: ${e.clientY}px;
@@ -2822,6 +2880,7 @@
 
         const cdInner = cardDetail.querySelector('.cd-inner');
         const cdCard = document.getElementById('cd-card');
+        const cdFlip = document.getElementById('cd-flip');
 
         function openCardDetail() {
             hideCardData();
@@ -2876,13 +2935,24 @@
             cardRevealed = false;
             verifying = false;
             cdCard.classList.remove('revealed', 'verifying');
+            cdFlip.style.transition = '';
+            cdFlip.style.transform = '';
         }
 
         document.getElementById('cd-ver-datos').addEventListener('click', revealCardData);
-        document.getElementById('cd-data-close').addEventListener('click', hideCardData);
+        document.getElementById('cd-data-close').addEventListener('click', e => {
+            e.stopPropagation();
+            hideCardData();
+        });
 
-        // Arrastrar la tarjeta: abajo = cerrar (Apple Wallet), arriba = ver datos
-        let cdStartY = null, cdRaw = 0;
+        /*
+         * Gestos sobre la tarjeta:
+         *  - Arrastre VERTICAL hacia abajo → cerrar (estilo Apple Wallet)
+         *  - Arrastre HORIZONTAL → giro 3D (peek); al soltar revela/oculta
+         *  - Tap/click (desktop) → revela u oculta según la cara visible
+         * El eje se "bloquea" con el primer desplazamiento para no mezclar.
+         */
+        let ptrActive = false, sx = 0, sy = 0, gAxis = null, gMoved = false;
 
         function cdSnapBack() {
             cdInner.style.transition = 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.25s ease';
@@ -2891,37 +2961,81 @@
             setTimeout(() => { cdInner.style.transition = ''; }, 380);
         }
 
+        function flipSnap() {
+            // devuelve el giro al estado por clase (0 ó 180) con transición
+            cdFlip.style.transition = '';
+            cdFlip.style.transform = '';
+        }
+
         cdCard.addEventListener('pointerdown', e => {
-            if (e.target.closest('.cd-data__close')) return;
-            cdStartY = e.clientY;
-            cdRaw = 0;
+            if (e.target.closest('.cd-data__close') || verifying) return;
+            ptrActive = true;
+            sx = e.clientX;
+            sy = e.clientY;
+            gAxis = null;
+            gMoved = false;
             cardDetail.classList.add('dragging');
             cdCard.setPointerCapture(e.pointerId);
         });
 
         cdCard.addEventListener('pointermove', e => {
-            if (cdStartY === null) return;
-            cdRaw = e.clientY - cdStartY;
-            // sólo desplazamos para cerrar cuando arrastramos hacia abajo y no hay datos revelados
-            if (cdRaw > 0 && !cardRevealed) {
-                cdInner.style.transform = `translateY(${cdRaw}px)`;
-                cdInner.style.opacity = String(Math.max(0.4, 1 - cdRaw / 600));
+            if (!ptrActive) return;
+            const dx = e.clientX - sx;
+            const dy = e.clientY - sy;
+            if (!gAxis && Math.hypot(dx, dy) > 8) {
+                gAxis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+            }
+            if (!gAxis) return;
+            gMoved = true;
+
+            if (gAxis === 'y' && !cardRevealed) {
+                const d = Math.max(0, dy);
+                cdInner.style.transform = `translateY(${d}px)`;
+                cdInner.style.opacity = String(Math.max(0.4, 1 - d / 600));
+            } else if (gAxis === 'x') {
+                // giro que sigue al dedo/mouse (peek), sin cruzar 90° antes de verificar
+                const base = cardRevealed ? 180 : 0;
+                let rot = base + dx * 0.5;
+                if (!cardRevealed) rot = Math.max(-80, Math.min(80, rot));
+                else rot = Math.max(100, Math.min(260, rot));
+                cdFlip.style.transition = 'none';
+                cdFlip.style.transform = `rotateY(${rot}deg)`;
             }
         });
 
-        cdCard.addEventListener('pointerup', () => {
-            if (cdStartY === null) return;
+        cdCard.addEventListener('pointerup', e => {
+            if (!ptrActive) return;
+            ptrActive = false;
             cardDetail.classList.remove('dragging');
-            const raw = cdRaw;
-            cdStartY = null;
-            if (raw < -60 && !cardRevealed) {
-                cdSnapBack();
-                revealCardData();
-            } else if (raw > 120 && !cardRevealed) {
-                closeCardDetail();
-            } else {
-                cdSnapBack();
+            const dx = e.clientX - sx;
+            const dy = e.clientY - sy;
+
+            if (gAxis === 'y' && !cardRevealed) {
+                if (dy > 120) { cdSnapBack(); closeCardDetail(); }
+                else cdSnapBack();
+                return;
             }
+
+            if (gAxis === 'x') {
+                flipSnap();
+                if (Math.abs(dx) > 60) {
+                    if (cardRevealed) hideCardData(); else revealCardData();
+                }
+                return;
+            }
+
+            // Sin arrastre significativo = tap/click (soporte desktop)
+            if (!gMoved) {
+                flipSnap();
+                if (cardRevealed) hideCardData(); else revealCardData();
+            }
+        });
+
+        cdCard.addEventListener('pointercancel', () => {
+            ptrActive = false;
+            cardDetail.classList.remove('dragging');
+            flipSnap();
+            if (!cardRevealed) cdSnapBack();
         });
 
         card.addEventListener('click', openCardDetail);
