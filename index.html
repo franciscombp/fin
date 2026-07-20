@@ -16,6 +16,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0">
 
+    <!-- Biometría real (WebAuthn). Debe cargar antes del script inline y app.js. -->
+    <script src="./webauthn.js"></script>
+
     <title>Banca Móvil - Banco Pichincha</title>
     <style>
         @font-face {
@@ -2843,18 +2846,30 @@
         // ----- Revelar datos sensibles con biometría simulada -----
         let cardRevealed = false, verifying = false;
 
-        function revealCardData() {
+        async function revealCardData() {
             if (cardRevealed || verifying) return;
             verifying = true;
             cdCard.classList.add('verifying');
             showToast('Verificando identidad…');
-            setTimeout(() => {
+            try {
+                const auth = window.BPAuth;
+                if (auth && auth.supported && await auth.platformAvailable()) {
+                    // Biometría real del dispositivo antes de mostrar datos sensibles
+                    await auth.verify();
+                } else {
+                    // Fallback simulado si no hay autenticador de plataforma
+                    await new Promise(r => setTimeout(r, 1400));
+                }
                 verifying = false;
                 cardRevealed = true;
                 cdCard.classList.remove('verifying');
                 cdCard.classList.add('revealed');
                 showToast('Identidad verificada ✓');
-            }, 1600);
+            } catch (err) {
+                verifying = false;
+                cdCard.classList.remove('verifying');
+                showToast('Verificación cancelada');
+            }
         }
 
         function hideCardData() {
