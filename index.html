@@ -44,7 +44,7 @@
 
         :root {
             --bp-surface-page: #ffffff;
-            --bp-surface-container: #f8fafc;
+            --bp-surface-container: #f5f7fa;
             --bp-surface-brand: #fcd000;
             --bp-text-primary: #0f265c;
             --bp-text-secondary: #646873;
@@ -57,7 +57,7 @@
             --bp-selection-fg-subtle: #3f517d;
             --bp-secondary-bg: rgba(233, 236, 243, 0.64);
             --bp-border-focus: #2f7abf;
-            --bp-border-divider: #f1f3f7;
+            --bp-border-divider: #e8eef7;
             --bp-status-info-bg-subtle: #eaf1f8;
             --bp-status-info-bg: #2f7abf;
             --bp-status-warning-bg-subtle: #fef0e5;
@@ -67,9 +67,19 @@
             --bp-radius-sm: 8px;
         }
 
+        * {
+            box-sizing: border-box;
+        }
+
         .material-symbols-rounded {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
             user-select: none;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
         }
 
         html {
@@ -81,1558 +91,94 @@
             background: var(--bp-surface-page);
             color: var(--bp-text-primary);
             min-height: 100vh;
-            padding-bottom: 104px; /* espacio para el nav fijo */
-        }
-
-        .page {
-            max-width: 480px;
-            margin: 0 auto;
-        }
-
-        /* ---------- Header sticky ---------- */
-        .header {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            background: var(--bp-surface-page);
-        }
-
-        .top-bar {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 56px;
-            padding: 0 16px;
+            flex-direction: column;
         }
 
-        .profile-story {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            padding: 3px;
-            background: conic-gradient(from 200deg, #ffdd00, #f76800, #ffdd00);
-            border: none;
-            cursor: pointer;
-        }
-
-        .profile-story__inner {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: var(--bp-surface-container);
-            color: #FFDD00;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 15px;
-        }
-
-        .top-bar__actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .icon-button {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--bp-text-primary);
-            transition: background 0.15s ease, transform 0.1s ease;
-        }
-
-        .icon-button:hover {
-            background: var(--bp-secondary-bg);
-        }
-
-        .icon-button:active {
-            transform: scale(0.92);
-            background: var(--bp-selection-bg-active-subtle);
-        }
-
-        /* ---------- Tabs ---------- */
-        .tabs {
-            display: flex;
-            gap: 8px;
-            padding: 16px 16px 16px 24px;
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-
-        .tabs::-webkit-scrollbar {
+        .screen {
             display: none;
-        }
-
-        .tab {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            height: 40px;
-            padding: 0 12px;
-            border-radius: 12px;
-            background: var(--bp-surface-container);
-            border: none;
-            cursor: pointer;
-            white-space: nowrap;
-            font-size: 14px;
-            font-weight: 600;
-            font-family: inherit;
-            color: var(--bp-selection-fg);
-            transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
-        }
-
-        .tab .material-symbols-rounded {
-            font-size: 20px;
-        }
-
-        .tab.active {
-            background: var(--bp-selection-bg-active);
-            color: #fff;
-        }
-
-        .tab:hover:not(.active) {
-            background: #e7eaf1;
-        }
-
-        .tab:active {
-            transform: scale(0.96);
-        }
-
-        /* ---------- Secciones ---------- */
-        .section {
-            padding: 8px 16px 16px;
-        }
-
-        .section__title {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 32px;
-            margin-bottom: 8px;
-        }
-
-        .section__title h2 {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .section__link {
-            border: none;
-            background: transparent;
-            color: var(--bp-text-interactive);
-            font-size: 14px;
-            font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            padding: 6px 8px;
-            border-radius: 8px;
-            transition: background 0.15s ease;
-        }
-
-        .section__link:hover {
-            background: var(--bp-status-info-bg-subtle);
-        }
-
-        /* ---------- Card contenedora ---------- */
-        .card {
-            background: var(--bp-surface-container);
-            border-radius: var(--bp-radius-md);
-            margin-bottom: 16px;
-            overflow: hidden;
-        }
-
-        .card__header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 12px 8px 16px;
-        }
-
-        .card__header-title {
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .card__header-meta {
-            display: flex;
-            align-items: center;
-            gap: 2px;
-            font-size: 14px;
-            color: var(--bp-text-helper);
-        }
-
-        .card__header-meta .material-symbols-rounded {
-            font-size: 20px;
-            color: var(--bp-text-helper);
-        }
-
-        /* ---------- Monto ---------- */
-        .amount-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-        }
-
-        .amount {
-            font-size: 32px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .icon-switch {
-            width: 32px;
-            height: 32px;
-            border: none;
-            border-radius: 8px;
-            background: var(--bp-secondary-bg);
-            color: var(--bp-text-secondary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.15s ease, transform 0.1s ease;
-        }
-
-        .icon-switch:active {
-            transform: scale(0.9);
-        }
-
-        .icon-switch .material-symbols-rounded {
-            font-size: 20px;
-        }
-
-        /* ---------- Tarjeta de débito con glow ---------- */
-        .debit-card-wrap {
-            padding: 8px 16px 16px;
-            perspective: 900px;
-        }
-
-        .debit-card {
-            position: relative;
+            min-height: 100vh;
             width: 100%;
-            height: 132px;
-            border-radius: var(--bp-radius-sm);
-            background: var(--bp-surface-brand);
-            border: none;
-            cursor: pointer;
-            overflow: hidden;
-            display: block;
-            text-align: left;
-            font-family: inherit;
-            transform-style: preserve-3d;
-            transition: transform 0.15s ease-out, box-shadow 0.3s ease;
-            will-change: transform;
-            box-shadow: 0 6px 20px rgba(255, 200, 0, 0.35);
         }
 
-        /* Capa de resplandores (reacciona al giroscopio / mouse) */
-        .debit-card__bg {
-            position: absolute;
-            inset: 0;
-            filter: blur(16px);
-            pointer-events: none;
-        }
-
-        .glow {
-            position: absolute;
-            border-radius: 50%;
-            will-change: transform;
-        }
-
-        .glow--sm {
-            width: 180px;
-            height: 180px;
-            left: 50%;
-            top: 50%;
-            transform: translate(calc(-50% + var(--gx, 0) * 100px), -50%);
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.461) 0%, rgba(255, 232, 23, 0.6) 40%, transparent 70%);
-        }
-
-        .glow--lg {
-            width: 260px;
-            height: 260px;
-            right: -50%;
-            bottom: -50%;
-            background: radial-gradient(circle, rgba(255, 170, 0, 0.472) 0%, rgba(255, 119, 0, 0.261) 45%, transparent 70%);
-            mix-blend-mode: lighten;
-            transform: translate(calc(var(--gx, 0) * -120px), 0);
-        }
-
-        .glow--md {
-            width: 220px;
-            height: 220px;
-            right: -40%;
-            top: -35%;
-            background: radial-gradient(circle, rgba(255, 240, 130, 0.98) 0%, rgba(255, 200, 40, 0.55) 45%, transparent 72%);
-            transform: translate(calc(var(--gx, 0) * -100px), 0);
-        }
-
-        /* Destello diagonal - barrido independiente del glow.
-           El ciclo dura --shine-cycle; el barrido ocupa solo el primer 40%
-           y el resto es pausa (el keyframe queda en reposo hasta 100%). */
-        .debit-card__shine {
-            --shine-cycle: 8s;
-            --shine-from: -80px;
-            --shine-to: 360px;
-            --shine-angle: 27deg;
-            position: absolute;
-            top: -200%;
-            left: 0;
-            width: 100px;
-            height: 500%;
-            transform: rotate(var(--shine-angle)) translateX(var(--shine-pos, var(--shine-from)));
-            background: linear-gradient(90deg,
-                rgba(255, 204, 0, 0) 0%,
-                rgba(255, 231, 135, 0.55) 25%,
-                rgba(251, 241, 198, 0.663) 50%,
-                rgba(255, 233, 144, 0.55) 75%,
-                rgba(255, 245, 204, 0) 100%);
-            filter: blur(2px);
-            pointer-events: none;
-            will-change: transform, opacity;
-            animation: shineSweep var(--shine-cycle) cubic-bezier(0.4, 0, 0.2, 1) 0.3s infinite;
-            opacity: 0;
-        }
-
-        @keyframes shineSweep {
-            0% {
-                transform: rotate(var(--shine-angle)) translateX(var(--shine-from));
-                opacity: 0;
-            }
-            10%, 20% {
-                opacity: 1;
-            }
-            40%, 100% {
-                transform: rotate(var(--shine-angle)) translateX(var(--shine-to));
-                opacity: 0;
-            }
-        }
-
-        /* En modo giroscopio el barrido automático se pausa y la posición
-           la controla el dispositivo vía --shine-pos */
-        .debit-card__shine.gyro-controlled {
-            animation: none;
-            opacity: 0.85;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .debit-card__shine {
-                animation: none;
-            }
-        }
-
-        .debit-card__content {
-            position: relative;
-            z-index: 2;
-            height: 100%;
-            padding: 16px;
+        .screen.active {
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            color: var(--bp-text-brand);
         }
 
-        .debit-card__row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-
-        .debit-card__brand {
-            font-weight: 800;
-            font-size: 13px;
-            line-height: 1.1;
-            letter-spacing: 0.2px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .debit-card__brand-mark {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-            background: var(--bp-brand-support);
-            color: var(--bp-surface-brand);
-            display: inline-flex;
+        /* ========== WELCOME SCREEN ========== */
+        #welcome-screen {
+            background: linear-gradient(135deg, #fcd000 0%, #fde047 100%);
             align-items: center;
             justify-content: center;
-            font-size: 12px;
-            font-weight: 900;
+            padding: 24px;
         }
 
-        .debit-card__visa {
-            width: 48px;
-            height: 16px;
-            display: inline-block;
-        }
-
-        .debit-card__label {
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .debit-card__number {
-            font-size: 14px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            font-variant-numeric: tabular-nums;
-        }
-
-        /* ---------- Quick actions ---------- */
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px 12px;
-            background: var(--bp-surface-container);
-            border-radius: var(--bp-radius-md);
-            padding: 16px 8px;
-            margin-bottom: 16px;
-        }
-
-        .quick-action {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            font-family: inherit;
-            padding: 0 0 8px;
-            border-radius: 8px;
-        }
-
-        .quick-action__icon {
-            width: 56px;
-            height: 56px;
-            border-radius: 12px;
-            background: #f0f4f8;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--bp-text-primary);
-            transition: background 0.15s ease, transform 0.12s ease;
-            font-size: 28px;
-        }
-
-        .quick-action:hover .quick-action__icon {
-            background: var(--bp-selection-bg-active-subtle);
-            box-shadow: 0 0 0 8px rgba(47, 122, 191, 0.1);
-        }
-
-        .quick-action:active .quick-action__icon {
-            transform: scale(0.85);
-            box-shadow: 0 2px 8px rgba(47, 122, 191, 0.2);
-        }
-
-        .quick-action__label {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--bp-text-primary);
-            line-height: 1.25;
+        .welcome-content {
             text-align: center;
-        }
-
-        /* ---------- List items ---------- */
-        .list-item {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            padding: 12px 16px 16px;
-            border-bottom: 1px solid var(--bp-border-divider);
-            cursor: pointer;
-            transition: background 0.15s ease;
-            background: transparent;
-            border-left: none;
-            border-right: none;
-            border-top: none;
-            width: 100%;
-            font-family: inherit;
-            text-align: left;
-        }
-
-        .list-item:hover {
-            background: #fafbfc;
-        }
-
-        .list-item:last-child {
-            border-bottom: none;
-        }
-
-        .avatar-cat {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: rgba(47, 122, 191, 0.16);
-            color: var(--bp-status-info-bg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .avatar-cat .material-symbols-rounded {
-            font-size: 18px;
-        }
-
-        .list-item__title {
-            flex: 1;
-            font-size: 16px;
-            font-weight: 500;
-            min-width: 0;
-        }
-
-        .tag {
-            height: 24px;
-            display: inline-flex;
-            align-items: center;
-            padding: 0 8px;
-            border-radius: 100px;
-            font-size: 12px;
-            font-weight: 600;
-            flex-shrink: 0;
-        }
-
-        .tag--info {
-            background: var(--bp-status-info-bg-subtle);
-            color: var(--bp-status-info-bg);
-        }
-
-        .tag--warning {
-            background: var(--bp-status-warning-bg-subtle);
-            color: var(--bp-status-warning-bg);
-        }
-
-        /* ---------- Widget cuenta flexible ---------- */
-        .widget-body {
-            display: grid;
-            grid-template-columns: 3.75fr 2.25fr;
-            gap: 12px 16px;
-            padding: 0 16px 16px;
-        }
-
-        .widget-body__text {
-            font-size: 14px;
-            color: var(--bp-text-secondary);
-            line-height: 1.4;
-        }
-
-        .amount-trend {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            margin-top: 12px;
-        }
-
-        .amount-trend__value {
-            font-size: 24px;
-            font-weight: 600;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .amount-trend .material-symbols-rounded {
-            color: #1e9e5a;
-            font-size: 24px;
-        }
-
-        .chart {
-            align-self: end;
-            width: 100%;
-            height: 72px;
-        }
-
-        /* ---------- Promociones ---------- */
-        .promos {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .promo {
-            aspect-ratio: 144 / 256;
-            border-radius: var(--bp-radius-md);
-            border: none;
-            cursor: pointer;
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            align-items: flex-end;
-            padding: 12px;
-            color: #fff;
-            font-family: inherit;
-            font-weight: 600;
-            font-size: 14px;
-            text-align: left;
-            transition: transform 0.15s ease;
-        }
-
-        .promo:hover {
-            transform: translateY(-3px);
-        }
-
-        .promo:active {
-            transform: scale(0.97);
-        }
-
-        .promo--1 { background: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ff8c42 100%); }
-        .promo--2 { background: linear-gradient(135deg, #1e7f3a 0%, #26a041 50%, #34c759 100%); }
-        .promo--3 { background: linear-gradient(135deg, #d946ef 0%, #f43f5e 50%, #fb7185 100%); }
-        .promo--4 { background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 50%, #10b981 100%); }
-
-        .promo span {
-            position: relative;
-            z-index: 1;
-            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-        }
-
-        .promo::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at 70% 20%, rgba(255, 255, 255, 0.25), transparent 55%);
-        }
-
-        /* ---------- Bottom nav ---------- */
-        .nav-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 60;
-            display: flex;
-            justify-content: center;
-            background: var(--bp-surface-page);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border-top: 1px solid var(--bp-border-elevated);
-            padding: 8px 8px calc(16px + env(safe-area-inset-bottom, 16px));
-        }
-
-        .nav-bar__inner {
-            display: flex;
-            width: 100%;
-            max-width: 480px;
-        }
-
-        .nav-item {
-            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-end;
-            gap: 8px;
-            height: 56px;
-            padding-bottom: 8px;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            font-family: inherit;
-            border-radius: 12px;
+            gap: 40px;
+            max-width: 400px;
         }
 
-        .nav-item__wrap {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2px 12px;
-            border-radius: 12px;
-            background: transparent;
-            color: var(--bp-selection-fg-subtle);
-            transition: background 0.2s ease, color 0.2s ease, transform 0.12s ease;
-        }
-
-        .nav-item__wrap .material-symbols-rounded {
-            font-size: 24px;
-            transition: font-variation-settings 0.2s ease;
-        }
-
-        .nav-item__label {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--bp-selection-fg-subtle);
-            transition: color 0.2s ease;
-        }
-
-        .nav-item:hover:not(.active) .nav-item__wrap {
-            background: #f6f7fa;
-        }
-
-        .nav-item:active .nav-item__wrap {
-            transform: scale(0.9);
-        }
-
-        .nav-item.active .nav-item__wrap {
-            background: var(--bp-selection-bg-active-subtle);
-            color: var(--bp-selection-fg);
-        }
-
-        .nav-item.active .nav-item__wrap .material-symbols-rounded {
-            font-variation-settings: 'FILL' 1, 'wght' 500;
-        }
-
-        .nav-item.active .nav-item__label {
-            color: var(--bp-selection-fg);
-        }
-
-        /* Anillo azul SOLO para focus de teclado (accesibilidad) */
-        .nav-item:focus,
-        .tab:focus,
-        .icon-button:focus,
-        .icon-switch:focus,
-        .quick-action:focus,
-        .list-item:focus,
-        .promo:focus,
-        .debit-card:focus,
-        .section__link:focus,
-        .profile-story:focus {
-            outline: none;
-        }
-
-        .nav-item:focus-visible .nav-item__wrap {
-            box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--bp-border-focus);
-        }
-
-        .tab:focus-visible,
-        .icon-button:focus-visible,
-        .icon-switch:focus-visible,
-        .quick-action:focus-visible .quick-action__icon,
-        .promo:focus-visible,
-        .debit-card:focus-visible,
-        .section__link:focus-visible,
-        .profile-story:focus-visible {
-            box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--bp-border-focus);
-        }
-
-        /* Toast de feedback */
-        .toast {
-            position: fixed;
-            bottom: 120px;
-            left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            background: var(--bp-brand-support);
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 100px;
-            font-size: 14px;
-            font-weight: 500;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.25s ease, transform 0.25s ease;
-            z-index: 100;
-            white-space: nowrap;
-            box-shadow: 0 4px 16px rgba(15, 38, 92, 0.3);
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-            animation: toastPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        @keyframes toastPop {
-            0% { transform: translateX(-50%) scale(0.7); opacity: 0; }
-            50% { transform: translateX(-50%) scale(1.05); }
-            100% { transform: translateX(-50%) scale(1); opacity: 1; }
-        }
-
-        /* Modal de permiso giroscopio */
-        .gyro-modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 200;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-        }
-
-        .gyro-modal.show {
-            display: flex;
-            animation: modalFadeIn 0.3s ease-out;
-        }
-
-        @keyframes modalFadeIn {
-            from { opacity: 0; backdrop-filter: blur(0); }
-            to { opacity: 1; backdrop-filter: blur(4px); }
-        }
-
-        .gyro-modal__content {
-            background: white;
+        .welcome-logo {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 20px;
-            padding: 32px;
-            max-width: 340px;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            animation: contentSlideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
         }
 
-        @keyframes contentSlideUp {
-            from { transform: translateY(40px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        .welcome-logo svg {
+            width: 60px;
+            height: 60px;
         }
 
-        .gyro-modal__icon {
-            font-size: 64px;
-            margin-bottom: 12px;
-        }
-
-        .gyro-modal__title {
-            font-size: 18px;
+        .welcome-title {
+            font-size: 28px;
             font-weight: 700;
-            margin-bottom: 8px;
-            color: var(--bp-text-primary);
+            color: #0f265c;
+            line-height: 1.3;
         }
 
-        .gyro-modal__desc {
-            font-size: 14px;
-            color: var(--bp-text-secondary);
-            margin-bottom: 24px;
+        .welcome-subtitle {
+            font-size: 16px;
+            color: #0f265c;
+            opacity: 0.9;
             line-height: 1.5;
         }
 
-        .gyro-modal__buttons {
-            display: flex;
-            gap: 8px;
-        }
-
-        .gyro-modal__btn {
-            flex: 1;
-            padding: 12px 16px;
+        .welcome-button {
+            width: 100%;
+            max-width: 300px;
+            height: 56px;
+            background: #0f265c;
+            color: #fcd000;
             border: none;
-            border-radius: 12px;
-            font-size: 14px;
+            border-radius: 16px;
+            font-size: 18px;
             font-weight: 600;
             font-family: inherit;
             cursor: pointer;
-            transition: all 0.15s ease;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(15, 38, 92, 0.2);
         }
 
-        .gyro-modal__btn--primary {
-            background: var(--bp-selection-bg-active);
-            color: white;
-        }
-
-        .gyro-modal__btn--primary:active {
+        .welcome-button:active {
             transform: scale(0.95);
         }
 
-        .gyro-modal__btn--secondary {
-            background: #f0f0f0;
-            color: var(--bp-text-primary);
-        }
-
-        .gyro-modal__btn--secondary:active {
-            background: #e0e0e0;
-        }
-
-        /* ---------- Vistas (transiciones entre secciones del nav) ---------- */
-        .view {
-            display: none;
-        }
-
-        .view.active {
-            display: block;
-        }
-
-        .view.enter-right {
-            animation: viewFromRight 0.32s cubic-bezier(0.25, 0.8, 0.35, 1);
-        }
-
-        .view.enter-left {
-            animation: viewFromLeft 0.32s cubic-bezier(0.25, 0.8, 0.35, 1);
-        }
-
-        @keyframes viewFromRight {
-            from { opacity: 0; transform: translateX(40px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        @keyframes viewFromLeft {
-            from { opacity: 0; transform: translateX(-40px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        /* Vistas placeholder (Solicitudes, Beneficios, etc.) */
-        .placeholder-view {
-            padding: 24px 16px;
-        }
-
-        .placeholder-view h1 {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 16px;
-        }
-
-        .skeleton-card {
-            background: var(--bp-surface-container);
-            border-radius: var(--bp-radius-md);
-            padding: 16px;
-            margin-bottom: 12px;
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .skeleton {
-            background: linear-gradient(90deg, #eceef3 25%, #f6f7fa 50%, #eceef3 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.4s ease infinite;
-            border-radius: 6px;
-        }
-
-        @keyframes shimmer {
-            from { background-position: 200% 0; }
-            to { background-position: -200% 0; }
-        }
-
-        .skeleton--avatar { width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0; }
-        .skeleton--lines { flex: 1; display: flex; flex-direction: column; gap: 8px; }
-        .skeleton--title { height: 14px; width: 60%; }
-        .skeleton--sub { height: 10px; width: 40%; }
-
-        /* Stagger de entrada de las cards en cada vista */
-        .view.enter-right .skeleton-card,
-        .view.enter-left .skeleton-card {
-            animation: cardRise 0.4s cubic-bezier(0.25, 0.8, 0.35, 1) backwards;
-        }
-
-        .view .skeleton-card:nth-child(2) { animation-delay: 0.05s; }
-        .view .skeleton-card:nth-child(3) { animation-delay: 0.1s; }
-        .view .skeleton-card:nth-child(4) { animation-delay: 0.15s; }
-        .view .skeleton-card:nth-child(5) { animation-delay: 0.2s; }
-
-        @keyframes cardRise {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ---------- Bottom sheet ---------- */
-        .sheet-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.45);
-            z-index: 150;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .sheet-backdrop.open {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .sheet {
-            position: fixed;
-            left: 50%;
-            bottom: 0;
-            width: 100%;
-            max-width: 480px;
-            z-index: 160;
-            background: var(--bp-surface-container);
-            border-radius: 20px 20px 0 0;
-            box-shadow: 0 -8px 40px rgba(15, 38, 92, 0.18);
-            transform: translate(-50%, 100%);
-            transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
-            padding: 8px 16px calc(24px + env(safe-area-inset-bottom, 0px));
-            touch-action: none;
-            will-change: transform;
-        }
-
-        .sheet.open {
-            transform: translate(-50%, 0);
-        }
-
-        .sheet.dragging {
-            transition: none;
-        }
-
-        .sheet__handle {
-            width: 40px;
-            height: 4px;
-            border-radius: 2px;
-            background: #d6dae3;
-            margin: 4px auto 16px;
-            cursor: grab;
-        }
-
-        .sheet__title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .sheet__subtitle {
-            font-size: 14px;
-            color: var(--bp-text-secondary);
-            margin-bottom: 16px;
-        }
-
-        .sheet__row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--bp-border-divider);
-            font-size: 14px;
-        }
-
-        .sheet__row:last-of-type {
-            border-bottom: none;
-        }
-
-        .sheet__row-label { color: var(--bp-text-secondary); }
-        .sheet__row-value { font-weight: 600; font-variant-numeric: tabular-nums; }
-
-        .sheet__grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px 8px;
-            padding: 8px 0 4px;
-        }
-
-        .sheet__cta {
-            width: 100%;
-            height: 48px;
-            margin-top: 16px;
-            border: none;
-            border-radius: 12px;
-            background: var(--bp-surface-brand);
-            color: var(--bp-text-brand);
-            font-size: 15px;
-            font-weight: 700;
-            font-family: inherit;
-            cursor: pointer;
-            transition: transform 0.12s ease, filter 0.15s ease;
-        }
-
-        .sheet__cta:hover { filter: brightness(0.97); }
-        .sheet__cta:active { transform: scale(0.97); }
-
-        /* Contenido del sheet entra con stagger al abrir */
-        .sheet.open .sheet__content > * {
-            animation: cardRise 0.35s cubic-bezier(0.25, 0.8, 0.35, 1) backwards;
-        }
-
-        .sheet.open .sheet__content > *:nth-child(2) { animation-delay: 0.04s; }
-        .sheet.open .sheet__content > *:nth-child(3) { animation-delay: 0.08s; }
-        .sheet.open .sheet__content > *:nth-child(4) { animation-delay: 0.12s; }
-        .sheet.open .sheet__content > *:nth-child(5) { animation-delay: 0.16s; }
-        .sheet.open .sheet__content > *:nth-child(6) { animation-delay: 0.2s; }
-
-        /* ---------- Carga simulada (skeleton del contenido de Inicio) ---------- */
-        .tabs.is-hidden {
-            display: none;
-        }
-
-        .content-loader {
-            display: none;
-            padding: 8px 16px;
-        }
-
-        .view[data-view="0"].is-loading .section {
-            display: none;
-        }
-
-        .view[data-view="0"].is-loading .content-loader {
-            display: block;
-        }
-
-        .skeleton--balance {
-            height: 240px;
-            width: 100%;
-            border-radius: var(--bp-radius-md);
-            margin-bottom: 16px;
-        }
-
-        .skeleton--actions {
-            height: 180px;
-            width: 100%;
-            border-radius: var(--bp-radius-md);
-            margin-bottom: 16px;
-        }
-
-        /* Revelado del contenido tras la carga: cada sección sube con stagger */
-        .view[data-view="0"].reveal .section {
-            animation: cardRise 0.45s cubic-bezier(0.25, 0.8, 0.35, 1) backwards;
-        }
-
-        .view[data-view="0"].reveal .section:nth-of-type(2) { animation-delay: 0.08s; }
-        .view[data-view="0"].reveal .section:nth-of-type(3) { animation-delay: 0.16s; }
-
-        /* ---------- Ajustes mobile ---------- */
-        /* Los estados hover no aplican en pantallas táctiles: evita estilos
-           "pegados" tras un tap */
-        @media (hover: none) {
-            .quick-action:hover .quick-action__icon {
-                background: var(--bp-secondary-bg);
-                box-shadow: none;
-            }
-            .promo:hover { transform: none; }
-            .tab:hover:not(.active) { background: var(--bp-surface-container); }
-            .icon-button:hover { background: transparent; }
-            .list-item:hover { background: transparent; }
-            .nav-item:hover:not(.active) .nav-item__wrap { background: transparent; }
-            .section__link:hover { background: transparent; }
-        }
-
-        @media (max-width: 480px) {
-            /* blur más liviano en mobile: el filtro grande es costoso en GPU móvil */
-            .debit-card__bg { filter: blur(12px); }
-            /* transiciones de vista más cortas y sutiles en pantallas pequeñas */
-            .view.enter-right, .view.enter-left { animation-duration: 0.26s; }
-        }
-
-        @keyframes viewFromRight {
-            from { opacity: 0; transform: translate3d(40px, 0, 0); }
-            to { opacity: 1; transform: translate3d(0, 0, 0); }
-        }
-
-        @keyframes viewFromLeft {
-            from { opacity: 0; transform: translate3d(-40px, 0, 0); }
-            to { opacity: 1; transform: translate3d(0, 0, 0); }
-        }
-
-        /* ---------- Stories (visor tipo Instagram) ---------- */
-        .story-viewer {
-            position: fixed;
-            inset: 0;
-            z-index: 300;
-            display: none;
+        /* ========== LOGIN SCREEN ========== */
+        #login-screen {
             flex-direction: column;
-            background: #000;
         }
 
-        .story-viewer.open {
-            display: flex;
-            animation: storyZoomIn 0.28s cubic-bezier(0.25, 0.8, 0.35, 1);
-        }
-
-        @keyframes storyZoomIn {
-            from { opacity: 0; transform: scale(0.92); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .story-progress {
-            position: absolute;
-            top: calc(12px + env(safe-area-inset-top, 0px));
-            left: 12px;
-            right: 12px;
-            display: flex;
-            gap: 6px;
-            z-index: 2;
-        }
-
-        .story-bar {
-            flex: 1;
-            height: 3px;
-            border-radius: 2px;
-            background: rgba(255, 255, 255, 0.3);
-            overflow: hidden;
-        }
-
-        .story-bar i {
-            display: block;
-            height: 100%;
-            width: 0;
-            background: #fff;
-            border-radius: 2px;
-        }
-
-        .story-bar.done i { width: 100%; }
-
-        .story-bar.running i {
-            animation: storyFill var(--story-duration, 4s) linear forwards;
-        }
-
-        @keyframes storyFill {
-            from { width: 0; }
-            to { width: 100%; }
-        }
-
-        .story-header {
-            position: absolute;
-            top: calc(28px + env(safe-area-inset-top, 0px));
-            left: 16px;
-            right: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 2;
-            color: #fff;
-        }
-
-        .story-header__avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: var(--bp-brand-support);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 700;
-            border: 2px solid var(--bp-surface-brand);
-        }
-
-        .story-header__name {
-            flex: 1;
-            font-size: 14px;
-            font-weight: 600;
-            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-        }
-
-        .story-close {
-            border: none;
-            background: transparent;
-            color: #fff;
-            cursor: pointer;
-            display: flex;
-            padding: 6px;
-        }
-
-        .story-close .material-symbols-rounded { font-size: 28px; }
-
-        .story-slide {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            text-align: center;
-            color: #fff;
-            padding: 48px 32px;
-            animation: storySlideIn 0.3s ease;
-        }
-
-        @keyframes storySlideIn {
-            from { opacity: 0; transform: scale(1.04); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .story-slide .material-symbols-rounded {
-            font-size: 64px;
-            animation: cardRise 0.4s cubic-bezier(0.25, 0.8, 0.35, 1) 0.1s backwards;
-        }
-
-        .story-slide h2 {
-            font-size: 26px;
-            font-weight: 800;
-            animation: cardRise 0.4s cubic-bezier(0.25, 0.8, 0.35, 1) 0.18s backwards;
-        }
-
-        .story-slide p {
-            font-size: 15px;
-            opacity: 0.85;
-            max-width: 300px;
-            line-height: 1.5;
-            animation: cardRise 0.4s cubic-bezier(0.25, 0.8, 0.35, 1) 0.26s backwards;
-        }
-
-        .story-nav {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 35%;
-            z-index: 1;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-        }
-
-        .story-nav--prev { left: 0; }
-        .story-nav--next { right: 0; width: 65%; }
-
-        /* El avatar de stories solo vive en Inicio */
-        .profile-story.is-hidden {
-            visibility: hidden;
-            pointer-events: none;
-        }
-
-        /* ---------- Detalle de tarjeta (estilo Apple Wallet) ---------- */
-        .card-detail {
-            position: fixed;
-            inset: 0;
-            z-index: 250;
-            background: var(--bp-surface-page);
-            overflow-y: auto;
-            display: none;
-        }
-
-        .card-detail.open {
-            display: block;
-            animation: cdFadeIn 0.25s ease;
-        }
-
-        @keyframes cdFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .cd-inner {
-            max-width: 480px;
-            margin: 0 auto;
-            padding: 8px 16px 40px;
-        }
-
-        .cd-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 56px;
-        }
-
-        .cd-title {
-            font-size: 26px;
-            font-weight: 600;
-            margin: 4px 0 16px;
-        }
-
-        /* La tarjeta "real": proporción de tarjeta física, flota con spring */
-        .cd-card {
-            aspect-ratio: 8 / 5;
-            border-radius: 16px;
-            background:
-                radial-gradient(circle at 30% 110%, rgba(255, 170, 0, 0.55), transparent 55%),
-                radial-gradient(circle at 85% -10%, rgba(255, 250, 210, 0.9), transparent 50%),
-                var(--bp-surface-brand);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            color: var(--bp-text-brand);
-            box-shadow: 0 18px 40px rgba(15, 38, 92, 0.28), 0 6px 16px rgba(255, 200, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card-detail.open .cd-card {
-            animation:
-                cdCardIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
-                cdFloat 4.5s ease-in-out 0.6s infinite;
-        }
-
-        @keyframes cdCardIn {
-            from { opacity: 0; transform: translateY(60px) scale(0.85); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        /* Levitación continua: la tarjeta "flota" */
-        @keyframes cdFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-7px); }
-        }
-
-        /* Cierre: animación inversa (tarjeta baja, todo se desvanece) */
-        .card-detail.closing {
-            animation: cdFadeOut 0.3s ease forwards;
-        }
-
-        .card-detail.closing .cd-card {
-            animation: cdCardOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-
-        .card-detail.closing .cd-content {
-            animation: cdContentOut 0.25s ease forwards;
-        }
-
-        @keyframes cdFadeOut {
-            to { opacity: 0; }
-        }
-
-        @keyframes cdCardOut {
-            to { opacity: 0; transform: translateY(60px) scale(0.85); }
-        }
-
-        @keyframes cdContentOut {
-            to { opacity: 0; transform: translateY(24px); }
-        }
-
-        /* Arrastre para cerrar (drag-to-dismiss desde la tarjeta) */
-        .cd-card {
-            touch-action: none;
-            cursor: grab;
-        }
-
-        .cd-card:active { cursor: grabbing; }
-
-        .card-detail.dragging .cd-card {
-            animation-play-state: paused;
-        }
-
-        .cd-card__row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-
-        .cd-visa {
-            font-style: italic;
-            font-weight: 800;
-            font-size: 26px;
-            letter-spacing: 0.5px;
-        }
-
-        .cd-card__number {
-            font-size: 16px;
-            font-weight: 600;
-            letter-spacing: 2px;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .cd-card__footer {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 10px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .cd-visa--sm { font-size: 16px; }
-
-        .cd-divider {
-            width: 1px;
-            height: 18px;
-            background: var(--bp-text-brand);
-            opacity: 0.5;
-        }
-
-        /* Contenido debajo de la tarjeta: sube en stagger */
-        .card-detail.open .cd-content > * {
-            animation: cardRise 0.45s cubic-bezier(0.25, 0.8, 0.35, 1) backwards;
-        }
-
-        .card-detail.open .cd-content > *:nth-child(1) { animation-delay: 0.15s; }
-        .card-detail.open .cd-content > *:nth-child(2) { animation-delay: 0.22s; }
-        .card-detail.open .cd-content > *:nth-child(3) { animation-delay: 0.3s; }
-
-        .cd-actions {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            background: var(--bp-surface-container);
-            border-radius: var(--bp-radius-md);
-            padding: 16px 8px;
-            margin-top: 24px;
-        }
-
-        .cd-subtitle {
-            font-size: 16px;
-            font-weight: 700;
-            margin: 24px 0 12px;
-        }
-
-        .cd-subs {
-            background: var(--bp-surface-container);
-            border-radius: var(--bp-radius-md);
-            overflow: hidden;
-        }
-
-        .sub-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            width: 100%;
-            padding: 14px 16px;
-            border: none;
-            border-bottom: 1px solid var(--bp-border-divider);
-            background: transparent;
-            cursor: pointer;
-            font-family: inherit;
-            text-align: left;
-            transition: background 0.15s ease;
-        }
-
-        .sub-item:last-child { border-bottom: none; }
-
-        @media (hover: hover) {
-            .sub-item:hover { background: #fafbfc; }
-        }
-
-        .sub-item:active { background: var(--bp-secondary-bg); }
-
-        .sub-item__logo {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-weight: 800;
-            font-size: 13px;
-        }
-
-        .sub-item__info { flex: 1; min-width: 0; }
-
-        .sub-item__name {
-            font-size: 15px;
-            font-weight: 600;
-        }
-
-        .sub-item__meta {
-            font-size: 13px;
-            color: var(--bp-text-helper);
-            margin-top: 2px;
-        }
-
-        .sub-item__price {
-            font-size: 15px;
-            font-weight: 600;
-            font-variant-numeric: tabular-nums;
-        }
-
-        /* ---------- Loading Spinner ---------- */
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .loading-spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(15, 38, 92, 0.2);
-            border-top-color: #0f265c;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            display: inline-block;
-            margin-top: 8px;
-        }
-
-        .login-button:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-
-        /* ---------- Login Screen ---------- */
-        .login-screen {
-            position: fixed;
-            inset: 0;
-            z-index: 500;
-            display: none;
-            flex-direction: column;
-            background: var(--bp-surface-page);
-            overflow-y: auto;
-        }
-
-        .login-screen.active {
-            display: flex;
-        }
-
-        .login-screen__header {
+        .login-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -1641,87 +187,79 @@
             border-bottom: 1px solid var(--bp-border-divider);
         }
 
-        .login-screen__header-logo {
+        .login-header-logo {
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .login-screen__header-logo svg {
+        .login-header-logo svg {
             width: 32px;
             height: 32px;
         }
 
-        .login-screen__header-text {
-            font-size: 13px;
+        .login-header-text {
+            font-size: 12px;
             font-weight: 600;
             color: var(--bp-text-primary);
+            line-height: 1.2;
         }
 
-        .login-screen__header-actions {
+        .login-header-actions {
             display: flex;
             gap: 16px;
-            align-items: center;
         }
 
-        .login-screen__header-action {
+        .login-header-action {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 4px;
-            text-decoration: none;
+            font-size: 10px;
             color: var(--bp-text-primary);
-            font-size: 11px;
+            background: none;
+            border: none;
             cursor: pointer;
         }
 
-        .login-screen__container {
+        .login-container {
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 24px 16px;
-            max-width: 480px;
-            margin: 0 auto;
-            width: 100%;
             overflow-y: auto;
-        }
-
-        .login-screen__content {
+            padding: 24px 16px;
             display: flex;
             flex-direction: column;
             gap: 24px;
         }
 
-        .login-screen__title {
+        .login-title {
             font-size: 20px;
             font-weight: 700;
             text-align: center;
             color: var(--bp-text-primary);
-            line-height: 1.3;
         }
 
-        .login-screen__illustration {
+        .login-illustration {
             width: 100%;
             max-width: 300px;
             height: 240px;
-            background: linear-gradient(135deg, #f0f4f8 0%, #e8ecf1 100%);
+            background: linear-gradient(135deg, #e8ecf1 0%, #f0f4f8 100%);
             border-radius: 16px;
+            margin: 0 auto;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto;
-            color: var(--bp-text-helper);
             font-size: 14px;
+            color: var(--bp-text-helper);
         }
 
-        .login-screen__features {
+        .login-features {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
         }
 
-        .login-feature {
-            background: #f8fafc;
+        .feature {
+            background: var(--bp-surface-container);
             border: 1px solid var(--bp-border-divider);
             border-radius: 12px;
             padding: 16px;
@@ -1731,18 +269,18 @@
             gap: 8px;
         }
 
-        .login-feature__icon {
-            font-size: 24px;
+        .feature-icon {
+            font-size: 28px;
             color: var(--bp-text-primary);
         }
 
-        .login-feature__label {
-            font-size: 13px;
+        .feature-label {
+            font-size: 12px;
             color: var(--bp-text-secondary);
             font-weight: 500;
         }
 
-        .login-screen__actions {
+        .login-actions {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 12px;
@@ -1754,7 +292,7 @@
             align-items: center;
             gap: 8px;
             padding: 12px;
-            background: #f8fafc;
+            background: var(--bp-surface-container);
             border-radius: 12px;
             border: none;
             cursor: pointer;
@@ -1768,28 +306,31 @@
             transform: scale(0.95);
         }
 
-        .login-action__icon {
+        .login-action-icon {
             font-size: 20px;
             color: var(--bp-text-primary);
         }
 
-        .login-screen__buttons {
+        .login-buttons {
             display: flex;
             flex-direction: column;
             gap: 12px;
-            width: 100%;
         }
 
         .login-button {
             width: 100%;
-            height: 48px;
+            height: 56px;
             border: none;
-            border-radius: 12px;
+            border-radius: 16px;
             font-size: 16px;
             font-weight: 600;
             font-family: inherit;
             cursor: pointer;
             transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .login-button--primary {
@@ -1805,975 +346,950 @@
             background: transparent;
             color: var(--bp-text-secondary);
             font-size: 14px;
-            font-weight: 500;
         }
 
-        .login-button--secondary:active {
-            opacity: 0.7;
-        }
-
-        .page.hidden {
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(15, 38, 92, 0.2);
+            border-top-color: #0f265c;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
             display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ========== HOME SCREEN ========== */
+        #home-screen {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 104px;
+        }
+
+        .home-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--bp-surface-page);
+            border-bottom: 1px solid var(--bp-border-divider);
+            sticky: top;
+            z-index: 40;
+        }
+
+        .home-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .home-logo svg {
+            width: 40px;
+            height: 40px;
+        }
+
+        .home-header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--bp-surface-container);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bp-text-primary);
+            transition: all 0.15s ease;
+        }
+
+        .icon-button:active {
+            transform: scale(0.92);
+            background: #eff2f7;
+        }
+
+        .home-content {
+            padding: 16px;
+        }
+
+        .promo-banner {
+            background: linear-gradient(135deg, #0f265c 0%, #1e3a8a 100%);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .promo-banner h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .promo-banner p {
+            font-size: 14px;
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            border-radius: 12px;
+            background: var(--bp-surface-container);
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            color: var(--bp-text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .tab.active {
+            background: var(--bp-selection-bg-active);
+            color: white;
+        }
+
+        .card-container {
+            margin-bottom: 24px;
+        }
+
+        .debit-card {
+            width: 100%;
+            height: 200px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #fcd000 0%, #ffdd00 100%);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            color: #0f265c;
+            text-decoration: none;
+            border: none;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(255, 200, 0, 0.3);
+            transition: transform 0.15s ease;
+        }
+
+        .debit-card:active {
+            transform: scale(0.98);
+        }
+
+        .debit-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .debit-card-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .debit-card-brand svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .debit-card-visa {
+            width: 48px;
+            height: 16px;
+        }
+
+        .debit-card-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .debit-card-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .debit-card-number {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+            background: var(--bp-surface-container);
+            border-radius: 16px;
+            padding: 16px 8px;
+        }
+
+        .quick-action {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-family: inherit;
+            color: var(--bp-text-primary);
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .quick-action:active {
+            background: rgba(15, 38, 92, 0.05);
+            transform: scale(0.95);
+        }
+
+        .quick-action-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bp-text-primary);
+            font-size: 28px;
+        }
+
+        .quick-action-label {
+            font-size: 11px;
+            font-weight: 500;
+            text-align: center;
+            color: var(--bp-text-secondary);
+        }
+
+        .section {
+            margin-bottom: 24px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--bp-text-primary);
+            margin: 0;
+        }
+
+        .section-link {
+            font-size: 14px;
+            color: var(--bp-text-interactive);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .promos {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .promo {
+            aspect-ratio: 144 / 220;
+            border-radius: 16px;
+            border: none;
+            cursor: pointer;
+            overflow: hidden;
+            padding: 16px;
+            color: #fff;
+            font-family: inherit;
+            font-weight: 600;
+            display: flex;
+            align-items: flex-end;
+            transition: transform 0.15s ease;
+            position: relative;
+        }
+
+        .promo:active {
+            transform: scale(0.97);
+        }
+
+        .promo--1 { background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%); }
+        .promo--2 { background: linear-gradient(135deg, #1e7f3a 0%, #26a041 100%); }
+        .promo--3 { background: linear-gradient(135deg, #d946ef 0%, #f43f5e 100%); }
+
+        /* ========== CARD DETAIL MODAL ========== */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            align-items: flex-end;
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-content {
+            width: 100%;
+            background: var(--bp-surface-page);
+            border-radius: 24px 24px 0 0;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--bp-text-primary);
+            margin: 0;
+        }
+
+        .modal-close {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bp-surface-container);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bp-text-primary);
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:active {
+            transform: scale(0.9);
+        }
+
+        .card-flip {
+            width: 100%;
+            height: 220px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card-flip-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card-flip-inner.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #fcd000 0%, #ffdd00 100%);
+            color: #0f265c;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #0f265c 0%, #1e3a8a 100%);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .card-data {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .card-data-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-data-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .card-data-value {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .card-data-copy {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: inherit;
+            font-size: 20px;
+            opacity: 0.8;
+            transition: opacity 0.2s ease;
+        }
+
+        .card-data-copy:active {
+            opacity: 0.5;
+        }
+
+        .modal-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .modal-button {
+            height: 48px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .modal-button--primary {
+            background: var(--bp-surface-brand);
+            color: var(--bp-text-brand);
+        }
+
+        .modal-button--secondary {
+            background: var(--bp-surface-container);
+            color: var(--bp-text-primary);
+        }
+
+        /* ========== BOTTOM NAV ========== */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+            background: var(--bp-surface-page);
+            border-top: 1px solid var(--bp-border-divider);
+            z-index: 50;
+        }
+
+        .nav-item {
+            flex: 1;
+            height: 56px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--bp-text-secondary);
+            font-size: 11px;
+            transition: color 0.2s ease;
+        }
+
+        .nav-item.active {
+            color: var(--bp-text-primary);
+        }
+
+        .nav-item-icon {
+            font-size: 24px;
+        }
+
+        /* ========== STORIES ========== */
+        .stories-container {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stories-container.active {
+            display: flex;
+        }
+
+        .story-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.3);
+            z-index: 1;
+        }
+
+        .story-progress-bar {
+            height: 100%;
+            background: white;
+            animation: progress 5s linear;
+        }
+
+        @keyframes progress {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+
+        .story-header {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            right: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 2;
+        }
+
+        .story-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fcd000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0f265c;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .story-header-text {
+            flex: 1;
+            color: white;
+        }
+
+        .story-header-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .story-header-time {
+            font-size: 12px;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        .story-close {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            transition: all 0.2s ease;
+        }
+
+        .story-close:active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .story-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .story-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .story-cta {
+            position: absolute;
+            bottom: 24px;
+            left: 16px;
+            right: 16px;
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            color: #0f265c;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .story-cta:active {
+            transform: scale(0.95);
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 480px) {
+            .page {
+                max-width: 100%;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Welcome Screen -->
+    <div id="welcome-screen" class="screen active">
+        <div class="welcome-content">
+            <div class="welcome-logo">
+                <svg width="60" height="60" viewBox="0 0 129 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M27.43 0V27.9999H9.18404C4.10351 27.9999 0 23.8112 0 18.6251L0 0L27.43 0ZM22.8624 4.6625H13.7272V8.8762L18.7345 8.8762V13.9875H22.8624V4.6625Z" fill="currentColor"/>
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M22.864 4.66666L13.7288 4.66666V8.88036H18.736V13.9917H22.864V4.66666Z" fill="currentColor"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="welcome-title">¡Vive la alegría del dinero!</h1>
+                <p class="welcome-subtitle">Banca móvil del Banco Pichincha ahora más rápida y segura</p>
+            </div>
+            <button class="welcome-button" onclick="transitionToLogin()">Comenzar</button>
+        </div>
+    </div>
+
     <!-- Login Screen -->
-    <div class="login-screen active" id="login-screen">
-        <!-- Header -->
-        <div class="login-screen__header">
-            <div class="login-screen__header-logo">
+    <div id="login-screen" class="screen">
+        <div class="login-header">
+            <div class="login-header-logo">
                 <svg width="32" height="32" viewBox="0 0 129 28" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect width="32" height="32" fill="#FCD000" rx="4"/>
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M27.43 0V27.9999H9.18404C4.10351 27.9999 0 23.8112 0 18.6251L0 0L27.43 0ZM22.8624 4.6625H13.7272V8.8762L18.7345 8.8762V13.9875H22.8624V4.6625Z" fill="#0F265C" transform="scale(0.25) translate(0,0)"/>
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M27.43 0V27.9999H9.18404C4.10351 27.9999 0 23.8112 0 18.6251L0 0L27.43 0ZM22.8624 4.6625H13.7272V8.8762L18.7345 8.8762V13.9875H22.8624V4.6625Z" fill="#0F265C"/>
                 </svg>
-                <span class="login-screen__header-text">BANCO<br>PICHINCHA</span>
+                <div class="login-header-text">BANCO<br>PICHINCHA</div>
             </div>
-            <div class="login-screen__header-actions">
-                <a href="#" class="login-screen__header-action" title="Clave digital">
-                    <span class="material-symbols-rounded" style="font-size: 20px;">vpn_key</span>
+            <div class="login-header-actions">
+                <button class="login-header-action" title="Clave digital">
+                    <span class="material-symbols-rounded">vpn_key</span>
                     <span>Clave digital</span>
-                </a>
-                <a href="#" class="login-screen__header-action" title="Soporte">
-                    <span class="material-symbols-rounded" style="font-size: 20px;">headset_mic</span>
-                </a>
+                </button>
+                <button class="login-header-action" title="Soporte">
+                    <span class="material-symbols-rounded">headset_mic</span>
+                </button>
             </div>
         </div>
 
-        <div class="login-screen__container">
-            <div class="login-screen__content">
-                <h1 class="login-screen__title">¡Vive la alegría del Mundial con La Tri!</h1>
+        <div class="login-container">
+            <h1 class="login-title">¡Vive la alegría del Mundial con La Tri!</h1>
 
-                <!-- Illustration placeholder -->
-                <div class="login-screen__illustration">
-                    [Ilustración aquí]
-                </div>
+            <div class="login-illustration">
+                Ilustración aquí
+            </div>
 
-                <!-- Features -->
-                <div class="login-screen__features">
-                    <div class="login-feature">
-                        <div class="login-feature__icon"><span class="material-symbols-rounded">qr_code</span></div>
-                        <div class="login-feature__label">Cobrar con QR</div>
-                    </div>
-                    <div class="login-feature">
-                        <div class="login-feature__icon" style="color: var(--bp-text-primary); font-weight: 700;">d/</div>
-                        <div class="login-feature__label">Pagar con QR</div>
-                    </div>
+            <div class="login-features">
+                <div class="feature">
+                    <div class="feature-icon"><span class="material-symbols-rounded">qr_code</span></div>
+                    <div class="feature-label">Cobrar con QR</div>
                 </div>
+                <div class="feature">
+                    <div class="feature-icon">d/</div>
+                    <div class="feature-label">Pagar con QR</div>
+                </div>
+            </div>
 
-                <!-- Quick actions -->
-                <div class="login-screen__actions">
-                    <button class="login-action" data-action="Transferir">
-                        <span class="material-symbols-rounded login-action__icon">send_money</span>
-                        <span>Transferir</span>
-                    </button>
-                    <button class="login-action" data-action="Retirar">
-                        <span class="material-symbols-rounded login-action__icon">atm</span>
-                        <span>Retirar sin tarjeta</span>
-                    </button>
-                    <button class="login-action" data-action="Pagar">
-                        <span class="material-symbols-rounded login-action__icon">credit_card</span>
-                        <span>Pagar</span>
-                    </button>
-                    <button class="login-action" data-action="Verificar">
-                        <span class="material-symbols-rounded login-action__icon">verified_user</span>
-                        <span>Verificar pago</span>
-                    </button>
-                </div>
+            <div class="login-actions">
+                <button class="login-action" data-action="Transferir">
+                    <span class="material-symbols-rounded login-action-icon">send_money</span>
+                    <span>Transferir</span>
+                </button>
+                <button class="login-action" data-action="Retirar">
+                    <span class="material-symbols-rounded login-action-icon">atm</span>
+                    <span>Retirar</span>
+                </button>
+                <button class="login-action" data-action="Pagar">
+                    <span class="material-symbols-rounded login-action-icon">credit_card</span>
+                    <span>Pagar</span>
+                </button>
+                <button class="login-action" data-action="Verificar">
+                    <span class="material-symbols-rounded login-action-icon">verified_user</span>
+                    <span>Verificar</span>
+                </button>
+            </div>
 
-                <!-- Login buttons -->
-                <div class="login-screen__buttons">
-                    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-                        <button class="login-button login-button--primary" id="btn-login-biometric">
-                            Ingresar
-                        </button>
-                        <div class="loading-spinner" id="loading-spinner" style="display: none;"></div>
-                    </div>
-                    <button class="login-button login-button--secondary" id="btn-login-other">
-                        Otro método de ingreso
-                    </button>
-                </div>
+            <div class="login-buttons">
+                <button class="login-button login-button--primary" id="btn-login-biometric" onclick="loginWithBiometric()">
+                    Ingresar
+                </button>
+                <div class="loading-spinner" id="loading-spinner"></div>
+                <button class="login-button login-button--secondary" onclick="alert('Próximamente')">
+                    Otro método de ingreso
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="page" id="home-page">
-        <div style="position: fixed; top: 16px; right: 16px; z-index: 100;">
-            <button class="icon-button" id="btn-logout" aria-label="Cerrar sesión" style="background: rgba(15, 38, 92, 0.1);">
-                <span class="material-symbols-rounded">logout</span>
-            </button>
-        </div>
-        <!-- Header -->
-        <header class="header">
-            <div class="top-bar">
-                <button class="profile-story" aria-label="Perfil de Francisco">
-                    <span class="profile-story__inner"><img width="24" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAMKADAAQAAAABAAAAMAAAAADbN2wMAAABdElEQVRoBe1ZsWoCQRCdveQDjvyAir0EbFPY2pk+kO+wM6WfYBnIB6QQUliIfyBYq9em8wfMObt4x4GyBz50nDAHi97tvpl57+3sgbp8TTkpvhLFtYfSjYC0g+aAOQAqoH4LPYIC1MLT/lvtmtiC3c9XbJrUO2AEov7eYNIcuIHI0RTqHbj6MTodz6IKrjZPNJx0o2tik1cn8NL5jeWH59RvISMA7wEwgDkACgjDzQFYQjCAs9+FQAVRuPUAqiCKNwdQBVG8OYAqiOL/hQM7VAVJvHcgkywAze0JLNAgkviE/yFbShaA5k7ogb45iNo+SFwrFP+JKiGFdz5xvqUm/dFWqggkb3gPsAsZE/hAAklhgwM+ObuQckPPeTxLFXNJ3vJNHHrB0SsHyS4JJIUpHSgKOPbDnO+bxbN7/jwh4IvVRKLcQlWVfVO7NrU0NPZZB6pkght7GpGj9+rze/leS6AoNJxSe+rx/YBHgwn50yrlIXodAAqmNsvMgaiDAAAAAElFTkSuQmCC" alt=""></span>
+    <!-- Home Screen -->
+    <div id="home-screen" class="screen">
+        <div class="home-header">
+            <div class="home-logo">
+                <svg width="40" height="40" viewBox="0 0 129 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="40" height="40" fill="#FCD000" rx="6"/>
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M27.43 0V27.9999H9.18404C4.10351 27.9999 0 23.8112 0 18.6251L0 0L27.43 0ZM22.8624 4.6625H13.7272V8.8762L18.7345 8.8762V13.9875H22.8624V4.6625Z" fill="#0F265C"/>
+                </svg>
+            </div>
+            <div class="home-header-actions">
+                <button class="icon-button" title="Buscar">
+                    <span class="material-symbols-rounded">search</span>
                 </button>
-                <div class="top-bar__actions">
-                    <button class="icon-button" aria-label="Buscar" data-action="Buscar">
-                        <span class="material-symbols-rounded">search</span>
-                    </button>
-                    <button class="icon-button" aria-label="Notificaciones" data-action="Notificaciones">
-                        <span class="material-symbols-rounded">notifications</span>
-                    </button>
-                    <button class="icon-button" aria-label="Soporte" data-action="Soporte">
-                        <span class="material-symbols-rounded">headset_mic</span>
-                    </button>
-                </div>
+                <button class="icon-button" title="Notificaciones">
+                    <span class="material-symbols-rounded">notifications</span>
+                </button>
+                <button class="icon-button" title="Soporte">
+                    <span class="material-symbols-rounded">headset_mic</span>
+                </button>
+                <button class="icon-button" title="Logout" onclick="logout()">
+                    <span class="material-symbols-rounded">logout</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="home-content">
+            <div class="promo-banner">
+                <h2>¡Ofertas todo el año!</h2>
+                <p>Disfruta de beneficios exclusivos en Banco Pichincha</p>
             </div>
 
-            <!-- Tabs -->
-            <nav class="tabs" aria-label="Secciones">
-                <button class="tab" data-action="Modo finanzas" aria-label="Modo finanzas">
-                    <span class="material-symbols-rounded">monitoring</span>
-                </button>
+            <div class="tabs">
                 <button class="tab active">Destacado</button>
                 <button class="tab">Cuentas</button>
                 <button class="tab">Tarjetas</button>
                 <button class="tab">Préstamos</button>
-                <button class="tab">Inversiones</button>
-                <button class="tab">Seguros</button>
-            </nav>
-        </header>
-
-        <main id="views">
-        <div class="view active" data-view="0">
-        <!-- Skeleton mientras "carga" el contenido -->
-        <div class="content-loader" aria-hidden="true">
-            <div class="skeleton skeleton--balance"></div>
-            <div class="skeleton skeleton--actions"></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-        </div>
-        <!-- Cuenta transaccional -->
-        <section class="section">
-            <div class="section__title">
-                <h2>Cuenta transaccional</h2>
-                <button class="section__link" data-action="Cambiar cuenta">Cambiar</button>
             </div>
 
-            <div class="card">
-                <div class="card__header">
-                    <span class="card__header-title">PRINCIPAL</span>
-                    <div class="card__header-meta">
-                        <span>Nro. ******7890</span>
-                        <span class="material-symbols-rounded">info</span>
+            <div class="card-container">
+                <button class="debit-card" onclick="openCardModal()">
+                    <div class="debit-card-header">
+                        <div class="debit-card-brand">
+                            <svg width="32" height="32" viewBox="0 0 129 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M27.43 0V27.9999H9.18404C4.10351 27.9999 0 23.8112 0 18.6251L0 0L27.43 0ZM22.8624 4.6625H13.7272V8.8762L18.7345 8.8762V13.9875H22.8624V4.6625Z" fill="currentColor"/>
+                            </svg>
+                            BANCO PICHINCHA
+                        </div>
+                        <svg class="debit-card-visa" width="48" height="16" viewBox="0 0 48 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M31.3769 0C32.8715 0 34.0722 0.336247 35.0062 0.687372L34.3244 3.96801C32.5876 3.14227 31.0554 3.2003 30.5005 3.27618C29.3791 3.42645 28.8675 4.01711 28.8545 4.57058C28.817 6.39613 34.3057 6.62228 34.2898 10.7063C34.2754 13.9245 31.6104 16 27.5371 16C25.8017 15.9836 24.1283 15.6087 23.2246 15.1787L23.9265 11.788C24.8273 12.2224 25.9602 12.7967 27.909 12.7655C29.026 12.7476 30.2194 12.2894 30.231 11.2509C30.2367 10.5724 29.7294 10.0859 28.2188 9.32713C26.7487 8.58769 24.7971 7.34387 24.8245 5.11512C24.8461 2.10378 27.5429 0 31.3769 0ZM44.8694 0.282685L48 15.759H44.4125L43.9426 13.4484H38.9685L38.1584 15.759H34.088L39.9068 1.41789C40.1817 0.742169 40.7923 0.297935 41.5194 0.28307L41.5571 0.282685H44.8694ZM23.7665 0.282685L20.5595 15.759H16.6808L19.8893 0.282685H23.7665ZM6.69221 0.282685C7.53252 0.282685 8.28923 0.859959 8.48093 1.85977L10.114 10.8164L14.1512 0.282685H18.2245L11.9402 15.759H7.84097L4.74782 3.40859C4.56045 2.64832 4.39757 2.36861 3.8268 2.04873C2.89424 1.52501 1.35487 1.03552 0 0.732007L0.0922467 0.282685H6.69221ZM42.1265 4.46346L40.0841 10.2749H43.3012L42.1265 4.46346Z" fill="currentColor"/>
+                        </svg>
                     </div>
-                </div>
-
-                <div class="amount-row">
-                    <span class="amount" id="balance">$ 1.906,04</span>
-                    <button class="icon-switch" id="balance-toggle" aria-label="Ocultar saldo" aria-pressed="false">
-                        <span class="material-symbols-rounded" id="balance-toggle-icon">visibility</span>
-                    </button>
-                </div>
-
-                <!-- Tarjeta de débito con resplandor reactivo al giroscopio -->
-                <div class="debit-card-wrap">
-                    <button class="debit-card" id="debit-card" aria-label="Tarjeta Débito Digital 1234">
-                        <div class="debit-card__bg">
-                            <div class="glow glow--lg"></div>
-                            <div class="glow glow--md"></div>
-                            <div class="glow glow--sm"></div>
-                        </div>
-                        <div class="debit-card__shine"></div>
-                        <div class="debit-card__content">
-                            <div class="debit-card__row">
-                                <span class="debit-card__brand">
-                                                                        BANCO<br>PICHINCHA
-                                </span>
-                                <svg class="debit-card__visa" width="48" height="16" viewBox="0 0 48 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M31.3769 0C32.8715 0 34.0722 0.336247 35.0062 0.687372L34.3244 3.96801C32.5876 3.14227 31.0554 3.2003 30.5005 3.27618C29.3791 3.42645 28.8675 4.01711 28.8545 4.57058C28.817 6.39613 34.3057 6.62228 34.2898 10.7063C34.2754 13.9245 31.6104 16 27.5371 16C25.8017 15.9836 24.1283 15.6087 23.2246 15.1787L23.9265 11.788C24.8273 12.2224 25.9602 12.7967 27.909 12.7655C29.026 12.7476 30.2194 12.2894 30.231 11.2509C30.2367 10.5724 29.7294 10.0859 28.2188 9.32713C26.7487 8.58769 24.7971 7.34387 24.8245 5.11512C24.8461 2.10378 27.5429 0 31.3769 0ZM44.8694 0.282685L48 15.759H44.4125L43.9426 13.4484H38.9685L38.1584 15.759H34.088L39.9068 1.41789C40.1817 0.742169 40.7923 0.297935 41.5194 0.28307L41.5571 0.282685H44.8694ZM23.7665 0.282685L20.5595 15.759H16.6808L19.8893 0.282685H23.7665ZM6.69221 0.282685C7.53252 0.282685 8.28923 0.859959 8.48093 1.85977L10.114 10.8164L14.1512 0.282685H18.2245L11.9402 15.759H7.84097L4.74782 3.40859C4.56045 2.64832 4.39757 2.36861 3.8268 2.04873C2.89424 1.52501 1.35487 1.03552 0 0.732007L0.0922467 0.282685H6.69221ZM42.1265 4.46346L40.0841 10.2749H43.3012L42.1265 4.46346Z" fill="white"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <div class="debit-card__label">Tarjeta Débito Digital</div>
-                                <div class="debit-card__number">1234 **** **** 1234</div>
-                            </div>
-                        </div>
-                    </button>
-                </div>
+                    <div class="debit-card-info">
+                        <div class="debit-card-label">Débito Internacional</div>
+                        <div class="debit-card-number">1234 **** **** 1234</div>
+                    </div>
+                </button>
             </div>
 
-            <!-- Quick actions -->
             <div class="quick-actions">
                 <button class="quick-action" data-action="Pagar con QR">
-                    <span class="quick-action__icon"><span class="material-symbols-rounded">qr_code_scanner</span></span>
-                    <span class="quick-action__label">Pagar<br>con QR</span>
+                    <div class="quick-action-icon"><span class="material-symbols-rounded">qr_code_scanner</span></div>
+                    <span class="quick-action-label">Pagar<br>con QR</span>
                 </button>
                 <button class="quick-action" data-action="Transferir dinero">
-                    <span class="quick-action__icon"><span class="material-symbols-rounded">send_money</span></span>
-                    <span class="quick-action__label">Transferir<br>dinero</span>
+                    <div class="quick-action-icon"><span class="material-symbols-rounded">send_money</span></div>
+                    <span class="quick-action-label">Transferir<br>dinero</span>
                 </button>
                 <button class="quick-action" data-action="Recibir dinero">
-                    <span class="quick-action__icon"><span class="material-symbols-rounded">control_point_duplicate</span></span>
-                    <span class="quick-action__label">Recibir<br>dinero</span>
+                    <div class="quick-action-icon"><span class="material-symbols-rounded">call_received</span></div>
+                    <span class="quick-action-label">Recibir<br>dinero</span>
                 </button>
                 <button class="quick-action" data-action="Pagar servicios">
-                    <span class="quick-action__icon"><span class="material-symbols-rounded">emoji_objects</span></span>
-                    <span class="quick-action__label">Pagar<br>servicios</span>
-                </button>
-                <button class="quick-action" data-action="Pagar tarjeta">
-                    <span class="quick-action__icon"><span class="material-symbols-rounded">credit_card</span></span>
-                    <span class="quick-action__label">Pagar<br>tarjeta</span>
-                </button>
-                <button class="quick-action" data-action="Retirar sin tarjeta">
-                    <span class="quick-action__icon"><span class="material-symbols-rounded">payments</span></span>
-                    <span class="quick-action__label">Retirar sin<br>tarjeta</span>
-                </button>
-                <button class="quick-action" data-action="Recargar celular">
-                    <span class="quick-action__icon"><span class="material-symbols-rounded">phone_android</span></span>
-                    <span class="quick-action__label">Recargar<br>celular</span>
-                </button>
-                <button class="quick-action" data-sheet="actions">
-                    <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
-                    <span class="quick-action__label">Más<br>acciones</span>
+                    <div class="quick-action-icon"><span class="material-symbols-rounded">home_repair_service</span></div>
+                    <span class="quick-action-label">Pagar<br>servicios</span>
                 </button>
             </div>
-        </section>
 
-        <!-- Para ti -->
-        <section class="section">
-            <div class="section__title">
-                <h2>Para ti</h2>
-                <button class="section__link" data-action="Personalizar">Personalizar</button>
-            </div>
-
-            <div class="card">
-                <div class="card__header">
-                    <span class="card__header-title">Recordatorios</span>
-                    <div class="card__header-meta">
-                        <span>5 Pendientes</span>
-                        <span class="material-symbols-rounded">chevron_right</span>
-                    </div>
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Para ti</h2>
+                    <button class="section-link">Personalizar</button>
                 </div>
-                <button class="list-item" data-sheet="payment" data-title="Pagar Luz de la casa" data-amount="$ 24,80">
-                    <span class="avatar-cat"><span class="material-symbols-rounded">bolt</span></span>
-                    <span class="list-item__title">Pagar Luz de la casa</span>
-                    <span class="tag tag--info">Hoy</span>
-                </button>
-                <button class="list-item" data-sheet="payment" data-title="Pagar Casa de la abue" data-amount="$ 18,35">
-                    <span class="avatar-cat"><span class="material-symbols-rounded">water_drop</span></span>
-                    <span class="list-item__title">Pagar Casa de la abue</span>
-                    <span class="tag tag--warning">Atrasado</span>
+                <div style="background: var(--bp-surface-container); border-radius: 12px; padding: 16px; text-align: center; color: var(--bp-text-secondary);">
+                    <p style="margin: 0;">Tus recordatorios y ofertas personalizadas aparecerán aquí</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Promociones</h2>
+                    <button class="section-link">Ver todo</button>
+                </div>
+                <div class="promos">
+                    <button class="promo promo--1" data-action="Ofertas Rappi">
+                        <span>30% cashback<br>con Mastercard</span>
+                    </button>
+                    <button class="promo promo--2" data-action="Ofertas Green">
+                        <span>15% descuento<br>Sweet & Coffee</span>
+                    </button>
+                    <button class="promo promo--3" data-action="Ofertas Pink">
+                        <span>20% off en<br>compras online</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Detail Modal -->
+    <div id="card-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Débito Internacional</h2>
+                <button class="modal-close" onclick="closeCardModal()">
+                    <span class="material-symbols-rounded">close</span>
                 </button>
             </div>
 
-            <div class="card">
-                <div class="card__header">
-                    <span class="card__header-title">Cuenta Flexible</span>
-                    <div class="card__header-meta">
-                        <span>******1234</span>
-                        <span class="material-symbols-rounded">chevron_right</span>
-                    </div>
-                </div>
-                <div class="widget-body">
-                    <div>
-                        <p class="widget-body__text">El día de ayer, tu cuenta generó en intereses</p>
-                        <div class="amount-trend">
-                            <span class="amount-trend__value">$ 16,04</span>
-                            <span class="material-symbols-rounded">trending_up</span>
+            <div class="card-flip" onclick="flipCard()">
+                <div class="card-flip-inner" id="card-flip-inner">
+                    <!-- Front -->
+                    <div class="card-front">
+                        <img src="./assets/card-debit.png" alt="Tarjeta" style="width: 100%; height: 100%; object-fit: cover; border-radius: 16px; position: absolute; top: 0; left: 0;">
+                        <div style="position: relative; z-index: 1; text-align: center; color: #0f265c;">
+                            <p style="margin: 0; font-size: 14px; opacity: 0.8;">Presiona para ver datos</p>
                         </div>
                     </div>
-                    <svg class="chart" viewBox="0 0 120 56" fill="none" preserveAspectRatio="none" aria-hidden="true">
-                        <path d="M2 52 C 30 50, 55 46, 75 36 S 105 12, 118 4" stroke="#2f7abf" stroke-width="2.5" stroke-linecap="round"/>
-                        <path d="M2 52 C 30 50, 55 46, 75 36 S 105 12, 118 4 L 118 56 L 2 56 Z" fill="url(#chartFill)"/>
-                        <defs>
-                            <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0" stop-color="#2f7abf" stop-opacity="0.25"/>
-                                <stop offset="1" stop-color="#2f7abf" stop-opacity="0"/>
-                            </linearGradient>
-                        </defs>
-                    </svg>
+                    <!-- Back -->
+                    <div class="card-back">
+                        <div class="card-data">
+                            <div class="card-data-row">
+                                <span class="card-data-label">Número</span>
+                                <span class="card-data-value">1234 5678 9012 1234</span>
+                            </div>
+                            <div class="card-data-row">
+                                <span class="card-data-label">Vencimiento</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="card-data-value">12/28</span>
+                                    <button class="card-data-copy" onclick="copyToClipboard('12/28')">
+                                        <span class="material-symbols-rounded" style="font-size: 18px;">content_copy</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-data-row">
+                                <span class="card-data-label">CVV</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="card-data-value" id="cvv-display">***</span>
+                                    <button class="card-data-copy" onclick="toggleCVV()">
+                                        <span class="material-symbols-rounded" style="font-size: 18px;">visibility</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </section>
 
-        <!-- Promociones -->
-        <section class="section" style="padding-left: 24px; padding-right: 24px;">
-            <div class="section__title">
-                <h2>Promociones</h2>
-                <button class="section__link" data-action="Ver todas las promociones">Ver todo</button>
-            </div>
-            <div class="promos">
-                <button class="promo promo--1" data-action="Promoción vinos">
-                    <span>Hasta 30% dcto. en vinos seleccionados</span>
-                </button>
-                <button class="promo promo--2" data-action="Promoción supermercado">
-                    <span>Beneficios exclusivos en tu súper favorito</span>
-                </button>
-            </div>
-        </section>
-        </div>
-
-        <div class="view placeholder-view" data-view="1">
-            <h1>Solicitudes</h1>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-        </div>
-
-        <div class="view placeholder-view" data-view="2">
-            <h1>Beneficios</h1>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-        </div>
-
-        <div class="view placeholder-view" data-view="3">
-            <h1>Tienda</h1>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-        </div>
-
-        <div class="view placeholder-view" data-view="4">
-            <h1>Perfil</h1>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-        </div>
-        </main>
-    </div>
-
-    <!-- Bottom nav -->
-    <nav class="nav-bar" aria-label="Navegación principal">
-        <div class="nav-bar__inner">
-            <button class="nav-item active" aria-current="page">
-                <span class="nav-item__wrap"><span class="material-symbols-rounded">home</span></span>
-                <span class="nav-item__label">Inicio</span>
-            </button>
-            <button class="nav-item">
-                <span class="nav-item__wrap"><span class="material-symbols-rounded">list_alt</span></span>
-                <span class="nav-item__label">Solicitudes</span>
-            </button>
-            <button class="nav-item">
-                <span class="nav-item__wrap"><span class="material-symbols-rounded">redeem</span></span>
-                <span class="nav-item__label">Beneficios</span>
-            </button>
-            <button class="nav-item">
-                <span class="nav-item__wrap"><span class="material-symbols-rounded">storefront</span></span>
-                <span class="nav-item__label">Tienda</span>
-            </button>
-            <button class="nav-item">
-                <span class="nav-item__wrap"><span class="material-symbols-rounded">account_circle</span></span>
-                <span class="nav-item__label">Perfil</span>
-            </button>
-        </div>
-    </nav>
-
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-    <!-- Modal permiso giroscopio -->
-    <div class="gyro-modal" id="gyro-modal">
-        <div class="gyro-modal__content">
-            <div class="gyro-modal__icon">📱</div>
-            <h2 class="gyro-modal__title">Activar efecto de movimiento</h2>
-            <p class="gyro-modal__desc">La tarjeta de débito se adaptará al movimiento de tu dispositivo para un efecto 3D inmersivo.</p>
-            <div class="gyro-modal__buttons">
-                <button class="gyro-modal__btn gyro-modal__btn--secondary" id="gyro-deny">Ahora no</button>
-                <button class="gyro-modal__btn gyro-modal__btn--primary" id="gyro-allow">Activar</button>
+            <div class="modal-actions">
+                <button class="modal-button modal-button--secondary" onclick="closeCardModal()">Cancelar</button>
+                <button class="modal-button modal-button--primary" onclick="alert('Opciones de tarjeta')">Opciones</button>
             </div>
         </div>
     </div>
 
-    <!-- Detalle de tarjeta (estilo Apple Wallet) -->
-    <div class="card-detail" id="card-detail" role="dialog" aria-modal="true" aria-label="Detalle de tarjeta">
-        <div class="cd-inner">
-            <div class="cd-top">
-                <button class="icon-button" id="cd-back" aria-label="Volver">
-                    <span class="material-symbols-rounded">arrow_back</span>
-                </button>
-                <button class="icon-button" data-action="Ajustes de tarjeta" aria-label="Ajustes">
-                    <span class="material-symbols-rounded">settings</span>
-                </button>
-            </div>
-            <h1 class="cd-title">Débito Internacional</h1>
-
-            <div class="cd-card">
-                <img src="./assets/card-debit.png" alt="Tarjeta de débito internacional" style="width: 100%; height: auto; border-radius: 16px; display: block;">
-            </div>
-
-            <div class="cd-content">
-                <div class="cd-actions">
-                    <button class="quick-action" data-action="Ver datos">
-                        <span class="quick-action__icon"><span class="material-symbols-rounded">visibility</span></span>
-                        <span class="quick-action__label">Ver datos</span>
-                    </button>
-                    <button class="quick-action" data-action="Tarjeta bloqueada">
-                        <span class="quick-action__icon"><span class="material-symbols-rounded">lock</span></span>
-                        <span class="quick-action__label">Bloquear</span>
-                    </button>
-                    <button class="quick-action" data-action="Límites">
-                        <span class="quick-action__icon"><span class="material-symbols-rounded">speed</span></span>
-                        <span class="quick-action__label">Límites</span>
-                    </button>
-                    <button class="quick-action" data-action="Más opciones">
-                        <span class="quick-action__icon"><span class="material-symbols-rounded">more_horiz</span></span>
-                        <span class="quick-action__label">Más</span>
-                    </button>
-                </div>
-
-                <h2 class="cd-subtitle">Tus suscripciones y pagos recurrentes</h2>
-
-                <div class="cd-subs">
-                    <button class="sub-item" data-action="Uber Eats">
-                        <span class="sub-item__logo" style="background:#06C167; font-size:9px; line-height:1.1;">Uber<br>Eats</span>
-                        <span class="sub-item__info">
-                            <span class="sub-item__name">Uber Eats</span>
-                            <div class="sub-item__meta">Se renueva el 11 de abril</div>
-                        </span>
-                        <span class="sub-item__price">$ 4,99</span>
-                    </button>
-                    <button class="sub-item" data-action="Spotify">
-                        <span class="sub-item__logo" style="background:#1DB954;"><span class="material-symbols-rounded">graphic_eq</span></span>
-                        <span class="sub-item__info">
-                            <span class="sub-item__name">Spotify</span>
-                            <div class="sub-item__meta">Se renueva el 16 de mayo</div>
-                        </span>
-                        <span class="sub-item__price">$ 5,99</span>
-                    </button>
-                    <button class="sub-item" data-action="Disney+ Premium">
-                        <span class="sub-item__logo" style="background:#0e2a5c;">D+</span>
-                        <span class="sub-item__info">
-                            <span class="sub-item__name">Disney+ Premium</span>
-                            <div class="sub-item__meta">Se renueva el 1 de octubre</div>
-                        </span>
-                        <span class="sub-item__price">$ 119,99</span>
-                    </button>
-                    <button class="sub-item" data-action="Netflix">
-                        <span class="sub-item__logo" style="background:#E50914;">N</span>
-                        <span class="sub-item__info">
-                            <span class="sub-item__name">Netflix</span>
-                            <div class="sub-item__meta">Se renueva el 5 de octubre</div>
-                        </span>
-                        <span class="sub-item__price">$ 159,99</span>
-                    </button>
-                </div>
-            </div>
+    <!-- Stories Container -->
+    <div id="stories-container" class="stories-container">
+        <div class="story-progress">
+            <div class="story-progress-bar" id="story-progress-bar"></div>
         </div>
-    </div>
-
-    <!-- Visor de stories -->
-    <div class="story-viewer" id="story-viewer" role="dialog" aria-modal="true" aria-label="Stories">
-        <div class="story-progress" id="story-progress"></div>
         <div class="story-header">
-            <span class="story-header__avatar" style="background: var(--bp-surface-brand); color: var(--bp-text-brand);">B</span>
-            <span class="story-header__name">Banco Pichincha</span>
-            <button class="story-close" id="story-close" aria-label="Cerrar stories">
+            <div class="story-avatar">BP</div>
+            <div class="story-header-text">
+                <p class="story-header-name">Banco Pichincha</p>
+                <p class="story-header-time">4 h</p>
+            </div>
+            <button class="story-close" onclick="closeStories()">
                 <span class="material-symbols-rounded">close</span>
             </button>
         </div>
-        <div class="story-slide" id="story-slide"></div>
-        <button class="story-nav story-nav--prev" id="story-prev" aria-label="Story anterior"></button>
-        <button class="story-nav story-nav--next" id="story-next" aria-label="Siguiente story"></button>
+        <div class="story-content">
+            <img class="story-image" src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&h=800&fit=crop" alt="Story">
+            <div class="story-cta" onclick="alert('Solicita tu tarjeta de crédito')">Solicita tu Tarjeta de Crédito</div>
+        </div>
     </div>
 
-    <!-- Bottom sheet genérico -->
-    <div class="sheet-backdrop" id="sheet-backdrop"></div>
-    <div class="sheet" id="sheet" role="dialog" aria-modal="true">
-        <div class="sheet__handle" id="sheet-handle"></div>
-        <div class="sheet__content" id="sheet-content"></div>
-    </div>
-
-    <script>
-        // ---------- Toast de feedback con microinteracciones ----------
-        const toast = document.getElementById('toast');
-        let toastTimer;
-        function showToast(msg) {
-            toast.textContent = msg;
-            toast.classList.remove('show');
-            // forzar reflow para reiniciar animación
-            void toast.offsetWidth;
-            toast.classList.add('show');
-            clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
-        }
-
-        // Cualquier elemento con data-action muestra feedback
-        document.querySelectorAll('[data-action]').forEach(el => {
-            el.addEventListener('click', (e) => {
-                showToast(el.dataset.action);
-                // ripple effect visual
-                const rect = el.getBoundingClientRect();
-                const ripple = document.createElement('div');
-                ripple.style.cssText = `
-                    position: fixed;
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 50%;
-                    background: rgba(47, 122, 191, 0.4);
-                    pointer-events: none;
-                    left: ${e.clientX}px;
-                    top: ${e.clientY}px;
-                    transform: translate(-50%, -50%);
-                    animation: rippleExpand 0.6s ease-out;
-                    z-index: 50;
-                `;
-                document.body.appendChild(ripple);
-                setTimeout(() => ripple.remove(), 600);
-            });
-        });
-
-        // Agregar animación de ripple al CSS dinámicamente
-        if (!document.getElementById('ripple-keyframes')) {
-            const style = document.createElement('style');
-            style.id = 'ripple-keyframes';
-            style.textContent = `
-                @keyframes rippleExpand {
-                    from { width: 40px; height: 40px; opacity: 1; }
-                    to { width: 200px; height: 200px; opacity: 0; }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-
-        // ---------- Carga asíncrona simulada (skeleton → contenido) ----------
-        const homeView = document.querySelector('.view[data-view="0"]');
-        let loadTimer, revealTimer;
-
-        function simulateLoad(duration = 800) {
-            clearTimeout(loadTimer);
-            clearTimeout(revealTimer);
-            homeView.classList.remove('reveal');
-            homeView.classList.add('is-loading');
-            window.scrollTo({ top: 0 });
-            loadTimer = setTimeout(() => {
-                homeView.classList.remove('is-loading');
-                homeView.classList.add('reveal');
-                revealTimer = setTimeout(() => homeView.classList.remove('reveal'), 700);
-            }, duration);
-        }
-
-        // Carga inicial de la página
-        simulateLoad(1000);
-
-        // ---------- Tabs: cada cambio simula una carga con skeleton ----------
-        document.querySelectorAll('.tabs .tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                if (tab.dataset.action) return;
-                const wasActive = tab.classList.contains('active');
-                document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                tab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-                if (!wasActive) simulateLoad();
-            });
-        });
-
-        // ---------- Bottom nav + transiciones entre vistas ----------
-        const views = document.querySelectorAll('.view');
-        const navItems = document.querySelectorAll('.nav-item');
-        let currentView = 0;
-
-        function switchView(index) {
-            if (index === currentView) return;
-            const dir = index > currentView ? 'enter-right' : 'enter-left';
-            views.forEach(v => v.classList.remove('active', 'enter-right', 'enter-left'));
-            const next = document.querySelector(`.view[data-view="${index}"]`);
-            next.classList.add('active', dir);
-            currentView = index;
-            // Las tabs de productos y el avatar de stories solo pertenecen a Inicio
-            document.querySelector('.tabs').classList.toggle('is-hidden', index !== 0);
-            document.querySelector('.profile-story').classList.toggle('is-hidden', index !== 0);
-            window.scrollTo({ top: 0 });
-        }
-
-        navItems.forEach((item, index) => {
-            item.addEventListener('click', () => {
-                navItems.forEach(i => {
-                    i.classList.remove('active');
-                    i.removeAttribute('aria-current');
-                });
-                item.classList.add('active');
-                item.setAttribute('aria-current', 'page');
-                switchView(index);
-            });
-        });
-
-        // ---------- Ocultar / mostrar saldo ----------
-        const balance = document.getElementById('balance');
-        const balanceToggle = document.getElementById('balance-toggle');
-        const balanceIcon = document.getElementById('balance-toggle-icon');
-        const balanceValue = balance.textContent;
-        let hidden = false;
-        balanceToggle.addEventListener('click', () => {
-            hidden = !hidden;
-            balance.textContent = hidden ? '$ ••••••' : balanceValue;
-            balanceIcon.textContent = hidden ? 'visibility_off' : 'visibility';
-            balanceToggle.setAttribute('aria-label', hidden ? 'Mostrar saldo' : 'Ocultar saldo');
-            balanceToggle.setAttribute('aria-pressed', String(hidden));
-            showToast(hidden ? 'Saldo oculto' : 'Saldo visible');
-        });
-
-        // ---------- Resplandor reactivo: giroscopio + mouse ----------
-        const card = document.getElementById('debit-card');
-        const modal = document.getElementById('gyro-modal');
-        let targetX = 0, targetY = 0;
-        let curX = 0, curY = 0;
-        let gyroActive = false;
-        let gyroAsked = localStorage.getItem('gyroAsked') === 'true';
-        let gyroGranted = localStorage.getItem('gyroGranted') === 'true';
-        const needsGyroPermission = typeof DeviceOrientationEvent !== 'undefined' &&
-            typeof DeviceOrientationEvent.requestPermission === 'function';
-
-        const shineEl = document.querySelector('.debit-card__shine');
-        // Rango del barrido del shine (coincide con --shine-from / --shine-to)
-        const SHINE_FROM = -80, SHINE_TO = 360;
-
-        function tick() {
-            curX += (targetX - curX) * 0.12;
-            // En modo giroscopio, solo movimiento horizontal
-            const effectiveY = gyroActive ? 0 : targetY;
-            curY += (effectiveY - curY) * 0.12;
-            card.style.setProperty('--gx', curX.toFixed(4));
-            card.style.setProperty('--gy', curY.toFixed(4));
-            if (gyroActive) {
-                // Sin tilt 3D; el shine sigue al dispositivo de izq a der
-                card.style.transform = `scale(1)`;
-                shineEl.classList.add('gyro-controlled');
-                const shinePos = SHINE_FROM + ((curX + 1) / 2) * (SHINE_TO - SHINE_FROM);
-                shineEl.style.setProperty('--shine-pos', `${shinePos.toFixed(1)}px`);
-            } else {
-                const tiltX = curX * 4;
-                const tiltY = curY * -4;
-                card.style.transform = `rotateY(${tiltX}deg) rotateX(${tiltY}deg) scale(1)`;
-            }
-            requestAnimationFrame(tick);
-        }
-        requestAnimationFrame(tick);
-
-        // Giroscopio con diálogo explícito - solo movimiento horizontal
-        function handleOrientation(e) {
-            if (e.gamma === null && e.beta === null) return;
-            gyroActive = true;
-            // Solo gamma (inclinación izq/der) - beta ignorado
-            targetX = Math.max(-1, Math.min(1, (e.gamma || 0) / 40));
-            targetY = 0; // Sin movimiento vertical
-        }
-
-        function enableGyro(withToast = true) {
-            localStorage.setItem('gyroAsked', 'true');
-            localStorage.setItem('gyroGranted', 'true');
-            window.addEventListener('deviceorientation', handleOrientation);
-            if (withToast) showToast('Efecto de movimiento activado');
-        }
-
-        function requestGyroPermission() {
-            if (needsGyroPermission) {
-                // iOS 13+: requiere gesto del usuario
-                DeviceOrientationEvent.requestPermission()
-                    .then(state => {
-                        localStorage.setItem('gyroAsked', 'true');
-                        if (state === 'granted') {
-                            enableGyro();
-                        } else {
-                            localStorage.setItem('gyroGranted', 'false');
-                            showToast('Permiso denegado');
-                        }
-                        modal.classList.remove('show');
-                    })
-                    .catch(() => {
-                        modal.classList.remove('show');
-                    });
-            } else {
-                // Android y otros: no requiere permiso
-                enableGyro();
-                modal.classList.remove('show');
-            }
-        }
-
-        // Modal de permiso
-        document.getElementById('gyro-allow').addEventListener('click', requestGyroPermission);
-        document.getElementById('gyro-deny').addEventListener('click', () => {
-            localStorage.setItem('gyroAsked', 'true');
-            localStorage.setItem('gyroGranted', 'false');
-            modal.classList.remove('show');
-            showToast('Puedes activarlo después');
-        });
-
-        // Reconexión del giroscopio en visitas posteriores:
-        // el permiso ya concedido no persiste el listener entre recargas.
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        if (isMobile) {
-            if (gyroGranted && !needsGyroPermission) {
-                // Android: reactivar directo, sin toast
-                enableGyro(false);
-            } else if (gyroGranted && needsGyroPermission) {
-                // iOS: re-pedir en el primer gesto (requestPermission necesita gesto)
-                window.addEventListener('pointerdown', () => {
-                    DeviceOrientationEvent.requestPermission()
-                        .then(state => { if (state === 'granted') enableGyro(false); })
-                        .catch(() => {});
-                }, { once: true });
-            } else if (!gyroAsked) {
-                // Primera visita: mostrar modal explicativo al primer toque
-                window.addEventListener('pointerdown', () => {
-                    modal.classList.add('show');
-                }, { once: true });
-            }
-        }
-
-        // Fallback de mouse (desktop)
-        window.addEventListener('mousemove', e => {
-            if (gyroActive) return;
-            const r = card.getBoundingClientRect();
-            if (r.top < 0 || r.bottom > window.innerHeight) return; // fuera de pantalla
-            const cx = r.left + r.width / 2;
-            const cy = r.top + r.height / 2;
-            const dx = (e.clientX - cx) / r.width;
-            const dy = (e.clientY - cy) / r.height;
-            targetX = Math.max(-0.5, Math.min(0.5, dx));
-            targetY = Math.max(-0.5, Math.min(0.5, dy));
-        });
-
-        // ---------- Bottom sheet ----------
-        const sheet = document.getElementById('sheet');
-        const sheetBackdrop = document.getElementById('sheet-backdrop');
-        const sheetContent = document.getElementById('sheet-content');
-        const sheetHandle = document.getElementById('sheet-handle');
-
-        const sheetTemplates = {
-            card: () => `
-                <h2 class="sheet__title">Tarjeta Débito Digital</h2>
-                <p class="sheet__subtitle">VISA · 1234 **** **** 1234</p>
-                <div class="sheet__row"><span class="sheet__row-label">Estado</span><span class="sheet__row-value">Activa</span></div>
-                <div class="sheet__row"><span class="sheet__row-label">Cupo diario</span><span class="sheet__row-value">$ 500,00</span></div>
-                <div class="sheet__row"><span class="sheet__row-label">Consumo del mes</span><span class="sheet__row-value">$ 312,45</span></div>
-                <button class="sheet__cta" data-toast="Tarjeta congelada temporalmente">Congelar tarjeta</button>`,
-            actions: () => `
-                <h2 class="sheet__title">Más acciones</h2>
-                <p class="sheet__subtitle">Todo lo que puedes hacer</p>
-                <div class="sheet__grid">
-                    <button class="quick-action" data-toast="Certificados"><span class="quick-action__icon"><span class="material-symbols-rounded">description</span></span><span class="quick-action__label">Certificados</span></button>
-                    <button class="quick-action" data-toast="Divisas"><span class="quick-action__icon"><span class="material-symbols-rounded">currency_exchange</span></span><span class="quick-action__label">Divisas</span></button>
-                    <button class="quick-action" data-toast="Inversiones"><span class="quick-action__icon"><span class="material-symbols-rounded">trending_up</span></span><span class="quick-action__label">Inversiones</span></button>
-                    <button class="quick-action" data-toast="Seguros"><span class="quick-action__icon"><span class="material-symbols-rounded">shield</span></span><span class="quick-action__label">Seguros</span></button>
-                </div>`,
-            payment: (el) => `
-                <h2 class="sheet__title">${el.dataset.title}</h2>
-                <p class="sheet__subtitle">Servicio básico · Pago pendiente</p>
-                <div class="sheet__row"><span class="sheet__row-label">Monto</span><span class="sheet__row-value">${el.dataset.amount}</span></div>
-                <div class="sheet__row"><span class="sheet__row-label">Cuenta origen</span><span class="sheet__row-value">PRINCIPAL ***7890</span></div>
-                <button class="sheet__cta" data-toast="Pago realizado ✓">Pagar ahora</button>`
-        };
-
-        function openSheet(type, trigger) {
-            sheetContent.innerHTML = sheetTemplates[type](trigger);
-            sheetBackdrop.classList.add('open');
-            // reflow para que la transición corra al agregar .open
-            void sheet.offsetHeight;
-            sheet.classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeSheet() {
-            sheet.classList.remove('open');
-            sheetBackdrop.classList.remove('open');
-            sheet.style.transform = '';
-            document.body.style.overflow = '';
-        }
-
-        document.querySelectorAll('[data-sheet]').forEach(el => {
-            el.addEventListener('click', () => openSheet(el.dataset.sheet, el));
-        });
-
-        sheetBackdrop.addEventListener('click', closeSheet);
-
-        // Botones internos del sheet: toast + cerrar
-        sheetContent.addEventListener('click', e => {
-            const btn = e.target.closest('[data-toast]');
-            if (!btn) return;
-            showToast(btn.dataset.toast);
-            closeSheet();
-        });
-
-        // Arrastrar para cerrar (drag-to-dismiss)
-        let dragStartY = null, dragDelta = 0;
-
-        sheet.addEventListener('pointerdown', e => {
-            // solo desde el handle o zonas no interactivas
-            if (e.target.closest('button')) return;
-            dragStartY = e.clientY;
-            dragDelta = 0;
-            sheet.classList.add('dragging');
-            sheet.setPointerCapture(e.pointerId);
-        });
-
-        sheet.addEventListener('pointermove', e => {
-            if (dragStartY === null) return;
-            dragDelta = Math.max(0, e.clientY - dragStartY);
-            sheet.style.transform = `translate(-50%, ${dragDelta}px)`;
-        });
-
-        sheet.addEventListener('pointerup', () => {
-            if (dragStartY === null) return;
-            sheet.classList.remove('dragging');
-            dragStartY = null;
-            if (dragDelta > 90) {
-                closeSheet();
-            } else {
-                sheet.style.transform = '';
-            }
-        });
-
-        // Escape cierra el sheet
-        window.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && sheet.classList.contains('open')) closeSheet();
-        });
-
-        // ---------- Detalle de tarjeta (estilo Apple Wallet) ----------
-        const cardDetail = document.getElementById('card-detail');
-
-        function openCardDetail() {
-            cardDetail.classList.add('open');
-            cardDetail.scrollTop = 0;
-            document.body.style.overflow = 'hidden';
-        }
-
-        const cdInner = cardDetail.querySelector('.cd-inner');
-        const cdCard = cardDetail.querySelector('.cd-card');
-
-        function closeCardDetail() {
-            if (!cardDetail.classList.contains('open') || cardDetail.classList.contains('closing')) return;
-            cardDetail.classList.add('closing');
-            setTimeout(() => {
-                cardDetail.classList.remove('open', 'closing');
-                cdInner.style.transform = '';
-                cdInner.style.opacity = '';
-                cdInner.style.transition = '';
-                document.body.style.overflow = '';
-            }, 300);
-        }
-
-        // Arrastrar la tarjeta hacia abajo cierra la vista (como Apple Wallet)
-        let cdStartY = null, cdDelta = 0;
-
-        cdCard.addEventListener('pointerdown', e => {
-            cdStartY = e.clientY;
-            cdDelta = 0;
-            cardDetail.classList.add('dragging');
-            cdCard.setPointerCapture(e.pointerId);
-        });
-
-        cdCard.addEventListener('pointermove', e => {
-            if (cdStartY === null) return;
-            cdDelta = Math.max(0, e.clientY - cdStartY);
-            cdInner.style.transform = `translateY(${cdDelta}px)`;
-            cdInner.style.opacity = String(Math.max(0.4, 1 - cdDelta / 600));
-        });
-
-        cdCard.addEventListener('pointerup', () => {
-            if (cdStartY === null) return;
-            cardDetail.classList.remove('dragging');
-            cdStartY = null;
-            if (cdDelta > 120) {
-                closeCardDetail();
-            } else {
-                // vuelve a su lugar con spring
-                cdInner.style.transition = 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.25s ease';
-                cdInner.style.transform = '';
-                cdInner.style.opacity = '';
-                setTimeout(() => { cdInner.style.transition = ''; }, 380);
-            }
-        });
-
-        card.addEventListener('click', openCardDetail);
-        document.getElementById('cd-back').addEventListener('click', closeCardDetail);
-        window.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && cardDetail.classList.contains('open')) closeCardDetail();
-        });
-
-        // ---------- Stories (visor tipo Instagram) ----------
-        const storyViewer = document.getElementById('story-viewer');
-        const storyProgress = document.getElementById('story-progress');
-        const storySlide = document.getElementById('story-slide');
-        const STORY_DURATION = 4000;
-
-        const storiesData = [
-            {
-                bg: 'linear-gradient(160deg, #0f265c 0%, #1a3a7d 60%, #276db6 100%)',
-                icon: 'savings',
-                title: 'Ahorraste $ 120 este mes',
-                desc: 'Tu meta de ahorro va por buen camino. ¡Sigue así!'
-            },
-            {
-                bg: 'linear-gradient(160deg, #7a0930 0%, #b31237 60%, #f76800 100%)',
-                icon: 'local_fire_department',
-                title: '30% dcto. en restaurantes',
-                desc: 'Este fin de semana paga con tu tarjeta y acumula beneficios.'
-            },
-            {
-                bg: 'linear-gradient(160deg, #073d27 0%, #0f7a4d 60%, #1e9e5a 100%)',
-                icon: 'trending_up',
-                title: 'Tus intereses crecieron',
-                desc: 'La Cuenta Flexible generó $ 16,04 solo el día de ayer.'
-            }
-        ];
-
-        let storyIndex = 0, storyTimer = null;
-
-        function renderStoryBars() {
-            storyProgress.innerHTML = storiesData
-                .map((_, i) => {
-                    const state = i < storyIndex ? 'done' : i === storyIndex ? 'running' : '';
-                    return `<span class="story-bar ${state}"><i></i></span>`;
-                })
-                .join('');
-        }
-
-        function showStory(index) {
-            storyIndex = index;
-            const s = storiesData[index];
-            storyViewer.style.background = s.bg;
-            storySlide.innerHTML = `
-                <span class="material-symbols-rounded">${s.icon}</span>
-                <h2>${s.title}</h2>
-                <p>${s.desc}</p>`;
-            // reinicia la animación de entrada del slide
-            storySlide.style.animation = 'none';
-            void storySlide.offsetWidth;
-            storySlide.style.animation = '';
-            renderStoryBars();
-            clearTimeout(storyTimer);
-            storyTimer = setTimeout(nextStory, STORY_DURATION);
-        }
-
-        function nextStory() {
-            if (storyIndex < storiesData.length - 1) {
-                showStory(storyIndex + 1);
-            } else {
-                closeStories();
-            }
-        }
-
-        function prevStory() {
-            showStory(Math.max(0, storyIndex - 1));
-        }
-
-        function openStories() {
-            storyViewer.classList.add('open');
-            document.body.style.overflow = 'hidden';
-            showStory(0);
-        }
-
-        function closeStories() {
-            clearTimeout(storyTimer);
-            storyViewer.classList.remove('open');
-            document.body.style.overflow = '';
-        }
-
-        document.querySelector('.profile-story').addEventListener('click', openStories);
-        document.getElementById('story-close').addEventListener('click', closeStories);
-        document.getElementById('story-next').addEventListener('click', nextStory);
-        document.getElementById('story-prev').addEventListener('click', prevStory);
-        window.addEventListener('keydown', e => {
-            if (!storyViewer.classList.contains('open')) return;
-            if (e.key === 'Escape') closeStories();
-            if (e.key === 'ArrowRight') nextStory();
-            if (e.key === 'ArrowLeft') prevStory();
-        });
-    </script>
+    <!-- Bottom Navigation -->
+    <nav class="nav-bar">
+        <button class="nav-item active">
+            <span class="nav-item-icon material-symbols-rounded">home</span>
+            <span>Inicio</span>
+        </button>
+        <button class="nav-item" onclick="openStories()">
+            <span class="nav-item-icon material-symbols-rounded">inbox</span>
+            <span>Solicitudes</span>
+        </button>
+        <button class="nav-item">
+            <span class="nav-item-icon material-symbols-rounded">card_giftcard</span>
+            <span>Beneficios</span>
+        </button>
+        <button class="nav-item">
+            <span class="nav-item-icon material-symbols-rounded">store</span>
+            <span>Tienda</span>
+        </button>
+        <button class="nav-item">
+            <span class="nav-item-icon material-symbols-rounded">person</span>
+            <span>Perfil</span>
+        </button>
+    </nav>
 
     <script src="./app.js"></script>
 </body>
