@@ -2,52 +2,19 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Banca Móvil - Home</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0">
-    <style>
-        @font-face {
-            font-display: swap;
-            font-family: "Prelo book";
-            src: url("https://pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-book.woff2") format("woff2");
-        }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Banca Móvil Banco Pichincha - POC Rediseño">
+    <meta name="theme-color" content="#fcd000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Banca Movil">
 
-        @font-face {
-            font-display: swap;
-            font-family: "Prelo bold";
-            src: url("https://pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-bold.woff2") format("woff2");
-        }
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23fcd000' width='192' height='192'/><text x='96' y='125' font-size='96' font-weight='bold' fill='%230f265c' text-anchor='middle' font-family='Arial'>BP</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23fcd000' width='192' height='192' rx='44'/><text x='96' y='125' font-size='96' font-weight='bold' fill='%230f265c' text-anchor='middle' font-family='Arial'>BP</text></svg>">
 
-        @font-face {
-            font-display: swap;
-            font-family: "Prelo semibold";
-            src: url("https://pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-semibold.woff2") format("woff2");
-        }
-
-        @font-face {
-            font-display: swap;
-            font-family: "Prelo medium";
-            src: url("https://www.pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-medium.woff2") format("woff2");
-        }
-
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        :root {
-            --bp-surface-page: #f1f3f7;
-            --bp-surface-container: #ffffff;
-            --bp-surface-fixed: rgba(255, 255, 255, 0.96);
-            --bp-surface-brand: #ffdd00;
-            --bp-brand-support: #0f265c;
-            --bp-text-primary: #252529;
-            --bp-text-secondary: #5e626f;
-            --bp-text-helper: #7e8394;
+    <link rel="stylesheet" href="styles.css">
+    <title>Banca Móvil - Banco Pichincha</title>
             --bp-text-brand: #0f265c;
             --bp-text-interactive: #276db6;
             --bp-selection-bg-active: #0f265c;
@@ -2477,5 +2444,7 @@
             if (e.key === 'ArrowLeft') prevStory();
         });
     </script>
+
+    <script src="/app.js"></script>
 </body>
 </html>
