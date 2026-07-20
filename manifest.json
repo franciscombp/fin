@@ -2,8 +2,8 @@
   "name": "Banca Móvil - Banco Pichincha POC",
   "short_name": "Banca Movil",
   "description": "POC de rediseño de banca móvil con micro interacciones, login biométrico y PWA",
-  "start_url": "/index.html",
-  "scope": "/",
+  "start_url": "/bm/index.html",
+  "scope": "/bm/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#ffffff",
@@ -41,7 +41,7 @@
       "name": "Ingresar",
       "short_name": "Ingresar",
       "description": "Ingresa a tu cuenta con biometría",
-      "url": "/index.html?action=login",
+      "url": "/bm/index.html?action=login",
       "icons": [
         {
           "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%230f265c' width='96' height='96' rx='24'/><text x='48' y='60' font-size='48' font-weight='bold' fill='%23fcd000' text-anchor='middle' font-family='Arial'>→</text></svg>",

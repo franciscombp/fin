@@ -1,9 +1,8 @@
-const CACHE_NAME = 'banca-movil-v1';
+const CACHE_NAME = 'banca-movil-v2';
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/styles.css'
+  './index.html',
+  './manifest.json',
+  './app.js'
 ];
 
 self.addEventListener('install', (event) => {
@@ -57,7 +56,7 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => {
-          return caches.match('/index.html');
+          return caches.match('./index.html');
         });
     })
   );
