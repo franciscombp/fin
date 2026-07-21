@@ -394,7 +394,7 @@
             height: 180px;
             left: 50%;
             top: 50%;
-            transform: translate(calc(-50% + var(--gx, 0) * 100px), -50%);
+            transform: translate(calc(-50% + var(--gx, 0) * 100px), calc(-50% + var(--gy, 0) * 70px));
             background: radial-gradient(circle, rgba(255, 255, 255, 0.461) 0%, rgba(255, 232, 23, 0.6) 40%, transparent 70%);
         }
 
@@ -405,7 +405,7 @@
             bottom: -50%;
             background: radial-gradient(circle, rgba(255, 170, 0, 0.472) 0%, rgba(255, 119, 0, 0.261) 45%, transparent 70%);
             mix-blend-mode: lighten;
-            transform: translate(calc(var(--gx, 0) * -120px), 0);
+            transform: translate(calc(var(--gx, 0) * -120px), calc(var(--gy, 0) * -70px));
         }
 
         .glow--md {
@@ -414,7 +414,7 @@
             right: -40%;
             top: -35%;
             background: radial-gradient(circle, rgba(255, 240, 130, 0.98) 0%, rgba(255, 200, 40, 0.55) 45%, transparent 72%);
-            transform: translate(calc(var(--gx, 0) * -100px), 0);
+            transform: translate(calc(var(--gx, 0) * -100px), calc(var(--gy, 0) * 60px));
         }
 
         /* Destello diagonal - barrido independiente del glow.
@@ -2319,59 +2319,57 @@
 
         .fiesta-canvas.show { display: block; }
 
+        /* Botón sutil bajo la ilustración del login */
         .fiesta-btn {
-            position: fixed;
-            right: 16px;
-            bottom: calc(104px + env(safe-area-inset-bottom, 0px));
-            z-index: 65;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 14px 8px 10px;
-            border: none;
+            margin: 10px auto 0;
+            padding: 7px 12px;
+            border: 1px solid var(--bp-border-divider);
             border-radius: 999px;
             cursor: pointer;
             font-family: inherit;
-            color: #fff;
-            background: linear-gradient(135deg, #FFDD00 0%, #FFDD00 38%, #034EA2 38%, #034EA2 72%, #ED1C24 72%);
-            box-shadow: 0 6px 18px rgba(3, 78, 162, 0.35);
-            transition: transform 0.12s ease, box-shadow 0.2s ease;
+            color: var(--bp-text-primary);
+            background: var(--bp-surface-container);
+            transition: transform 0.12s ease, background 0.15s ease;
         }
 
-        .fiesta-btn:active { transform: scale(0.94); }
+        .fiesta-btn:active { transform: scale(0.95); background: var(--bp-secondary-bg); }
 
         .fiesta-btn.pulse { animation: fiestaPulse 0.5s ease; }
 
         @keyframes fiestaPulse {
             0% { transform: scale(1); }
-            35% { transform: scale(1.12); }
+            35% { transform: scale(1.08); }
             100% { transform: scale(1); }
         }
 
-        .fiesta-btn__icon {
-            font-size: 22px;
-            line-height: 1;
-            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
-        }
-
-        .fiesta-btn__info {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            line-height: 1.15;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+        /* Mini bandera de Ecuador */
+        .fiesta-btn__flag {
+            width: 18px;
+            height: 12px;
+            border-radius: 3px;
+            background: linear-gradient(180deg,
+                #FFDD00 0%, #FFDD00 50%,
+                #034EA2 50%, #034EA2 75%,
+                #ED1C24 75%, #ED1C24 100%);
+            box-shadow: inset 0 0 0 0.5px rgba(15, 38, 92, 0.15);
         }
 
         .fiesta-btn__label {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.2px;
+            font-size: 12px;
+            font-weight: 600;
         }
 
         .fiesta-btn__count {
-            font-size: 15px;
-            font-weight: 800;
+            font-size: 12px;
+            font-weight: 700;
             font-variant-numeric: tabular-nums;
+            color: var(--bp-text-interactive);
+            background: var(--bp-status-info-bg-subtle);
+            padding: 2px 8px;
+            border-radius: 999px;
         }
 
         /* ---------- Responsive: tablet y escritorio ----------
@@ -2462,6 +2460,12 @@
             <div class="login-screen__illustration">
                 <img class="login-illustration__img" src="./assets/login-illustration.svg" alt="Ilustración de bienvenida">
             </div>
+            <!-- Festejo de independencia: pirotecnia + contador global -->
+            <button class="fiesta-btn" id="fiesta-btn" aria-label="Festejar la independencia de Ecuador">
+                <span class="fiesta-btn__flag" aria-hidden="true"></span>
+                <span class="fiesta-btn__label">¡Viva Ecuador!</span>
+                <span class="fiesta-btn__count" id="fiesta-count">0</span>
+            </button>
         </div>
 
         <!-- Parte inferior: acciones + botones (fondo blanco) -->
@@ -2792,15 +2796,6 @@
             </section>
         </div>
         </main>
-
-        <!-- Festejo de independencia: pirotecnia + contador global -->
-        <button class="fiesta-btn" id="fiesta-btn" aria-label="Festejar la independencia de Ecuador">
-            <span class="fiesta-btn__icon">🎆</span>
-            <span class="fiesta-btn__info">
-                <span class="fiesta-btn__label">¡Viva Ecuador!</span>
-                <span class="fiesta-btn__count" id="fiesta-count">0</span>
-            </span>
-        </button>
     </div>
 
     <!-- Lienzo de fuegos artificiales (pantalla completa) -->
@@ -3501,19 +3496,21 @@
 
         function tick() {
             curX += (targetX - curX) * 0.12;
-            // En modo giroscopio, solo movimiento horizontal
-            const effectiveY = gyroActive ? 0 : targetY;
-            curY += (effectiveY - curY) * 0.12;
+            curY += (targetY - curY) * 0.12;
             // En giroscopio el resplandor es INVERSO al giro: la luz queda fija
             // en el "mundo" y el reflejo se desplaza al contrario (más físico).
             const gx = gyroActive ? -curX : curX;
+            const gy = gyroActive ? -curY : curY;
             card.style.setProperty('--gx', gx.toFixed(4));
-            card.style.setProperty('--gy', curY.toFixed(4));
+            card.style.setProperty('--gy', gy.toFixed(4));
             if (gyroActive) {
-                // Sin tilt 3D; el shine se mueve al contrario del dispositivo
+                // Sin tilt 3D; el shine se mueve al contrario del dispositivo.
+                // Mezcla ambos ejes: izquierda/derecha (gamma) y adelante/atrás
+                // (beta) desplazan el reflejo a lo largo de su eje diagonal.
                 card.style.transform = `scale(1)`;
                 shineEl.classList.add('gyro-controlled');
-                const inv = (-curX + 1) / 2; // 0..1 inverso al giro
+                const mix = Math.max(-1, Math.min(1, -curX * 0.75 - curY * 0.65));
+                const inv = (mix + 1) / 2; // 0..1
                 shineEl.style.setProperty('--shine-pos', `${(SHINE_FROM + inv * (SHINE_TO - SHINE_FROM)).toFixed(1)}px`);
                 // Mismo control (inverso) para el shine de la tarjeta del detalle
                 if (cdShineEl) {
@@ -3530,13 +3527,18 @@
         }
         requestAnimationFrame(tick);
 
-        // Giroscopio con diálogo explícito - solo movimiento horizontal
+        // Giroscopio con diálogo explícito.
+        // beta (adelante/atrás) se calibra con la primera lectura como "reposo",
+        // así el efecto responde al movimiento relativo y no a la postura.
+        let baseBeta = null;
         function handleOrientation(e) {
             if (e.gamma === null && e.beta === null) return;
             gyroActive = true;
-            // Solo gamma (inclinación izq/der) - beta ignorado
+            if (baseBeta === null) baseBeta = e.beta || 0;
+            // Suaviza la calibración: el "reposo" sigue lentamente a la postura
+            baseBeta += ((e.beta || 0) - baseBeta) * 0.005;
             targetX = Math.max(-1, Math.min(1, (e.gamma || 0) / 40));
-            targetY = 0; // Sin movimiento vertical
+            targetY = Math.max(-1, Math.min(1, ((e.beta || 0) - baseBeta) / 28));
         }
 
         function enableGyro(withToast = true) {
