@@ -1993,15 +1993,21 @@
             flex: 1 1 auto;
             min-height: 90px;
             width: 100%;
-            max-width: 320px;
-            background: linear-gradient(135deg, #e9edf3 0%, #dfe4ec 100%);
-            border-radius: 16px;
+            max-width: 340px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto;
-            color: var(--bp-text-helper);
-            font-size: 14px;
+            overflow: hidden;
+        }
+
+        .login-illustration__img {
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
         }
 
         /* Parte inferior (blanca): acciones + botones */
@@ -2300,6 +2306,74 @@
         }
         .push-page.open .section { animation-delay: 0.08s; }
 
+        /* ---------- Festejo de independencia (pirotecnia + contador) ---------- */
+        .fiesta-canvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 700;
+            pointer-events: none;
+            display: none;
+        }
+
+        .fiesta-canvas.show { display: block; }
+
+        .fiesta-btn {
+            position: fixed;
+            right: 16px;
+            bottom: calc(104px + env(safe-area-inset-bottom, 0px));
+            z-index: 65;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px 8px 10px;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            font-family: inherit;
+            color: #fff;
+            background: linear-gradient(135deg, #FFDD00 0%, #FFDD00 38%, #034EA2 38%, #034EA2 72%, #ED1C24 72%);
+            box-shadow: 0 6px 18px rgba(3, 78, 162, 0.35);
+            transition: transform 0.12s ease, box-shadow 0.2s ease;
+        }
+
+        .fiesta-btn:active { transform: scale(0.94); }
+
+        .fiesta-btn.pulse { animation: fiestaPulse 0.5s ease; }
+
+        @keyframes fiestaPulse {
+            0% { transform: scale(1); }
+            35% { transform: scale(1.12); }
+            100% { transform: scale(1); }
+        }
+
+        .fiesta-btn__icon {
+            font-size: 22px;
+            line-height: 1;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+        }
+
+        .fiesta-btn__info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            line-height: 1.15;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+        }
+
+        .fiesta-btn__label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+
+        .fiesta-btn__count {
+            font-size: 15px;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+        }
+
         /* ---------- Responsive: tablet y escritorio ----------
            Disposición propuesta: la app se muestra como una columna central de
            ancho fijo (una "app" centrada) sobre un fondo de marca con marco
@@ -2386,7 +2460,7 @@
         <div class="login-screen__top">
             <h1 class="login-screen__title">¡Vive la alegría del Mundial con La Tri!</h1>
             <div class="login-screen__illustration">
-                [Ilustración aquí]
+                <img class="login-illustration__img" src="./assets/login-illustration.svg" alt="Ilustración de bienvenida">
             </div>
         </div>
 
@@ -2718,7 +2792,19 @@
             </section>
         </div>
         </main>
+
+        <!-- Festejo de independencia: pirotecnia + contador global -->
+        <button class="fiesta-btn" id="fiesta-btn" aria-label="Festejar la independencia de Ecuador">
+            <span class="fiesta-btn__icon">🎆</span>
+            <span class="fiesta-btn__info">
+                <span class="fiesta-btn__label">¡Viva Ecuador!</span>
+                <span class="fiesta-btn__count" id="fiesta-count">0</span>
+            </span>
+        </button>
     </div>
+
+    <!-- Lienzo de fuegos artificiales (pantalla completa) -->
+    <canvas class="fiesta-canvas" id="fiesta-canvas" aria-hidden="true"></canvas>
 
     <!-- Bottom nav -->
     <nav class="nav-bar" aria-label="Navegación principal">
@@ -3990,5 +4076,6 @@
     </script>
 
     <script src="./app.js"></script>
+    <script src="./fiesta.js"></script>
 </body>
 </html>
