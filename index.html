@@ -127,7 +127,7 @@
             justify-content: space-between;
             align-items: center;
             height: 56px;
-            padding: 0 24px;
+            padding: calc(env(safe-area-inset-top, 0px)) 24px 0;
         }
 
         .profile-story {
@@ -1945,7 +1945,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 24px;
+            padding: calc(12px + env(safe-area-inset-top, 0px)) 24px 12px;
             background: var(--bp-surface-page);
         }
 
