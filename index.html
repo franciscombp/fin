@@ -118,11 +118,16 @@
         }
 
         /* ---------- Header sticky ---------- */
+        /* El padding-top con el safe-area vive en .header (sin alto fijo) para
+           que rellene la zona del status bar/notch con el color de fondo. Si se
+           pusiera en .top-bar, box-sizing: border-box lo restaría de sus 56px y
+           el contenido quedaría tapado por el status bar. */
         .header {
             position: sticky;
             top: 0;
             z-index: 50;
             background: var(--bp-surface-page);
+            padding-top: env(safe-area-inset-top, 0px);
         }
 
         .top-bar {
@@ -130,7 +135,7 @@
             justify-content: space-between;
             align-items: center;
             height: 56px;
-            padding: calc(env(safe-area-inset-top, 0px)) 24px 0;
+            padding: 0 24px;
         }
 
         .profile-story {
