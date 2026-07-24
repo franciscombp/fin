@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="format-detection" content="telephone=no">
     <meta name="description" content="Banca Móvil Banco Pichincha - POC Rediseño">
-    <meta name="theme-color" content="#fcd000">
+    <!-- En Android el theme-color pinta la barra superior; usamos el gris del
+         fondo (no el amarillo de marca) para que la cabecera no se vea amarilla. -->
+    <meta name="theme-color" content="#f1f3f7">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Banca Movil">
 
@@ -127,7 +130,7 @@
             justify-content: space-between;
             align-items: center;
             height: 56px;
-            padding: 0 24px;
+            padding: calc(env(safe-area-inset-top, 0px)) 24px 0;
         }
 
         .profile-story {
@@ -700,6 +703,175 @@
             align-self: end;
             width: 100%;
             height: 72px;
+        }
+
+        /* ---------- Paneles de sección (Destacado, Cuentas, Tarjetas…) ---------- */
+        .tab-panel { display: none; }
+        .tab-panel.is-active { display: block; }
+
+        /* Botón "ojo" para ocultar montos de una sección */
+        .section__eye {
+            border: none;
+            background: transparent;
+            color: var(--bp-text-interactive);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+            border-radius: 8px;
+            transition: background 0.15s ease, transform 0.1s ease;
+        }
+        .section__eye:active { transform: scale(0.9); background: var(--bp-status-info-bg-subtle); }
+        .section__eye .material-symbols-rounded { font-size: 22px; }
+
+        /* Los montos se difuminan cuando la sección está en modo privado */
+        .section.is-private .product-row__amount,
+        .section.is-private .card__footer-value,
+        .section.is-private .goal-row__amount {
+            filter: blur(7px);
+            transition: filter 0.22s ease;
+        }
+        .product-row__amount,
+        .card__footer-value,
+        .goal-row__amount { transition: filter 0.22s ease; }
+
+        /* Fila de producto (cuenta / tarjeta): miniatura + info + monto */
+        .product-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--bp-border-divider);
+            background: transparent;
+            border-left: none; border-right: none; border-top: none;
+            width: 100%;
+            font-family: inherit;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        .product-row:hover { background: #fafbfc; }
+        .product-row:active { background: var(--bp-secondary-bg); }
+        .product-row__info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .product-row__name { display: block; font-size: 16px; font-weight: 600; color: var(--bp-text-primary); }
+        .product-row__sub { display: block; font-size: 14px; color: var(--bp-text-secondary); }
+        .product-row__masked {
+            display: block; font-size: 14px; color: var(--bp-text-helper); letter-spacing: 0.5px;
+        }
+        .product-row__right {
+            display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+            text-align: right; flex-shrink: 0; padding-left: 8px;
+        }
+        .product-row__label { display: block; font-size: 13px; color: var(--bp-text-helper); }
+        .product-row__amount {
+            display: block; font-size: 17px; font-weight: 600;
+            font-variant-numeric: tabular-nums; color: var(--bp-text-primary);
+            white-space: nowrap;
+        }
+
+        /* Pie de tarjeta con total (Saldo disponible total / Pendiente de pago) */
+        .card__footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-top: 1px solid var(--bp-border-divider);
+        }
+        .card__footer-label { font-size: 16px; font-weight: 600; color: var(--bp-text-secondary); }
+        .card__footer-value {
+            font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;
+            color: var(--bp-text-primary);
+        }
+
+        /* Miniatura de tarjeta */
+        .card-thumb {
+            width: 58px; height: 40px;
+            border-radius: 6px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 5px 7px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(15, 38, 92, 0.2);
+        }
+        .card-thumb--visa { background: #ffdd00; }
+        .card-thumb--black { background: linear-gradient(135deg, #2b2d33, #060606); }
+        .card-thumb--diners { background: #eef1f5; box-shadow: inset 0 0 0 1px rgba(15, 38, 92, 0.1); }
+        .card-thumb--ghost {
+            background: #fff;
+            box-shadow: inset 0 0 0 1.5px rgba(15, 38, 92, 0.12);
+            opacity: 0.55;
+        }
+        .card-thumb__brand { font-size: 6px; font-weight: 800; letter-spacing: 0.2px; color: #0f265c; }
+        .card-thumb--black .card-thumb__brand { color: #fff; }
+        .card-thumb__foot { display: flex; justify-content: flex-end; align-items: center; }
+        .card-thumb__visa { font-size: 11px; font-weight: 800; font-style: italic; color: #0f265c; }
+        .card-thumb__diners { font-size: 8px; font-weight: 700; color: #274c8f; align-self: center; margin: auto; }
+        .mc-dots { display: inline-flex; align-items: center; }
+        .mc-dots i { width: 13px; height: 13px; border-radius: 50%; display: block; }
+        .mc-dots i:first-child { background: #eb001b; }
+        .mc-dots i:last-child { background: #f79e1b; margin-left: -6px; opacity: 0.9; }
+
+        /* CTA con borde punteado (Solicitar / Crear producto) */
+        .cta-dashed {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            padding: 16px;
+            border: 1.5px dashed #c7cedd;
+            border-radius: var(--bp-radius-md);
+            background: rgba(233, 236, 243, 0.35);
+            margin-bottom: 16px;
+            width: 100%;
+            font-family: inherit;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.15s ease, transform 0.1s ease;
+        }
+        .cta-dashed:active { background: rgba(233, 236, 243, 0.75); transform: scale(0.99); }
+        .cta-dashed__text { font-size: 15px; color: var(--bp-text-primary); line-height: 1.4; }
+        .cta-dashed__link { display: block; margin-top: 4px; color: var(--bp-text-interactive); font-weight: 600; }
+
+        /* Fila de meta de ahorro */
+        .goal-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 14px 16px;
+            width: 100%;
+            background: transparent;
+            border: none;
+            font-family: inherit;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        .goal-row:hover { background: #fafbfc; }
+        .goal-row__info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .goal-row__name { display: block; font-size: 16px; font-weight: 600; color: var(--bp-text-primary); }
+        .goal-row__meta { display: block; font-size: 14px; color: var(--bp-text-secondary); }
+        .goal-row__amount {
+            font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums;
+            color: var(--bp-text-primary); white-space: nowrap; align-self: center;
+        }
+        .avatar-lg {
+            width: 48px; height: 48px; border-radius: 12px;
+            background: rgba(47, 122, 191, 0.12); color: var(--bp-status-info-bg);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .avatar-lg .material-symbols-rounded { font-size: 24px; }
+
+        /* Barra de progreso de meta */
+        .goal-progress {
+            height: 6px; border-radius: 100px;
+            background: var(--bp-selection-bg-active-subtle);
+            margin: 8px 0 0; overflow: hidden;
+        }
+        .goal-progress__fill {
+            height: 100%; border-radius: 100px;
+            background: linear-gradient(90deg, #2f7abf, #1e9e5a);
         }
 
         /* ---------- Promociones ---------- */
@@ -1945,7 +2117,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 24px;
+            padding: calc(12px + env(safe-area-inset-top, 0px)) 24px 12px;
             background: var(--bp-surface-page);
         }
 
@@ -2333,6 +2505,7 @@
             color: var(--bp-text-primary);
             background: var(--bp-surface-container);
             transition: transform 0.12s ease, background 0.15s ease;
+            touch-action: manipulation;
         }
 
         .fiesta-btn:active { transform: scale(0.95); background: var(--bp-secondary-bg); }
@@ -2547,12 +2720,12 @@
                 <button class="tab" data-action="Modo finanzas" aria-label="Modo finanzas">
                     <span class="material-symbols-rounded">monitoring</span>
                 </button>
-                <button class="tab active">Destacado</button>
-                <button class="tab">Cuentas</button>
-                <button class="tab">Tarjetas</button>
-                <button class="tab">Préstamos</button>
-                <button class="tab">Inversiones</button>
-                <button class="tab">Seguros</button>
+                <button class="tab active" data-panel="Destacado">Destacado</button>
+                <button class="tab" data-panel="Cuentas">Cuentas</button>
+                <button class="tab" data-panel="Tarjetas">Tarjetas</button>
+                <button class="tab" data-panel="Prestamos">Préstamos</button>
+                <button class="tab" data-panel="Inversiones">Inversiones</button>
+                <button class="tab" data-panel="Seguros">Seguros</button>
             </nav>
         </header>
 
@@ -2574,6 +2747,8 @@
             <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
             <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
         </div>
+        <!-- ============ Panel: Destacado ============ -->
+        <div class="tab-panel is-active" data-panel="Destacado">
         <!-- Cuenta transaccional -->
         <section class="section">
             <div class="section__title">
@@ -2731,7 +2906,313 @@
                 </button>
             </div>
         </section>
-        </div>
+        </div><!-- /panel Destacado -->
+
+        <!-- ============ Panel: Cuentas ============ -->
+        <div class="tab-panel" data-panel="Cuentas">
+            <section class="section">
+                <div class="section__title">
+                    <h2>Mis cuentas</h2>
+                    <button class="section__eye" data-eye aria-label="Ocultar saldos" aria-pressed="false">
+                        <span class="material-symbols-rounded">visibility</span>
+                    </button>
+                </div>
+                <div class="card">
+                    <button class="product-row" data-action="Cuenta Ahorro transaccional">
+                        <span class="avatar-lg"><span class="material-symbols-rounded">account_balance_wallet</span></span>
+                        <span class="product-row__info">
+                            <span class="product-row__name">Sueldo</span>
+                            <span class="product-row__sub">Ahorro transaccional</span>
+                            <span class="product-row__masked">******7980</span>
+                        </span>
+                        <span class="product-row__right">
+                            <span class="product-row__amount">$ 100,00</span>
+                        </span>
+                    </button>
+                    <button class="product-row" data-action="Cuenta Corriente">
+                        <span class="avatar-lg"><span class="material-symbols-rounded">payments</span></span>
+                        <span class="product-row__info">
+                            <span class="product-row__name">Sueldo</span>
+                            <span class="product-row__sub">Corriente</span>
+                            <span class="product-row__masked">******1234</span>
+                        </span>
+                        <span class="product-row__right">
+                            <span class="product-row__amount">$ 1.440,35</span>
+                        </span>
+                    </button>
+                    <div class="card__footer">
+                        <span class="card__footer-label">Saldo disponible total</span>
+                        <span class="card__footer-value">$ 1.540,35</span>
+                    </div>
+                </div>
+
+                <button class="cta-dashed" data-action="Crear Ahorro Flexible">
+                    <span class="avatar-lg"><span class="material-symbols-rounded">savings</span></span>
+                    <span class="cta-dashed__text">
+                        Tu dinero siempre disponible, creciendo cada día.
+                        <span class="cta-dashed__link">Crear Ahorro Flexible</span>
+                    </span>
+                </button>
+            </section>
+
+            <section class="section">
+                <div class="section__title">
+                    <h2>Mis metas</h2>
+                    <button class="section__eye" data-eye aria-label="Ocultar montos de metas" aria-pressed="false">
+                        <span class="material-symbols-rounded">visibility</span>
+                    </button>
+                </div>
+                <div class="card">
+                    <button class="goal-row" data-action="Meta Viaje de finde">
+                        <span class="avatar-lg"><span class="material-symbols-rounded">beach_access</span></span>
+                        <span class="goal-row__info">
+                            <span class="goal-row__name">Viaje de finde</span>
+                            <span class="goal-row__meta">Meta: 21 ago 2029</span>
+                            <span class="goal-progress"><span class="goal-progress__fill" style="width: 30%;"></span></span>
+                        </span>
+                        <span class="goal-row__amount">$ 15,00</span>
+                    </button>
+                    <button class="goal-row" data-action="Meta Fondo de emergencia">
+                        <span class="avatar-lg"><span class="material-symbols-rounded">health_and_safety</span></span>
+                        <span class="goal-row__info">
+                            <span class="goal-row__name">Fondo de emergencia</span>
+                            <span class="goal-row__meta">Meta: 15 dic 2026</span>
+                            <span class="goal-progress"><span class="goal-progress__fill" style="width: 62%;"></span></span>
+                        </span>
+                        <span class="goal-row__amount">$ 620,00</span>
+                    </button>
+                </div>
+
+                <button class="cta-dashed" data-action="Crear meta de ahorro">
+                    <span class="avatar-lg"><span class="material-symbols-rounded">flag</span></span>
+                    <span class="cta-dashed__text">
+                        Ponle nombre a tu próximo sueño y ahorra para lograrlo.
+                        <span class="cta-dashed__link">Crear nueva meta</span>
+                    </span>
+                </button>
+            </section>
+        </div><!-- /panel Cuentas -->
+
+        <!-- ============ Panel: Tarjetas ============ -->
+        <div class="tab-panel" data-panel="Tarjetas">
+            <section class="section">
+                <div class="section__title">
+                    <h2>Débito</h2>
+                </div>
+                <div class="card">
+                    <button class="product-row" data-action="Visa Débito">
+                        <span class="card-thumb card-thumb--visa">
+                            <span class="card-thumb__brand">BANCO<br>PICHINCHA</span>
+                            <span class="card-thumb__foot"><span class="card-thumb__visa">VISA</span></span>
+                        </span>
+                        <span class="product-row__info">
+                            <span class="product-row__name">Visa Débito</span>
+                            <span class="product-row__masked">1234 **** **** 1234</span>
+                        </span>
+                    </button>
+                </div>
+
+                <button class="cta-dashed" data-action="Solicitar Débito Digital">
+                    <span class="card-thumb card-thumb--ghost">
+                        <span class="card-thumb__brand">BANCO<br>PICHINCHA</span>
+                        <span class="card-thumb__foot"><span class="card-thumb__visa">VISA</span></span>
+                    </span>
+                    <span class="cta-dashed__text">
+                        Para todas tus compras y pagos por internet.
+                        <span class="cta-dashed__link">Solicitar Débito Digital</span>
+                    </span>
+                </button>
+            </section>
+
+            <section class="section">
+                <div class="section__title">
+                    <h2>Crédito</h2>
+                    <button class="section__eye" data-eye aria-label="Ocultar saldos de crédito" aria-pressed="false">
+                        <span class="material-symbols-rounded">visibility</span>
+                    </button>
+                </div>
+                <div class="card">
+                    <button class="product-row" data-action="Mastercard Black">
+                        <span class="card-thumb card-thumb--black">
+                            <span class="card-thumb__brand">BANCO<br>PICHINCHA</span>
+                            <span class="card-thumb__foot"><span class="mc-dots"><i></i><i></i></span></span>
+                        </span>
+                        <span class="product-row__info">
+                            <span class="product-row__name">Mastercard Black</span>
+                            <span class="product-row__masked">5221 **** **** 7643</span>
+                        </span>
+                        <span class="product-row__right">
+                            <span class="product-row__label">Saldo a pagar</span>
+                            <span class="product-row__amount">$ 15,00</span>
+                        </span>
+                    </button>
+                    <button class="product-row" data-action="Diners Club">
+                        <span class="card-thumb card-thumb--diners">
+                            <span class="card-thumb__diners">Diners Club</span>
+                        </span>
+                        <span class="product-row__info">
+                            <span class="product-row__name">Diners Club</span>
+                            <span class="product-row__masked">3295 **** **** 4863</span>
+                        </span>
+                        <span class="product-row__right">
+                            <span class="product-row__label">Saldo a pagar</span>
+                            <span class="product-row__amount">$ 0,00</span>
+                        </span>
+                    </button>
+                    <div class="card__footer">
+                        <span class="card__footer-label">Pendiente de pago</span>
+                        <span class="card__footer-value">$ 15,00</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section__title">
+                    <h2>Movilidad</h2>
+                    <button class="section__eye" data-eye aria-label="Ocultar saldo de movilidad" aria-pressed="false">
+                        <span class="material-symbols-rounded">visibility</span>
+                    </button>
+                </div>
+                <div class="card">
+                    <button class="product-row" data-action="Tarjeta Movilidad">
+                        <span class="avatar-lg"><span class="material-symbols-rounded">directions_bus</span></span>
+                        <span class="product-row__info">
+                            <span class="product-row__name">Tarjeta Movilidad</span>
+                            <span class="product-row__sub">Transporte y peajes</span>
+                            <span class="product-row__masked">******5566</span>
+                        </span>
+                        <span class="product-row__right">
+                            <span class="product-row__label">Saldo</span>
+                            <span class="product-row__amount">$ 8,50</span>
+                        </span>
+                    </button>
+                </div>
+
+                <button class="cta-dashed" data-action="Recargar Movilidad">
+                    <span class="avatar-lg"><span class="material-symbols-rounded">add_card</span></span>
+                    <span class="cta-dashed__text">
+                        Recarga tu tarjeta y muévete sin filas.
+                        <span class="cta-dashed__link">Recargar ahora</span>
+                    </span>
+                </button>
+            </section>
+        </div><!-- /panel Tarjetas -->
+
+        <!-- ============ Panel: Préstamos ============ -->
+        <div class="tab-panel" data-panel="Prestamos">
+            <section class="section">
+                <div class="section__title">
+                    <h2>Mis préstamos</h2>
+                    <button class="section__eye" data-eye aria-label="Ocultar montos de préstamos" aria-pressed="false">
+                        <span class="material-symbols-rounded">visibility</span>
+                    </button>
+                </div>
+                <div class="card">
+                    <button class="product-row" data-action="Préstamo de consumo">
+                        <span class="avatar-lg"><span class="material-symbols-rounded">real_estate_agent</span></span>
+                        <span class="product-row__info">
+                            <span class="product-row__name">Préstamo de consumo</span>
+                            <span class="product-row__sub">Cuota 6 de 36</span>
+                            <span class="goal-progress"><span class="goal-progress__fill" style="width: 17%;"></span></span>
+                        </span>
+                        <span class="product-row__right">
+                            <span class="product-row__label">Próx. cuota</span>
+                            <span class="product-row__amount">$ 245,90</span>
+                        </span>
+                    </button>
+                    <div class="card__footer">
+                        <span class="card__footer-label">Saldo pendiente</span>
+                        <span class="card__footer-value">$ 7.380,50</span>
+                    </div>
+                </div>
+
+                <button class="cta-dashed" data-action="Simular crédito preaprobado">
+                    <span class="avatar-lg"><span class="material-symbols-rounded">savings</span></span>
+                    <span class="cta-dashed__text">
+                        Tienes un crédito preaprobado de $ 5.000.
+                        <span class="cta-dashed__link">Simular mi crédito</span>
+                    </span>
+                </button>
+            </section>
+        </div><!-- /panel Prestamos -->
+
+        <!-- ============ Panel: Inversiones ============ -->
+        <div class="tab-panel" data-panel="Inversiones">
+            <section class="section">
+                <div class="section__title">
+                    <h2>Mis inversiones</h2>
+                    <button class="section__eye" data-eye aria-label="Ocultar montos de inversiones" aria-pressed="false">
+                        <span class="material-symbols-rounded">visibility</span>
+                    </button>
+                </div>
+                <div class="card">
+                    <button class="product-row" data-action="Depósito a plazo">
+                        <span class="avatar-lg"><span class="material-symbols-rounded">trending_up</span></span>
+                        <span class="product-row__info">
+                            <span class="product-row__name">Depósito a plazo</span>
+                            <span class="product-row__sub">Vence: 12 nov 2026 · 7,25%</span>
+                        </span>
+                        <span class="product-row__right">
+                            <span class="product-row__amount">$ 3.000,00</span>
+                        </span>
+                    </button>
+                    <div class="card__footer">
+                        <span class="card__footer-label">Interés proyectado</span>
+                        <span class="card__footer-value">$ 217,50</span>
+                    </div>
+                </div>
+
+                <button class="cta-dashed" data-action="Crear inversión">
+                    <span class="avatar-lg"><span class="material-symbols-rounded">savings</span></span>
+                    <span class="cta-dashed__text">
+                        Haz crecer tu dinero desde $ 100 con tasas preferenciales.
+                        <span class="cta-dashed__link">Invertir ahora</span>
+                    </span>
+                </button>
+            </section>
+        </div><!-- /panel Inversiones -->
+
+        <!-- ============ Panel: Seguros ============ -->
+        <div class="tab-panel" data-panel="Seguros">
+            <section class="section">
+                <div class="section__title">
+                    <h2>Mis seguros</h2>
+                </div>
+                <div class="card">
+                    <button class="product-row" data-action="Seguro de vida">
+                        <span class="avatar-lg"><span class="material-symbols-rounded">health_and_safety</span></span>
+                        <span class="product-row__info">
+                            <span class="product-row__name">Seguro de vida</span>
+                            <span class="product-row__sub">Vigente · Renueva 01 ene 2027</span>
+                        </span>
+                        <span class="product-row__right">
+                            <span class="product-row__label">Prima mensual</span>
+                            <span class="product-row__amount">$ 12,90</span>
+                        </span>
+                    </button>
+                    <button class="product-row" data-action="Seguro de tarjetas">
+                        <span class="avatar-lg"><span class="material-symbols-rounded">shield</span></span>
+                        <span class="product-row__info">
+                            <span class="product-row__name">Protección de tarjetas</span>
+                            <span class="product-row__sub">Vigente · Cobertura por fraude</span>
+                        </span>
+                        <span class="product-row__right">
+                            <span class="product-row__label">Prima mensual</span>
+                            <span class="product-row__amount">$ 3,50</span>
+                        </span>
+                    </button>
+                </div>
+
+                <button class="cta-dashed" data-action="Contratar seguro">
+                    <span class="avatar-lg"><span class="material-symbols-rounded">add_moderator</span></span>
+                    <span class="cta-dashed__text">
+                        Protege lo que más te importa con nuestros seguros.
+                        <span class="cta-dashed__link">Ver seguros disponibles</span>
+                    </span>
+                </button>
+            </section>
+        </div><!-- /panel Seguros -->
+        </div><!-- /view data-view=0 -->
 
         <div class="view placeholder-view" data-view="1">
             <h1>Solicitudes</h1>
@@ -3291,12 +3772,20 @@
         // ---------- Tabs: cada cambio simula una carga con skeleton ----------
         const sectionTabs = [...document.querySelectorAll('.tabs .tab')].filter(t => !t.dataset.action);
 
+        function showPanel(name) {
+            if (!name) return;
+            document.querySelectorAll('.tab-panel').forEach(p => {
+                p.classList.toggle('is-active', p.dataset.panel === name);
+            });
+        }
+
         function activateSectionTab(tab) {
             if (!tab || tab.dataset.action) return;
             const wasActive = tab.classList.contains('active');
             document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
             tab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            showPanel(tab.dataset.panel); // cambia el contenido visible según la pestaña
             if (!wasActive) simulateLoad();
         }
 
@@ -3452,6 +3941,7 @@
             document.querySelectorAll('.tabs .tab').forEach((t, idx) => {
                 t.classList.toggle('active', idx === 1); // "Destacado"
             });
+            showPanel('Destacado');
             window.scrollTo({ top: 0 });
         };
 
@@ -3474,6 +3964,19 @@
             balanceToggle.setAttribute('aria-label', hidden ? 'Mostrar saldo' : 'Ocultar saldo');
             balanceToggle.setAttribute('aria-pressed', String(hidden));
             showToast(hidden ? 'Saldo oculto' : 'Saldo visible');
+        });
+
+        // ---------- Ojos de sección: difuminan los montos de esa sección ----------
+        document.querySelectorAll('[data-eye]').forEach(eye => {
+            eye.addEventListener('click', (e) => {
+                e.stopPropagation(); // no dispares el swipe ni acciones de fila
+                const section = eye.closest('.section');
+                if (!section) return;
+                const isPrivate = section.classList.toggle('is-private');
+                eye.querySelector('.material-symbols-rounded').textContent =
+                    isPrivate ? 'visibility_off' : 'visibility';
+                eye.setAttribute('aria-pressed', String(isPrivate));
+            });
         });
 
         // ---------- Resplandor reactivo: giroscopio + mouse ----------

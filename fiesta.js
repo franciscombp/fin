@@ -61,10 +61,17 @@
   var running = false;
   var dpr = Math.min(window.devicePixelRatio || 1, 2);
   var FLAG_EVERY = 5; // cada N festejos, un firework forma la bandera
+  var rocketBaseY = innerHeight * 0.45; // altura de lanzamiento (desde la zona gris)
 
   function resize() {
     canvas.width = innerWidth * dpr;
     canvas.height = innerHeight * dpr;
+    // Recalcular la altura de lanzamiento si la ventana cambia
+    var loginTop = document.querySelector('.login-screen__top');
+    if (loginTop) {
+      var rect = loginTop.getBoundingClientRect();
+      rocketBaseY = rect.bottom;
+    }
   }
   resize();
   addEventListener('resize', resize);
@@ -75,7 +82,7 @@
   function launchRocket(isFlag) {
     rockets.push({
       x: (isFlag ? innerWidth * 0.5 : rand(innerWidth * 0.2, innerWidth * 0.8)) * dpr,
-      y: innerHeight * dpr,
+      y: rocketBaseY * dpr,
       vx: isFlag ? 0 : rand(-0.6, 0.6) * dpr,
       vy: (isFlag ? -12.5 : rand(-13, -10)) * dpr,
       color: isFlag ? '#FFDD00' : pick(COLORS),
