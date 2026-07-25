@@ -37,9 +37,16 @@
             function reveal() { document.documentElement.classList.add('icons-ready'); }
             function iconFontLoaded() {
                 var test = document.createElement('span');
-                test.className = 'material-symbols-rounded';
+                // Sin className: la clase .material-symbols-rounded real fija
+                // su caja a 1em×1em con overflow:hidden (para no romper el
+                // layout de contenedores como el nav inferior mientras la
+                // fuente no carga) — si se usara esa clase aquí, la medición
+                // SIEMPRE daría ~48px sin importar si la fuente cargó,
+                // rindiendo esta prueba inútil. Se aplica sólo el
+                // font-family directo, sin ninguna otra regla del sitio.
+                test.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;' +
+                    'font-family:"Material Symbols Rounded";font-size:48px;left:-9999px;top:-9999px;';
                 test.textContent = 'settings';
-                test.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font-size:48px;left:-9999px;top:-9999px;';
                 document.body.appendChild(test);
                 var w = test.offsetWidth;
                 document.body.removeChild(test);
@@ -138,12 +145,6 @@
             --bp-icon-secondary-fg: #104798; /* Figma: interaction-secondary-fg (quick actions) */
             --bp-radius-md: 12px;
             --bp-radius-sm: 8px;
-            /* Radio compartido por TODA superficie que representa "una
-               tarjeta física real" (destacado + detalle): antes usaban
-               8px y 16px respectivamente, así que durante el morph entre
-               ambas el radio se veía cambiar/distorsionar. Con el mismo
-               valor en los dos lugares, la esquina no "salta". */
-            --bp-radius-card: 16px;
         }
 
         *, *::before, *::after {
@@ -159,6 +160,24 @@
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
             user-select: none;
             visibility: hidden;
+            /* visibility:hidden (a diferencia de display:none) preserva el
+               ancho NATURAL del contenido — mientras la fuente no carga eso
+               es el texto crudo del ligature como respaldo ("account_circle",
+               14 caracteres), mucho más ancho que un ícono real. En cajas que
+               se dimensionan por contenido (los tabs del nav inferior, con
+               flex:1) eso inflaba el ancho de ESE ítem específico y rompía
+               el reparto equitativo entre pestañas — en escritorio incluso
+               desbordaba la columna. Fijando la caja a 1em×1em (el tamaño
+               real del ícono, según el font-size de cada contexto) con
+               overflow:hidden, el espacio ocupado es siempre el mismo sin
+               importar qué texto haya adentro mientras se espera la fuente. */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1em;
+            height: 1em;
+            overflow: hidden;
+            flex-shrink: 0;
         }
 
         html.icons-ready .material-symbols-rounded {
@@ -476,7 +495,7 @@
             position: relative;
             width: 100%;
             height: 88px; /* Figma: bp-sale_of_products */
-            border-radius: var(--bp-radius-card);
+            border-radius: var(--bp-radius-sm); /* 8px: tarjeta destacada */
             background: var(--bp-surface-brand); /* respaldo mientras carga el arte */
             border: none;
             cursor: pointer;
@@ -1246,41 +1265,55 @@
            Perfil) — por eso NO deslizan lateralmente: un slide sugiere una
            relación de orden que no existe, y es la convención nativa de
            push/pop (usada en la tarjeta de detalle y las páginas de acción
-           rápida), no la de tabs. Aquí se usa "fade through": la vista
-           saliente se desvanece y encoge un poco muy rápido, LUEGO entra la
-           siguiente con el mismo lenguaje (fundido + escala sutil). Antes
-           había un corte duro (display:none/block instantáneo) seguido de
-           una animación de entrada sin salida, más un flasheo de skeleton
-           interno que se disparaba aunque el contenido de destino (las
-           pestañas placeholder) nunca cambiara — de ahí la sensación de caos. */
+           rápida), no la de tabs. Se usa un crossfade real: la vista
+           entrante toma su lugar en el flujo normal DE INMEDIATO (así el
+           contenido nuevo ya está asentado, sin layout raro) mientras la
+           saliente se despega a position:absolute superpuesta encima y se
+           desvanece — ambas visibles y animando a la vez, no una tras otra.
+           La versión anterior las hacía en SECUENCIA (una se apaga del
+           todo, recién entonces aparece la otra), lo que dejaba un
+           instante en blanco entre ambas — un corte, no un cruce — y eso
+           es lo que se sentía "roto"/poco natural. */
+        #views {
+            position: relative;
+        }
+
         .view {
             display: none;
         }
 
         .view.active {
             display: block;
+            opacity: 1;
+            transition: opacity 0.28s ease;
         }
 
+        /* Estado inicial de la entrante: se monta ya en su lugar final
+           (por eso 'active' sigue puesto) pero arranca invisible, sin
+           transición todavía — se le quita en el frame siguiente para que
+           SÍ dispare la transición de .view.active hacia opacity:1. */
+        .view.active.entering {
+            opacity: 0;
+            transition: none;
+        }
+
+        /* La saliente se saca del flujo normal para poder solaparse con la
+           entrante (que ya ocupa el espacio en flujo normal) en vez de
+           apilarse debajo de ella. */
         .view.leaving {
-            animation: viewFadeOut 0.15s ease forwards;
-        }
-
-        .view.entering {
-            animation: viewFadeIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
-        }
-
-        @keyframes viewFadeOut {
-            from { opacity: 1; scale: 1; }
-            to   { opacity: 0; scale: 0.985; }
-        }
-
-        @keyframes viewFadeIn {
-            from { opacity: 0; scale: 0.985; }
-            to   { opacity: 1; scale: 1; }
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.22s ease;
         }
 
         @media (prefers-reduced-motion: reduce) {
-            .view.leaving, .view.entering { animation: none; }
+            .view.active,
+            .view.leaving { transition: none; }
         }
 
         /* Vistas placeholder (Solicitudes, Beneficios, etc.) */
@@ -1816,7 +1849,7 @@
         .cd-card {
             perspective: 1600px;
             position: relative;
-            border-radius: var(--bp-radius-card);
+            border-radius: var(--bp-radius-md); /* 12px: tarjeta de detalle */
             overflow: hidden;
             cursor: pointer;
             touch-action: none;
@@ -1838,7 +1871,7 @@
         .cd-card.revealed .cd-flip { transform: rotateY(180deg); }
 
         .cd-face {
-            border-radius: var(--bp-radius-card);
+            border-radius: var(--bp-radius-md);
             overflow: hidden;
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
@@ -1905,7 +1938,7 @@
             width: 100%;
             height: auto;
             display: block;
-            border-radius: var(--bp-radius-card);
+            border-radius: var(--bp-radius-md);
         }
 
         /* Pista de girar para revelar */
@@ -2165,12 +2198,14 @@
         .sub-item__info { flex: 1; min-width: 0; }
 
         .sub-item__name {
+            display: block;
             font-size: 15px;
             font-weight: 600;
             color: var(--bp-text-primary);
         }
 
         .sub-item__meta {
+            display: block;
             font-size: 13px;
             color: var(--bp-text-helper);
             margin-top: 2px;
@@ -2477,6 +2512,14 @@
             visibility: hidden;
         }
 
+        /* #push-page (el genérico) puede abrirse COMO drill-down desde
+           dentro de #finance-page (ambas comparten .push-page, mismo
+           z-index) — sube su índice específicamente para que quede siempre
+           por encima cuando las dos están abiertas a la vez. */
+        #push-page {
+            z-index: 310;
+        }
+
         .push-page.open {
             transform: translateX(0);
             visibility: visible;
@@ -2515,6 +2558,166 @@
         }
 
         .push-page__hero .material-symbols-rounded { font-size: 56px; }
+        .push-page__hero.is-hidden { display: none; }
+
+        /* ---------- Contenido específico por acción rápida ----------
+           Antes cualquier acción (Transferir, Pagar con QR, Pagar
+           servicios, Recargar celular...) abría el mismo bloque genérico
+           (ícono + Resumen + Movimientos), sin relación real con lo que el
+           usuario quería hacer. Estas plantillas cubren los flujos más
+           comunes con algo parecido a lo que se vería de verdad. */
+        .push-qr {
+            background: var(--bp-surface-container);
+            border-radius: var(--bp-radius-md);
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .push-qr__code {
+            width: 176px;
+            height: 176px;
+            margin: 0 auto 16px;
+            padding: 12px;
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid var(--bp-border-divider);
+        }
+        .push-qr__code svg { width: 100%; height: 100%; display: block; }
+        .push-qr__caption { font-size: 14px; color: var(--bp-text-secondary); line-height: 1.4; }
+        .push-qr__amount { font-size: 28px; font-weight: 700; margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+
+        .push-beneficiaries {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            padding: 4px 2px 16px;
+            margin-bottom: 4px;
+        }
+        .push-beneficiaries::-webkit-scrollbar { display: none; }
+        .push-beneficiary {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+            width: 64px;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            cursor: pointer;
+        }
+        .push-beneficiary__avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 17px;
+        }
+        .push-beneficiary--new .push-beneficiary__avatar {
+            background: var(--bp-secondary-bg);
+            color: var(--bp-text-interactive);
+        }
+        .push-beneficiary__name {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--bp-text-secondary);
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .push-chip-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .push-chip {
+            height: 40px;
+            padding: 0 16px;
+            border-radius: 100px;
+            border: 1px solid var(--bp-border-divider);
+            background: var(--bp-surface-container);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--bp-text-primary);
+            cursor: pointer;
+        }
+        .push-chip.is-selected {
+            background: var(--bp-selection-bg-active);
+            border-color: var(--bp-selection-bg-active);
+            color: #fff;
+        }
+
+        /* ---------- Modo finanzas: resumen consolidado ---------- */
+        .finance-subtitle {
+            font-size: 15px;
+            color: var(--bp-text-secondary);
+            margin: -8px 0 16px;
+        }
+
+        .finance-hero {
+            display: flex;
+            align-items: stretch;
+            background: var(--bp-surface-container);
+            border-radius: var(--bp-radius-md);
+            padding: 18px 0;
+            margin-bottom: 12px;
+        }
+
+        .finance-hero__item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .finance-hero__label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--bp-text-helper);
+        }
+
+        .finance-hero__value {
+            font-size: 20px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .finance-hero__value--positive { color: #1e9e5a; }
+        .finance-hero__value--negative { color: var(--bp-status-warning-bg); }
+
+        .finance-hero__divider {
+            width: 1px;
+            background: var(--bp-border-divider);
+        }
+
+        .finance-networth {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 14px;
+            color: var(--bp-text-secondary);
+            padding: 10px 16px;
+            border-radius: 100px;
+            background: var(--bp-status-warning-bg-subtle);
+            margin-bottom: 24px;
+        }
+
+        .finance-networth strong { color: var(--bp-status-warning-bg); font-weight: 700; }
+        .finance-networth.is-positive { background: rgba(30, 158, 90, 0.12); }
+        .finance-networth.is-positive strong { color: #1e9e5a; }
+        .finance-networth .material-symbols-rounded { font-size: 18px; }
 
         #push-cta { margin-top: 8px; }
 
@@ -3607,25 +3810,193 @@
         </div>
         <div class="push-page__inner">
             <h1 class="detail-title" id="push-title">Acción</h1>
-            <div class="push-page__hero">
+            <div class="push-page__hero" id="push-hero">
                 <span class="material-symbols-rounded" id="push-hero-icon">bolt</span>
             </div>
 
-            <section class="section" style="padding-left:0; padding-right:0;">
-                <div class="section__title"><h2>Resumen</h2></div>
-                <div class="card">
-                    <div class="sub-item"><span class="sub-item__logo" style="background:var(--bp-selection-bg-active);"><span class="material-symbols-rounded">schedule</span></span><span class="sub-item__info"><span class="sub-item__name">Disponible</span><span class="sub-item__meta">Actualizado hoy</span></span><span class="sub-item__price">$ 1.906,04</span></div>
-                    <div class="sub-item"><span class="sub-item__logo" style="background:#1e9e5a;"><span class="material-symbols-rounded">trending_up</span></span><span class="sub-item__info"><span class="sub-item__name">Ingresos del mes</span><span class="sub-item__meta">Mayo 2026</span></span><span class="sub-item__price">$ 2.430,00</span></div>
-                    <div class="sub-item"><span class="sub-item__logo" style="background:#f76800;"><span class="material-symbols-rounded">trending_down</span></span><span class="sub-item__info"><span class="sub-item__name">Gastos del mes</span><span class="sub-item__meta">Mayo 2026</span></span><span class="sub-item__price">$ 1.284,45</span></div>
-                </div>
-            </section>
+            <!-- Contenido específico por acción (QR, transferir, servicios,
+                 recargar...); vacío/oculto para acciones sin plantilla propia -->
+            <div id="push-extra"></div>
 
             <section class="section" style="padding-left:0; padding-right:0;">
+                <div class="section__title"><h2 id="push-summary-title">Resumen</h2></div>
+                <div class="card" id="push-summary"></div>
+            </section>
+
+            <section class="section" style="padding-left:0; padding-right:0;" id="push-movs-section">
                 <div class="section__title"><h2>Movimientos</h2><button class="section__link" data-action="Ver todos">Ver todos</button></div>
                 <div class="card" id="push-movs"></div>
             </section>
 
             <button class="login-button login-button--primary" id="push-cta">Continuar</button>
+        </div>
+    </div>
+
+    <!-- Modo finanzas: resumen consolidado de todos los productos -->
+    <div class="push-page" id="finance-page" role="dialog" aria-modal="true">
+        <div class="detail-topbar" id="finance-topbar">
+            <div class="detail-topbar__row">
+                <button class="icon-button" id="finance-back" aria-label="Volver">
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </button>
+                <span class="detail-topbar__title">Modo finanzas</span>
+            </div>
+        </div>
+        <div class="push-page__inner">
+            <h1 class="detail-title" id="finance-title">Modo finanzas</h1>
+            <p class="finance-subtitle">Todo tu dinero, en un solo lugar</p>
+
+            <div class="finance-hero">
+                <div class="finance-hero__item">
+                    <span class="finance-hero__label">Activos</span>
+                    <span class="finance-hero__value finance-hero__value--positive">$ 5.183,85</span>
+                </div>
+                <div class="finance-hero__divider"></div>
+                <div class="finance-hero__item">
+                    <span class="finance-hero__label">Pasivos</span>
+                    <span class="finance-hero__value finance-hero__value--negative">$ 7.395,50</span>
+                </div>
+            </div>
+            <div class="finance-networth">
+                <span class="material-symbols-rounded">trending_down</span>
+                Patrimonio neto: <strong>-$ 2.211,65</strong>
+            </div>
+
+            <section class="section" style="padding-left:0; padding-right:0;">
+                <div class="section__title"><h2>Cuentas</h2></div>
+                <div class="card">
+                    <button class="product-row" data-action="Cuenta Ahorro transaccional">
+                        <span class="avatar-lg"><span class="material-symbols-rounded">account_balance_wallet</span></span>
+                        <span class="product-row__info">
+                            <span class="product-row__name">Sueldo</span>
+                            <span class="product-row__sub">Ahorro transaccional</span>
+                        </span>
+                        <span class="product-row__right"><span class="product-row__amount">$ 100,00</span></span>
+                    </button>
+                    <button class="product-row" data-action="Cuenta Corriente">
+                        <span class="avatar-lg"><span class="material-symbols-rounded">payments</span></span>
+                        <span class="product-row__info">
+                            <span class="product-row__name">Sueldo</span>
+                            <span class="product-row__sub">Corriente</span>
+                        </span>
+                        <span class="product-row__right"><span class="product-row__amount">$ 1.440,35</span></span>
+                    </button>
+                    <div class="card__footer">
+                        <span class="card__footer-label">Saldo disponible</span>
+                        <span class="card__footer-value">$ 1.540,35</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" style="padding-left:0; padding-right:0;">
+                <div class="section__title"><h2>Metas de ahorro</h2></div>
+                <div class="card">
+                    <button class="goal-row" data-action="Meta Viaje de finde">
+                        <span class="avatar-lg"><span class="material-symbols-rounded">beach_access</span></span>
+                        <span class="goal-row__info">
+                            <span class="goal-row__name">Viaje de finde</span>
+                            <span class="goal-progress"><span class="goal-progress__fill" style="width: 30%;"></span></span>
+                        </span>
+                        <span class="goal-row__amount">$ 15,00</span>
+                    </button>
+                    <button class="goal-row" data-action="Meta Fondo de emergencia">
+                        <span class="avatar-lg"><span class="material-symbols-rounded">health_and_safety</span></span>
+                        <span class="goal-row__info">
+                            <span class="goal-row__name">Fondo de emergencia</span>
+                            <span class="goal-progress"><span class="goal-progress__fill" style="width: 62%;"></span></span>
+                        </span>
+                        <span class="goal-row__amount">$ 620,00</span>
+                    </button>
+                </div>
+            </section>
+
+            <section class="section" style="padding-left:0; padding-right:0;">
+                <div class="section__title"><h2>Tarjetas de crédito</h2></div>
+                <div class="card">
+                    <button class="product-row" data-action="Mastercard Black">
+                        <span class="card-thumb card-thumb--black">
+                            <span class="card-thumb__brand">BANCO<br>PICHINCHA</span>
+                            <span class="card-thumb__foot"><span class="mc-dots"><i></i><i></i></span></span>
+                        </span>
+                        <span class="product-row__info"><span class="product-row__name">Mastercard Black</span></span>
+                        <span class="product-row__right">
+                            <span class="product-row__label">Saldo a pagar</span>
+                            <span class="product-row__amount">$ 15,00</span>
+                        </span>
+                    </button>
+                    <button class="product-row" data-action="Diners Club">
+                        <span class="card-thumb card-thumb--diners">
+                            <span class="card-thumb__diners">Diners Club</span>
+                        </span>
+                        <span class="product-row__info"><span class="product-row__name">Diners Club</span></span>
+                        <span class="product-row__right">
+                            <span class="product-row__label">Saldo a pagar</span>
+                            <span class="product-row__amount">$ 0,00</span>
+                        </span>
+                    </button>
+                    <div class="card__footer">
+                        <span class="card__footer-label">Pendiente de pago</span>
+                        <span class="card__footer-value">$ 15,00</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" style="padding-left:0; padding-right:0;">
+                <div class="section__title"><h2>Préstamos</h2></div>
+                <div class="card">
+                    <button class="product-row" data-action="Préstamo de consumo">
+                        <span class="avatar-lg"><span class="material-symbols-rounded">real_estate_agent</span></span>
+                        <span class="product-row__info">
+                            <span class="product-row__name">Préstamo de consumo</span>
+                            <span class="product-row__sub">Cuota 6 de 36</span>
+                        </span>
+                        <span class="product-row__right">
+                            <span class="product-row__label">Próx. cuota</span>
+                            <span class="product-row__amount">$ 245,90</span>
+                        </span>
+                    </button>
+                    <div class="card__footer">
+                        <span class="card__footer-label">Saldo pendiente</span>
+                        <span class="card__footer-value">$ 7.380,50</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" style="padding-left:0; padding-right:0;">
+                <div class="section__title"><h2>Inversiones</h2></div>
+                <div class="card">
+                    <button class="product-row" data-action="Depósito a plazo">
+                        <span class="avatar-lg"><span class="material-symbols-rounded">trending_up</span></span>
+                        <span class="product-row__info">
+                            <span class="product-row__name">Depósito a plazo</span>
+                            <span class="product-row__sub">7,25% anual</span>
+                        </span>
+                        <span class="product-row__right"><span class="product-row__amount">$ 3.000,00</span></span>
+                    </button>
+                </div>
+            </section>
+
+            <section class="section" style="padding-left:0; padding-right:0;">
+                <div class="section__title"><h2>Seguros activos</h2></div>
+                <div class="card">
+                    <button class="product-row" data-action="Seguro de vida">
+                        <span class="avatar-lg"><span class="material-symbols-rounded">health_and_safety</span></span>
+                        <span class="product-row__info"><span class="product-row__name">Seguro de vida</span></span>
+                        <span class="product-row__right">
+                            <span class="product-row__label">Mensual</span>
+                            <span class="product-row__amount">$ 12,90</span>
+                        </span>
+                    </button>
+                    <button class="product-row" data-action="Seguro de tarjetas">
+                        <span class="avatar-lg"><span class="material-symbols-rounded">shield</span></span>
+                        <span class="product-row__info"><span class="product-row__name">Protección de tarjetas</span></span>
+                        <span class="product-row__right">
+                            <span class="product-row__label">Mensual</span>
+                            <span class="product-row__amount">$ 3,50</span>
+                        </span>
+                    </button>
+                </div>
+            </section>
         </div>
     </div>
 
@@ -3720,10 +4091,209 @@
             'Cuenta PRINCIPAL': 'account_balance_wallet'
         };
 
+        // Resumen genérico (fallback para acciones que no son un producto).
+        const DEFAULT_SUMMARY = {
+            title: 'Resumen',
+            stats: [
+                ['schedule', 'Disponible', 'Actualizado hoy', '$ 1.906,04', 'var(--bp-selection-bg-active)'],
+                ['trending_up', 'Ingresos del mes', 'Mayo 2026', '$ 2.430,00', '#1e9e5a'],
+                ['trending_down', 'Gastos del mes', 'Mayo 2026', '$ 1.284,45', '#f76800'],
+            ],
+        };
+
+        // Un "detalle de producto" real por cada fila clicable de Cuentas/
+        // Tarjetas/Préstamos/Inversiones/Seguros — antes cualquier producto
+        // abría el mismo resumen genérico (Disponible/Ingresos/Gastos) sin
+        // relación con lo que se tocó; ahora cada uno muestra sus propios
+        // datos (cupo, saldo a pagar, fecha de corte, etc.).
+        const PRODUCT_DETAILS = {
+            'Cuenta Ahorro transaccional': { icon: 'account_balance_wallet', stats: [
+                ['account_balance_wallet', 'Saldo disponible', '******7980', '$ 100,00', 'var(--bp-selection-bg-active)'],
+                ['trending_up', 'Interés generado', 'Este mes', '$ 0,42', '#1e9e5a'],
+            ]},
+            'Cuenta Corriente': { icon: 'payments', stats: [
+                ['account_balance_wallet', 'Saldo disponible', '******1234', '$ 1.440,35', 'var(--bp-selection-bg-active)'],
+                ['trending_down', 'Gastos del mes', 'Mayo 2026', '$ 812,40', '#f76800'],
+            ]},
+            'Visa Débito': { icon: 'credit_card', stats: [
+                ['account_balance_wallet', 'Cuenta asociada', 'Sueldo ******1234', '', 'var(--bp-selection-bg-active)'],
+                ['point_of_sale', 'Consumo del mes', 'Mayo 2026', '$ 312,45', '#f76800'],
+            ]},
+            'Mastercard Black': { icon: 'credit_card', stats: [
+                ['account_balance_wallet', 'Cupo disponible', 'De $ 5.000,00', '$ 4.985,00', '#1e9e5a'],
+                ['event', 'Saldo a pagar', 'Corte: 28 de cada mes', '$ 15,00', '#f76800'],
+                ['calendar_today', 'Fecha límite de pago', '', '05 jun', 'var(--bp-selection-bg-active)'],
+            ]},
+            'Diners Club': { icon: 'credit_card', stats: [
+                ['account_balance_wallet', 'Cupo disponible', 'De $ 2.000,00', '$ 2.000,00', '#1e9e5a'],
+                ['event', 'Saldo a pagar', 'Corte: 28 de cada mes', '$ 0,00', 'var(--bp-selection-bg-active)'],
+            ]},
+            'Tarjeta Movilidad': { icon: 'directions_bus', stats: [
+                ['account_balance_wallet', 'Saldo', 'Transporte y peajes', '$ 8,50', 'var(--bp-selection-bg-active)'],
+            ]},
+            'Préstamo de consumo': { icon: 'real_estate_agent', stats: [
+                ['account_balance', 'Saldo pendiente', 'De $ 9.000,00 originales', '$ 7.380,50', '#f76800'],
+                ['event', 'Próxima cuota', 'Cuota 6 de 36', '$ 245,90', 'var(--bp-selection-bg-active)'],
+                ['calendar_today', 'Fecha de pago', '', '05 jun', 'var(--bp-selection-bg-active)'],
+            ]},
+            'Depósito a plazo': { icon: 'trending_up', stats: [
+                ['savings', 'Capital invertido', 'Tasa 7,25% anual', '$ 3.000,00', 'var(--bp-selection-bg-active)'],
+                ['trending_up', 'Interés proyectado', 'Al vencimiento', '$ 217,50', '#1e9e5a'],
+                ['event', 'Vencimiento', '', '12 nov 2026', 'var(--bp-selection-bg-active)'],
+            ]},
+            'Seguro de vida': { icon: 'health_and_safety', stats: [
+                ['payments', 'Prima mensual', 'Débito automático', '$ 12,90', 'var(--bp-selection-bg-active)'],
+                ['event', 'Próxima renovación', '', '01 ene 2027', '#1e9e5a'],
+            ]},
+            'Seguro de tarjetas': { icon: 'shield', stats: [
+                ['payments', 'Prima mensual', 'Débito automático', '$ 3,50', 'var(--bp-selection-bg-active)'],
+                ['verified_user', 'Cobertura', 'Fraude y clonación', 'Activa', '#1e9e5a'],
+            ]},
+        };
+
+        // Patrón de QR falso pero visualmente convincente: 3 marcadores de
+        // esquina reales (borde negro, hueco blanco, centro negro, como
+        // cualquier QR) + módulos de datos con semilla fija (siempre el
+        // mismo patrón, no cambia en cada apertura).
+        function buildFakeQR(size = 21) {
+            const zones = [[0, 0], [size - 7, 0], [0, size - 7]];
+            function inFinder(x, y) {
+                return zones.find(([zx, zy]) => x >= zx && x < zx + 7 && y >= zy && y < zy + 7);
+            }
+            let seed = 1337;
+            function rand() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+            const cells = [];
+            for (let y = 0; y < size; y++) {
+                for (let x = 0; x < size; x++) {
+                    const zone = inFinder(x, y);
+                    let on;
+                    if (zone) {
+                        const lx = x - zone[0], ly = y - zone[1];
+                        on = lx === 0 || lx === 6 || ly === 0 || ly === 6 || (lx >= 2 && lx <= 4 && ly >= 2 && ly <= 4);
+                    } else {
+                        on = rand() > 0.56;
+                    }
+                    if (on) cells.push(`<rect x="${x}" y="${y}" width="1" height="1"/>`);
+                }
+            }
+            return `<svg viewBox="0 0 ${size} ${size}" fill="#0f265c" xmlns="http://www.w3.org/2000/svg">${cells.join('')}</svg>`;
+        }
+        const FAKE_QR_SVG = buildFakeQR();
+
+        const BENEFICIARIES = [
+            ['MJ', 'María José', '#276db6'], ['CA', 'Carlos A.', '#1e9e5a'],
+            ['LP', 'Luis P.', '#8e44ad'], ['SG', 'Sofía G.', '#e67e22'], ['DR', 'Diego R.', '#c0392b'],
+        ];
+        const SERVICE_BILLERS = [
+            ['bolt', 'Empresa Eléctrica Quito', 'Luz', '#f76800'],
+            ['water_drop', 'EPMAPS', 'Agua potable', '#2f7abf'],
+            ['wifi', 'CNT Internet', 'Internet y TV', '#8e44ad'],
+            ['smartphone', 'Claro', 'Plan celular', '#c0392b'],
+            ['home_work', 'Municipio de Quito', 'Predios e impuestos', '#1e9e5a'],
+        ];
+        const CARRIERS = ['Claro', 'Movistar', 'CNT'];
+        const RECHARGE_AMOUNTS = ['$ 3', '$ 5', '$ 10', '$ 15'];
+
+        // Plantillas por acción: reemplazan el bloque genérico de
+        // ícono+Resumen cuando la acción tiene un flujo propio reconocible.
+        const ACTION_EXTRAS = {
+            'Pagar con QR': () => `
+                <div class="push-qr">
+                    <div class="push-qr__code">${FAKE_QR_SVG}</div>
+                    <p class="push-qr__caption">Apunta la cámara al código QR del negocio para pagar al instante.</p>
+                </div>`,
+            'Cobrar con QR': () => `
+                <div class="push-qr">
+                    <div class="push-qr__amount">$ 0,00</div>
+                    <div class="push-qr__code">${FAKE_QR_SVG}</div>
+                    <p class="push-qr__caption">Comparte este código para que te paguen desde cualquier banco.</p>
+                </div>`,
+            'Transferir dinero': () => `
+                <div class="push-beneficiaries">
+                    <button class="push-beneficiary push-beneficiary--new" data-action="Nuevo beneficiario">
+                        <span class="push-beneficiary__avatar"><span class="material-symbols-rounded">add</span></span>
+                        <span class="push-beneficiary__name">Nuevo</span>
+                    </button>
+                    ${BENEFICIARIES.map(b => `
+                        <button class="push-beneficiary" data-action="Transferir a ${b[1]}">
+                            <span class="push-beneficiary__avatar" style="background:${b[2]};">${b[0]}</span>
+                            <span class="push-beneficiary__name">${b[1].split(' ')[0]}</span>
+                        </button>`).join('')}
+                </div>`,
+            'Pagar servicios': () => `
+                <div class="card">
+                    ${SERVICE_BILLERS.map(s => `
+                        <button class="sub-item" data-action="Pagar ${s[1]}">
+                            <span class="sub-item__logo" style="background:${s[3]};"><span class="material-symbols-rounded">${s[0]}</span></span>
+                            <span class="sub-item__info"><span class="sub-item__name">${s[1]}</span><span class="sub-item__meta">${s[2]}</span></span>
+                            <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
+                        </button>`).join('')}
+                </div>`,
+            'Recargar celular': () => `
+                <p class="finance-subtitle" style="margin-top:0;">Operador</p>
+                <div class="push-chip-row">
+                    ${CARRIERS.map((c, i) => `<button class="push-chip${i === 0 ? ' is-selected' : ''}" data-action="Operador ${c}">${c}</button>`).join('')}
+                </div>
+                <p class="finance-subtitle">Monto</p>
+                <div class="push-chip-row">
+                    ${RECHARGE_AMOUNTS.map((a, i) => `<button class="push-chip${i === 1 ? ' is-selected' : ''}" data-action="Recargar ${a}">${a}</button>`).join('')}
+                </div>`,
+        };
+
+        function renderPushExtra(title) {
+            const build = ACTION_EXTRAS[title];
+            const extra = document.getElementById('push-extra');
+            const hero = document.getElementById('push-hero');
+            extra.innerHTML = build ? build() : '';
+            // Con una plantilla propia, el ícono genérico amarillo sobra —
+            // el QR/los chips/los beneficiarios ya comunican la acción.
+            hero.classList.toggle('is-hidden', !!build);
+            // Rewire: el contenido recién insertado también usa
+            // data-action, pero se generó después de que el listener
+            // delegado original recorrió el DOM — se cablea aparte.
+            extra.querySelectorAll('[data-action]').forEach(el => {
+                el.addEventListener('click', () => {
+                    if (el.matches('.push-chip')) {
+                        el.parentElement.querySelectorAll('.push-chip').forEach(c => c.classList.remove('is-selected'));
+                        el.classList.add('is-selected');
+                    } else {
+                        showToast(el.dataset.action);
+                    }
+                });
+            });
+        }
+
+        function renderPushSummary(title) {
+            const product = PRODUCT_DETAILS[title];
+            const summary = product ? { title: 'Detalle', stats: product.stats } : DEFAULT_SUMMARY;
+            document.getElementById('push-summary-title').textContent = summary.title;
+            document.getElementById('push-summary').innerHTML = summary.stats.map(s => `
+                <div class="sub-item">
+                    <span class="sub-item__logo" style="background:${s[4]};"><span class="material-symbols-rounded">${s[0]}</span></span>
+                    <span class="sub-item__info"><span class="sub-item__name">${s[1]}</span><span class="sub-item__meta">${s[2]}</span></span>
+                    ${s[3] ? `<span class="sub-item__price">${s[3]}</span>` : ''}
+                </div>`).join('');
+            // Los productos no-financieros de consumo diario (cuentas,
+            // tarjetas) sí tienen sentido con una lista de movimientos
+            // debajo; preservado siempre, ya que aplica a todos los casos
+            // reales de esta demo.
+            document.getElementById('push-movs-section').style.display = '';
+        }
+
         function openPushPage(title, originEl) {
             pushTitle.textContent = title;
             pushTopbarTitle.textContent = title;
-            pushHeroIcon.textContent = pushIcons[title] || 'bolt';
+            renderPushExtra(title);
+            // Con plantilla propia (QR, transferir, servicios, recargar) el
+            // Resumen/Movimientos genéricos no aportan nada a ESA pantalla
+            // específica — se ocultan para no diluir el flujo real con
+            // datos que no vienen al caso.
+            const hasExtra = !!ACTION_EXTRAS[title];
+            document.querySelectorAll('#push-page .section').forEach(s => {
+                s.style.display = hasExtra ? 'none' : '';
+            });
+            if (!hasExtra) renderPushSummary(title);
+            pushHeroIcon.textContent = (PRODUCT_DETAILS[title] && PRODUCT_DETAILS[title].icon) || pushIcons[title] || 'bolt';
             pushPage.classList.remove('scrolled', 'grow', 'closing-grow');
             pushPage.scrollTop = 0;
             document.body.style.overflow = 'hidden';
@@ -3808,12 +4378,35 @@
             if (dx > 90) closePushPage();
         });
 
+        // ---------- Modo finanzas: resumen consolidado de productos ----------
+        const financePage = document.getElementById('finance-page');
+        setupCollapsingHeader(financePage, document.getElementById('finance-title'), document.getElementById('finance-topbar'));
+
+        function openFinancePage() {
+            financePage.classList.remove('scrolled');
+            financePage.scrollTop = 0;
+            document.body.style.overflow = 'hidden';
+            financePage.classList.add('open');
+        }
+        function closeFinancePage() {
+            if (!financePage.classList.contains('open')) return;
+            financePage.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+        document.getElementById('finance-back').addEventListener('click', closeFinancePage);
+        window.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && financePage.classList.contains('open')) closeFinancePage();
+        });
+
         // Cualquier elemento con data-action da feedback.
-        // Las acciones rápidas y destacados abren la página genérica (push).
+        // Las acciones rápidas, destacados y filas de producto abren una
+        // página (push o resumen); el resto sólo confirma con un toast.
         document.querySelectorAll('[data-action]').forEach(el => {
             el.addEventListener('click', (e) => {
-                if (el.matches('.quick-action, .login-feature')) {
-                    openPushPage(el.dataset.action, el); // crece desde el botón
+                if (el.dataset.action === 'Modo finanzas') {
+                    openFinancePage();
+                } else if (el.matches('.quick-action, .login-feature, .product-row')) {
+                    openPushPage(el.dataset.action, el); // crece desde el botón/fila
                 } else {
                     showToast(el.dataset.action);
                 }
@@ -3994,15 +4587,15 @@
         let currentView = 0;
         let viewSwitchTimer = null;
 
-        // "Fade through": la vista saliente se desvanece del todo (150ms)
-        // ANTES de que la entrante aparezca (sin solaparse ni pisarse en el
-        // layout), y ambas comparten el mismo lenguaje de fundido+escala. Se
-        // quitó el flasheo de skeleton que corría en Solicitudes/Beneficios/
-        // Tienda/Perfil: esas vistas son contenido estático (placeholders o
-        // el perfil), nunca "cargan" nada distinto, así que el flash sólo
-        // añadía movimiento sin significado.
-        const VIEW_OUT_MS = 150;
-        const VIEW_IN_MS = 320;
+        // Crossfade real: la entrante toma su lugar en flujo normal DE
+        // INMEDIATO (invisible, vía .entering) y la saliente se despega a
+        // position:absolute superpuesta — ambas visibles y animando en el
+        // MISMO frame, no una tras otra con un hueco en blanco entremedio
+        // (así se sentía la versión anterior, secuencial). Se quitó el
+        // flasheo de skeleton que corría en Solicitudes/Beneficios/Tienda/
+        // Perfil: esas vistas son contenido estático, nunca "cargan" nada
+        // distinto, así que el flash sólo añadía movimiento sin significado.
+        const VIEW_FADE_MS = 300;
 
         function switchView(index) {
             if (index === currentView) return;
@@ -4015,20 +4608,18 @@
             document.querySelector('.tabs').classList.toggle('is-hidden', index !== 0);
             document.querySelector('.profile-story').classList.toggle('is-hidden', index !== 0);
 
-            prev.classList.remove('entering');
-            prev.classList.add('leaving');
+            next.classList.add('active', 'entering');
+            window.scrollTo({ top: 0 });
+            if (index === 0) simulateLoad(700); // Destacado sí carga datos reales, arranca ya
+
+            requestAnimationFrame(() => {
+                prev.classList.add('leaving');
+                next.classList.remove('entering'); // dispara su fade-in a la vez que el fade-out de prev
+            });
+
             viewSwitchTimer = setTimeout(() => {
                 prev.classList.remove('active', 'leaving');
-
-                next.classList.add('active');
-                window.scrollTo({ top: 0 });
-                requestAnimationFrame(() => {
-                    next.classList.add('entering');
-                    setTimeout(() => next.classList.remove('entering'), VIEW_IN_MS + 20);
-                });
-
-                if (index === 0) simulateLoad(700); // Destacado sí carga datos reales
-            }, VIEW_OUT_MS);
+            }, VIEW_FADE_MS);
         }
 
         navItems.forEach((item, index) => {
@@ -4335,23 +4926,23 @@
 
         /*
          * Morph "reveal" entre la tarjeta de Destacado y la de detalle: NO
-         * es un scale(). Antes se calculaba un transform con escala NO
-         * uniforme (sx ≠ sy, porque la tarjeta chica es 88px de alto y la
-         * grande ronda 270px, mientras el ancho apenas cambia) — eso
-         * ESTIRABA la imagen completa (que en el detalle se ve entera, sin
-         * recortar) para que cupiera en la proporción achatada de la chica,
-         * y luego la "desestiraba" de vuelta según crecía. Se veía como una
-         * foto deformándose, no como el mismo objeto.
+         * es un scale() (eso estiraba la imagen no-uniformemente, como
+         * antes) NI tampoco anima width/height directamente. width/height
+         * son propiedades de LAYOUT: animarlas fuerza un recálculo de
+         * layout en cada frame (reflow), lo cual en un teléfono real —a
+         * diferencia de este navegador de escritorio— se nota como un
+         * recorrido con saltos/tirones en vez de fluido.
          *
-         * En vez de eso: cdCard mide su alto NATURAL (el de la imagen
-         * completa) y anima directamente ESE alto real (no un scale) desde
-         * el alto de la tarjeta chica hasta el natural. Como cdCard tiene
-         * overflow:hidden, mientras el alto está reducido simplemente se ve
-         * menos imagen (recortada por abajo, igual que hace object-fit
-         * arriba en Destacado) — la imagen interior nunca cambia de escala,
-         * sólo se revela más o menos de ella. El ancho, que ya es casi
-         * idéntico entre ambos contextos (misma columna de 24px de margen),
-         * se ajusta igual por si acaso difiere.
+         * En su lugar se usa clip-path (+ transform:translate para la
+         * posición): cdCard se queda SIEMPRE en su tamaño natural completo
+         * en el layout — nunca cambia de tamaño de verdad — y sólo se
+         * recorta visualmente con clip-path desde/hacia la ventana del
+         * tamaño de Destacado. clip-path y transform son ambas propiedades
+         * que el compositor anima sin tocar layout, así el recorrido es
+         * tan fluido como cualquier transform puro. De paso, clip-path
+         * inset() acepta su propio radio ("round"), así que la esquina de
+         * 8px (Destacado) a 12px (detalle) se interpola como parte de la
+         * misma animación, sin quedar a medio camino en un valor raro.
          */
         function morphMetrics() {
             const feat = featCard.getBoundingClientRect();
@@ -4360,12 +4951,18 @@
             return {
                 dx: feat.left - rect.left,
                 dy: feat.top - rect.top,
-                fromW: feat.width,
-                fromH: feat.height,
-                toW: rect.width,
-                toH: rect.height,
+                clipRight: Math.max(0, rect.width - feat.width),
+                clipBottom: Math.max(0, rect.height - feat.height),
             };
         }
+
+        // Deben calzar con --bp-radius-sm / --bp-radius-md en :root.
+        const FEAT_RADIUS = 8;
+        const DETAIL_RADIUS = 12;
+        function clipToFeatured(m) {
+            return `inset(0px ${m.clipRight}px ${m.clipBottom}px 0px round ${FEAT_RADIUS}px)`;
+        }
+        const CLIP_FULL = `inset(0px round ${DETAIL_RADIUS}px)`;
 
         // Ancla el origen de la animación del panel (.card-detail.entering /
         // .closing) al centro real de la tarjeta destacada en pantalla, para
@@ -4403,23 +5000,19 @@
             cardDetail.scrollTop = 0;
             document.body.style.overflow = 'hidden';
 
-            // Extrapolación: la tarjeta arranca en la posición y el alto de
-            // Destacado (recortada, sin distorsión) y crece hacia su alto
-            // natural, revelando el resto de la imagen.
+            // La tarjeta arranca recortada al tamaño/posición/radio de
+            // Destacado y se revela hacia su forma completa (ver comentario
+            // de morphMetrics: clip-path + translate, nunca width/height).
             const m = morphMetrics();
             if (m) {
                 cardDetail.classList.add('morphing');
                 cdCard.style.transition = 'none';
                 cdCard.style.transform = `translate(${m.dx}px, ${m.dy}px)`;
-                cdCard.style.width = m.fromW + 'px';
-                cdCard.style.height = m.fromH + 'px';
-                // fuerza el layout antes de animar hacia su lugar
+                cdCard.style.clipPath = clipToFeatured(m);
                 requestAnimationFrame(() => requestAnimationFrame(() => {
-                    cdCard.style.transition =
-                        `transform ${OPEN_MS}ms ${MORPH_EASE}, width ${OPEN_MS}ms ${MORPH_EASE}, height ${OPEN_MS}ms ${MORPH_EASE}`;
+                    cdCard.style.transition = `transform ${OPEN_MS}ms ${MORPH_EASE}, clip-path ${OPEN_MS}ms ${MORPH_EASE}`;
                     cdCard.style.transform = 'translate(0, 0)';
-                    cdCard.style.width = m.toW + 'px';
-                    cdCard.style.height = m.toH + 'px';
+                    cdCard.style.clipPath = CLIP_FULL;
                 }));
                 // El contenido (título/acciones) arranca un poco después que
                 // el panel y la tarjeta, para que estas "lideren" el
@@ -4429,8 +5022,7 @@
                     cardDetail.classList.remove('entering');
                     cdCard.style.transition = '';
                     cdCard.style.transform = '';
-                    cdCard.style.width = '';
-                    cdCard.style.height = '';
+                    cdCard.style.clipPath = '';
                 }, OPEN_MS + 40);
             } else {
                 cardDetail.classList.remove('morphing');
@@ -4457,24 +5049,19 @@
             const m = inView ? morphMetrics() : null;
             if (m) {
                 setMorphOrigin();
-                // El ancho/alto de cdCard son "auto" por CSS (los define el
-                // contenido); un navegador no anima de forma fiable una
-                // transición que PARTE de "auto" — salta directo al valor
-                // final aunque se declare transition-duration. Por eso,
-                // igual que en openCardDetail, primero se fija el tamaño
-                // NATURAL actual como valor explícito (sin transición, es
-                // un no-op visual) y recién en el siguiente frame se anima
-                // hacia el tamaño de Destacado — así ambos extremos de la
-                // transición son números concretos, nunca "auto".
+                // clip-path parte de "sin recortar" (su valor por CSS es
+                // "none", no animable de forma fiable) — igual que con
+                // width/height antes, primero se fija el estado actual
+                // (sin recorte, transition:none, un no-op visual ya que es
+                // lo que ya se ve) y recién en el siguiente frame se anima
+                // hacia el recorte de Destacado, así ambos extremos son
+                // formas concretas.
                 cdCard.style.transition = 'none';
-                cdCard.style.width = m.toW + 'px';
-                cdCard.style.height = m.toH + 'px';
+                cdCard.style.clipPath = CLIP_FULL;
                 requestAnimationFrame(() => requestAnimationFrame(() => {
-                    cdCard.style.transition =
-                        `transform ${CLOSE_MS}ms ${MORPH_EASE}, width ${CLOSE_MS}ms ${MORPH_EASE}, height ${CLOSE_MS}ms ${MORPH_EASE}`;
+                    cdCard.style.transition = `transform ${CLOSE_MS}ms ${MORPH_EASE}, clip-path ${CLOSE_MS}ms ${MORPH_EASE}`;
                     cdCard.style.transform = `translate(${m.dx}px, ${m.dy}px)`;
-                    cdCard.style.width = m.fromW + 'px';
-                    cdCard.style.height = m.fromH + 'px';
+                    cdCard.style.clipPath = clipToFeatured(m);
                 }));
             } else {
                 cardDetail.style.removeProperty('--cd-origin-x');
@@ -4485,8 +5072,7 @@
                 cardDetail.classList.remove('open', 'closing', 'morphing');
                 cdCard.style.transition = '';
                 cdCard.style.transform = '';
-                cdCard.style.width = '';
-                cdCard.style.height = '';
+                cdCard.style.clipPath = '';
                 cdInner.style.transform = '';
                 cdInner.style.opacity = '';
                 cdInner.style.transition = '';
