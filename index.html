@@ -284,16 +284,27 @@
             background: var(--bp-selection-bg-active-subtle);
         }
 
-        /* ---------- Tabs ---------- */
+        /* ---------- Tabs ----------
+           "Modo finanzas" queda fijo fuera de la zona con scroll: es un
+           acceso aparte (cambia de modo), no una sección más de la lista
+           de productos, así que no debe desplazarse junto con ellas. */
         .tabs {
             display: flex;
+            align-items: center;
             gap: 8px;
-            padding: 16px 24px;
-            overflow-x: auto;
-            scrollbar-width: none;
+            padding: 16px 0 16px 24px;
         }
 
-        .tabs::-webkit-scrollbar {
+        .tabs__scroll {
+            display: flex;
+            gap: 8px;
+            min-width: 0; /* permite que este flex-item se achique y sí scrollee */
+            overflow-x: auto;
+            scrollbar-width: none;
+            padding-right: 24px;
+        }
+
+        .tabs__scroll::-webkit-scrollbar {
             display: none;
         }
 
@@ -480,7 +491,15 @@
 
         /* Arte de la tarjeta: el mismo asset que el detalle, recortado desde
            arriba. El logo de Banco Pichincha y el VISA vienen impresos en la
-           ilustración, por eso no se superponen como elementos aparte. */
+           ilustración, por eso no se superponen como elementos aparte.
+           border-radius: inherit además del overflow:hidden del contenedor:
+           .debit-card tiene transform-style:preserve-3d (para el tilt del
+           giroscopio), lo que lo promueve a su propia capa compuesta — en
+           esa situación algunos navegadores (Safari/iOS sobre todo) no
+           recortan correctamente al hijo con el overflow:hidden del padre,
+           y las esquinas rectas de la imagen se asoman por fuera del radio
+           redondeado. Redondeando también la imagen queda a salvo aunque
+           el clip del padre falle. */
         .debit-card__art {
             position: absolute;
             inset: 0;
@@ -490,9 +509,10 @@
             object-position: top center;
             display: block;
             pointer-events: none;
+            border-radius: inherit;
         }
 
-        /* Capa de resplandores (reacciona al giroscopio / mouse).
+        /* Capa de resplandores (reacciona al giroscopio).
            Sobre la ilustración se mezcla en soft-light para que lea como luz
            recorriendo la tarjeta y no como manchas que tapen al jugador. */
         .debit-card__bg {
@@ -592,65 +612,12 @@
             }
         }
 
-        /* Franja de datos sobre el arte (Figma: bp-information; blur token =
-           --bp-semantic-effects-blur-overlay: 24px). El blur no corta en una
-           línea recta: se enmascara con un degradado (mask-image) para que
-           el desenfoque crezca progresivo de arriba a abajo, igual que el
-           fondo. Antes el borde del blur era parejo y de solo 12px, por eso
-           se veía "sucio" (textura de la ilustración a medio difuminar) y
-           desalineado con el resto de la tarjeta. */
-        .debit-card__info {
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 3;
-            height: 56px;
-            padding: 0 16px 10px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            gap: 2px;
-            color: var(--bp-text-brand);
-            -webkit-backdrop-filter: blur(24px);
-            backdrop-filter: blur(24px);
-            background: linear-gradient(to bottom,
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 0.14) 45%,
-                rgba(255, 255, 255, 0.26) 100%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.5) 40%, #000 75%);
-            mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.5) 40%, #000 75%);
-        }
-
-        /* Sin soporte de backdrop-filter (Firefox antiguo) el texto quedaría
-           sobre la ilustración sin contraste: se cae a un velo sólido y sin
-           máscara (que también depende de que el navegador entienda mask). */
-        @supports not ((backdrop-filter: blur(24px)) or (-webkit-backdrop-filter: blur(24px))) {
-            .debit-card__info {
-                background: rgba(255, 221, 0, 0.82);
-                -webkit-mask-image: none;
-                mask-image: none;
-            }
-        }
-
-        /* Mismo tratamiento que .cd-data__label/__value (el reverso de la
-           tarjeta de detalle, el otro lugar de la app donde se lee un
-           número de tarjeta sobre la superficie de la tarjeta): antes esta
-           etiqueta usaba mayúsculas + 600 + letter-spacing 0.3px, una
-           combinación que no aparece en ningún otro lado de la app. */
-        .debit-card__label {
-            font-size: 11px;
-            font-weight: 500;
-            letter-spacing: 0.3px;
-            opacity: 0.75;
-        }
-
-        .debit-card__number {
-            font-size: 16px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            font-variant-numeric: tabular-nums;
-        }
+        /* Sin texto ni número superpuestos: la tarjeta destacada muestra
+           sólo la ilustración limpia (el detalle, un tap más adentro, ya
+           tiene los datos). Antes había una franja con blur para que la
+           etiqueta se leyera sobre el arte — al quitar el texto esa franja
+           dejaba de tener sentido y sólo se veía como una mancha borrosa
+           sin motivo en la parte baja de la tarjeta. */
 
         /* ---------- Quick actions ---------- */
         .quick-actions {
@@ -696,7 +663,6 @@
 
         .quick-action:active .quick-action__icon {
             transform: scale(0.85);
-            box-shadow: 0 2px 8px rgba(47, 122, 191, 0.2);
         }
 
         .quick-action__label {
@@ -904,14 +870,15 @@
             justify-content: space-between;
             padding: 5px 7px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(15, 38, 92, 0.2);
         }
         .card-thumb--visa { background: #ffdd00; }
         .card-thumb--black { background: linear-gradient(135deg, #2b2d33, #060606); }
-        .card-thumb--diners { background: #eef1f5; box-shadow: inset 0 0 0 1px rgba(15, 38, 92, 0.1); }
+        /* diners/ghost son claras: necesitan un borde para definirse contra
+           el fondo blanco de la fila (antes era un box-shadow inset) */
+        .card-thumb--diners { background: #eef1f5; border: 1px solid rgba(15, 38, 92, 0.1); }
         .card-thumb--ghost {
             background: #fff;
-            box-shadow: inset 0 0 0 1.5px rgba(15, 38, 92, 0.12);
+            border: 1.5px solid rgba(15, 38, 92, 0.12);
             opacity: 0.55;
         }
         .card-thumb__brand { font-size: 6px; font-weight: 800; letter-spacing: 0.2px; color: #0f265c; }
@@ -1168,7 +1135,6 @@
             transition: opacity 0.25s ease, transform 0.25s ease;
             z-index: 100;
             white-space: nowrap;
-            box-shadow: 0 4px 16px rgba(15, 38, 92, 0.3);
         }
 
         .toast.show {
@@ -1212,7 +1178,6 @@
             padding: 32px;
             max-width: 340px;
             text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             animation: contentSlideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
@@ -1452,7 +1417,6 @@
             z-index: 160;
             background: var(--bp-surface-container);
             border-radius: 20px 20px 0 0;
-            box-shadow: 0 -8px 40px rgba(15, 38, 92, 0.18);
             transform: translate(-50%, 100%);
             transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
             padding: 8px 16px calc(24px + env(safe-area-inset-bottom, 0px));
@@ -2332,7 +2296,6 @@
             flex: 0 0 auto;
             background: var(--bp-surface-container);
             border-radius: 24px 24px 0 0;
-            box-shadow: 0 -8px 30px rgba(15, 38, 92, 0.06);
             padding: 20px 24px calc(16px + env(safe-area-inset-bottom, 0px));
             display: flex;
             flex-direction: column;
@@ -2512,7 +2475,6 @@
             transition: transform 0.36s cubic-bezier(0.32, 0.72, 0, 1),
                         visibility 0s linear 0.36s;
             visibility: hidden;
-            box-shadow: -12px 0 30px rgba(15, 38, 92, 0.14);
         }
 
         .push-page.open {
@@ -2562,7 +2524,11 @@
             top: 0;
             z-index: 10;
             background: transparent;
-            transition: background 0.25s ease, box-shadow 0.25s ease;
+            /* borde inferior transparente desde el inicio (mismo ancho
+               siempre) para que sólo el color transicione al colapsar, sin
+               saltos de layout */
+            border-bottom: 1px solid transparent;
+            transition: background 0.25s ease, border-color 0.25s ease;
         }
 
         .detail-topbar__row {
@@ -2593,7 +2559,7 @@
             background: var(--bp-surface-fixed);
             -webkit-backdrop-filter: blur(14px) saturate(180%);
             backdrop-filter: blur(14px) saturate(180%);
-            box-shadow: 0 1px 0 rgba(15, 38, 92, 0.08);
+            border-bottom-color: rgba(15, 38, 92, 0.08);
         }
 
         .push-page.scrolled .detail-topbar__title,
@@ -2712,11 +2678,13 @@
                 margin: 0 auto;
             }
 
-            /* Home: columna con marco lateral */
+            /* Home: columna con marco lateral (un borde fino, no una sombra
+               de elevación — no es el estilo de la app) */
             #home-page.page {
                 background: var(--bp-surface-page);
                 min-height: 100vh;
-                box-shadow: 0 0 0 1px rgba(15, 38, 92, 0.05), 0 24px 70px rgba(15, 38, 92, 0.16);
+                border-left: 1px solid rgba(15, 38, 92, 0.08);
+                border-right: 1px solid rgba(15, 38, 92, 0.08);
             }
 
             /* Overlays fijos centrados a la misma columna */
@@ -2725,7 +2693,8 @@
                 left: 50%;
                 right: auto;
                 transform: translateX(-50%);
-                box-shadow: 0 0 0 1px rgba(15, 38, 92, 0.05), 0 24px 70px rgba(15, 38, 92, 0.16);
+                border-left: 1px solid rgba(15, 38, 92, 0.08);
+                border-right: 1px solid rgba(15, 38, 92, 0.08);
             }
 
             /* Nav inferior alineado a la columna, no a todo el ancho */
@@ -2739,7 +2708,6 @@
                 border-right: 1px solid rgba(15, 38, 92, 0.06);
             }
 
-            /* En escritorio no hay giroscopio: el hover del mouse basta */
             .debit-card { cursor: pointer; }
         }
 
@@ -2865,12 +2833,14 @@
                 <button class="tab" data-action="Modo finanzas" aria-label="Modo finanzas">
                     <span class="material-symbols-rounded">monitoring</span>
                 </button>
-                <button class="tab active" data-panel="Destacado">Destacado</button>
-                <button class="tab" data-panel="Cuentas">Cuentas</button>
-                <button class="tab" data-panel="Tarjetas">Tarjetas</button>
-                <button class="tab" data-panel="Prestamos">Préstamos</button>
-                <button class="tab" data-panel="Inversiones">Inversiones</button>
-                <button class="tab" data-panel="Seguros">Seguros</button>
+                <div class="tabs__scroll">
+                    <button class="tab active" data-panel="Destacado">Destacado</button>
+                    <button class="tab" data-panel="Cuentas">Cuentas</button>
+                    <button class="tab" data-panel="Tarjetas">Tarjetas</button>
+                    <button class="tab" data-panel="Prestamos">Préstamos</button>
+                    <button class="tab" data-panel="Inversiones">Inversiones</button>
+                    <button class="tab" data-panel="Seguros">Seguros</button>
+                </div>
             </nav>
         </header>
 
@@ -2927,10 +2897,6 @@
                             <div class="glow glow--sm"></div>
                         </div>
                         <div class="debit-card__shine"></div>
-                        <div class="debit-card__info">
-                            <div class="debit-card__label">Tarjeta Débito Digital</div>
-                            <div class="debit-card__number">1234 **** **** 1234</div>
-                        </div>
                     </button>
                 </div>
             </div>
@@ -4258,18 +4224,9 @@
             }
         }
 
-        // Fallback de mouse (desktop)
-        window.addEventListener('mousemove', e => {
-            if (gyroActive) return;
-            const r = card.getBoundingClientRect();
-            if (r.top < 0 || r.bottom > window.innerHeight) return; // fuera de pantalla
-            const cx = r.left + r.width / 2;
-            const cy = r.top + r.height / 2;
-            const dx = (e.clientX - cx) / r.width;
-            const dy = (e.clientY - cy) / r.height;
-            targetX = Math.max(-0.5, Math.min(0.5, dx));
-            targetY = Math.max(-0.5, Math.min(0.5, dy));
-        });
+        // Nota: sin fallback de mouse a propósito — es una app móvil, el
+        // resplandor sólo reacciona al giroscopio real. En escritorio (sin
+        // sensores) la tarjeta queda simplemente estática.
 
         // ---------- Bottom sheet ----------
         const sheet = document.getElementById('sheet');
