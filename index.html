@@ -20,33 +20,84 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0">
 
+    <!-- Revela los íconos (ocultos por CSS) sólo cuando la fuente real está
+         cargada. Si el CDN de Google Fonts está bloqueado o caído, los
+         íconos quedan invisibles en vez de mostrar el nombre del ligature
+         como texto ("search", "notifications"...).
+
+         No se usa document.fonts.check(): en algunos entornos (sandboxes,
+         ciertos Chromium headless) devuelve true por coincidencia de nombre
+         aunque la fuente nunca haya cargado — falso positivo comprobado, que
+         dejaba pasar el texto crudo del ligature. En su lugar se mide el
+         ancho real de un glifo de prueba: un ícono real es ~cuadrado a un
+         tamaño dado; el texto plano de respaldo ("settings") es mucho más
+         ancho. Es la señal directa de lo que el usuario vería. -->
+    <script>
+        (function () {
+            function reveal() { document.documentElement.classList.add('icons-ready'); }
+            function iconFontLoaded() {
+                var test = document.createElement('span');
+                test.className = 'material-symbols-rounded';
+                test.textContent = 'settings';
+                test.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font-size:48px;left:-9999px;top:-9999px;';
+                document.body.appendChild(test);
+                var w = test.offsetWidth;
+                document.body.removeChild(test);
+                return w > 0 && w < 60; // glifo real ≈ 48-54px; "settings" sin la fuente mide 200px+
+            }
+            function start() {
+                if (iconFontLoaded()) { reveal(); return; }
+                var tries = 0;
+                var poll = setInterval(function () {
+                    tries++;
+                    if (iconFontLoaded()) { clearInterval(poll); reveal(); }
+                    else if (tries >= 25) { clearInterval(poll); } // ~5s: se rinde, íconos quedan ocultos
+                }, 200);
+            }
+            // Este script corre en <head>: aún no existe <body> para medir.
+            if (document.body) start();
+            else document.addEventListener('DOMContentLoaded', start);
+        })();
+    </script>
+
     <!-- Biometría real (WebAuthn). Debe cargar antes del script inline y app.js. -->
     <script src="./webauthn.js"></script>
 
     <title>Banca Móvil - Banco Pichincha</title>
     <style>
+        /* Una sola familia "Prelo" con las 4 variantes registradas por peso
+           real (400/500/600/700). Antes cada variante era una @font-face con
+           un nombre de familia distinto y ningún elemento referenciaba
+           "Prelo bold": todo el texto en negrita (font-weight 700) se
+           renderizaba con negrita SINTÉTICA sobre la cara Medium. Al unificar
+           la familia, el navegador elige automáticamente el archivo real que
+           corresponde a cada peso solicitado. */
         @font-face {
             font-display: swap;
-            font-family: "Prelo book";
+            font-family: "Prelo";
+            font-weight: 400;
             src: url("https://pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-book.woff2") format("woff2");
         }
 
         @font-face {
             font-display: swap;
-            font-family: "Prelo bold";
-            src: url("https://pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-bold.woff2") format("woff2");
+            font-family: "Prelo";
+            font-weight: 500;
+            src: url("https://www.pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-medium.woff2") format("woff2");
         }
 
         @font-face {
             font-display: swap;
-            font-family: "Prelo semibold";
+            font-family: "Prelo";
+            font-weight: 600;
             src: url("https://pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-semibold.woff2") format("woff2");
         }
 
         @font-face {
             font-display: swap;
-            font-family: "Prelo medium";
-            src: url("https://www.pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-medium.woff2") format("woff2");
+            font-family: "Prelo";
+            font-weight: 700;
+            src: url("https://pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-bold.woff2") format("woff2");
         }
 
         :root {
@@ -72,6 +123,7 @@
             --bp-status-warning-bg-subtle: #fef0e5;
             --bp-status-warning-bg: #f76800;
             --bp-border-elevated: rgba(47, 49, 56, 0.04);
+            --bp-icon-secondary-fg: #104798; /* Figma: interaction-secondary-fg (quick actions) */
             --bp-radius-md: 12px;
             --bp-radius-sm: 8px;
         }
@@ -80,9 +132,19 @@
             box-sizing: border-box;
         }
 
+        /* Si la hoja de estilos de Google Fonts no carga (red bloqueada,
+           CDN caído), el navegador renderiza el nombre del ligature como
+           texto plano ("search", "notifications"...). Se oculta por
+           defecto con visibility (no display, para no mover el layout) y
+           sólo se revela cuando JS confirma que la fuente real cargó. */
         .material-symbols-rounded {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
             user-select: none;
+            visibility: hidden;
+        }
+
+        html.icons-ready .material-symbols-rounded {
+            visibility: visible;
         }
 
         html {
@@ -105,7 +167,8 @@
 
         body {
             margin: 0; /* elimina el margen por defecto del navegador (8px) */
-            font-family: 'Prelo medium', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Prelo', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 500; /* peso por defecto = cara Medium, igual que antes */
             background: var(--bp-surface-page);
             color: var(--bp-text-primary);
             min-height: 100vh;
@@ -115,6 +178,20 @@
         .page {
             max-width: 480px;
             margin: 0 auto;
+        }
+
+        /* El home "recede" (encoge y se oscurece un poco) mientras el detalle
+           de tarjeta está abierto/animando, como si esa pantalla se hubiera
+           levantado del stack — se asoma un instante detrás de la wallet
+           durante el fade de apertura/cierre y refuerza la sensación de
+           profundidad, en vez de que el home simplemente desaparezca tapado. */
+        #home-page {
+            transition: scale 0.42s cubic-bezier(0.32, 0.72, 0, 1), filter 0.42s ease;
+        }
+
+        body.card-detail-active #home-page {
+            scale: 0.97;
+            filter: brightness(0.94) saturate(0.96);
         }
 
         /* ---------- Header sticky ---------- */
@@ -497,33 +574,44 @@
             }
         }
 
-        /* Franja de datos sobre el arte (Figma: bp-information).
-           Usa backdrop-filter para difuminar la ilustración que queda detrás,
-           así el texto se lee sin tapar la tarjeta con un bloque opaco. */
+        /* Franja de datos sobre el arte (Figma: bp-information; blur token =
+           --bp-semantic-effects-blur-overlay: 24px). El blur no corta en una
+           línea recta: se enmascara con un degradado (mask-image) para que
+           el desenfoque crezca progresivo de arriba a abajo, igual que el
+           fondo. Antes el borde del blur era parejo y de solo 12px, por eso
+           se veía "sucio" (textura de la ilustración a medio difuminar) y
+           desalineado con el resto de la tarjeta. */
         .debit-card__info {
             position: absolute;
             left: 0;
             right: 0;
             bottom: 0;
             z-index: 3;
-            height: 46px;
-            padding: 0 16px;
+            height: 56px;
+            padding: 0 16px 10px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-end;
             gap: 2px;
             color: var(--bp-text-brand);
-            /* --bp-semantic-effects-blur-overlay: 12px */
-            -webkit-backdrop-filter: blur(12px);
-            backdrop-filter: blur(12px);
-            background: rgba(255, 255, 255, 0.12);
+            -webkit-backdrop-filter: blur(24px);
+            backdrop-filter: blur(24px);
+            background: linear-gradient(to bottom,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.14) 45%,
+                rgba(255, 255, 255, 0.26) 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.5) 40%, #000 75%);
+            mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.5) 40%, #000 75%);
         }
 
         /* Sin soporte de backdrop-filter (Firefox antiguo) el texto quedaría
-           sobre la ilustración sin contraste: se cae a un velo sólido. */
-        @supports not ((backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px))) {
+           sobre la ilustración sin contraste: se cae a un velo sólido y sin
+           máscara (que también depende de que el navegador entienda mask). */
+        @supports not ((backdrop-filter: blur(24px)) or (-webkit-backdrop-filter: blur(24px))) {
             .debit-card__info {
                 background: rgba(255, 221, 0, 0.82);
+                -webkit-mask-image: none;
+                mask-image: none;
             }
         }
 
@@ -574,7 +662,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--bp-brand-support);
+            color: var(--bp-icon-secondary-fg);
             transition: background 0.15s ease, transform 0.12s ease;
             font-size: 26px;
         }
@@ -1686,12 +1774,41 @@
 
         .card-detail.open {
             display: block;
-            animation: cdFadeIn 0.25s ease;
         }
 
-        @keyframes cdFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        /*
+         * La pantalla completa "nace" desde la tarjeta destacada, como una
+         * wallet que se abre: crece y sube desde el origen --cd-origin-x/y
+         * (fijado por JS a la posición real de la tarjeta) en vez de un fade
+         * plano sin relación con el elemento que la abrió. Duración y curva
+         * calzan exactamente con el FLIP de la tarjeta compartida (ver
+         * morphToFeatured en el script) para que todo —panel, tarjeta y
+         * contenido— llegue a su lugar al mismo tiempo.
+         *
+         * Anima `scale`/`translate` (propiedades individuales, no el
+         * shorthand `transform`) a propósito: en desktop este panel se
+         * centra con `transform: translateX(-50%)` en su regla base (ver
+         * media query más abajo) y ambos grupos de propiedades componen sin
+         * pisarse, así el centrado no se pierde mientras crece.
+         */
+        .card-detail.entering {
+            transform-origin: var(--cd-origin-x, 50%) var(--cd-origin-y, 15%);
+            animation: cdGrowIn 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+
+        @keyframes cdGrowIn {
+            from { opacity: 0; scale: 0.94; translate: 0 10px; }
+            to   { opacity: 1; scale: 1; translate: 0 0; }
+        }
+
+        .card-detail.closing {
+            transform-origin: var(--cd-origin-x, 50%) var(--cd-origin-y, 15%);
+            animation: cdShrinkOut 0.42s cubic-bezier(0.4, 0, 1, 1) forwards;
+        }
+
+        @keyframes cdShrinkOut {
+            from { opacity: 1; scale: 1; translate: 0 0; }
+            to   { opacity: 0; scale: 0.94; translate: 0 10px; }
         }
 
         .cd-inner {
@@ -1934,26 +2051,21 @@
         }
 
         /* Apertura/cierre por "extrapolación": la tarjeta se anima con JS
-           (FLIP) desde/hacia la tarjeta de Destacados. El resto del contenido
-           (título, acciones) sólo se desvanece. */
+           (FLIP) desde/hacia la tarjeta de Destacados (ver cdCard más abajo).
+           El título y las acciones no sólo se desvanecen: suben un poco al
+           aparecer (y bajan un poco al ocultarse), para que se sientan parte
+           del mismo movimiento que trae la tarjeta y no un fade suelto. */
         .cd-title,
         .cd-content,
         .card-detail .detail-topbar {
-            transition: opacity 0.28s ease;
+            transition: opacity 0.32s ease, transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         .card-detail.morphing .cd-title,
         .card-detail.morphing .cd-content,
         .card-detail.morphing .detail-topbar {
             opacity: 0;
-        }
-
-        .card-detail.closing {
-            animation: cdFadeOut 0.4s ease forwards;
-        }
-
-        @keyframes cdFadeOut {
-            to { opacity: 0; }
+            transform: translateY(10px);
         }
 
         .cd-card__row {
@@ -4229,13 +4341,39 @@
             return `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
         }
 
-        // Curva tipo iOS para el morph
+        // Ancla el origen de la animación del panel (.card-detail.entering /
+        // .closing) al centro real de la tarjeta destacada en pantalla, para
+        // que "crezca" desde ahí como una wallet en vez de desde el centro
+        // genérico de la pantalla. Si la tarjeta no es medible (raro), se
+        // quita la propiedad y CSS cae a su default (50% 15%).
+        function setMorphOrigin() {
+            const feat = featCard.getBoundingClientRect();
+            if (!feat.width) {
+                cardDetail.style.removeProperty('--cd-origin-x');
+                cardDetail.style.removeProperty('--cd-origin-y');
+                return;
+            }
+            const ox = ((feat.left + feat.width / 2) / window.innerWidth * 100).toFixed(2) + '%';
+            const oy = ((feat.top + feat.height / 2) / window.innerHeight * 100).toFixed(2) + '%';
+            cardDetail.style.setProperty('--cd-origin-x', ox);
+            cardDetail.style.setProperty('--cd-origin-y', oy);
+        }
+
+        // Curva tipo iOS para el morph. Una sola duración (0.5s abrir / 0.42s
+        // cerrar) para el panel completo, la tarjeta compartida (FLIP) y el
+        // home de fondo: antes cada pieza corría con su propio tiempo
+        // (fade del panel 0.25s, tarjeta 0.52s, contenido 0.28s) y llegaban
+        // a destino en momentos distintos, lo que se sentía torpe/descosido.
         const MORPH_EASE = 'cubic-bezier(0.32, 0.72, 0, 1)';
+        const OPEN_MS = 500;
+        const CLOSE_MS = 420;
 
         function openCardDetail() {
             hideCardData();
             cardDetail.classList.remove('scrolled');
-            cardDetail.classList.add('open');
+            setMorphOrigin(); // con la tarjeta aún en su lugar de Destacado
+            cardDetail.classList.add('open', 'entering');
+            document.body.classList.add('card-detail-active'); // el home recede detrás
             cardDetail.scrollTop = 0;
             document.body.style.overflow = 'hidden';
 
@@ -4248,36 +4386,49 @@
                 cdCard.style.transform = from;
                 // fuerza el layout antes de animar hacia su lugar
                 requestAnimationFrame(() => requestAnimationFrame(() => {
-                    cdCard.style.transition = `transform 0.52s ${MORPH_EASE}`;
+                    cdCard.style.transition = `transform ${OPEN_MS}ms ${MORPH_EASE}`;
                     cdCard.style.transform = 'none';
-                    // el contenido se desvanece hacia adentro un pelín después,
-                    // para que la tarjeta "lidere" el movimiento (más realista)
-                    cardDetail.classList.remove('morphing');
                 }));
+                // El contenido (título/acciones) arranca un poco después que
+                // el panel y la tarjeta, para que estas "lideren" el
+                // movimiento — pero termina junto con ellas.
+                setTimeout(() => cardDetail.classList.remove('morphing'), 90);
                 setTimeout(() => {
+                    cardDetail.classList.remove('entering');
                     cdCard.style.transition = '';
                     cdCard.style.transform = '';
                     cdCard.style.transformOrigin = '';
-                }, 560);
+                }, OPEN_MS + 40);
+            } else {
+                cardDetail.classList.remove('morphing');
+                setTimeout(() => cardDetail.classList.remove('entering'), OPEN_MS + 40);
             }
         }
 
         function closeCardDetail() {
             if (!cardDetail.classList.contains('open') || cardDetail.classList.contains('closing')) return;
             hideCardData(); // vuelve al frente antes de encoger
-            cardDetail.classList.remove('scrolled');
-            // el contenido se desvanece primero; la tarjeta encoge de vuelta.
-            // NO reseteamos el scroll aquí (eso causaba el salto): se hace al final.
+            cardDetail.classList.remove('scrolled', 'entering');
+            // el contenido se desvanece primero; la tarjeta y el panel encogen
+            // de vuelta a la posición de Destacado. NO reseteamos el scroll
+            // aquí (eso causaba el salto): se hace al final.
             cardDetail.classList.add('closing', 'morphing');
+            document.body.classList.remove('card-detail-active'); // el home vuelve a su tamaño
 
             // Sólo hacemos el morph si la tarjeta está a la vista; si se hizo
-            // scroll y quedó fuera, se cierra con un simple desvanecimiento.
+            // scroll y quedó fuera, se cierra con un simple desvanecimiento
+            // (y el panel encoge hacia el centro, no hacia un punto fuera de
+            // pantalla, que se vería como si "saliera volando").
             const rect = cdCard.getBoundingClientRect();
             const inView = rect.bottom > 48 && rect.top < window.innerHeight - 48;
             if (inView) {
+                setMorphOrigin();
                 cdCard.style.transformOrigin = 'top left';
-                cdCard.style.transition = `transform 0.44s ${MORPH_EASE}`;
+                cdCard.style.transition = `transform ${CLOSE_MS}ms ${MORPH_EASE}`;
                 cdCard.style.transform = morphToFeatured() || 'scale(0.94)';
+            } else {
+                cardDetail.style.removeProperty('--cd-origin-x');
+                cardDetail.style.removeProperty('--cd-origin-y');
             }
 
             setTimeout(() => {
@@ -4291,7 +4442,7 @@
                 cardDetail.scrollTop = 0; // reset ya oculto (sin salto)
                 document.body.style.overflow = '';
                 hideCardData();
-            }, 450);
+            }, CLOSE_MS + 30);
         }
 
         // ----- Revelar datos sensibles con biometría (WebAuthn) -----
