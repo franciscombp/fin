@@ -65,39 +65,51 @@
 
     <title>Banca Móvil - Banco Pichincha</title>
     <style>
-        /* Una sola familia "Prelo" con las 4 variantes registradas por peso
-           real (400/500/600/700). Antes cada variante era una @font-face con
+        /* Prelo se hotlinkea desde el CDN de tema de pichincha.com: un sitio
+           de terceros que no controlamos y que ya ha roto estas rutas antes
+           (dejaron de responder). No es una base confiable para un POC que
+           debe verse bien en cualquier entorno. Se mantiene como mejora
+           progresiva de "mejor esfuerzo" (si carga, se usa) pero el stack de
+           `body` de más abajo cierra siempre con fuentes nativas del sistema
+           —San Francisco/Segoe UI/Roboto— que ya traen sus propios pesos
+           400/500/600/700 reales, así que aunque Prelo nunca cargue el texto
+           en negrita sigue siendo negrita de verdad, no sintética.
+           `font-display: optional` (no "swap"): si no está disponible casi
+           de inmediato, el navegador se queda con la fuente de respaldo
+           permanentemente para esa carga de página, en vez de cambiar de
+           tipografía a mitad de sesión si Prelo termina resolviendo tarde.
+           Una sola familia "Prelo" con las 4 variantes registradas por peso
+           real (400/500/600/700): antes cada variante era una @font-face con
            un nombre de familia distinto y ningún elemento referenciaba
-           "Prelo bold": todo el texto en negrita (font-weight 700) se
-           renderizaba con negrita SINTÉTICA sobre la cara Medium. Al unificar
-           la familia, el navegador elige automáticamente el archivo real que
-           corresponde a cada peso solicitado. */
+           "Prelo bold", así que el texto en negrita se renderizaba con
+           negrita sintética sobre la cara Medium incluso cuando Prelo sí
+           cargaba. */
         @font-face {
-            font-display: swap;
+            font-display: optional;
             font-family: "Prelo";
             font-weight: 400;
-            src: url("https://pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-book.woff2") format("woff2");
+            src: url("https://www.pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-book.woff2") format("woff2");
         }
 
         @font-face {
-            font-display: swap;
+            font-display: optional;
             font-family: "Prelo";
             font-weight: 500;
             src: url("https://www.pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-medium.woff2") format("woff2");
         }
 
         @font-face {
-            font-display: swap;
+            font-display: optional;
             font-family: "Prelo";
             font-weight: 600;
-            src: url("https://pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-semibold.woff2") format("woff2");
+            src: url("https://www.pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-semibold.woff2") format("woff2");
         }
 
         @font-face {
-            font-display: swap;
+            font-display: optional;
             font-family: "Prelo";
             font-weight: 700;
-            src: url("https://pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-bold.woff2") format("woff2");
+            src: url("https://www.pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-bold.woff2") format("woff2");
         }
 
         :root {
@@ -126,6 +138,12 @@
             --bp-icon-secondary-fg: #104798; /* Figma: interaction-secondary-fg (quick actions) */
             --bp-radius-md: 12px;
             --bp-radius-sm: 8px;
+            /* Radio compartido por TODA superficie que representa "una
+               tarjeta física real" (destacado + detalle): antes usaban
+               8px y 16px respectivamente, así que durante el morph entre
+               ambas el radio se veía cambiar/distorsionar. Con el mismo
+               valor en los dos lugares, la esquina no "salta". */
+            --bp-radius-card: 16px;
         }
 
         *, *::before, *::after {
@@ -167,7 +185,7 @@
 
         body {
             margin: 0; /* elimina el margen por defecto del navegador (8px) */
-            font-family: 'Prelo', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Prelo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             font-weight: 500; /* peso por defecto = cara Medium, igual que antes */
             background: var(--bp-surface-page);
             color: var(--bp-text-primary);
@@ -447,7 +465,7 @@
             position: relative;
             width: 100%;
             height: 88px; /* Figma: bp-sale_of_products */
-            border-radius: var(--bp-radius-sm);
+            border-radius: var(--bp-radius-card);
             background: var(--bp-surface-brand); /* respaldo mientras carga el arte */
             border: none;
             cursor: pointer;
@@ -615,18 +633,22 @@
             }
         }
 
+        /* Mismo tratamiento que .cd-data__label/__value (el reverso de la
+           tarjeta de detalle, el otro lugar de la app donde se lee un
+           número de tarjeta sobre la superficie de la tarjeta): antes esta
+           etiqueta usaba mayúsculas + 600 + letter-spacing 0.3px, una
+           combinación que no aparece en ningún otro lado de la app. */
         .debit-card__label {
-            font-size: 10px;
-            font-weight: 600;
+            font-size: 11px;
+            font-weight: 500;
             letter-spacing: 0.3px;
-            text-transform: uppercase;
-            opacity: 0.8;
+            opacity: 0.75;
         }
 
         .debit-card__number {
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 700;
-            letter-spacing: 1.5px;
+            letter-spacing: 1px;
             font-variant-numeric: tabular-nums;
         }
 
@@ -1253,7 +1275,19 @@
             background: #e0e0e0;
         }
 
-        /* ---------- Vistas (transiciones entre secciones del nav) ---------- */
+        /* ---------- Vistas (transiciones entre pestañas del nav inferior) ----------
+           Las pestañas del nav inferior son destinos hermanos, no una
+           jerarquía de navegación (no hay "atrás/adelante" entre Inicio y
+           Perfil) — por eso NO deslizan lateralmente: un slide sugiere una
+           relación de orden que no existe, y es la convención nativa de
+           push/pop (usada en la tarjeta de detalle y las páginas de acción
+           rápida), no la de tabs. Aquí se usa "fade through": la vista
+           saliente se desvanece y encoge un poco muy rápido, LUEGO entra la
+           siguiente con el mismo lenguaje (fundido + escala sutil). Antes
+           había un corte duro (display:none/block instantáneo) seguido de
+           una animación de entrada sin salida, más un flasheo de skeleton
+           interno que se disparaba aunque el contenido de destino (las
+           pestañas placeholder) nunca cambiara — de ahí la sensación de caos. */
         .view {
             display: none;
         }
@@ -1262,32 +1296,26 @@
             display: block;
         }
 
-        .view.enter-right {
-            animation: viewFromRight 0.45s cubic-bezier(0.25, 0.8, 0.35, 1);
+        .view.leaving {
+            animation: viewFadeOut 0.15s ease forwards;
         }
 
-        .view.enter-left {
-            animation: viewFromLeft 0.45s cubic-bezier(0.25, 0.8, 0.35, 1);
+        .view.entering {
+            animation: viewFadeIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
 
-        @keyframes viewFromRight {
-            from { opacity: 0; transform: translateX(40px); }
-            to { opacity: 1; transform: translateX(0); }
+        @keyframes viewFadeOut {
+            from { opacity: 1; scale: 1; }
+            to   { opacity: 0; scale: 0.985; }
         }
 
-        @keyframes viewFromLeft {
-            from { opacity: 0; transform: translateX(-40px); }
-            to { opacity: 1; transform: translateX(0); }
+        @keyframes viewFadeIn {
+            from { opacity: 0; scale: 0.985; }
+            to   { opacity: 1; scale: 1; }
         }
 
-        /* Carga simulada de vistas con contenido real: aparece tras un instante */
-        .view.is-loading-view .section {
-            animation: viewLoadReveal 0.85s ease;
-        }
-
-        @keyframes viewLoadReveal {
-            0%, 55% { opacity: 0; transform: translateY(10px); }
-            100% { opacity: 1; transform: translateY(0); }
+        @media (prefers-reduced-motion: reduce) {
+            .view.leaving, .view.entering { animation: none; }
         }
 
         /* Vistas placeholder (Solicitudes, Beneficios, etc.) */
@@ -1385,8 +1413,7 @@
         .skeleton--sub { height: 10px; width: 40%; }
 
         /* Stagger de entrada de las cards en cada vista */
-        .view.enter-right .skeleton-card,
-        .view.enter-left .skeleton-card {
+        .view.entering .skeleton-card {
             animation: cardRise 0.4s cubic-bezier(0.25, 0.8, 0.35, 1) backwards;
         }
 
@@ -1591,18 +1618,8 @@
         @media (max-width: 480px) {
             /* blur más liviano en mobile: el filtro grande es costoso en GPU móvil */
             .debit-card__bg { filter: blur(12px); }
-            /* transiciones de vista más cortas y sutiles en pantallas pequeñas */
-            .view.enter-right, .view.enter-left { animation-duration: 0.26s; }
-        }
-
-        @keyframes viewFromRight {
-            from { opacity: 0; transform: translate3d(40px, 0, 0); }
-            to { opacity: 1; transform: translate3d(0, 0, 0); }
-        }
-
-        @keyframes viewFromLeft {
-            from { opacity: 0; transform: translate3d(-40px, 0, 0); }
-            to { opacity: 1; transform: translate3d(0, 0, 0); }
+            /* transición de vista un poco más corta en pantallas pequeñas */
+            .view.entering { animation-duration: 0.24s; }
         }
 
         /* ---------- Stories (visor tipo Instagram) ---------- */
@@ -1781,8 +1798,8 @@
          * wallet que se abre: crece y sube desde el origen --cd-origin-x/y
          * (fijado por JS a la posición real de la tarjeta) en vez de un fade
          * plano sin relación con el elemento que la abrió. Duración y curva
-         * calzan exactamente con el FLIP de la tarjeta compartida (ver
-         * morphToFeatured en el script) para que todo —panel, tarjeta y
+         * calzan exactamente con el morph "reveal" de la tarjeta compartida
+         * (ver morphMetrics en el script) para que todo —panel, tarjeta y
          * contenido— llegue a su lugar al mismo tiempo.
          *
          * Anima `scale`/`translate` (propiedades individuales, no el
@@ -1826,11 +1843,17 @@
             transition: opacity 0.2s ease;
         }
 
-        /* La tarjeta "real": flip 3D (frente = imagen, reverso = datos) */
+        /* La tarjeta "real": flip 3D (frente = imagen, reverso = datos).
+           overflow:hidden es lo que permite el morph "reveal" con Destacado:
+           durante la animación se le impone un alto explícito menor (el de
+           la tarjeta chica) y esto recorta el contenido en vez de dejarlo
+           desbordar, sin tocar la escala/tamaño real de la imagen interior
+           (ver openCardDetail/closeCardDetail más abajo). */
         .cd-card {
             perspective: 1600px;
             position: relative;
-            border-radius: 16px;
+            border-radius: var(--bp-radius-card);
+            overflow: hidden;
             cursor: pointer;
             touch-action: none;
             -webkit-user-select: none;
@@ -1851,7 +1874,7 @@
         .cd-card.revealed .cd-flip { transform: rotateY(180deg); }
 
         .cd-face {
-            border-radius: 16px;
+            border-radius: var(--bp-radius-card);
             overflow: hidden;
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
@@ -1918,7 +1941,7 @@
             width: 100%;
             height: auto;
             display: block;
-            border-radius: 16px;
+            border-radius: var(--bp-radius-card);
         }
 
         /* Pista de girar para revelar */
@@ -2051,21 +2074,31 @@
         }
 
         /* Apertura/cierre por "extrapolación": la tarjeta se anima con JS
-           (FLIP) desde/hacia la tarjeta de Destacados (ver cdCard más abajo).
-           El título y las acciones no sólo se desvanecen: suben un poco al
-           aparecer (y bajan un poco al ocultarse), para que se sientan parte
+           (reveal) desde/hacia la tarjeta de Destacados (ver cdCard más
+           abajo). El título (arriba de la tarjeta) y la barra colapsable no
+           sólo se desvanecen: suben un poco al aparecer, para sentirse parte
            del mismo movimiento que trae la tarjeta y no un fade suelto. */
         .cd-title,
-        .cd-content,
         .card-detail .detail-topbar {
             transition: opacity 0.32s ease, transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         .card-detail.morphing .cd-title,
-        .card-detail.morphing .cd-content,
         .card-detail.morphing .detail-topbar {
             opacity: 0;
             transform: translateY(10px);
+        }
+
+        /* .cd-content va DEBAJO de la tarjeta en el flujo normal: mientras
+           cdCard anima su alto real (ver JS), el layout ya lo empuja hacia
+           abajo de forma natural — sumarle además un translateY propio aquí
+           duplicaría el movimiento. Sólo se desvanece. */
+        .cd-content {
+            transition: opacity 0.32s ease;
+        }
+
+        .card-detail.morphing .cd-content {
+            opacity: 0;
         }
 
         .cd-card__row {
@@ -3993,30 +4026,43 @@
         const views = document.querySelectorAll('.view');
         const navItems = document.querySelectorAll('.nav-item');
         let currentView = 0;
+        let viewSwitchTimer = null;
+
+        // "Fade through": la vista saliente se desvanece del todo (150ms)
+        // ANTES de que la entrante aparezca (sin solaparse ni pisarse en el
+        // layout), y ambas comparten el mismo lenguaje de fundido+escala. Se
+        // quitó el flasheo de skeleton que corría en Solicitudes/Beneficios/
+        // Tienda/Perfil: esas vistas son contenido estático (placeholders o
+        // el perfil), nunca "cargan" nada distinto, así que el flash sólo
+        // añadía movimiento sin significado.
+        const VIEW_OUT_MS = 150;
+        const VIEW_IN_MS = 320;
 
         function switchView(index) {
             if (index === currentView) return;
-            const dir = index > currentView ? 'enter-right' : 'enter-left';
-            views.forEach(v => v.classList.remove('active', 'enter-right', 'enter-left'));
+            clearTimeout(viewSwitchTimer);
+            const prev = document.querySelector(`.view[data-view="${currentView}"]`);
             const next = document.querySelector(`.view[data-view="${index}"]`);
-            next.classList.add('active', dir);
             currentView = index;
+
             // Las tabs de productos y el avatar de stories solo pertenecen a Inicio
             document.querySelector('.tabs').classList.toggle('is-hidden', index !== 0);
             document.querySelector('.profile-story').classList.toggle('is-hidden', index !== 0);
-            window.scrollTo({ top: 0 });
-            // Simula el tiempo de carga con skeleton
-            if (index === 0) simulateLoad(900);
-            else loadView(next);
-        }
 
-        // Estado de carga genérico (skeleton) para vistas con contenido real
-        function loadView(view) {
-            const content = view.querySelector('.section');
-            if (!content) return; // vistas que ya son sólo skeleton
-            view.classList.add('is-loading-view');
-            clearTimeout(view._loadTimer);
-            view._loadTimer = setTimeout(() => view.classList.remove('is-loading-view'), 850);
+            prev.classList.remove('entering');
+            prev.classList.add('leaving');
+            viewSwitchTimer = setTimeout(() => {
+                prev.classList.remove('active', 'leaving');
+
+                next.classList.add('active');
+                window.scrollTo({ top: 0 });
+                requestAnimationFrame(() => {
+                    next.classList.add('entering');
+                    setTimeout(() => next.classList.remove('entering'), VIEW_IN_MS + 20);
+                });
+
+                if (index === 0) simulateLoad(700); // Destacado sí carga datos reales
+            }, VIEW_OUT_MS);
         }
 
         navItems.forEach((item, index) => {
@@ -4038,7 +4084,8 @@
                 if (idx === 0) i.setAttribute('aria-current', 'page');
                 else i.removeAttribute('aria-current');
             });
-            views.forEach(v => v.classList.remove('active', 'enter-right', 'enter-left'));
+            clearTimeout(viewSwitchTimer);
+            views.forEach(v => v.classList.remove('active', 'entering', 'leaving'));
             document.querySelector('.view[data-view="0"]').classList.add('active');
             currentView = 0;
             document.querySelector('.tabs').classList.remove('is-hidden');
@@ -4329,16 +4376,38 @@
 
         const featCard = document.getElementById('debit-card');
 
-        // Calcula el transform (FLIP) que lleva cdCard hasta la tarjeta de Destacados
-        function morphToFeatured() {
+        /*
+         * Morph "reveal" entre la tarjeta de Destacado y la de detalle: NO
+         * es un scale(). Antes se calculaba un transform con escala NO
+         * uniforme (sx ≠ sy, porque la tarjeta chica es 88px de alto y la
+         * grande ronda 270px, mientras el ancho apenas cambia) — eso
+         * ESTIRABA la imagen completa (que en el detalle se ve entera, sin
+         * recortar) para que cupiera en la proporción achatada de la chica,
+         * y luego la "desestiraba" de vuelta según crecía. Se veía como una
+         * foto deformándose, no como el mismo objeto.
+         *
+         * En vez de eso: cdCard mide su alto NATURAL (el de la imagen
+         * completa) y anima directamente ESE alto real (no un scale) desde
+         * el alto de la tarjeta chica hasta el natural. Como cdCard tiene
+         * overflow:hidden, mientras el alto está reducido simplemente se ve
+         * menos imagen (recortada por abajo, igual que hace object-fit
+         * arriba en Destacado) — la imagen interior nunca cambia de escala,
+         * sólo se revela más o menos de ella. El ancho, que ya es casi
+         * idéntico entre ambos contextos (misma columna de 24px de margen),
+         * se ajusta igual por si acaso difiere.
+         */
+        function morphMetrics() {
             const feat = featCard.getBoundingClientRect();
-            const rect = cdCard.getBoundingClientRect();
-            if (!rect.width || !feat.width) return '';
-            const sx = feat.width / rect.width;
-            const sy = feat.height / rect.height;
-            const dx = feat.left - rect.left;
-            const dy = feat.top - rect.top;
-            return `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+            const rect = cdCard.getBoundingClientRect(); // ya en su layout final/natural
+            if (!rect.width || !feat.width) return null;
+            return {
+                dx: feat.left - rect.left,
+                dy: feat.top - rect.top,
+                fromW: feat.width,
+                fromH: feat.height,
+                toW: rect.width,
+                toH: rect.height,
+            };
         }
 
         // Ancla el origen de la animación del panel (.card-detail.entering /
@@ -4377,17 +4446,23 @@
             cardDetail.scrollTop = 0;
             document.body.style.overflow = 'hidden';
 
-            // Extrapolación: la tarjeta arranca en la posición/tamaño de Destacados
-            const from = morphToFeatured();
-            if (from) {
+            // Extrapolación: la tarjeta arranca en la posición y el alto de
+            // Destacado (recortada, sin distorsión) y crece hacia su alto
+            // natural, revelando el resto de la imagen.
+            const m = morphMetrics();
+            if (m) {
                 cardDetail.classList.add('morphing');
-                cdCard.style.transformOrigin = 'top left';
                 cdCard.style.transition = 'none';
-                cdCard.style.transform = from;
+                cdCard.style.transform = `translate(${m.dx}px, ${m.dy}px)`;
+                cdCard.style.width = m.fromW + 'px';
+                cdCard.style.height = m.fromH + 'px';
                 // fuerza el layout antes de animar hacia su lugar
                 requestAnimationFrame(() => requestAnimationFrame(() => {
-                    cdCard.style.transition = `transform ${OPEN_MS}ms ${MORPH_EASE}`;
-                    cdCard.style.transform = 'none';
+                    cdCard.style.transition =
+                        `transform ${OPEN_MS}ms ${MORPH_EASE}, width ${OPEN_MS}ms ${MORPH_EASE}, height ${OPEN_MS}ms ${MORPH_EASE}`;
+                    cdCard.style.transform = 'translate(0, 0)';
+                    cdCard.style.width = m.toW + 'px';
+                    cdCard.style.height = m.toH + 'px';
                 }));
                 // El contenido (título/acciones) arranca un poco después que
                 // el panel y la tarjeta, para que estas "lideren" el
@@ -4397,7 +4472,8 @@
                     cardDetail.classList.remove('entering');
                     cdCard.style.transition = '';
                     cdCard.style.transform = '';
-                    cdCard.style.transformOrigin = '';
+                    cdCard.style.width = '';
+                    cdCard.style.height = '';
                 }, OPEN_MS + 40);
             } else {
                 cardDetail.classList.remove('morphing');
@@ -4421,11 +4497,28 @@
             // pantalla, que se vería como si "saliera volando").
             const rect = cdCard.getBoundingClientRect();
             const inView = rect.bottom > 48 && rect.top < window.innerHeight - 48;
-            if (inView) {
+            const m = inView ? morphMetrics() : null;
+            if (m) {
                 setMorphOrigin();
-                cdCard.style.transformOrigin = 'top left';
-                cdCard.style.transition = `transform ${CLOSE_MS}ms ${MORPH_EASE}`;
-                cdCard.style.transform = morphToFeatured() || 'scale(0.94)';
+                // El ancho/alto de cdCard son "auto" por CSS (los define el
+                // contenido); un navegador no anima de forma fiable una
+                // transición que PARTE de "auto" — salta directo al valor
+                // final aunque se declare transition-duration. Por eso,
+                // igual que en openCardDetail, primero se fija el tamaño
+                // NATURAL actual como valor explícito (sin transición, es
+                // un no-op visual) y recién en el siguiente frame se anima
+                // hacia el tamaño de Destacado — así ambos extremos de la
+                // transición son números concretos, nunca "auto".
+                cdCard.style.transition = 'none';
+                cdCard.style.width = m.toW + 'px';
+                cdCard.style.height = m.toH + 'px';
+                requestAnimationFrame(() => requestAnimationFrame(() => {
+                    cdCard.style.transition =
+                        `transform ${CLOSE_MS}ms ${MORPH_EASE}, width ${CLOSE_MS}ms ${MORPH_EASE}, height ${CLOSE_MS}ms ${MORPH_EASE}`;
+                    cdCard.style.transform = `translate(${m.dx}px, ${m.dy}px)`;
+                    cdCard.style.width = m.fromW + 'px';
+                    cdCard.style.height = m.fromH + 'px';
+                }));
             } else {
                 cardDetail.style.removeProperty('--cd-origin-x');
                 cardDetail.style.removeProperty('--cd-origin-y');
@@ -4435,7 +4528,8 @@
                 cardDetail.classList.remove('open', 'closing', 'morphing');
                 cdCard.style.transition = '';
                 cdCard.style.transform = '';
-                cdCard.style.transformOrigin = '';
+                cdCard.style.width = '';
+                cdCard.style.height = '';
                 cdInner.style.transform = '';
                 cdInner.style.opacity = '';
                 cdInner.style.transition = '';

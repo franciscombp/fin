@@ -12,7 +12,17 @@
   // Colores de la bandera de Ecuador (+ blanco para chispas)
   var COLORS = ['#FFDD00', '#034EA2', '#ED1C24', '#ffffff'];
 
-  var API = window.FIESTA_API || 'http://localhost:8787/api/celebrations';
+  // Sólo se intenta el servidor cuando la propia página vive en localhost
+  // (sesión de desarrollo donde probablemente también corre `node server.js`)
+  // o cuando alguien fija window.FIESTA_API explícitamente. Antes se
+  // intentaba SIEMPRE contra http://localhost:8787 sin importar dónde
+  // estuviera desplegada la página (GitHub Pages, este mismo sandbox, etc.),
+  // lo que producía un fetch fallido por CORS cada POLL_MS, para siempre:
+  // muchísimo ruido en consola en cualquier sitio que no fuera la máquina
+  // del desarrollador original.
+  var LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
+  var isLocalDev = LOCAL_HOSTS.indexOf(location.hostname) !== -1;
+  var API = window.FIESTA_API || (isLocalDev ? 'http://localhost:8787/api/celebrations' : null);
   var LOCAL_KEY = 'bp_fiesta_count';
   var POLL_MS = 3000;
 
@@ -21,7 +31,11 @@
   if (!btn || !counterEl) return;
 
   // ---------- Contador (server con fallback local) ----------
-  var serverOk = false;
+  // Se apaga en el primer fallo (o de entrada si no hay API conocida) para
+  // no seguir reintentando cada POLL_MS: un solo intento fallido en vez de
+  // un error infinito.
+  var serverReachable = !!API;
+  var pollTimer = null;
 
   function setCount(n) {
     counterEl.textContent = new Intl.NumberFormat('es-EC').format(n);
@@ -33,24 +47,35 @@
     return n;
   }
 
+  function giveUpOnServer() {
+    serverReachable = false;
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  }
+
   function refresh() {
+    if (!serverReachable) { setCount(localCount(0)); return; }
     fetch(API, { cache: 'no-store' })
       .then(function (r) { return r.json(); })
-      .then(function (d) { serverOk = true; setCount(d.count); })
-      .catch(function () { serverOk = false; setCount(localCount(0)); });
+      .then(function (d) { setCount(d.count); })
+      .catch(function () { giveUpOnServer(); setCount(localCount(0)); });
   }
 
   function celebrate() {
     // Optimista: pinta ya el +1 mientras confirma el server
     setCount((parseInt(counterEl.textContent.replace(/\D/g, ''), 10) || 0) + 1);
+    if (!serverReachable) { localCount(1); return; }
     fetch(API, { method: 'POST' })
       .then(function (r) { return r.json(); })
-      .then(function (d) { serverOk = true; setCount(d.count); })
-      .catch(function () { serverOk = false; setCount(localCount(1)); });
+      .then(function (d) { setCount(d.count); })
+      .catch(function () { giveUpOnServer(); setCount(localCount(1)); });
   }
 
-  refresh();
-  setInterval(refresh, POLL_MS); // "tiempo real" sencillo: sondeo cada 3 s
+  if (serverReachable) {
+    refresh();
+    pollTimer = setInterval(refresh, POLL_MS); // "tiempo real" sencillo: sondeo cada 3 s
+  } else {
+    setCount(localCount(0)); // sin servidor conocido: directo al contador local
+  }
 
   // ---------- Pirotecnia (canvas) ----------
   var canvas = document.getElementById('fiesta-canvas');
