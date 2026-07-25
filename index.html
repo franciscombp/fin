@@ -1272,15 +1272,13 @@
            Perfil) — por eso NO deslizan lateralmente: un slide sugiere una
            relación de orden que no existe, y es la convención nativa de
            push/pop (usada en la tarjeta de detalle y las páginas de acción
-           rápida), no la de tabs. Se usa un crossfade real: la vista
-           entrante toma su lugar en el flujo normal DE INMEDIATO (así el
-           contenido nuevo ya está asentado, sin layout raro) mientras la
-           saliente se despega a position:absolute superpuesta encima y se
-           desvanece — ambas visibles y animando a la vez, no una tras otra.
-           La versión anterior las hacía en SECUENCIA (una se apaga del
-           todo, recién entonces aparece la otra), lo que dejaba un
-           instante en blanco entre ambas — un corte, no un cruce — y eso
-           es lo que se sentía "roto"/poco natural. */
+           rápida), no la de tabs. El cambio es instantáneo, sin fundido:
+           es lo que hacen los tab bars nativos de verdad (UITabBarController
+           en iOS, BottomNavigationView en Android no animan la transición
+           entre pestañas). Se probaron dos variantes con fundido (una
+           secuencial y luego una superpuesta) y ninguna terminó de sentirse
+           profesional — un tab bar no debería "notarse" cambiando, sólo
+           cambiar. */
         #views {
             position: relative;
         }
@@ -1291,36 +1289,6 @@
 
         .view.active {
             display: block;
-            opacity: 1;
-            transition: opacity 0.28s ease;
-        }
-
-        /* Estado inicial de la entrante: se monta ya en su lugar final
-           (por eso 'active' sigue puesto) pero arranca invisible, sin
-           transición todavía — se le quita en el frame siguiente para que
-           SÍ dispare la transición de .view.active hacia opacity:1. */
-        .view.active.entering {
-            opacity: 0;
-            transition: none;
-        }
-
-        /* La saliente se saca del flujo normal para poder solaparse con la
-           entrante (que ya ocupa el espacio en flujo normal) en vez de
-           apilarse debajo de ella. */
-        .view.leaving {
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.22s ease;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .view.active,
-            .view.leaving { transition: none; }
         }
 
         /* Vistas placeholder (Solicitudes, Beneficios, etc.) */
@@ -2567,6 +2535,45 @@
         .push-page__hero .material-symbols-rounded { font-size: 56px; }
         .push-page__hero.is-hidden { display: none; }
 
+        /* Simula la espera de un micrositio externo (Pagar servicios,
+           Recargar celular): un spinner cubre la pantalla unos segundos
+           antes de revelar el contenido, ya renderizado detrás. */
+        .push-loading {
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            padding: 0 48px;
+            text-align: center;
+            background: var(--bp-surface-page);
+        }
+        .push-loading.is-active { display: flex; }
+        .push-loading__spinner {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 3px solid rgba(15, 38, 92, 0.12);
+            border-top-color: var(--bp-selection-bg-active);
+            animation: pushLoadingSpin 0.8s linear infinite;
+        }
+        .push-loading__text {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--bp-text-primary);
+        }
+        .push-loading__subtext {
+            font-size: 13px;
+            color: var(--bp-text-helper);
+            margin-top: -6px;
+        }
+        @keyframes pushLoadingSpin {
+            to { transform: rotate(360deg); }
+        }
+
         /* ---------- Contenido específico por acción rápida ----------
            Antes cualquier acción (Transferir, Pagar con QR, Pagar
            servicios, Recargar celular...) abría el mismo bloque genérico
@@ -2867,59 +2874,50 @@
         }
 
         /* ---------- Responsive: tablet y escritorio ----------
-           Disposición propuesta: la app se muestra como una columna central de
-           ancho fijo (una "app" centrada) sobre un fondo de marca con marco
-           sutil. Todas las superficies de nivel superior (home, login y detalle)
-           y el nav comparten la misma columna para una experiencia consistente. */
+           Versión web real: el contenido usa el ancho disponible. La
+           versión anterior encerraba todo en una columna fija de 480px
+           centrada sobre un fondo vacío — en una pantalla ancha se veía
+           como el teléfono "flotando" en medio de la nada (lo que se
+           percibía como una pantalla rota/mal adaptada). Aquí el
+           contenido se ensancha de verdad en tablet, y en escritorio la
+           navegación pasa a un panel lateral fijo (el patrón estándar al
+           adaptar una app mobile a la web — Slack, Discord, Revolut Web,
+           etc. — en vez de una barra inferior con espacio vacío a los
+           lados) dejando el resto del ancho para el contenido. */
         @media (min-width: 700px) {
             body {
-                background:
-                    radial-gradient(1200px 600px at 50% -10%, #eaf0f8 0%, transparent 60%),
-                    linear-gradient(180deg, #e2e7ef 0%, #d3d9e4 100%);
-                background-attachment: fixed;
+                background: var(--bp-surface-page);
             }
 
-            /* Columna central compartida. Antes sólo incluía home/login/
-               card-detail: cualquier otro overlay de pantalla completa
-               (push-page —usado tanto por las acciones rápidas como por
-               "Modo finanzas"— y el visor de stories) se quedaba a ancho
-               completo del viewport (position:fixed; inset:0 sin acotar),
-               con su fondo estirado de punta a punta mientras el contenido
-               interno seguía angosto — la app se veía rota/inconsistente
-               en pantallas anchas apenas se abría cualquiera de esas
-               pantallas. */
-            #home-page.page,
+            /* Home: se ensancha de verdad (no queda "stackeado" en 480px). */
+            #home-page.page {
+                max-width: 720px;
+                margin: 0 auto;
+                min-height: 100vh;
+            }
+
+            /* Overlays de pantalla completa (login, detalle de tarjeta,
+               push-page, stories): más anchos también, cubren el resto de
+               la pantalla como un panel de tarea enfocada — sin quedar
+               angostos ni volver a la sensación de columna flotante. */
             .login-screen,
             .card-detail,
             .push-page,
             .story-viewer {
                 width: 100%;
-                max-width: 480px;
+                max-width: 640px;
                 margin: 0 auto;
             }
 
-            /* Home: columna con marco lateral (un borde fino, no una sombra
-               de elevación — no es el estilo de la app) */
-            #home-page.page {
-                background: var(--bp-surface-page);
-                min-height: 100vh;
-                border-left: 1px solid rgba(15, 38, 92, 0.08);
-                border-right: 1px solid rgba(15, 38, 92, 0.08);
-            }
-
-            /* Overlays fijos centrados a la misma columna. login-screen y
-               card-detail no dependen de la propiedad transform para su
-               propia animación (login-screen alterna display; card-detail
-               anima con las propiedades individuales scale/translate, no
-               con transform), así que centrarlos con transform:translateX
-               es seguro. push-page y story-viewer SÍ usan transform para
-               su propia animación (deslizar/zoom) — declarar aquí OTRO
-               transform pisaría esa animación (se quedarían siempre
-               centrados sin poder abrir/cerrar, o mal ubicados a mitad de
-               camino). Por eso a esos dos se les centra con
-               left + margin-left (mitad del ancho, en negativo), que no
-               toca transform en absoluto y compone sin conflicto con
-               cualquier transform que la animación necesite. */
+            /* login-screen y card-detail no dependen de la propiedad
+               transform para su propia animación (login-screen alterna
+               display; card-detail anima con las propiedades individuales
+               scale/translate, no con transform), así que centrarlos con
+               transform:translateX es seguro. push-page y story-viewer SÍ
+               usan transform para su propia animación (deslizar/zoom) —
+               declarar aquí OTRO transform pisaría esa animación. Por eso
+               a esos dos se les centra con left + margin-left (mitad del
+               ancho, en negativo), que no toca transform en absoluto. */
             .login-screen,
             .card-detail {
                 left: 50%;
@@ -2931,37 +2929,61 @@
             .story-viewer {
                 left: 50%;
                 right: auto;
-                margin-left: -240px; /* -(480px máx / 2) */
-            }
-
-            .login-screen,
-            .card-detail,
-            .push-page {
-                border-left: 1px solid rgba(15, 38, 92, 0.08);
-                border-right: 1px solid rgba(15, 38, 92, 0.08);
-            }
-
-            /* Nav inferior alineado a la columna, no a todo el ancho */
-            .nav-bar {
-                left: 50%;
-                right: auto;
-                transform: translateX(-50%);
-                width: 100%;
-                max-width: 480px;
-                border-left: 1px solid rgba(15, 38, 92, 0.06);
-                border-right: 1px solid rgba(15, 38, 92, 0.06);
+                margin-left: -320px; /* -(640px máx / 2) */
             }
 
             .debit-card { cursor: pointer; }
         }
 
-        /* Tablet en horizontal / escritorio amplio: más contraste de fondo */
+        /* Escritorio: la navegación pasa de barra inferior a panel lateral
+           fijo — deja de competir por el ancho de la pantalla con el
+           contenido, y el contenido pasa a usar el resto del ancho
+           disponible en vez de quedar acotado a una columna angosta. */
         @media (min-width: 1024px) {
             body {
-                background:
-                    radial-gradient(1000px 520px at 50% 0%, #eef3fa 0%, transparent 55%),
-                    linear-gradient(180deg, #dee3ec 0%, #ccd3df 100%);
-                background-attachment: fixed;
+                padding-left: 96px;
+                padding-bottom: 0;
+            }
+
+            .nav-bar {
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: auto;
+                transform: none;
+                width: 96px;
+                max-width: none;
+                height: 100vh;
+                flex-direction: column;
+                justify-content: flex-start;
+                padding: 28px 12px;
+                border-top: none;
+                border-right: 1px solid rgba(15, 38, 92, 0.08);
+            }
+
+            .nav-bar__inner {
+                flex-direction: column;
+                width: 100%;
+                max-width: none;
+                gap: 4px;
+            }
+
+            .nav-item {
+                width: 100%;
+                height: 64px;
+            }
+
+            /* El sidebar no compite por ancho con home: el contenido usa
+               bastante más espacio en escritorio real. */
+            #home-page.page {
+                max-width: 960px;
+            }
+
+            /* 8 accesos rápidos caben en una sola fila con este ancho, en
+               vez de dejar 4 columnas enormes con mucho vacío alrededor
+               de cada ícono. */
+            .quick-actions {
+                grid-template-columns: repeat(8, 1fr);
             }
         }
     </style>
@@ -3871,6 +3893,14 @@
 
             <button class="login-button login-button--primary" id="push-cta">Continuar</button>
         </div>
+
+        <!-- Simula la carga de un micrositio externo (pago de servicios,
+             recarga celular) antes de mostrar el contenido real -->
+        <div class="push-loading" id="push-loading">
+            <div class="push-loading__spinner"></div>
+            <p class="push-loading__text" id="push-loading-text">Conectando…</p>
+            <p class="push-loading__subtext">Esto puede tardar unos segundos</p>
+        </div>
     </div>
 
     <!-- Modo finanzas: resumen consolidado de todos los productos -->
@@ -4094,6 +4124,8 @@
         const pushTitle = document.getElementById('push-title');
         const pushTopbarTitle = document.getElementById('push-topbar-title');
         const pushHeroIcon = document.getElementById('push-hero-icon');
+        const pushLoading = document.getElementById('push-loading');
+        const pushLoadingText = document.getElementById('push-loading-text');
         const pushMovs = document.getElementById('push-movs');
         setupCollapsingHeader(pushPage, pushTitle, document.getElementById('push-topbar'));
 
@@ -4235,6 +4267,18 @@
         const CARRIERS = ['Claro', 'Movistar', 'CNT'];
         const RECHARGE_AMOUNTS = ['$ 3', '$ 5', '$ 10', '$ 15'];
 
+        // Algunas acciones rápidas en la banca real abren un micrositio de
+        // un tercero (proveedor de servicios, operador celular) que tarda
+        // en cargar — a diferencia de QR/transferir, que son 100% nativas
+        // del banco y responden al instante.
+        const SLOW_LOAD_ACTIONS = new Set(['Pagar servicios', 'Recargar celular']);
+        const SLOW_LOAD_LABELS = {
+            'Pagar servicios': 'Conectando con el proveedor de servicios…',
+            'Recargar celular': 'Conectando con tu operador…',
+        };
+        const SLOW_LOAD_MS = 5000;
+        let pushLoadingTimer = null;
+
         // Plantillas por acción: reemplazan el bloque genérico de
         // ícono+Resumen cuando la acción tiene un flujo propio reconocible.
         const ACTION_EXTRAS = {
@@ -4325,6 +4369,15 @@
             pushTitle.textContent = title;
             pushTopbarTitle.textContent = title;
             renderPushExtra(title);
+
+            clearTimeout(pushLoadingTimer);
+            if (SLOW_LOAD_ACTIONS.has(title)) {
+                pushLoadingText.textContent = SLOW_LOAD_LABELS[title];
+                pushLoading.classList.add('is-active');
+                pushLoadingTimer = setTimeout(() => pushLoading.classList.remove('is-active'), SLOW_LOAD_MS);
+            } else {
+                pushLoading.classList.remove('is-active');
+            }
             // Con plantilla propia (QR, transferir, servicios, recargar) el
             // Resumen/Movimientos genéricos no aportan nada a ESA pantalla
             // específica — se ocultan para no diluir el flujo real con
@@ -4361,6 +4414,8 @@
 
         function closePushPage() {
             if (!pushPage.classList.contains('open')) return;
+            clearTimeout(pushLoadingTimer);
+            pushLoading.classList.remove('is-active');
             if (pushPage.classList.contains('grow')) {
                 // Encoge de vuelta hacia el botón
                 pushPage.classList.add('closing-grow');
@@ -4628,16 +4683,10 @@
         let currentView = 0;
         let viewSwitchTimer = null;
 
-        // Crossfade real: la entrante toma su lugar en flujo normal DE
-        // INMEDIATO (invisible, vía .entering) y la saliente se despega a
-        // position:absolute superpuesta — ambas visibles y animando en el
-        // MISMO frame, no una tras otra con un hueco en blanco entremedio
-        // (así se sentía la versión anterior, secuencial). Se quitó el
-        // flasheo de skeleton que corría en Solicitudes/Beneficios/Tienda/
-        // Perfil: esas vistas son contenido estático, nunca "cargan" nada
-        // distinto, así que el flash sólo añadía movimiento sin significado.
-        const VIEW_FADE_MS = 300;
-
+        // Cambio instantáneo (ver comentario CSS de .view): un tab bar no
+        // debería animar su propio cambio, sólo cambiar. 'entering' se
+        // mantiene sólo para disparar el stagger de las skeleton-card
+        // (una animación de CONTENIDO, no de la página en sí).
         function switchView(index) {
             if (index === currentView) return;
             clearTimeout(viewSwitchTimer);
@@ -4649,18 +4698,12 @@
             document.querySelector('.tabs').classList.toggle('is-hidden', index !== 0);
             document.querySelector('.profile-story').classList.toggle('is-hidden', index !== 0);
 
+            prev.classList.remove('active', 'entering');
             next.classList.add('active', 'entering');
             window.scrollTo({ top: 0 });
-            if (index === 0) simulateLoad(700); // Destacado sí carga datos reales, arranca ya
+            if (index === 0) simulateLoad(700); // Destacado sí carga datos reales
 
-            requestAnimationFrame(() => {
-                prev.classList.add('leaving');
-                next.classList.remove('entering'); // dispara su fade-in a la vez que el fade-out de prev
-            });
-
-            viewSwitchTimer = setTimeout(() => {
-                prev.classList.remove('active', 'leaving');
-            }, VIEW_FADE_MS);
+            viewSwitchTimer = setTimeout(() => next.classList.remove('entering'), 500);
         }
 
         navItems.forEach((item, index) => {
