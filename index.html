@@ -81,10 +81,17 @@
            —San Francisco/Segoe UI/Roboto— que ya traen sus propios pesos
            400/500/600/700 reales, así que aunque Prelo nunca cargue el texto
            en negrita sigue siendo negrita de verdad, no sintética.
-           `font-display: optional` (no "swap"): si no está disponible casi
-           de inmediato, el navegador se queda con la fuente de respaldo
-           permanentemente para esa carga de página, en vez de cambiar de
-           tipografía a mitad de sesión si Prelo termina resolviendo tarde.
+           `font-display: swap` (no "optional"): "optional" le da a la
+           fuente una ventana de bloqueo brevísima (~100ms) y, si no está
+           lista para entonces, el navegador se queda con la de respaldo
+           PARA SIEMPRE en esa carga — ni siquiera cambia si Prelo termina
+           de descargar un instante después. Contra un host de terceros
+           (más lento y menos confiable que un CDN propio), eso significaba
+           que Prelo casi nunca llegaba a aplicarse en la práctica aunque
+           la descarga sí funcionara. "swap" no tiene ese límite: muestra
+           el respaldo de inmediato pero SIEMPRE cambia a Prelo en cuanto
+           esté lista, sea cual sea la demora — se prioriza que la fuente
+           real se vea sobre evitar el pequeño salto visual del cambio.
            Una sola familia "Prelo" con las 4 variantes registradas por peso
            real (400/500/600/700): antes cada variante era una @font-face con
            un nombre de familia distinto y ningún elemento referenciaba
@@ -92,28 +99,28 @@
            negrita sintética sobre la cara Medium incluso cuando Prelo sí
            cargaba. */
         @font-face {
-            font-display: optional;
+            font-display: swap;
             font-family: "Prelo";
             font-weight: 400;
             src: url("https://www.pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-book.woff2") format("woff2");
         }
 
         @font-face {
-            font-display: optional;
+            font-display: swap;
             font-family: "Prelo";
             font-weight: 500;
             src: url("https://www.pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-medium.woff2") format("woff2");
         }
 
         @font-face {
-            font-display: optional;
+            font-display: swap;
             font-family: "Prelo";
             font-weight: 600;
             src: url("https://www.pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-semibold.woff2") format("woff2");
         }
 
         @font-face {
-            font-display: optional;
+            font-display: swap;
             font-family: "Prelo";
             font-weight: 700;
             src: url("https://www.pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-bold.woff2") format("woff2");
@@ -2872,10 +2879,20 @@
                 background-attachment: fixed;
             }
 
-            /* Columna central compartida */
+            /* Columna central compartida. Antes sólo incluía home/login/
+               card-detail: cualquier otro overlay de pantalla completa
+               (push-page —usado tanto por las acciones rápidas como por
+               "Modo finanzas"— y el visor de stories) se quedaba a ancho
+               completo del viewport (position:fixed; inset:0 sin acotar),
+               con su fondo estirado de punta a punta mientras el contenido
+               interno seguía angosto — la app se veía rota/inconsistente
+               en pantallas anchas apenas se abría cualquiera de esas
+               pantallas. */
             #home-page.page,
             .login-screen,
-            .card-detail {
+            .card-detail,
+            .push-page,
+            .story-viewer {
                 width: 100%;
                 max-width: 480px;
                 margin: 0 auto;
@@ -2890,12 +2907,36 @@
                 border-right: 1px solid rgba(15, 38, 92, 0.08);
             }
 
-            /* Overlays fijos centrados a la misma columna */
+            /* Overlays fijos centrados a la misma columna. login-screen y
+               card-detail no dependen de la propiedad transform para su
+               propia animación (login-screen alterna display; card-detail
+               anima con las propiedades individuales scale/translate, no
+               con transform), así que centrarlos con transform:translateX
+               es seguro. push-page y story-viewer SÍ usan transform para
+               su propia animación (deslizar/zoom) — declarar aquí OTRO
+               transform pisaría esa animación (se quedarían siempre
+               centrados sin poder abrir/cerrar, o mal ubicados a mitad de
+               camino). Por eso a esos dos se les centra con
+               left + margin-left (mitad del ancho, en negativo), que no
+               toca transform en absoluto y compone sin conflicto con
+               cualquier transform que la animación necesite. */
             .login-screen,
             .card-detail {
                 left: 50%;
                 right: auto;
                 transform: translateX(-50%);
+            }
+
+            .push-page,
+            .story-viewer {
+                left: 50%;
+                right: auto;
+                margin-left: -240px; /* -(480px máx / 2) */
+            }
+
+            .login-screen,
+            .card-detail,
+            .push-page {
                 border-left: 1px solid rgba(15, 38, 92, 0.08);
                 border-right: 1px solid rgba(15, 38, 92, 0.08);
             }
