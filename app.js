@@ -73,10 +73,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Otro método de ingreso
+  // Otro método de ingreso: entra directo, sin pedir identificación,
+  // pero con la misma pantalla de bienvenida que el login biométrico
+  // para que la transición se sienta igual de intencional.
   if (btnLoginOther) {
     btnLoginOther.addEventListener('click', () => {
-      alert('Otros métodos: Usuario y contraseña (próximamente)');
+      if (welcomeSplash) welcomeSplash.classList.add('show');
+      setTimeout(showHome, 1400);
     });
   }
 

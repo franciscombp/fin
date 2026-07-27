@@ -1775,10 +1775,8 @@
          * contenido— llegue a su lugar al mismo tiempo.
          *
          * Anima `scale`/`translate` (propiedades individuales, no el
-         * shorthand `transform`) a propósito: en desktop este panel se
-         * centra con `transform: translateX(-50%)` en su regla base (ver
-         * media query más abajo) y ambos grupos de propiedades componen sin
-         * pisarse, así el centrado no se pierde mientras crece.
+         * shorthand `transform`) a propósito: deja `transform` libre para
+         * quien lo necesite sin pisar esta animación de entrada.
          */
         .card-detail.entering {
             transform-origin: var(--cd-origin-x, 50%) var(--cd-origin-y, 15%);
@@ -2896,6 +2894,18 @@
                 min-height: 100vh;
             }
 
+            /* Solicitudes/Beneficios/Tienda/Perfil son listas simples de una
+               columna (fila ícono + texto), no un dashboard con tarjetas y
+               grillas como Inicio: si ocupan el mismo ancho que Inicio cada
+               fila queda con el texto pegado a la izquierda y medio vacío el
+               resto — se ve tan desadaptado como la columna angosta que
+               reemplazamos, sólo que ahora por demasiado ancho. Se acotan a
+               un ancho de lectura cómodo, igual que push-page/card-detail. */
+            .view:not([data-view="0"]) {
+                max-width: 640px;
+                margin: 0 auto;
+            }
+
             /* Overlays de pantalla completa (login, detalle de tarjeta,
                push-page, stories): más anchos también, cubren el resto de
                la pantalla como un panel de tarea enfocada — sin quedar
@@ -2909,22 +2919,18 @@
                 margin: 0 auto;
             }
 
-            /* login-screen y card-detail no dependen de la propiedad
-               transform para su propia animación (login-screen alterna
-               display; card-detail anima con las propiedades individuales
-               scale/translate, no con transform), así que centrarlos con
-               transform:translateX es seguro. push-page y story-viewer SÍ
-               usan transform para su propia animación (deslizar/zoom) —
-               declarar aquí OTRO transform pisaría esa animación. Por eso
-               a esos dos se les centra con left + margin-left (mitad del
-               ancho, en negativo), que no toca transform en absoluto. */
+            /* Centrado con left + margin-left (mitad del ancho, en
+               negativo) en vez de transform:translateX en los cuatro:
+               card-detail y finance/push-page contienen una cabecera
+               `position: sticky` (el título grande que colapsa al hacer
+               scroll) y Safari deja de "pegar" un sticky cuando su
+               ancestro de scroll tiene un transform aplicado — el
+               centrado dejaba de tener efecto en cuanto ese ancestro
+               también centraba con transform. left/margin-left no crea
+               ese contexto, así que la cabecera colapsable funciona en
+               cualquier navegador. */
             .login-screen,
-            .card-detail {
-                left: 50%;
-                right: auto;
-                transform: translateX(-50%);
-            }
-
+            .card-detail,
             .push-page,
             .story-viewer {
                 left: 50%;
@@ -2933,6 +2939,14 @@
             }
 
             .debit-card { cursor: pointer; }
+
+            /* Con el ancho de tablet/escritorio ya hay espacio de sobra:
+               4 columnas dejaban los 8 accesos en dos filas con íconos
+               chicos flotando en huecos enormes. 8 en una fila usa el
+               espacio real sin agrandar el ícono (56px fijo). */
+            .quick-actions {
+                grid-template-columns: repeat(8, 1fr);
+            }
         }
 
         /* Escritorio: la navegación pasa de barra inferior a panel lateral
@@ -2977,13 +2991,6 @@
                bastante más espacio en escritorio real. */
             #home-page.page {
                 max-width: 960px;
-            }
-
-            /* 8 accesos rápidos caben en una sola fila con este ancho, en
-               vez de dejar 4 columnas enormes con mucho vacío alrededor
-               de cada ícono. */
-            .quick-actions {
-                grid-template-columns: repeat(8, 1fr);
             }
         }
     </style>
