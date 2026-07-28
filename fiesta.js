@@ -37,8 +37,16 @@
   var serverReachable = !!API;
   var pollTimer = null;
 
-  function setCount(n) {
-    counterEl.textContent = new Intl.NumberFormat('es-EC').format(n);
+  // El número real (server o local) se guarda aparte de un "extra"
+  // simulado que sólo existe en esta pestaña: da la sensación de que
+  // otras personas están festejando al mismo tiempo sin inventarle
+  // festejos al contador compartido de verdad (no se manda al server ni
+  // se persiste en localStorage).
+  var baseCount = 0;
+  var simulatedExtra = 0;
+
+  function render() {
+    counterEl.textContent = new Intl.NumberFormat('es-EC').format(baseCount + simulatedExtra);
   }
 
   function localCount(delta) {
@@ -53,29 +61,44 @@
   }
 
   function refresh() {
-    if (!serverReachable) { setCount(localCount(0)); return; }
+    if (!serverReachable) { baseCount = localCount(0); render(); return; }
     fetch(API, { cache: 'no-store' })
       .then(function (r) { return r.json(); })
-      .then(function (d) { setCount(d.count); })
-      .catch(function () { giveUpOnServer(); setCount(localCount(0)); });
+      .then(function (d) { baseCount = d.count; render(); })
+      .catch(function () { giveUpOnServer(); baseCount = localCount(0); render(); });
   }
 
   function celebrate() {
     // Optimista: pinta ya el +1 mientras confirma el server
-    setCount((parseInt(counterEl.textContent.replace(/\D/g, ''), 10) || 0) + 1);
+    baseCount++;
+    render();
     if (!serverReachable) { localCount(1); return; }
     fetch(API, { method: 'POST' })
       .then(function (r) { return r.json(); })
-      .then(function (d) { setCount(d.count); })
-      .catch(function () { giveUpOnServer(); setCount(localCount(1)); });
+      .then(function (d) { baseCount = d.count; render(); })
+      .catch(function () { giveUpOnServer(); baseCount = localCount(1); render(); });
   }
 
   if (serverReachable) {
     refresh();
     pollTimer = setInterval(refresh, POLL_MS); // "tiempo real" sencillo: sondeo cada 3 s
   } else {
-    setCount(localCount(0)); // sin servidor conocido: directo al contador local
+    baseCount = localCount(0); // sin servidor conocido: directo al contador local
+    render();
   }
+
+  // Simula que otras personas también están festejando: cada tanto suma
+  // un puñado al "extra" (nunca al contador real) para que el número se
+  // sienta vivo incluso si nadie más está tocando el botón en este momento.
+  // (rand() se declara más abajo, junto a la pirotecnia — function
+  // declarations se izan, así que ya está disponible aquí.)
+  (function simulateOthers() {
+    setTimeout(function () {
+      simulatedExtra += Math.round(rand(1, 6));
+      render();
+      simulateOthers();
+    }, rand(2200, 5200));
+  })();
 
   // ---------- Pirotecnia (canvas) ----------
   var canvas = document.getElementById('fiesta-canvas');
@@ -86,17 +109,20 @@
   var running = false;
   var dpr = Math.min(window.devicePixelRatio || 1, 2);
   var FLAG_EVERY = 5; // cada N festejos, un firework forma la bandera
-  var rocketBaseY = innerHeight * 0.45; // altura de lanzamiento (desde la zona gris)
+  var rocketBaseY = innerHeight * 0.55; // altura de lanzamiento (desde el botón)
 
   function resize() {
     canvas.width = innerWidth * dpr;
     canvas.height = innerHeight * dpr;
-    // Recalcular la altura de lanzamiento si la ventana cambia
-    var loginTop = document.querySelector('.login-screen__top');
-    if (loginTop) {
-      var rect = loginTop.getBoundingClientRect();
-      rocketBaseY = rect.bottom;
-    }
+    // El botón vive en la zona superior del login, que ahora ocupa sólo
+    // media pantalla (antes era casi toda) — anclar el lanzamiento a su
+    // borde real dejaba muy poco margen arriba y el estallido terminaba
+    // saliéndose por el borde superior. Se usa su posición real sólo si
+    // ya deja al menos 45% de la pantalla libre arriba para el estallido;
+    // si no, se ancla más abajo en su lugar.
+    var rect = btn.getBoundingClientRect();
+    var measured = rect.height ? rect.top : innerHeight * 0.55;
+    rocketBaseY = Math.max(measured, innerHeight * 0.55);
   }
   resize();
   addEventListener('resize', resize);
@@ -234,8 +260,11 @@
 
   function fireworksShow(withFlag) {
     canvas.classList.add('show');
-    // Tanda de cohetes escalonados
-    for (var i = 0; i < 5; i++) setTimeout(function () { launchRocket(false); }, i * 180);
+    // El primero se lanza ya, sin setTimeout: si el primer frame() de
+    // requestAnimationFrame se ejecuta antes que un setTimeout(0), ve los
+    // arrays todavía vacíos y apaga "show" de inmediato sin que se vea nada.
+    launchRocket(false);
+    for (var i = 1; i < 5; i++) setTimeout(function () { launchRocket(false); }, i * 180);
     // Gran final: un cohete central que forma la bandera
     if (withFlag) setTimeout(function () { launchRocket(true); }, 5 * 180 + 150);
     if (!running) { running = true; requestAnimationFrame(frame); }

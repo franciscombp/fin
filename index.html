@@ -2669,6 +2669,90 @@
             color: #fff;
         }
 
+        /* ---------- Transferir dinero: flujo de pago de inicio a fin ----------
+           Beneficiario -> monto -> confirmar -> procesando -> éxito, todo
+           dentro de #push-extra (mismo contenedor de las otras plantillas). */
+        .push-transfer-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--bp-text-interactive);
+            cursor: pointer;
+            padding: 4px 0;
+            margin-bottom: 8px;
+        }
+        .push-transfer-back .material-symbols-rounded { font-size: 18px; }
+
+        .push-transfer-target {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--bp-surface-container);
+            border-radius: var(--bp-radius-md);
+            padding: 12px 16px;
+        }
+        .push-transfer-target__name { font-size: 15px; font-weight: 700; }
+        .push-transfer-target__meta { font-size: 13px; color: var(--bp-text-secondary); }
+
+        .push-transfer-amount {
+            font-size: 36px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            margin-bottom: 16px;
+        }
+
+        .push-transfer-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 32px 8px 8px;
+        }
+
+        .push-transfer-center .push-loading__spinner { margin-bottom: 20px; }
+
+        .push-transfer-processing-text {
+            font-size: 15px;
+            color: var(--bp-text-secondary);
+        }
+
+        .push-transfer-success__icon {
+            color: #1e9e5a;
+            font-size: 64px;
+            margin-bottom: 12px;
+            animation: transferSuccessPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes transferSuccessPop {
+            0% { transform: scale(0.4); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .push-transfer-success__title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .push-transfer-success__amount {
+            font-size: 32px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            margin-bottom: 4px;
+        }
+        .push-transfer-success__meta {
+            font-size: 14px;
+            color: var(--bp-text-secondary);
+        }
+        .push-transfer-success__ref {
+            font-size: 12px;
+            color: var(--bp-text-helper);
+            margin: 4px 0 24px;
+        }
+        .push-transfer-success .login-button { width: 100%; }
+
         /* ---------- Modo finanzas: resumen consolidado ---------- */
         .finance-subtitle {
             font-size: 15px;
@@ -2744,6 +2828,10 @@
                saltos de layout */
             border-bottom: 1px solid transparent;
             transition: background 0.25s ease, border-color 0.25s ease;
+            /* Como PWA instalada (standalone) el contenido dibuja debajo
+               del status bar/notch — en Safari normal esa franja ya la
+               reserva el navegador, por eso ahí se veía bien sin esto. */
+            padding-top: env(safe-area-inset-top, 0px);
         }
 
         .detail-topbar__row {
@@ -4131,6 +4219,7 @@
         const pushTitle = document.getElementById('push-title');
         const pushTopbarTitle = document.getElementById('push-topbar-title');
         const pushHeroIcon = document.getElementById('push-hero-icon');
+        const pushCta = document.getElementById('push-cta');
         const pushLoading = document.getElementById('push-loading');
         const pushLoadingText = document.getElementById('push-loading-text');
         const pushMovs = document.getElementById('push-movs');
@@ -4261,9 +4350,10 @@
         const FAKE_QR_SVG = buildFakeQR();
 
         const BENEFICIARIES = [
-            ['MJ', 'María José', '#276db6'], ['CA', 'Carlos A.', '#1e9e5a'],
-            ['LP', 'Luis P.', '#8e44ad'], ['SG', 'Sofía G.', '#e67e22'], ['DR', 'Diego R.', '#c0392b'],
+            ['MJ', 'María José', '#276db6', '4521'], ['CA', 'Carlos A.', '#1e9e5a', '7734'],
+            ['LP', 'Luis P.', '#8e44ad', '2290'], ['SG', 'Sofía G.', '#e67e22', '6015'], ['DR', 'Diego R.', '#c0392b', '3348'],
         ];
+        const TRANSFER_AMOUNT_CHIPS = [20, 50, 100, 200];
         const SERVICE_BILLERS = [
             ['bolt', 'Empresa Eléctrica Quito', 'Luz', '#f76800'],
             ['water_drop', 'EPMAPS', 'Agua potable', '#2f7abf'],
@@ -4300,18 +4390,7 @@
                     <div class="push-qr__code">${FAKE_QR_SVG}</div>
                     <p class="push-qr__caption">Comparte este código para que te paguen desde cualquier banco.</p>
                 </div>`,
-            'Transferir dinero': () => `
-                <div class="push-beneficiaries">
-                    <button class="push-beneficiary push-beneficiary--new" data-action="Nuevo beneficiario">
-                        <span class="push-beneficiary__avatar"><span class="material-symbols-rounded">add</span></span>
-                        <span class="push-beneficiary__name">Nuevo</span>
-                    </button>
-                    ${BENEFICIARIES.map(b => `
-                        <button class="push-beneficiary" data-action="Transferir a ${b[1]}">
-                            <span class="push-beneficiary__avatar" style="background:${b[2]};">${b[0]}</span>
-                            <span class="push-beneficiary__name">${b[1].split(' ')[0]}</span>
-                        </button>`).join('')}
-                </div>`,
+            'Transferir dinero': () => transferPickHTML(),
             'Pagar servicios': () => `
                 <div class="card">
                     ${SERVICE_BILLERS.map(s => `
@@ -4331,6 +4410,142 @@
                     ${RECHARGE_AMOUNTS.map((a, i) => `<button class="push-chip${i === 1 ? ' is-selected' : ''}" data-action="Recargar ${a}">${a}</button>`).join('')}
                 </div>`,
         };
+
+        // ---------- Transferir dinero: flujo de pago simulado de inicio a
+        // fin (beneficiario -> monto -> confirmar -> procesando -> éxito) ----------
+        let transferFlow = null; // { beneficiary: {initials,name,color,acct}, amount }
+        const fmtMoney = n => n.toFixed(2).replace('.', ',');
+
+        function transferPickHTML() {
+            return `
+                <div class="push-beneficiaries">
+                    <button class="push-beneficiary push-beneficiary--new" data-beneficiary="__new">
+                        <span class="push-beneficiary__avatar"><span class="material-symbols-rounded">add</span></span>
+                        <span class="push-beneficiary__name">Nuevo</span>
+                    </button>
+                    ${BENEFICIARIES.map(b => `
+                        <button class="push-beneficiary" data-beneficiary="${b[1]}">
+                            <span class="push-beneficiary__avatar" style="background:${b[2]};">${b[0]}</span>
+                            <span class="push-beneficiary__name">${b[1].split(' ')[0]}</span>
+                        </button>`).join('')}
+                </div>`;
+        }
+
+        function transferAmountHTML(b) {
+            return `
+                <button class="push-transfer-back" data-transfer-back>
+                    <span class="material-symbols-rounded">arrow_back</span>Cambiar beneficiario
+                </button>
+                <div class="push-transfer-target">
+                    <span class="push-beneficiary__avatar" style="background:${b.color};">${b.initials}</span>
+                    <div>
+                        <div class="push-transfer-target__name">${b.name}</div>
+                        <div class="push-transfer-target__meta">Cuenta de ahorros ******${b.acct}</div>
+                    </div>
+                </div>
+                <p class="finance-subtitle" style="margin-top:20px;">¿Cuánto quieres transferir?</p>
+                <div class="push-transfer-amount" id="transfer-amount-display">$ 0,00</div>
+                <div class="push-chip-row">
+                    ${TRANSFER_AMOUNT_CHIPS.map(a => `<button class="push-chip" data-transfer-chip="${a}">$ ${a}</button>`).join('')}
+                </div>
+                <button class="login-button login-button--primary" data-transfer-continue disabled>Continuar</button>`;
+        }
+
+        function transferConfirmHTML(b, amount) {
+            return `
+                <button class="push-transfer-back" data-transfer-back-amount>
+                    <span class="material-symbols-rounded">arrow_back</span>Editar monto
+                </button>
+                <p class="finance-subtitle" style="margin-top:20px;">Revisa los datos antes de confirmar</p>
+                <div class="card">
+                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">Para</span><span class="sub-item__meta">${b.name} · ******${b.acct}</span></span></div>
+                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">Desde</span><span class="sub-item__meta">Cuenta PRINCIPAL ******7890</span></span></div>
+                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">Monto</span></span><span class="sub-item__price">$ ${fmtMoney(amount)}</span></div>
+                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">Comisión</span></span><span class="sub-item__price">$ 0,00</span></div>
+                </div>
+                <button class="login-button login-button--primary" data-transfer-confirm>Confirmar transferencia</button>`;
+        }
+
+        function transferProcessingHTML() {
+            return `
+                <div class="push-transfer-center">
+                    <div class="push-loading__spinner"></div>
+                    <p class="push-transfer-processing-text">Procesando tu transferencia…</p>
+                </div>`;
+        }
+
+        function transferSuccessHTML(b, amount) {
+            const ref = Math.floor(100000000 + Math.random() * 900000000);
+            return `
+                <div class="push-transfer-center push-transfer-success">
+                    <span class="material-symbols-rounded push-transfer-success__icon">check_circle</span>
+                    <h2 class="push-transfer-success__title">¡Transferencia exitosa!</h2>
+                    <div class="push-transfer-success__amount">$ ${fmtMoney(amount)}</div>
+                    <p class="push-transfer-success__meta">Enviado a ${b.name}</p>
+                    <p class="push-transfer-success__ref">Comprobante Nro. ${ref}</p>
+                    <button class="login-button login-button--primary" data-transfer-done>Listo</button>
+                </div>`;
+        }
+
+        // Delegado (una sola vez): #push-extra se re-renderiza en cada paso,
+        // así que escuchar en el contenedor evita recablear tras cada cambio.
+        document.getElementById('push-extra').addEventListener('click', (e) => {
+            const extra = document.getElementById('push-extra');
+
+            const benBtn = e.target.closest('[data-beneficiary]');
+            if (benBtn) {
+                const key = benBtn.dataset.beneficiary;
+                const found = BENEFICIARIES.find(x => x[1] === key);
+                const b = found
+                    ? { initials: found[0], name: found[1], color: found[2], acct: found[3] }
+                    : { initials: 'NB', name: 'Nuevo beneficiario', color: 'var(--bp-selection-bg-active)', acct: '0000' };
+                transferFlow = { beneficiary: b, amount: 0 };
+                extra.innerHTML = transferAmountHTML(b);
+                return;
+            }
+
+            const chip = e.target.closest('[data-transfer-chip]');
+            if (chip) {
+                chip.parentElement.querySelectorAll('[data-transfer-chip]').forEach(c => c.classList.remove('is-selected'));
+                chip.classList.add('is-selected');
+                transferFlow.amount = parseFloat(chip.dataset.transferChip);
+                document.getElementById('transfer-amount-display').textContent = `$ ${fmtMoney(transferFlow.amount)}`;
+                extra.querySelector('[data-transfer-continue]').disabled = false;
+                return;
+            }
+
+            if (e.target.closest('[data-transfer-back]')) {
+                transferFlow = null;
+                extra.innerHTML = transferPickHTML();
+                return;
+            }
+
+            if (e.target.closest('[data-transfer-back-amount]')) {
+                extra.innerHTML = transferAmountHTML(transferFlow.beneficiary);
+                return;
+            }
+
+            const cont = e.target.closest('[data-transfer-continue]');
+            if (cont && !cont.disabled) {
+                extra.innerHTML = transferConfirmHTML(transferFlow.beneficiary, transferFlow.amount);
+                return;
+            }
+
+            if (e.target.closest('[data-transfer-confirm]')) {
+                extra.innerHTML = transferProcessingHTML();
+                setTimeout(() => {
+                    if (!transferFlow) return; // se cerró el push-page mientras procesaba
+                    extra.innerHTML = transferSuccessHTML(transferFlow.beneficiary, transferFlow.amount);
+                }, 1800);
+                return;
+            }
+
+            if (e.target.closest('[data-transfer-done]')) {
+                transferFlow = null;
+                closePushPage();
+                showToast('Transferencia registrada');
+            }
+        });
 
         function renderPushExtra(title) {
             const build = ACTION_EXTRAS[title];
@@ -4375,7 +4590,12 @@
         function openPushPage(title, originEl) {
             pushTitle.textContent = title;
             pushTopbarTitle.textContent = title;
+            transferFlow = null; // reinicia el flujo si había quedado a medias
             renderPushExtra(title);
+            // El flujo de transferencia trae su propio CTA por paso
+            // (Continuar/Confirmar/Listo); el "Continuar" genérico de abajo
+            // sobra y quedaría flotando debajo del paso que sea.
+            pushCta.style.display = title === 'Transferir dinero' ? 'none' : '';
 
             clearTimeout(pushLoadingTimer);
             if (SLOW_LOAD_ACTIONS.has(title)) {
