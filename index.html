@@ -313,8 +313,17 @@
         /* ---------- Tabs ----------
            "Modo finanzas" queda fijo fuera de la zona con scroll: es un
            acceso aparte (cambia de modo), no una sección más de la lista
-           de productos, así que no debe desplazarse junto con ellas. */
+           de productos, así que no debe desplazarse junto con ellas.
+           Sticky por su cuenta (ya no vive dentro de .header): el offset
+           "top" es la altura del top-bar (56px) + su propio safe-area, así
+           que al scrollear queda pegado justo debajo del logo, como una
+           sola cabecera de dos pisos — con el banner de ofertas
+           desapareciendo entremedio en flujo normal. */
         .tabs {
+            position: sticky;
+            top: calc(56px + env(safe-area-inset-top, 0px));
+            z-index: 49;
+            background: var(--bp-surface-page);
             display: flex;
             align-items: center;
             gap: 8px;
@@ -367,6 +376,134 @@
 
         .tab:active {
             transform: scale(0.96);
+        }
+
+        /* ---------- Banner de ofertas (carrusel infinito) ----------
+           No sticky a propósito: vive en flujo normal entre el logo y los
+           tabs (ambos sticky), así que al hacer scroll simplemente se
+           desplaza hacia arriba y desaparece detrás de ellos. */
+        .home-banner {
+            padding: 4px 0 4px;
+        }
+        .home-banner.is-hidden { display: none; }
+
+        .home-banner__track {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            padding: 0 24px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .home-banner__track::-webkit-scrollbar { display: none; }
+
+        .home-banner__slide {
+            scroll-snap-align: center;
+            flex: 0 0 84%;
+            max-width: 360px;
+            height: 168px;
+            border-radius: var(--bp-radius-md);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+            padding: 20px;
+            cursor: pointer;
+        }
+
+        .home-banner__figure {
+            position: absolute;
+            right: -30px;
+            bottom: -30px;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            filter: blur(2px);
+        }
+
+        .home-banner__slide--1 {
+            background: radial-gradient(120% 140% at 88% -12%, rgba(255, 255, 255, 0.16), transparent 55%),
+                        linear-gradient(135deg, #23232b 0%, #313139 55%, #101014 100%);
+        }
+        .home-banner__slide--1 .home-banner__figure {
+            background: radial-gradient(circle at 35% 35%, #fcd000, #f76800 70%, transparent 100%);
+            opacity: 0.85;
+        }
+
+        .home-banner__slide--2 {
+            background: radial-gradient(120% 140% at 88% -12%, rgba(255, 255, 255, 0.14), transparent 55%),
+                        linear-gradient(135deg, #0f265c 0%, #1c3f8f 60%, #0a1a40 100%);
+        }
+        .home-banner__slide--2 .home-banner__figure {
+            background: radial-gradient(circle at 35% 35%, #7fb3ff, #2f7abf 70%, transparent 100%);
+            opacity: 0.8;
+        }
+
+        .home-banner__slide--3 {
+            background: radial-gradient(120% 140% at 88% -12%, rgba(255, 255, 255, 0.14), transparent 55%),
+                        linear-gradient(135deg, #1e9e5a 0%, #0f7a4d 60%, #06331f 100%);
+        }
+        .home-banner__slide--3 .home-banner__figure {
+            background: radial-gradient(circle at 35% 35%, #baf7d3, #1e9e5a 70%, transparent 100%);
+            opacity: 0.8;
+        }
+
+        .home-banner__text {
+            position: relative;
+            z-index: 1;
+            max-width: 64%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .home-banner__title {
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.35;
+            color: #fff;
+            margin: 0;
+        }
+
+        .home-banner__cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            align-self: flex-start;
+            height: 32px;
+            padding: 0 12px 0 14px;
+            border-radius: 100px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            cursor: pointer;
+        }
+        .home-banner__cta .material-symbols-rounded { font-size: 16px; }
+        .home-banner__cta:active { transform: scale(0.96); }
+
+        .home-banner__dots {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .home-banner__dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--bp-border-divider);
+            transition: background 0.2s ease, width 0.2s ease;
+        }
+        .home-banner__dot.is-active {
+            background: var(--bp-selection-bg-active);
+            width: 16px;
+            border-radius: 3px;
         }
 
         /* ---------- Secciones ---------- */
@@ -498,6 +635,51 @@
             perspective: 900px;
         }
 
+        /* Estado sin tarjeta de débito activa (cuenta sin Débito Digital):
+           reemplaza a .debit-card cuando se cambia de cuenta con "Cambiar". */
+        .debit-card-disabled {
+            padding: 16px;
+            border: 1.5px dashed #c7cedd;
+            border-radius: var(--bp-radius-sm);
+            background: rgba(233, 236, 243, 0.35);
+        }
+        .debit-card-disabled.is-hidden { display: none; }
+        .debit-card-disabled__row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .debit-card-disabled__logo {
+            height: 15px;
+            width: auto;
+            opacity: 0.5;
+            filter: grayscale(1);
+        }
+        .debit-card-disabled__visa {
+            font-size: 15px;
+            font-weight: 800;
+            font-style: italic;
+            color: var(--bp-text-helper);
+        }
+        .debit-card-disabled__text {
+            font-size: 14px;
+            color: var(--bp-text-secondary);
+            margin: 0 0 4px;
+        }
+        .debit-card-disabled__link {
+            display: block;
+            border: none;
+            background: transparent;
+            padding: 0;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--bp-text-interactive);
+            cursor: pointer;
+            text-align: left;
+        }
+
         .debit-card {
             position: relative;
             width: 100%;
@@ -514,6 +696,7 @@
             transition: transform 0.15s ease-out;
             will-change: transform;
         }
+        .debit-card.is-hidden { display: none; }
 
         /* Arte de la tarjeta: el mismo asset que el detalle, recortado desde
            arriba. El logo de Banco Pichincha y el VISA vienen impresos en la
@@ -1777,12 +1960,28 @@
          * Anima `scale`/`translate` (propiedades individuales, no el
          * shorthand `transform`) a propósito: deja `transform` libre para
          * quien lo necesite sin pisar esta animación de entrada.
+         * Cuando SÍ hay tarjeta para hacer morph (el caso normal), el panel
+         * sólo se desvanece (opacity) — el propio #cd-card ya hace su
+         * translate/clip-path hacia el origen (ver openCardDetail). Antes el
+         * panel completo TAMBIÉN escalaba/trasladaba (cdGrowIn/cdShrinkOut)
+         * al mismo tiempo que la tarjeta hacía su propio movimiento: dos
+         * animaciones de transform compitiendo con curvas de easing
+         * distintas, sobre todo notorio al cerrar (se sentía doble/tosco).
+         * cdGrowIn/cdShrinkOut (con scale+translate) quedan sólo para
+         * .no-morph: el respaldo cuando no hay tarjeta visible que animar.
          */
         .card-detail.entering {
             transform-origin: var(--cd-origin-x, 50%) var(--cd-origin-y, 15%);
+            animation: cdFadeIn 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+        .card-detail.entering.no-morph {
             animation: cdGrowIn 0.5s cubic-bezier(0.32, 0.72, 0, 1);
         }
 
+        @keyframes cdFadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
         @keyframes cdGrowIn {
             from { opacity: 0; scale: 0.94; translate: 0 10px; }
             to   { opacity: 1; scale: 1; translate: 0 0; }
@@ -1790,9 +1989,16 @@
 
         .card-detail.closing {
             transform-origin: var(--cd-origin-x, 50%) var(--cd-origin-y, 15%);
+            animation: cdFadeOut 0.42s cubic-bezier(0.4, 0, 1, 1) forwards;
+        }
+        .card-detail.closing.no-morph {
             animation: cdShrinkOut 0.42s cubic-bezier(0.4, 0, 1, 1) forwards;
         }
 
+        @keyframes cdFadeOut {
+            from { opacity: 1; }
+            to   { opacity: 0; }
+        }
         @keyframes cdShrinkOut {
             from { opacity: 1; scale: 1; translate: 0 0; }
             to   { opacity: 0; scale: 0.94; translate: 0 10px; }
@@ -1913,6 +2119,56 @@
             display: block;
             border-radius: var(--bp-radius-md);
         }
+        .cd-card__img.is-hidden { display: none; }
+
+        /* Arte de tarjeta genérico (CSS, sin foto): tarjetas de crédito que
+           no tienen un asset propio como card-debit.png. Mismo ratio que
+           esa imagen (1312x827) para que el resto del layout no salte. */
+        .cd-card__art {
+            display: none;
+            flex-direction: column;
+            gap: 28px;
+            aspect-ratio: 1.586;
+            width: 100%;
+            border-radius: var(--bp-radius-md);
+            /* padding-bottom de sobra: deja libre la franja donde flota el
+               pill ".cd-card__hint" ("Desliza para ver datos") para que el
+               número no quede tapado detrás de él */
+            padding: 20px 20px 44px;
+            box-sizing: border-box;
+        }
+        .cd-card__art.is-active { display: flex; }
+        .cd-card__art-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+        .cd-card__art-brand {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            line-height: 1.25;
+        }
+        .cd-card__art-number {
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            font-variant-numeric: tabular-nums;
+        }
+        .cd-card__art--black {
+            background: linear-gradient(135deg, #2b2d33, #060606);
+        }
+        .cd-card__art--black .cd-card__art-brand,
+        .cd-card__art--black .cd-card__art-number { color: #fff; }
+        .cd-card__art--black .cd-card__art-number { opacity: 0.85; }
+
+        .cd-card__art--diners {
+            background: linear-gradient(135deg, #eef1f5, #dfe4ec);
+            border: 1px solid rgba(15, 38, 92, 0.08);
+        }
+        .cd-card__art--diners .cd-card__art-brand { color: #0f265c; }
+        .cd-card__art--diners .cd-card__art-number { color: rgba(15, 38, 92, 0.75); }
+        .cd-card__art-diners-text { font-size: 15px; font-weight: 700; color: #274c8f; }
 
         /* Pista de girar para revelar */
         .cd-card__hint {
@@ -2885,6 +3141,73 @@
             opacity: 0;
         }
 
+        /* ---------- Tema oscuro del detalle (tarjetas premium tipo Black) ----------
+           Se activa con .theme-dark sobre #card-detail cuando el tipo de
+           tarjeta lo pide (ver CARD_DETAIL_THEMES). Todo queda scopeado
+           bajo .card-detail.theme-dark para no filtrar el look oscuro a
+           .quick-action/.sub-item en el resto de la app, que siguen claros. */
+        .card-detail.theme-dark {
+            background: #0b0b0d;
+            color-scheme: dark;
+        }
+        .card-detail.theme-dark .cd-title,
+        .card-detail.theme-dark .cd-subtitle {
+            color: #f5f5f7;
+        }
+        .card-detail.theme-dark .detail-topbar {
+            background: transparent;
+        }
+        .card-detail.theme-dark.scrolled .detail-topbar {
+            background: rgba(20, 20, 23, 0.85);
+            border-bottom-color: rgba(255, 255, 255, 0.08);
+        }
+        .card-detail.theme-dark .detail-topbar__title {
+            color: #f5f5f7;
+        }
+        .card-detail.theme-dark .icon-button {
+            color: #f5f5f7;
+        }
+        .card-detail.theme-dark .icon-button:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .card-detail.theme-dark .icon-button:active {
+            background: rgba(255, 255, 255, 0.14);
+        }
+        .card-detail.theme-dark .cd-actions {
+            background: #1c1c1f;
+        }
+        .card-detail.theme-dark .quick-action__icon {
+            background: rgba(255, 255, 255, 0.08);
+            color: #f5f5f7;
+        }
+        .card-detail.theme-dark .quick-action:hover .quick-action__icon {
+            background: rgba(252, 208, 0, 0.16);
+        }
+        .card-detail.theme-dark .quick-action__label {
+            color: #f5f5f7;
+        }
+        .card-detail.theme-dark .cd-subs {
+            background: #1c1c1f;
+        }
+        .card-detail.theme-dark .sub-item {
+            border-bottom-color: rgba(255, 255, 255, 0.08);
+        }
+        .card-detail.theme-dark .sub-item__name {
+            color: #f5f5f7;
+        }
+        .card-detail.theme-dark .sub-item__meta {
+            color: #a3a3ab;
+        }
+        .card-detail.theme-dark .sub-item__price {
+            color: #f5f5f7;
+        }
+        .card-detail.theme-dark .sub-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .card-detail.theme-dark .sub-item:active {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
         /* Contenido del push: sube con stagger al abrir */
         .push-page.open .push-page__hero,
         .push-page.open .section {
@@ -2994,13 +3317,11 @@
                 margin: 0 auto;
             }
 
-            /* Overlays de pantalla completa (login, detalle de tarjeta,
-               push-page, stories): más anchos también, cubren el resto de
-               la pantalla como un panel de tarea enfocada — sin quedar
+            /* Login y stories sí quedan como un panel centrado de tarea
+               enfocada (login no es "una página" del banco todavía, y las
+               stories son contenido vertical tipo Instagram) — sin quedar
                angostos ni volver a la sensación de columna flotante. */
             .login-screen,
-            .card-detail,
-            .push-page,
             .story-viewer {
                 width: 100%;
                 max-width: 640px;
@@ -3008,23 +3329,27 @@
             }
 
             /* Centrado con left + margin-left (mitad del ancho, en
-               negativo) en vez de transform:translateX en los cuatro:
-               card-detail y finance/push-page contienen una cabecera
-               `position: sticky` (el título grande que colapsa al hacer
-               scroll) y Safari deja de "pegar" un sticky cuando su
-               ancestro de scroll tiene un transform aplicado — el
-               centrado dejaba de tener efecto en cuanto ese ancestro
-               también centraba con transform. left/margin-left no crea
-               ese contexto, así que la cabecera colapsable funciona en
-               cualquier navegador. */
+               negativo) en vez de transform:translateX: login-screen
+               contiene contenido que anima con transform (bandera,
+               tarjeta) y así no compite con el centrado. */
             .login-screen,
-            .card-detail,
-            .push-page,
             .story-viewer {
                 left: 50%;
                 right: auto;
                 margin-left: -320px; /* -(640px máx / 2) */
             }
+
+            /* card-detail/push-page (y finance-page, que comparte la misma
+               clase) quedan a ancho completo (su regla base ya es
+               position:fixed; inset:0, sin tocar aquí) en vez de angostarse
+               también a 640px: como ESE elemento es el que pinta el fondo
+               (blanco/negro según el tema), angostarlo dejaba "sangrar" el
+               home de fondo a los costados — ni página completa ni modal
+               con velo, un híbrido roto. El contenido interior
+               (.cd-inner/.push-page__inner) ya tiene su propio ancho de
+               lectura cómodo (480px, ver esas reglas), así que separa igual
+               que Solicitudes/Beneficios/Perfil: cáscara completa, columna
+               de lectura angosta adentro. */
 
             .debit-card { cursor: pointer; }
 
@@ -3188,22 +3513,32 @@
                     </button>
                 </div>
             </div>
-
-            <!-- Tabs -->
-            <nav class="tabs" aria-label="Secciones">
-                <button class="tab" data-action="Modo finanzas" aria-label="Modo finanzas">
-                    <span class="material-symbols-rounded">monitoring</span>
-                </button>
-                <div class="tabs__scroll">
-                    <button class="tab active" data-panel="Destacado">Destacado</button>
-                    <button class="tab" data-panel="Cuentas">Cuentas</button>
-                    <button class="tab" data-panel="Tarjetas">Tarjetas</button>
-                    <button class="tab" data-panel="Prestamos">Préstamos</button>
-                    <button class="tab" data-panel="Inversiones">Inversiones</button>
-                    <button class="tab" data-panel="Seguros">Seguros</button>
-                </div>
-            </nav>
         </header>
+
+        <!-- Carrusel de ofertas: vive FUERA de .header/.tabs a propósito, en
+             flujo normal (no sticky) — así se desplaza y desaparece con el
+             scroll mientras el logo y los tabs, cada uno sticky por su
+             cuenta, quedan pegados uno debajo del otro exactamente igual
+             que antes de agregar este banner. -->
+        <div class="home-banner" id="home-banner" aria-label="Ofertas">
+            <div class="home-banner__track" id="home-banner-track"></div>
+            <div class="home-banner__dots" id="home-banner-dots"></div>
+        </div>
+
+        <!-- Tabs -->
+        <nav class="tabs" aria-label="Secciones">
+            <button class="tab" data-action="Modo finanzas" aria-label="Modo finanzas">
+                <span class="material-symbols-rounded">monitoring</span>
+            </button>
+            <div class="tabs__scroll">
+                <button class="tab active" data-panel="Destacado">Destacado</button>
+                <button class="tab" data-panel="Cuentas">Cuentas</button>
+                <button class="tab" data-panel="Tarjetas">Tarjetas</button>
+                <button class="tab" data-panel="Prestamos">Préstamos</button>
+                <button class="tab" data-panel="Inversiones">Inversiones</button>
+                <button class="tab" data-panel="Seguros">Seguros</button>
+            </div>
+        </nav>
 
         <main id="views">
         <!-- Vista previa (skeleton) que asoma al hacer swipe entre secciones -->
@@ -3234,9 +3569,9 @@
 
             <div class="card account-card" id="account-card" role="button" tabindex="0" aria-label="Ver detalle de cuenta PRINCIPAL">
                 <div class="card__header">
-                    <span class="card__header-title">PRINCIPAL</span>
+                    <span class="card__header-title" id="account-title">PRINCIPAL</span>
                     <div class="card__header-meta">
-                        <span>Nro. ******7890</span>
+                        <span id="account-number">Nro. ******7890</span>
                         <span class="material-symbols-rounded">info</span>
                     </div>
                 </div>
@@ -3259,6 +3594,16 @@
                         </div>
                         <div class="debit-card__shine"></div>
                     </button>
+
+                    <!-- Estado sin tarjeta de débito activa (otra cuenta) -->
+                    <div class="debit-card-disabled is-hidden" id="debit-card-disabled">
+                        <div class="debit-card-disabled__row">
+                            <img src="./assets/bp-brand-logo--blue.svg" alt="Banco Pichincha" class="debit-card-disabled__logo">
+                            <span class="debit-card-disabled__visa">VISA</span>
+                        </div>
+                        <p class="debit-card-disabled__text">Para tus compras y pagos por internet</p>
+                        <button class="debit-card-disabled__link" data-action="Activar Débito Digital">Activa tu tarjeta Débito Digital</button>
+                    </div>
                 </div>
             </div>
 
@@ -3796,20 +4141,28 @@
                 <button class="icon-button" id="cd-back" aria-label="Volver">
                     <span class="material-symbols-rounded">arrow_back</span>
                 </button>
-                <span class="detail-topbar__title">Débito Internacional</span>
+                <span class="detail-topbar__title" id="cd-topbar-title">Débito Internacional</span>
                 <button class="icon-button" data-action="Ajustes de tarjeta" aria-label="Ajustes" style="margin-left:auto;">
                     <span class="material-symbols-rounded">settings</span>
                 </button>
             </div>
         </div>
         <div class="cd-inner">
-            <h1 class="cd-title">Débito Internacional</h1>
+            <h1 class="cd-title" id="cd-title">Débito Internacional</h1>
 
             <div class="cd-card" id="cd-card">
                 <div class="cd-flip" id="cd-flip">
-                    <!-- Frente: imagen de la tarjeta -->
+                    <!-- Frente: imagen de la tarjeta (Visa Débito) o arte CSS
+                         genérico (tarjetas de crédito sin foto propia) -->
                     <div class="cd-face cd-face--front">
-                        <img class="cd-card__img" src="./assets/card-debit.png" alt="Tarjeta de débito internacional">
+                        <img class="cd-card__img" id="cd-card-img" src="./assets/card-debit.png" alt="Tarjeta de débito internacional">
+                        <div class="cd-card__art" id="cd-card-art">
+                            <div class="cd-card__art-top">
+                                <span class="cd-card__art-brand">BANCO<br>PICHINCHA</span>
+                                <span class="cd-card__art-mark" id="cd-card-art-mark"></span>
+                            </div>
+                            <span class="cd-card__art-number" id="cd-card-art-number"></span>
+                        </div>
                         <div class="cd-shine"></div>
                         <div class="cd-card__hint">
                             <span class="material-symbols-rounded">swipe</span>
@@ -3840,11 +4193,11 @@
                             <div class="cd-data__row">
                                 <div class="cd-data__item">
                                     <span class="cd-data__label">Vence</span>
-                                    <span class="cd-data__value">08/29</span>
+                                    <span class="cd-data__value" id="cd-expiry">08/29</span>
                                 </div>
                                 <div class="cd-data__item">
                                     <span class="cd-data__label">CVV</span>
-                                    <span class="cd-data__value">123</span>
+                                    <span class="cd-data__value" id="cd-cvv">123</span>
                                 </div>
                             </div>
                         </div>
@@ -4728,6 +5081,14 @@
             el.addEventListener('click', (e) => {
                 if (el.dataset.action === 'Modo finanzas') {
                     openFinancePage();
+                } else if (el.dataset.action === 'Cambiar cuenta') {
+                    toggleAccountSwitch();
+                } else if (el.matches('.product-row') && CARD_DETAIL_THEMES[el.dataset.action] && el.closest('[data-panel="Tarjetas"]')) {
+                    // Débito/crédito en Tarjetas: mismo morph "wallet" que la
+                    // tarjeta destacada de Destacado, creciendo desde su
+                    // propio card-thumb (no toda la fila) y con el detalle
+                    // temático (arte + modo oscuro para la Black).
+                    openCardDetail(el.dataset.action, el.querySelector('.card-thumb') || el);
                 } else if (el.matches('.quick-action, .login-feature, .product-row')) {
                     openPushPage(el.dataset.action, el); // crece desde el botón/fila
                 } else {
@@ -4788,6 +5149,122 @@
 
         // Carga inicial de la página
         simulateLoad(1000);
+
+        // ---------- Banner de ofertas: carrusel infinito ----------
+        const BANNER_SLIDES = [
+            { theme: 1, title: 'Ofertas todo el año con Tarjetas Banco Pichincha y Deuna', cta: 'Ver ofertas' },
+            { theme: 2, title: 'Acumula millas en cada compra con tu tarjeta de crédito', cta: 'Conocer más' },
+            { theme: 3, title: 'Activa Modo finanzas y controla todo tu dinero en un solo lugar', cta: 'Activar' },
+        ];
+
+        function bannerSlideHTML(s) {
+            return `
+                <div class="home-banner__slide home-banner__slide--${s.theme}" data-action="${s.cta}">
+                    <div class="home-banner__figure"></div>
+                    <div class="home-banner__text">
+                        <p class="home-banner__title">${s.title}</p>
+                        <button class="home-banner__cta" data-action="${s.cta}">${s.cta}<span class="material-symbols-rounded">arrow_forward</span></button>
+                    </div>
+                </div>`;
+        }
+
+        const bannerTrack = document.getElementById('home-banner-track');
+        const bannerDotsEl = document.getElementById('home-banner-dots');
+        if (bannerTrack) {
+            const N = BANNER_SLIDES.length;
+            // Clon del ÚLTIMO slide antes del primero y clon del PRIMERO
+            // después del último: así, en reposo, el slide 0 real siempre
+            // asoma con un vecino a cada lado (igual que cualquier otro),
+            // y tanto avanzar como retroceder cruzan un clon idéntico al
+            // real antes de saltar sin transición — la ilusión de un
+            // carrusel que nunca "termina" en ninguna dirección.
+            bannerTrack.innerHTML =
+                bannerSlideHTML(BANNER_SLIDES[N - 1]) +
+                BANNER_SLIDES.map(bannerSlideHTML).join('') +
+                bannerSlideHTML(BANNER_SLIDES[0]);
+            bannerDotsEl.innerHTML = BANNER_SLIDES.map((_, i) => `<span class="home-banner__dot${i === 0 ? ' is-active' : ''}"></span>`).join('');
+
+            const slides = [...bannerTrack.children];
+            const dots = [...bannerDotsEl.children];
+            // bannerIdx es el índice REAL (0..N-1); realIdxToSlide(i) da la
+            // posición en el track (desplazada +1 por el clon inicial).
+            let bannerIdx = 0;
+            let bannerTimer = null;
+            let bannerPaused = false;
+            const realIdxToSlide = i => i + 1;
+
+            function goToSlidePos(pos, smooth) {
+                // scrollLeft directo sobre el track (no scrollIntoView): así
+                // sólo se mueve el carrusel y nunca el scroll vertical de la
+                // página, aunque el banner esté parcialmente fuera de vista.
+                const el = slides[pos];
+                const target = el.offsetLeft - (bannerTrack.clientWidth - el.clientWidth) / 2;
+                bannerTrack.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
+            }
+
+            function setActiveDot(i) {
+                dots.forEach((d, di) => d.classList.toggle('is-active', di === i));
+            }
+
+            // Posición inicial: el slide 0 real (segundo elemento del
+            // track), sin animación.
+            goToSlidePos(realIdxToSlide(0), false);
+
+            function bannerNext() {
+                if (bannerPaused) return;
+                bannerIdx++;
+                goToSlidePos(realIdxToSlide(bannerIdx), true);
+                if (bannerIdx >= N) {
+                    // Cruzó al clon del primero: al terminar el scroll
+                    // suave, salto instantáneo (mismo aspecto) al slide 0 real.
+                    setTimeout(() => {
+                        bannerIdx = 0;
+                        goToSlidePos(realIdxToSlide(0), false);
+                    }, 420);
+                }
+                setActiveDot(bannerIdx % N);
+            }
+
+            function startBannerAutoplay() {
+                clearInterval(bannerTimer);
+                bannerTimer = setInterval(bannerNext, 4500);
+            }
+            startBannerAutoplay();
+
+            // Pausa mientras el usuario interactúa a mano con el carrusel
+            // (drag/swipe), reanuda un momento después de soltar. Si el
+            // swipe manual cruzó al clon inicial (retroceso) o final
+            // (avance), al asentarse el scroll se corrige sin transición
+            // hacia el slide real equivalente, y bannerIdx/dots quedan en
+            // sincro para que el autoplay siga desde ahí.
+            let scrollSettleTimer = null;
+            bannerTrack.addEventListener('pointerdown', () => { bannerPaused = true; });
+            bannerTrack.addEventListener('pointerup', () => {
+                setTimeout(() => { bannerPaused = false; }, 3000);
+            });
+            bannerTrack.addEventListener('scroll', () => {
+                clearTimeout(scrollSettleTimer);
+                scrollSettleTimer = setTimeout(() => {
+                    const center = bannerTrack.scrollLeft + bannerTrack.clientWidth / 2;
+                    let pos = 0;
+                    let best = Infinity;
+                    slides.forEach((el, i) => {
+                        const d = Math.abs((el.offsetLeft + el.offsetWidth / 2) - center);
+                        if (d < best) { best = d; pos = i; }
+                    });
+                    if (pos === 0) { // clon del último (retrocedió de más)
+                        bannerIdx = N - 1;
+                        goToSlidePos(realIdxToSlide(bannerIdx), false);
+                    } else if (pos === slides.length - 1) { // clon del primero (avanzó de más)
+                        bannerIdx = 0;
+                        goToSlidePos(realIdxToSlide(bannerIdx), false);
+                    } else {
+                        bannerIdx = pos - 1;
+                    }
+                    setActiveDot(bannerIdx % N);
+                }, 150);
+            }, { passive: true });
+        }
 
         // ---------- Tabs: cada cambio simula una carga con skeleton ----------
         const sectionTabs = [...document.querySelectorAll('.tabs .tab')].filter(t => !t.dataset.action);
@@ -4921,8 +5398,10 @@
             const next = document.querySelector(`.view[data-view="${index}"]`);
             currentView = index;
 
-            // Las tabs de productos y el avatar de stories solo pertenecen a Inicio
+            // Las tabs de productos, el banner de ofertas y el avatar de
+            // stories solo pertenecen a Inicio
             document.querySelector('.tabs').classList.toggle('is-hidden', index !== 0);
+            document.querySelector('.home-banner').classList.toggle('is-hidden', index !== 0);
             document.querySelector('.profile-story').classList.toggle('is-hidden', index !== 0);
 
             prev.classList.remove('active', 'entering');
@@ -4957,6 +5436,7 @@
             document.querySelector('.view[data-view="0"]').classList.add('active');
             currentView = 0;
             document.querySelector('.tabs').classList.remove('is-hidden');
+            document.querySelector('.home-banner').classList.remove('is-hidden');
             document.querySelector('.profile-story').classList.remove('is-hidden');
             document.querySelectorAll('.tabs .tab').forEach((t, idx) => {
                 t.classList.toggle('active', idx === 1); // "Destacado"
@@ -4969,7 +5449,7 @@
         const balance = document.getElementById('balance');
         const balanceToggle = document.getElementById('balance-toggle');
         const balanceIcon = document.getElementById('balance-toggle-icon');
-        const balanceValue = balance.textContent;
+        let balanceValue = balance.textContent;
         const balanceMasked = '$ ****,**';
         let hidden = false;
         balanceToggle.addEventListener('click', () => {
@@ -5234,6 +5714,57 @@
         setupCollapsingHeader(cardDetail, cardDetail.querySelector('.cd-title'), document.getElementById('cd-topbar'));
 
         const featCard = document.getElementById('debit-card');
+        // Elemento desde el que se hace el morph la próxima vez que se abra
+        // el detalle: la tarjeta destacada de Destacado por defecto, o el
+        // card-thumb de la fila que se haya tocado en Tarjetas.
+        let currentOriginEl = featCard;
+
+        // Contenido/tema por tarjeta: qué arte mostrar (foto real vs CSS),
+        // los datos falsos del reverso y si el detalle completo pasa a modo
+        // oscuro (las tarjetas "premium" como la Black lo usan de verdad).
+        const CARD_DETAIL_THEMES = {
+            'Visa Débito': {
+                title: 'Débito Internacional', art: null, dark: false,
+                number: '4532 1234 5678 1234', expiry: '08/29', cvv: '123',
+            },
+            'Mastercard Black': {
+                title: 'Mastercard Black', art: 'black', dark: true,
+                number: '5221 4471 8823 7643', expiry: '11/28', cvv: '456',
+            },
+            'Diners Club': {
+                title: 'Diners Club', art: 'diners', dark: false,
+                number: '3295 8610 0044 4863', expiry: '05/27', cvv: '789',
+            },
+        };
+
+        const cdCardArt = document.getElementById('cd-card-art');
+        const cdCardImg = document.getElementById('cd-card-img');
+        const cdCardArtMark = document.getElementById('cd-card-art-mark');
+        const cdCardArtNumber = document.getElementById('cd-card-art-number');
+
+        function applyCardTheme(key) {
+            const t = CARD_DETAIL_THEMES[key] || CARD_DETAIL_THEMES['Visa Débito'];
+            document.getElementById('cd-title').textContent = t.title;
+            document.getElementById('cd-topbar-title').textContent = t.title;
+            document.getElementById('cd-number').textContent = t.number;
+            document.getElementById('cd-expiry').textContent = t.expiry;
+            document.getElementById('cd-cvv').textContent = t.cvv;
+            cardDetail.classList.toggle('theme-dark', !!t.dark);
+
+            if (t.art) {
+                cdCardImg.classList.add('is-hidden');
+                cdCardArt.className = `cd-card__art is-active cd-card__art--${t.art}`;
+                const groups = t.number.replace(/\s+/g, '').match(/.{1,4}/g);
+                const masked = `${groups[0]} •••• •••• ${groups[groups.length - 1]}`;
+                cdCardArtNumber.textContent = masked;
+                cdCardArtMark.innerHTML = t.art === 'black'
+                    ? '<span class="mc-dots"><i></i><i></i></span>'
+                    : '<span class="cd-card__art-diners-text">Diners Club</span>';
+            } else {
+                cdCardImg.classList.remove('is-hidden');
+                cdCardArt.classList.remove('is-active');
+            }
+        }
 
         /*
          * Morph "reveal" entre la tarjeta de Destacado y la de detalle: NO
@@ -5256,14 +5787,19 @@
          * misma animación, sin quedar a medio camino en un valor raro.
          */
         function morphMetrics() {
-            const feat = featCard.getBoundingClientRect();
+            const feat = currentOriginEl.getBoundingClientRect();
             const rect = cdCard.getBoundingClientRect(); // ya en su layout final/natural
             if (!rect.width || !feat.width) return null;
+            // El radio del origen puede variar (8px la tarjeta destacada de
+            // Destacado, 6px un card-thumb de Tarjetas): se lee del propio
+            // elemento en vez de asumir siempre el mismo valor.
+            const originRadius = parseFloat(getComputedStyle(currentOriginEl).borderRadius) || FEAT_RADIUS;
             return {
                 dx: feat.left - rect.left,
                 dy: feat.top - rect.top,
                 clipRight: Math.max(0, rect.width - feat.width),
                 clipBottom: Math.max(0, rect.height - feat.height),
+                originRadius,
             };
         }
 
@@ -5271,17 +5807,18 @@
         const FEAT_RADIUS = 8;
         const DETAIL_RADIUS = 12;
         function clipToFeatured(m) {
-            return `inset(0px ${m.clipRight}px ${m.clipBottom}px 0px round ${FEAT_RADIUS}px)`;
+            return `inset(0px ${m.clipRight}px ${m.clipBottom}px 0px round ${m.originRadius}px)`;
         }
         const CLIP_FULL = `inset(0px round ${DETAIL_RADIUS}px)`;
 
         // Ancla el origen de la animación del panel (.card-detail.entering /
-        // .closing) al centro real de la tarjeta destacada en pantalla, para
-        // que "crezca" desde ahí como una wallet en vez de desde el centro
-        // genérico de la pantalla. Si la tarjeta no es medible (raro), se
-        // quita la propiedad y CSS cae a su default (50% 15%).
+        // .closing) al centro real del elemento que abrió el detalle
+        // (currentOriginEl) en pantalla, para que "crezca" desde ahí como
+        // una wallet en vez de desde el centro genérico de la pantalla. Si
+        // no es medible (raro), se quita la propiedad y CSS cae a su
+        // default (50% 15%).
         function setMorphOrigin() {
-            const feat = featCard.getBoundingClientRect();
+            const feat = currentOriginEl.getBoundingClientRect();
             if (!feat.width) {
                 cardDetail.style.removeProperty('--cd-origin-x');
                 cardDetail.style.removeProperty('--cd-origin-y');
@@ -5302,10 +5839,12 @@
         const OPEN_MS = 500;
         const CLOSE_MS = 420;
 
-        function openCardDetail() {
+        function openCardDetail(key = 'Visa Débito', originEl = featCard) {
+            currentOriginEl = originEl || featCard;
+            applyCardTheme(key);
             hideCardData();
-            cardDetail.classList.remove('scrolled');
-            setMorphOrigin(); // con la tarjeta aún en su lugar de Destacado
+            cardDetail.classList.remove('scrolled', 'no-morph');
+            setMorphOrigin(); // con la tarjeta/thumb aún en su lugar de origen
             cardDetail.classList.add('open', 'entering');
             document.body.classList.add('card-detail-active'); // el home recede detrás
             cardDetail.scrollTop = 0;
@@ -5336,17 +5875,23 @@
                     cdCard.style.clipPath = '';
                 }, OPEN_MS + 40);
             } else {
+                // Sin tarjeta medible que morphear: el panel entero hace un
+                // crecimiento simple (scale+translate) en vez de sólo fade.
+                cardDetail.classList.add('no-morph');
                 cardDetail.classList.remove('morphing');
-                setTimeout(() => cardDetail.classList.remove('entering'), OPEN_MS + 40);
+                setTimeout(() => cardDetail.classList.remove('entering', 'no-morph'), OPEN_MS + 40);
             }
         }
 
         function closeCardDetail() {
             if (!cardDetail.classList.contains('open') || cardDetail.classList.contains('closing')) return;
             hideCardData(); // vuelve al frente antes de encoger
-            cardDetail.classList.remove('scrolled', 'entering');
-            // el contenido se desvanece primero; la tarjeta y el panel encogen
-            // de vuelta a la posición de Destacado. NO reseteamos el scroll
+            cardDetail.classList.remove('scrolled', 'entering', 'no-morph');
+            // el contenido se desvanece primero; la tarjeta encoge de vuelta
+            // a la posición de Destacado; el panel sólo se desvanece detrás
+            // (ver comentario en .card-detail.closing: si el panel TAMBIÉN
+            // escalara/trasladara aquí, competiría con el propio movimiento
+            // de la tarjeta y se vería doble/tosco). NO reseteamos el scroll
             // aquí (eso causaba el salto): se hace al final.
             cardDetail.classList.add('closing', 'morphing');
             document.body.classList.remove('card-detail-active'); // el home vuelve a su tamaño
@@ -5375,12 +5920,13 @@
                     cdCard.style.clipPath = clipToFeatured(m);
                 }));
             } else {
+                cardDetail.classList.add('no-morph');
                 cardDetail.style.removeProperty('--cd-origin-x');
                 cardDetail.style.removeProperty('--cd-origin-y');
             }
 
             setTimeout(() => {
-                cardDetail.classList.remove('open', 'closing', 'morphing');
+                cardDetail.classList.remove('open', 'closing', 'morphing', 'no-morph');
                 cdCard.style.transition = '';
                 cdCard.style.transform = '';
                 cdCard.style.clipPath = '';
@@ -5572,6 +6118,29 @@
         accountCard.addEventListener('keydown', e => {
             if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openAccountDetail(); }
         });
+
+        // ---------- Cambiar cuenta: alterna PRINCIPAL (tarjeta activa) con
+        // una cuenta sin Débito Digital activado (tarjeta deshabilitada) ----------
+        const ACCOUNTS = {
+            main: { title: 'PRINCIPAL', number: 'Nro. ******7890', balance: '$ 1.906,04' },
+            alt: { title: 'AHORROS', number: 'Nro. ******3321', balance: '$ 350,00' },
+        };
+        let usingAltAccount = false;
+        function toggleAccountSwitch() {
+            usingAltAccount = !usingAltAccount;
+            const acc = usingAltAccount ? ACCOUNTS.alt : ACCOUNTS.main;
+            document.getElementById('account-title').textContent = acc.title;
+            document.getElementById('account-number').textContent = acc.number;
+            accountCard.setAttribute('aria-label', `Ver detalle de cuenta ${acc.title}`);
+            // Sincroniza con el ojo de ocultar saldo: si está oculto, el
+            // enmascarado sigue viéndose; el valor real que se restaura al
+            // volver a mostrarlo pasa a ser el de la cuenta recién elegida.
+            balanceValue = acc.balance;
+            if (!hidden) balance.textContent = acc.balance;
+            document.getElementById('debit-card').classList.toggle('is-hidden', usingAltAccount);
+            document.getElementById('debit-card-disabled').classList.toggle('is-hidden', !usingAltAccount);
+            showToast(`Cuenta ${acc.title}`);
+        }
 
         document.getElementById('cd-back').addEventListener('click', closeCardDetail);
         window.addEventListener('keydown', e => {
