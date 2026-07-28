@@ -399,25 +399,28 @@
         .home-banner__track::-webkit-scrollbar { display: none; }
 
         .home-banner__slide {
-            scroll-snap-align: center;
-            flex: 0 0 84%;
-            max-width: 360px;
-            height: 168px;
+            scroll-snap-align: start;
+            /* Mismo ancho que cualquier otro contenedor de sección: 100%
+               del content-box del track, que tiene el mismo padding lateral
+               (24px) que .section — nunca asoma el vecino de al lado. */
+            flex: 0 0 100%;
+            height: 104px;
             border-radius: var(--bp-radius-md);
             position: relative;
             overflow: hidden;
             display: flex;
-            align-items: flex-end;
-            padding: 20px;
+            align-items: center;
+            padding: 14px 20px;
             cursor: pointer;
         }
 
         .home-banner__figure {
             position: absolute;
-            right: -30px;
-            bottom: -30px;
-            width: 160px;
-            height: 160px;
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 110px;
+            height: 110px;
             border-radius: 50%;
             filter: blur(2px);
         }
@@ -452,16 +455,16 @@
         .home-banner__text {
             position: relative;
             z-index: 1;
-            max-width: 64%;
+            max-width: 66%;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 8px;
         }
 
         .home-banner__title {
-            font-size: 15px;
+            font-size: 13px;
             font-weight: 700;
-            line-height: 1.35;
+            line-height: 1.3;
             color: #fff;
             margin: 0;
         }
@@ -471,40 +474,21 @@
             align-items: center;
             gap: 2px;
             align-self: flex-start;
-            height: 32px;
-            padding: 0 12px 0 14px;
+            height: 26px;
+            padding: 0 10px 0 12px;
             border-radius: 100px;
             border: none;
             background: rgba(255, 255, 255, 0.2);
             -webkit-backdrop-filter: blur(6px);
             backdrop-filter: blur(6px);
             font-family: inherit;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
             color: #fff;
             cursor: pointer;
         }
-        .home-banner__cta .material-symbols-rounded { font-size: 16px; }
+        .home-banner__cta .material-symbols-rounded { font-size: 14px; }
         .home-banner__cta:active { transform: scale(0.96); }
-
-        .home-banner__dots {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            margin-top: 10px;
-        }
-        .home-banner__dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--bp-border-divider);
-            transition: background 0.2s ease, width 0.2s ease;
-        }
-        .home-banner__dot.is-active {
-            background: var(--bp-selection-bg-active);
-            width: 16px;
-            border-radius: 3px;
-        }
 
         /* ---------- Secciones ---------- */
         .section {
@@ -3522,7 +3506,6 @@
              que antes de agregar este banner. -->
         <div class="home-banner" id="home-banner" aria-label="Ofertas">
             <div class="home-banner__track" id="home-banner-track"></div>
-            <div class="home-banner__dots" id="home-banner-dots"></div>
         </div>
 
         <!-- Tabs -->
@@ -5169,7 +5152,6 @@
         }
 
         const bannerTrack = document.getElementById('home-banner-track');
-        const bannerDotsEl = document.getElementById('home-banner-dots');
         if (bannerTrack) {
             const N = BANNER_SLIDES.length;
             // Clon del ÚLTIMO slide antes del primero y clon del PRIMERO
@@ -5177,15 +5159,15 @@
             // asoma con un vecino a cada lado (igual que cualquier otro),
             // y tanto avanzar como retroceder cruzan un clon idéntico al
             // real antes de saltar sin transición — la ilusión de un
-            // carrusel que nunca "termina" en ninguna dirección.
+            // carrusel que nunca "termina" en ninguna dirección. Sin
+            // indicador de puntos: al ser infinito no hay un "final" que
+            // marcar.
             bannerTrack.innerHTML =
                 bannerSlideHTML(BANNER_SLIDES[N - 1]) +
                 BANNER_SLIDES.map(bannerSlideHTML).join('') +
                 bannerSlideHTML(BANNER_SLIDES[0]);
-            bannerDotsEl.innerHTML = BANNER_SLIDES.map((_, i) => `<span class="home-banner__dot${i === 0 ? ' is-active' : ''}"></span>`).join('');
 
             const slides = [...bannerTrack.children];
-            const dots = [...bannerDotsEl.children];
             // bannerIdx es el índice REAL (0..N-1); realIdxToSlide(i) da la
             // posición en el track (desplazada +1 por el clon inicial).
             let bannerIdx = 0;
@@ -5200,10 +5182,6 @@
                 const el = slides[pos];
                 const target = el.offsetLeft - (bannerTrack.clientWidth - el.clientWidth) / 2;
                 bannerTrack.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
-            }
-
-            function setActiveDot(i) {
-                dots.forEach((d, di) => d.classList.toggle('is-active', di === i));
             }
 
             // Posición inicial: el slide 0 real (segundo elemento del
@@ -5222,7 +5200,6 @@
                         goToSlidePos(realIdxToSlide(0), false);
                     }, 420);
                 }
-                setActiveDot(bannerIdx % N);
             }
 
             function startBannerAutoplay() {
@@ -5235,8 +5212,8 @@
             // (drag/swipe), reanuda un momento después de soltar. Si el
             // swipe manual cruzó al clon inicial (retroceso) o final
             // (avance), al asentarse el scroll se corrige sin transición
-            // hacia el slide real equivalente, y bannerIdx/dots quedan en
-            // sincro para que el autoplay siga desde ahí.
+            // hacia el slide real equivalente, y bannerIdx queda en sincro
+            // para que el autoplay siga desde ahí.
             let scrollSettleTimer = null;
             bannerTrack.addEventListener('pointerdown', () => { bannerPaused = true; });
             bannerTrack.addEventListener('pointerup', () => {
@@ -5261,7 +5238,6 @@
                     } else {
                         bannerIdx = pos - 1;
                     }
-                    setActiveDot(bannerIdx % N);
                 }, 150);
             }, { passive: true });
         }
@@ -5276,6 +5252,35 @@
             });
         }
 
+        // Al entrar a una sección de producto (Cuentas/Tarjetas/...) el
+        // banner de ofertas ya no aporta nada ahí — se hace scroll para que
+        // los tabs queden pegados justo debajo del logo (como si el propio
+        // usuario hubiera bajado) y recién entonces se oculta el banner, sin
+        // saltos. Al volver a Destacado reaparece y se sube al principio.
+        function scrollPastBanner(hide) {
+            const banner = document.querySelector('.home-banner');
+            if (hide) {
+                // Hay que bajar el alto COMPLETO del banner (no el del
+                // header) para que quede realmente fuera de vista antes de
+                // ocultarlo — con menos, tabs todavía no llega a su punto
+                // sticky y se ve el banner a medio salir.
+                window.scrollTo({ top: banner.offsetHeight, behavior: 'smooth' });
+                setTimeout(() => {
+                    banner.classList.add('is-hidden');
+                    // Ese alto que acaba de desaparecer arriba había que
+                    // compensarlo: si el scroll se queda en banner.offsetHeight
+                    // después de ocultarlo, el contenido normal (no sticky)
+                    // de la sección salta hacia arriba ese mismo alto de
+                    // nuevo (se resta dos veces). header/tabs, al ser
+                    // sticky, no se mueven ni con esto ni sin esto.
+                    window.scrollTo({ top: 0 });
+                }, 400);
+            } else {
+                banner.classList.remove('is-hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
         function activateSectionTab(tab) {
             if (!tab || tab.dataset.action) return;
             const wasActive = tab.classList.contains('active');
@@ -5284,6 +5289,7 @@
             tab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
             showPanel(tab.dataset.panel); // cambia el contenido visible según la pestaña
             if (!wasActive) simulateLoad();
+            scrollPastBanner(tab.dataset.panel !== 'Destacado');
         }
 
         function moveSection(dir) {
@@ -5414,6 +5420,7 @@
 
         navItems.forEach((item, index) => {
             item.addEventListener('click', () => {
+                const alreadyOnThisView = index === currentView;
                 navItems.forEach(i => {
                     i.classList.remove('active');
                     i.removeAttribute('aria-current');
@@ -5421,6 +5428,12 @@
                 item.classList.add('active');
                 item.setAttribute('aria-current', 'page');
                 switchView(index);
+                // Tocar "Inicio" de nuevo estando ya en Inicio = inicio
+                // rápido: vuelve directo a Destacado, como el tap repetido
+                // que resetea un tab bar nativo.
+                if (index === 0 && alreadyOnThisView) {
+                    activateSectionTab(document.querySelector('.tabs .tab[data-panel="Destacado"]'));
+                }
             });
         });
 
