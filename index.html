@@ -19,11 +19,13 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0">
-    <!-- Sólo para el tema Y2K (POC, ver Preferencias en Perfil): tipografía
-         de display gruesa/afiche, coherente con el resto de fuentes vía
-         Google Fonts. font-display:swap, igual que Material Symbols arriba —
-         si no carga, el tema igual funciona con el fallback del sistema. -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap">
+    <!-- Sólo para el tema Y2K (POC, ver Preferencias en Perfil): dos
+         tipografías de afiche en vez de una — Anton (condensada, se lee
+         bien incluso chica: tabs/nav/listas) y Bungee (más extravagante,
+         reservada al monto grande y los títulos hero). font-display:swap,
+         igual que Material Symbols arriba — si no cargan, el tema igual
+         funciona con el fallback del sistema. -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bungee&display=swap">
 
     <!-- Revela los íconos (ocultos por CSS) sólo cuando la fuente real está
          cargada. Si el CDN de Google Fonts está bloqueado o caído, los
@@ -3485,24 +3487,51 @@
         /* Tipografía de afiche en toda la "cáscara" de navegación/títulos
            (tabs, nav, encabezados de sección, botones) — el contenido real
            de las filas (nombres, montos de movimientos, correos) se deja
-           con la tipografía normal para que siga siendo legible. */
+           con la tipografía normal para que siga siendo legible.
+
+           Anton es CONDENSADA (letras angostas) — a diferencia de Archivo
+           Black (una grotesca ancha), a igual tamaño ocupa menos y se lee
+           más liviana, así que además de cambiar la fuente se bajan los
+           tamaños unos puntos respecto al original: la heavy-weight ya
+           aporta el peso visual por su cuenta, no hace falta que también
+           sea grande. Sin letter-spacing extra (Anton ya viene apretada). */
         html.theme-y2k .tab,
         html.theme-y2k .nav-item__label,
         html.theme-y2k .section__title h2,
         html.theme-y2k .section__link,
         html.theme-y2k .card__header-title,
-        html.theme-y2k .amount,
         html.theme-y2k .quick-action__label,
         html.theme-y2k .login-button,
         html.theme-y2k .logout-btn,
-        html.theme-y2k .detail-title,
-        html.theme-y2k .cd-title,
         html.theme-y2k .placeholder-view h1,
         html.theme-y2k .list-item__title {
-            font-family: 'Archivo Black', 'Prelo', sans-serif;
+            font-family: 'Anton', 'Prelo', sans-serif;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.2px;
         }
+        html.theme-y2k .tab { font-size: 12px; }
+        html.theme-y2k .nav-item__label { font-size: 10.5px; }
+        html.theme-y2k .section__title h2 { font-size: 16px; }
+        html.theme-y2k .section__link { font-size: 13px; }
+        html.theme-y2k .card__header-title { font-size: 14px; }
+        html.theme-y2k .quick-action__label { font-size: 11px; }
+        html.theme-y2k .login-button,
+        html.theme-y2k .logout-btn { font-size: 15px; letter-spacing: 0.5px; }
+        html.theme-y2k .placeholder-view h1 { font-size: 21px; }
+        html.theme-y2k .list-item__title { font-size: 14px; }
+
+        /* El monto grande y los títulos hero de pantalla completa sí usan
+           la fuente más extravagante (Bungee) — son 2-3 elementos por
+           pantalla, no todo el texto, así que el "ruido" no se acumula. */
+        html.theme-y2k .amount,
+        html.theme-y2k .detail-title,
+        html.theme-y2k .cd-title {
+            font-family: 'Bungee', 'Prelo', sans-serif;
+            text-transform: uppercase;
+        }
+        html.theme-y2k .amount { font-size: 26px; letter-spacing: 0.5px; }
+        html.theme-y2k .detail-title,
+        html.theme-y2k .cd-title { font-size: 22px; letter-spacing: 0.3px; }
 
         /* Glitch/cromático sutil sobre el monto grande, como en la
            referencia (duplicado de color desfasado en vez de blur) */
@@ -3526,6 +3555,16 @@
         html.theme-y2k .debit-card {
             border: 3px solid var(--y2k-pink);
             box-shadow: 5px 5px 0 var(--y2k-cyan);
+        }
+
+        /* Textura de puntos sobre la tarjeta de cuenta (la más "hero" de
+           Destacado), como el fondo punteado detrás del monto/tarjeta en
+           la referencia — el resto de .card (listas, filas) se deja lisa
+           para no acumular ruido detrás de texto denso. */
+        html.theme-y2k .account-card,
+        html.theme-y2k .debit-card-disabled {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 10px 10px;
         }
 
         /* Subrayado tipo garabato bajo los títulos de sección */
@@ -3565,7 +3604,11 @@
             color: var(--y2k-green);
         }
         html.theme-y2k .tab[data-action="Modo finanzas"] {
-            background: var(--y2k-purple);
+            background-color: var(--y2k-purple);
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
+            background-size: 6px 6px;
             border-color: var(--y2k-purple);
             box-shadow: 3px 3px 0 var(--y2k-cyan);
             color: var(--y2k-cyan);
@@ -3642,6 +3685,15 @@
             background: rgba(10, 10, 18, 0.85);
             border-top-color: rgba(255, 255, 255, 0.1);
             border-right-color: rgba(255, 255, 255, 0.1); /* variante de escritorio (sidebar) */
+        }
+
+        /* El shimmer del skeleton (mientras "carga" Inicio) es un gris casi
+           blanco fijo — sobre el fondo casi negro del tema se ve como un
+           destello. Mismo criterio de siempre: se agrega el equivalente
+           oscuro sólo acá, sin tocar el shimmer claro original. */
+        html.theme-y2k .skeleton {
+            background: linear-gradient(90deg, #1c1c2b 25%, #26263a 50%, #1c1c2b 75%);
+            background-size: 200% 100%;
         }
     </style>
 </head>
