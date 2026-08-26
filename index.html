@@ -3664,12 +3664,6 @@
             color: var(--bp-surface-brand);
         }
 
-        /* Logo del header: resplandor extra sobre el aro amarillo ya
-           existente, para que combine con el resto de acentos de neón */
-        html.theme-y2k .profile-story {
-            box-shadow: 0 0 0 2px var(--y2k-pink), 0 0 14px rgba(255, 47, 146, 0.55);
-        }
-
         /* Unos pocos hovers de filas usan un blanco fijo (#fafbfc) en vez
            de un token — a propósito no se toca esa regla original (sigue
            sirviendo al tema claro), sólo se agrega el equivalente oscuro acá */
@@ -3699,6 +3693,136 @@
         html.theme-y2k .skeleton {
             background: linear-gradient(90deg, #1c1c2b 25%, #26263a 50%, #1c1c2b 75%);
             background-size: 200% 100%;
+        }
+
+        /* Dos superficies más con blanco fijo (no tokens) que quedaban
+           deslavadas contra el fondo oscuro: el modal de permiso del
+           giroscopio y el "handle" del bottom sheet. */
+        html.theme-y2k .gyro-modal__content {
+            background: var(--bp-surface-container);
+            border: 2px solid var(--y2k-cyan);
+            box-shadow: 5px 5px 0 var(--y2k-pink);
+        }
+        html.theme-y2k .sheet__handle {
+            background: var(--y2k-pink);
+        }
+
+        /* ---------- Más cositas Y2K: grano, franjas, brillos, ligero tilt ---------- */
+
+        /* Grano/ruido muy sutil sobre toda la pantalla — textura de VHS/
+           impresión barata en vez de un fondo perfectamente liso. Fixed +
+           pointer-events:none: nunca estorba al contenido ni al tacto. */
+        html.theme-y2k body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            pointer-events: none;
+            opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* Franja diagonal de colores arriba del todo (zona del status bar),
+           como el filo de cinta de peligro/póster de feria de la
+           referencia. .header ya es position:sticky, así que alcanza de
+           contenedor para este ::before absoluto. */
+        html.theme-y2k .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: repeating-linear-gradient(-45deg,
+                var(--y2k-pink) 0 6px,
+                var(--y2k-cyan) 6px 12px,
+                var(--y2k-green) 12px 18px,
+                var(--bp-surface-brand) 18px 24px);
+        }
+
+        /* Chispa cómica + franja a cuadros (banderín de carrera) sobre la
+           tarjeta destacada — .debit-card ya tiene overflow:hidden y
+           border-radius, así que ambos quedan recortados prolijos dentro
+           del borde de la tarjeta. */
+        html.theme-y2k .debit-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 7px;
+            background: repeating-linear-gradient(45deg, #06060a 0 6px, #fff 6px 12px);
+            opacity: 0.9;
+            z-index: 2;
+        }
+        html.theme-y2k .debit-card::after {
+            content: '';
+            position: absolute;
+            bottom: 14px;
+            right: 54px;
+            width: 0;
+            height: 0;
+            border-left: 13px solid transparent;
+            border-right: 13px solid transparent;
+            border-bottom: 22px solid var(--y2k-cyan);
+            transform: rotate(18deg);
+            opacity: 0.85;
+            z-index: 2;
+        }
+
+        /* Tilt tipo sticker/collage en los accesos rápidos — se rota el
+           botón entero, no el ícono, porque el ícono ya tiene su propio
+           transform (scale) al tocarlo y ambos convivían mal en el mismo
+           elemento. */
+        html.theme-y2k .quick-action:nth-child(odd) {
+            transform: rotate(-2deg);
+        }
+        html.theme-y2k .quick-action:nth-child(even) {
+            transform: rotate(2deg);
+        }
+
+        /* Brillo pulsante en el tab activo y el aro del logo, en vez de una
+           sombra de neón fija — se siente más "encendido". */
+        @keyframes y2kTabGlow {
+            0%, 100% { box-shadow: 3px 3px 0 var(--y2k-pink), 0 0 8px rgba(255, 47, 146, 0.35); }
+            50% { box-shadow: 3px 3px 0 var(--y2k-pink), 0 0 18px rgba(255, 47, 146, 0.8); }
+        }
+        html.theme-y2k .tab.active {
+            animation: y2kTabGlow 2.2s ease-in-out infinite;
+        }
+        @keyframes y2kLogoGlow {
+            0%, 100% { box-shadow: 0 0 0 2px var(--y2k-pink), 0 0 12px rgba(255, 47, 146, 0.5); }
+            50% { box-shadow: 0 0 0 2px var(--y2k-cyan), 0 0 18px rgba(34, 229, 255, 0.7); }
+        }
+        html.theme-y2k .profile-story {
+            animation: y2kLogoGlow 3s ease-in-out infinite;
+        }
+
+        /* Chispita titilante + glitch cromático sobre los títulos de
+           sección — de a poco, no en cada texto de la app. */
+        html.theme-y2k .section__title h2 {
+            text-shadow: 1px 0 var(--y2k-cyan), -1px 0 var(--y2k-pink);
+        }
+        html.theme-y2k .section__title h2::before {
+            content: '✦';
+            position: absolute;
+            top: -9px;
+            right: -13px;
+            font-size: 9px;
+            color: var(--y2k-cyan);
+            animation: y2kTwinkle 1.8s ease-in-out infinite;
+        }
+        @keyframes y2kTwinkle {
+            0%, 100% { opacity: 0.35; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.15); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html.theme-y2k .tab.active,
+            html.theme-y2k .profile-story,
+            html.theme-y2k .section__title h2::before {
+                animation: none;
+            }
         }
     </style>
 </head>
