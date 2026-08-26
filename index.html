@@ -3034,6 +3034,66 @@
         }
         .push-transfer-success .login-button { width: 100%; }
 
+        /* ---------- Pagar servicios: flujo completo con formulario ----------
+           A diferencia de QR/transferir (100% nativos del banco), este
+           simula el micrositio propio del proveedor: fondo BLANCO (no el
+           grisáceo de #push-page por defecto), con tarjetas/inputs en gris
+           claro para separarse de ese blanco — el patrón inverso al resto
+           de la app, típico de estas pantallas de terceros. */
+        .push-page.is-form-flow { background: var(--bp-surface-container); }
+        .push-page.is-form-flow .push-loading { background: var(--bp-surface-container); }
+        .push-page.is-form-flow .card,
+        .push-page.is-form-flow .push-transfer-target { background: var(--bp-surface-page); }
+
+        .push-field { margin-bottom: 16px; }
+        .push-field__label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--bp-text-secondary);
+            margin-bottom: 6px;
+        }
+        .push-field__hint {
+            font-size: 12px;
+            color: var(--bp-text-helper);
+            margin-top: 6px;
+            min-height: 15px;
+        }
+        .push-field__hint--error { color: #c0392b; font-weight: 600; }
+
+        .push-input, .push-select {
+            width: 100%;
+            height: 48px;
+            padding: 0 14px;
+            border-radius: var(--bp-radius-sm);
+            border: 1px solid var(--bp-border-divider);
+            background: var(--bp-surface-page);
+            font-family: inherit;
+            font-size: 15px;
+            color: var(--bp-text-primary);
+        }
+        .push-input:focus, .push-select:focus {
+            outline: none;
+            border-color: var(--bp-selection-bg-active);
+        }
+        .push-input::placeholder { color: var(--bp-text-helper); }
+        .push-select-wrap { position: relative; }
+        .push-select {
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+            padding-right: 40px;
+        }
+        .push-select-wrap__chevron {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: var(--bp-text-helper);
+            pointer-events: none;
+        }
+
         /* ---------- Modo finanzas: resumen consolidado ---------- */
         .finance-subtitle {
             font-size: 15px;
@@ -5157,12 +5217,39 @@
             ['LP', 'Luis P.', '#8e44ad', '2290'], ['SG', 'Sofía G.', '#e67e22', '6015'], ['DR', 'Diego R.', '#c0392b', '3348'],
         ];
         const TRANSFER_AMOUNT_CHIPS = [20, 50, 100, 200];
+        // Cada servicio se puede pagar identificándose de más de una forma
+        // (número de cuenta, de medidor, cédula del titular...) — antes la
+        // lista de servicios no llevaba a ningún lado (data-action genérico,
+        // sólo mostraba un toast); ahora cada uno abre su propio formulario
+        // con un selector de tipo de identificación + el campo que corresponda.
         const SERVICE_BILLERS = [
-            ['bolt', 'Empresa Eléctrica Quito', 'Luz', '#f76800'],
-            ['water_drop', 'EPMAPS', 'Agua potable', '#2f7abf'],
-            ['wifi', 'CNT Internet', 'Internet y TV', '#8e44ad'],
-            ['smartphone', 'Claro', 'Plan celular', '#c0392b'],
-            ['home_work', 'Municipio de Quito', 'Predios e impuestos', '#1e9e5a'],
+            { icon: 'bolt', name: 'Empresa Eléctrica Quito', category: 'Luz', color: '#f76800', idTypes: [
+                { label: 'Número de cuenta', placeholder: 'Ej. 123456789', hint: 'Está en la parte superior de tu factura' },
+                { label: 'Número de medidor', placeholder: 'Ej. 8814452', hint: 'Código impreso en el medidor' },
+            ] },
+            { icon: 'water_drop', name: 'EPMAPS', category: 'Agua potable', color: '#2f7abf', idTypes: [
+                { label: 'Código de cuenta', placeholder: 'Ej. 445120', hint: '' },
+                { label: 'Cédula del titular', placeholder: 'Ej. 1712345678', hint: '' },
+            ] },
+            { icon: 'wifi', name: 'CNT Internet', category: 'Internet y TV', color: '#8e44ad', idTypes: [
+                { label: 'Número de contrato', placeholder: 'Ej. CNT-00234511', hint: '' },
+                { label: 'Teléfono asociado', placeholder: 'Ej. 022345678', hint: '' },
+            ] },
+            { icon: 'smartphone', name: 'Claro', category: 'Plan celular', color: '#c0392b', idTypes: [
+                { label: 'Número de línea', placeholder: 'Ej. 0991234567', hint: '' },
+                { label: 'Cédula del titular', placeholder: 'Ej. 1712345678', hint: '' },
+            ] },
+            { icon: 'home_work', name: 'Municipio de Quito', category: 'Predios e impuestos', color: '#1e9e5a', idTypes: [
+                { label: 'Número de predio', placeholder: 'Ej. 250134987', hint: '' },
+                { label: 'Clave catastral', placeholder: 'Ej. 12-345-067', hint: '' },
+                { label: 'Cédula / RUC del propietario', placeholder: 'Ej. 1712345678001', hint: '' },
+            ] },
+        ];
+        // Cuentas propias desde las que se puede debitar un pago de
+        // servicio — mismos saldos/números que Cuentas en Modo finanzas.
+        const ORIGIN_ACCOUNTS = [
+            { name: 'Cuenta Corriente', acct: '1234', balance: 1440.35 },
+            { name: 'Cuenta Ahorro transaccional', acct: '7980', balance: 100.00 },
         ];
         const CARRIERS = ['Claro', 'Movistar', 'CNT'];
         const RECHARGE_AMOUNTS = ['$ 3', '$ 5', '$ 10', '$ 15'];
@@ -5194,15 +5281,7 @@
                     <p class="push-qr__caption">Comparte este código para que te paguen desde cualquier banco.</p>
                 </div>`,
             'Transferir dinero': () => transferPickHTML(),
-            'Pagar servicios': () => `
-                <div class="card">
-                    ${SERVICE_BILLERS.map(s => `
-                        <button class="sub-item" data-action="Pagar ${s[1]}">
-                            <span class="sub-item__logo" style="background:${s[3]};"><span class="material-symbols-rounded">${s[0]}</span></span>
-                            <span class="sub-item__info"><span class="sub-item__name">${s[1]}</span><span class="sub-item__meta">${s[2]}</span></span>
-                            <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
-                        </button>`).join('')}
-                </div>`,
+            'Pagar servicios': () => servicePickHTML(),
             'Recargar celular': () => `
                 <p class="finance-subtitle" style="margin-top:0;">Operador</p>
                 <div class="push-chip-row">
@@ -5290,10 +5369,204 @@
                 </div>`;
         }
 
+        // ---------- Pagar servicios: flujo de pago simulado de inicio a fin
+        // (servicio -> tipo de identificación + valor -> consultar factura
+        // -> revisar monto y elegir cuenta -> pagar -> procesando -> éxito).
+        // A diferencia de transferir (un solo campo, monto), cada servicio
+        // puede identificarse de más de una forma (número de cuenta, de
+        // medidor, cédula...) — de ahí el selector de tipo de identificación
+        // antes del campo de valor. ----------
+        let serviceFlow = null; // { biller, idTypeIdx, idValue, bill, account }
+
+        function servicePickHTML() {
+            return `
+                <p class="finance-subtitle" style="margin-top:0;">Elige un servicio</p>
+                <div class="card">
+                    ${SERVICE_BILLERS.map(s => `
+                        <button class="sub-item" data-biller="${s.name}">
+                            <span class="sub-item__logo" style="background:${s.color};"><span class="material-symbols-rounded">${s.icon}</span></span>
+                            <span class="sub-item__info"><span class="sub-item__name">${s.name}</span><span class="sub-item__meta">${s.category}</span></span>
+                            <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
+                        </button>`).join('')}
+                </div>`;
+        }
+
+        function serviceFormHTML(biller, idTypeIdx, idValue) {
+            const idType = biller.idTypes[idTypeIdx];
+            return `
+                <button class="push-transfer-back" data-service-back>
+                    <span class="material-symbols-rounded">arrow_back</span>Cambiar servicio
+                </button>
+                <div class="push-transfer-target">
+                    <span class="push-beneficiary__avatar" style="background:${biller.color};"><span class="material-symbols-rounded">${biller.icon}</span></span>
+                    <div>
+                        <div class="push-transfer-target__name">${biller.name}</div>
+                        <div class="push-transfer-target__meta">${biller.category}</div>
+                    </div>
+                </div>
+                <p class="finance-subtitle" style="margin-top:20px;">¿Cómo quieres identificarte?</p>
+                <div class="push-field">
+                    <label class="push-field__label" for="service-id-type">Tipo de identificación</label>
+                    <div class="push-select-wrap">
+                        <select class="push-select" id="service-id-type" data-service-idtype>
+                            ${biller.idTypes.map((t, i) => `<option value="${i}"${i === idTypeIdx ? ' selected' : ''}>${t.label}</option>`).join('')}
+                        </select>
+                        <span class="material-symbols-rounded push-select-wrap__chevron">expand_more</span>
+                    </div>
+                </div>
+                <div class="push-field">
+                    <label class="push-field__label" for="service-id-value">${idType.label}</label>
+                    <input class="push-input" type="text" inputmode="numeric" id="service-id-value" placeholder="${idType.placeholder}" value="${idValue || ''}" data-service-idvalue autocomplete="off">
+                    <p class="push-field__hint">${idType.hint || ''}</p>
+                </div>
+                <button class="login-button login-button--primary" data-service-consult${(idValue || '').trim().length >= 4 ? '' : ' disabled'}>Consultar</button>`;
+        }
+
+        function serviceConsultingHTML() {
+            return `
+                <div class="push-transfer-center">
+                    <div class="push-loading__spinner"></div>
+                    <p class="push-transfer-processing-text">Consultando tu factura…</p>
+                </div>`;
+        }
+
+        // Genera una factura "real" pero determinista a partir del valor
+        // ingresado (mismo id => misma factura), en vez de puro azar en
+        // cada consulta — se siente como datos de verdad, no ruido.
+        function generateBill(idValue) {
+            let seed = 7;
+            for (let i = 0; i < idValue.length; i++) seed = (seed * 31 + idValue.charCodeAt(i)) >>> 0;
+            const rand = () => { seed = (seed * 1103515245 + 12345) >>> 0; return (seed >>> 8) / 0xffffff; };
+            const HOLDERS = ['Juan Carlos Pazmiño', 'María Fernanda López', 'Andrés Santacruz', 'Ana Belén Vélez', 'Diego Ramírez'];
+            return {
+                holder: HOLDERS[Math.floor(rand() * HOLDERS.length)],
+                period: 'Consumo de mayo 2026',
+                amount: 8 + rand() * 55, // tope bajo: siempre cubierto por ambas cuentas de origen
+                dueDate: `${String(5 + Math.floor(rand() * 20)).padStart(2, '0')} jun 2026`,
+            };
+        }
+
+        function serviceBillHTML(biller, idType, idValue, bill) {
+            return `
+                <button class="push-transfer-back" data-service-back-form>
+                    <span class="material-symbols-rounded">arrow_back</span>Editar datos
+                </button>
+                <p class="finance-subtitle" style="margin-top:20px;">Factura encontrada</p>
+                <div class="card">
+                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">Titular</span><span class="sub-item__meta">${bill.holder}</span></span></div>
+                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">${idType.label}</span><span class="sub-item__meta">${idValue}</span></span></div>
+                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">Concepto</span><span class="sub-item__meta">${bill.period}</span></span></div>
+                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">Fecha límite</span><span class="sub-item__meta">${bill.dueDate}</span></span></div>
+                </div>
+                <p class="finance-subtitle">Monto a pagar</p>
+                <div class="push-transfer-amount">$ ${fmtMoney(bill.amount)}</div>
+                <div class="push-field">
+                    <label class="push-field__label" for="service-account">Cuenta de origen</label>
+                    <div class="push-select-wrap">
+                        <select class="push-select" id="service-account" data-service-account>
+                            ${ORIGIN_ACCOUNTS.map((a, i) => `<option value="${i}">${a.name} ****${a.acct} · $ ${fmtMoney(a.balance)}</option>`).join('')}
+                        </select>
+                        <span class="material-symbols-rounded push-select-wrap__chevron">expand_more</span>
+                    </div>
+                    <p class="push-field__hint" id="service-account-hint"></p>
+                </div>
+                <button class="login-button login-button--primary" data-service-pay>Pagar $ ${fmtMoney(bill.amount)}</button>`;
+        }
+
+        function serviceProcessingHTML() {
+            return `
+                <div class="push-transfer-center">
+                    <div class="push-loading__spinner"></div>
+                    <p class="push-transfer-processing-text">Procesando tu pago…</p>
+                </div>`;
+        }
+
+        function serviceSuccessHTML(biller, bill, account) {
+            const ref = Math.floor(100000000 + Math.random() * 900000000);
+            return `
+                <div class="push-transfer-center push-transfer-success">
+                    <span class="material-symbols-rounded push-transfer-success__icon">check_circle</span>
+                    <h2 class="push-transfer-success__title">¡Pago realizado!</h2>
+                    <div class="push-transfer-success__amount">$ ${fmtMoney(bill.amount)}</div>
+                    <p class="push-transfer-success__meta">Pagado a ${biller.name}</p>
+                    <p class="push-transfer-success__meta">Debitado de ${account.name} ****${account.acct}</p>
+                    <p class="push-transfer-success__ref">Comprobante Nro. ${ref}</p>
+                    <button class="login-button login-button--primary" data-service-done>Listo</button>
+                </div>`;
+        }
+
+        // Revalida fondos cada vez que cambia la cuenta de origen elegida
+        // (poco probable con estos montos, pero la cuenta Ahorro sólo
+        // tiene $ 100 — mejor no dejar pagar de una cuenta sin saldo).
+        function updateServiceAccountHint() {
+            const sel = document.getElementById('service-account');
+            const hint = document.getElementById('service-account-hint');
+            const payBtn = document.querySelector('[data-service-pay]');
+            if (!sel || !serviceFlow || !serviceFlow.bill) return;
+            const account = ORIGIN_ACCOUNTS[parseInt(sel.value, 10)];
+            const insufficient = account.balance < serviceFlow.bill.amount;
+            if (hint) {
+                hint.textContent = insufficient ? 'Fondos insuficientes en esta cuenta' : '';
+                hint.classList.toggle('push-field__hint--error', insufficient);
+            }
+            if (payBtn) payBtn.disabled = insufficient;
+        }
+
         // Delegado (una sola vez): #push-extra se re-renderiza en cada paso,
         // así que escuchar en el contenedor evita recablear tras cada cambio.
         document.getElementById('push-extra').addEventListener('click', (e) => {
             const extra = document.getElementById('push-extra');
+
+            const billerBtn = e.target.closest('[data-biller]');
+            if (billerBtn) {
+                const biller = SERVICE_BILLERS.find(s => s.name === billerBtn.dataset.biller);
+                serviceFlow = { biller, idTypeIdx: 0, idValue: '' };
+                extra.innerHTML = serviceFormHTML(biller, 0, '');
+                return;
+            }
+
+            if (e.target.closest('[data-service-back]')) {
+                serviceFlow = null;
+                extra.innerHTML = servicePickHTML();
+                return;
+            }
+
+            if (e.target.closest('[data-service-back-form]')) {
+                extra.innerHTML = serviceFormHTML(serviceFlow.biller, serviceFlow.idTypeIdx, serviceFlow.idValue);
+                return;
+            }
+
+            const consultBtn = e.target.closest('[data-service-consult]');
+            if (consultBtn && !consultBtn.disabled) {
+                extra.innerHTML = serviceConsultingHTML();
+                setTimeout(() => {
+                    if (!serviceFlow) return; // se cerró el push-page mientras consultaba
+                    serviceFlow.bill = generateBill(serviceFlow.idValue);
+                    const idType = serviceFlow.biller.idTypes[serviceFlow.idTypeIdx];
+                    extra.innerHTML = serviceBillHTML(serviceFlow.biller, idType, serviceFlow.idValue, serviceFlow.bill);
+                    updateServiceAccountHint();
+                }, 1100);
+                return;
+            }
+
+            const payBtn = e.target.closest('[data-service-pay]');
+            if (payBtn && !payBtn.disabled) {
+                const account = ORIGIN_ACCOUNTS[parseInt(document.getElementById('service-account').value, 10)];
+                serviceFlow.account = account;
+                extra.innerHTML = serviceProcessingHTML();
+                setTimeout(() => {
+                    if (!serviceFlow) return; // se cerró el push-page mientras procesaba
+                    extra.innerHTML = serviceSuccessHTML(serviceFlow.biller, serviceFlow.bill, serviceFlow.account);
+                }, 1600);
+                return;
+            }
+
+            if (e.target.closest('[data-service-done]')) {
+                serviceFlow = null;
+                closePushPage();
+                showToast('Pago registrado');
+                return;
+            }
 
             const benBtn = e.target.closest('[data-beneficiary]');
             if (benBtn) {
@@ -5350,6 +5623,34 @@
             }
         });
 
+        // Los <select> del flujo de Pagar servicios (tipo de identificación,
+        // cuenta de origen) no disparan "click" de forma útil para su
+        // propio valor — se escuchan aparte con "change" sobre el mismo
+        // contenedor delegado.
+        document.getElementById('push-extra').addEventListener('change', (e) => {
+            const extra = document.getElementById('push-extra');
+            if (e.target.matches('[data-service-idtype]')) {
+                serviceFlow.idTypeIdx = parseInt(e.target.value, 10);
+                serviceFlow.idValue = '';
+                extra.innerHTML = serviceFormHTML(serviceFlow.biller, serviceFlow.idTypeIdx, '');
+                return;
+            }
+            if (e.target.matches('[data-service-account]')) {
+                updateServiceAccountHint();
+            }
+        });
+
+        // El botón "Consultar" arranca deshabilitado hasta escribir algo
+        // con pinta de identificador real (mismo criterio que "Continuar"
+        // en transferir, pero sobre el campo de texto en vez de un chip).
+        document.getElementById('push-extra').addEventListener('input', (e) => {
+            if (e.target.matches('[data-service-idvalue]')) {
+                serviceFlow.idValue = e.target.value;
+                const btn = document.querySelector('[data-service-consult]');
+                if (btn) btn.disabled = e.target.value.trim().length < 4;
+            }
+        });
+
         function renderPushExtra(title) {
             const build = ACTION_EXTRAS[title];
             const extra = document.getElementById('push-extra');
@@ -5394,11 +5695,17 @@
             pushTitle.textContent = title;
             pushTopbarTitle.textContent = title;
             transferFlow = null; // reinicia el flujo si había quedado a medias
+            serviceFlow = null;
             renderPushExtra(title);
-            // El flujo de transferencia trae su propio CTA por paso
-            // (Continuar/Confirmar/Listo); el "Continuar" genérico de abajo
-            // sobra y quedaría flotando debajo del paso que sea.
-            pushCta.style.display = title === 'Transferir dinero' ? 'none' : '';
+            // El flujo de transferencia y el de pagar servicios traen su
+            // propio CTA por paso (Continuar/Confirmar/Pagar/Listo); el
+            // "Continuar" genérico de abajo sobra y quedaría flotando
+            // debajo del paso que sea.
+            pushCta.style.display = (title === 'Transferir dinero' || title === 'Pagar servicios') ? 'none' : '';
+            // Pagar servicios simula el micrositio propio del proveedor:
+            // fondo blanco en vez del grisáceo por defecto de #push-page
+            // (ver CSS .is-form-flow) — el resto de acciones no cambia.
+            pushPage.classList.toggle('is-form-flow', title === 'Pagar servicios');
 
             clearTimeout(pushLoadingTimer);
             if (SLOW_LOAD_ACTIONS.has(title)) {
