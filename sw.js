@@ -1,4 +1,4 @@
-const CACHE_NAME = 'banca-movil-v21';
+const CACHE_NAME = 'banca-movil-v25';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',

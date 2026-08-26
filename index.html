@@ -19,11 +19,13 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0">
-    <!-- Sólo para el tema Y2K (POC, ver Preferencias en Perfil): tipografía
-         de display gruesa/afiche, coherente con el resto de fuentes vía
-         Google Fonts. font-display:swap, igual que Material Symbols arriba —
-         si no carga, el tema igual funciona con el fallback del sistema. -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap">
+    <!-- Sólo para el tema Y2K (POC, ver Preferencias en Perfil): dos
+         tipografías de afiche en vez de una — Anton (condensada, se lee
+         bien incluso chica: tabs/nav/listas) y Bungee (más extravagante,
+         reservada al monto grande y los títulos hero). font-display:swap,
+         igual que Material Symbols arriba — si no cargan, el tema igual
+         funciona con el fallback del sistema. -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bungee&display=swap">
 
     <!-- Revela los íconos (ocultos por CSS) sólo cuando la fuente real está
          cargada. Si el CDN de Google Fonts está bloqueado o caído, los
@@ -397,6 +399,11 @@
             gap: 12px;
             overflow-x: auto;
             scroll-snap-type: x mandatory;
+            /* El snap nativo (al soltar un swipe manual) respeta este
+               padding igual que el scrollTo() calculado por JS — ambos
+               caminos llegan al mismo punto alineado con el resto del
+               contenido. */
+            scroll-padding: 0 24px;
             scrollbar-width: none;
             padding: 0 24px;
             -webkit-overflow-scrolling: touch;
@@ -3027,6 +3034,66 @@
         }
         .push-transfer-success .login-button { width: 100%; }
 
+        /* ---------- Pagar servicios: flujo completo con formulario ----------
+           A diferencia de QR/transferir (100% nativos del banco), este
+           simula el micrositio propio del proveedor: fondo BLANCO (no el
+           grisáceo de #push-page por defecto), con tarjetas/inputs en gris
+           claro para separarse de ese blanco — el patrón inverso al resto
+           de la app, típico de estas pantallas de terceros. */
+        .push-page.is-form-flow { background: var(--bp-surface-container); }
+        .push-page.is-form-flow .push-loading { background: var(--bp-surface-container); }
+        .push-page.is-form-flow .card,
+        .push-page.is-form-flow .push-transfer-target { background: var(--bp-surface-page); }
+
+        .push-field { margin-bottom: 16px; }
+        .push-field__label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--bp-text-secondary);
+            margin-bottom: 6px;
+        }
+        .push-field__hint {
+            font-size: 12px;
+            color: var(--bp-text-helper);
+            margin-top: 6px;
+            min-height: 15px;
+        }
+        .push-field__hint--error { color: #c0392b; font-weight: 600; }
+
+        .push-input, .push-select {
+            width: 100%;
+            height: 48px;
+            padding: 0 14px;
+            border-radius: var(--bp-radius-sm);
+            border: 1px solid var(--bp-border-divider);
+            background: var(--bp-surface-page);
+            font-family: inherit;
+            font-size: 15px;
+            color: var(--bp-text-primary);
+        }
+        .push-input:focus, .push-select:focus {
+            outline: none;
+            border-color: var(--bp-selection-bg-active);
+        }
+        .push-input::placeholder { color: var(--bp-text-helper); }
+        .push-select-wrap { position: relative; }
+        .push-select {
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+            padding-right: 40px;
+        }
+        .push-select-wrap__chevron {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: var(--bp-text-helper);
+            pointer-events: none;
+        }
+
         /* ---------- Modo finanzas: resumen consolidado ---------- */
         .finance-subtitle {
             font-size: 15px;
@@ -3485,24 +3552,51 @@
         /* Tipografía de afiche en toda la "cáscara" de navegación/títulos
            (tabs, nav, encabezados de sección, botones) — el contenido real
            de las filas (nombres, montos de movimientos, correos) se deja
-           con la tipografía normal para que siga siendo legible. */
+           con la tipografía normal para que siga siendo legible.
+
+           Anton es CONDENSADA (letras angostas) — a diferencia de Archivo
+           Black (una grotesca ancha), a igual tamaño ocupa menos y se lee
+           más liviana, así que además de cambiar la fuente se bajan los
+           tamaños unos puntos respecto al original: la heavy-weight ya
+           aporta el peso visual por su cuenta, no hace falta que también
+           sea grande. Sin letter-spacing extra (Anton ya viene apretada). */
         html.theme-y2k .tab,
         html.theme-y2k .nav-item__label,
         html.theme-y2k .section__title h2,
         html.theme-y2k .section__link,
         html.theme-y2k .card__header-title,
-        html.theme-y2k .amount,
         html.theme-y2k .quick-action__label,
         html.theme-y2k .login-button,
         html.theme-y2k .logout-btn,
-        html.theme-y2k .detail-title,
-        html.theme-y2k .cd-title,
         html.theme-y2k .placeholder-view h1,
         html.theme-y2k .list-item__title {
-            font-family: 'Archivo Black', 'Prelo', sans-serif;
+            font-family: 'Anton', 'Prelo', sans-serif;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.2px;
         }
+        html.theme-y2k .tab { font-size: 12px; }
+        html.theme-y2k .nav-item__label { font-size: 10.5px; }
+        html.theme-y2k .section__title h2 { font-size: 16px; }
+        html.theme-y2k .section__link { font-size: 13px; }
+        html.theme-y2k .card__header-title { font-size: 14px; }
+        html.theme-y2k .quick-action__label { font-size: 11px; }
+        html.theme-y2k .login-button,
+        html.theme-y2k .logout-btn { font-size: 15px; letter-spacing: 0.5px; }
+        html.theme-y2k .placeholder-view h1 { font-size: 21px; }
+        html.theme-y2k .list-item__title { font-size: 14px; }
+
+        /* El monto grande y los títulos hero de pantalla completa sí usan
+           la fuente más extravagante (Bungee) — son 2-3 elementos por
+           pantalla, no todo el texto, así que el "ruido" no se acumula. */
+        html.theme-y2k .amount,
+        html.theme-y2k .detail-title,
+        html.theme-y2k .cd-title {
+            font-family: 'Bungee', 'Prelo', sans-serif;
+            text-transform: uppercase;
+        }
+        html.theme-y2k .amount { font-size: 26px; letter-spacing: 0.5px; }
+        html.theme-y2k .detail-title,
+        html.theme-y2k .cd-title { font-size: 22px; letter-spacing: 0.3px; }
 
         /* Glitch/cromático sutil sobre el monto grande, como en la
            referencia (duplicado de color desfasado en vez de blur) */
@@ -3526,6 +3620,16 @@
         html.theme-y2k .debit-card {
             border: 3px solid var(--y2k-pink);
             box-shadow: 5px 5px 0 var(--y2k-cyan);
+        }
+
+        /* Textura de puntos sobre la tarjeta de cuenta (la más "hero" de
+           Destacado), como el fondo punteado detrás del monto/tarjeta en
+           la referencia — el resto de .card (listas, filas) se deja lisa
+           para no acumular ruido detrás de texto denso. */
+        html.theme-y2k .account-card,
+        html.theme-y2k .debit-card-disabled {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 10px 10px;
         }
 
         /* Subrayado tipo garabato bajo los títulos de sección */
@@ -3565,7 +3669,11 @@
             color: var(--y2k-green);
         }
         html.theme-y2k .tab[data-action="Modo finanzas"] {
-            background: var(--y2k-purple);
+            background-color: var(--y2k-purple);
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
+            background-size: 6px 6px;
             border-color: var(--y2k-purple);
             box-shadow: 3px 3px 0 var(--y2k-cyan);
             color: var(--y2k-cyan);
@@ -3616,12 +3724,6 @@
             color: var(--bp-surface-brand);
         }
 
-        /* Logo del header: resplandor extra sobre el aro amarillo ya
-           existente, para que combine con el resto de acentos de neón */
-        html.theme-y2k .profile-story {
-            box-shadow: 0 0 0 2px var(--y2k-pink), 0 0 14px rgba(255, 47, 146, 0.55);
-        }
-
         /* Unos pocos hovers de filas usan un blanco fijo (#fafbfc) en vez
            de un token — a propósito no se toca esa regla original (sigue
            sirviendo al tema claro), sólo se agrega el equivalente oscuro acá */
@@ -3642,6 +3744,145 @@
             background: rgba(10, 10, 18, 0.85);
             border-top-color: rgba(255, 255, 255, 0.1);
             border-right-color: rgba(255, 255, 255, 0.1); /* variante de escritorio (sidebar) */
+        }
+
+        /* El shimmer del skeleton (mientras "carga" Inicio) es un gris casi
+           blanco fijo — sobre el fondo casi negro del tema se ve como un
+           destello. Mismo criterio de siempre: se agrega el equivalente
+           oscuro sólo acá, sin tocar el shimmer claro original. */
+        html.theme-y2k .skeleton {
+            background: linear-gradient(90deg, #1c1c2b 25%, #26263a 50%, #1c1c2b 75%);
+            background-size: 200% 100%;
+        }
+
+        /* Dos superficies más con blanco fijo (no tokens) que quedaban
+           deslavadas contra el fondo oscuro: el modal de permiso del
+           giroscopio y el "handle" del bottom sheet. */
+        html.theme-y2k .gyro-modal__content {
+            background: var(--bp-surface-container);
+            border: 2px solid var(--y2k-cyan);
+            box-shadow: 5px 5px 0 var(--y2k-pink);
+        }
+        html.theme-y2k .sheet__handle {
+            background: var(--y2k-pink);
+        }
+
+        /* ---------- Más cositas Y2K: grano, franjas, brillos, ligero tilt ---------- */
+
+        /* Grano/ruido muy sutil sobre toda la pantalla — textura de VHS/
+           impresión barata en vez de un fondo perfectamente liso. Fixed +
+           pointer-events:none: nunca estorba al contenido ni al tacto. */
+        html.theme-y2k body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            pointer-events: none;
+            opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* Franja diagonal de colores arriba del todo (zona del status bar),
+           como el filo de cinta de peligro/póster de feria de la
+           referencia. .header ya es position:sticky, así que alcanza de
+           contenedor para este ::before absoluto. */
+        html.theme-y2k .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: repeating-linear-gradient(-45deg,
+                var(--y2k-pink) 0 6px,
+                var(--y2k-cyan) 6px 12px,
+                var(--y2k-green) 12px 18px,
+                var(--bp-surface-brand) 18px 24px);
+        }
+
+        /* Chispa cómica + franja a cuadros (banderín de carrera) sobre la
+           tarjeta destacada — .debit-card ya tiene overflow:hidden y
+           border-radius, así que ambos quedan recortados prolijos dentro
+           del borde de la tarjeta. */
+        html.theme-y2k .debit-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 7px;
+            background: repeating-linear-gradient(45deg, #06060a 0 6px, #fff 6px 12px);
+            opacity: 0.9;
+            z-index: 2;
+        }
+        html.theme-y2k .debit-card::after {
+            content: '';
+            position: absolute;
+            bottom: 14px;
+            right: 54px;
+            width: 0;
+            height: 0;
+            border-left: 13px solid transparent;
+            border-right: 13px solid transparent;
+            border-bottom: 22px solid var(--y2k-cyan);
+            transform: rotate(18deg);
+            opacity: 0.85;
+            z-index: 2;
+        }
+
+        /* Tilt tipo sticker/collage en los accesos rápidos — se rota el
+           botón entero, no el ícono, porque el ícono ya tiene su propio
+           transform (scale) al tocarlo y ambos convivían mal en el mismo
+           elemento. */
+        html.theme-y2k .quick-action:nth-child(odd) {
+            transform: rotate(-2deg);
+        }
+        html.theme-y2k .quick-action:nth-child(even) {
+            transform: rotate(2deg);
+        }
+
+        /* Brillo pulsante en el tab activo y el aro del logo, en vez de una
+           sombra de neón fija — se siente más "encendido". */
+        @keyframes y2kTabGlow {
+            0%, 100% { box-shadow: 3px 3px 0 var(--y2k-pink), 0 0 8px rgba(255, 47, 146, 0.35); }
+            50% { box-shadow: 3px 3px 0 var(--y2k-pink), 0 0 18px rgba(255, 47, 146, 0.8); }
+        }
+        html.theme-y2k .tab.active {
+            animation: y2kTabGlow 2.2s ease-in-out infinite;
+        }
+        @keyframes y2kLogoGlow {
+            0%, 100% { box-shadow: 0 0 0 2px var(--y2k-pink), 0 0 12px rgba(255, 47, 146, 0.5); }
+            50% { box-shadow: 0 0 0 2px var(--y2k-cyan), 0 0 18px rgba(34, 229, 255, 0.7); }
+        }
+        html.theme-y2k .profile-story {
+            animation: y2kLogoGlow 3s ease-in-out infinite;
+        }
+
+        /* Chispita titilante + glitch cromático sobre los títulos de
+           sección — de a poco, no en cada texto de la app. */
+        html.theme-y2k .section__title h2 {
+            text-shadow: 1px 0 var(--y2k-cyan), -1px 0 var(--y2k-pink);
+        }
+        html.theme-y2k .section__title h2::before {
+            content: '✦';
+            position: absolute;
+            top: -9px;
+            right: -13px;
+            font-size: 9px;
+            color: var(--y2k-cyan);
+            animation: y2kTwinkle 1.8s ease-in-out infinite;
+        }
+        @keyframes y2kTwinkle {
+            0%, 100% { opacity: 0.35; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.15); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html.theme-y2k .tab.active,
+            html.theme-y2k .profile-story,
+            html.theme-y2k .section__title h2::before {
+                animation: none;
+            }
         }
     </style>
 </head>
@@ -4976,12 +5217,39 @@
             ['LP', 'Luis P.', '#8e44ad', '2290'], ['SG', 'Sofía G.', '#e67e22', '6015'], ['DR', 'Diego R.', '#c0392b', '3348'],
         ];
         const TRANSFER_AMOUNT_CHIPS = [20, 50, 100, 200];
+        // Cada servicio se puede pagar identificándose de más de una forma
+        // (número de cuenta, de medidor, cédula del titular...) — antes la
+        // lista de servicios no llevaba a ningún lado (data-action genérico,
+        // sólo mostraba un toast); ahora cada uno abre su propio formulario
+        // con un selector de tipo de identificación + el campo que corresponda.
         const SERVICE_BILLERS = [
-            ['bolt', 'Empresa Eléctrica Quito', 'Luz', '#f76800'],
-            ['water_drop', 'EPMAPS', 'Agua potable', '#2f7abf'],
-            ['wifi', 'CNT Internet', 'Internet y TV', '#8e44ad'],
-            ['smartphone', 'Claro', 'Plan celular', '#c0392b'],
-            ['home_work', 'Municipio de Quito', 'Predios e impuestos', '#1e9e5a'],
+            { icon: 'bolt', name: 'Empresa Eléctrica Quito', category: 'Luz', color: '#f76800', idTypes: [
+                { label: 'Número de cuenta', placeholder: 'Ej. 123456789', hint: 'Está en la parte superior de tu factura' },
+                { label: 'Número de medidor', placeholder: 'Ej. 8814452', hint: 'Código impreso en el medidor' },
+            ] },
+            { icon: 'water_drop', name: 'EPMAPS', category: 'Agua potable', color: '#2f7abf', idTypes: [
+                { label: 'Código de cuenta', placeholder: 'Ej. 445120', hint: '' },
+                { label: 'Cédula del titular', placeholder: 'Ej. 1712345678', hint: '' },
+            ] },
+            { icon: 'wifi', name: 'CNT Internet', category: 'Internet y TV', color: '#8e44ad', idTypes: [
+                { label: 'Número de contrato', placeholder: 'Ej. CNT-00234511', hint: '' },
+                { label: 'Teléfono asociado', placeholder: 'Ej. 022345678', hint: '' },
+            ] },
+            { icon: 'smartphone', name: 'Claro', category: 'Plan celular', color: '#c0392b', idTypes: [
+                { label: 'Número de línea', placeholder: 'Ej. 0991234567', hint: '' },
+                { label: 'Cédula del titular', placeholder: 'Ej. 1712345678', hint: '' },
+            ] },
+            { icon: 'home_work', name: 'Municipio de Quito', category: 'Predios e impuestos', color: '#1e9e5a', idTypes: [
+                { label: 'Número de predio', placeholder: 'Ej. 250134987', hint: '' },
+                { label: 'Clave catastral', placeholder: 'Ej. 12-345-067', hint: '' },
+                { label: 'Cédula / RUC del propietario', placeholder: 'Ej. 1712345678001', hint: '' },
+            ] },
+        ];
+        // Cuentas propias desde las que se puede debitar un pago de
+        // servicio — mismos saldos/números que Cuentas en Modo finanzas.
+        const ORIGIN_ACCOUNTS = [
+            { name: 'Cuenta Corriente', acct: '1234', balance: 1440.35 },
+            { name: 'Cuenta Ahorro transaccional', acct: '7980', balance: 100.00 },
         ];
         const CARRIERS = ['Claro', 'Movistar', 'CNT'];
         const RECHARGE_AMOUNTS = ['$ 3', '$ 5', '$ 10', '$ 15'];
@@ -5013,15 +5281,7 @@
                     <p class="push-qr__caption">Comparte este código para que te paguen desde cualquier banco.</p>
                 </div>`,
             'Transferir dinero': () => transferPickHTML(),
-            'Pagar servicios': () => `
-                <div class="card">
-                    ${SERVICE_BILLERS.map(s => `
-                        <button class="sub-item" data-action="Pagar ${s[1]}">
-                            <span class="sub-item__logo" style="background:${s[3]};"><span class="material-symbols-rounded">${s[0]}</span></span>
-                            <span class="sub-item__info"><span class="sub-item__name">${s[1]}</span><span class="sub-item__meta">${s[2]}</span></span>
-                            <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
-                        </button>`).join('')}
-                </div>`,
+            'Pagar servicios': () => servicePickHTML(),
             'Recargar celular': () => `
                 <p class="finance-subtitle" style="margin-top:0;">Operador</p>
                 <div class="push-chip-row">
@@ -5109,10 +5369,204 @@
                 </div>`;
         }
 
+        // ---------- Pagar servicios: flujo de pago simulado de inicio a fin
+        // (servicio -> tipo de identificación + valor -> consultar factura
+        // -> revisar monto y elegir cuenta -> pagar -> procesando -> éxito).
+        // A diferencia de transferir (un solo campo, monto), cada servicio
+        // puede identificarse de más de una forma (número de cuenta, de
+        // medidor, cédula...) — de ahí el selector de tipo de identificación
+        // antes del campo de valor. ----------
+        let serviceFlow = null; // { biller, idTypeIdx, idValue, bill, account }
+
+        function servicePickHTML() {
+            return `
+                <p class="finance-subtitle" style="margin-top:0;">Elige un servicio</p>
+                <div class="card">
+                    ${SERVICE_BILLERS.map(s => `
+                        <button class="sub-item" data-biller="${s.name}">
+                            <span class="sub-item__logo" style="background:${s.color};"><span class="material-symbols-rounded">${s.icon}</span></span>
+                            <span class="sub-item__info"><span class="sub-item__name">${s.name}</span><span class="sub-item__meta">${s.category}</span></span>
+                            <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
+                        </button>`).join('')}
+                </div>`;
+        }
+
+        function serviceFormHTML(biller, idTypeIdx, idValue) {
+            const idType = biller.idTypes[idTypeIdx];
+            return `
+                <button class="push-transfer-back" data-service-back>
+                    <span class="material-symbols-rounded">arrow_back</span>Cambiar servicio
+                </button>
+                <div class="push-transfer-target">
+                    <span class="push-beneficiary__avatar" style="background:${biller.color};"><span class="material-symbols-rounded">${biller.icon}</span></span>
+                    <div>
+                        <div class="push-transfer-target__name">${biller.name}</div>
+                        <div class="push-transfer-target__meta">${biller.category}</div>
+                    </div>
+                </div>
+                <p class="finance-subtitle" style="margin-top:20px;">¿Cómo quieres identificarte?</p>
+                <div class="push-field">
+                    <label class="push-field__label" for="service-id-type">Tipo de identificación</label>
+                    <div class="push-select-wrap">
+                        <select class="push-select" id="service-id-type" data-service-idtype>
+                            ${biller.idTypes.map((t, i) => `<option value="${i}"${i === idTypeIdx ? ' selected' : ''}>${t.label}</option>`).join('')}
+                        </select>
+                        <span class="material-symbols-rounded push-select-wrap__chevron">expand_more</span>
+                    </div>
+                </div>
+                <div class="push-field">
+                    <label class="push-field__label" for="service-id-value">${idType.label}</label>
+                    <input class="push-input" type="text" inputmode="numeric" id="service-id-value" placeholder="${idType.placeholder}" value="${idValue || ''}" data-service-idvalue autocomplete="off">
+                    <p class="push-field__hint">${idType.hint || ''}</p>
+                </div>
+                <button class="login-button login-button--primary" data-service-consult${(idValue || '').trim().length >= 4 ? '' : ' disabled'}>Consultar</button>`;
+        }
+
+        function serviceConsultingHTML() {
+            return `
+                <div class="push-transfer-center">
+                    <div class="push-loading__spinner"></div>
+                    <p class="push-transfer-processing-text">Consultando tu factura…</p>
+                </div>`;
+        }
+
+        // Genera una factura "real" pero determinista a partir del valor
+        // ingresado (mismo id => misma factura), en vez de puro azar en
+        // cada consulta — se siente como datos de verdad, no ruido.
+        function generateBill(idValue) {
+            let seed = 7;
+            for (let i = 0; i < idValue.length; i++) seed = (seed * 31 + idValue.charCodeAt(i)) >>> 0;
+            const rand = () => { seed = (seed * 1103515245 + 12345) >>> 0; return (seed >>> 8) / 0xffffff; };
+            const HOLDERS = ['Juan Carlos Pazmiño', 'María Fernanda López', 'Andrés Santacruz', 'Ana Belén Vélez', 'Diego Ramírez'];
+            return {
+                holder: HOLDERS[Math.floor(rand() * HOLDERS.length)],
+                period: 'Consumo de mayo 2026',
+                amount: 8 + rand() * 55, // tope bajo: siempre cubierto por ambas cuentas de origen
+                dueDate: `${String(5 + Math.floor(rand() * 20)).padStart(2, '0')} jun 2026`,
+            };
+        }
+
+        function serviceBillHTML(biller, idType, idValue, bill) {
+            return `
+                <button class="push-transfer-back" data-service-back-form>
+                    <span class="material-symbols-rounded">arrow_back</span>Editar datos
+                </button>
+                <p class="finance-subtitle" style="margin-top:20px;">Factura encontrada</p>
+                <div class="card">
+                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">Titular</span><span class="sub-item__meta">${bill.holder}</span></span></div>
+                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">${idType.label}</span><span class="sub-item__meta">${idValue}</span></span></div>
+                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">Concepto</span><span class="sub-item__meta">${bill.period}</span></span></div>
+                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">Fecha límite</span><span class="sub-item__meta">${bill.dueDate}</span></span></div>
+                </div>
+                <p class="finance-subtitle">Monto a pagar</p>
+                <div class="push-transfer-amount">$ ${fmtMoney(bill.amount)}</div>
+                <div class="push-field">
+                    <label class="push-field__label" for="service-account">Cuenta de origen</label>
+                    <div class="push-select-wrap">
+                        <select class="push-select" id="service-account" data-service-account>
+                            ${ORIGIN_ACCOUNTS.map((a, i) => `<option value="${i}">${a.name} ****${a.acct} · $ ${fmtMoney(a.balance)}</option>`).join('')}
+                        </select>
+                        <span class="material-symbols-rounded push-select-wrap__chevron">expand_more</span>
+                    </div>
+                    <p class="push-field__hint" id="service-account-hint"></p>
+                </div>
+                <button class="login-button login-button--primary" data-service-pay>Pagar $ ${fmtMoney(bill.amount)}</button>`;
+        }
+
+        function serviceProcessingHTML() {
+            return `
+                <div class="push-transfer-center">
+                    <div class="push-loading__spinner"></div>
+                    <p class="push-transfer-processing-text">Procesando tu pago…</p>
+                </div>`;
+        }
+
+        function serviceSuccessHTML(biller, bill, account) {
+            const ref = Math.floor(100000000 + Math.random() * 900000000);
+            return `
+                <div class="push-transfer-center push-transfer-success">
+                    <span class="material-symbols-rounded push-transfer-success__icon">check_circle</span>
+                    <h2 class="push-transfer-success__title">¡Pago realizado!</h2>
+                    <div class="push-transfer-success__amount">$ ${fmtMoney(bill.amount)}</div>
+                    <p class="push-transfer-success__meta">Pagado a ${biller.name}</p>
+                    <p class="push-transfer-success__meta">Debitado de ${account.name} ****${account.acct}</p>
+                    <p class="push-transfer-success__ref">Comprobante Nro. ${ref}</p>
+                    <button class="login-button login-button--primary" data-service-done>Listo</button>
+                </div>`;
+        }
+
+        // Revalida fondos cada vez que cambia la cuenta de origen elegida
+        // (poco probable con estos montos, pero la cuenta Ahorro sólo
+        // tiene $ 100 — mejor no dejar pagar de una cuenta sin saldo).
+        function updateServiceAccountHint() {
+            const sel = document.getElementById('service-account');
+            const hint = document.getElementById('service-account-hint');
+            const payBtn = document.querySelector('[data-service-pay]');
+            if (!sel || !serviceFlow || !serviceFlow.bill) return;
+            const account = ORIGIN_ACCOUNTS[parseInt(sel.value, 10)];
+            const insufficient = account.balance < serviceFlow.bill.amount;
+            if (hint) {
+                hint.textContent = insufficient ? 'Fondos insuficientes en esta cuenta' : '';
+                hint.classList.toggle('push-field__hint--error', insufficient);
+            }
+            if (payBtn) payBtn.disabled = insufficient;
+        }
+
         // Delegado (una sola vez): #push-extra se re-renderiza en cada paso,
         // así que escuchar en el contenedor evita recablear tras cada cambio.
         document.getElementById('push-extra').addEventListener('click', (e) => {
             const extra = document.getElementById('push-extra');
+
+            const billerBtn = e.target.closest('[data-biller]');
+            if (billerBtn) {
+                const biller = SERVICE_BILLERS.find(s => s.name === billerBtn.dataset.biller);
+                serviceFlow = { biller, idTypeIdx: 0, idValue: '' };
+                extra.innerHTML = serviceFormHTML(biller, 0, '');
+                return;
+            }
+
+            if (e.target.closest('[data-service-back]')) {
+                serviceFlow = null;
+                extra.innerHTML = servicePickHTML();
+                return;
+            }
+
+            if (e.target.closest('[data-service-back-form]')) {
+                extra.innerHTML = serviceFormHTML(serviceFlow.biller, serviceFlow.idTypeIdx, serviceFlow.idValue);
+                return;
+            }
+
+            const consultBtn = e.target.closest('[data-service-consult]');
+            if (consultBtn && !consultBtn.disabled) {
+                extra.innerHTML = serviceConsultingHTML();
+                setTimeout(() => {
+                    if (!serviceFlow) return; // se cerró el push-page mientras consultaba
+                    serviceFlow.bill = generateBill(serviceFlow.idValue);
+                    const idType = serviceFlow.biller.idTypes[serviceFlow.idTypeIdx];
+                    extra.innerHTML = serviceBillHTML(serviceFlow.biller, idType, serviceFlow.idValue, serviceFlow.bill);
+                    updateServiceAccountHint();
+                }, 1100);
+                return;
+            }
+
+            const payBtn = e.target.closest('[data-service-pay]');
+            if (payBtn && !payBtn.disabled) {
+                const account = ORIGIN_ACCOUNTS[parseInt(document.getElementById('service-account').value, 10)];
+                serviceFlow.account = account;
+                extra.innerHTML = serviceProcessingHTML();
+                setTimeout(() => {
+                    if (!serviceFlow) return; // se cerró el push-page mientras procesaba
+                    extra.innerHTML = serviceSuccessHTML(serviceFlow.biller, serviceFlow.bill, serviceFlow.account);
+                }, 1600);
+                return;
+            }
+
+            if (e.target.closest('[data-service-done]')) {
+                serviceFlow = null;
+                closePushPage();
+                showToast('Pago registrado');
+                return;
+            }
 
             const benBtn = e.target.closest('[data-beneficiary]');
             if (benBtn) {
@@ -5169,6 +5623,34 @@
             }
         });
 
+        // Los <select> del flujo de Pagar servicios (tipo de identificación,
+        // cuenta de origen) no disparan "click" de forma útil para su
+        // propio valor — se escuchan aparte con "change" sobre el mismo
+        // contenedor delegado.
+        document.getElementById('push-extra').addEventListener('change', (e) => {
+            const extra = document.getElementById('push-extra');
+            if (e.target.matches('[data-service-idtype]')) {
+                serviceFlow.idTypeIdx = parseInt(e.target.value, 10);
+                serviceFlow.idValue = '';
+                extra.innerHTML = serviceFormHTML(serviceFlow.biller, serviceFlow.idTypeIdx, '');
+                return;
+            }
+            if (e.target.matches('[data-service-account]')) {
+                updateServiceAccountHint();
+            }
+        });
+
+        // El botón "Consultar" arranca deshabilitado hasta escribir algo
+        // con pinta de identificador real (mismo criterio que "Continuar"
+        // en transferir, pero sobre el campo de texto en vez de un chip).
+        document.getElementById('push-extra').addEventListener('input', (e) => {
+            if (e.target.matches('[data-service-idvalue]')) {
+                serviceFlow.idValue = e.target.value;
+                const btn = document.querySelector('[data-service-consult]');
+                if (btn) btn.disabled = e.target.value.trim().length < 4;
+            }
+        });
+
         function renderPushExtra(title) {
             const build = ACTION_EXTRAS[title];
             const extra = document.getElementById('push-extra');
@@ -5213,11 +5695,17 @@
             pushTitle.textContent = title;
             pushTopbarTitle.textContent = title;
             transferFlow = null; // reinicia el flujo si había quedado a medias
+            serviceFlow = null;
             renderPushExtra(title);
-            // El flujo de transferencia trae su propio CTA por paso
-            // (Continuar/Confirmar/Listo); el "Continuar" genérico de abajo
-            // sobra y quedaría flotando debajo del paso que sea.
-            pushCta.style.display = title === 'Transferir dinero' ? 'none' : '';
+            // El flujo de transferencia y el de pagar servicios traen su
+            // propio CTA por paso (Continuar/Confirmar/Pagar/Listo); el
+            // "Continuar" genérico de abajo sobra y quedaría flotando
+            // debajo del paso que sea.
+            pushCta.style.display = (title === 'Transferir dinero' || title === 'Pagar servicios') ? 'none' : '';
+            // Pagar servicios simula el micrositio propio del proveedor:
+            // fondo blanco en vez del grisáceo por defecto de #push-page
+            // (ver CSS .is-form-flow) — el resto de acciones no cambia.
+            pushPage.classList.toggle('is-form-flow', title === 'Pagar servicios');
 
             clearTimeout(pushLoadingTimer);
             if (SLOW_LOAD_ACTIONS.has(title)) {
@@ -5465,8 +5953,18 @@
                 // scrollLeft directo sobre el track (no scrollIntoView): así
                 // sólo se mueve el carrusel y nunca el scroll vertical de la
                 // página, aunque el banner esté parcialmente fuera de vista.
+                //
+                // No se usa el.offsetLeft: es relativo al offsetParent
+                // posicionado más cercano, que acá NO es el track (ninguno
+                // de los dos tiene position), así que terminaba midiendo
+                // contra un ancestro lejano — el slide quedaba pegado al
+                // borde de la pantalla en vez de alinear con el padding de
+                // 24px del resto del contenido. getBoundingClientRect() da
+                // la posición real en pantalla sin ese problema, y de ahí
+                // se calcula su lugar dentro del scroll del track.
                 const el = slides[pos];
-                const target = el.offsetLeft - (bannerTrack.clientWidth - el.clientWidth) / 2;
+                const elLeftInTrack = el.getBoundingClientRect().left - bannerTrack.getBoundingClientRect().left + bannerTrack.scrollLeft;
+                const target = elLeftInTrack - 24; // mismo padding que .section
                 bannerTrack.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
             }
 
@@ -5508,11 +6006,16 @@
             bannerTrack.addEventListener('scroll', () => {
                 clearTimeout(scrollSettleTimer);
                 scrollSettleTimer = setTimeout(() => {
+                    // Mismo motivo que en goToSlidePos: offsetLeft no sirve
+                    // acá (no es relativo al track), se recalcula la
+                    // posición real de cada slide dentro del scroll del track.
+                    const trackLeft = bannerTrack.getBoundingClientRect().left;
                     const center = bannerTrack.scrollLeft + bannerTrack.clientWidth / 2;
                     let pos = 0;
                     let best = Infinity;
                     slides.forEach((el, i) => {
-                        const d = Math.abs((el.offsetLeft + el.offsetWidth / 2) - center);
+                        const elLeftInTrack = el.getBoundingClientRect().left - trackLeft + bannerTrack.scrollLeft;
+                        const d = Math.abs((elLeftInTrack + el.offsetWidth / 2) - center);
                         if (d < best) { best = d; pos = i; }
                     });
                     if (pos === 0) { // clon del último (retrocedió de más)
