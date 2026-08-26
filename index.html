@@ -399,6 +399,11 @@
             gap: 12px;
             overflow-x: auto;
             scroll-snap-type: x mandatory;
+            /* El snap nativo (al soltar un swipe manual) respeta este
+               padding igual que el scrollTo() calculado por JS — ambos
+               caminos llegan al mismo punto alineado con el resto del
+               contenido. */
+            scroll-padding: 0 24px;
             scrollbar-width: none;
             padding: 0 24px;
             -webkit-overflow-scrolling: touch;
@@ -5517,8 +5522,18 @@
                 // scrollLeft directo sobre el track (no scrollIntoView): así
                 // sólo se mueve el carrusel y nunca el scroll vertical de la
                 // página, aunque el banner esté parcialmente fuera de vista.
+                //
+                // No se usa el.offsetLeft: es relativo al offsetParent
+                // posicionado más cercano, que acá NO es el track (ninguno
+                // de los dos tiene position), así que terminaba midiendo
+                // contra un ancestro lejano — el slide quedaba pegado al
+                // borde de la pantalla en vez de alinear con el padding de
+                // 24px del resto del contenido. getBoundingClientRect() da
+                // la posición real en pantalla sin ese problema, y de ahí
+                // se calcula su lugar dentro del scroll del track.
                 const el = slides[pos];
-                const target = el.offsetLeft - (bannerTrack.clientWidth - el.clientWidth) / 2;
+                const elLeftInTrack = el.getBoundingClientRect().left - bannerTrack.getBoundingClientRect().left + bannerTrack.scrollLeft;
+                const target = elLeftInTrack - 24; // mismo padding que .section
                 bannerTrack.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
             }
 
@@ -5560,11 +5575,16 @@
             bannerTrack.addEventListener('scroll', () => {
                 clearTimeout(scrollSettleTimer);
                 scrollSettleTimer = setTimeout(() => {
+                    // Mismo motivo que en goToSlidePos: offsetLeft no sirve
+                    // acá (no es relativo al track), se recalcula la
+                    // posición real de cada slide dentro del scroll del track.
+                    const trackLeft = bannerTrack.getBoundingClientRect().left;
                     const center = bannerTrack.scrollLeft + bannerTrack.clientWidth / 2;
                     let pos = 0;
                     let best = Infinity;
                     slides.forEach((el, i) => {
-                        const d = Math.abs((el.offsetLeft + el.offsetWidth / 2) - center);
+                        const elLeftInTrack = el.getBoundingClientRect().left - trackLeft + bannerTrack.scrollLeft;
+                        const d = Math.abs((elLeftInTrack + el.offsetWidth / 2) - center);
                         if (d < best) { best = d; pos = i; }
                     });
                     if (pos === 0) { // clon del último (retrocedió de más)
