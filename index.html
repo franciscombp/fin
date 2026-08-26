@@ -3631,6 +3631,18 @@
         html.theme-y2k .sub-item:hover {
             background: rgba(255, 255, 255, 0.06);
         }
+
+        /* El menú inferior (.nav-bar) tiene su fondo blanco fijo (no un
+           token) porque es un blur translúcido pensado para asomar el
+           contenido claro de atrás — bajo el tema oscuro ese mismo blanco
+           quedaba flotando encima del fondo negro, sin contraste con los
+           acentos de neón. Mismo criterio: no se toca la regla original,
+           sólo su equivalente oscuro acá. */
+        html.theme-y2k .nav-bar {
+            background: rgba(10, 10, 18, 0.85);
+            border-top-color: rgba(255, 255, 255, 0.1);
+            border-right-color: rgba(255, 255, 255, 0.1); /* variante de escritorio (sidebar) */
+        }
     </style>
 </head>
 <body>
