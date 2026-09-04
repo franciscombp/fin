@@ -75,7 +75,7 @@
       rp: { name: 'Banco Pichincha' },
       user: {
         id: randomBytes(16),
-        name: opts.username || 'cliente@pichincha.com',
+        name: opts.username || 'cliente@ejemplo.com',
         displayName: displayName
       },
       pubKeyCredParams: [

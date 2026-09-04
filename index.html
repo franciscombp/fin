@@ -79,26 +79,19 @@
 
     <title>Banca Móvil - Banco Pichincha</title>
     <style>
-        /* Prelo se hotlinkea desde el CDN de tema de pichincha.com: un sitio
-           de terceros que no controlamos y que ya ha roto estas rutas antes
-           (dejaron de responder). No es una base confiable para un POC que
-           debe verse bien en cualquier entorno. Se mantiene como mejora
-           progresiva de "mejor esfuerzo" (si carga, se usa) pero el stack de
-           `body` de más abajo cierra siempre con fuentes nativas del sistema
-           —San Francisco/Segoe UI/Roboto— que ya traen sus propios pesos
-           400/500/600/700 reales, así que aunque Prelo nunca cargue el texto
-           en negrita sigue siendo negrita de verdad, no sintética.
-           `font-display: swap` (no "optional"): "optional" le da a la
-           fuente una ventana de bloqueo brevísima (~100ms) y, si no está
-           lista para entonces, el navegador se queda con la de respaldo
-           PARA SIEMPRE en esa carga — ni siquiera cambia si Prelo termina
-           de descargar un instante después. Contra un host de terceros
-           (más lento y menos confiable que un CDN propio), eso significaba
-           que Prelo casi nunca llegaba a aplicarse en la práctica aunque
-           la descarga sí funcionara. "swap" no tiene ese límite: muestra
-           el respaldo de inmediato pero SIEMPRE cambia a Prelo en cuanto
-           esté lista, sea cual sea la demora — se prioriza que la fuente
-           real se vea sobre evitar el pequeño salto visual del cambio.
+        /* Prelo se carga desde ./assets/fonts/, no desde un CDN externo.
+           Los .woff2 no se versionan (ver .gitignore): se colocan a mano en
+           esa carpeta para trabajar en local. Si no están, el stack de `body`
+           de más abajo cierra con fuentes nativas del sistema —San
+           Francisco/Segoe UI/Roboto— que ya traen sus propios pesos
+           400/500/600/700 reales, así que el texto en negrita sigue siendo
+           negrita de verdad, no sintética.
+           `font-display: swap` (no "optional"): "optional" le da a la fuente
+           una ventana de bloqueo brevísima (~100ms) y, si no está lista para
+           entonces, el navegador se queda con la de respaldo PARA SIEMPRE en
+           esa carga — ni siquiera cambia si Prelo termina de descargar un
+           instante después. "swap" no tiene ese límite: muestra el respaldo
+           de inmediato pero SIEMPRE cambia a Prelo en cuanto esté lista.
            Una sola familia "Prelo" con las 4 variantes registradas por peso
            real (400/500/600/700): antes cada variante era una @font-face con
            un nombre de familia distinto y ningún elemento referenciaba
@@ -109,28 +102,28 @@
             font-display: swap;
             font-family: "Prelo";
             font-weight: 400;
-            src: url("https://www.pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-book.woff2") format("woff2");
+            src: url("./assets/fonts/prelo-book.woff2") format("woff2");
         }
 
         @font-face {
             font-display: swap;
             font-family: "Prelo";
             font-weight: 500;
-            src: url("https://www.pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-medium.woff2") format("woff2");
+            src: url("./assets/fonts/prelo-medium.woff2") format("woff2");
         }
 
         @font-face {
             font-display: swap;
             font-family: "Prelo";
             font-weight: 600;
-            src: url("https://www.pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-semibold.woff2") format("woff2");
+            src: url("./assets/fonts/prelo-semibold.woff2") format("woff2");
         }
 
         @font-face {
             font-display: swap;
             font-family: "Prelo";
             font-weight: 700;
-            src: url("https://www.pichincha.com/themes/custom/pichincha_theme/assets/fonts/prelo/prelo-bold.woff2") format("woff2");
+            src: url("./assets/fonts/prelo-bold.woff2") format("woff2");
         }
 
         :root {
