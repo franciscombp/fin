@@ -1,0 +1,38 @@
+# Despliegue MANUAL a GitHub Pages para probar el POC en un teléfono.
+# Sólo corre con "Run workflow" (workflow_dispatch); ningún push lo dispara.
+# Un sitio de Pages es público: desactívalo en Settings > Pages al terminar.
+name: Pages preview (manual)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - name: Copia sólo los archivos del POC
+        run: |
+          mkdir _site
+          cp index.html app.js fiesta.js haptics.js webauthn.js sw.js manifest.json .nojekyll _site/
+          cp -r assets _site/assets
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

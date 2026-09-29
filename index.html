@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="format-detection" content="telephone=no">
-    <meta name="description" content="Banca Móvil Banco Pichincha - POC Rediseño">
+    <meta name="description" content="Banca Móvil - POC Rediseño">
     <!-- En Android el theme-color pinta la barra superior; usamos el gris del
          fondo (no el amarillo de marca) para que la cabecera no se vea amarilla. -->
     <meta name="theme-color" content="#f1f3f7">
@@ -77,7 +77,7 @@
     <!-- Biometría real (WebAuthn). Debe cargar antes del script inline y app.js. -->
     <script src="./webauthn.js"></script>
 
-    <title>Banca Móvil - Banco Pichincha</title>
+    <title>Banca Móvil</title>
     <style>
         /* Prelo se carga desde ./assets/fonts/, no desde un CDN externo.
            Los .woff2 no se versionan (ver .gitignore): se colocan a mano en
@@ -688,7 +688,7 @@
         .debit-card.is-hidden { display: none; }
 
         /* Arte de la tarjeta: el mismo asset que el detalle, recortado desde
-           arriba. El logo de Banco Pichincha y el VISA vienen impresos en la
+           arriba. El logo del banco y el VISA vienen impresos en la
            ilustración, por eso no se superponen como elementos aparte.
            border-radius: inherit además del overflow:hidden del contenedor:
            .debit-card tiene transform-style:preserve-3d (para el tilt del
@@ -816,6 +816,47 @@
            etiqueta se leyera sobre el arte — al quitar el texto esa franja
            dejaba de tener sentido y sólo se veía como una mancha borrosa
            sin motivo en la parte baja de la tarjeta. */
+
+
+        /* ---------- Microinteracciones táctiles (ver haptics.js) ---------- */
+        .fx-clip { overflow: hidden; }
+        .fx-ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0.14;
+            transform: scale(0);
+            pointer-events: none;
+            animation: fxRipple 0.5s ease-out forwards;
+        }
+        @keyframes fxRipple {
+            to { transform: scale(1); opacity: 0; }
+        }
+        .fx-shake { animation: fxShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+        @keyframes fxShake {
+            10%, 90% { transform: translateX(-1px); }
+            20%, 80% { transform: translateX(3px); }
+            30%, 50%, 70% { transform: translateX(-5px); }
+            40%, 60% { transform: translateX(5px); }
+        }
+        /* Resorte al soltar: los controles rebotan un poco en vez de volver lineal */
+        .tab, .push-chip, .nav-item__wrap, .quick-action__icon, .login-button, .sheet__cta {
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .push-chip:active, .login-button:active { transform: scale(0.96); }
+        .push-chip.is-selected { animation: fxPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        @keyframes fxPop { 0% { transform: scale(0.92); } 100% { transform: scale(1); } }
+        /* Check de éxito: aro que se expande tras el pop del ícono */
+        .push-transfer-success__icon { position: relative; }
+        .push-transfer-success__icon::after {
+            content: ''; position: absolute; inset: 0; border-radius: 50%;
+            border: 3px solid #1e9e5a; opacity: 0;
+            animation: fxRing 0.7s 0.15s ease-out;
+        }
+        @keyframes fxRing { 0% { transform: scale(0.8); opacity: 0.6; } 100% { transform: scale(1.8); opacity: 0; } }
+        @media (prefers-reduced-motion: reduce) {
+            .fx-ripple, .fx-shake, .push-chip.is-selected, .push-transfer-success__icon::after { animation: none; }
+        }
 
         /* ---------- Quick actions ---------- */
         .quick-actions {
@@ -3885,7 +3926,7 @@
         <!-- Header -->
         <div class="login-screen__header">
             <div class="login-screen__header-logo">
-                <img src="./assets/bp-brand-logo.svg" alt="Banco Pichincha" class="login-logo">
+                <img src="./assets/bp-brand-logo.svg" alt="Logo del banco" class="login-logo">
             </div>
             <div class="login-screen__header-actions">
                 <button class="icon-button" aria-label="Clave digital" data-action="Clave digital">
@@ -3960,7 +4001,7 @@
 
     <!-- Splash de bienvenida (amarillo) mientras autentica -->
     <div class="welcome-splash" id="welcome-splash" aria-hidden="true">
-        <img src="./assets/bp-brand-logo--blue.svg" alt="Banco Pichincha" class="welcome-splash__logo">
+        <img src="./assets/bp-brand-logo--blue.svg" alt="Logo del banco" class="welcome-splash__logo">
         <h1 class="welcome-splash__title">¡Bienvenido de nuevo!</h1>
         <p class="welcome-splash__subtitle">Estamos preparando tu Banca Móvil…</p>
     </div>
@@ -4068,7 +4109,7 @@
                     <!-- Estado sin tarjeta de débito activa (otra cuenta) -->
                     <div class="debit-card-disabled is-hidden" id="debit-card-disabled">
                         <div class="debit-card-disabled__row">
-                            <img src="./assets/bp-brand-logo--blue.svg" alt="Banco Pichincha" class="debit-card-disabled__logo">
+                            <img src="./assets/bp-brand-logo--blue.svg" alt="Logo del banco" class="debit-card-disabled__logo">
                             <span class="debit-card-disabled__visa">VISA</span>
                         </div>
                         <p class="debit-card-disabled__text">Para tus compras y pagos por internet</p>
@@ -4282,7 +4323,7 @@
                 <div class="card">
                     <button class="product-row" data-action="Visa Débito">
                         <span class="card-thumb card-thumb--visa">
-                            <span class="card-thumb__brand">BANCO<br>PICHINCHA</span>
+                            <span class="card-thumb__brand">MI<br>BANCO</span>
                             <span class="card-thumb__foot"><span class="card-thumb__visa">VISA</span></span>
                         </span>
                         <span class="product-row__info">
@@ -4294,7 +4335,7 @@
 
                 <button class="cta-dashed" data-action="Solicitar Débito Digital">
                     <span class="card-thumb card-thumb--ghost">
-                        <span class="card-thumb__brand">BANCO<br>PICHINCHA</span>
+                        <span class="card-thumb__brand">MI<br>BANCO</span>
                         <span class="card-thumb__foot"><span class="card-thumb__visa">VISA</span></span>
                     </span>
                     <span class="cta-dashed__text">
@@ -4314,7 +4355,7 @@
                 <div class="card">
                     <button class="product-row" data-action="Mastercard Black">
                         <span class="card-thumb card-thumb--black">
-                            <span class="card-thumb__brand">BANCO<br>PICHINCHA</span>
+                            <span class="card-thumb__brand">MI<br>BANCO</span>
                             <span class="card-thumb__foot"><span class="mc-dots"><i></i><i></i></span></span>
                         </span>
                         <span class="product-row__info">
@@ -4641,7 +4682,7 @@
                         <img class="cd-card__img" id="cd-card-img" src="./assets/card-debit.png" alt="Tarjeta de débito internacional">
                         <div class="cd-card__art" id="cd-card-art">
                             <div class="cd-card__art-top">
-                                <span class="cd-card__art-brand">BANCO<br>PICHINCHA</span>
+                                <span class="cd-card__art-brand">MI<br>BANCO</span>
                                 <span class="cd-card__art-mark" id="cd-card-art-mark"></span>
                             </div>
                             <span class="cd-card__art-number" id="cd-card-art-number"></span>
@@ -4917,7 +4958,7 @@
                 <div class="card">
                     <button class="product-row" data-action="Mastercard Black">
                         <span class="card-thumb card-thumb--black">
-                            <span class="card-thumb__brand">BANCO<br>PICHINCHA</span>
+                            <span class="card-thumb__brand">MI<br>BANCO</span>
                             <span class="card-thumb__foot"><span class="mc-dots"><i></i><i></i></span></span>
                         </span>
                         <span class="product-row__info"><span class="product-row__name">Mastercard Black</span></span>
@@ -5007,7 +5048,7 @@
         <div class="story-progress" id="story-progress"></div>
         <div class="story-header">
             <span class="story-header__avatar" style="background: var(--bp-surface-brand); color: var(--bp-text-brand);">B</span>
-            <span class="story-header__name">Banco Pichincha</span>
+            <span class="story-header__name">Mi Banco</span>
             <button class="story-close" id="story-close" aria-label="Cerrar stories">
                 <span class="material-symbols-rounded">close</span>
             </button>
@@ -5902,7 +5943,7 @@
 
         // ---------- Banner de ofertas: carrusel infinito ----------
         const BANNER_SLIDES = [
-            { theme: 1, title: 'Ofertas todo el año con Tarjetas Banco Pichincha y Deuna', cta: 'Ver ofertas' },
+            { theme: 1, title: 'Ofertas todo el año con Tarjetas del banco y Deuna', cta: 'Ver ofertas' },
             { theme: 2, title: 'Acumula millas en cada compra con tu tarjeta de crédito', cta: 'Conocer más' },
             { theme: 3, title: 'Activa Modo finanzas y controla todo tu dinero en un solo lugar', cta: 'Activar' },
         ];
@@ -7037,6 +7078,7 @@
     </script>
 
     <script src="./app.js"></script>
+    <script src="./haptics.js"></script>
     <script src="./fiesta.js"></script>
 </body>
 </html>
