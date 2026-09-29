@@ -53,12 +53,17 @@ document.addEventListener('DOMContentLoaded', () => {
           btnLoginBiometric.textContent = auth.hasCredential()
             ? 'Verificando huella…'
             : 'Registrando huella…';
+          // Sin audio vivo durante Face ID: iOS interrumpe la sesión de audio
+          // y un contexto a medio sonar queda colgado emitiendo ruido.
+          if (window.Haptics_killAudio) window.Haptics_killAudio();
           await auth.verify();
         } else {
           // Sin autenticador de plataforma: caemos al simulado
           btnLoginBiometric.textContent = 'Autenticando...';
           await new Promise(r => setTimeout(r, 1600));
         }
+        // El sonido de ingreso suena recién al autenticar, nunca antes de Face ID
+        if (window.Haptics) window.Haptics.welcome();
         showHome();
       } catch (err) {
         // El usuario canceló o el autenticador falló
@@ -79,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnLoginOther) {
     btnLoginOther.addEventListener('click', () => {
       if (welcomeSplash) welcomeSplash.classList.add('show');
+      if (window.Haptics) window.Haptics.welcome();
       setTimeout(showHome, 1400);
     });
   }
