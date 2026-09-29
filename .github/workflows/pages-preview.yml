@@ -29,7 +29,7 @@ jobs:
       - name: Copia sólo los archivos del POC
         run: |
           mkdir _site
-          cp index.html app.js fiesta.js haptics.js webauthn.js sw.js manifest.json .nojekyll _site/
+          cp index.html duo.html app.js fiesta.js haptics.js webauthn.js sw.js manifest.json .nojekyll _site/
           cp -r assets _site/assets
       - uses: actions/upload-pages-artifact@v3
         with:

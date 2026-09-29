@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light" data-layout="mobile-sm">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Banca Móvil en iPhone Duo</title>
+    <meta name="description" content="Concept: la banca móvil adaptada al iPhone Duo plegable (pantalla exterior 5,4&quot; y pantalla interior 7,6&quot;).">
+    <link rel="stylesheet" href="./assets/tokens.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=block">
+    <style>
+        /* Concept de adaptación al iPhone Duo (plegable tipo libro).
+           Medidas públicas: cerrado 84,1 × 117,8 mm con pantalla de 5,4";
+           abierto 164,6 × 117,8 mm con pantalla de 7,6" (≈ 4:3 apaisado).
+           Escala de este concept: 1 mm ≈ 4,4 px CSS. */
+        :root {
+            --stage: #0e0f12;
+            --stage-2: #17191e;
+            --ink: #f5f5f5;
+            --ink-2: #a9adb7;
+            --accent: var(--bp-base-color-yellow-500, #ffdd00);
+            --titanium: linear-gradient(145deg, #6b6e75 0%, #c9ccd2 22%, #7d8087 48%, #d8dade 70%, #5d6067 100%);
+            --pad: 16px;
+            --closed-w: 370px;
+            --closed-h: 518px;
+            --open-w: 724px;
+            --open-h: 518px;
+            --bezel: 10px;
+        }
+        * { box-sizing: border-box; margin: 0; }
+        html, body { background: var(--stage); color: var(--ink); }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .material-symbols-rounded {
+            font-size: 20px; line-height: 1;
+            /* oculto hasta que cargue la fuente: si no, se ve el nombre del ícono */
+            visibility: hidden; display: inline-flex; width: 1em; height: 1em; overflow: hidden;
+        }
+        html.icons-ready .material-symbols-rounded { visibility: visible; }
+
+        /* ---------- Cabecera ---------- */
+        header {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 32px var(--pad) 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px 32px;
+            align-items: flex-end;
+            justify-content: space-between;
+        }
+        .eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+        h1 { font-size: clamp(26px, 4vw, 40px); line-height: 1.1; font-weight: 700; margin-top: 6px; }
+        .lede { color: var(--ink-2); max-width: 520px; margin-top: 8px; font-size: 15px; line-height: 1.5; }
+
+        .seg {
+            display: inline-flex;
+            background: var(--stage-2);
+            border: 1px solid #2a2d34;
+            border-radius: 999px;
+            padding: 4px;
+            gap: 4px;
+        }
+        .seg button {
+            border: 0;
+            background: transparent;
+            color: var(--ink-2);
+            font: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 10px 18px;
+            border-radius: 999px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background .2s, color .2s;
+        }
+        .seg button[aria-pressed="true"] { background: var(--ink); color: #111; }
+
+        /* ---------- Escenario ---------- */
+        .stage {
+            position: relative;
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 24px var(--pad) 8px;
+            display: flex;
+            justify-content: center;
+        }
+        .fit { transform-origin: top center; }
+
+        .device {
+            position: relative;
+            width: calc(var(--closed-w) + var(--bezel) * 2);
+            height: calc(var(--closed-h) + var(--bezel) * 2);
+            border-radius: 46px;
+            padding: var(--bezel);
+            background: var(--titanium);
+            box-shadow:
+                0 0 0 1px rgba(255,255,255,.08) inset,
+                0 40px 80px -20px rgba(0,0,0,.7),
+                0 12px 30px rgba(0,0,0,.45);
+            transition: width .75s cubic-bezier(.65,0,.35,1), border-radius .75s;
+        }
+        .device.is-open { width: calc(var(--open-w) + var(--bezel) * 2); border-radius: 40px; }
+        /* Botones laterales */
+        .device::before, .device::after {
+            content: '';
+            position: absolute;
+            right: -3px;
+            width: 4px;
+            border-radius: 2px;
+            background: #8a8d94;
+        }
+        .device::before { top: 110px; height: 56px; }
+        .device::after { top: 180px; height: 36px; }
+
+        .screen {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 36px;
+            overflow: hidden;
+            background: var(--bp-theme-color-surface-page-alt, #f5f5f5);
+        }
+        .device.is-open .screen { border-radius: 30px; }
+
+        /* Status bar común */
+        .status {
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #111;
+            z-index: 5;
+            pointer-events: none;
+        }
+        .status__icons { display: flex; gap: 5px; align-items: center; }
+        .status__icons .material-symbols-rounded { font-size: 16px; }
+        /* Cámara: isla en la exterior, perforación en la interior */
+        .island {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 96px;
+            height: 26px;
+            border-radius: 20px;
+            background: #000;
+            z-index: 6;
+        }
+        .device.is-open .island { width: 18px; height: 18px; left: 75%; top: 12px; }
+
+        /* ---------- Contenidos ---------- */
+        .pane {
+            position: absolute;
+            top: 40px; /* debajo de la barra de estado */
+            bottom: 0;
+            background: var(--bp-theme-color-surface-page-alt, #f5f5f5);
+            overflow: hidden;
+        }
+        .pane iframe {
+            border: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            background: var(--bp-theme-color-surface-page-alt, #f5f5f5);
+        }
+        .pane--app { left: 0; width: var(--closed-w); transition: width .75s cubic-bezier(.65,0,.35,1); }
+        .device.is-open .pane--app { width: calc(var(--open-w) / 2 - 12px); }
+
+        .pane--detail {
+            right: 0;
+            width: calc(var(--open-w) / 2 - 12px);
+            opacity: 0;
+            transform: translateX(40px);
+            transition: opacity .45s ease .35s, transform .6s cubic-bezier(.22,1,.36,1) .3s;
+            overflow-y: auto;
+            scrollbar-width: none;
+            padding: 12px 20px 24px;
+            color: var(--bp-theme-color-text-primary, #1f1f1f);
+            font-family: Prelo, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+        .pane--detail::-webkit-scrollbar { display: none; }
+        .device.is-open .pane--detail { opacity: 1; transform: none; }
+        .device:not(.is-open) .pane--detail { transition-delay: 0s; pointer-events: none; }
+
+        /* Pliegue: franja central con sombra suave; nada interactivo encima */
+        .crease {
+            position: absolute;
+            top: 0; bottom: 0;
+            left: calc(50% - 12px);
+            width: 24px;
+            background:
+                linear-gradient(90deg, transparent, rgba(0,0,0,.06) 40%, rgba(255,255,255,.35) 50%, rgba(0,0,0,.06) 60%, transparent),
+                var(--bp-theme-color-surface-page-alt, #f5f5f5);
+            opacity: 0;
+            transition: opacity .4s ease .3s;
+            z-index: 4;
+            pointer-events: none;
+        }
+        .device.is-open .crease { opacity: 1; }
+
+        /* ---------- Panel de detalle (lado derecho, pantalla interior) ---------- */
+        .d-title { font-size: 22px; line-height: 28px; font-weight: 600; margin-bottom: 4px; }
+        .d-sub { font-size: 13px; color: var(--bp-theme-color-text-helper, #5c5c5c); margin-bottom: 16px; }
+        .d-card {
+            background: var(--bp-theme-color-surface-container-default, #fff);
+            border-radius: var(--bp-semantic-radius-md, 12px);
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .d-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .d-card h3 a { font-size: 13px; color: var(--bp-theme-color-text-interactive, #0f265c); text-decoration: underline; font-weight: 600; }
+        .kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .kpi { background: var(--bp-theme-color-surface-page-alt, #f5f5f5); border-radius: 10px; padding: 10px 12px; }
+        .kpi small { display: block; font-size: 11px; color: var(--bp-theme-color-text-helper, #5c5c5c); }
+        .kpi b { font-size: 17px; font-variant-numeric: tabular-nums; }
+        .kpi .up { color: var(--bp-theme-color-status-success-text, #107524); }
+        .kpi .down { color: var(--bp-base-color-red-600, #c20505); }
+        .bars { display: flex; align-items: flex-end; gap: 6px; height: 88px; margin-top: 14px; }
+        .bars span {
+            flex: 1;
+            border-radius: 4px 4px 0 0;
+            background: var(--bp-base-color-blue-100, #cfd4de);
+            transform-origin: bottom;
+            animation: grow .7s cubic-bezier(.22,1,.36,1) both;
+        }
+        .bars span.is-now { background: var(--bp-base-color-blue-500, #0f265c); }
+        .bars-x { display: flex; gap: 6px; margin-top: 4px; }
+        .bars-x i { flex: 1; font-style: normal; font-size: 10px; text-align: center; color: var(--bp-theme-color-text-helper, #5c5c5c); }
+        @keyframes grow { from { transform: scaleY(0); } }
+        .mov { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--bp-theme-color-border-divider, #f5f5f5); }
+        .mov:first-of-type { border-top: 0; }
+        .mov__ic {
+            width: 36px; height: 36px; border-radius: 50%;
+            display: grid; place-items: center;
+            background: var(--bp-theme-color-avatar-bg, rgb(18 18 18 / .04));
+            color: var(--bp-theme-color-brand-support, #0f265c);
+        }
+        .mov__t { flex: 1; min-width: 0; }
+        .mov__t b { display: block; font-size: 14px; font-weight: 500; }
+        .mov__t small { font-size: 12px; color: var(--bp-theme-color-text-helper, #5c5c5c); }
+        .mov__a { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+        .mov__a.in { color: var(--bp-theme-color-status-success-text, #107524); }
+        .drop {
+            border: 1.5px dashed var(--bp-theme-color-border-default, #d0d0d0);
+            border-radius: var(--bp-semantic-radius-md, 12px);
+            padding: 14px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-size: 13px;
+            color: var(--bp-theme-color-text-helper, #5c5c5c);
+        }
+        .drop .material-symbols-rounded { color: var(--bp-theme-color-brand-support, #0f265c); }
+
+        /* ---------- Notas de diseño ---------- */
+        .notes {
+            max-width: 1180px;
+            margin: 24px auto 48px;
+            padding: 0 var(--pad);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 12px;
+        }
+        .note {
+            background: var(--stage-2);
+            border: 1px solid #23262d;
+            border-radius: 16px;
+            padding: 16px;
+        }
+        .note .material-symbols-rounded { color: var(--accent); font-size: 22px; }
+        @media (max-width: 520px) {
+            .seg { width: 100%; }
+            .seg button { flex: 1; justify-content: center; padding: 10px 8px; }
+        }
+        .note h2 { font-size: 15px; margin: 8px 0 4px; }
+        .note p { font-size: 13.5px; line-height: 1.5; color: var(--ink-2); }
+        .specs { font-size: 12px; color: #6f737c; text-align: center; margin-top: 12px; padding: 0 var(--pad); }
+
+        @media (prefers-reduced-motion: reduce) {
+            .device, .pane--app, .pane--detail, .crease, .bars span { transition: none !important; animation: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <div class="eyebrow">Concept · iPhone Duo</div>
+            <h1>La banca móvil, abierta en dos</h1>
+            <p class="lede">Cerrado, es la misma app de siempre en la pantalla exterior de 5,4". Al abrirlo, la pantalla interior de 7,6" se divide en lista + detalle: la app a la izquierda y un panel de análisis a la derecha, sin nada interactivo sobre el pliegue.</p>
+        </div>
+        <div class="seg" role="group" aria-label="Estado del dispositivo">
+            <button id="btn-closed" aria-pressed="false"><span class="material-symbols-rounded">smartphone</span>Cerrado</button>
+            <button id="btn-open" aria-pressed="true"><span class="material-symbols-rounded">menu_book</span>Abierto</button>
+        </div>
+    </header>
+
+    <main class="stage">
+        <div class="fit" id="fit">
+            <div class="device is-open" id="device">
+                <div class="screen">
+                    <div class="status"><span>9:41</span><span class="status__icons"><span class="material-symbols-rounded">signal_cellular_alt</span><span class="material-symbols-rounded">wifi</span><span class="material-symbols-rounded">battery_full</span></span></div>
+                    <div class="island" aria-hidden="true"></div>
+
+                    <!-- Panel izquierdo / pantalla completa cerrado: la app real -->
+                    <div class="pane pane--app">
+                        <iframe id="app" src="./index.html" title="Banca Móvil"></iframe>
+                    </div>
+
+                    <div class="crease" aria-hidden="true"></div>
+
+                    <!-- Panel derecho: sólo existe con el dispositivo abierto -->
+                    <aside class="pane pane--detail" aria-label="Panel de detalle">
+                        <p class="d-title">Tu mes en un vistazo</p>
+                        <p class="d-sub">Cuenta PRINCIPAL · ******7890</p>
+
+                        <div class="d-card">
+                            <h3>Resumen de septiembre <a href="#" onclick="return false">Ver más</a></h3>
+                            <div class="kpis">
+                                <div class="kpi"><small>Ingresos</small><b class="up">$ 2.450,00</b></div>
+                                <div class="kpi"><small>Gastos</small><b class="down">$ 1.318,76</b></div>
+                            </div>
+                            <div class="bars" aria-hidden="true">
+                                <span style="height:42%;animation-delay:.40s"></span>
+                                <span style="height:58%;animation-delay:.45s"></span>
+                                <span style="height:35%;animation-delay:.50s"></span>
+                                <span style="height:72%;animation-delay:.55s"></span>
+                                <span style="height:50%;animation-delay:.60s"></span>
+                                <span class="is-now" style="height:64%;animation-delay:.65s"></span>
+                            </div>
+                            <div class="bars-x" aria-hidden="true"><i>Abr</i><i>May</i><i>Jun</i><i>Jul</i><i>Ago</i><i>Sep</i></div>
+                        </div>
+
+                        <div class="d-card">
+                            <h3>Últimos movimientos <a href="#" onclick="return false">Ver todos</a></h3>
+                            <div class="mov"><span class="mov__ic"><span class="material-symbols-rounded">shopping_cart</span></span><span class="mov__t"><b>Supermercado</b><small>Hoy · Débito</small></span><span class="mov__a">- $ 48,20</span></div>
+                            <div class="mov"><span class="mov__ic"><span class="material-symbols-rounded">work</span></span><span class="mov__t"><b>Pago de nómina</b><small>Ayer · Transferencia</small></span><span class="mov__a in">+ $ 1.225,00</span></div>
+                            <div class="mov"><span class="mov__ic"><span class="material-symbols-rounded">bolt</span></span><span class="mov__t"><b>Luz de la casa</b><small>27 sep · Servicio</small></span><span class="mov__a">- $ 24,80</span></div>
+                            <div class="mov"><span class="mov__ic"><span class="material-symbols-rounded">local_cafe</span></span><span class="mov__t"><b>Cafetería</b><small>26 sep · Débito</small></span><span class="mov__a">- $ 6,50</span></div>
+                        </div>
+
+                        <div class="drop">
+                            <span class="material-symbols-rounded">drag_pan</span>
+                            Arrastra un contacto desde la izquierda hasta aquí para transferirle.
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <p class="specs">Escala aproximada a partir de las medidas publicadas: cerrado 84,1 × 117,8 mm (5,4"), abierto 164,6 × 117,8 mm (7,6"). El panel izquierdo es la app real e interactiva.</p>
+
+    <section class="notes">
+        <article class="note">
+            <span class="material-symbols-rounded">view_column_2</span>
+            <h2>Lista + detalle al abrir</h2>
+            <p>Con 7,6" apaisados, una sola columna de 390px dejaría media pantalla vacía. La app conserva su columna y la derecha se usa para lo que en el teléfono exige otra pantalla: resumen, movimientos, detalle.</p>
+        </article>
+        <article class="note">
+            <span class="material-symbols-rounded">fold</span>
+            <h2>El pliegue es zona muerta</h2>
+            <p>Hay 24px sin controles sobre la bisagra. Ningún botón, texto o campo cruza el centro, así no se pierde un tap en la zona donde el panel se deforma.</p>
+        </article>
+        <article class="note">
+            <span class="material-symbols-rounded">sync_alt</span>
+            <h2>Continuidad al plegar</h2>
+            <p>Al cerrar, el panel derecho se retira y la app se expande a la pantalla exterior sin recargar: mismo estado, misma posición de scroll, el mismo flujo a medio completar.</p>
+        </article>
+        <article class="note">
+            <span class="material-symbols-rounded">vibration</span>
+            <h2>Háptica al abrir y cerrar</h2>
+            <p>El gesto de desplegar se acompaña del efecto "abrir" y el de plegar con "cerrar" del sistema de feedback de la app, para que el cambio de postura se sienta físico.</p>
+        </article>
+    </section>
+
+    <script>
+        (function () {
+            var device = document.getElementById('device');
+            var fit = document.getElementById('fit');
+            var bOpen = document.getElementById('btn-open');
+            var bClosed = document.getElementById('btn-closed');
+            var frame = document.getElementById('app');
+
+            // Escala el dispositivo para que quepa en pantallas angostas
+            function rescale() {
+                var cs = getComputedStyle(document.documentElement);
+                var open = device.classList.contains('is-open');
+                var w = parseFloat(cs.getPropertyValue(open ? '--open-w' : '--closed-w')) + 20;
+                var avail = Math.min(window.innerWidth - 32, 1180);
+                var s = Math.min(1, avail / w);
+                fit.style.transform = s < 1 ? 'scale(' + s + ')' : '';
+                fit.style.height = s < 1 ? (device.offsetHeight * s) + 'px' : '';
+            }
+
+            function haptic(name) {
+                try { var H = frame.contentWindow.Haptics; if (H) H.fx(name); } catch (e) {}
+            }
+
+            function setOpen(on) {
+                device.classList.toggle('is-open', on);
+                bOpen.setAttribute('aria-pressed', String(on));
+                bClosed.setAttribute('aria-pressed', String(!on));
+                haptic(on ? 'open' : 'close');
+                rescale();
+                setTimeout(rescale, 780);
+            }
+            bOpen.addEventListener('click', function () { setOpen(true); });
+            bClosed.addEventListener('click', function () { setOpen(false); });
+            window.addEventListener('resize', rescale);
+            rescale();
+
+            if (document.fonts && document.fonts.load) {
+                document.fonts.load('20px "Material Symbols Rounded"').then(function (f) {
+                    if (f && f.length) document.documentElement.classList.add('icons-ready');
+                }).catch(function () {});
+            }
+
+            // Entra directo al home (sin la pantalla de login) para el concept
+            frame.addEventListener('load', function () {
+                try {
+                    var d = frame.contentWindow.document;
+                    var other = d.getElementById('btn-login-other');
+                    if (other) other.click();
+                } catch (e) { /* distinto origen (file://): queda en el login */ }
+            });
+        })();
+    </script>
+</body>
+</html>
