@@ -2,7 +2,7 @@
 <html lang="es" data-theme="light" data-layout="mobile-sm">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="format-detection" content="telephone=no">
     <meta name="description" content="Banca Móvil - POC Rediseño">
     <!-- En Android el theme-color pinta la barra superior; usamos el gris del
@@ -852,11 +852,24 @@
             30%, 50%, 70% { transform: translateX(-5px); }
             40%, 60% { transform: translateX(5px); }
         }
-        /* Resorte al soltar: los controles rebotan un poco en vez de volver lineal */
-        .tab, .push-chip, .nav-item__wrap, .quick-action__icon, .login-button, .sheet__cta {
+        /* Resorte al soltar: los controles rebotan un poco en vez de volver lineal.
+           Los tabs NO entran acá: al achicarse y rebotar dentro de una fila con
+           scroll horizontal se veían saltar. */
+        .push-chip, .nav-item__wrap, .quick-action__icon, .login-button, .sheet__cta {
             transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .push-chip:active, .login-button:active { transform: scale(0.96); }
+        /* Tabs estables: sin escala ni rebote; el feedback es sólo de color */
+        .tab, .tab:active {
+            transform: none;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+        .tab:active:not(.active) { background: var(--bp-theme-color-interaction-selection-bg-pressed, #f5f5f5); }
+
+        /* Sin zoom por doble tap ni resaltado de toque; el pinch lo cancela haptics.js */
+        html, body, button, a, .tab, .nav-item { touch-action: manipulation; }
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        * { -webkit-tap-highlight-color: transparent; }
         .push-chip.is-selected { animation: fxPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         @keyframes fxPop { 0% { transform: scale(0.92); } 100% { transform: scale(1); } }
         /* Check de éxito: aro que se expande tras el pop del ícono */

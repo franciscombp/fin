@@ -1,75 +1,93 @@
-// Feedback háptico + sonoro + microinteracciones táctiles.
+// Feedback háptico + sonoro.
 //
 // Los sonidos se sintetizan con WebAudio (sin archivos): cero assets, cero red.
-// El AudioContext se desbloquea en el primer toque (requisito de iOS/Chrome).
 //
-// - Android/Chrome: navigator.vibrate con patrones cortos.
+// - Android/Chrome: navigator.vibrate con patrones cortos (en pointerdown).
 // - iOS 17.4+ (Safari/PWA): no existe vibrate(); el truco es hacer click en un
 //   <input type="checkbox" switch> oculto, que dispara el motor háptico nativo.
+//   iOS sólo lo permite dentro de un gesto del usuario, así que allí la háptica
+//   se dispara en "click" y no en pointerdown, y los efectos asíncronos (éxito
+//   tras el procesamiento) pueden no vibrar.
+// - Audio: iOS/Chrome exigen desbloquear el AudioContext dentro de un gesto
+//   (touchend/click; pointerdown no cuenta en iOS). Además en iOS el switch de
+//   silencio mutea WebAudio salvo que audioSession.type = 'playback'.
 // - Sin soporte (escritorio) todo es no-op silencioso.
-// Respeta prefers-reduced-motion y un interruptor persistido en localStorage
-// (window.Haptics.setEnabled(false)).
+// Interruptores persistidos en localStorage (Haptics.setEnabled / setSoundEnabled).
 (function () {
   var KEY = 'bp_haptics';
-  var reduced = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)');
+  var SKEY = 'bp_sound';
   var enabled = true;
+  var soundOn = true;
   try { enabled = localStorage.getItem(KEY) !== 'off'; } catch (e) {}
+  try { soundOn = localStorage.getItem(SKEY) !== 'off'; } catch (e) {}
 
   var canVibrate = typeof navigator.vibrate === 'function';
+
+  // ---------- Háptica ----------
   var iosEl = null;
   function iosTick() {
-    if (!iosEl) {
-      var label = document.createElement('label');
-      label.setAttribute('aria-hidden', 'true');
-      label.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none';
-      var input = document.createElement('input');
-      input.type = 'checkbox';
-      input.setAttribute('switch', '');
-      input.tabIndex = -1;
-      label.appendChild(input);
-      document.body.appendChild(label);
-      iosEl = label;
-    }
-    iosEl.click();
+    try {
+      if (!iosEl) {
+        var label = document.createElement('label');
+        label.setAttribute('aria-hidden', 'true');
+        label.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none';
+        var input = document.createElement('input');
+        input.type = 'checkbox';
+        input.setAttribute('switch', '');
+        input.tabIndex = -1;
+        label.appendChild(input);
+        document.body.appendChild(label);
+        iosEl = label;
+      }
+      iosEl.click();
+    } catch (e) {}
   }
 
-  // Patrones en ms: [vibra, pausa, vibra...]. En iOS se emula con N ticks.
+  // Patrones en ms: [vibra, pausa, vibra...]. Por debajo de ~15ms muchos
+  // motores Android ni se sienten, por eso los pulsos son más largos.
+  // En iOS se emula con N ticks.
   var PATTERNS = {
-    tap:     { android: 8,                 ios: 1 },
-    select:  { android: 12,                ios: 1 },
-    toggle:  { android: [10, 30, 10],      ios: 2 },
-    success: { android: [12, 60, 22],      ios: 2 },
-    warning: { android: [20, 50, 20],      ios: 2 },
-    error:   { android: [30, 40, 30, 40, 50], ios: 3 }
+    tap:     { android: 15,                     ios: 1 },
+    select:  { android: 20,                     ios: 1 },
+    toggle:  { android: [20, 40, 20],           ios: 2 },
+    success: { android: [25, 60, 45],           ios: 2 },
+    warning: { android: [35, 60, 35],           ios: 2 },
+    error:   { android: [50, 50, 50, 50, 90],   ios: 3 }
   };
 
-  // ---- Sonido: notas [frecuencia Hz, inicio s, duración s, volumen, onda] ----
-  var SKEY = 'bp_sound';
-  var soundOn = true;
-  try { soundOn = localStorage.getItem(SKEY) !== 'off'; } catch (e) {}
+  // ---------- Sonido ----------
   var actx = null;
+  var master = null;
   function ctx() {
     if (actx) return actx;
     var AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return null;
-    try { actx = new AC(); } catch (e) { actx = null; }
+    try {
+      actx = new AC();
+      master = actx.createGain();
+      master.gain.value = 0.9;
+      master.connect(actx.destination);
+    } catch (e) { actx = null; }
     return actx;
   }
+
+  // Notas: [frecuencia Hz, inicio s, duración s, volumen, onda]
   var SOUNDS = {
-    tap:     [[1200, 0, 0.03, 0.025, 'sine']],
-    select:  [[900, 0, 0.04, 0.04, 'sine']],
-    toggle:  [[700, 0, 0.05, 0.05, 'sine'], [1000, 0.06, 0.06, 0.05, 'sine']],
-    success: [[523.25, 0, 0.16, 0.09, 'sine'], [659.25, 0.09, 0.16, 0.09, 'sine'], [783.99, 0.18, 0.34, 0.1, 'sine']],
-    warning: [[330, 0, 0.12, 0.07, 'triangle'], [330, 0.16, 0.12, 0.07, 'triangle']],
-    error:   [[180, 0, 0.16, 0.08, 'sawtooth'], [140, 0.2, 0.26, 0.08, 'sawtooth']],
-    welcome: [[392, 0, 0.18, 0.07, 'sine'], [523.25, 0.12, 0.18, 0.07, 'sine'], [659.25, 0.24, 0.18, 0.07, 'sine'], [783.99, 0.36, 0.5, 0.08, 'sine']]
+    tap:     [[1400, 0, 0.05, 0.10, 'sine']],
+    select:  [[1000, 0, 0.07, 0.16, 'sine']],
+    toggle:  [[760, 0, 0.08, 0.20, 'sine'], [1080, 0.07, 0.10, 0.20, 'sine']],
+    success: [[523.25, 0, 0.20, 0.35, 'sine'], [659.25, 0.10, 0.20, 0.35, 'sine'], [783.99, 0.20, 0.45, 0.38, 'sine']],
+    warning: [[392, 0, 0.16, 0.30, 'triangle'], [392, 0.20, 0.16, 0.30, 'triangle']],
+    error:   [[190, 0, 0.20, 0.28, 'sawtooth'], [140, 0.24, 0.32, 0.28, 'sawtooth']],
+    welcome: [[392, 0, 0.22, 0.30, 'sine'], [523.25, 0.14, 0.22, 0.30, 'sine'], [659.25, 0.28, 0.22, 0.30, 'sine'], [783.99, 0.42, 0.60, 0.34, 'sine']]
   };
+
   function play(name) {
     if (!soundOn) return;
     var notes = SOUNDS[name], a = ctx();
     if (!notes || !a) return;
-    if (a.state === 'suspended') a.resume();
-    var t0 = a.currentTime + 0.005;
+    if (a.state !== 'running') { try { a.resume(); } catch (e) {} }
+    var t0 = a.currentTime + 0.01;
     notes.forEach(function (n) {
       var o = a.createOscillator(), g = a.createGain();
       o.type = n[4]; o.frequency.value = n[0];
@@ -77,31 +95,47 @@
       g.gain.setValueAtTime(0.0001, st);
       g.gain.exponentialRampToValueAtTime(n[3], st + 0.012);
       g.gain.exponentialRampToValueAtTime(0.0001, st + n[2]);
-      o.connect(g); g.connect(a.destination);
-      o.start(st); o.stop(st + n[2] + 0.03);
+      o.connect(g); g.connect(master);
+      o.start(st); o.stop(st + n[2] + 0.05);
     });
   }
-  // Desbloqueo en el primer gesto
-  function unlock() {
-    var a = ctx();
-    if (a && a.state === 'suspended') a.resume();
-    document.removeEventListener('pointerdown', unlock, true);
-    document.removeEventListener('keydown', unlock, true);
-  }
-  document.addEventListener('pointerdown', unlock, true);
-  document.addEventListener('keydown', unlock, true);
 
+  // Desbloqueo: se reintenta en cada gesto hasta que el contexto queda
+  // 'running' (en iOS puede volver a 'interrupted' y hay que reanudarlo).
+  function unlock() {
+    // iOS: que el audio suene aunque el switch de silencio esté activo
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+    var a = ctx();
+    if (!a) return;
+    try {
+      if (a.state !== 'running') a.resume();
+      // buffer mudo dentro del gesto: lo que iOS exige para "desbloquear"
+      var b = a.createBuffer(1, 1, 22050), s = a.createBufferSource();
+      s.buffer = b; s.connect(a.destination); s.start(0);
+    } catch (e) {}
+  }
+  ['touchend', 'click', 'pointerup', 'keydown'].forEach(function (ev) {
+    document.addEventListener(ev, unlock, { capture: true, passive: true });
+  });
+
+  // ---------- Disparo ----------
   var lastAt = 0;
   function fire(name) {
+    // Tap/select se agrupan (evita doble disparo pointerdown+click); el resto
+    // (toggle, éxito, error…) siempre suena, aunque siga a un tap.
+    var soft = name === 'tap' || name === 'select';
     var now = Date.now();
-    if (now - lastAt < 30) return; // evita ráfagas por eventos duplicados
-    lastAt = now;
+    if (soft && now - lastAt < 60) return;
+    if (soft) lastAt = now;
+
     play(name);
-    if (!enabled || (reduced && reduced.matches)) return;
+    if (!enabled) return;
     var p = PATTERNS[name] || PATTERNS.tap;
     try {
       if (canVibrate) { navigator.vibrate(p.android); return; }
-      for (var i = 0; i < p.ios; i++) setTimeout(iosTick, i * 90);
+      for (var i = 0; i < p.ios; i++) {
+        if (i === 0) iosTick(); else setTimeout(iosTick, i * 90);
+      }
     } catch (e) {}
   }
 
@@ -115,15 +149,15 @@
     welcome: function () { fire('success'); play('welcome'); },
     isEnabled: function () { return enabled; },
     isSoundEnabled: function () { return soundOn; },
-    setSoundEnabled: function (on) {
-      soundOn = !!on;
-      try { localStorage.setItem(SKEY, soundOn ? 'on' : 'off'); } catch (e) {}
-      if (soundOn) play('toggle');
-    },
     setEnabled: function (on) {
       enabled = !!on;
       try { localStorage.setItem(KEY, enabled ? 'on' : 'off'); } catch (e) {}
       if (enabled) fire('toggle');
+    },
+    setSoundEnabled: function (on) {
+      soundOn = !!on;
+      try { localStorage.setItem(SKEY, soundOn ? 'on' : 'off'); } catch (e) {}
+      if (soundOn) { unlock(); play('toggle'); }
     }
   };
 
@@ -131,45 +165,35 @@
   var SELECT = '.tab, .push-chip, .nav-item, [data-transfer-chip], .story-header__name';
   var TAP = 'button, a[href], [role="button"], .product-row, .sub-item, .quick-action, ' +
             '.account-card, .promo, .icon-button, .icon-switch, [data-sheet], [data-biller], [data-beneficiary]';
+  var TARGETS = SELECT + ',' + TAP;
 
   function isDisabled(el) { return el.disabled || el.getAttribute('aria-disabled') === 'true'; }
-
-  document.addEventListener('pointerdown', function (e) {
-    if (e.pointerType === 'mouse') return; // háptica sólo tiene sentido en táctil
-    var el = e.target.closest && e.target.closest(SELECT + ',' + TAP);
+  function feedbackFor(target) {
+    var el = target.closest && target.closest(TARGETS);
     if (!el || isDisabled(el)) return;
-    if (el.matches(SELECT)) fire('select'); else fire('tap');
-    ripple(el, e);
-  }, { passive: true });
+    fire(el.matches(SELECT) ? 'select' : 'tap');
+  }
+
+  // Android: al tocar (baja latencia). iOS: en click, único gesto válido.
+  var lastTouchDown = 0;
+  if (canVibrate) {
+    document.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse') return;
+      lastTouchDown = Date.now();
+      feedbackFor(e.target);
+    }, { passive: true, capture: true });
+  }
+  document.addEventListener('click', function (e) {
+    // Android ya respondió en pointerdown: el click que sigue a ese toque no
+    // debe repetir vibración ni sonido. Sólo actúa en iOS y con mouse.
+    if (canVibrate && Date.now() - lastTouchDown < 1500) return;
+    feedbackFor(e.target);
+  }, true);
 
   document.addEventListener('change', function (e) {
     var t = e.target;
     if (t && (t.tagName === 'SELECT' || t.type === 'checkbox' || t.type === 'radio')) fire('toggle');
   }, true);
-
-  // ---- Ripple ligero (CSS en index.html: .fx-ripple) ----
-  function ripple(el, e) {
-    if (reduced && reduced.matches) return;
-    if (el.classList.contains('no-ripple')) return;
-    var r = el.getBoundingClientRect();
-    if (r.width > 340 || r.height > 200) return; // no en tarjetas/paneles grandes
-    var size = Math.max(r.width, r.height) * 2;
-    var dot = document.createElement('span');
-    dot.className = 'fx-ripple';
-    dot.style.width = dot.style.height = size + 'px';
-    dot.style.left = (e.clientX - r.left - size / 2) + 'px';
-    dot.style.top = (e.clientY - r.top - size / 2) + 'px';
-    var cs = getComputedStyle(el);
-    var added = false;
-    if (cs.position === 'static') { el.style.position = 'relative'; added = true; }
-    if (cs.overflow === 'visible') el.classList.add('fx-clip');
-    el.appendChild(dot);
-    setTimeout(function () {
-      dot.remove();
-      if (added) el.style.position = '';
-      el.classList.remove('fx-clip');
-    }, 550);
-  }
 
   // ---- Feedback por contenido dinámico (flujos de pago/transferencia) ----
   function watch() {
@@ -198,7 +222,7 @@
     var splash = document.getElementById('welcome-splash');
     if (splash) {
       new MutationObserver(function () {
-        if (splash.classList.contains('show')) { play('welcome'); if (enabled) fire('success'); }
+        if (splash.classList.contains('show')) { fire('success'); play('welcome'); }
       }).observe(splash, { attributes: true, attributeFilter: ['class'] });
     }
     // Interruptores de Preferencias (Vibración / Sonidos)
@@ -214,6 +238,7 @@
     }
     bind('pref-haptics', function () { return enabled; }, window.Haptics.setEnabled);
     bind('pref-sound', function () { return soundOn; }, window.Haptics.setSoundEnabled);
+
     // Menú "Probar efectos" del perfil
     var status = document.getElementById('fx-test-status');
     if (status) {
@@ -223,12 +248,14 @@
     document.querySelectorAll('[data-fx-test]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var k = btn.dataset.fxTest;
-        lastAt = 0; // que el anti-ráfaga del pointerdown no se coma la prueba
+        lastAt = 0; // que el anti-rebote no se coma la prueba
+        unlock();
         if (k === 'welcome') window.Haptics.welcome(); else fire(k);
         btn.classList.remove('fx-test--play'); void btn.offsetWidth; btn.classList.add('fx-test--play');
         if (k === 'error') { btn.classList.remove('fx-shake'); void btn.offsetWidth; btn.classList.add('fx-shake'); }
       });
     });
+
     var toast = document.getElementById('toast');
     if (toast) {
       new MutationObserver(function () {
@@ -242,4 +269,11 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch);
   else watch();
+
+  // ---- Sin zoom: doble tap y pinch ----
+  // touch-action: manipulation (CSS) cubre el doble tap; en iOS el pinch
+  // llega como gesture* y se cancela acá.
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach(function (ev) {
+    document.addEventListener(ev, function (e) { e.preventDefault(); });
+  });
 })();
