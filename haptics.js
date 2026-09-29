@@ -25,6 +25,9 @@
 
   // ---------- Háptica ----------
   var iosEl = null;
+  var ticking = false;
+  // ¿El evento viene del switch oculto que usamos para la háptica de iOS?
+  function isInternal(t) { return ticking || (iosEl && t && iosEl.contains(t)); }
   function iosTick() {
     try {
       if (!iosEl) {
@@ -39,7 +42,12 @@
         document.body.appendChild(label);
         iosEl = label;
       }
-      iosEl.click();
+      // El click sintético cambia el checkbox y dispara 'click'/'change' en el
+      // documento. Sin esta marca, el listener de 'change' lo tomaba por un
+      // toggle del usuario → fire('toggle') → otro iosTick → bucle infinito
+      // de sonido y vibración (sólo en iOS, que no tiene navigator.vibrate).
+      ticking = true;
+      try { iosEl.click(); } finally { ticking = false; }
     } catch (e) {}
   }
 
@@ -280,7 +288,8 @@
 
   // Desbloqueo: se reintenta en cada gesto hasta que el contexto queda
   // 'running' (en iOS puede volver a 'interrupted' y hay que reanudarlo).
-  function unlock() {
+  function unlock(e) {
+    if (e && isInternal(e.target)) return;
     var a = ctx();
     if (!a) return;
     try {
@@ -366,6 +375,7 @@
     }, { passive: true, capture: true });
   }
   document.addEventListener('click', function (e) {
+    if (isInternal(e.target)) return;
     // Android ya respondió en pointerdown: el click que sigue a ese toque no
     // debe repetir vibración ni sonido. Sólo actúa en iOS y con mouse.
     if (canVibrate && Date.now() - lastTouchDown < 1500) return;
@@ -374,6 +384,7 @@
 
   document.addEventListener('change', function (e) {
     var t = e.target;
+    if (isInternal(t)) return;
     if (t && (t.tagName === 'SELECT' || t.type === 'checkbox' || t.type === 'radio')) fire('toggle');
   }, true);
 
