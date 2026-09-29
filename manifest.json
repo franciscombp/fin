@@ -1,5 +1,5 @@
 {
-  "name": "Banca Móvil - Banco Pichincha POC",
+  "name": "Banca Móvil - POC",
   "short_name": "Banca Movil",
   "description": "POC de rediseño de banca móvil con micro interacciones, login biométrico y PWA",
   "start_url": "/bm/index.html",

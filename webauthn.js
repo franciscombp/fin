@@ -68,11 +68,11 @@
     opts = opts || {};
     if (!supported) return Promise.reject(new Error('WebAuthn no soportado'));
 
-    var displayName = opts.displayName || 'Cliente Banco Pichincha';
+    var displayName = opts.displayName || 'Cliente';
     var publicKey = {
       challenge: randomBytes(32),
       // rp.id se omite: el navegador usa el dominio actual automáticamente.
-      rp: { name: 'Banco Pichincha' },
+      rp: { name: 'Banca Móvil' },
       user: {
         id: randomBytes(16),
         name: opts.username || 'cliente@ejemplo.com',
