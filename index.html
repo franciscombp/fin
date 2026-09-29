@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light" data-layout="mobile-sm">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="format-detection" content="telephone=no">
     <meta name="description" content="Banca Móvil - POC Rediseño">
     <!-- En Android el theme-color pinta la barra superior; usamos el gris del
          fondo (no el amarillo de marca) para que la cabecera no se vea amarilla. -->
-    <meta name="theme-color" content="#f1f3f7">
+    <meta name="theme-color" content="#f5f5f5">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -39,6 +39,7 @@
          ancho real de un glifo de prueba: un ícono real es ~cuadrado a un
          tamaño dado; el texto plano de respaldo ("settings") es mucho más
          ancho. Es la señal directa de lo que el usuario vería. -->
+    <link rel="stylesheet" href="./assets/tokens.css">
     <script>
         (function () {
             function reveal() { document.documentElement.classList.add('icons-ready'); }
@@ -126,32 +127,41 @@
             src: url("./assets/fonts/prelo-bold.woff2") format("woff2");
         }
 
+        /* Los nombres locales de abajo son alias de los tokens oficiales del
+           Design System (assets/tokens.css, export de Figma "Components 4").
+           Los componentes siguen leyendo estos alias, así el tema Y2K puede
+           reasignarlos y el resto de la app no cambia. Fallback = valor del
+           token, por si tokens.css no cargara. */
         :root {
-            --bp-surface-page: #f1f3f7;
-            --bp-surface-container: #ffffff;
-            --bp-surface-fixed: rgba(255, 255, 255, 0.96);
-            --bp-surface-brand: #ffdd00;
-            --bp-brand-support: #0f265c;
-            --bp-text-primary: #252529;
-            --bp-text-secondary: #5e626f;
-            --bp-text-helper: #7e8394;
-            --bp-text-brand: #0f265c;
-            --bp-text-interactive: #276db6;
-            --bp-selection-bg-active: #0f265c;
-            --bp-selection-bg-active-subtle: #dee3ed;
-            --bp-selection-fg: #0f265c;
-            --bp-selection-fg-subtle: #3f517d;
-            --bp-secondary-bg: rgba(233, 236, 243, 0.64);
-            --bp-border-focus: #2f7abf;
-            --bp-border-divider: #f1f3f7;
-            --bp-status-info-bg-subtle: #eaf1f8;
-            --bp-status-info-bg: #2f7abf;
-            --bp-status-warning-bg-subtle: #fef0e5;
-            --bp-status-warning-bg: #f76800;
+            --bp-surface-page: var(--bp-theme-color-surface-page-alt, #f5f5f5);
+            --bp-surface-container: var(--bp-theme-color-surface-container-default, #ffffff);
+            --bp-surface-fixed: var(--bp-theme-color-surface-container-fixed, rgb(255 255 255 / 0.96));
+            --bp-surface-brand: var(--bp-theme-color-surface-brand-default, #ffdd00);
+            --bp-brand-support: var(--bp-theme-color-brand-support, #0f265c);
+            --bp-text-primary: var(--bp-theme-color-text-primary, #1f1f1f);
+            --bp-text-secondary: var(--bp-theme-color-text-secondary, #404040);
+            --bp-text-helper: var(--bp-theme-color-text-helper, #5c5c5c);
+            --bp-text-brand: var(--bp-theme-color-text-brand, #0f265c);
+            --bp-text-interactive: var(--bp-theme-color-text-interactive, #0f265c);
+            --bp-selection-bg-active: var(--bp-theme-color-interaction-selection-bg-active, #030c2d);
+            --bp-selection-bg-active-subtle: var(--bp-theme-color-interaction-selection-bg-active-subtle, #e0e0e0);
+            --bp-selection-fg: var(--bp-theme-color-interaction-selection-fg, #0f265c);
+            --bp-selection-fg-subtle: var(--bp-theme-color-interaction-selection-fg-subtle, #5c5c5c);
+            --bp-secondary-bg: var(--bp-theme-color-interaction-secondary-bg, rgb(208 208 208 / 0.32));
+            --bp-border-focus: var(--bp-theme-color-border-focus, #030c2d);
+            --bp-border-divider: var(--bp-theme-color-border-divider, #f5f5f5);
+            --bp-status-info-bg-subtle: var(--bp-theme-color-status-info-bg-subtle, #eaf1f8);
+            --bp-status-info-bg: var(--bp-theme-color-status-info-bg, #2f7abf);
+            --bp-status-warning-bg-subtle: var(--bp-theme-color-status-warning-bg-subtle, #fef0e5);
+            --bp-status-warning-bg: var(--bp-theme-color-status-warning-bg, #f76800);
+            --bp-status-success-bg-subtle: var(--bp-theme-color-status-success-bg-subtle, #ecf6ee);
+            --bp-status-success-text: var(--bp-theme-color-status-success-text, #107524);
+            --bp-status-info-text: var(--bp-theme-color-status-info-text, #1854a2);
+            --bp-status-warning-text: var(--bp-theme-color-status-warning-text, #404040);
             --bp-border-elevated: rgba(47, 49, 56, 0.04);
-            --bp-icon-secondary-fg: #104798; /* Figma: interaction-secondary-fg (quick actions) */
-            --bp-radius-md: 12px;
-            --bp-radius-sm: 8px;
+            --bp-icon-secondary-fg: var(--bp-theme-color-interaction-secondary-fg, #0f265c);
+            --bp-radius-md: var(--bp-semantic-radius-md, 12px);
+            --bp-radius-sm: var(--bp-semantic-radius-sm, 8px);
         }
 
         *, *::before, *::after {
@@ -842,11 +852,24 @@
             30%, 50%, 70% { transform: translateX(-5px); }
             40%, 60% { transform: translateX(5px); }
         }
-        /* Resorte al soltar: los controles rebotan un poco en vez de volver lineal */
-        .tab, .push-chip, .nav-item__wrap, .quick-action__icon, .login-button, .sheet__cta {
+        /* Resorte al soltar: los controles rebotan un poco en vez de volver lineal.
+           Los tabs NO entran acá: al achicarse y rebotar dentro de una fila con
+           scroll horizontal se veían saltar. */
+        .push-chip, .nav-item__wrap, .quick-action__icon, .login-button, .sheet__cta {
             transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .push-chip:active, .login-button:active { transform: scale(0.96); }
+        /* Tabs estables: sin escala ni rebote; el feedback es sólo de color */
+        .tab, .tab:active {
+            transform: none;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+        .tab:active:not(.active) { background: var(--bp-theme-color-interaction-selection-bg-pressed, #f5f5f5); }
+
+        /* Sin zoom por doble tap ni resaltado de toque; el pinch lo cancela haptics.js */
+        html, body, button, a, .tab, .nav-item { touch-action: manipulation; }
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        * { -webkit-tap-highlight-color: transparent; }
         .push-chip.is-selected { animation: fxPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         @keyframes fxPop { 0% { transform: scale(0.92); } 100% { transform: scale(1); } }
         /* Check de éxito: aro que se expande tras el pop del ícono */
@@ -3529,6 +3552,234 @@
             }
         }
 
+
+        /* ---------- Microinteracciones fluidas ---------- */
+        /* Presión suave en superficies tocables: baja rápido, vuelve con resorte */
+        .card, .account-card, .list-item, .product-row, .promo, .grow-cta__btn, .home-banner__cta, .section__link {
+            transition: transform 0.45s cubic-bezier(0.2, 1.4, 0.4, 1), background-color 0.2s ease;
+        }
+        .list-item:active, .product-row:active { transform: scale(0.985); transition-duration: 0.08s; }
+        .promo:active, .grow-cta__btn:active, .home-banner__cta:active { transform: scale(0.95); transition-duration: 0.08s; }
+        .account-card:active { transform: scale(0.985); transition-duration: 0.08s; }
+
+        /* Cambio de sección: el contenido entra escalonado */
+        .tab-panel.is-active > .section,
+        .tab-panel.is-active > .grow-cta { animation: fxRise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .tab-panel.is-active > :nth-child(2) { animation-delay: 0.05s; }
+        .tab-panel.is-active > :nth-child(3) { animation-delay: 0.10s; }
+        .tab-panel.is-active > :nth-child(4) { animation-delay: 0.15s; }
+        .tab-panel.is-active > :nth-child(n+5) { animation-delay: 0.2s; }
+        @keyframes fxRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+        /* Accesos rápidos: aparecen en cascada */
+        .tab-panel.is-active .quick-action { animation: fxRise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .tab-panel.is-active .quick-action:nth-child(2) { animation-delay: 0.03s; }
+        .tab-panel.is-active .quick-action:nth-child(3) { animation-delay: 0.06s; }
+        .tab-panel.is-active .quick-action:nth-child(4) { animation-delay: 0.09s; }
+        .tab-panel.is-active .quick-action:nth-child(5) { animation-delay: 0.12s; }
+        .tab-panel.is-active .quick-action:nth-child(6) { animation-delay: 0.15s; }
+        .tab-panel.is-active .quick-action:nth-child(7) { animation-delay: 0.18s; }
+        .tab-panel.is-active .quick-action:nth-child(8) { animation-delay: 0.21s; }
+
+        /* Nav inferior: el ícono activo hace un pop al seleccionarse */
+        .nav-item.active .nav-item__wrap .material-symbols-rounded { animation: fxNavPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        @keyframes fxNavPop { 0% { transform: scale(0.7) translateY(3px); } 60% { transform: scale(1.15); } 100% { transform: none; } }
+
+        /* Pantalla de éxito: cada línea entra en secuencia */
+        .push-transfer-success > * { animation: fxRise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .push-transfer-success > :nth-child(2) { animation-delay: 0.12s; }
+        .push-transfer-success > :nth-child(3) { animation-delay: 0.2s; }
+        .push-transfer-success > :nth-child(4) { animation-delay: 0.26s; }
+        .push-transfer-success > :nth-child(5) { animation-delay: 0.32s; }
+        .push-transfer-success > :nth-child(6) { animation-delay: 0.38s; }
+        .push-transfer-success > :nth-child(n+7) { animation-delay: 0.44s; }
+        .push-transfer-success > .push-transfer-success__icon { animation: transferSuccessPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+        /* Saldo: el número se asienta tras el conteo */
+        #balance { font-variant-numeric: tabular-nums; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .tab-panel.is-active > *, .tab-panel.is-active .quick-action,
+            .nav-item.active .nav-item__wrap .material-symbols-rounded,
+            .push-transfer-success > * { animation: none !important; }
+        }
+
+        /* ======================================================
+           ALINEACIÓN CON FIGMA — Destacado (Components 4 [Beta])
+           Márgenes de 16px (grid-margin), banner claro de 136px, links
+           subrayados, CTA punteado y promociones verticales 144×256.
+           Va antes del tema Y2K para que éste siga pudiendo sobreescribir.
+           ====================================================== */
+        .top-bar { padding: 0 16px; }
+        .tabs { padding: 12px 0 12px 16px; }
+        .tabs__scroll { padding-right: 16px; }
+        .tab { height: 48px; padding: 0 16px; }
+        .content-loader { padding: 8px 16px; }
+        .section { padding: 8px 16px 16px; }
+        .section__title { height: 40px; margin-bottom: 8px; }
+        .section__title h2 {
+            font-size: 18px;
+            line-height: 24px;
+            font-weight: 600;
+            color: var(--bp-text-primary);
+        }
+        .section__link {
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            font-size: 14px;
+            line-height: 18px;
+            padding: 8px;
+            margin-right: -8px;
+        }
+        .section__link--chevron {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            text-decoration: none;
+            padding-right: 0;
+            margin-right: 0;
+        }
+        .section__link--chevron .material-symbols-rounded { font-size: 20px; }
+
+        /* Banner claro, texto en color de marca (bp-banner) */
+        .home-banner__track { padding: 0 16px; scroll-padding: 0 16px; }
+        .home-banner__slide {
+            height: 136px;
+            padding: 16px;
+            align-items: stretch;
+        }
+        .home-banner__slide--1 { background: linear-gradient(135deg, var(--bp-theme-color-surface-brand-subtle, #fff8cc) 0%, var(--bp-base-color-amber-100, #fff3cd) 100%); }
+        .home-banner__slide--2 { background: linear-gradient(135deg, var(--bp-base-color-sky-100, #d5e4f2) 0%, var(--bp-base-color-sky-50, #eaf1f8) 100%); }
+        .home-banner__slide--3 { background: linear-gradient(135deg, var(--bp-base-color-green-100, #daeedf) 0%, var(--bp-base-color-green-50, #ecf6ee) 100%); }
+        .home-banner__figure { opacity: 0.55; width: 120px; height: 120px; right: -24px; }
+        .home-banner__text {
+            max-width: 60%;
+            justify-content: space-between;
+            gap: 0;
+        }
+        .home-banner__title {
+            font-size: 16px;
+            line-height: 24px;
+            font-weight: 500;
+            color: var(--bp-text-brand);
+        }
+        .home-banner__cta {
+            height: 40px;
+            padding: 0 12px 0 16px;
+            border-radius: var(--bp-semantic-radius-sm, 8px);
+            background: var(--bp-theme-color-interaction-secondary-bg, rgb(208 208 208 / 0.32));
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            font-size: 14px;
+            line-height: 18px;
+            font-weight: 600;
+            color: var(--bp-theme-color-interaction-secondary-fg, #0f265c);
+            gap: 4px;
+        }
+        .home-banner__cta .material-symbols-rounded { font-size: 20px; }
+
+        /* Etiquetas de estado (bp-tag) */
+        .tag--info { background: var(--bp-status-info-bg-subtle); color: var(--bp-status-info-text); }
+        .tag--success { background: var(--bp-status-success-bg-subtle); color: var(--bp-status-success-text); }
+
+        /* CTA punteado "Tu dinero puede crecer" (bp-widget) */
+        .grow-cta {
+            position: relative;
+            overflow: hidden;
+            min-height: 160px;
+            padding: 16px;
+            border: 1px dashed var(--bp-theme-color-border-default, #d0d0d0);
+            border-radius: var(--bp-radius-md);
+            background: var(--bp-theme-color-surface-container-alt, rgb(245 245 245 / 0.48));
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        .grow-cta__text {
+            max-width: 58%;
+            font-size: 16px;
+            line-height: 24px;
+            font-weight: 500;
+            color: var(--bp-text-primary);
+        }
+        .grow-cta__btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            height: 40px;
+            padding: 0 12px 0 16px;
+            border: none;
+            border-radius: var(--bp-semantic-radius-sm, 8px);
+            background: var(--bp-theme-color-interaction-secondary-bg, rgb(208 208 208 / 0.32));
+            color: var(--bp-theme-color-interaction-secondary-fg, #0f265c);
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 18px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .grow-cta__btn .material-symbols-rounded { font-size: 20px; }
+        .grow-cta__art {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 96px;
+            height: 88px;
+            pointer-events: none;
+        }
+
+        /* Promociones: carrusel horizontal de tarjetas 144×256 (bp-banner-vertical) */
+        .section--bleed { padding-left: 0; padding-right: 0; }
+        .section--bleed .section__title { padding: 0 16px; }
+        .promos {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 0 16px;
+            scroll-padding: 0 16px;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .promos::-webkit-scrollbar { display: none; }
+        .promo {
+            flex: 0 0 144px;
+            width: 144px;
+            aspect-ratio: auto;
+            height: 256px;
+            scroll-snap-align: start;
+            align-items: flex-start;
+            padding: 16px;
+        }
+        .promo .promo__title {
+            font-size: 14px;
+            line-height: 20px;
+            font-weight: 500;
+            text-shadow: none;
+        }
+        .promo .promo__go {
+            position: absolute;
+            right: 12px;
+            bottom: 12px;
+            width: 32px;
+            height: 32px;
+            border-radius: var(--bp-semantic-radius-sm, 8px);
+            background: rgb(255 255 255 / 0.24);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+        .promo .promo__go .material-symbols-rounded { font-size: 20px; }
+        .promo--1 { background: radial-gradient(90% 60% at 70% 85%, rgb(255 190 80 / 0.55), transparent 70%), linear-gradient(160deg, #ff5a1f 0%, #ff3d00 100%); }
+        .promo--2 { background: radial-gradient(90% 60% at 70% 85%, rgb(190 130 80 / 0.55), transparent 70%), linear-gradient(160deg, #1d5a40 0%, #0f3d2a 100%); }
+        .promo--3 { background: radial-gradient(90% 60% at 70% 85%, rgb(255 200 220 / 0.55), transparent 70%), linear-gradient(160deg, #ff7eb6 0%, #e0409a 100%); }
+
         /* ======================================================
            TEMA Y2K — POC de theming vía Design System
            ======================================================
@@ -4077,7 +4328,7 @@
         <!-- Cuenta transaccional -->
         <section class="section">
             <div class="section__title">
-                <h2>Cuenta transaccional</h2>
+                <h2>Mi cuenta</h2>
                 <button class="section__link" data-action="Cambiar cuenta">Cambiar</button>
             </div>
 
@@ -4086,7 +4337,7 @@
                     <span class="card__header-title" id="account-title">PRINCIPAL</span>
                     <div class="card__header-meta">
                         <span id="account-number">Nro. ******7890</span>
-                        <span class="material-symbols-rounded">info</span>
+                        <span class="material-symbols-rounded">chevron_right</span>
                     </div>
                 </div>
 
@@ -4161,7 +4412,7 @@
         <!-- Para ti -->
         <section class="section">
             <div class="section__title">
-                <h2>Para ti</h2>
+                <h2>Novedades</h2>
                 <button class="section__link" data-action="Personalizar">Personalizar</button>
             </div>
 
@@ -4176,57 +4427,50 @@
                 <button class="list-item" data-sheet="payment" data-title="Pagar Luz de la casa" data-amount="$ 24,80">
                     <span class="avatar-cat"><span class="material-symbols-rounded">bolt</span></span>
                     <span class="list-item__title">Pagar Luz de la casa</span>
-                    <span class="tag tag--info">Hoy</span>
+                    <span class="tag tag--success">Hoy</span>
                 </button>
                 <button class="list-item" data-sheet="payment" data-title="Pagar Casa de la abue" data-amount="$ 18,35">
                     <span class="avatar-cat"><span class="material-symbols-rounded">water_drop</span></span>
                     <span class="list-item__title">Pagar Casa de la abue</span>
-                    <span class="tag tag--warning">Atrasado</span>
+                    <span class="tag tag--info">Atrasado</span>
                 </button>
             </div>
 
-            <div class="card">
-                <div class="card__header">
-                    <span class="card__header-title">Cuenta Flexible</span>
-                    <div class="card__header-meta">
-                        <span>******1234</span>
-                        <span class="material-symbols-rounded">chevron_right</span>
-                    </div>
-                </div>
-                <div class="widget-body">
-                    <div>
-                        <p class="widget-body__text">El día de ayer, tu cuenta generó en intereses</p>
-                        <div class="amount-trend">
-                            <span class="amount-trend__value">$ 16,04</span>
-                            <span class="material-symbols-rounded">trending_up</span>
-                        </div>
-                    </div>
-                    <svg class="chart" viewBox="0 0 120 56" fill="none" preserveAspectRatio="none" aria-hidden="true">
-                        <path d="M2 52 C 30 50, 55 46, 75 36 S 105 12, 118 4" stroke="#2f7abf" stroke-width="2.5" stroke-linecap="round"/>
-                        <path d="M2 52 C 30 50, 55 46, 75 36 S 105 12, 118 4 L 118 56 L 2 56 Z" fill="url(#chartFill)"/>
-                        <defs>
-                            <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0" stop-color="#2f7abf" stop-opacity="0.25"/>
-                                <stop offset="1" stop-color="#2f7abf" stop-opacity="0"/>
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                </div>
+            <!-- CTA punteado (Figma: bp-widget "Tu dinero puede crecer") -->
+            <div class="grow-cta">
+                <p class="grow-cta__text">Tu dinero puede crecer mientras permanece disponible</p>
+                <button class="grow-cta__btn" data-action="Solicitar cuenta">
+                    Solicitar cuenta
+                    <span class="material-symbols-rounded">add_circle</span>
+                </button>
+                <svg class="grow-cta__art" viewBox="0 0 96 88" fill="none" aria-hidden="true">
+                    <rect x="34" y="6" width="44" height="30" rx="4" transform="rotate(-8 34 6)" fill="var(--bp-theme-color-border-subtle, #e0e0e0)"/>
+                    <rect x="46" y="2" width="44" height="30" rx="4" transform="rotate(6 46 2)" fill="var(--bp-theme-color-border-default, #d0d0d0)"/>
+                    <rect x="4" y="34" width="88" height="50" rx="10" fill="var(--bp-theme-color-surface-container-default, #fff)" stroke="var(--bp-theme-color-border-default, #d0d0d0)" stroke-width="2"/>
+                    <rect x="62" y="50" width="30" height="18" rx="9" fill="var(--bp-theme-color-surface-page-alt, #f5f5f5)" stroke="var(--bp-theme-color-border-default, #d0d0d0)" stroke-width="2"/>
+                    <circle cx="72" cy="59" r="3.5" fill="var(--bp-theme-color-border-default, #d0d0d0)"/>
+                </svg>
             </div>
         </section>
 
-        <!-- Promociones -->
-        <section class="section" style="padding-left: 24px; padding-right: 24px;">
+        <!-- Promociones: tarjetas verticales 144x256 (Figma: bp-banner-vertical) -->
+        <section class="section section--bleed">
             <div class="section__title">
                 <h2>Promociones</h2>
-                <button class="section__link" data-action="Ver todas las promociones">Ver todo</button>
+                <button class="section__link section__link--chevron" data-action="Ver todas las promociones">Ver todo<span class="material-symbols-rounded">chevron_right</span></button>
             </div>
             <div class="promos">
-                <button class="promo promo--1" data-action="Promoción vinos">
-                    <span>Hasta 30% dcto. en vinos seleccionados</span>
+                <button class="promo promo--1" data-action="Promoción cashback">
+                    <span class="promo__title">30% cashback comprando con tu tarjeta</span>
+                    <span class="promo__go"><span class="material-symbols-rounded">chevron_right</span></span>
                 </button>
-                <button class="promo promo--2" data-action="Promoción supermercado">
-                    <span>Beneficios exclusivos en tu súper favorito</span>
+                <button class="promo promo--2" data-action="Promoción cafetería">
+                    <span class="promo__title">Giftcard y descuentos del 15%</span>
+                    <span class="promo__go"><span class="material-symbols-rounded">chevron_right</span></span>
+                </button>
+                <button class="promo promo--3" data-action="Promoción vinos">
+                    <span class="promo__title">Hasta 30% dcto. en vinos seleccionados</span>
+                    <span class="promo__go"><span class="material-symbols-rounded">chevron_right</span></span>
                 </button>
             </div>
         </section>
@@ -4622,7 +4866,7 @@
                     <div class="list-item fx-test__status" id="fx-test-status" aria-live="polite"></div>
                     <button class="list-item" data-fx-test="tap">
                         <span class="avatar-cat"><span class="material-symbols-rounded">touch_app</span></span>
-                        <span class="list-item__title">Tap<small class="fx-test__hint">Pulso corto + tick</small></span>
+                        <span class="list-item__title">Tap<small class="fx-test__hint">Pulso corto + clic táctil</small></span>
                         <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
                     </button>
                     <button class="list-item" data-fx-test="select">
@@ -4637,7 +4881,7 @@
                     </button>
                     <button class="list-item" data-fx-test="success">
                         <span class="avatar-cat"><span class="material-symbols-rounded">check_circle</span></span>
-                        <span class="list-item__title">Éxito<small class="fx-test__hint">Acorde + patrón de éxito</small></span>
+                        <span class="list-item__title">Éxito<small class="fx-test__hint">Golpe + campanas FM + brillo</small></span>
                         <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
                     </button>
                     <button class="list-item" data-fx-test="warning">
@@ -4650,9 +4894,39 @@
                         <span class="list-item__title">Error<small class="fx-test__hint">Zumbido + shake</small></span>
                         <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
                     </button>
+                    <button class="list-item" data-fx-test="swipe">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">swipe</span></span>
+                        <span class="list-item__title">Deslizar<small class="fx-test__hint">Barrido + clic de encaje</small></span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
+                    </button>
+                    <button class="list-item" data-fx-test="open">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">expand_less</span></span>
+                        <span class="list-item__title">Abrir panel<small class="fx-test__hint">Whoosh ascendente + campana</small></span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
+                    </button>
+                    <button class="list-item" data-fx-test="close">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">expand_more</span></span>
+                        <span class="list-item__title">Cerrar panel<small class="fx-test__hint">Whoosh descendente</small></span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
+                    </button>
+                    <button class="list-item" data-fx-test="flip">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">flip</span></span>
+                        <span class="list-item__title">Girar tarjeta<small class="fx-test__hint">Doble whoosh estéreo</small></span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
+                    </button>
+                    <button class="list-item" data-fx-test="reveal">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">auto_awesome</span></span>
+                        <span class="list-item__title">Revelar datos<small class="fx-test__hint">Cascada de campanas</small></span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
+                    </button>
+                    <button class="list-item" data-fx-test="detent">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">linear_scale</span></span>
+                        <span class="list-item__title">Umbral<small class="fx-test__hint">Clic seco al cruzar un límite</small></span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
+                    </button>
                     <button class="list-item" data-fx-test="welcome">
                         <span class="avatar-cat"><span class="material-symbols-rounded">waving_hand</span></span>
-                        <span class="list-item__title">Bienvenida<small class="fx-test__hint">Melodía de ingreso</small></span>
+                        <span class="list-item__title">Bienvenida<small class="fx-test__hint">Barrido, golpe, acorde y lluvia de campanas</small></span>
                         <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
                     </button>
                 </div>
@@ -5119,6 +5393,9 @@
     </div>
 
     <script>
+        // Feedback háptico/sonoro (haptics.js carga después; se resuelve al llamar)
+        const fx = name => { if (window.Haptics) window.Haptics.fx(name); };
+
         // ---------- Toast de feedback con microinteracciones ----------
         const toast = document.getElementById('toast');
         let toastTimer;
@@ -5779,6 +6056,7 @@
         }
 
         function openPushPage(title, originEl) {
+            fx('open');
             pushTitle.textContent = title;
             pushTopbarTitle.textContent = title;
             transferFlow = null; // reinicia el flujo si había quedado a medias
@@ -5838,6 +6116,7 @@
 
         function closePushPage() {
             if (!pushPage.classList.contains('open')) return;
+            fx('close');
             clearTimeout(pushLoadingTimer);
             pushLoading.classList.remove('is-active');
             if (pushPage.classList.contains('grow')) {
@@ -6051,7 +6330,7 @@
                 // se calcula su lugar dentro del scroll del track.
                 const el = slides[pos];
                 const elLeftInTrack = el.getBoundingClientRect().left - bannerTrack.getBoundingClientRect().left + bannerTrack.scrollLeft;
-                const target = elLeftInTrack - 24; // mismo padding que .section
+                const target = elLeftInTrack - 16; // mismo padding que .section (grid-margin del DS)
                 bannerTrack.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
             }
 
@@ -6231,6 +6510,7 @@
             e.preventDefault(); // evita el scroll vertical durante el swipe horizontal
             let d = dx;
             if (!canGo(dx)) d = dx * 0.35; // resistencia en los extremos
+            if ((Math.abs(sw.dx) > 70) !== (Math.abs(d) > 70) && canGo(dx)) fx('detent');
             sw.dx = d;
             peek._sign = dx;
             home0.style.transition = 'none';
@@ -6246,6 +6526,7 @@
                 const w = home0.offsetWidth;
                 const sign = dx < 0 ? -1 : 1;
                 // completa el deslizamiento: el contenido sale y el peek entra
+                fx('swipe');
                 home0.style.transition = EASE;
                 home0.style.transform = `translateX(${sign * w}px)`;
                 peek.style.transition = EASE;
@@ -6341,13 +6622,30 @@
         let balanceValue = balance.textContent;
         const balanceMasked = '$ ****,**';
         let hidden = false;
+        // Cuenta de 0 al valor final ("$ 1.906,04") con easing; respeta el formato
+        function countUp(el, finalText, ms = 650) {
+            const m = finalText.match(/[\d.]+,\d+/);
+            if (!m || matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = finalText; return; }
+            const target = parseFloat(m[0].replace(/\./g, '').replace(',', '.'));
+            const t0 = performance.now();
+            const step = now => {
+                const k = Math.min(1, (now - t0) / ms);
+                const v = target * (1 - Math.pow(1 - k, 3));
+                const [ent, dec] = v.toFixed(2).split('.');
+                el.textContent = finalText.replace(m[0], ent.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + dec);
+                if (k < 1) requestAnimationFrame(step); else el.textContent = finalText;
+            };
+            requestAnimationFrame(step);
+        }
+
         balanceToggle.addEventListener('click', () => {
             hidden = !hidden;
             // Anima el cambio: desenfoca/desvanece, cambia el texto y reaparece
             balance.classList.add('is-masking');
             setTimeout(() => {
-                balance.textContent = hidden ? balanceMasked : balanceValue;
                 balance.classList.remove('is-masking');
+                if (hidden) balance.textContent = balanceMasked;
+                else countUp(balance, balanceValue);
             }, 180);
             balanceIcon.textContent = hidden ? 'visibility_off' : 'visibility';
             balanceToggle.setAttribute('aria-label', hidden ? 'Mostrar saldo' : 'Ocultar saldo');
@@ -6537,9 +6835,11 @@
             void sheet.offsetHeight;
             sheet.classList.add('open');
             document.body.style.overflow = 'hidden';
+            fx('open');
         }
 
         function closeSheet() {
+            if (sheet.classList.contains('open')) fx('close');
             sheet.classList.remove('open');
             sheetBackdrop.classList.remove('open');
             sheet.style.transform = '';
@@ -6574,7 +6874,9 @@
 
         sheet.addEventListener('pointermove', e => {
             if (dragStartY === null) return;
+            const was = dragDelta > 90;
             dragDelta = Math.max(0, e.clientY - dragStartY);
+            if (was !== dragDelta > 90) fx('detent'); // cruza el umbral de cierre
             sheet.style.transform = `translate(-50%, ${dragDelta}px)`;
         });
 
@@ -6730,6 +7032,7 @@
 
         function openCardDetail(key = 'Visa Débito', originEl = featCard) {
             currentOriginEl = originEl || featCard;
+            fx('open');
             applyCardTheme(key);
             hideCardData();
             cardDetail.classList.remove('scrolled', 'no-morph');
@@ -6863,7 +7166,8 @@
                 cdCard.classList.remove('verifying');
                 cdCard.classList.add('revealed');
                 updateVerDatosBtn();
-                showToast('Identidad verificada ✓');
+                fx('reveal');
+                showToast('Datos visibles');
             } catch (err) {
                 verifying = false;
                 cdCard.classList.remove('verifying');
@@ -6967,7 +7271,7 @@
             const dy = e.clientY - sy;
 
             if (gAxis === 'y' && !cardRevealed) {
-                if (dy > 120) { cdSnapBack(); closeCardDetail(); }
+                if (dy > 120) { fx('close'); cdSnapBack(); closeCardDetail(); }
                 else cdSnapBack();
                 return;
             }
@@ -6975,6 +7279,7 @@
             if (gAxis === 'x') {
                 flipSnap();
                 if (Math.abs(dx) > 60) {
+                    fx('flip');
                     if (cardRevealed) hideCardData(); else revealCardData();
                 }
                 return;
@@ -7090,6 +7395,7 @@
             void storySlide.offsetWidth;
             storySlide.style.animation = '';
             renderStoryBars();
+            fx('detent');
             clearTimeout(storyTimer);
             storyTimer = setTimeout(nextStory, STORY_DURATION);
         }

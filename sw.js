@@ -1,11 +1,12 @@
-const CACHE_NAME = 'banca-movil-v28';
+const CACHE_NAME = 'banca-movil-v31';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
   './app.js',
   './webauthn.js',
   './fiesta.js',
-  './haptics.js'
+  './haptics.js',
+  './assets/tokens.css'
 ];
 
 self.addEventListener('install', (event) => {
