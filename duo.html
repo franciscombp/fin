@@ -2,438 +2,1479 @@
 <html lang="es" data-theme="light" data-layout="mobile-sm">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Banca Móvil en iPhone Duo</title>
-    <meta name="description" content="Concept: la banca móvil adaptada al iPhone Duo plegable (pantalla exterior 5,4&quot; y pantalla interior 7,6&quot;).">
+    <meta name="description" content="Concept interactivo: la banca móvil adaptada al iPhone Duo siguiendo las Human Interface Guidelines de iOS.">
     <link rel="stylesheet" href="./assets/tokens.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=block">
     <style>
-        /* Concept de adaptación al iPhone Duo (plegable tipo libro).
-           Medidas públicas: cerrado 84,1 × 117,8 mm con pantalla de 5,4";
-           abierto 164,6 × 117,8 mm con pantalla de 7,6" (≈ 4:3 apaisado).
-           Escala de este concept: 1 mm ≈ 4,4 px CSS. */
+        /* =====================================================================
+           Concept iPhone Duo — plegable tipo libro.
+           Cerrado 84,1 × 117,8 mm (5,4"), abierto 164,6 × 117,8 mm (7,6").
+           Escala: ~5 px CSS por mm.
+
+           Pantalla exterior: la app real (index.html) en un iframe.
+           Pantalla interior: UI construida siguiendo las Human Interface
+           Guidelines para pantallas grandes: split view (barra lateral +
+           columna de contenido + columna de detalle con su propia pila de
+           navegación), títulos grandes, listas agrupadas insertadas, swipe
+           actions, menús contextuales, drag & drop entre columnas, toggles,
+           slider, segmented control, form sheet centrado, HUD, Face ID,
+           materiales translúcidos, modo oscuro y feedback háptico.
+           ===================================================================== */
         :root {
-            --stage: #0e0f12;
-            --stage-2: #17191e;
-            --ink: #f5f5f5;
-            --ink-2: #a9adb7;
+            --stage: #0c0d10;
+            --stage-2: #15171c;
+            --ink: #f5f5f7;
+            --ink-2: #a1a4ad;
             --accent: var(--bp-base-color-yellow-500, #ffdd00);
-            --titanium: linear-gradient(145deg, #6b6e75 0%, #c9ccd2 22%, #7d8087 48%, #d8dade 70%, #5d6067 100%);
-            --pad: 16px;
-            --closed-w: 370px;
-            --closed-h: 518px;
-            --open-w: 724px;
-            --open-h: 518px;
+            --titanium: linear-gradient(145deg, #676a71 0%, #c9ccd2 22%, #7b7e85 48%, #d9dbdf 70%, #5b5e65 100%);
+            --closed-w: 419px;
+            --open-w: 820px;
+            --dev-h: 587px;
             --bezel: 10px;
+            --ease: cubic-bezier(.32, .72, 0, 1);      /* curva "spring" de UIKit */
+            --ease-out: cubic-bezier(.22, 1, .36, 1);
         }
-        * { box-sizing: border-box; margin: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { background: var(--stage); color: var(--ink); }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Segoe UI", Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
             min-height: 100vh;
             overflow-x: hidden;
+            touch-action: manipulation;
         }
-        .material-symbols-rounded {
-            font-size: 20px; line-height: 1;
-            /* oculto hasta que cargue la fuente: si no, se ve el nombre del ícono */
-            visibility: hidden; display: inline-flex; width: 1em; height: 1em; overflow: hidden;
+        button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        input { font: inherit; }
+        .ms {
+            font-family: 'Material Symbols Rounded';
+            font-weight: normal; font-style: normal;
+            font-size: 22px; line-height: 1;
+            display: inline-flex; width: 1em; height: 1em; overflow: hidden;
+            flex-shrink: 0;
+            visibility: hidden;
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            user-select: none;
         }
-        html.icons-ready .material-symbols-rounded { visibility: visible; }
+        .ms.fill { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        html.icons-ready .ms { visibility: visible; }
 
-        /* ---------- Cabecera ---------- */
-        header {
-            max-width: 1180px;
-            margin: 0 auto;
-            padding: 32px var(--pad) 8px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px 32px;
-            align-items: flex-end;
-            justify-content: space-between;
+        /* ---------------- Página ---------------- */
+        header.top {
+            max-width: 1200px; margin: 0 auto;
+            padding: 28px 16px 4px;
+            display: flex; flex-wrap: wrap; gap: 16px 32px;
+            align-items: flex-end; justify-content: space-between;
         }
         .eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
-        h1 { font-size: clamp(26px, 4vw, 40px); line-height: 1.1; font-weight: 700; margin-top: 6px; }
-        .lede { color: var(--ink-2); max-width: 520px; margin-top: 8px; font-size: 15px; line-height: 1.5; }
-
-        .seg {
-            display: inline-flex;
-            background: var(--stage-2);
-            border: 1px solid #2a2d34;
-            border-radius: 999px;
-            padding: 4px;
-            gap: 4px;
+        h1.h { font-size: clamp(26px, 4vw, 40px); line-height: 1.1; font-weight: 700; margin-top: 6px; letter-spacing: -.01em; }
+        .lede { color: var(--ink-2); max-width: 560px; margin-top: 8px; font-size: 15px; line-height: 1.5; }
+        .controls { display: flex; gap: 10px; flex-wrap: wrap; }
+        .seg-page {
+            display: inline-flex; background: var(--stage-2); border: 1px solid #262930;
+            border-radius: 999px; padding: 4px; gap: 4px;
         }
-        .seg button {
-            border: 0;
-            background: transparent;
-            color: var(--ink-2);
-            font: inherit;
-            font-size: 14px;
-            font-weight: 600;
-            padding: 10px 18px;
-            border-radius: 999px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+        .seg-page button {
+            color: var(--ink-2); font-size: 14px; font-weight: 600;
+            padding: 9px 16px; border-radius: 999px;
+            display: inline-flex; align-items: center; gap: 6px;
             transition: background .2s, color .2s;
         }
-        .seg button[aria-pressed="true"] { background: var(--ink); color: #111; }
+        .seg-page button .ms { font-size: 18px; }
+        .seg-page button[aria-pressed="true"] { background: var(--ink); color: #111; }
 
-        /* ---------- Escenario ---------- */
-        .stage {
-            position: relative;
-            max-width: 1180px;
-            margin: 0 auto;
-            padding: 24px var(--pad) 8px;
-            display: flex;
-            justify-content: center;
-        }
+        .stage { max-width: 1200px; margin: 0 auto; padding: 20px 16px 4px; display: flex; justify-content: center; }
         .fit { transform-origin: top center; }
+        .hint { text-align: center; color: #6f737c; font-size: 12.5px; margin-top: 10px; padding: 0 16px; }
+        .hint kbd { font-family: inherit; background: #1d2026; border: 1px solid #2c3038; border-radius: 5px; padding: 1px 6px; color: var(--ink-2); }
 
+        /* ---------------- Dispositivo ---------------- */
         .device {
             position: relative;
             width: calc(var(--closed-w) + var(--bezel) * 2);
-            height: calc(var(--closed-h) + var(--bezel) * 2);
-            border-radius: 46px;
+            height: calc(var(--dev-h) + var(--bezel) * 2);
+            border-radius: 50px;
             padding: var(--bezel);
             background: var(--titanium);
-            box-shadow:
-                0 0 0 1px rgba(255,255,255,.08) inset,
-                0 40px 80px -20px rgba(0,0,0,.7),
-                0 12px 30px rgba(0,0,0,.45);
-            transition: width .75s cubic-bezier(.65,0,.35,1), border-radius .75s;
+            box-shadow: 0 0 0 1px rgba(255,255,255,.08) inset, 0 50px 90px -25px rgba(0,0,0,.75), 0 14px 34px rgba(0,0,0,.5);
+            transition: width .8s var(--ease), border-radius .8s var(--ease);
         }
-        .device.is-open { width: calc(var(--open-w) + var(--bezel) * 2); border-radius: 40px; }
-        /* Botones laterales */
-        .device::before, .device::after {
-            content: '';
-            position: absolute;
-            right: -3px;
-            width: 4px;
-            border-radius: 2px;
-            background: #8a8d94;
-        }
-        .device::before { top: 110px; height: 56px; }
-        .device::after { top: 180px; height: 36px; }
-
+        .device.is-open { width: calc(var(--open-w) + var(--bezel) * 2); border-radius: 44px; }
+        .device::before, .device::after { content: ''; position: absolute; right: -3px; width: 4px; border-radius: 2px; background: #8a8d94; }
+        .device::before { top: 120px; height: 60px; }
+        .device::after { top: 196px; height: 38px; }
         .screen {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            border-radius: 36px;
-            overflow: hidden;
-            background: var(--bp-theme-color-surface-page-alt, #f5f5f5);
+            position: relative; width: 100%; height: 100%;
+            border-radius: 40px; overflow: hidden;
+            background: var(--bg);
+            isolation: isolate;
         }
-        .device.is-open .screen { border-radius: 30px; }
+        .device.is-open .screen { border-radius: 34px; }
 
-        /* Status bar común */
-        .status {
-            position: absolute;
-            inset: 0 0 auto 0;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 28px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #111;
-            z-index: 5;
+        /* Pantalla exterior: app real */
+        .outer {
+            position: absolute; inset: 0; width: var(--closed-w);
+            transition: opacity .35s ease, transform .8s var(--ease);
+            background: #f5f5f5;
+        }
+        .outer iframe { border: 0; width: 100%; height: calc(100% - 44px); margin-top: 44px; display: block; background: #f5f5f5; }
+        .outer .sb { color: #111; }
+        .device.is-open .outer { opacity: 0; transform: translateX(-60px) scale(.96); pointer-events: none; }
+
+        /* Pantalla interior */
+        .inner {
+            position: absolute; inset: 0; width: var(--open-w);
+            opacity: 0; transform: scale(1.03);
             pointer-events: none;
+            transition: opacity .45s ease .25s, transform .8s var(--ease);
         }
-        .status__icons { display: flex; gap: 5px; align-items: center; }
-        .status__icons .material-symbols-rounded { font-size: 16px; }
-        /* Cámara: isla en la exterior, perforación en la interior */
-        .island {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 96px;
-            height: 26px;
-            border-radius: 20px;
-            background: #000;
-            z-index: 6;
-        }
-        .device.is-open .island { width: 18px; height: 18px; left: 75%; top: 12px; }
+        .device.is-open .inner { opacity: 1; transform: none; pointer-events: auto; }
 
-        /* ---------- Contenidos ---------- */
-        .pane {
-            position: absolute;
-            top: 40px; /* debajo de la barra de estado */
-            bottom: 0;
-            background: var(--bp-theme-color-surface-page-alt, #f5f5f5);
-            overflow: hidden;
+        /* Barra de estado */
+        .sb {
+            position: absolute; top: 0; left: 0; right: 0; height: 44px; z-index: 30;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 4px 30px 0; font-size: 15px; font-weight: 600;
+            color: var(--label); pointer-events: none;
+            font-variant-numeric: tabular-nums;
         }
-        .pane iframe {
-            border: 0;
-            width: 100%;
-            height: 100%;
-            display: block;
-            background: var(--bp-theme-color-surface-page-alt, #f5f5f5);
-        }
-        .pane--app { left: 0; width: var(--closed-w); transition: width .75s cubic-bezier(.65,0,.35,1); }
-        .device.is-open .pane--app { width: calc(var(--open-w) / 2 - 12px); }
+        .sb__r { display: flex; gap: 5px; align-items: center; }
+        .sb__r .ms { font-size: 17px; }
+        .island { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 104px; height: 30px; border-radius: 20px; background: #000; z-index: 31; }
+        .punch { position: absolute; top: 14px; left: 75%; width: 16px; height: 16px; border-radius: 50%; background: #000; z-index: 31; }
 
-        .pane--detail {
-            right: 0;
-            width: calc(var(--open-w) / 2 - 12px);
-            opacity: 0;
-            transform: translateX(40px);
-            transition: opacity .45s ease .35s, transform .6s cubic-bezier(.22,1,.36,1) .3s;
-            overflow-y: auto;
-            scrollbar-width: none;
-            padding: 12px 20px 24px;
-            color: var(--bp-theme-color-text-primary, #1f1f1f);
-            font-family: Prelo, -apple-system, "Segoe UI", Roboto, sans-serif;
+        /* ================== Sistema visual iOS (interior) ================== */
+        .inner, .screen {
+            --bg: #f2f2f7;                 /* systemGroupedBackground */
+            --bg-2: #ffffff;               /* secondarySystemGroupedBackground */
+            --bg-3: #f2f2f7;
+            --fill: rgba(120,120,128,.12); /* tertiarySystemFill */
+            --fill-2: rgba(120,120,128,.2);
+            --label: #000;
+            --label-2: rgba(60,60,67,.6);
+            --label-3: rgba(60,60,67,.3);
+            --sep: rgba(60,60,67,.18);
+            --tint: var(--bp-base-color-blue-500, #0f265c);   /* tint de marca */
+            --tint-soft: rgba(15,38,92,.1);
+            --brand: var(--bp-base-color-yellow-500, #ffdd00);
+            --green: #34c759; --red: #ff3b30; --orange: #ff9500; --blue: #007aff;
+            --glass: rgba(249,249,249,.72);
+            --glass-border: rgba(255,255,255,.6);
+            --shadow-float: 0 10px 30px rgba(0,0,0,.14), 0 2px 6px rgba(0,0,0,.06);
+            color: var(--label);
         }
-        .pane--detail::-webkit-scrollbar { display: none; }
-        .device.is-open .pane--detail { opacity: 1; transform: none; }
-        .device:not(.is-open) .pane--detail { transition-delay: 0s; pointer-events: none; }
+        .dark .inner, .dark.screen, .screen.dark {
+            --bg: #000; --bg-2: #1c1c1e; --bg-3: #2c2c2e;
+            --fill: rgba(118,118,128,.24); --fill-2: rgba(118,118,128,.32);
+            --label: #fff; --label-2: rgba(235,235,245,.6); --label-3: rgba(235,235,245,.3);
+            --sep: rgba(84,84,88,.6);
+            --tint: #8fb2ff; --tint-soft: rgba(143,178,255,.16);
+            --glass: rgba(30,30,32,.72); --glass-border: rgba(255,255,255,.08);
+            --shadow-float: 0 10px 30px rgba(0,0,0,.6);
+        }
+        .inner { background: var(--bg); transition: opacity .45s ease .25s, transform .8s var(--ease), background .3s; }
 
-        /* Pliegue: franja central con sombra suave; nada interactivo encima */
+        /* Layout: página izquierda | pliegue | página derecha */
+        .page { position: absolute; top: 0; bottom: 0; overflow: hidden; }
+        .page--l { left: 0; width: calc(50% - 12px); display: flex; }
+        .page--r { right: 0; width: calc(50% - 12px); }
         .crease {
-            position: absolute;
-            top: 0; bottom: 0;
-            left: calc(50% - 12px);
-            width: 24px;
-            background:
-                linear-gradient(90deg, transparent, rgba(0,0,0,.06) 40%, rgba(255,255,255,.35) 50%, rgba(0,0,0,.06) 60%, transparent),
-                var(--bp-theme-color-surface-page-alt, #f5f5f5);
-            opacity: 0;
-            transition: opacity .4s ease .3s;
-            z-index: 4;
+            position: absolute; top: 0; bottom: 0; left: calc(50% - 12px); width: 24px; z-index: 5; pointer-events: none;
+            background: linear-gradient(90deg, transparent, rgba(0,0,0,.05) 38%, rgba(255,255,255,.35) 50%, rgba(0,0,0,.05) 62%, transparent);
+        }
+        .dark .crease { background: linear-gradient(90deg, transparent, rgba(255,255,255,.03) 38%, rgba(255,255,255,.07) 50%, rgba(255,255,255,.03) 62%, transparent); }
+
+        /* Barra lateral compacta (sidebar colapsada a rail) */
+        .rail {
+            width: 64px; flex-shrink: 0; padding: 52px 0 16px;
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            border-right: .5px solid var(--sep);
+            background: var(--bg);
+        }
+        .rail__item {
+            width: 48px; height: 48px; border-radius: 14px;
+            display: grid; place-items: center; color: var(--label-2);
+            position: relative;
+            transition: background .2s, color .2s, transform .35s var(--ease);
+        }
+        .rail__item:active { transform: scale(.9); }
+        .rail__item[aria-current="page"] { background: var(--tint-soft); color: var(--tint); }
+        .rail__item[aria-current="page"] .ms { font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24; }
+        .rail__tip {
+            position: absolute; left: 56px; white-space: nowrap; font-size: 12px; font-weight: 600;
+            background: var(--label); color: var(--bg); padding: 4px 8px; border-radius: 6px;
+            opacity: 0; transform: translateX(-4px); pointer-events: none; transition: .15s; z-index: 10;
+        }
+        .rail__item:hover .rail__tip { opacity: 1; transform: none; }
+        .rail__sp { flex: 1; }
+        .rail__avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--brand); color: #0f265c; display: grid; place-items: center; font-weight: 700; font-size: 14px; }
+
+        /* Columnas con scroll y título grande */
+        .col { position: relative; flex: 1; min-width: 0; height: 100%; }
+        .scroll { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; padding: 44px 16px 24px; scrollbar-width: none; overscroll-behavior: contain; }
+        .scroll::-webkit-scrollbar { display: none; }
+        .navbar {
+            position: absolute; top: 0; left: 0; right: 0; height: 88px; z-index: 6;
+            display: flex; align-items: flex-end; justify-content: space-between;
+            padding: 0 12px 8px 16px;
             pointer-events: none;
         }
-        .device.is-open .crease { opacity: 1; }
-
-        /* ---------- Panel de detalle (lado derecho, pantalla interior) ---------- */
-        .d-title { font-size: 22px; line-height: 28px; font-weight: 600; margin-bottom: 4px; }
-        .d-sub { font-size: 13px; color: var(--bp-theme-color-text-helper, #5c5c5c); margin-bottom: 16px; }
-        .d-card {
-            background: var(--bp-theme-color-surface-container-default, #fff);
-            border-radius: var(--bp-semantic-radius-md, 12px);
-            padding: 16px;
-            margin-bottom: 12px;
+        .navbar > * { pointer-events: auto; }
+        /* barra compacta de material: aparece al desplazar (título grande → inline) */
+        .navbar__bg {
+            position: absolute; inset: 0; z-index: -1;
+            background: var(--glass);
+            -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: .5px solid var(--sep);
+            opacity: 0; transition: opacity .2s;
         }
-        .d-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .d-card h3 a { font-size: 13px; color: var(--bp-theme-color-text-interactive, #0f265c); text-decoration: underline; font-weight: 600; }
-        .kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .kpi { background: var(--bp-theme-color-surface-page-alt, #f5f5f5); border-radius: 10px; padding: 10px 12px; }
-        .kpi small { display: block; font-size: 11px; color: var(--bp-theme-color-text-helper, #5c5c5c); }
-        .kpi b { font-size: 17px; font-variant-numeric: tabular-nums; }
-        .kpi .up { color: var(--bp-theme-color-status-success-text, #107524); }
-        .kpi .down { color: var(--bp-base-color-red-600, #c20505); }
-        .bars { display: flex; align-items: flex-end; gap: 6px; height: 88px; margin-top: 14px; }
-        .bars span {
-            flex: 1;
-            border-radius: 4px 4px 0 0;
-            background: var(--bp-base-color-blue-100, #cfd4de);
-            transform-origin: bottom;
-            animation: grow .7s cubic-bezier(.22,1,.36,1) both;
-        }
-        .bars span.is-now { background: var(--bp-base-color-blue-500, #0f265c); }
-        .bars-x { display: flex; gap: 6px; margin-top: 4px; }
-        .bars-x i { flex: 1; font-style: normal; font-size: 10px; text-align: center; color: var(--bp-theme-color-text-helper, #5c5c5c); }
-        @keyframes grow { from { transform: scaleY(0); } }
-        .mov { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--bp-theme-color-border-divider, #f5f5f5); }
-        .mov:first-of-type { border-top: 0; }
-        .mov__ic {
+        .navbar__title { font-size: 17px; font-weight: 600; opacity: 0; transform: translateY(6px); transition: .2s; position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; pointer-events: none; }
+        .col.scrolled .navbar__bg, .col.scrolled .navbar__title { opacity: 1; transform: none; }
+        .navbar__back { display: inline-flex; align-items: center; color: var(--tint); font-size: 17px; margin-left: -8px; height: 44px; padding-right: 8px; }
+        .navbar__back .ms { font-size: 28px; }
+        .navbar__actions { display: flex; gap: 4px; margin-left: auto; }
+        .icon-btn {
             width: 36px; height: 36px; border-radius: 50%;
-            display: grid; place-items: center;
-            background: var(--bp-theme-color-avatar-bg, rgb(18 18 18 / .04));
-            color: var(--bp-theme-color-brand-support, #0f265c);
+            display: grid; place-items: center; color: var(--tint);
+            background: var(--fill);
+            transition: transform .3s var(--ease), background .2s;
         }
-        .mov__t { flex: 1; min-width: 0; }
-        .mov__t b { display: block; font-size: 14px; font-weight: 500; }
-        .mov__t small { font-size: 12px; color: var(--bp-theme-color-text-helper, #5c5c5c); }
-        .mov__a { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
-        .mov__a.in { color: var(--bp-theme-color-status-success-text, #107524); }
-        .drop {
-            border: 1.5px dashed var(--bp-theme-color-border-default, #d0d0d0);
-            border-radius: var(--bp-semantic-radius-md, 12px);
-            padding: 14px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            font-size: 13px;
-            color: var(--bp-theme-color-text-helper, #5c5c5c);
-        }
-        .drop .material-symbols-rounded { color: var(--bp-theme-color-brand-support, #0f265c); }
+        .icon-btn:active { transform: scale(.88); background: var(--fill-2); }
+        .icon-btn .ms { font-size: 20px; }
+        .large-title { font-size: 32px; font-weight: 700; letter-spacing: .01em; margin: 44px 0 12px; line-height: 1.1; }
+        .subhead { font-size: 13px; color: var(--label-2); margin: -8px 0 14px; }
 
-        /* ---------- Notas de diseño ---------- */
-        .notes {
-            max-width: 1180px;
-            margin: 24px auto 48px;
-            padding: 0 var(--pad);
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 12px;
+        /* Listas agrupadas insertadas (inset grouped) */
+        .group-h { font-size: 13px; color: var(--label-2); text-transform: uppercase; letter-spacing: .02em; margin: 18px 16px 6px; display: flex; justify-content: space-between; }
+        .group-h button { color: var(--tint); text-transform: none; font-size: 13px; letter-spacing: 0; }
+        .group { background: var(--bg-2); border-radius: 12px; overflow: hidden; }
+        .group-f { font-size: 12.5px; color: var(--label-2); margin: 6px 16px 0; line-height: 1.4; }
+        .row {
+            position: relative; display: flex; align-items: center; gap: 12px;
+            min-height: 48px; padding: 8px 16px; width: 100%; text-align: left;
+            background: var(--bg-2);
+            transition: background .15s;
+            touch-action: pan-y;
+            user-select: none; -webkit-user-select: none;
         }
-        .note {
-            background: var(--stage-2);
-            border: 1px solid #23262d;
-            border-radius: 16px;
-            padding: 16px;
+        .row + .row::before { content: ''; position: absolute; top: 0; left: 60px; right: 0; height: .5px; background: var(--sep); }
+        .row.no-icon + .row::before, .row.no-icon::before { left: 16px; }
+        .row:active, .row.is-pressed { background: var(--fill); }
+        .row.is-selected { background: var(--tint-soft); }
+        .row__ic {
+            width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center;
+            color: #fff; flex-shrink: 0;
         }
-        .note .material-symbols-rounded { color: var(--accent); font-size: 22px; }
-        @media (max-width: 520px) {
-            .seg { width: 100%; }
-            .seg button { flex: 1; justify-content: center; padding: 10px 8px; }
+        .row__ic .ms { font-size: 19px; }
+        .row__ic--round { border-radius: 50%; width: 36px; height: 36px; font-size: 13px; font-weight: 600; }
+        .row__main { flex: 1; min-width: 0; }
+        .row__t, .row__s { display: block; }
+        .row__t { font-size: 16px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .row__s { font-size: 13px; color: var(--label-2); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .row__v { font-size: 16px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .row__v.in { color: var(--green); }
+        .row__chev { color: var(--label-3); font-size: 20px; margin-right: -6px; }
+        .row__value { color: var(--label-2); font-size: 16px; }
+
+        /* Swipe actions */
+        .swipe { position: relative; overflow: hidden; }
+        .swipe + .swipe .row::before { content: ''; position: absolute; top: 0; left: 64px; right: 0; height: .5px; background: var(--sep); z-index: 1; }
+        .swipe__acts { position: absolute; inset: 0 0 0 auto; display: flex; }
+        .swipe__acts button { width: 76px; color: #fff; font-size: 12px; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+        .swipe__acts .a-tag { background: var(--orange); }
+        .swipe__acts .a-split { background: var(--blue); }
+        .swipe__acts .a-report { background: var(--red); }
+        .swipe .row { transition: transform .35s var(--ease), background .15s; z-index: 1; }
+        .swipe.dragging .row { transition: background .15s; }
+
+        /* Tarjeta de saldo */
+        .hero {
+            border-radius: 20px; padding: 18px; color: #0f265c;
+            background: radial-gradient(120% 120% at 100% 0%, #fff6a8 0%, transparent 55%), linear-gradient(135deg, #ffe433 0%, #ffcb00 100%);
+            box-shadow: 0 8px 24px rgba(255,197,0,.25);
+            position: relative; overflow: hidden;
         }
-        .note h2 { font-size: 15px; margin: 8px 0 4px; }
+        .hero__lbl { font-size: 13px; font-weight: 600; opacity: .75; display: flex; justify-content: space-between; align-items: center; }
+        .hero__amt { font-size: 34px; font-weight: 700; letter-spacing: -.01em; margin-top: 6px; font-variant-numeric: tabular-nums; transition: filter .25s; }
+        .hero__amt.masked { filter: blur(9px); }
+        .hero__eye { width: 32px; height: 32px; border-radius: 50%; background: rgba(15,38,92,.1); display: grid; place-items: center; color: #0f265c; }
+        .hero__eye .ms { font-size: 19px; }
+        .hero__meta { font-size: 13px; margin-top: 2px; opacity: .8; }
+
+        .qa { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+        .qa button {
+            background: var(--bg-2); border-radius: 14px; padding: 12px 4px 10px;
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            font-size: 12px; font-weight: 500;
+            transition: transform .35s var(--ease);
+        }
+        .qa button:active { transform: scale(.92); }
+        .qa .ms { color: var(--tint); font-size: 24px; }
+
+        /* Segmented control */
+        .segc {
+            position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+            background: var(--fill); border-radius: 9px; padding: 2px; margin: 4px 0 4px;
+        }
+        .segc button { position: relative; z-index: 1; font-size: 13px; font-weight: 500; height: 30px; border-radius: 7px; }
+        .segc button[aria-selected="true"] { font-weight: 600; }
+        .segc__thumb {
+            position: absolute; top: 2px; bottom: 2px; left: 2px; border-radius: 7px;
+            background: var(--bg-2); box-shadow: 0 3px 8px rgba(0,0,0,.12), 0 3px 1px rgba(0,0,0,.04);
+            transition: transform .35s var(--ease);
+        }
+        .dark .segc__thumb { background: #636366; }
+
+        /* Gráfico */
+        .chart { background: var(--bg-2); border-radius: 12px; padding: 14px 14px 8px; }
+        .chart__top { display: flex; justify-content: space-between; align-items: baseline; }
+        .chart__v { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+        .chart__d { font-size: 13px; color: var(--green); font-weight: 600; }
+        .chart svg { width: 100%; height: 90px; display: block; margin-top: 6px; overflow: visible; }
+        .chart__x { display: flex; justify-content: space-between; font-size: 11px; color: var(--label-2); margin-top: 2px; }
+        .chart .scrub { opacity: 0; transition: opacity .15s; }
+        .chart.scrubbing .scrub { opacity: 1; }
+
+        /* Detalle de movimiento */
+        .mv-hero { text-align: center; padding: 8px 0 18px; }
+        .mv-hero__ic { width: 64px; height: 64px; border-radius: 18px; margin: 0 auto 10px; display: grid; place-items: center; color: #fff; }
+        .mv-hero__ic .ms { font-size: 32px; }
+        .mv-hero__amt { font-size: 36px; font-weight: 700; font-variant-numeric: tabular-nums; }
+        .mv-hero__t { font-size: 15px; color: var(--label-2); margin-top: 2px; }
+        .btn {
+            width: 100%; height: 50px; border-radius: 14px; font-size: 17px; font-weight: 600;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: transform .3s var(--ease), opacity .2s, background .2s;
+        }
+        .btn:active { transform: scale(.97); }
+        .btn--primary { background: var(--brand); color: #0f265c; }
+        .btn--tinted { background: var(--tint-soft); color: var(--tint); }
+        .btn--plain-red { color: var(--red); background: var(--bg-2); }
+        .btn[disabled] { opacity: .35; pointer-events: none; }
+        .stack { display: grid; gap: 10px; margin-top: 16px; }
+
+        /* Tarjeta física */
+        .pcard {
+            aspect-ratio: 1.586; border-radius: 16px; padding: 18px; color: #fff; position: relative; overflow: hidden;
+            background: radial-gradient(90% 120% at 100% 0%, rgba(255,255,255,.25), transparent 50%), linear-gradient(135deg, #0f265c, #1f60ac);
+            box-shadow: 0 16px 32px rgba(15,38,92,.35);
+            transition: filter .4s, transform .5s var(--ease);
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .pcard--2 { background: radial-gradient(90% 120% at 100% 0%, rgba(255,255,255,.2), transparent 50%), linear-gradient(135deg, #1f1f1f, #5c5c5c); box-shadow: 0 16px 32px rgba(0,0,0,.35); }
+        .pcard.locked { filter: grayscale(1) brightness(.8); }
+        .pcard__top { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; opacity: .9; }
+        .pcard__num { font-size: 19px; letter-spacing: .12em; font-variant-numeric: tabular-nums; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+        .pcard__bot { display: flex; justify-content: space-between; align-items: flex-end; font-size: 12px; opacity: .9; }
+        .pcard__net { font-size: 20px; font-weight: 800; font-style: italic; letter-spacing: -.02em; }
+        .pcard__lock { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.25); opacity: 0; transition: opacity .3s; }
+        .pcard__lock .ms { font-size: 44px; }
+        .pcard.locked .pcard__lock { opacity: 1; }
+        .mini-card { width: 44px; height: 28px; border-radius: 5px; flex-shrink: 0; background: linear-gradient(135deg, #0f265c, #1f60ac); }
+        .mini-card--2 { background: linear-gradient(135deg, #1f1f1f, #5c5c5c); }
+
+        /* Toggle iOS */
+        .tgl { position: relative; width: 51px; height: 31px; flex-shrink: 0; }
+        .tgl input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; z-index: 1; }
+        .tgl span { position: absolute; inset: 0; border-radius: 16px; background: var(--fill-2); transition: background .25s; }
+        .tgl span::after {
+            content: ''; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%;
+            background: #fff; box-shadow: 0 3px 8px rgba(0,0,0,.15), 0 1px 1px rgba(0,0,0,.16);
+            transition: transform .3s var(--ease), width .2s;
+        }
+        .tgl input:checked + span { background: var(--green); }
+        .tgl input:checked + span::after { transform: translateX(20px); }
+        .tgl input:active + span::after { width: 33px; }
+        .tgl input:checked:active + span::after { transform: translateX(14px); }
+
+        /* Slider iOS */
+        .sld { padding: 12px 16px 14px; background: var(--bg-2); }
+        .sld__top { display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 10px; }
+        .sld__top b { font-variant-numeric: tabular-nums; font-weight: 600; }
+        .sld input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 28px; background: transparent; }
+        .sld input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: linear-gradient(90deg, var(--tint) var(--p, 25%), var(--fill-2) var(--p, 25%)); }
+        .sld input[type=range]::-moz-range-track { height: 4px; border-radius: 2px; background: var(--fill-2); }
+        .sld input[type=range]::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--tint); }
+        .sld input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; margin-top: -12px; border-radius: 50%; background: #fff; box-shadow: 0 3px 8px rgba(0,0,0,.15), 0 1px 2px rgba(0,0,0,.2), 0 0 0 .5px rgba(0,0,0,.04); }
+        .sld input[type=range]::-moz-range-thumb { width: 28px; height: 28px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 3px 8px rgba(0,0,0,.15); }
+        .sld__x { display: flex; justify-content: space-between; font-size: 12px; color: var(--label-2); }
+
+        /* Búsqueda */
+        .search { display: flex; align-items: center; gap: 6px; height: 36px; border-radius: 10px; background: var(--fill); padding: 0 8px; color: var(--label-2); margin-bottom: 8px; }
+        .search .ms { font-size: 19px; }
+        .search input { flex: 1; border: 0; background: transparent; outline: 0; color: var(--label); font-size: 16px; min-width: 0; }
+
+        /* Drag & drop */
+        .drag-ghost {
+            position: absolute; z-index: 60; pointer-events: none;
+            display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 8px;
+            border-radius: 999px; background: var(--bg-2); box-shadow: var(--shadow-float), 0 20px 40px rgba(0,0,0,.2);
+            font-weight: 600; font-size: 15px; transform: translate(-50%, -50%) scale(1.06);
+            transition: transform .2s var(--ease);
+        }
+        .drag-ghost.drop-ok { transform: translate(-50%, -50%) scale(1.12); }
+        .drag-badge { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; background: var(--green); color: #fff; display: grid; place-items: center; transform: scale(0); transition: transform .25s var(--ease); }
+        .drag-badge .ms { font-size: 16px; }
+        .drag-ghost.drop-ok .drag-badge { transform: scale(1); }
+        .row.is-lifted { opacity: .35; }
+        .dropzone {
+            margin-top: 8px; border: 2px dashed var(--fill-2); border-radius: 20px;
+            min-height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+            text-align: center; padding: 24px; color: var(--label-2);
+            transition: background .2s, border-color .2s, transform .35s var(--ease);
+        }
+        .dropzone .ms { font-size: 44px; color: var(--tint); }
+        .dropzone b { color: var(--label); font-size: 17px; }
+        .dropzone.is-over { background: var(--tint-soft); border-color: var(--tint); transform: scale(1.02); }
+        .dropzone.is-armed { border-color: var(--tint); }
+
+        /* Teclado numérico y monto */
+        .amt-to { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 0 2px; }
+        .amt-to .row__ic--round { width: 40px; height: 40px; font-size: 15px; }
+        .amt-to b { font-size: 16px; display: block; }
+        .amt-to small { color: var(--label-2); font-size: 13px; display: block; }
+        .amt {
+            text-align: center; font-size: 48px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums;
+            height: 60px; line-height: 60px;
+        }
+        .amt.empty { color: var(--label-3); }
+        .amt.bump { animation: bump .18s var(--ease); }
+        .amt.shake { animation: shake .4s; color: var(--red); }
+        @keyframes bump { 50% { transform: scale(1.06); } }
+        @keyframes shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+        .chips { display: flex; gap: 8px; justify-content: center; margin: 4px 0 10px; }
+        .chips button { padding: 6px 12px; border-radius: 999px; background: var(--fill); font-size: 14px; font-weight: 500; }
+        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .keypad button {
+            height: 42px; border-radius: 10px; font-size: 22px; font-weight: 400; background: var(--bg-2);
+            box-shadow: 0 1px 0 rgba(0,0,0,.12);
+            transition: background .1s, transform .2s var(--ease);
+        }
+        .keypad button:active { background: var(--fill-2); transform: scale(.96); }
+        .keypad .k-muted { background: transparent; box-shadow: none; }
+        .keypad .ms { font-size: 24px; }
+
+        /* Face ID */
+        .faceid { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 40px 0 20px; }
+        .faceid svg { width: 76px; height: 76px; }
+        .faceid .fid-frame { stroke: var(--tint); stroke-width: 4; fill: none; stroke-linecap: round; }
+        .faceid .fid-face { stroke: var(--tint); stroke-width: 4; fill: none; stroke-linecap: round; transition: opacity .2s; }
+        .faceid.scanning svg { animation: fidPulse .9s ease-in-out infinite; }
+        .faceid .fid-ok { stroke: var(--green); stroke-width: 5; fill: none; stroke-linecap: round; stroke-dasharray: 60; stroke-dashoffset: 60; }
+        .faceid.ok .fid-face { opacity: 0; }
+        .faceid.ok .fid-frame { stroke: var(--green); }
+        .faceid.ok .fid-ok { transition: stroke-dashoffset .45s var(--ease-out) .05s; stroke-dashoffset: 0; }
+        @keyframes fidPulse { 50% { transform: scale(.92); } }
+        .faceid p { font-size: 15px; color: var(--label-2); }
+
+        /* Éxito */
+        .done { text-align: center; padding: 28px 0 8px; }
+        .done svg { width: 84px; height: 84px; }
+        .done circle { fill: var(--green); transform-origin: center; animation: pop .5s var(--ease) both; }
+        .done path { stroke: #fff; stroke-width: 6; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 50; stroke-dashoffset: 50; animation: draw .4s var(--ease-out) .25s forwards; }
+        .done h2 { font-size: 24px; margin-top: 14px; }
+        .done .big { font-size: 36px; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+        .done p { color: var(--label-2); font-size: 14px; margin-top: 4px; }
+        .done > * { animation: rise .5s var(--ease-out) both; }
+        .done > :nth-child(2) { animation-delay: .15s; } .done > :nth-child(3) { animation-delay: .22s; }
+        .done > :nth-child(4) { animation-delay: .29s; } .done > :nth-child(5) { animation-delay: .36s; }
+        @keyframes pop { from { transform: scale(.3); opacity: 0; } }
+        @keyframes draw { to { stroke-dashoffset: 0; } }
+        @keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+
+        /* Transiciones de la pila de navegación del detalle (push/pop) */
+        .view-in-push { animation: pushIn .45s var(--ease) both; }
+        .view-in-pop { animation: popIn .45s var(--ease) both; }
+        .view-in-fade { animation: fadeIn .3s ease both; }
+        @keyframes pushIn { from { transform: translateX(100%); } }
+        @keyframes popIn { from { transform: translateX(-30%); opacity: .6; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } }
+
+        /* Menú contextual (long press) */
+        .ctx { position: absolute; inset: 0; z-index: 50; display: none; }
+        .ctx.open { display: block; }
+        .ctx__dim {
+            position: absolute; inset: 0; background: rgba(0,0,0,.12);
+            -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+            animation: fadeIn .25s ease both;
+        }
+        .ctx__preview .swipe__acts { display: none; }
+        .ctx__preview {
+            position: absolute; border-radius: 14px; overflow: hidden; background: var(--bg-2);
+            box-shadow: var(--shadow-float);
+            animation: lift .35s var(--ease) both;
+        }
+        @keyframes lift { from { transform: scale(.96); } 60% { transform: scale(1.03); } to { transform: scale(1.02); } }
+        .ctx__menu {
+            position: absolute; width: 250px; border-radius: 14px; overflow: hidden;
+            background: var(--glass); -webkit-backdrop-filter: saturate(180%) blur(30px); backdrop-filter: saturate(180%) blur(30px);
+            box-shadow: var(--shadow-float);
+            transform-origin: top left;
+            animation: menuIn .35s var(--ease) both;
+        }
+        @keyframes menuIn { from { transform: scale(.4); opacity: 0; } }
+        .ctx__menu button { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 11px 16px; font-size: 16px; text-align: left; }
+        .ctx__menu button + button { border-top: .5px solid var(--sep); }
+        .ctx__menu button:active { background: var(--fill); }
+        .ctx__menu .ms { font-size: 20px; }
+        .ctx__menu .danger { color: var(--red); }
+
+        /* Form sheet centrado (pantallas grandes) */
+        .sheet { position: absolute; inset: 0; z-index: 45; display: none; align-items: center; justify-content: center; }
+        .sheet.open { display: flex; }
+        .sheet__dim { position: absolute; inset: 0; background: rgba(0,0,0,.35); animation: fadeIn .25s ease both; }
+        .sheet__card {
+            position: relative; width: 380px; max-height: 88%; overflow: auto; scrollbar-width: none;
+            background: var(--bg); border-radius: 22px; padding: 14px 16px 18px;
+            box-shadow: 0 30px 60px rgba(0,0,0,.3);
+            animation: sheetIn .5s var(--ease) both;
+        }
+        @keyframes sheetIn { from { transform: translateY(40px) scale(.96); opacity: 0; } }
+        .sheet__bar { display: flex; justify-content: space-between; align-items: center; height: 36px; margin-bottom: 6px; }
+        .sheet__bar b { font-size: 17px; }
+        .sheet__bar button { color: var(--tint); font-size: 17px; }
+
+        /* HUD */
+        .hud {
+            position: absolute; top: 52px; left: 50%; z-index: 70;
+            transform: translate(-50%, -20px); opacity: 0;
+            display: flex; align-items: center; gap: 8px; padding: 10px 16px 10px 12px; border-radius: 999px;
+            background: var(--glass); -webkit-backdrop-filter: saturate(180%) blur(24px); backdrop-filter: saturate(180%) blur(24px);
+            border: .5px solid var(--glass-border);
+            box-shadow: var(--shadow-float); font-size: 14px; font-weight: 600; white-space: nowrap;
+            transition: transform .45s var(--ease), opacity .25s;
+            pointer-events: none;
+        }
+        .hud.show { transform: translate(-50%, 0); opacity: 1; }
+        .hud .ms { font-size: 20px; color: var(--tint); }
+
+        /* Pull to refresh */
+        .ptr { height: 0; display: grid; place-items: center; overflow: hidden; color: var(--label-2); }
+        .ptr .spin { width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid var(--fill-2); border-top-color: var(--label-2); }
+        .ptr.loading .spin { animation: spin .8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .row.is-new { animation: newRow 1.4s ease; }
+        @keyframes newRow { 0% { background: var(--tint-soft); } 100% { background: var(--bg-2); } }
+
+        .empty { text-align: center; color: var(--label-2); padding: 80px 20px; }
+        .empty .ms { font-size: 56px; color: var(--label-3); }
+
+        /* ---------------- Notas HIG ---------------- */
+        .notes { max-width: 1200px; margin: 28px auto 56px; padding: 0 16px; }
+        .notes h2.sec { font-size: 20px; margin-bottom: 12px; }
+        .notes__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+        .note { background: var(--stage-2); border: 1px solid #22252c; border-radius: 16px; padding: 16px; }
+        .note .ms { color: var(--accent); font-size: 22px; }
+        .note h3 { font-size: 15px; margin: 8px 0 4px; }
         .note p { font-size: 13.5px; line-height: 1.5; color: var(--ink-2); }
-        .specs { font-size: 12px; color: #6f737c; text-align: center; margin-top: 12px; padding: 0 var(--pad); }
+        .note em { color: var(--ink); font-style: normal; }
+        .note button { margin-top: 10px; font-size: 13px; font-weight: 600; color: var(--accent); display: inline-flex; align-items: center; gap: 4px; }
+        .note button .ms { font-size: 16px; }
 
+        @media (max-width: 560px) {
+            .controls, .seg-page { width: 100%; }
+            .seg-page button { flex: 1; justify-content: center; padding: 9px 6px; }
+        }
         @media (prefers-reduced-motion: reduce) {
-            .device, .pane--app, .pane--detail, .crease, .bars span { transition: none !important; animation: none !important; }
+            *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
         }
     </style>
 </head>
 <body>
-    <header>
+    <header class="top">
         <div>
-            <div class="eyebrow">Concept · iPhone Duo</div>
-            <h1>La banca móvil, abierta en dos</h1>
-            <p class="lede">Cerrado, es la misma app de siempre en la pantalla exterior de 5,4". Al abrirlo, la pantalla interior de 7,6" se divide en lista + detalle: la app a la izquierda y un panel de análisis a la derecha, sin nada interactivo sobre el pliegue.</p>
+            <div class="eyebrow">Concept · iPhone Duo · iOS HIG</div>
+            <h1 class="h">La banca móvil, abierta en dos</h1>
+            <p class="lede">Cerrado, la app de siempre en la pantalla exterior. Abierto, la pantalla de 7,6" se convierte en un split view nativo: barra lateral, lista y detalle con su propia pila de navegación. Todo es interactivo: toca, desliza, mantén presionado y arrastra.</p>
         </div>
-        <div class="seg" role="group" aria-label="Estado del dispositivo">
-            <button id="btn-closed" aria-pressed="false"><span class="material-symbols-rounded">smartphone</span>Cerrado</button>
-            <button id="btn-open" aria-pressed="true"><span class="material-symbols-rounded">menu_book</span>Abierto</button>
+        <div class="controls">
+            <div class="seg-page" role="group" aria-label="Postura">
+                <button id="btn-closed" aria-pressed="false"><span class="ms">smartphone</span>Cerrado</button>
+                <button id="btn-open" aria-pressed="true"><span class="ms">menu_book</span>Abierto</button>
+            </div>
+            <div class="seg-page" role="group" aria-label="Apariencia">
+                <button id="btn-light" aria-pressed="true"><span class="ms">light_mode</span>Claro</button>
+                <button id="btn-dark" aria-pressed="false"><span class="ms">dark_mode</span>Oscuro</button>
+            </div>
         </div>
     </header>
 
     <main class="stage">
         <div class="fit" id="fit">
             <div class="device is-open" id="device">
-                <div class="screen">
-                    <div class="status"><span>9:41</span><span class="status__icons"><span class="material-symbols-rounded">signal_cellular_alt</span><span class="material-symbols-rounded">wifi</span><span class="material-symbols-rounded">battery_full</span></span></div>
-                    <div class="island" aria-hidden="true"></div>
-
-                    <!-- Panel izquierdo / pantalla completa cerrado: la app real -->
-                    <div class="pane pane--app">
-                        <iframe id="app" src="./index.html" title="Banca Móvil"></iframe>
+                <div class="screen" id="screen">
+                    <!-- Exterior: app real -->
+                    <div class="outer" aria-hidden="true" id="outer">
+                        <div class="sb"><span class="clock">9:41</span><span class="sb__r"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span class="ms">battery_full</span></span></div>
+                        <div class="island"></div>
+                        <iframe id="app" src="./index.html" title="Banca Móvil (pantalla exterior)" tabindex="-1"></iframe>
                     </div>
 
-                    <div class="crease" aria-hidden="true"></div>
+                    <!-- Interior: split view -->
+                    <div class="inner" id="inner">
+                        <div class="sb"><span class="clock">9:41</span><span class="sb__r"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span class="ms">battery_full</span></span></div>
+                        <div class="punch"></div>
 
-                    <!-- Panel derecho: sólo existe con el dispositivo abierto -->
-                    <aside class="pane pane--detail" aria-label="Panel de detalle">
-                        <p class="d-title">Tu mes en un vistazo</p>
-                        <p class="d-sub">Cuenta PRINCIPAL · ******7890</p>
-
-                        <div class="d-card">
-                            <h3>Resumen de septiembre <a href="#" onclick="return false">Ver más</a></h3>
-                            <div class="kpis">
-                                <div class="kpi"><small>Ingresos</small><b class="up">$ 2.450,00</b></div>
-                                <div class="kpi"><small>Gastos</small><b class="down">$ 1.318,76</b></div>
-                            </div>
-                            <div class="bars" aria-hidden="true">
-                                <span style="height:42%;animation-delay:.40s"></span>
-                                <span style="height:58%;animation-delay:.45s"></span>
-                                <span style="height:35%;animation-delay:.50s"></span>
-                                <span style="height:72%;animation-delay:.55s"></span>
-                                <span style="height:50%;animation-delay:.60s"></span>
-                                <span class="is-now" style="height:64%;animation-delay:.65s"></span>
-                            </div>
-                            <div class="bars-x" aria-hidden="true"><i>Abr</i><i>May</i><i>Jun</i><i>Jul</i><i>Ago</i><i>Sep</i></div>
+                        <div class="page page--l">
+                            <nav class="rail" aria-label="Barra lateral">
+                                <button class="rail__item" data-nav="inicio" aria-current="page" aria-label="Inicio"><span class="ms">home</span><span class="rail__tip">Inicio</span></button>
+                                <button class="rail__item" data-nav="tarjetas" aria-label="Tarjetas"><span class="ms">credit_card</span><span class="rail__tip">Tarjetas</span></button>
+                                <button class="rail__item" data-nav="transferir" aria-label="Transferir"><span class="ms">sync_alt</span><span class="rail__tip">Transferir</span></button>
+                                <button class="rail__item" data-nav="ajustes" aria-label="Ajustes"><span class="ms">settings</span><span class="rail__tip">Ajustes</span></button>
+                                <span class="rail__sp"></span>
+                                <span class="rail__avatar" aria-hidden="true">AM</span>
+                            </nav>
+                            <section class="col" id="col-l" aria-label="Contenido"></section>
+                        </div>
+                        <div class="crease" aria-hidden="true"></div>
+                        <div class="page page--r">
+                            <section class="col" id="col-r" aria-label="Detalle"></section>
                         </div>
 
-                        <div class="d-card">
-                            <h3>Últimos movimientos <a href="#" onclick="return false">Ver todos</a></h3>
-                            <div class="mov"><span class="mov__ic"><span class="material-symbols-rounded">shopping_cart</span></span><span class="mov__t"><b>Supermercado</b><small>Hoy · Débito</small></span><span class="mov__a">- $ 48,20</span></div>
-                            <div class="mov"><span class="mov__ic"><span class="material-symbols-rounded">work</span></span><span class="mov__t"><b>Pago de nómina</b><small>Ayer · Transferencia</small></span><span class="mov__a in">+ $ 1.225,00</span></div>
-                            <div class="mov"><span class="mov__ic"><span class="material-symbols-rounded">bolt</span></span><span class="mov__t"><b>Luz de la casa</b><small>27 sep · Servicio</small></span><span class="mov__a">- $ 24,80</span></div>
-                            <div class="mov"><span class="mov__ic"><span class="material-symbols-rounded">local_cafe</span></span><span class="mov__t"><b>Cafetería</b><small>26 sep · Débito</small></span><span class="mov__a">- $ 6,50</span></div>
-                        </div>
-
-                        <div class="drop">
-                            <span class="material-symbols-rounded">drag_pan</span>
-                            Arrastra un contacto desde la izquierda hasta aquí para transferirle.
-                        </div>
-                    </aside>
+                        <div class="ctx" id="ctx"></div>
+                        <div class="sheet" id="sheet"></div>
+                        <div class="hud" id="hud" role="status"><span class="ms fill">check_circle</span><span id="hud-t"></span></div>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
-
-    <p class="specs">Escala aproximada a partir de las medidas publicadas: cerrado 84,1 × 117,8 mm (5,4"), abierto 164,6 × 117,8 mm (7,6"). El panel izquierdo es la app real e interactiva.</p>
+    <p class="hint">Prueba: <b>mantén presionado</b> un movimiento · <b>desliza</b> una fila a la izquierda · <b>arrastra</b> un contacto a la derecha · <b>tira hacia abajo</b> los movimientos · recorre el gráfico con el dedo · <kbd>O</kbd> abre/cierra</p>
 
     <section class="notes">
-        <article class="note">
-            <span class="material-symbols-rounded">view_column_2</span>
-            <h2>Lista + detalle al abrir</h2>
-            <p>Con 7,6" apaisados, una sola columna de 390px dejaría media pantalla vacía. La app conserva su columna y la derecha se usa para lo que en el teléfono exige otra pantalla: resumen, movimientos, detalle.</p>
-        </article>
-        <article class="note">
-            <span class="material-symbols-rounded">fold</span>
-            <h2>El pliegue es zona muerta</h2>
-            <p>Hay 24px sin controles sobre la bisagra. Ningún botón, texto o campo cruza el centro, así no se pierde un tap en la zona donde el panel se deforma.</p>
-        </article>
-        <article class="note">
-            <span class="material-symbols-rounded">sync_alt</span>
-            <h2>Continuidad al plegar</h2>
-            <p>Al cerrar, el panel derecho se retira y la app se expande a la pantalla exterior sin recargar: mismo estado, misma posición de scroll, el mismo flujo a medio completar.</p>
-        </article>
-        <article class="note">
-            <span class="material-symbols-rounded">vibration</span>
-            <h2>Háptica al abrir y cerrar</h2>
-            <p>El gesto de desplegar se acompaña del efecto "abrir" y el de plegar con "cerrar" del sistema de feedback de la app, para que el cambio de postura se sienta físico.</p>
-        </article>
+        <h2 class="sec">Cómo se aplican las Human Interface Guidelines</h2>
+        <div class="notes__grid">
+            <article class="note"><span class="ms">view_sidebar</span><h3>Split view con barra lateral</h3><p>La pantalla interior usa la estructura de <em>NavigationSplitView</em>: barra lateral colapsada a íconos, columna de contenido y columna de detalle. El detalle tiene su <em>propia pila</em> (push/pop con botón Atrás) sin tocar la columna izquierda.</p><button data-demo="inicio"><span class="ms">play_arrow</span>Ver</button></article>
+            <article class="note"><span class="ms">fold</span><h3>Nada sobre el pliegue</h3><p>Cada columna vive en una mitad física. Los 24px del centro quedan libres de controles y texto, como pide la guía para <em>layout guides y áreas seguras</em> en pantallas con bisagra.</p></article>
+            <article class="note"><span class="ms">drag_pan</span><h3>Drag and drop entre columnas</h3><p>Arrastra un contacto de la izquierda al área de la derecha: la fila se <em>levanta</em>, la zona de destino responde al pasar encima y hay feedback al soltar. Tocar el contacto hace lo mismo (alternativa accesible).</p><button data-demo="transferir"><span class="ms">play_arrow</span>Ver</button></article>
+            <article class="note"><span class="ms">touch_app</span><h3>Menús contextuales y swipe actions</h3><p>Mantener presionado un movimiento muestra una <em>vista previa elevada</em> con acciones; deslizar la fila revela acciones rápidas y el swipe completo ejecuta la primera, con clic háptico al cruzar el umbral.</p><button data-demo="ctx"><span class="ms">play_arrow</span>Ver</button></article>
+            <article class="note"><span class="ms">toggle_on</span><h3>Controles del sistema</h3><p>Toggles, slider con pasos que vibran, segmented control, campo de búsqueda y teclado numérico propio para montos. Las acciones que cambian dinero piden <em>Face ID</em> antes de ejecutarse.</p><button data-demo="tarjetas"><span class="ms">play_arrow</span>Ver</button></article>
+            <article class="note"><span class="ms">dark_mode</span><h3>Apariencia y materiales</h3><p>Colores semánticos de iOS (grouped backgrounds, labels, separators) con el tinte de marca, <em>modo oscuro</em> completo y barras de material translúcido que aparecen al desplazar, cuando el título grande pasa a la barra.</p></article>
+            <article class="note"><span class="ms">vibration</span><h3>Háptica con intención</h3><p>Equivalentes a <em>UIImpactFeedbackGenerator</em> (tocar, umbrales, pasos del slider), <em>UISelectionFeedbackGenerator</em> (barra lateral, segmentos) y <em>UINotificationFeedbackGenerator</em> (éxito, error). Nunca en cada frame.</p></article>
+            <article class="note"><span class="ms">sync_alt</span><h3>Continuidad al plegar</h3><p>Al cerrar, la interfaz vuelve a la columna única de la pantalla exterior; al abrir, la interior aparece con el estado donde lo dejaste (sección, detalle y borrador de transferencia).</p></article>
+        </div>
     </section>
 
+    <script src="./haptics.js"></script>
     <script>
-        (function () {
-            var device = document.getElementById('device');
-            var fit = document.getElementById('fit');
-            var bOpen = document.getElementById('btn-open');
-            var bClosed = document.getElementById('btn-closed');
-            var frame = document.getElementById('app');
+    (function () {
+        'use strict';
+        // ------------------------------------------------------------------
+        // Datos de ejemplo
+        // ------------------------------------------------------------------
+        const ACCOUNTS = [
+            { id: 'ppal', name: 'Cuenta Principal', type: 'Ahorro transaccional', num: '7890', bal: 1906.04, color: '#0f265c', icon: 'account_balance_wallet',
+              series: [1210, 1380, 1295, 1520, 1460, 1710, 1640, 1820, 1755, 1906] },
+            { id: 'flex', name: 'Cuenta Flexible', type: 'Ahorro con intereses', num: '1234', bal: 5420.10, color: '#1f60ac', icon: 'savings',
+              series: [4800, 4860, 4920, 5010, 5060, 5130, 5200, 5280, 5350, 5420] },
+            { id: 'cte', name: 'Corriente', type: 'Cuenta corriente', num: '5521', bal: 320.55, color: '#5c5c5c', icon: 'payments',
+              series: [900, 640, 780, 520, 610, 410, 560, 380, 450, 320] }
+        ];
+        const CAT = {
+            super: ['shopping_cart', '#34c759'], cafe: ['local_cafe', '#a2845e'], work: ['work', '#007aff'],
+            luz: ['bolt', '#ff9500'], transp: ['directions_car', '#5856d6'], trans: ['sync_alt', '#0f265c'],
+            salud: ['medical_services', '#ff2d55'], streaming: ['movie', '#af52de'], interes: ['trending_up', '#30b0c7']
+        };
+        let MOVS = {
+            ppal: [
+                { id: 1, t: 'Supermercado', s: 'Débito', d: 'Hoy', a: -48.20, c: 'super' },
+                { id: 2, t: 'Cafetería', s: 'Débito', d: 'Hoy', a: -6.50, c: 'cafe' },
+                { id: 3, t: 'Pago de nómina', s: 'Transferencia recibida', d: 'Ayer', a: 1225.00, c: 'work' },
+                { id: 4, t: 'Luz de la casa', s: 'Pago de servicio', d: 'Ayer', a: -24.80, c: 'luz' },
+                { id: 5, t: 'Transporte', s: 'Débito', d: '27 sep', a: -12.40, c: 'transp' },
+                { id: 6, t: 'Farmacia', s: 'Débito', d: '27 sep', a: -18.75, c: 'salud' },
+                { id: 7, t: 'Streaming', s: 'Débito recurrente', d: '26 sep', a: -9.99, c: 'streaming' },
+                { id: 8, t: 'Ana Torres', s: 'Transferencia enviada', d: '25 sep', a: -40.00, c: 'trans' }
+            ],
+            flex: [
+                { id: 21, t: 'Intereses del día', s: 'Rendimiento', d: 'Hoy', a: 1.04, c: 'interes' },
+                { id: 22, t: 'Intereses del día', s: 'Rendimiento', d: 'Ayer', a: 1.03, c: 'interes' },
+                { id: 23, t: 'Aporte programado', s: 'Desde Cuenta Principal', d: '25 sep', a: 150, c: 'trans' }
+            ],
+            cte: [
+                { id: 31, t: 'Proveedor', s: 'Cheque cobrado', d: 'Ayer', a: -130.00, c: 'work' },
+                { id: 32, t: 'Depósito', s: 'Ventanilla', d: '26 sep', a: 60.00, c: 'trans' }
+            ]
+        };
+        const CONTACTS = [
+            { n: 'Ana Torres', b: 'Ahorros ****4821', i: 'AT', c: '#2f7abf' },
+            { n: 'Carlos Vega', b: 'Corriente ****1190', i: 'CV', c: '#ff9500' },
+            { n: 'Daniela Ruiz', b: 'Ahorros ****7732', i: 'DR', c: '#af52de' },
+            { n: 'Esteban Mora', b: 'Ahorros ****3308', i: 'EM', c: '#34c759' },
+            { n: 'Lucía Paredes', b: 'Ahorros ****6614', i: 'LP', c: '#ff2d55' },
+            { n: 'Mateo Salazar', b: 'Corriente ****2047', i: 'MS', c: '#5856d6' }
+        ];
+        const CARDS = [
+            { id: 'deb', name: 'Débito Digital', num: '4532 7781 2045 1234', last: '1234', exp: '08/29', cls: '' },
+            { id: 'cre', name: 'Crédito Clásica', num: '5210 4481 9920 5521', last: '5521', exp: '11/28', cls: 'pcard--2' }
+        ];
 
-            // Escala el dispositivo para que quepa en pantallas angostas
-            function rescale() {
-                var cs = getComputedStyle(document.documentElement);
-                var open = device.classList.contains('is-open');
-                var w = parseFloat(cs.getPropertyValue(open ? '--open-w' : '--closed-w')) + 20;
-                var avail = Math.min(window.innerWidth - 32, 1180);
-                var s = Math.min(1, avail / w);
-                fit.style.transform = s < 1 ? 'scale(' + s + ')' : '';
-                fit.style.height = s < 1 ? (device.offsetHeight * s) + 'px' : '';
+        // ------------------------------------------------------------------
+        // Estado (se conserva al plegar/desplegar = continuidad)
+        // ------------------------------------------------------------------
+        const S = {
+            open: true, dark: false, section: 'inicio',
+            acct: 'ppal', filter: 'all', masked: false,
+            stack: [],                     // pila del detalle: [{type:'mov', id}]
+            card: 'deb', cardState: { deb: { locked: false, online: true, intl: false, limit: 500, shown: false }, cre: { locked: false, online: true, intl: true, limit: 1500, shown: false } },
+            q: '', to: null, amount: '', step: 'pick'   // transferir: pick → amount → auth → done
+        };
+
+        const $ = (s, r = document) => r.querySelector(s);
+        const fx = n => { if (window.Haptics) window.Haptics.fx(n); };
+        const money = v => {
+            const [e, d] = Math.abs(v).toFixed(2).split('.');
+            return '$ ' + e.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + d;
+        };
+        const signed = v => (v > 0 ? '+ ' : '- ') + money(v);
+        const acct = () => ACCOUNTS.find(a => a.id === S.acct);
+        const colL = $('#col-l'), colR = $('#col-r');
+        const device = $('#device'), screen = $('#screen'), inner = $('#inner');
+
+        // ------------------------------------------------------------------
+        // Plantillas
+        // ------------------------------------------------------------------
+        function navbar(title, { back, actions = '' } = {}) {
+            return `<div class="navbar"><div class="navbar__bg"></div>
+                ${back ? `<button class="navbar__back" data-back><span class="ms">chevron_left</span>${back}</button>` : ''}
+                <div class="navbar__title">${title}</div>
+                <div class="navbar__actions">${actions}</div></div>`;
+        }
+        function rowIc(icon, color) { return `<span class="row__ic" style="background:${color}"><span class="ms fill">${icon}</span></span>`; }
+        function movRow(m, selectable = true) {
+            const [ic, col] = CAT[m.c];
+            const sel = S.stack.length && S.stack[S.stack.length - 1].id === m.id ? ' is-selected' : '';
+            return `<div class="swipe" data-swipe="${m.id}">
+                <div class="swipe__acts">
+                    <button class="a-tag" data-act="tag" data-id="${m.id}"><span class="ms">sell</span>Etiquetar</button>
+                    <button class="a-split" data-act="split" data-id="${m.id}"><span class="ms">call_split</span>Dividir</button>
+                </div>
+                <button class="row${sel}" data-mov="${m.id}">
+                    ${rowIc(ic, col)}
+                    <span class="row__main"><span class="row__t">${m.t}</span><span class="row__s">${m.s}${m.tag ? ' · ' + m.tag : ''}</span></span>
+                    <span class="row__v${m.a > 0 ? ' in' : ''}">${signed(m.a)}</span>
+                </button></div>`;
+        }
+        function segc(name, opts, val) {
+            const idx = Math.max(0, opts.findIndex(o => o[0] === val));
+            return `<div class="segc" data-segc="${name}" role="tablist" style="--n:${opts.length}">
+                <span class="segc__thumb" style="width:calc((100% - 4px)/${opts.length});transform:translateX(${idx * 100}%)"></span>
+                ${opts.map(o => `<button role="tab" data-val="${o[0]}" aria-selected="${o[0] === val}">${o[1]}</button>`).join('')}</div>`;
+        }
+        function chartSVG(series) {
+            const w = 300, h = 90, min = Math.min(...series), max = Math.max(...series);
+            const pts = series.map((v, i) => [i * w / (series.length - 1), h - 8 - (v - min) / (max - min || 1) * (h - 18)]);
+            let d = `M${pts[0][0]},${pts[0][1]}`;
+            for (let i = 1; i < pts.length; i++) {
+                const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], cx = (x0 + x1) / 2;
+                d += ` C${cx},${y0} ${cx},${y1} ${x1},${y1}`;
             }
+            const up = series[series.length - 1] >= series[0];
+            const col = up ? 'var(--green)' : 'var(--red)';
+            return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" data-chart>
+                <defs><linearGradient id="cg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${up ? '#34c759' : '#ff3b30'}" stop-opacity=".28"/><stop offset="1" stop-color="${up ? '#34c759' : '#ff3b30'}" stop-opacity="0"/></linearGradient></defs>
+                <path d="${d} L${w},${h} L0,${h} Z" fill="url(#cg)"/>
+                <path d="${d}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linecap="round" vector-effect="non-scaling-stroke" style="stroke-dasharray:1000;stroke-dashoffset:1000;animation:draw 1s var(--ease-out) forwards"/>
+                <line class="scrub" x1="0" x2="0" y1="0" y2="${h}" stroke="var(--label-3)" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                <circle class="scrub" r="5" fill="${col}" stroke="var(--bg-2)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+            </svg>`;
+        }
+        const MONTHS = ['Dic', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep'];
 
-            function haptic(name) {
-                try { var H = frame.contentWindow.Haptics; if (H) H.fx(name); } catch (e) {}
+        // ---- Columna izquierda por sección ----
+        function leftInicio() {
+            const a = acct();
+            return navbar('Inicio', { actions: `<button class="icon-btn" data-hud="Sin notificaciones nuevas" aria-label="Notificaciones"><span class="ms">notifications</span></button>` }) +
+            `<div class="scroll"><h1 class="large-title">Hola, Ana</h1>
+                <div class="hero">
+                    <div class="hero__lbl"><span>Saldo total</span><button class="hero__eye" data-mask aria-label="${S.masked ? 'Mostrar' : 'Ocultar'} saldo"><span class="ms">${S.masked ? 'visibility_off' : 'visibility'}</span></button></div>
+                    <div class="hero__amt${S.masked ? ' masked' : ''}" id="total">${money(ACCOUNTS.reduce((s, x) => s + x.bal, 0))}</div>
+                    <div class="hero__meta">3 cuentas · actualizado ahora</div>
+                </div>
+                <div class="qa">
+                    <button data-go="transferir"><span class="ms">sync_alt</span>Transferir</button>
+                    <button data-sheet="pagar"><span class="ms">receipt_long</span>Pagar</button>
+                    <button data-sheet="recargar"><span class="ms">smartphone</span>Recargar</button>
+                    <button data-hud="Apunta la cámara al código QR"><span class="ms">qr_code_scanner</span>QR</button>
+                </div>
+                <div class="group-h"><span>Cuentas</span></div>
+                <div class="group">
+                    ${ACCOUNTS.map(x => `<button class="row${x.id === S.acct && S.section === 'inicio' ? ' is-selected' : ''}" data-acct="${x.id}">
+                        ${rowIc(x.icon, x.color)}
+                        <span class="row__main"><span class="row__t">${x.name}</span><span class="row__s">${x.type} · ****${x.num}</span></span>
+                        <span class="row__v">${S.masked ? '••••' : money(x.bal)}</span>
+                    </button>`).join('')}
+                </div>
+                <p class="group-f">Mantén presionado un movimiento para ver más acciones.</p>
+            </div>`;
+        }
+        function leftTarjetas() {
+            return navbar('Tarjetas') + `<div class="scroll"><h1 class="large-title">Tarjetas</h1>
+                <div class="group">${CARDS.map(c => `<button class="row${c.id === S.card ? ' is-selected' : ''}" data-card="${c.id}">
+                    <span class="mini-card ${c.cls ? 'mini-card--2' : ''}"></span>
+                    <span class="row__main"><span class="row__t">${c.name}</span><span class="row__s">****${c.last}${S.cardState[c.id].locked ? ' · Bloqueada' : ''}</span></span>
+                    <span class="ms row__chev">chevron_right</span></button>`).join('')}</div>
+                <div class="group-h"><span>Beneficios</span></div>
+                <div class="group">
+                    <button class="row" data-hud="Tienes 1.240 puntos">${rowIc('stars', '#ff9500')}<span class="row__main"><span class="row__t">Puntos</span></span><span class="row__value">1.240</span></button>
+                    <button class="row" data-hud="Cashback acreditado">${rowIc('savings', '#34c759')}<span class="row__main"><span class="row__t">Cashback del mes</span></span><span class="row__value">$ 12,40</span></button>
+                </div></div>`;
+        }
+        function leftTransferir() {
+            const list = CONTACTS.filter(c => c.n.toLowerCase().includes(S.q.toLowerCase()));
+            return navbar('Transferir') + `<div class="scroll"><h1 class="large-title">Transferir</h1>
+                <label class="search"><span class="ms">search</span><input id="q" type="search" placeholder="Buscar contacto" value="${S.q}" autocomplete="off"></label>
+                <div class="group-h"><span>Contactos frecuentes</span></div>
+                <div class="group" id="contacts">${list.map(c => `<button class="row" data-contact="${c.n}">
+                    <span class="row__ic row__ic--round" style="background:${c.c}">${c.i}</span>
+                    <span class="row__main"><span class="row__t">${c.n}</span><span class="row__s">${c.b}</span></span>
+                    <span class="ms row__chev">drag_indicator</span></button>`).join('') || '<div class="row no-icon"><span class="row__s">Sin resultados</span></div>'}</div>
+                <p class="group-f">Arrastra un contacto a la derecha o tócalo.</p></div>`;
+        }
+        function leftAjustes() {
+            const H = window.Haptics;
+            return navbar('Ajustes') + `<div class="scroll"><h1 class="large-title">Ajustes</h1>
+                <div class="group">
+                    <div class="row">${rowIc('vibration', '#ff2d55')}<span class="row__main"><span class="row__t">Vibración</span></span><label class="tgl"><input type="checkbox" data-pref="haptics" ${!H || H.isEnabled() ? 'checked' : ''}><span></span></label></div>
+                    <div class="row">${rowIc('volume_up', '#ff9500')}<span class="row__main"><span class="row__t">Sonidos</span></span><label class="tgl"><input type="checkbox" data-pref="sound" ${!H || H.isSoundEnabled() ? 'checked' : ''}><span></span></label></div>
+                    <div class="row">${rowIc('dark_mode', '#5856d6')}<span class="row__main"><span class="row__t">Modo oscuro</span></span><label class="tgl"><input type="checkbox" data-pref="dark" ${S.dark ? 'checked' : ''}><span></span></label></div>
+                </div>
+                <div class="group-h"><span>Seguridad</span></div>
+                <div class="group">
+                    <div class="row">${rowIc('face', '#34c759')}<span class="row__main"><span class="row__t">Face ID para transferir</span></span><label class="tgl"><input type="checkbox" checked data-pref="noop"><span></span></label></div>
+                    <button class="row" data-hud="Dispositivo de confianza">${rowIc('devices', '#007aff')}<span class="row__main"><span class="row__t">Dispositivos</span></span><span class="row__value">2</span><span class="ms row__chev">chevron_right</span></button>
+                </div>
+                <p class="group-f">La vibración y los sonidos se comparten con la app de la pantalla exterior.</p></div>`;
+        }
+
+        // ---- Columna derecha (detalle con pila) ----
+        function rightInicio() {
+            const top = S.stack[S.stack.length - 1];
+            if (top && top.type === 'mov') return rightMov(top.id);
+            const a = acct();
+            const list = MOVS[a.id].filter(m => S.filter === 'all' || (S.filter === 'in' ? m.a > 0 : m.a < 0));
+            const days = [...new Set(list.map(m => m.d))];
+            return navbar(a.name, { actions: `<button class="icon-btn" data-hud="Estado de cuenta enviado a tu correo" aria-label="Compartir"><span class="ms">ios_share</span></button>` }) +
+            `<div class="scroll" data-ptr>
+                <div class="ptr"><span class="spin"></span></div>
+                <h1 class="large-title">${a.name}</h1>
+                <p class="subhead">${a.type} · ****${a.num}</p>
+                <div class="chart" data-series='${JSON.stringify(a.series)}'>
+                    <div class="chart__top"><span class="chart__v" id="chart-v">${S.masked ? '••••' : money(a.bal)}</span><span class="chart__d" id="chart-d" style="color:${a.series.at(-1) >= a.series[0] ? 'var(--green)' : 'var(--red)'}">${a.series.at(-1) >= a.series[0] ? '▲' : '▼'} ${Math.abs((a.series.at(-1) - a.series[0]) / a.series[0] * 100).toFixed(1)}%</span></div>
+                    ${chartSVG(a.series)}
+                    <div class="chart__x"><span>Dic</span><span>Mar</span><span>Jun</span><span>Sep</span></div>
+                </div>
+                <div style="margin-top:14px">${segc('filter', [['all', 'Todos'], ['in', 'Ingresos'], ['out', 'Gastos']], S.filter)}</div>
+                ${days.map(d => `<div class="group-h"><span>${d}</span></div><div class="group">${list.filter(m => m.d === d).map(m => movRow(m)).join('')}</div>`).join('') || '<div class="empty"><span class="ms">inbox</span><p>Sin movimientos</p></div>'}
+            </div>`;
+        }
+        function findMov(id) { for (const k in MOVS) { const m = MOVS[k].find(x => x.id === id); if (m) return m; } }
+        function rightMov(id) {
+            const m = findMov(id); const [ic, col] = CAT[m.c]; const a = acct();
+            return navbar(m.t, { back: a.name, actions: `<button class="icon-btn" data-ctx-btn="${m.id}" aria-label="Más acciones"><span class="ms">more_horiz</span></button>` }) +
+            `<div class="scroll"><div class="mv-hero" style="margin-top:40px">
+                <div class="mv-hero__ic" style="background:${col}"><span class="ms fill">${ic}</span></div>
+                <div class="mv-hero__amt" style="color:${m.a > 0 ? 'var(--green)' : 'var(--label)'}">${signed(m.a)}</div>
+                <div class="mv-hero__t">${m.t}</div></div>
+                <div class="group">
+                    <div class="row no-icon"><span class="row__main"><span class="row__t">Fecha</span></span><span class="row__value">${m.d}, 10:4${m.id % 10}</span></div>
+                    <div class="row no-icon"><span class="row__main"><span class="row__t">Tipo</span></span><span class="row__value">${m.s}</span></div>
+                    <div class="row no-icon"><span class="row__main"><span class="row__t">Cuenta</span></span><span class="row__value">****${a.num}</span></div>
+                    <div class="row no-icon"><span class="row__main"><span class="row__t">Referencia</span></span><span class="row__value">${(482019 + m.id * 7919).toString().slice(0, 6)}</span></div>
+                    ${m.tag ? `<div class="row no-icon"><span class="row__main"><span class="row__t">Etiqueta</span></span><span class="row__value">${m.tag}</span></div>` : ''}
+                </div>
+                <div class="stack">
+                    <button class="btn btn--tinted" data-hud="Comprobante listo para compartir"><span class="ms">ios_share</span>Compartir comprobante</button>
+                    <button class="btn btn--plain-red" data-sheet="reportar">Reportar un problema</button>
+                </div></div>`;
+        }
+        function rightTarjetas() {
+            const c = CARDS.find(x => x.id === S.card), st = S.cardState[c.id];
+            const num = st.shown ? c.num : '•••• •••• •••• ' + c.last;
+            const p = (st.limit - 100) / 1900 * 100;
+            return navbar(c.name) + `<div class="scroll"><h1 class="large-title">${c.name}</h1>
+                <div class="pcard ${c.cls}${st.locked ? ' locked' : ''}" id="pcard">
+                    <div class="pcard__top"><span>MI BANCO</span><span>${c.id === 'deb' ? 'Débito' : 'Crédito'}</span></div>
+                    <div class="pcard__num" id="pcard-num">${num}</div>
+                    <div class="pcard__bot"><span>ANA MARTÍNEZ<br>Vence ${st.shown ? c.exp : '••/••'}</span><span class="pcard__net">VISA</span></div>
+                    <div class="pcard__lock"><span class="ms fill">lock</span></div>
+                </div>
+                <div class="stack"><button class="btn btn--tinted" data-reveal>${st.shown ? '<span class="ms">visibility_off</span>Ocultar datos' : '<span class="ms">face</span>Ver datos con Face ID'}</button></div>
+                <div class="group-h"><span>Controles</span></div>
+                <div class="group">
+                    <div class="row">${rowIc('lock', '#ff3b30')}<span class="row__main"><span class="row__t">Bloqueo temporal</span></span><label class="tgl"><input type="checkbox" data-cardopt="locked" ${st.locked ? 'checked' : ''}><span></span></label></div>
+                    <div class="row">${rowIc('shopping_bag', '#007aff')}<span class="row__main"><span class="row__t">Compras por internet</span></span><label class="tgl"><input type="checkbox" data-cardopt="online" ${st.online ? 'checked' : ''}><span></span></label></div>
+                    <div class="row">${rowIc('public', '#34c759')}<span class="row__main"><span class="row__t">Uso internacional</span></span><label class="tgl"><input type="checkbox" data-cardopt="intl" ${st.intl ? 'checked' : ''}><span></span></label></div>
+                </div>
+                <div class="group-h"><span>Límite diario</span></div>
+                <div class="group"><div class="sld">
+                    <div class="sld__top"><span>Compras y retiros</span><b id="lim-v">${money(st.limit)}</b></div>
+                    <input type="range" min="100" max="2000" step="50" value="${st.limit}" id="lim" style="--p:${p}%" aria-label="Límite diario">
+                    <div class="sld__x"><span>$ 100</span><span>$ 2.000</span></div>
+                </div></div>
+                <p class="group-f">Cada paso del límite marca un clic háptico, como el selector de fechas de iOS.</p></div>`;
+        }
+        function rightTransferir() {
+            if (S.step === 'pick' || !S.to) {
+                return navbar('Nueva transferencia') + `<div class="scroll"><h1 class="large-title">Nueva transferencia</h1>
+                    <div class="dropzone" id="drop"><span class="ms">move_to_inbox</span><b>Suelta aquí un contacto</b><span>o tócalo en la lista de la izquierda</span></div>
+                    <div class="group-h"><span>Desde</span></div>
+                    <div class="group"><div class="row">${rowIc('account_balance_wallet', '#0f265c')}<span class="row__main"><span class="row__t">Cuenta Principal</span><span class="row__s">Disponible ${money(ACCOUNTS[0].bal)}</span></span></div></div></div>`;
             }
-
-            function setOpen(on) {
-                device.classList.toggle('is-open', on);
-                bOpen.setAttribute('aria-pressed', String(on));
-                bClosed.setAttribute('aria-pressed', String(!on));
-                haptic(on ? 'open' : 'close');
-                rescale();
-                setTimeout(rescale, 780);
+            const c = S.to;
+            if (S.step === 'amount') {
+                const v = S.amount ? parseFloat(S.amount.replace(',', '.')) : 0;
+                return navbar('Monto', { back: 'Contactos' }) + `<div class="scroll" style="padding-top:92px">
+                    <div class="amt-to"><span class="row__ic row__ic--round" style="background:${c.c}">${c.i}</span><span><b>Para ${c.n}</b><small>${c.b}</small></span></div>
+                    <div class="amt${S.amount ? '' : ' empty'}" id="amt">${S.amount ? '$ ' + S.amount : '$ 0'}</div>
+                    <div class="chips">${[10, 25, 50, 100].map(x => `<button data-chip="${x}">$ ${x}</button>`).join('')}</div>
+                    <div class="keypad">${['1','2','3','4','5','6','7','8','9',',','0','del'].map(k => `<button class="${k === 'del' || k === ',' ? 'k-muted' : ''}" data-key="${k}">${k === 'del' ? '<span class="ms">backspace</span>' : k}</button>`).join('')}</div>
+                    <div class="stack"><button class="btn btn--primary" data-pay ${v > 0 ? '' : 'disabled'}><span class="ms">face</span>Transferir con Face ID</button></div></div>`;
             }
-            bOpen.addEventListener('click', function () { setOpen(true); });
-            bClosed.addEventListener('click', function () { setOpen(false); });
-            window.addEventListener('resize', rescale);
-            rescale();
-
-            if (document.fonts && document.fonts.load) {
-                document.fonts.load('20px "Material Symbols Rounded"').then(function (f) {
-                    if (f && f.length) document.documentElement.classList.add('icons-ready');
-                }).catch(function () {});
+            if (S.step === 'auth') {
+                return navbar('Confirmando') + `<div class="scroll"><div class="faceid scanning" id="fid" style="margin-top:60px">${FACEID_SVG}<p>Face ID</p></div></div>`;
             }
+            return navbar('Listo') + `<div class="scroll"><div class="done" style="margin-top:40px">
+                <svg viewBox="0 0 84 84"><circle cx="42" cy="42" r="40"/><path d="M26 43 l11 11 l21 -23"/></svg>
+                <h2>Transferencia enviada</h2>
+                <div class="big">${money(parseFloat(S.amount.replace(',', '.')))}</div>
+                <p>a ${c.n} · ${c.b}</p>
+                <p>Comprobante Nro. ${Math.floor(1e8 + Math.random() * 9e8)}</p></div>
+                <div class="stack"><button class="btn btn--tinted" data-hud="Comprobante listo para compartir"><span class="ms">ios_share</span>Compartir comprobante</button>
+                <button class="btn btn--primary" data-newtx>Listo</button></div></div>`;
+        }
+        const FACEID_SVG = `<svg viewBox="0 0 76 76">
+            <path class="fid-frame" d="M4 20 V12 a8 8 0 0 1 8 -8 H20 M56 4 H64 a8 8 0 0 1 8 8 V20 M72 56 V64 a8 8 0 0 1 -8 8 H56 M20 72 H12 a8 8 0 0 1 -8 -8 V56"/>
+            <g class="fid-face"><path d="M26 28 V33 M50 28 V33 M38 30 V42 h-3 M28 50 q10 8 20 0"/></g>
+            <path class="fid-ok" d="M24 39 l10 10 l19 -21"/></svg>`;
+        function rightAjustes() {
+            return navbar('Acerca de') + `<div class="scroll"><h1 class="large-title">Acerca de</h1>
+                <div class="group">
+                    <div class="row no-icon"><span class="row__main"><span class="row__t">Versión</span></span><span class="row__value">Concept Duo 1.0</span></div>
+                    <div class="row no-icon"><span class="row__main"><span class="row__t">Postura</span></span><span class="row__value" id="posture">Abierto · 7,6"</span></div>
+                    <div class="row no-icon"><span class="row__main"><span class="row__t">Apariencia</span></span><span class="row__value">${S.dark ? 'Oscura' : 'Clara'}</span></div>
+                </div>
+                <div class="group-h"><span>Probar feedback</span></div>
+                <div class="group">
+                    ${[['success', 'Éxito', 'check_circle', '#34c759'], ['error', 'Error', 'error', '#ff3b30'], ['detent', 'Umbral', 'linear_scale', '#007aff'], ['open', 'Abrir', 'expand_less', '#5856d6']].map(x =>
+                        `<button class="row" data-try="${x[0]}">${rowIc(x[2], x[3])}<span class="row__main"><span class="row__t">${x[1]}</span></span><span class="ms row__chev">play_arrow</span></button>`).join('')}
+                </div></div>`;
+        }
 
-            // Entra directo al home (sin la pantalla de login) para el concept
-            frame.addEventListener('load', function () {
-                try {
-                    var d = frame.contentWindow.document;
-                    var other = d.getElementById('btn-login-other');
-                    if (other) other.click();
-                } catch (e) { /* distinto origen (file://): queda en el login */ }
-            });
-        })();
+        const LEFT = { inicio: leftInicio, tarjetas: leftTarjetas, transferir: leftTransferir, ajustes: leftAjustes };
+        const RIGHT = { inicio: rightInicio, tarjetas: rightTarjetas, transferir: rightTransferir, ajustes: rightAjustes };
+
+        // ------------------------------------------------------------------
+        // Render
+        // ------------------------------------------------------------------
+        function renderL(anim) {
+            const sc = colL.querySelector('.scroll'); const y = anim ? 0 : (sc ? sc.scrollTop : 0);
+            colL.innerHTML = LEFT[S.section]();
+            const ns = colL.querySelector('.scroll'); if (ns) ns.scrollTop = y;
+            if (anim) ns.classList.add('view-in-fade');
+            wireCol(colL);
+        }
+        function renderR(anim) {
+            const sc = colR.querySelector('.scroll'); const keep = !anim && sc ? sc.scrollTop : 0;
+            colR.innerHTML = RIGHT[S.section]();
+            const ns = colR.querySelector('.scroll');
+            if (ns) { ns.scrollTop = keep; if (anim) ns.classList.add('view-in-' + anim); }
+            wireCol(colR);
+            wireRight();
+        }
+        function render(anim) { renderL(anim ? 'fade' : null); renderR(anim ? 'fade' : null); }
+
+        // Título grande → barra compacta de material al desplazar
+        function wireCol(col) {
+            const sc = col.querySelector('.scroll'); if (!sc) return;
+            const on = () => col.classList.toggle('scrolled', sc.scrollTop > 40);
+            sc.addEventListener('scroll', on, { passive: true }); on();
+        }
+
+        // ------------------------------------------------------------------
+        // Interacciones: delegación sobre la pantalla interior
+        // ------------------------------------------------------------------
+        let hudT;
+        function hud(t, icon = 'check_circle') {
+            const h = $('#hud'); $('#hud-t').textContent = t; h.querySelector('.ms').textContent = icon;
+            h.classList.remove('show'); void h.offsetWidth; h.classList.add('show');
+            clearTimeout(hudT); hudT = setTimeout(() => h.classList.remove('show'), 1800);
+        }
+
+        function go(section) {
+            if (S.section === section) return;
+            S.section = section;
+            document.querySelectorAll('.rail__item').forEach(b => b.setAttribute('aria-current', b.dataset.nav === section ? 'page' : 'false'));
+            render(true);
+        }
+        function push(entry) { S.stack.push(entry); fx('swipe'); renderR('push'); renderL(); }
+        function pop() { S.stack.pop(); fx('close'); renderR('pop'); renderL(); }
+
+        inner.addEventListener('click', e => {
+            if (suppressClick) { suppressClick = false; e.preventDefault(); return; }
+            const t = e.target;
+            const q = s => t.closest(s);
+            let el;
+            if ((el = q('[data-nav]'))) { fx('select'); go(el.dataset.nav); return; }
+            if ((el = q('[data-go]'))) { go(el.dataset.go); return; }
+            if ((el = q('[data-back]'))) {
+                if (S.section === 'transferir') { S.step = 'pick'; S.to = null; S.amount = ''; fx('close'); renderR('pop'); return; }
+                pop(); return;
+            }
+            if ((el = q('[data-hud]'))) { hud(el.dataset.hud, 'info'); return; }
+            if ((el = q('[data-mask]'))) {
+                S.masked = !S.masked; fx('toggle');
+                const amt = $('#total'); amt.classList.toggle('masked', S.masked);
+                el.querySelector('.ms').textContent = S.masked ? 'visibility_off' : 'visibility';
+                renderL(); renderR(); return;
+            }
+            if ((el = q('[data-acct]'))) {
+                if (S.acct === el.dataset.acct && !S.stack.length) return;
+                S.acct = el.dataset.acct; S.stack = []; S.filter = 'all';
+                renderL(); renderR('fade'); return;
+            }
+            if ((el = q('[data-act]'))) { swipeAction(el.dataset.act, +el.dataset.id); return; }
+            if ((el = q('[data-mov]'))) {
+                const id = +el.dataset.mov; const top = S.stack.at(-1);
+                if (top && top.id === id) return;
+                if (top) { S.stack[S.stack.length - 1] = { type: 'mov', id }; renderR('fade'); renderL(); fx('select'); }
+                else push({ type: 'mov', id });
+                return;
+            }
+            if ((el = q('[data-segc] button'))) {
+                const seg = el.parentElement, val = el.dataset.val;
+                const idx = [...seg.querySelectorAll('button')].indexOf(el);
+                seg.querySelector('.segc__thumb').style.transform = `translateX(${idx * 100}%)`;
+                seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', String(b === el)));
+                if (seg.dataset.segc === 'filter' && S.filter !== val) { S.filter = val; fx('select'); setTimeout(() => renderR(), 200); }
+                return;
+            }
+            if ((el = q('[data-ctx-btn]'))) { openCtx(+el.dataset.ctxBtn, el.closest('.navbar'), true); return; }
+            if ((el = q('[data-card]'))) { if (S.card !== el.dataset.card) { S.card = el.dataset.card; renderL(); renderR('fade'); } return; }
+            if ((el = q('[data-reveal]'))) { revealCard(); return; }
+            if ((el = q('[data-contact]'))) { pickContact(el.dataset.contact); return; }
+            if ((el = q('[data-key]'))) { key(el.dataset.key); return; }
+            if ((el = q('[data-chip]'))) { S.amount = el.dataset.chip; fx('select'); renderR(); bumpAmt(); return; }
+            if ((el = q('[data-pay]'))) { pay(); return; }
+            if ((el = q('[data-newtx]'))) { S.step = 'pick'; S.to = null; S.amount = ''; renderR('fade'); return; }
+            if ((el = q('[data-sheet]'))) { openSheet(el.dataset.sheet); return; }
+            if ((el = q('[data-try]'))) { fx(el.dataset.try); return; }
+        });
+
+        inner.addEventListener('change', e => {
+            const t = e.target;
+            if (t.dataset.cardopt) {
+                const st = S.cardState[S.card]; st[t.dataset.cardopt] = t.checked;
+                if (t.dataset.cardopt === 'locked') {
+                    $('#pcard').classList.toggle('locked', t.checked);
+                    hud(t.checked ? 'Tarjeta bloqueada' : 'Tarjeta desbloqueada', t.checked ? 'lock' : 'lock_open');
+                    renderL();
+                }
+            }
+            if (t.dataset.pref === 'haptics' && window.Haptics) window.Haptics.setEnabled(t.checked);
+            if (t.dataset.pref === 'sound' && window.Haptics) window.Haptics.setSoundEnabled(t.checked);
+            if (t.dataset.pref === 'dark') setDark(t.checked);
+        });
+
+        inner.addEventListener('input', e => {
+            const t = e.target;
+            if (t.id === 'q') { S.q = t.value; const pos = t.selectionStart; renderL(); const n = $('#q'); n.focus(); n.setSelectionRange(pos, pos); }
+            if (t.id === 'lim') {
+                const v = +t.value, st = S.cardState[S.card];
+                if (v !== st.limit) { st.limit = v; fx('detent'); }
+                $('#lim-v').textContent = money(v);
+                t.style.setProperty('--p', ((v - 100) / 1900 * 100) + '%');
+            }
+        });
+
+        // ---- Tarjeta: ver datos con Face ID ----
+        function revealCard() {
+            const st = S.cardState[S.card];
+            if (st.shown) { st.shown = false; fx('toggle'); renderR(); return; }
+            openSheet('faceid', () => { st.shown = true; renderR(); fx('reveal'); hud('Datos visibles por 30 s', 'visibility'); });
+        }
+
+        // ---- Transferir ----
+        function pickContact(name) {
+            S.to = CONTACTS.find(c => c.n === name); S.step = 'amount'; S.amount = '';
+            fx('open'); renderR('push');
+        }
+        function bumpAmt() { const a = $('#amt'); if (!a) return; a.classList.remove('bump'); void a.offsetWidth; a.classList.add('bump'); }
+        function key(k) {
+            let a = S.amount;
+            if (k === 'del') a = a.slice(0, -1);
+            else if (k === ',') { if (!a.includes(',')) a = (a || '0') + ','; }
+            else {
+                if (a.includes(',') && a.split(',')[1].length >= 2) { return shakeAmt(); }
+                if (a === '0') a = '';
+                a += k;
+            }
+            const v = parseFloat((a || '0').replace(',', '.'));
+            if (v > ACCOUNTS[0].bal) { return shakeAmt('Supera tu saldo disponible'); }
+            S.amount = a; fx('tap'); renderR(); bumpAmt();
+        }
+        function shakeAmt(msg) {
+            const el = $('#amt'); fx('error');
+            el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+            if (msg) hud(msg, 'error');
+        }
+        function pay() {
+            S.step = 'auth'; renderR('fade');
+            const f = $('#fid');
+            setTimeout(() => { f.classList.remove('scanning'); f.classList.add('ok'); fx('detent'); }, 1100);
+            setTimeout(() => {
+                const v = parseFloat(S.amount.replace(',', '.'));
+                ACCOUNTS[0].bal -= v;
+                MOVS.ppal.unshift({ id: Date.now() % 100000, t: S.to.n, s: 'Transferencia enviada', d: 'Hoy', a: -v, c: 'trans' });
+                S.step = 'done'; renderR('fade'); fx('success');
+                if (S.section === 'inicio') renderL();
+            }, 1700);
+        }
+
+        // ---- Drag & drop de contactos (izquierda → derecha) ----
+        let drag = null, suppressClick = false;
+        inner.addEventListener('pointerdown', e => {
+            const row = e.target.closest('[data-contact]');
+            if (!row || S.section !== 'transferir' || S.step === 'auth') return;
+            const start = { x: e.clientX, y: e.clientY };
+            let timer = e.pointerType === 'mouse' ? null : setTimeout(() => { begin(); fx('detent'); }, 220);
+            const begin = () => {
+                if (drag) return;
+                const c = CONTACTS.find(x => x.n === row.dataset.contact);
+                drag = { row, c, ghost: document.createElement('div'), over: false, moved: false };
+                drag.ghost.className = 'drag-ghost';
+                drag.ghost.innerHTML = `<span class="row__ic row__ic--round" style="background:${c.c}">${c.i}</span>${c.n}<span class="drag-badge"><span class="ms">add</span></span>`;
+                inner.appendChild(drag.ghost);
+                moveGhost(start.x, start.y);
+                row.classList.add('is-lifted');
+                const dz = $('#drop'); if (dz) dz.classList.add('is-armed');
+            };
+            const move = ev => {
+                if (!drag) {
+                    // desplazamiento vertical antes del long-press = scroll, no drag
+                    if (Math.hypot(ev.clientX - start.x, ev.clientY - start.y) > 8) {
+                        if (e.pointerType === 'mouse') begin(); else { clearTimeout(timer); cleanup(); }
+                    }
+                    if (!drag) return;
+                }
+                ev.preventDefault();
+                drag.moved = true;
+                moveGhost(ev.clientX, ev.clientY);
+                const dz = $('#drop') || colR;
+                const r = dz.getBoundingClientRect();
+                const over = ev.clientX > r.left && ev.clientX < r.right && ev.clientY > r.top && ev.clientY < r.bottom;
+                if (over !== drag.over) { drag.over = over; fx('detent'); dz.classList && dz.classList.toggle('is-over', over); drag.ghost.classList.toggle('drop-ok', over); }
+            };
+            const up = () => {
+                clearTimeout(timer);
+                if (drag) {
+                    const { over, c, moved } = drag;
+                    drag.row.classList.remove('is-lifted');
+                    drag.ghost.remove();
+                    const dz = $('#drop'); if (dz) dz.classList.remove('is-armed', 'is-over');
+                    drag = null;
+                    if (moved) {
+                        suppressClick = true; setTimeout(() => { suppressClick = false; }, 50);
+                        if (over) { S.q = ''; pickContact(c.n); hud('Contacto agregado', 'person_add'); }
+                        else fx('close');
+                    }
+                }
+                cleanup();
+            };
+            const cleanup = () => {
+                window.removeEventListener('pointermove', move);
+                window.removeEventListener('pointerup', up);
+                window.removeEventListener('pointercancel', up);
+            };
+            window.addEventListener('pointermove', move, { passive: false });
+            window.addEventListener('pointerup', up);
+            window.addEventListener('pointercancel', up);
+        });
+        inner.addEventListener('touchmove', ev => { if (drag || (sw && sw.axis === 'x') || pulling) ev.preventDefault(); }, { passive: false });
+        let pulling = false;
+        function scale() { const r = device.getBoundingClientRect(); return r.width / device.offsetWidth || 1; }
+        function moveGhost(x, y) {
+            const r = inner.getBoundingClientRect(), s = scale();
+            drag.ghost.style.left = ((x - r.left) / s) + 'px';
+            drag.ghost.style.top = ((y - r.top) / s) + 'px';
+        }
+
+        // ---- Swipe actions y long-press (menú contextual) en movimientos ----
+        let sw = null;
+        inner.addEventListener('pointerdown', e => {
+            const wrap = e.target.closest('[data-swipe]');
+            if (!wrap || e.target.closest('.swipe__acts')) return;
+            const row = wrap.querySelector('.row');
+            const open = wrap.classList.contains('is-open');
+            sw = { wrap, row, x: e.clientX, y: e.clientY, dx: 0, axis: null, base: open ? -152 : 0, full: false };
+            sw.lp = setTimeout(() => { if (!sw || sw.axis) return; row.classList.add('is-pressed'); openCtx(+wrap.dataset.swipe, row); sw = null; suppressClick = true; setTimeout(() => { suppressClick = false; }, 700); }, 480);
+        });
+        window.addEventListener('pointermove', e => {
+            if (!sw) return;
+            const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
+            if (!sw.axis && Math.hypot(dx, dy) > 8) { sw.axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y'; clearTimeout(sw.lp); }
+            if (sw.axis !== 'x') return;
+            const s = scale();
+            sw.wrap.classList.add('dragging');
+            let x = sw.base + dx / s; if (x > 0) x = x * .3;
+            const w = sw.wrap.offsetWidth;
+            const full = x < -w * .6;
+            if (full !== sw.full) { sw.full = full; fx('detent'); }
+            sw.dx = x;
+            sw.row.style.transform = `translateX(${x}px)`;
+        });
+        window.addEventListener('pointerup', () => {
+            if (!sw) return;
+            clearTimeout(sw.lp);
+            const { wrap, row, dx, axis, full } = sw; sw = null;
+            if (axis !== 'x') return;
+            suppressClick = true; setTimeout(() => { suppressClick = false; }, 50);
+            wrap.classList.remove('dragging');
+            inner.querySelectorAll('.swipe.is-open').forEach(o => { if (o !== wrap) { o.classList.remove('is-open'); o.querySelector('.row').style.transform = ''; } });
+            if (full) { row.style.transform = `translateX(-100%)`; setTimeout(() => swipeAction('tag', +wrap.dataset.swipe), 220); return; }
+            const openIt = dx < -60;
+            wrap.classList.toggle('is-open', openIt);
+            row.style.transform = openIt ? 'translateX(-152px)' : '';
+        });
+
+        const TAGS = ['Comida', 'Hogar', 'Transporte', 'Ocio', 'Salud'];
+        function swipeAction(act, id) {
+            const m = findMov(id);
+            if (act === 'tag') { m.tag = TAGS[(TAGS.indexOf(m.tag) + 1) % TAGS.length]; fx('success'); hud('Etiquetado como ' + m.tag, 'sell'); renderR(); if (S.stack.length) renderL(); }
+            if (act === 'split') { openSheet('dividir', null, m); }
+            if (act === 'report') { openSheet('reportar'); }
+            if (act === 'copy') { hud('Referencia copiada', 'content_copy'); fx('toggle'); }
+            if (act === 'share') { hud('Comprobante listo para compartir', 'ios_share'); fx('toggle'); }
+        }
+
+        function openCtx(id, anchor, fromButton) {
+            const m = findMov(id); const ctx = $('#ctx');
+            const ir = inner.getBoundingClientRect(), s = scale(), r = anchor.getBoundingClientRect();
+            const top = (r.top - ir.top) / s, left = (r.left - ir.left) / s, w = r.width / s, h = r.height / s;
+            fx('open');
+            // Debajo de la fila si cabe; si no, encima (como UIContextMenu)
+            const MH = 222;
+            const menuTop = top + h + 8 + MH < inner.offsetHeight - 8 ? top + h + 8 : Math.max(52, top - MH - 8);
+            const menuLeft = Math.min(left + 8, inner.offsetWidth - 260);
+            ctx.innerHTML = `<div class="ctx__dim" data-ctx-close></div>
+                ${fromButton ? '' : `<div class="ctx__preview" style="top:${top}px;left:${left}px;width:${w}px">${movRow(m).replace('class="swipe"', 'class="swipe" style="pointer-events:none"')}</div>`}
+                <div class="ctx__menu" style="top:${fromButton ? top + 50 : menuTop}px;left:${fromButton ? left + w - 262 : menuLeft}px;${fromButton ? 'transform-origin:top right' : ''}">
+                    <button data-cact="copy">Copiar referencia <span class="ms">content_copy</span></button>
+                    <button data-cact="share">Compartir comprobante <span class="ms">ios_share</span></button>
+                    <button data-cact="tag">Etiquetar <span class="ms">sell</span></button>
+                    <button data-cact="split">Dividir gasto <span class="ms">call_split</span></button>
+                    <button data-cact="report" class="danger">Reportar problema <span class="ms">report</span></button>
+                </div>`;
+            ctx.classList.add('open'); ctx.dataset.id = id;
+        }
+        function closeCtx() { const c = $('#ctx'); c.classList.remove('open'); c.innerHTML = ''; inner.querySelectorAll('.row.is-pressed').forEach(r => r.classList.remove('is-pressed')); }
+        $('#ctx').addEventListener('click', e => {
+            e.stopPropagation();
+            const b = e.target.closest('[data-cact]');
+            const id = +$('#ctx').dataset.id;
+            closeCtx();
+            if (b) swipeAction(b.dataset.cact, id); else fx('close');
+        });
+
+        // ---- Form sheets ----
+        function openSheet(kind, onDone, data) {
+            const sh = $('#sheet'); let body = '', title = '', action = '';
+            if (kind === 'pagar') {
+                title = 'Pagar servicio';
+                body = `<div class="group">${[['Luz de la casa', 'bolt', '#ff9500', 24.80], ['Agua potable', 'water_drop', '#007aff', 18.35], ['Internet', 'wifi', '#5856d6', 32.00]].map(x =>
+                    `<button class="row" data-payitem="${x[0]}|${x[3]}">${rowIc(x[1], x[2])}<span class="row__main"><span class="row__t">${x[0]}</span><span class="row__s">Vence en 3 días</span></span><span class="row__v">${money(x[3])}</span></button>`).join('')}</div>
+                    <p class="group-f">Toca un servicio para pagarlo con Face ID.</p>`;
+            } else if (kind === 'recargar') {
+                title = 'Recargar celular';
+                body = `<div class="group"><div class="row no-icon"><span class="row__main"><span class="row__t">Número</span></span><span class="row__value">099 ••• 4821</span></div></div>
+                    <div class="chips" style="margin-top:14px">${[3, 5, 10, 20].map(x => `<button data-payitem="Recarga|${x}">$ ${x}</button>`).join('')}</div>`;
+            } else if (kind === 'reportar') {
+                title = 'Reportar problema';
+                body = `<div class="group">${['No reconozco este cargo', 'Me cobraron dos veces', 'El monto es incorrecto', 'Otro'].map(x =>
+                    `<button class="row no-icon" data-report="${x}"><span class="row__main"><span class="row__t">${x}</span></span><span class="ms row__chev">chevron_right</span></button>`).join('')}</div>`;
+            } else if (kind === 'dividir') {
+                title = 'Dividir gasto';
+                body = `<p class="subhead" style="margin:4px 0 12px">${data.t} · ${money(data.a)}</p>
+                    <div class="group">${CONTACTS.slice(0, 4).map(c => `<div class="row"><span class="row__ic row__ic--round" style="background:${c.c}">${c.i}</span><span class="row__main"><span class="row__t">${c.n}</span></span><label class="tgl"><input type="checkbox" data-splitc><span></span></label></div>`).join('')}</div>
+                    <div class="stack"><button class="btn btn--primary" data-splitgo>Enviar solicitudes</button></div>`;
+            } else if (kind === 'faceid') {
+                sh.innerHTML = `<div class="sheet__dim"></div><div class="sheet__card" style="width:260px;text-align:center"><div class="faceid scanning" id="fid2" style="padding:18px 0 8px">${FACEID_SVG}<p>Face ID</p></div></div>`;
+                sh.classList.add('open');
+                const f = $('#fid2');
+                setTimeout(() => { f.classList.remove('scanning'); f.classList.add('ok'); fx('detent'); }, 1000);
+                setTimeout(() => { closeSheet(); onDone && onDone(); }, 1500);
+                return;
+            }
+            sh.innerHTML = `<div class="sheet__dim" data-sclose></div><div class="sheet__card" role="dialog" aria-label="${title}">
+                <div class="sheet__bar"><button data-sclose>Cancelar</button><b>${title}</b><span style="width:70px"></span></div>${body}</div>`;
+            sh.classList.add('open'); fx('open');
+        }
+        function closeSheet() { const sh = $('#sheet'); sh.classList.remove('open'); sh.innerHTML = ''; }
+        $('#sheet').addEventListener('click', e => {
+            e.stopPropagation();
+            const t = e.target;
+            if (t.closest('[data-sclose]')) { fx('close'); closeSheet(); return; }
+            const pi = t.closest('[data-payitem]');
+            if (pi) {
+                const [name, amt] = pi.dataset.payitem.split('|');
+                closeSheet();
+                openSheet('faceid', () => {
+                    ACCOUNTS[0].bal -= +amt;
+                    MOVS.ppal.unshift({ id: Date.now() % 100000, t: name, s: 'Pago desde la app', d: 'Hoy', a: -amt, c: name === 'Recarga' ? 'trans' : 'luz' });
+                    fx('success'); hud(name + ' pagado · ' + money(+amt));
+                    render();
+                });
+                return;
+            }
+            const rp = t.closest('[data-report]');
+            if (rp) { closeSheet(); fx('success'); hud('Reporte enviado. Te contactaremos pronto', 'support_agent'); return; }
+            if (t.closest('[data-splitgo]')) {
+                const n = $('#sheet').querySelectorAll('[data-splitc]:checked').length;
+                if (!n) { fx('error'); hud('Elige al menos un contacto', 'error'); return; }
+                closeSheet(); fx('success'); hud(`Solicitud enviada a ${n} contacto${n > 1 ? 's' : ''}`, 'call_split'); return;
+            }
+        });
+        $('#sheet').addEventListener('change', e => { if (e.target.matches('[data-splitc]')) fx('toggle'); });
+
+        // ---- Detalle: gráfico con scrub y pull-to-refresh ----
+        function wireRight() {
+            const chart = colR.querySelector('.chart');
+            if (chart) {
+                const svg = chart.querySelector('svg'), series = JSON.parse(chart.dataset.series);
+                const line = svg.querySelector('line.scrub'), dot = svg.querySelector('circle.scrub');
+                const vEl = $('#chart-v'), dEl = $('#chart-d'); let last = -1;
+                const base = { v: vEl.textContent, d: dEl.textContent };
+                const at = ev => {
+                    const r = svg.getBoundingClientRect();
+                    const k = Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width));
+                    const i = Math.round(k * (series.length - 1));
+                    if (i === last) return; last = i; fx('detent');
+                    const x = i * 300 / (series.length - 1);
+                    const min = Math.min(...series), max = Math.max(...series);
+                    const y = 90 - 8 - (series[i] - min) / (max - min || 1) * 72;
+                    line.setAttribute('x1', x); line.setAttribute('x2', x);
+                    dot.setAttribute('cx', x); dot.setAttribute('cy', y);
+                    vEl.textContent = S.masked ? '••••' : money(series[i]);
+                    dEl.textContent = MONTHS[i] + (i === series.length - 1 ? ' · hoy' : '');
+                };
+                svg.addEventListener('pointerdown', ev => { chart.classList.add('scrubbing'); svg.setPointerCapture(ev.pointerId); last = -1; at(ev); });
+                svg.addEventListener('pointermove', ev => { if (chart.classList.contains('scrubbing')) at(ev); });
+                const end = () => { chart.classList.remove('scrubbing'); vEl.textContent = base.v; dEl.textContent = base.d; last = -1; };
+                svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
+                svg.style.touchAction = 'none';
+            }
+            const sc = colR.querySelector('[data-ptr]');
+            if (sc) {
+                const ptr = sc.querySelector('.ptr'); let y0 = null, pull = 0, armed = false;
+                const startP = (y, target) => { if (sc.scrollTop <= 0 && !target.closest('svg,.swipe__acts')) { y0 = y; pull = 0; armed = false; } };
+                const moveP = (y, ev) => {
+                    if (y0 === null) return;
+                    pull = Math.max(0, (y - y0) / scale());
+                    if (pull < 6) { pulling = false; return; }
+                    if (sc.scrollTop > 0) { y0 = null; pulling = false; return; }
+                    pulling = true;
+                    if (sw) { clearTimeout(sw.lp); sw = null; }
+                    ptr.style.height = Math.min(70, pull * .5) + 'px';
+                    ptr.querySelector('.spin').style.transform = `rotate(${pull * 3}deg)`;
+                    const a = pull > 110; if (a !== armed) { armed = a; fx('detent'); }
+                };
+                const rel = () => {
+                    if (y0 === null) return; y0 = null; pulling = false;
+                    if (pull > 6) { suppressClick = true; setTimeout(() => { suppressClick = false; }, 50); }
+                    if (armed) {
+                        ptr.classList.add('loading'); ptr.style.height = '44px';
+                        setTimeout(() => {
+                            const a = acct();
+                            const nm = { id: Date.now() % 100000, t: a.id === 'flex' ? 'Intereses del día' : 'Cafetería', s: a.id === 'flex' ? 'Rendimiento' : 'Débito', d: 'Hoy', a: a.id === 'flex' ? 1.05 : -3.75, c: a.id === 'flex' ? 'interes' : 'cafe' };
+                            MOVS[a.id].unshift(nm); a.bal += nm.a;
+                            fx('success'); renderR(); renderL();
+                            const r = colR.querySelector(`[data-mov="${nm.id}"]`); if (r) r.classList.add('is-new');
+                            hud('1 movimiento nuevo', 'refresh');
+                        }, 900);
+                    } else { ptr.style.transition = 'height .3s'; ptr.style.height = '0'; setTimeout(() => ptr.style.transition = '', 300); }
+                };
+                sc.addEventListener('touchstart', ev => startP(ev.touches[0].clientY, ev.target), { passive: true });
+                sc.addEventListener('touchmove', ev => moveP(ev.touches[0].clientY, ev), { passive: true });
+                sc.addEventListener('touchend', rel); sc.addEventListener('touchcancel', rel);
+                sc.addEventListener('mousedown', ev => startP(ev.clientY, ev.target));
+                sc.addEventListener('mousemove', ev => moveP(ev.clientY, ev));
+                sc.addEventListener('mouseup', rel); sc.addEventListener('mouseleave', rel);
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // Postura, apariencia, escala, reloj
+        // ------------------------------------------------------------------
+        function rescale() {
+            const fit = $('#fit');
+            const cs = getComputedStyle(document.documentElement);
+            const w = parseFloat(cs.getPropertyValue(S.open ? '--open-w' : '--closed-w')) + 20;
+            const h = parseFloat(cs.getPropertyValue('--dev-h')) + 20;
+            const availW = Math.min(window.innerWidth - 32, 1200);
+            const availH = Math.max(420, window.innerHeight - 140);
+            const s = Math.min(1, availW / w, availH / h);
+            fit.style.transform = s < 1 ? `scale(${s})` : '';
+            fit.style.height = s < 1 ? (h * s) + 'px' : '';
+        }
+        function setOpen(on) {
+            if (S.open === on) return;
+            S.open = on;
+            device.classList.toggle('is-open', on);
+            $('#btn-open').setAttribute('aria-pressed', String(on));
+            $('#btn-closed').setAttribute('aria-pressed', String(!on));
+            fx(on ? 'open' : 'close');
+            if (on) render(true);
+            rescale(); setTimeout(rescale, 820);
+            const p = $('#posture'); if (p) p.textContent = on ? 'Abierto · 7,6"' : 'Cerrado · 5,4"';
+        }
+        function setDark(on) {
+            S.dark = on;
+            screen.classList.toggle('dark', on);
+            $('#btn-dark').setAttribute('aria-pressed', String(on));
+            $('#btn-light').setAttribute('aria-pressed', String(!on));
+            fx('toggle');
+            if (S.section === 'ajustes') render();
+        }
+        $('#btn-open').addEventListener('click', () => setOpen(true));
+        $('#btn-closed').addEventListener('click', () => setOpen(false));
+        $('#btn-dark').addEventListener('click', () => setDark(true));
+        $('#btn-light').addEventListener('click', () => setDark(false));
+        document.querySelectorAll('[data-demo]').forEach(b => b.addEventListener('click', () => {
+            setOpen(true);
+            const d = b.dataset.demo;
+            if (d === 'ctx') {
+                go('inicio'); S.stack = []; renderR();
+                setTimeout(() => { const r = colR.querySelector('.swipe .row'); if (r) openCtx(+r.closest('[data-swipe]').dataset.swipe, r); }, 350);
+            } else go(d);
+            $('#fit').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }));
+        document.addEventListener('keydown', e => {
+            if (e.target.matches('input')) return;
+            if (e.key === 'o' || e.key === 'O') setOpen(!S.open);
+            if (e.key === 'Escape') { if ($('#ctx').classList.contains('open')) closeCtx(); else if ($('#sheet').classList.contains('open')) closeSheet(); else if (S.stack.length) pop(); }
+        });
+        window.addEventListener('resize', rescale);
+
+        function tick() {
+            const d = new Date();
+            document.querySelectorAll('.clock').forEach(c => c.textContent = d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0'));
+        }
+        tick(); setInterval(tick, 20000);
+
+        if (document.fonts && document.fonts.load) {
+            document.fonts.load('22px "Material Symbols Rounded"').then(f => { if (f && f.length) document.documentElement.classList.add('icons-ready'); }).catch(() => {});
+        }
+
+        // App de la pantalla exterior: entra directo al home
+        const frame = $('#app');
+        frame.addEventListener('load', () => {
+            try { const b = frame.contentWindow.document.getElementById('btn-login-other'); if (b) b.click(); } catch (e) { /* file:// */ }
+        });
+
+        render(true);
+        rescale();
+    })();
     </script>
 </body>
 </html>
