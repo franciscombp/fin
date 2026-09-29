@@ -68,12 +68,45 @@
   // generada por código. Todo pasa por un compresor para que suene lleno
   // sin saturar.
   var actx = null, master = null, dry = null, wet = null;
+  // iOS: la sesión de audio se fija UNA vez y ANTES de crear el contexto.
+  // Cambiarla con un AudioContext vivo (o que Face ID/WebAuthn la
+  // interrumpa) deja a WebKit emitiendo ruido/zumbido sin fin.
+  var sessionSet = false;
+  function setSession() {
+    if (sessionSet) return;
+    sessionSet = true;
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+  }
+  // Tira el contexto por completo: corta cualquier sonido colgado y el
+  // próximo efecto crea uno limpio.
+  function killCtx() {
+    clearTimeout(idleTimer);
+    if (!actx) return;
+    var old = actx;
+    actx = master = dry = wet = null;
+    noiseBuf = null;
+    try { old.close(); } catch (e) {}
+  }
+  // En reposo el contexto se suspende: nada puede seguir sonando de fondo.
+  var idleTimer = null;
+  function scheduleIdle(ms) {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(function () {
+      if (actx && actx.state === 'running') { try { actx.suspend(); } catch (e) {} }
+    }, ms);
+  }
   function ctx() {
     if (actx) return actx;
     var AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return null;
+    setSession();
     try {
       actx = new AC();
+      actx.onstatechange = function () {
+        // 'interrupted' (iOS): llamada, Face ID, Siri… el contexto queda
+        // corrupto al volver; mejor descartarlo.
+        if (actx && actx.state === 'interrupted') killCtx();
+      };
       var comp = actx.createDynamicsCompressor();
       comp.threshold.value = -16; comp.knee.value = 12; comp.ratio.value = 4;
       comp.attack.value = 0.003; comp.release.value = 0.2;
@@ -241,12 +274,13 @@
     if (!fn || !a) return;
     if (a.state !== 'running') { try { a.resume(); } catch (e) {} }
     try { fn(a, a.currentTime + 0.01); } catch (e) { if (window.__fxDebug) console.error(e); }
+    // duración del efecto + cola de reverb (2.4s) + margen
+    scheduleIdle(name === 'welcome' ? 6500 : 4000);
   }
 
   // Desbloqueo: se reintenta en cada gesto hasta que el contexto queda
   // 'running' (en iOS puede volver a 'interrupted' y hay que reanudarlo).
   function unlock() {
-    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
     var a = ctx();
     if (!a) return;
     try {
@@ -258,6 +292,11 @@
   ['touchend', 'click', 'pointerup', 'keydown'].forEach(function (ev) {
     document.addEventListener(ev, unlock, { capture: true, passive: true });
   });
+  // Al salir de la app, bloquear pantalla o abrirse el diálogo biométrico
+  // (la página pierde visibilidad/foco), se descarta el audio.
+  document.addEventListener('visibilitychange', function () { if (document.hidden) killCtx(); });
+  window.addEventListener('pagehide', killCtx);
+  window.Haptics_killAudio = killCtx;
 
   // ---------- Disparo ----------
   var lastAt = 0, lastStrongAt = 0;
@@ -362,12 +401,8 @@
         }
       }).observe(extra, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['class'] });
     }
-    var splash = document.getElementById('welcome-splash');
-    if (splash) {
-      new MutationObserver(function () {
-        if (splash.classList.contains('show')) fire('welcome');
-      }).observe(splash, { attributes: true, attributeFilter: ['class'] });
-    }
+    // El sonido de ingreso lo dispara app.js al autenticar (no al mostrar el
+    // splash, que aparece ANTES de Face ID).
     // Interruptores de Preferencias (Vibración / Sonidos)
     function bind(id, get, set) {
       var row = document.getElementById(id);
