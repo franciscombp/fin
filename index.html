@@ -832,6 +832,9 @@
         @keyframes fxRipple {
             to { transform: scale(1); opacity: 0; }
         }
+        .fx-test__hint { display: block; font-size: 12px; font-weight: 400; color: var(--bp-text-helper); }
+        .fx-test__status { font-size: 12px; color: var(--bp-text-helper); }
+        .fx-test--play { animation: fxPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .fx-shake { animation: fxShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
         @keyframes fxShake {
             10%, 90% { transform: translateX(-1px); }
@@ -4601,6 +4604,56 @@
                         <span class="avatar-cat"><span class="material-symbols-rounded">palette</span></span>
                         <span class="list-item__title">Tema Y2K</span>
                         <span class="pref-switch" aria-hidden="true"><span class="pref-switch__knob"></span></span>
+                    </button>
+                    <button class="list-item" id="pref-haptics" aria-pressed="true">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">vibration</span></span>
+                        <span class="list-item__title">Vibración</span>
+                        <span class="pref-switch" aria-hidden="true"><span class="pref-switch__knob"></span></span>
+                    </button>
+                    <button class="list-item" id="pref-sound" aria-pressed="true">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">volume_up</span></span>
+                        <span class="list-item__title">Sonidos</span>
+                        <span class="pref-switch" aria-hidden="true"><span class="pref-switch__knob"></span></span>
+                    </button>
+                </div>
+
+                <div class="section__title"><h2>Probar efectos</h2></div>
+                <div class="card" id="fx-test-card">
+                    <div class="list-item fx-test__status" id="fx-test-status" aria-live="polite"></div>
+                    <button class="list-item" data-fx-test="tap">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">touch_app</span></span>
+                        <span class="list-item__title">Tap<small class="fx-test__hint">Pulso corto + tick</small></span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
+                    </button>
+                    <button class="list-item" data-fx-test="select">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">radio_button_checked</span></span>
+                        <span class="list-item__title">Selección<small class="fx-test__hint">Pulso + tono medio</small></span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
+                    </button>
+                    <button class="list-item" data-fx-test="toggle">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">toggle_on</span></span>
+                        <span class="list-item__title">Interruptor<small class="fx-test__hint">Doble pulso</small></span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
+                    </button>
+                    <button class="list-item" data-fx-test="success">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">check_circle</span></span>
+                        <span class="list-item__title">Éxito<small class="fx-test__hint">Acorde + patrón de éxito</small></span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
+                    </button>
+                    <button class="list-item" data-fx-test="warning">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">warning</span></span>
+                        <span class="list-item__title">Aviso<small class="fx-test__hint">Doble pitido</small></span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
+                    </button>
+                    <button class="list-item" data-fx-test="error">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">error</span></span>
+                        <span class="list-item__title">Error<small class="fx-test__hint">Zumbido + shake</small></span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
+                    </button>
+                    <button class="list-item" data-fx-test="welcome">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">waving_hand</span></span>
+                        <span class="list-item__title">Bienvenida<small class="fx-test__hint">Melodía de ingreso</small></span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
                     </button>
                 </div>
 
