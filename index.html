@@ -3552,6 +3552,58 @@
             }
         }
 
+
+        /* ---------- Microinteracciones fluidas ---------- */
+        /* Presión suave en superficies tocables: baja rápido, vuelve con resorte */
+        .card, .account-card, .list-item, .product-row, .promo, .grow-cta__btn, .home-banner__cta, .section__link {
+            transition: transform 0.45s cubic-bezier(0.2, 1.4, 0.4, 1), background-color 0.2s ease;
+        }
+        .list-item:active, .product-row:active { transform: scale(0.985); transition-duration: 0.08s; }
+        .promo:active, .grow-cta__btn:active, .home-banner__cta:active { transform: scale(0.95); transition-duration: 0.08s; }
+        .account-card:active { transform: scale(0.985); transition-duration: 0.08s; }
+
+        /* Cambio de sección: el contenido entra escalonado */
+        .tab-panel.is-active > .section,
+        .tab-panel.is-active > .grow-cta { animation: fxRise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .tab-panel.is-active > :nth-child(2) { animation-delay: 0.05s; }
+        .tab-panel.is-active > :nth-child(3) { animation-delay: 0.10s; }
+        .tab-panel.is-active > :nth-child(4) { animation-delay: 0.15s; }
+        .tab-panel.is-active > :nth-child(n+5) { animation-delay: 0.2s; }
+        @keyframes fxRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+        /* Accesos rápidos: aparecen en cascada */
+        .tab-panel.is-active .quick-action { animation: fxRise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .tab-panel.is-active .quick-action:nth-child(2) { animation-delay: 0.03s; }
+        .tab-panel.is-active .quick-action:nth-child(3) { animation-delay: 0.06s; }
+        .tab-panel.is-active .quick-action:nth-child(4) { animation-delay: 0.09s; }
+        .tab-panel.is-active .quick-action:nth-child(5) { animation-delay: 0.12s; }
+        .tab-panel.is-active .quick-action:nth-child(6) { animation-delay: 0.15s; }
+        .tab-panel.is-active .quick-action:nth-child(7) { animation-delay: 0.18s; }
+        .tab-panel.is-active .quick-action:nth-child(8) { animation-delay: 0.21s; }
+
+        /* Nav inferior: el ícono activo hace un pop al seleccionarse */
+        .nav-item.active .nav-item__wrap .material-symbols-rounded { animation: fxNavPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        @keyframes fxNavPop { 0% { transform: scale(0.7) translateY(3px); } 60% { transform: scale(1.15); } 100% { transform: none; } }
+
+        /* Pantalla de éxito: cada línea entra en secuencia */
+        .push-transfer-success > * { animation: fxRise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .push-transfer-success > :nth-child(2) { animation-delay: 0.12s; }
+        .push-transfer-success > :nth-child(3) { animation-delay: 0.2s; }
+        .push-transfer-success > :nth-child(4) { animation-delay: 0.26s; }
+        .push-transfer-success > :nth-child(5) { animation-delay: 0.32s; }
+        .push-transfer-success > :nth-child(6) { animation-delay: 0.38s; }
+        .push-transfer-success > :nth-child(n+7) { animation-delay: 0.44s; }
+        .push-transfer-success > .push-transfer-success__icon { animation: transferSuccessPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+        /* Saldo: el número se asienta tras el conteo */
+        #balance { font-variant-numeric: tabular-nums; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .tab-panel.is-active > *, .tab-panel.is-active .quick-action,
+            .nav-item.active .nav-item__wrap .material-symbols-rounded,
+            .push-transfer-success > * { animation: none !important; }
+        }
+
         /* ======================================================
            ALINEACIÓN CON FIGMA — Destacado (Components 4 [Beta])
            Márgenes de 16px (grid-margin), banner claro de 136px, links
@@ -4814,7 +4866,7 @@
                     <div class="list-item fx-test__status" id="fx-test-status" aria-live="polite"></div>
                     <button class="list-item" data-fx-test="tap">
                         <span class="avatar-cat"><span class="material-symbols-rounded">touch_app</span></span>
-                        <span class="list-item__title">Tap<small class="fx-test__hint">Pulso corto + tick</small></span>
+                        <span class="list-item__title">Tap<small class="fx-test__hint">Pulso corto + clic táctil</small></span>
                         <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
                     </button>
                     <button class="list-item" data-fx-test="select">
@@ -4829,7 +4881,7 @@
                     </button>
                     <button class="list-item" data-fx-test="success">
                         <span class="avatar-cat"><span class="material-symbols-rounded">check_circle</span></span>
-                        <span class="list-item__title">Éxito<small class="fx-test__hint">Acorde + patrón de éxito</small></span>
+                        <span class="list-item__title">Éxito<small class="fx-test__hint">Golpe + campanas FM + brillo</small></span>
                         <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
                     </button>
                     <button class="list-item" data-fx-test="warning">
@@ -4842,9 +4894,39 @@
                         <span class="list-item__title">Error<small class="fx-test__hint">Zumbido + shake</small></span>
                         <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
                     </button>
+                    <button class="list-item" data-fx-test="swipe">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">swipe</span></span>
+                        <span class="list-item__title">Deslizar<small class="fx-test__hint">Barrido + clic de encaje</small></span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
+                    </button>
+                    <button class="list-item" data-fx-test="open">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">expand_less</span></span>
+                        <span class="list-item__title">Abrir panel<small class="fx-test__hint">Whoosh ascendente + campana</small></span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
+                    </button>
+                    <button class="list-item" data-fx-test="close">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">expand_more</span></span>
+                        <span class="list-item__title">Cerrar panel<small class="fx-test__hint">Whoosh descendente</small></span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
+                    </button>
+                    <button class="list-item" data-fx-test="flip">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">flip</span></span>
+                        <span class="list-item__title">Girar tarjeta<small class="fx-test__hint">Doble whoosh estéreo</small></span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
+                    </button>
+                    <button class="list-item" data-fx-test="reveal">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">auto_awesome</span></span>
+                        <span class="list-item__title">Revelar datos<small class="fx-test__hint">Cascada de campanas</small></span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
+                    </button>
+                    <button class="list-item" data-fx-test="detent">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">linear_scale</span></span>
+                        <span class="list-item__title">Umbral<small class="fx-test__hint">Clic seco al cruzar un límite</small></span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
+                    </button>
                     <button class="list-item" data-fx-test="welcome">
                         <span class="avatar-cat"><span class="material-symbols-rounded">waving_hand</span></span>
-                        <span class="list-item__title">Bienvenida<small class="fx-test__hint">Melodía de ingreso</small></span>
+                        <span class="list-item__title">Bienvenida<small class="fx-test__hint">Barrido, golpe, acorde y lluvia de campanas</small></span>
                         <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
                     </button>
                 </div>
@@ -5311,6 +5393,9 @@
     </div>
 
     <script>
+        // Feedback háptico/sonoro (haptics.js carga después; se resuelve al llamar)
+        const fx = name => { if (window.Haptics) window.Haptics.fx(name); };
+
         // ---------- Toast de feedback con microinteracciones ----------
         const toast = document.getElementById('toast');
         let toastTimer;
@@ -5971,6 +6056,7 @@
         }
 
         function openPushPage(title, originEl) {
+            fx('open');
             pushTitle.textContent = title;
             pushTopbarTitle.textContent = title;
             transferFlow = null; // reinicia el flujo si había quedado a medias
@@ -6030,6 +6116,7 @@
 
         function closePushPage() {
             if (!pushPage.classList.contains('open')) return;
+            fx('close');
             clearTimeout(pushLoadingTimer);
             pushLoading.classList.remove('is-active');
             if (pushPage.classList.contains('grow')) {
@@ -6423,6 +6510,7 @@
             e.preventDefault(); // evita el scroll vertical durante el swipe horizontal
             let d = dx;
             if (!canGo(dx)) d = dx * 0.35; // resistencia en los extremos
+            if ((Math.abs(sw.dx) > 70) !== (Math.abs(d) > 70) && canGo(dx)) fx('detent');
             sw.dx = d;
             peek._sign = dx;
             home0.style.transition = 'none';
@@ -6438,6 +6526,7 @@
                 const w = home0.offsetWidth;
                 const sign = dx < 0 ? -1 : 1;
                 // completa el deslizamiento: el contenido sale y el peek entra
+                fx('swipe');
                 home0.style.transition = EASE;
                 home0.style.transform = `translateX(${sign * w}px)`;
                 peek.style.transition = EASE;
@@ -6533,13 +6622,30 @@
         let balanceValue = balance.textContent;
         const balanceMasked = '$ ****,**';
         let hidden = false;
+        // Cuenta de 0 al valor final ("$ 1.906,04") con easing; respeta el formato
+        function countUp(el, finalText, ms = 650) {
+            const m = finalText.match(/[\d.]+,\d+/);
+            if (!m || matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = finalText; return; }
+            const target = parseFloat(m[0].replace(/\./g, '').replace(',', '.'));
+            const t0 = performance.now();
+            const step = now => {
+                const k = Math.min(1, (now - t0) / ms);
+                const v = target * (1 - Math.pow(1 - k, 3));
+                const [ent, dec] = v.toFixed(2).split('.');
+                el.textContent = finalText.replace(m[0], ent.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + dec);
+                if (k < 1) requestAnimationFrame(step); else el.textContent = finalText;
+            };
+            requestAnimationFrame(step);
+        }
+
         balanceToggle.addEventListener('click', () => {
             hidden = !hidden;
             // Anima el cambio: desenfoca/desvanece, cambia el texto y reaparece
             balance.classList.add('is-masking');
             setTimeout(() => {
-                balance.textContent = hidden ? balanceMasked : balanceValue;
                 balance.classList.remove('is-masking');
+                if (hidden) balance.textContent = balanceMasked;
+                else countUp(balance, balanceValue);
             }, 180);
             balanceIcon.textContent = hidden ? 'visibility_off' : 'visibility';
             balanceToggle.setAttribute('aria-label', hidden ? 'Mostrar saldo' : 'Ocultar saldo');
@@ -6729,9 +6835,11 @@
             void sheet.offsetHeight;
             sheet.classList.add('open');
             document.body.style.overflow = 'hidden';
+            fx('open');
         }
 
         function closeSheet() {
+            if (sheet.classList.contains('open')) fx('close');
             sheet.classList.remove('open');
             sheetBackdrop.classList.remove('open');
             sheet.style.transform = '';
@@ -6766,7 +6874,9 @@
 
         sheet.addEventListener('pointermove', e => {
             if (dragStartY === null) return;
+            const was = dragDelta > 90;
             dragDelta = Math.max(0, e.clientY - dragStartY);
+            if (was !== dragDelta > 90) fx('detent'); // cruza el umbral de cierre
             sheet.style.transform = `translate(-50%, ${dragDelta}px)`;
         });
 
@@ -6922,6 +7032,7 @@
 
         function openCardDetail(key = 'Visa Débito', originEl = featCard) {
             currentOriginEl = originEl || featCard;
+            fx('open');
             applyCardTheme(key);
             hideCardData();
             cardDetail.classList.remove('scrolled', 'no-morph');
@@ -7055,7 +7166,8 @@
                 cdCard.classList.remove('verifying');
                 cdCard.classList.add('revealed');
                 updateVerDatosBtn();
-                showToast('Identidad verificada ✓');
+                fx('reveal');
+                showToast('Datos visibles');
             } catch (err) {
                 verifying = false;
                 cdCard.classList.remove('verifying');
@@ -7159,7 +7271,7 @@
             const dy = e.clientY - sy;
 
             if (gAxis === 'y' && !cardRevealed) {
-                if (dy > 120) { cdSnapBack(); closeCardDetail(); }
+                if (dy > 120) { fx('close'); cdSnapBack(); closeCardDetail(); }
                 else cdSnapBack();
                 return;
             }
@@ -7167,6 +7279,7 @@
             if (gAxis === 'x') {
                 flipSnap();
                 if (Math.abs(dx) > 60) {
+                    fx('flip');
                     if (cardRevealed) hideCardData(); else revealCardData();
                 }
                 return;
@@ -7282,6 +7395,7 @@
             void storySlide.offsetWidth;
             storySlide.style.animation = '';
             renderStoryBars();
+            fx('detent');
             clearTimeout(storyTimer);
             storyTimer = setTimeout(nextStory, STORY_DURATION);
         }
