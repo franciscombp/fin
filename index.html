@@ -2207,7 +2207,7 @@
         .cd-card__img.is-hidden { display: none; }
 
         /* Arte de tarjeta genérico (CSS, sin foto): tarjetas de crédito que
-           no tienen un asset propio como card-debit.png. Mismo ratio que
+           no tienen un asset propio como card-debit.svg. Mismo ratio que
            esa imagen (1312x827) para que el resto del layout no salte. */
         .cd-card__art {
             display: none;
@@ -4173,6 +4173,9 @@
             }
         }
     </style>
+    <!-- Solar Design System: componentes y mapeo de la app (va después del CSS
+         inline para ganar la cascada con la misma especificidad) -->
+    <link rel="stylesheet" href="./assets/solar.css">
 </head>
 <body>
     <!-- Login Screen -->
@@ -4351,7 +4354,7 @@
                 <!-- Tarjeta de débito con resplandor reactivo al giroscopio -->
                 <div class="debit-card-wrap">
                     <button class="debit-card" id="debit-card" aria-label="Tarjeta Débito Digital 1234">
-                        <img class="debit-card__art" src="./assets/card-debit.png" alt="" aria-hidden="true">
+                        <img class="debit-card__art" src="./assets/card-debit.svg" alt="" aria-hidden="true">
                         <div class="debit-card__bg">
                             <div class="glow glow--lg"></div>
                             <div class="glow glow--md"></div>
@@ -5006,7 +5009,7 @@
                     <!-- Frente: imagen de la tarjeta (Visa Débito) o arte CSS
                          genérico (tarjetas de crédito sin foto propia) -->
                     <div class="cd-face cd-face--front">
-                        <img class="cd-card__img" id="cd-card-img" src="./assets/card-debit.png" alt="Tarjeta de débito internacional">
+                        <img class="cd-card__img" id="cd-card-img" src="./assets/card-debit.svg" alt="Tarjeta de débito internacional">
                         <div class="cd-card__art" id="cd-card-art">
                             <div class="cd-card__art-top">
                                 <span class="cd-card__art-brand">PICHI<br>BANK</span>
