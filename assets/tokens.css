@@ -1,11 +1,16 @@
 /**
- * @sistema Components 4 [Beta]
- * @tipo tokens globales (custom properties CSS)
- * @origen Figma — export de tokens (base / layout / semantic / theme)
- * @nota SUBCONJUNTO: contiene los tokens que consume el prototipo (colores
- *       base, tema light, radios, espaciado, elevación, tamaños, layout
- *       mobile-sm). Reemplazar por el export completo cuando se necesite el
- *       resto (tipografía semántica, tema dark, otros layouts).
+ * Solar Design System · "Components 4 [Beta]" — tokens globales (CSS custom properties)
+ * Origen: variables de Figma (colecciones base · semantic · theme · layout · componente).
+ *
+ * Arquitectura (ver Figma › Guías › Token Architecture):
+ *   base      → primitivos privados. Los componentes NUNCA los consumen directo.
+ *   semantic  → API pública: tamaños, espaciado, radios, tipografía, elevación.
+ *   theme     → color por modo (light; dark pendiente de export).
+ *   layout    → grilla por breakpoint (mode = data-layout).
+ *   bp-*      → recetas por componente: sólo remapean tokens semánticos por tamaño.
+ *
+ * Este archivo cubre lo que consume el prototipo; al recibir el export completo
+ * (dark, system, product) se reemplaza sin tocar componentes.
  */
 
 @layer tokens.base, tokens.layout, tokens.semantic, tokens.theme, tokens.product;
@@ -43,6 +48,15 @@
     --bp-base-color-green-700: #218c3b;
     --bp-base-color-green-800: #19812f;
     --bp-base-color-green-900: #107524;
+    --bp-base-color-indigo-50: #e1e3e9;
+    --bp-base-color-indigo-100: #b1bad3;
+    --bp-base-color-indigo-200: #9ba6c7;
+    --bp-base-color-indigo-300: #8592ba;
+    --bp-base-color-indigo-400: #717fac;
+    --bp-base-color-indigo-500: #5d6c9d;
+    --bp-base-color-indigo-600: #4a598d;
+    --bp-base-color-indigo-700: #37477d;
+    --bp-base-color-indigo-800: #25366d;
     --bp-base-color-neutral-0: #ffffff;
     --bp-base-color-neutral-50: #fafafa;
     --bp-base-color-neutral-100: #f5f5f5;
@@ -128,6 +142,7 @@
     --bp-base-color-yellow-700: #ffd100;
     --bp-base-color-yellow-800: #ffcb00;
     --bp-base-color-yellow-900: #ffc500;
+    --bp-base-color-indigo-900: var(--bp-base-color-blue-500);
     --bp-base-color-transparent: rgb(0 0 0 / 0);
     --bp-base-dimension-0: 0px;
     --bp-base-dimension-2: 2px;
@@ -149,6 +164,10 @@
     --bp-base-dimension-96: 96px;
     --bp-base-dimension-128: 128px;
     --bp-base-dimension-144: 144px;
+    --bp-base-dimension-240: 240px;
+    --bp-base-dimension-440: 440px;
+    --bp-base-dimension-480: 480px;
+    --bp-base-dimension-896: 896px;
     --bp-base-blur-0: 0px;
     --bp-base-blur-4: 4px;
     --bp-base-blur-8: 8px;
@@ -165,135 +184,515 @@
     --bp-base-radius-16: 16px;
     --bp-base-radius-24: 24px;
     --bp-base-radius-full: 9999px;
+    --bp-base-opacity-0: 0;
+    --bp-base-opacity-4: 0.04;
+    --bp-base-opacity-6: 0.06;
+    --bp-base-opacity-8: 0.08;
+    --bp-base-opacity-10: 0.1;
+    --bp-base-opacity-12: 0.12;
+    --bp-base-opacity-16: 0.16;
+    --bp-base-opacity-20: 0.2;
+    --bp-base-opacity-24: 0.24;
+    --bp-base-opacity-32: 0.32;
+    --bp-base-opacity-40: 0.4;
+    --bp-base-opacity-48: 0.48;
+    --bp-base-opacity-64: 0.64;
+    --bp-base-opacity-80: 0.8;
+    --bp-base-opacity-88: 0.88;
+    --bp-base-opacity-96: 0.96;
+    --bp-base-opacity-100: 1;
     --bp-base-typography-font-family-sans: Prelo;
     --bp-base-typography-font-family-slab: Prelo Slab;
     --bp-base-typography-font-family-system: Arial;
+    --bp-base-typography-font-size-8: 8px;
+    --bp-base-typography-font-size-12: 12px;
+    --bp-base-typography-font-size-14: 14px;
+    --bp-base-typography-font-size-16: 16px;
+    --bp-base-typography-font-size-18: 18px;
+    --bp-base-typography-font-size-20: 20px;
+    --bp-base-typography-font-size-22: 22px;
+    --bp-base-typography-font-size-24: 24px;
+    --bp-base-typography-font-size-26: 26px;
+    --bp-base-typography-font-size-28: 28px;
+    --bp-base-typography-font-size-32: 32px;
+    --bp-base-typography-font-size-34: 34px;
+    --bp-base-typography-font-size-40: 40px;
+    --bp-base-typography-font-size-52: 52px;
+    --bp-base-typography-font-weight-300: 300;
+    --bp-base-typography-font-weight-400: 400;
+    --bp-base-typography-font-weight-500: 500;
+    --bp-base-typography-font-weight-600: 600;
+    --bp-base-typography-font-weight-700: 700;
+    --bp-base-typography-line-height-12: 12px;
+    --bp-base-typography-line-height-16: 16px;
+    --bp-base-typography-line-height-18: 18px;
+    --bp-base-typography-line-height-20: 20px;
+    --bp-base-typography-line-height-24: 24px;
+    --bp-base-typography-line-height-28: 28px;
+    --bp-base-typography-line-height-32: 32px;
+    --bp-base-typography-line-height-38: 38px;
+    --bp-base-typography-line-height-40: 40px;
+    --bp-base-typography-line-height-48: 48px;
+    --bp-base-typography-line-height-60: 60px;
+    --bp-base-typography-letter-spacing-0: 0px;
+    --bp-base-z-index-0: 0;
+    --bp-base-z-index-10: 10;
+    --bp-base-z-index-100: 100;
+    --bp-base-z-index-200: 200;
+    --bp-base-z-index-500: 500;
+    --bp-base-z-index-1000: 1000;
+    --bp-base-z-index-1100: 1100;
   }
 }
 
 @layer tokens.layout {
-  :root[data-layout="mobile-sm"] {
+  :root, :root[data-layout="mobile-sm"] {
     --bp-layout-breakpoint: 390px;
     --bp-layout-grid-columns: 4;
     --bp-layout-grid-gutter: var(--bp-base-dimension-24);
     --bp-layout-grid-inset: var(--bp-base-dimension-8);
     --bp-layout-grid-margin: var(--bp-base-dimension-16);
   }
+  :root[data-layout="mobile-xs"] { --bp-layout-breakpoint: 360px; --bp-layout-grid-gutter: var(--bp-base-dimension-16); }
+  :root[data-layout="mobile-lg"] { --bp-layout-breakpoint: 440px; --bp-layout-grid-inset: var(--bp-base-dimension-16); --bp-layout-grid-margin: var(--bp-base-dimension-24); }
 }
 
 @layer tokens.semantic {
   :root {
-    --bp-semantic-border-medium: var(--bp-base-border-2);
     --bp-semantic-border-none: var(--bp-base-border-0);
     --bp-semantic-border-thin: var(--bp-base-border-1);
-    --bp-semantic-effects-blur-background: var(--bp-base-blur-16);
+    --bp-semantic-border-medium: var(--bp-base-border-2);
+    --bp-semantic-effects-blur-none: var(--bp-base-blur-0);
+    --bp-semantic-effects-blur-soft: var(--bp-base-blur-4);
     --bp-semantic-effects-blur-subdued: var(--bp-base-blur-8);
+    --bp-semantic-effects-blur-background: var(--bp-base-blur-16);
+    --bp-semantic-effects-blur-overlay: var(--bp-base-blur-24);
     --bp-semantic-elevation-low-blur: var(--bp-base-blur-8);
     --bp-semantic-elevation-low-color: color-mix(in srgb, var(--bp-base-color-neutral-900) 8%, transparent);
     --bp-semantic-elevation-low-offset-y: var(--bp-base-dimension-4);
     --bp-semantic-elevation-mid-blur: var(--bp-base-blur-16);
     --bp-semantic-elevation-mid-color: color-mix(in srgb, var(--bp-base-color-neutral-900) 12%, transparent);
     --bp-semantic-elevation-mid-offset-y: var(--bp-base-dimension-8);
-    --bp-semantic-radius-full: var(--bp-base-radius-full);
-    --bp-semantic-radius-lg: var(--bp-base-radius-16);
-    --bp-semantic-radius-md: var(--bp-base-radius-12);
+    --bp-semantic-elevation-high-blur: var(--bp-base-blur-24);
+    --bp-semantic-elevation-high-color: color-mix(in srgb, var(--bp-base-color-neutral-900) 16%, transparent);
+    --bp-semantic-elevation-high-offset-y: var(--bp-base-dimension-12);
+    --bp-semantic-elevation-overlay-blur: var(--bp-base-blur-32);
+    --bp-semantic-elevation-overlay-color: color-mix(in srgb, var(--bp-base-color-neutral-900) 24%, transparent);
+    --bp-semantic-elevation-overlay-offset-y: var(--bp-base-dimension-16);
+    --bp-semantic-opacity-transparent: var(--bp-base-opacity-0);
+    --bp-semantic-opacity-subtle: var(--bp-base-opacity-10);
+    --bp-semantic-opacity-soft: var(--bp-base-opacity-20);
+    --bp-semantic-opacity-subdued: var(--bp-base-opacity-40);
+    --bp-semantic-opacity-overlay: var(--bp-base-opacity-80);
+    --bp-semantic-opacity-opaque: var(--bp-base-opacity-100);
     --bp-semantic-radius-none: var(--bp-base-radius-0);
-    --bp-semantic-radius-sm: var(--bp-base-radius-8);
     --bp-semantic-radius-xs: var(--bp-base-radius-4);
-    --bp-semantic-size-icon-lg: var(--bp-base-dimension-32);
-    --bp-semantic-size-icon-md: var(--bp-base-dimension-24);
+    --bp-semantic-radius-sm: var(--bp-base-radius-8);
+    --bp-semantic-radius-md: var(--bp-base-radius-12);
+    --bp-semantic-radius-lg: var(--bp-base-radius-16);
+    --bp-semantic-radius-full: var(--bp-base-radius-full);
+    --bp-semantic-size-avatar-xs: var(--bp-base-dimension-32);
+    --bp-semantic-size-avatar-sm: var(--bp-base-dimension-40);
+    --bp-semantic-size-avatar-md: var(--bp-base-dimension-48);
+    --bp-semantic-size-avatar-lg: var(--bp-base-dimension-64);
+    --bp-semantic-size-avatar-xl: var(--bp-base-dimension-96);
+    --bp-semantic-size-avatar-xxl: var(--bp-base-dimension-128);
+    --bp-semantic-size-icon-xxs: var(--bp-base-dimension-12);
+    --bp-semantic-size-icon-xs: var(--bp-base-dimension-16);
     --bp-semantic-size-icon-sm: var(--bp-base-dimension-20);
-    --bp-semantic-size-interactive-sm: var(--bp-base-dimension-48);
+    --bp-semantic-size-icon-md: var(--bp-base-dimension-24);
+    --bp-semantic-size-icon-lg: var(--bp-base-dimension-32);
+    --bp-semantic-size-icon-xl: var(--bp-base-dimension-48);
+    --bp-semantic-size-icon-xxl: var(--bp-base-dimension-64);
     --bp-semantic-size-interactive-xxs: var(--bp-base-dimension-32);
+    --bp-semantic-size-interactive-xs: var(--bp-base-dimension-40);
+    --bp-semantic-size-interactive-sm: var(--bp-base-dimension-48);
+    --bp-semantic-size-interactive-md: var(--bp-base-dimension-56);
+    --bp-semantic-size-interactive-lg: var(--bp-base-dimension-64);
+    --bp-semantic-size-logo-xs: var(--bp-base-dimension-24);
+    --bp-semantic-size-logo-sm: var(--bp-base-dimension-28);
+    --bp-semantic-size-logo-md: var(--bp-base-dimension-32);
+    --bp-semantic-size-logo-lg: var(--bp-base-dimension-40);
     --bp-semantic-size-touch-target-min: var(--bp-base-dimension-48);
-    --bp-semantic-spacing-macro-lg: var(--bp-base-dimension-32);
-    --bp-semantic-spacing-macro-md: var(--bp-base-dimension-24);
-    --bp-semantic-spacing-macro-sm: var(--bp-base-dimension-16);
-    --bp-semantic-spacing-micro-lg: var(--bp-base-dimension-12);
-    --bp-semantic-spacing-micro-md: var(--bp-base-dimension-8);
+    --bp-semantic-size-touch-target-comfortable: var(--bp-base-dimension-56);
+    --bp-semantic-spacing-none: var(--bp-base-dimension-0);
+    --bp-semantic-spacing-micro-xs: var(--bp-base-dimension-2);
     --bp-semantic-spacing-micro-sm: var(--bp-base-dimension-4);
+    --bp-semantic-spacing-micro-md: var(--bp-base-dimension-8);
+    --bp-semantic-spacing-micro-lg: var(--bp-base-dimension-12);
+    --bp-semantic-spacing-macro-sm: var(--bp-base-dimension-16);
+    --bp-semantic-spacing-macro-md: var(--bp-base-dimension-24);
+    --bp-semantic-spacing-macro-lg: var(--bp-base-dimension-32);
+    --bp-semantic-spacing-macro-xl: var(--bp-base-dimension-48);
+    --bp-semantic-spacing-xl: var(--bp-base-dimension-20);
+    --bp-semantic-spacing-gap-related: var(--bp-base-dimension-8);
+    --bp-semantic-spacing-gap-title: var(--bp-base-dimension-8);
+    --bp-semantic-spacing-gap-item: var(--bp-base-dimension-12);
+    --bp-semantic-spacing-gap-content: var(--bp-base-dimension-16);
+    --bp-semantic-spacing-padding-inset: var(--bp-base-dimension-12);
+    --bp-semantic-spacing-padding-container-compact: var(--bp-base-dimension-16);
+    --bp-semantic-z-index-base: var(--bp-base-z-index-0);
+    --bp-semantic-z-index-docked: var(--bp-base-z-index-10);
+    --bp-semantic-z-index-dropdown: var(--bp-base-z-index-100);
+    --bp-semantic-z-index-sticky: var(--bp-base-z-index-200);
+    --bp-semantic-z-index-overlay: var(--bp-base-z-index-500);
+    --bp-semantic-z-index-modal: var(--bp-base-z-index-1000);
+    --bp-semantic-z-index-popover: var(--bp-base-z-index-1100);
+    --bp-semantic-typography-brand-body-md-medium-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-body-md-medium-font-size: var(--bp-base-typography-font-size-16);
+    --bp-semantic-typography-brand-body-md-medium-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-body-md-medium-line-height: var(--bp-base-typography-line-height-24);
+    --bp-semantic-typography-brand-body-md-medium-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-body-md-regular-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-body-md-regular-font-size: var(--bp-base-typography-font-size-16);
+    --bp-semantic-typography-brand-body-md-regular-font-weight: var(--bp-base-typography-font-weight-400);
+    --bp-semantic-typography-brand-body-md-regular-line-height: var(--bp-base-typography-line-height-24);
+    --bp-semantic-typography-brand-body-md-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-body-md-semibold-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-body-md-semibold-font-size: var(--bp-base-typography-font-size-16);
+    --bp-semantic-typography-brand-body-md-semibold-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-body-md-semibold-line-height: var(--bp-base-typography-line-height-24);
+    --bp-semantic-typography-brand-body-md-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-body-sm-medium-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-body-sm-medium-font-size: var(--bp-base-typography-font-size-14);
+    --bp-semantic-typography-brand-body-sm-medium-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-body-sm-medium-line-height: var(--bp-base-typography-line-height-20);
+    --bp-semantic-typography-brand-body-sm-medium-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-body-sm-regular-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-body-sm-regular-font-size: var(--bp-base-typography-font-size-14);
+    --bp-semantic-typography-brand-body-sm-regular-font-weight: var(--bp-base-typography-font-weight-400);
+    --bp-semantic-typography-brand-body-sm-regular-line-height: var(--bp-base-typography-line-height-20);
+    --bp-semantic-typography-brand-body-sm-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-body-sm-semibold-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-body-sm-semibold-font-size: var(--bp-base-typography-font-size-14);
+    --bp-semantic-typography-brand-body-sm-semibold-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-body-sm-semibold-line-height: var(--bp-base-typography-line-height-20);
+    --bp-semantic-typography-brand-body-sm-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-body-xs-medium-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-body-xs-medium-font-size: var(--bp-base-typography-font-size-12);
+    --bp-semantic-typography-brand-body-xs-medium-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-body-xs-medium-line-height: var(--bp-base-typography-line-height-16);
+    --bp-semantic-typography-brand-body-xs-medium-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-body-xs-semibold-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-body-xs-semibold-font-size: var(--bp-base-typography-font-size-12);
+    --bp-semantic-typography-brand-body-xs-semibold-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-body-xs-semibold-line-height: var(--bp-base-typography-line-height-16);
+    --bp-semantic-typography-brand-body-xs-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-display-md-regular-font-family: var(--bp-base-typography-font-family-slab);
+    --bp-semantic-typography-brand-display-md-regular-font-size: var(--bp-base-typography-font-size-40);
+    --bp-semantic-typography-brand-display-md-regular-font-weight: var(--bp-base-typography-font-weight-400);
+    --bp-semantic-typography-brand-display-md-regular-line-height: var(--bp-base-typography-line-height-48);
+    --bp-semantic-typography-brand-display-md-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-display-md-semibold-font-family: var(--bp-base-typography-font-family-slab);
+    --bp-semantic-typography-brand-display-md-semibold-font-size: var(--bp-base-typography-font-size-40);
+    --bp-semantic-typography-brand-display-md-semibold-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-display-md-semibold-line-height: var(--bp-base-typography-line-height-48);
+    --bp-semantic-typography-brand-display-md-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-label-lg-medium-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-label-lg-medium-font-size: var(--bp-base-typography-font-size-16);
+    --bp-semantic-typography-brand-label-lg-medium-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-label-lg-medium-line-height: var(--bp-base-typography-line-height-20);
+    --bp-semantic-typography-brand-label-lg-medium-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-label-lg-semibold-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-label-lg-semibold-font-size: var(--bp-base-typography-font-size-16);
+    --bp-semantic-typography-brand-label-lg-semibold-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-label-lg-semibold-line-height: var(--bp-base-typography-line-height-20);
+    --bp-semantic-typography-brand-label-lg-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-label-md-medium-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-label-md-medium-font-size: var(--bp-base-typography-font-size-14);
+    --bp-semantic-typography-brand-label-md-medium-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-label-md-medium-line-height: var(--bp-base-typography-line-height-18);
+    --bp-semantic-typography-brand-label-md-medium-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-label-md-semibold-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-label-md-semibold-font-size: var(--bp-base-typography-font-size-14);
+    --bp-semantic-typography-brand-label-md-semibold-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-label-md-semibold-line-height: var(--bp-base-typography-line-height-18);
+    --bp-semantic-typography-brand-label-md-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-label-sm-medium-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-label-sm-medium-font-size: var(--bp-base-typography-font-size-12);
+    --bp-semantic-typography-brand-label-sm-medium-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-label-sm-medium-line-height: var(--bp-base-typography-line-height-16);
+    --bp-semantic-typography-brand-label-sm-medium-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-label-sm-semibold-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-label-sm-semibold-font-size: var(--bp-base-typography-font-size-12);
+    --bp-semantic-typography-brand-label-sm-semibold-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-label-sm-semibold-line-height: var(--bp-base-typography-line-height-16);
+    --bp-semantic-typography-brand-label-sm-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-label-xs-semibold-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-label-xs-semibold-font-size: var(--bp-base-typography-font-size-8);
+    --bp-semantic-typography-brand-label-xs-semibold-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-label-xs-semibold-line-height: var(--bp-base-typography-line-height-12);
+    --bp-semantic-typography-brand-label-xs-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-headline-md-font-family: var(--bp-base-typography-font-family-slab);
+    --bp-semantic-typography-brand-headline-md-font-size: var(--bp-base-typography-font-size-32);
+    --bp-semantic-typography-brand-headline-md-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-headline-md-line-height: var(--bp-base-typography-line-height-38);
+    --bp-semantic-typography-brand-headline-md-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-headline-sm-font-family: var(--bp-base-typography-font-family-slab);
+    --bp-semantic-typography-brand-headline-sm-font-size: var(--bp-base-typography-font-size-28);
+    --bp-semantic-typography-brand-headline-sm-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-headline-sm-line-height: var(--bp-base-typography-line-height-32);
+    --bp-semantic-typography-brand-headline-sm-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-link-lg-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-link-lg-font-size: var(--bp-base-typography-font-size-16);
+    --bp-semantic-typography-brand-link-lg-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-link-lg-line-height: var(--bp-base-typography-line-height-20);
+    --bp-semantic-typography-brand-link-lg-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-link-md-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-link-md-font-size: var(--bp-base-typography-font-size-14);
+    --bp-semantic-typography-brand-link-md-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-link-md-line-height: var(--bp-base-typography-line-height-18);
+    --bp-semantic-typography-brand-link-md-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-numeric-lg-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-numeric-lg-font-size: var(--bp-base-typography-font-size-52);
+    --bp-semantic-typography-brand-numeric-lg-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-numeric-lg-line-height: var(--bp-base-typography-line-height-60);
+    --bp-semantic-typography-brand-numeric-lg-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-numeric-md-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-numeric-md-font-size: var(--bp-base-typography-font-size-40);
+    --bp-semantic-typography-brand-numeric-md-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-numeric-md-line-height: var(--bp-base-typography-line-height-48);
+    --bp-semantic-typography-brand-numeric-md-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-numeric-sm-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-numeric-sm-font-size: var(--bp-base-typography-font-size-32);
+    --bp-semantic-typography-brand-numeric-sm-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-numeric-sm-line-height: var(--bp-base-typography-line-height-40);
+    --bp-semantic-typography-brand-numeric-sm-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-numeric-xs-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-numeric-xs-font-size: var(--bp-base-typography-font-size-24);
+    --bp-semantic-typography-brand-numeric-xs-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-numeric-xs-line-height: var(--bp-base-typography-line-height-32);
+    --bp-semantic-typography-brand-numeric-xs-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-title-lg-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-title-lg-font-size: var(--bp-base-typography-font-size-26);
+    --bp-semantic-typography-brand-title-lg-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-title-lg-line-height: var(--bp-base-typography-line-height-32);
+    --bp-semantic-typography-brand-title-lg-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-title-md-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-title-md-font-size: var(--bp-base-typography-font-size-22);
+    --bp-semantic-typography-brand-title-md-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-title-md-line-height: var(--bp-base-typography-line-height-28);
+    --bp-semantic-typography-brand-title-md-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-title-sm-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-title-sm-font-size: var(--bp-base-typography-font-size-18);
+    --bp-semantic-typography-brand-title-sm-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-title-sm-line-height: var(--bp-base-typography-line-height-24);
+    --bp-semantic-typography-brand-title-sm-letter-spacing: var(--bp-base-typography-letter-spacing-0);
   }
 }
 
 @layer tokens.theme {
-  :root[data-theme="light"] {
+  :root, :root[data-theme="light"] {
     --bp-theme-color-avatar-bg: color-mix(in srgb, var(--bp-base-color-neutral-1000) 4%, transparent);
+    --bp-theme-color-avatar-fg: var(--bp-base-color-blue-500);
     --bp-theme-color-border-default: var(--bp-base-color-neutral-400);
     --bp-theme-color-border-divider: var(--bp-theme-color-surface-page-alt);
+    --bp-theme-color-border-divider-alt: var(--bp-theme-color-surface-page-default);
     --bp-theme-color-border-focus: var(--bp-base-color-blue-900);
+    --bp-theme-color-border-strong: #c7cfe1;
     --bp-theme-color-border-subtle: var(--bp-base-color-neutral-300);
     --bp-theme-color-brand-main: var(--bp-base-color-yellow-500);
     --bp-theme-color-brand-support: var(--bp-base-color-blue-500);
+    --bp-theme-color-brand-on-solid: var(--bp-base-color-neutral-0);
+    --bp-theme-color-data-accent: var(--bp-base-color-yellow-500);
+    --bp-theme-color-data-accent-dim: var(--bp-base-color-yellow-300);
+    --bp-theme-color-data-chart-alt-1: var(--bp-base-color-amber-900);
+    --bp-theme-color-data-chart-alt-2: var(--bp-base-color-amber-600);
+    --bp-theme-color-data-chart-alt-3: var(--bp-base-color-amber-300);
+    --bp-theme-color-data-chart-alt-4: var(--bp-base-color-amber-100);
+    --bp-theme-color-data-chart-comparison: var(--bp-base-color-neutral-700);
+    --bp-theme-color-data-chart-reference: var(--bp-base-color-neutral-400);
+    --bp-theme-color-data-chart-primary-1: var(--bp-base-color-blue-500);
+    --bp-theme-color-data-chart-primary-2: var(--bp-base-color-blue-400);
+    --bp-theme-color-data-chart-primary-3: var(--bp-base-color-blue-300);
+    --bp-theme-color-data-chart-primary-4: var(--bp-base-color-blue-200);
+    --bp-theme-color-data-chart-primary-5: var(--bp-base-color-blue-100);
+    --bp-theme-color-data-chart-primary-6: var(--bp-base-color-blue-75);
+    --bp-theme-color-data-chart-track: var(--bp-base-color-neutral-100);
+    --bp-theme-color-data-chart-grid: var(--bp-base-color-blue-75);
+    --bp-theme-color-data-negative: var(--bp-base-color-red-700);
+    --bp-theme-color-data-neutral: var(--bp-base-color-blue-200);
+    --bp-theme-color-data-positive: var(--bp-base-color-green-700);
+    --bp-theme-color-data-surface-raised: var(--bp-base-color-neutral-50);
+    --bp-theme-color-data-text-default: var(--bp-base-color-blue-500);
+    --bp-theme-color-data-text-muted: var(--bp-base-color-blue-300);
     --bp-theme-color-field-bg: var(--bp-base-color-neutral-0);
+    --bp-theme-color-field-bg-disabled: var(--bp-base-color-neutral-50);
+    --bp-theme-color-field-bg-readonly: var(--bp-theme-color-field-bg-disabled);
     --bp-theme-color-field-border: var(--bp-base-color-neutral-500);
+    --bp-theme-color-field-border-disabled: var(--bp-base-color-neutral-300);
     --bp-theme-color-field-border-error: var(--bp-base-color-red-500);
+    --bp-theme-color-field-border-hover: var(--bp-base-color-neutral-800);
+    --bp-theme-color-field-control-active: var(--bp-base-color-blue-500);
+    --bp-theme-color-field-control-active-disabled: var(--bp-base-color-sky-300);
+    --bp-theme-color-field-control-hover: var(--bp-base-color-neutral-500);
+    --bp-theme-color-field-control-inactive: var(--bp-base-color-neutral-400);
+    --bp-theme-color-field-control-inactive-disabled: var(--bp-base-color-neutral-300);
+    --bp-theme-color-field-thumb: var(--bp-base-color-neutral-0);
     --bp-theme-color-icon-brand: var(--bp-theme-color-brand-support);
+    --bp-theme-color-icon-disabled: var(--bp-base-color-neutral-500);
     --bp-theme-color-icon-helper: var(--bp-base-color-neutral-800);
     --bp-theme-color-icon-interactive: var(--bp-base-color-blue-500);
+    --bp-theme-color-icon-interactive-hover: var(--bp-base-color-blue-900);
+    --bp-theme-color-icon-inverse: var(--bp-base-color-neutral-0);
     --bp-theme-color-icon-on-brand: var(--bp-base-color-blue-500);
     --bp-theme-color-icon-on-solid: var(--bp-base-color-neutral-0);
+    --bp-theme-color-icon-placeholder: var(--bp-base-color-neutral-400);
     --bp-theme-color-icon-primary: var(--bp-base-color-neutral-950);
     --bp-theme-color-icon-secondary: var(--bp-base-color-neutral-850);
+    --bp-theme-color-icon-subtle: var(--bp-base-color-blue-300);
+    --bp-theme-color-icon-tertiary: var(--bp-base-color-neutral-600);
     --bp-theme-color-interaction-accent-bg: var(--bp-base-color-blue-900);
+    --bp-theme-color-interaction-accent-bg-disabled: var(--bp-base-color-blue-100);
+    --bp-theme-color-interaction-accent-bg-hover: color-mix(in srgb, var(--bp-base-color-blue-900) 88%, transparent);
+    --bp-theme-color-interaction-accent-bg-pressed: color-mix(in srgb, var(--bp-base-color-blue-900) 80%, transparent);
     --bp-theme-color-interaction-accent-fg: var(--bp-theme-color-text-on-solid);
+    --bp-theme-color-interaction-accent-fg-disabled: color-mix(in srgb, var(--bp-base-color-neutral-0) 80%, transparent);
+    --bp-theme-color-interaction-destructive-bg: color-mix(in srgb, var(--bp-base-color-red-500) 8%, transparent);
+    --bp-theme-color-interaction-destructive-bg-disabled: color-mix(in srgb, var(--bp-base-color-red-500) 4%, transparent);
+    --bp-theme-color-interaction-destructive-bg-hover: color-mix(in srgb, var(--bp-base-color-red-500) 16%, transparent);
+    --bp-theme-color-interaction-destructive-bg-pressed: color-mix(in srgb, var(--bp-base-color-red-500) 24%, transparent);
+    --bp-theme-color-interaction-destructive-fg: var(--bp-base-color-red-900);
+    --bp-theme-color-interaction-destructive-fg-disabled: color-mix(in srgb, var(--bp-base-color-red-900) 20%, transparent);
     --bp-theme-color-interaction-primary-bg: var(--bp-base-color-yellow-500);
+    --bp-theme-color-interaction-primary-bg-disabled: var(--bp-base-color-amber-100);
     --bp-theme-color-interaction-primary-bg-hover: var(--bp-base-color-yellow-800);
     --bp-theme-color-interaction-primary-bg-pressed: var(--bp-base-color-amber-600);
     --bp-theme-color-interaction-primary-fg: var(--bp-theme-color-text-on-brand);
+    --bp-theme-color-interaction-primary-fg-disabled: color-mix(in srgb, var(--bp-base-color-blue-500) 32%, transparent);
     --bp-theme-color-interaction-secondary-bg: color-mix(in srgb, var(--bp-base-color-neutral-400) 32%, transparent);
+    --bp-theme-color-interaction-secondary-bg-disabled: color-mix(in srgb, var(--bp-base-color-neutral-400) 12%, transparent);
     --bp-theme-color-interaction-secondary-bg-hover: color-mix(in srgb, var(--bp-base-color-neutral-400) 48%, transparent);
     --bp-theme-color-interaction-secondary-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-400) 80%, transparent);
     --bp-theme-color-interaction-secondary-fg: var(--bp-base-color-blue-500);
+    --bp-theme-color-interaction-secondary-fg-disabled: color-mix(in srgb, var(--bp-base-color-blue-500) 32%, transparent);
     --bp-theme-color-interaction-selection-bg: color-mix(in srgb, var(--bp-base-color-neutral-1050) 4%, transparent);
     --bp-theme-color-interaction-selection-bg-active: var(--bp-theme-color-interaction-accent-bg);
     --bp-theme-color-interaction-selection-bg-active-subtle: var(--bp-base-color-neutral-300);
+    --bp-theme-color-interaction-selection-bg-disabled: var(--bp-theme-color-interaction-tertiary-bg-disabled);
     --bp-theme-color-interaction-selection-bg-elevated: var(--bp-base-color-neutral-0);
     --bp-theme-color-interaction-selection-bg-hover: var(--bp-base-color-neutral-50);
     --bp-theme-color-interaction-selection-bg-pressed: var(--bp-base-color-neutral-100);
     --bp-theme-color-interaction-selection-fg: var(--bp-theme-color-text-brand);
+    --bp-theme-color-interaction-selection-fg-disabled: color-mix(in srgb, var(--bp-base-color-blue-500) 32%, transparent);
     --bp-theme-color-interaction-selection-fg-on-active: var(--bp-theme-color-interaction-accent-fg);
     --bp-theme-color-interaction-selection-fg-subtle: var(--bp-base-color-neutral-800);
+    --bp-theme-color-interaction-tertiary-bg: var(--bp-base-color-transparent);
+    --bp-theme-color-interaction-tertiary-bg-adaptive: color-mix(in srgb, var(--bp-base-color-neutral-200) 64%, transparent);
+    --bp-theme-color-interaction-tertiary-bg-disabled: var(--bp-base-color-neutral-0);
     --bp-theme-color-interaction-tertiary-bg-hover: color-mix(in srgb, var(--bp-base-color-neutral-800) 4%, transparent);
     --bp-theme-color-interaction-tertiary-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-800) 8%, transparent);
     --bp-theme-color-interaction-tertiary-fg: var(--bp-base-color-blue-500);
+    --bp-theme-color-interaction-tertiary-fg-disabled: color-mix(in srgb, var(--bp-base-color-blue-500) 32%, transparent);
+    --bp-theme-color-loading-backdrop-on-page: color-mix(in srgb, var(--bp-base-color-neutral-900) 16%, transparent);
+    --bp-theme-color-loading-spinner-on-brand: var(--bp-theme-color-icon-on-brand);
+    --bp-theme-color-loading-spinner-on-page: var(--bp-theme-color-icon-brand);
+    --bp-theme-color-loading-spinner-on-solid: var(--bp-theme-color-icon-on-solid);
     --bp-theme-color-row-bg: var(--bp-base-color-neutral-0);
+    --bp-theme-color-row-bg-active: color-mix(in srgb, var(--bp-base-color-neutral-400) 24%, transparent);
+    --bp-theme-color-row-bg-hover: color-mix(in srgb, var(--bp-base-color-neutral-300) 16%, transparent);
+    --bp-theme-color-row-bg-selected: color-mix(in srgb, var(--bp-base-color-blue-200) 16%, transparent);
+    --bp-theme-color-status-caution-bg: var(--bp-base-color-amber-800);
     --bp-theme-color-status-caution-bg-subtle: var(--bp-base-color-amber-100);
+    --bp-theme-color-status-caution-border: var(--bp-base-color-amber-500);
+    --bp-theme-color-status-caution-icon: var(--bp-base-color-amber-900);
+    --bp-theme-color-status-caution-text: var(--bp-base-color-neutral-850);
     --bp-theme-color-status-error-bg: var(--bp-base-color-red-500);
     --bp-theme-color-status-error-bg-subtle: var(--bp-base-color-red-50);
+    --bp-theme-color-status-error-border: var(--bp-base-color-red-500);
+    --bp-theme-color-status-error-icon: var(--bp-base-color-red-500);
     --bp-theme-color-status-error-text: var(--bp-base-color-red-500);
+    --bp-theme-color-status-important-bg: var(--bp-base-color-red-600);
     --bp-theme-color-status-info-bg: var(--bp-base-color-sky-500);
     --bp-theme-color-status-info-bg-subtle: var(--bp-base-color-sky-50);
+    --bp-theme-color-status-info-border: var(--bp-base-color-sky-500);
+    --bp-theme-color-status-info-icon: var(--bp-base-color-sky-600);
     --bp-theme-color-status-info-text: var(--bp-base-color-sky-800);
+    --bp-theme-color-status-neutral-bg: var(--bp-base-color-neutral-800);
     --bp-theme-color-status-neutral-bg-subtle: var(--bp-base-color-neutral-200);
+    --bp-theme-color-status-neutral-border: var(--bp-base-color-neutral-850);
+    --bp-theme-color-status-neutral-icon: var(--bp-base-color-neutral-800);
     --bp-theme-color-status-neutral-text: var(--bp-base-color-neutral-800);
+    --bp-theme-color-status-new-bg: var(--bp-base-color-teal-500);
     --bp-theme-color-status-new-bg-subtle: var(--bp-base-color-teal-50);
+    --bp-theme-color-status-new-border: var(--bp-base-color-teal-500);
+    --bp-theme-color-status-new-icon: var(--bp-base-color-teal-600);
     --bp-theme-color-status-new-text: var(--bp-base-color-teal-800);
+    --bp-theme-color-status-notification-bg: var(--bp-base-color-red-500);
+    --bp-theme-color-status-notification-fg: var(--bp-base-color-neutral-0);
+    --bp-theme-color-status-pending-bg: var(--bp-base-color-blue-500);
     --bp-theme-color-status-pending-bg-subtle: var(--bp-base-color-blue-50);
+    --bp-theme-color-status-pending-border: var(--bp-base-color-blue-400);
+    --bp-theme-color-status-pending-icon: var(--bp-base-color-blue-400);
     --bp-theme-color-status-pending-text: var(--bp-base-color-blue-400);
+    --bp-theme-color-status-promo-bg: var(--bp-base-color-purple-500);
+    --bp-theme-color-status-promo-bg-subtle: var(--bp-base-color-purple-50);
+    --bp-theme-color-status-promo-border: var(--bp-base-color-purple-500);
+    --bp-theme-color-status-promo-icon: var(--bp-base-color-purple-600);
+    --bp-theme-color-status-promo-text: var(--bp-base-color-purple-700);
     --bp-theme-color-status-success-bg: var(--bp-base-color-green-500);
     --bp-theme-color-status-success-bg-subtle: var(--bp-base-color-green-50);
+    --bp-theme-color-status-success-border: var(--bp-base-color-green-500);
     --bp-theme-color-status-success-icon: var(--bp-base-color-green-600);
     --bp-theme-color-status-success-text: var(--bp-base-color-green-900);
     --bp-theme-color-status-warning-bg: var(--bp-base-color-tangerine-500);
     --bp-theme-color-status-warning-bg-subtle: var(--bp-base-color-tangerine-50);
+    --bp-theme-color-status-warning-border: var(--bp-base-color-tangerine-500);
+    --bp-theme-color-status-warning-icon: var(--bp-base-color-tangerine-600);
     --bp-theme-color-status-warning-text: var(--bp-base-color-neutral-850);
+    --bp-theme-color-surface-brand-alt: var(--bp-base-color-blue-500);
+    --bp-theme-color-surface-brand-alt-subtle: var(--bp-base-color-sky-100);
     --bp-theme-color-surface-brand-default: var(--bp-theme-color-brand-main);
+    --bp-theme-color-surface-brand-preferred: var(--bp-base-color-neutral-950);
     --bp-theme-color-surface-brand-subtle: var(--bp-base-color-yellow-100);
+    --bp-theme-color-surface-container-adaptive: color-mix(in srgb, var(--bp-base-color-neutral-0) 64%, transparent);
     --bp-theme-color-surface-container-alt: color-mix(in srgb, var(--bp-base-color-neutral-100) 48%, transparent);
     --bp-theme-color-surface-container-default: var(--bp-base-color-neutral-0);
     --bp-theme-color-surface-container-fixed: color-mix(in srgb, var(--bp-base-color-neutral-0) 96%, transparent);
     --bp-theme-color-surface-page-alt: var(--bp-base-color-neutral-100);
     --bp-theme-color-surface-page-default: var(--bp-base-color-neutral-0);
+    --bp-theme-color-surface-scrim-alt: color-mix(in srgb, var(--bp-base-color-neutral-0) 48%, transparent);
     --bp-theme-color-surface-scrim-default: color-mix(in srgb, var(--bp-base-color-neutral-900) 64%, transparent);
+    --bp-theme-color-surface-scrim-subtle: color-mix(in srgb, var(--bp-base-color-neutral-900) 8%, transparent);
     --bp-theme-color-text-brand: var(--bp-base-color-blue-500);
     --bp-theme-color-text-disabled: var(--bp-base-color-neutral-500);
     --bp-theme-color-text-helper: var(--bp-base-color-neutral-800);
     --bp-theme-color-text-interactive: var(--bp-base-color-blue-500);
+    --bp-theme-color-text-interactive-hover: var(--bp-base-color-blue-900);
     --bp-theme-color-text-inverse: var(--bp-base-color-neutral-0);
     --bp-theme-color-text-on-brand: var(--bp-base-color-blue-500);
     --bp-theme-color-text-on-solid: var(--bp-base-color-neutral-0);
+    --bp-theme-color-text-placeholder: var(--bp-theme-color-text-helper);
     --bp-theme-color-text-primary: var(--bp-base-color-neutral-950);
     --bp-theme-color-text-secondary: var(--bp-base-color-neutral-850);
     --bp-theme-color-text-tertiary: var(--bp-base-color-neutral-600);
+    /* Anillo de foco (efecto interaction/focus: 2px gap + 4px color) */
+    --bp-focus-ring-gap: var(--bp-theme-color-surface-page-default);
+    --bp-focus-ring-color: var(--bp-theme-color-border-focus);
   }
+}
+
+@layer tokens.product {
+  :root {
+    /* Recetas bp-* (sólo remapean semánticos; los modos = data-size) */
+    --bp-button-size: var(--bp-semantic-size-interactive-md);
+    --bp-button-padding-x: var(--bp-semantic-spacing-macro-md);
+    --bp-button-padding-icon: var(--bp-semantic-spacing-micro-lg);
+    --bp-action-button-size: var(--bp-semantic-size-interactive-xs);
+    --bp-action-button-padding-x: var(--bp-semantic-spacing-macro-sm);
+    --bp-action-button-padding-x-icon: var(--bp-semantic-spacing-micro-lg);
+    --bp-action-button-icon-size: var(--bp-semantic-size-icon-sm);
+    --bp-icon-switch-size: var(--bp-semantic-size-interactive-xs);
+    --bp-tag-height: var(--bp-semantic-size-icon-md);
+    --bp-avatar-size: var(--bp-semantic-size-avatar-xs);
+    --bp-avatar-icon-size: var(--bp-semantic-size-icon-xs);
+    --bp-component-interactive-icon-size: var(--bp-semantic-size-icon-md);
+  }
+  [data-size="md"].bp-button, .bp-button[data-size="md"] { --bp-button-size: var(--bp-semantic-size-interactive-sm); }
+  .bp-action-button[data-size="sm"] {
+    --bp-action-button-size: var(--bp-semantic-size-interactive-xxs);
+    --bp-action-button-padding-x: var(--bp-semantic-spacing-micro-lg);
+    --bp-action-button-padding-x-icon: var(--bp-semantic-spacing-micro-md);
+  }
+  .bp-tag[data-size="sm"] { --bp-tag-height: var(--bp-semantic-size-icon-xs); }
 }
