@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Banca Móvil en iPhone Duo</title>
-    <meta name="description" content="Concept interactivo: la banca móvil adaptada al iPhone Duo siguiendo las Human Interface Guidelines de iOS.">
+    <title>Pichibank app en iPhone Duo</title>
+    <meta name="description" content="Concept interactivo: Pichibank app adaptada al iPhone Duo siguiendo las Human Interface Guidelines de iOS.">
     <link rel="stylesheet" href="./assets/tokens.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=block">
     <style>
@@ -585,7 +585,7 @@
     <header class="top">
         <div>
             <div class="eyebrow">Concept · iPhone Duo · iOS HIG</div>
-            <h1 class="h">La banca móvil, abierta en dos</h1>
+            <h1 class="h">Pichibank app, abierta en dos</h1>
             <p class="lede">Cerrado, la app de siempre en la pantalla exterior. Abierto, la pantalla de 7,6" se convierte en un split view nativo: barra lateral, lista y detalle con su propia pila de navegación. Todo es interactivo: toca, desliza, mantén presionado y arrastra.</p>
         </div>
         <div class="controls">
@@ -608,7 +608,7 @@
                     <div class="outer" aria-hidden="true" id="outer">
                         <div class="sb"><span class="clock">9:41</span><span class="sb__r"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span class="ms">battery_full</span></span></div>
                         <div class="island"></div>
-                        <iframe id="app" src="./index.html" title="Banca Móvil (pantalla exterior)" tabindex="-1"></iframe>
+                        <iframe id="app" src="./index.html" title="Pichibank app (pantalla exterior)" tabindex="-1"></iframe>
                     </div>
 
                     <!-- Interior: split view -->
@@ -895,7 +895,7 @@
             const p = (st.limit - 100) / 1900 * 100;
             return navbar(c.name) + `<div class="scroll"><h1 class="large-title">${c.name}</h1>
                 <div class="pcard ${c.cls}${st.locked ? ' locked' : ''}" id="pcard">
-                    <div class="pcard__top"><span>MI BANCO</span><span>${c.id === 'deb' ? 'Débito' : 'Crédito'}</span></div>
+                    <div class="pcard__top"><span>PICHIBANK</span><span>${c.id === 'deb' ? 'Débito' : 'Crédito'}</span></div>
                     <div class="pcard__num" id="pcard-num">${num}</div>
                     <div class="pcard__bot"><span>ANA MARTÍNEZ<br>Vence ${st.shown ? c.exp : '••/••'}</span><span class="pcard__net">VISA</span></div>
                     <div class="pcard__lock"><span class="ms fill">lock</span></div>

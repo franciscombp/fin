@@ -1,0 +1,5 @@
+<svg width="129" height="28" viewBox="0 0 129 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0H28V18.6C28 23.8 23.8 28 18.6 28H0V0Z" fill="#FFDD00"/>
+<path d="M9 7H17.2C20.5 7 22.5 9.1 22.5 12.1C22.5 15.1 20.5 17.2 17.2 17.2H13V21H9V7ZM13 10.4V13.8H16.9C18 13.8 18.6 13.1 18.6 12.1C18.6 11.1 18 10.4 16.9 10.4H13Z" fill="#0F265C"/>
+<text x="35" y="20.5" fill="#0F265C" font-family="-apple-system, 'SF Pro Display', 'Segoe UI', Roboto, Arial, sans-serif" font-size="19" font-weight="700" letter-spacing="-0.3">Pichibank</text>
+</svg>

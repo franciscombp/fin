@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Guía de feedback y movimiento · Pichibank app</title>
+    <meta name="description" content="Criterios para usar microinteracciones, feedback háptico, sonido y transiciones en Pichibank app, con demos en vivo.">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=block">
+    <style>
+        /* ---------- Tokens de la guía ---------- */
+        :root {
+            --bg: #ffffff;
+            --bg-2: #f6f7f9;
+            --bg-3: #eef0f3;
+            --ink: #1f2328;
+            --ink-2: #57606a;
+            --ink-3: #8b949e;
+            --line: #d8dee4;
+            --code-bg: #f6f8fa;
+            --brand: #ffdd00;
+            --brand-ink: #0f265c;
+            --link: #1f60ac;
+            --ok: #1a7f37; --ok-bg: #dafbe1;
+            --no: #cf222e; --no-bg: #ffebe9;
+            --note: #0969da; --note-bg: #ddf4ff;
+            --warn: #9a6700; --warn-bg: #fff8c5;
+
+            /* Tokens de movimiento de Pichibank (se documentan en §7) */
+            --motion-instant: 80ms;
+            --motion-fast: 150ms;
+            --motion-base: 250ms;
+            --motion-slow: 400ms;
+            --motion-emphasis: 600ms;
+            --ease-standard: cubic-bezier(.2, 0, 0, 1);
+            --ease-decelerate: cubic-bezier(.22, 1, .36, 1);
+            --ease-accelerate: cubic-bezier(.4, 0, 1, 1);
+            --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+            --ease-ios: cubic-bezier(.32, .72, 0, 1);
+        }
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --bg: #0d1117; --bg-2: #161b22; --bg-3: #21262d;
+                --ink: #e6edf3; --ink-2: #9da7b3; --ink-3: #6e7681; --line: #30363d; --code-bg: #161b22;
+                --link: #79b8ff; --brand-ink: #0f265c;
+                --ok: #3fb950; --ok-bg: rgba(46,160,67,.15); --no: #f85149; --no-bg: rgba(248,81,73,.12);
+                --note: #58a6ff; --note-bg: rgba(56,139,253,.12); --warn: #d29922; --warn-bg: rgba(187,128,9,.15);
+            }
+        }
+        :root[data-theme="dark"] {
+            --bg: #0d1117; --bg-2: #161b22; --bg-3: #21262d;
+            --ink: #e6edf3; --ink-2: #9da7b3; --ink-3: #6e7681; --line: #30363d; --code-bg: #161b22;
+            --link: #79b8ff;
+            --ok: #3fb950; --ok-bg: rgba(46,160,67,.15); --no: #f85149; --no-bg: rgba(248,81,73,.12);
+            --note: #58a6ff; --note-bg: rgba(56,139,253,.12); --warn: #d29922; --warn-bg: rgba(187,128,9,.15);
+        }
+        /* Reducir movimiento: preferencia del sistema o el interruptor de la guía */
+        html.rm *, html.rm *::before, html.rm *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+        }
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: 72px; -webkit-text-size-adjust: 100%; }
+        body {
+            margin: 0; background: var(--bg); color: var(--ink);
+            font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--link); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .ms {
+            font-family: 'Material Symbols Rounded'; font-weight: normal; font-style: normal;
+            font-size: 20px; line-height: 1; display: inline-flex; width: 1em; height: 1em; overflow: hidden;
+            vertical-align: -4px; visibility: hidden; flex-shrink: 0;
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        html.icons-ready .ms { visibility: visible; }
+        .ms.fill { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+
+        /* ---------- Barra superior ---------- */
+        .topbar {
+            position: sticky; top: 0; z-index: 20;
+            display: flex; align-items: center; gap: 12px;
+            height: 56px; padding: 0 16px;
+            background: color-mix(in srgb, var(--bg) 88%, transparent);
+            -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--line);
+        }
+        .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+        .brand__mark { width: 26px; height: 26px; border-radius: 0 0 9px 0; background: var(--brand); color: var(--brand-ink); display: grid; place-items: center; font-size: 15px; font-weight: 800; }
+        .crumb { color: var(--ink-3); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .topbar__sp { flex: 1; }
+        .topbar nav { display: flex; gap: 4px; }
+        .topbar nav a, .tb-btn {
+            display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 10px; border-radius: 6px;
+            font-size: 14px; color: var(--ink-2); border: 1px solid transparent; background: none; white-space: nowrap;
+        }
+        .topbar nav a:hover, .tb-btn:hover { background: var(--bg-2); text-decoration: none; }
+        .tb-btn { border-color: var(--line); }
+        .toc-btn { display: none; }
+
+        /* ---------- Layout ---------- */
+        .layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); max-width: 1180px; margin: 0 auto; }
+        .toc {
+            position: sticky; top: 56px; height: calc(100vh - 56px); overflow-y: auto;
+            padding: 24px 12px 40px 16px; border-right: 1px solid var(--line); font-size: 14px;
+        }
+        .toc h6 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); }
+        .toc ol { list-style: none; margin: 0; padding: 0; counter-reset: t; }
+        .toc li a { display: block; padding: 5px 10px; border-radius: 6px; color: var(--ink-2); border-left: 2px solid transparent; }
+        .toc li a:hover { background: var(--bg-2); text-decoration: none; }
+        .toc li a.active { color: var(--ink); font-weight: 600; background: var(--bg-2); border-left-color: var(--brand); }
+        .toc .prefs { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); display: grid; gap: 10px; }
+        main.doc { padding: 32px clamp(16px, 5vw, 56px) 96px; max-width: 860px; min-width: 0; }
+
+        /* ---------- Tipografía tipo Markdown ---------- */
+        .doc h1 { font-size: 34px; line-height: 1.2; margin: 0 0 8px; letter-spacing: -.01em; }
+        .doc h2 { font-size: 24px; line-height: 1.3; margin: 56px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+        .doc h2 .num { color: var(--ink-3); font-weight: 500; margin-right: 6px; }
+        .doc h3 { font-size: 18px; margin: 32px 0 8px; }
+        .doc h4 { font-size: 15px; margin: 20px 0 6px; }
+        .doc p, .doc ul, .doc ol { margin: 0 0 14px; }
+        .doc ul, .doc ol { padding-left: 24px; }
+        .doc li { margin: 4px 0; }
+        .doc hr { border: 0; border-top: 1px solid var(--line); margin: 32px 0; }
+        .lead { font-size: 18px; color: var(--ink-2); }
+        .meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 24px; }
+        .pill { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); color: var(--ink-2); }
+        code, kbd, pre { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; font-size: .88em; }
+        :not(pre) > code { background: var(--code-bg); border: 1px solid var(--line); padding: .1em .4em; border-radius: 6px; }
+        kbd { border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; background: var(--bg-2); }
+        pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow: auto; line-height: 1.5; margin: 0 0 16px; }
+        pre .c { color: var(--ink-3); }
+        pre .k { color: #cf222e; }
+        pre .s { color: #0a3069; }
+        [data-theme="dark"] pre .s { color: #a5d6ff; }
+        @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) pre .s { color: #a5d6ff; } :root:not([data-theme="light"]) pre .k { color: #ff7b72; } }
+        [data-theme="dark"] pre .k { color: #ff7b72; }
+
+        /* Tablas */
+        .tbl { overflow-x: auto; margin: 0 0 18px; border: 1px solid var(--line); border-radius: 8px; }
+        table { border-collapse: collapse; width: 100%; font-size: 14px; line-height: 1.45; }
+        th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+        th { background: var(--bg-2); font-weight: 600; white-space: nowrap; }
+        tr:last-child td { border-bottom: 0; }
+        td code { white-space: nowrap; }
+        .y { color: var(--ok); font-weight: 700; }
+        .n { color: var(--ink-3); }
+        .opt { color: var(--warn); font-weight: 600; }
+
+        /* Callouts estilo GitHub */
+        .callout { border-left: 4px solid; border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 0 0 16px; font-size: 15px; }
+        .callout > b:first-child { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
+        .callout p:last-child, .callout ul:last-child { margin-bottom: 0; }
+        .callout.note { border-color: var(--note); background: var(--note-bg); } .callout.note > b { color: var(--note); }
+        .callout.tip { border-color: var(--ok); background: var(--ok-bg); } .callout.tip > b { color: var(--ok); }
+        .callout.warn { border-color: var(--warn); background: var(--warn-bg); } .callout.warn > b { color: var(--warn); }
+        .callout.no { border-color: var(--no); background: var(--no-bg); } .callout.no > b { color: var(--no); }
+
+        /* Hacer / No hacer */
+        .dodont { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0 0 18px; }
+        .dodont > div { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; font-size: 14.5px; }
+        .dodont h5 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; display: flex; align-items: center; gap: 4px; }
+        .dodont .do { border-top: 3px solid var(--ok); } .dodont .do h5 { color: var(--ok); }
+        .dodont .dont { border-top: 3px solid var(--no); } .dodont .dont h5 { color: var(--no); }
+        .dodont ul { margin: 0; padding-left: 18px; }
+
+        /* ---------- Bloques de demo ---------- */
+        .demo { border: 1px solid var(--line); border-radius: 10px; margin: 0 0 20px; overflow: hidden; }
+        .demo__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; background: var(--bg-2); border-bottom: 1px solid var(--line); font-size: 13px; color: var(--ink-2); }
+        .demo__head b { color: var(--ink); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+        .demo__head b::before { content: 'DEMO'; font-size: 10px; letter-spacing: .08em; background: var(--brand); color: var(--brand-ink); padding: 1px 6px; border-radius: 4px; }
+        .demo__body { padding: 20px; background: #f5f5f5; color: #1f1f1f; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; justify-content: center; }
+        .demo__foot { padding: 8px 12px; font-size: 13px; color: var(--ink-2); border-top: 1px solid var(--line); background: var(--bg); }
+        .demo__log { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--ink-2); }
+
+        /* Componentes Pichibank dentro de los demos (siempre tema claro de la app) */
+        .pb-card { background: #fff; border-radius: 12px; padding: 16px; width: 100%; max-width: 320px; box-shadow: 0 1px 0 rgba(0,0,0,.04); }
+        .pb-label { font-size: 13px; color: #5c5c5c; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+        .pb-amount { font-size: 30px; font-weight: 700; letter-spacing: -.01em; font-variant-numeric: tabular-nums; margin-top: 4px; transition: filter var(--motion-base) var(--ease-standard); }
+        .pb-amount.masked { filter: blur(8px); }
+        .pb-eye { width: 36px; height: 36px; border-radius: 10px; border: 0; background: rgba(208,208,208,.32); color: #0f265c; display: grid; place-items: center; transition: transform var(--motion-fast) var(--ease-spring); }
+        .pb-eye:active { transform: scale(.88); }
+        .pb-btn {
+            height: 48px; padding: 0 20px; border: 0; border-radius: 12px; font-weight: 600; font-size: 15px;
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            background: #ffdd00; color: #0f265c;
+            transition: transform var(--motion-slow) var(--ease-spring), background var(--motion-fast);
+        }
+        .pb-btn:active { transform: scale(.96); transition-duration: var(--motion-instant); background: #ffcb00; }
+        .pb-btn--sec { background: rgba(208,208,208,.4); }
+        .pb-btn--flat:active { transform: none; background: #ffdd00; }
+        .pb-btn[disabled] { opacity: .4; pointer-events: none; }
+        .pb-field { width: 100%; max-width: 320px; }
+        .pb-field label { display: block; font-size: 13px; font-weight: 600; color: #404040; margin-bottom: 4px; }
+        .pb-field input { width: 100%; height: 48px; border-radius: 10px; border: 1.5px solid #bdbdbd; padding: 0 12px; font-size: 18px; font-variant-numeric: tabular-nums; background: #fff; color: #1f1f1f; outline: none; transition: border-color var(--motion-fast); }
+        .pb-field input:focus { border-color: #0f265c; }
+        .pb-field.err input { border-color: #d50707; }
+        .pb-field .hint { font-size: 12.5px; color: #5c5c5c; min-height: 18px; margin-top: 4px; }
+        .pb-field.err .hint { color: #d50707; }
+        .shake { animation: shake 400ms var(--ease-standard); }
+        @keyframes shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+        .pb-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+        .pb-row + .pb-row { border-top: 1px solid #f0f0f0; }
+        .pb-ic { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: rgba(15,38,92,.06); color: #0f265c; flex-shrink: 0; }
+        .pb-row__t { flex: 1; font-size: 15px; }
+        .pb-row__t small { display: block; color: #5c5c5c; font-size: 12.5px; }
+        .pb-copy { border: 0; background: rgba(208,208,208,.32); width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; color: #0f265c; position: relative; }
+        .pb-copy .ms { transition: transform var(--motion-base) var(--ease-spring), opacity var(--motion-fast); position: absolute; }
+        .pb-copy .ok { transform: scale(0); opacity: 0; color: #218c3b; }
+        .pb-copy.done .cp { transform: scale(0); opacity: 0; }
+        .pb-copy.done .ok { transform: scale(1); opacity: 1; }
+        .tgl { position: relative; width: 51px; height: 31px; display: inline-block; flex-shrink: 0; }
+        .tgl input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; z-index: 1; }
+        .tgl span { position: absolute; inset: 0; border-radius: 16px; background: #d0d0d0; transition: background var(--motion-base); }
+        .tgl span::after { content: ''; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.2); transition: transform var(--motion-base) var(--ease-ios); }
+        .tgl input:checked + span { background: #31a451; }
+        .tgl input:checked + span::after { transform: translateX(20px); }
+        .skel { background: linear-gradient(90deg, #ececec 25%, #f7f7f7 37%, #ececec 63%); background-size: 400% 100%; animation: sk 1.3s ease infinite; border-radius: 6px; }
+        @keyframes sk { from { background-position: 100% 50%; } to { background-position: 0 50%; } }
+        .rise { animation: rise var(--motion-slow) var(--ease-decelerate) both; }
+        @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+        /* Mini teléfono para transiciones */
+        .phone { width: 220px; height: 400px; border-radius: 30px; background: #1f1f1f; padding: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.18); }
+        .phone__scr { position: relative; width: 100%; height: 100%; border-radius: 23px; overflow: hidden; background: #f5f5f5; }
+        .scr { position: absolute; inset: 0; padding: 36px 14px 14px; background: #f5f5f5; }
+        .scr h4 { margin: 0 0 10px; font-size: 18px; color: #1f1f1f; }
+        .scr .pb-row { padding: 8px 0; }
+        .scr .pb-row__t { font-size: 13px; }
+        .scr-back { border: 0; background: none; color: #0f265c; font-size: 13px; font-weight: 600; padding: 0; display: inline-flex; align-items: center; margin: -22px 0 8px -4px; }
+        .tr-controls { display: flex; flex-direction: column; gap: 8px; min-width: 200px; }
+        .tr-controls .pb-btn { height: 40px; font-size: 14px; justify-content: flex-start; }
+        .sheet-back { position: absolute; inset: 0; background: rgba(0,0,0,.35); opacity: 0; pointer-events: none; transition: opacity var(--motion-base); }
+        .sheet { position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-radius: 16px 16px 0 0; padding: 10px 14px 18px; transform: translateY(100%); transition: transform var(--motion-slow) var(--ease-ios); }
+        .sheet::before { content: ''; display: block; width: 36px; height: 5px; border-radius: 3px; background: #d0d0d0; margin: 0 auto 12px; }
+        .phone.sheet-open .sheet { transform: none; }
+        .phone.sheet-open .sheet-back { opacity: 1; pointer-events: auto; }
+        .spd { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--ink-2); }
+        .spd input { accent-color: #0f265c; }
+
+        /* Asistente de decisión */
+        .wiz { display: grid; gap: 10px; width: 100%; }
+        .wiz__q { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #fff; border-radius: 10px; padding: 10px 14px; font-size: 14.5px; }
+        .seg { display: inline-flex; background: #ececec; border-radius: 8px; padding: 2px; flex-shrink: 0; }
+        .seg button { border: 0; background: none; padding: 4px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; color: #404040; }
+        .seg button[aria-pressed="true"] { background: #fff; color: #0f265c; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+        .wiz__out { background: #0f265c; color: #fff; border-radius: 12px; padding: 14px 16px; font-size: 14.5px; }
+        .wiz__out h5 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: #ffdd00; }
+        .wiz__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .wiz__cell { background: rgba(255,255,255,.08); border-radius: 8px; padding: 8px 10px; }
+        .wiz__cell small { display: block; opacity: .7; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+        .wiz__cell b { font-size: 14px; }
+        .wiz__try { margin-top: 10px; background: #ffdd00; color: #0f265c; border: 0; border-radius: 8px; padding: 6px 12px; font-weight: 700; font-size: 13px; }
+
+        /* Botonera de efectos */
+        .fxgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; width: 100%; }
+        .fxbtn { border: 0; background: #fff; border-radius: 10px; padding: 10px 12px; text-align: left; display: flex; flex-direction: column; gap: 2px; transition: transform var(--motion-fast) var(--ease-spring); box-shadow: 0 1px 0 rgba(0,0,0,.04); }
+        .fxbtn:active { transform: scale(.96); }
+        .fxbtn b { font-size: 14px; color: #0f265c; display: flex; align-items: center; gap: 6px; }
+        .fxbtn small { font-size: 12px; color: #5c5c5c; }
+        .fxbtn.play { animation: fxpop 300ms var(--ease-spring); }
+        @keyframes fxpop { 50% { transform: scale(1.05); } }
+
+        .slider { width: 100%; max-width: 320px; background: #fff; border-radius: 12px; padding: 14px 16px; }
+        .slider__top { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; }
+        .slider__top b { font-variant-numeric: tabular-nums; }
+        .slider input { width: 100%; accent-color: #0f265c; }
+        .counter { font-size: 12px; color: #5c5c5c; margin-top: 4px; font-variant-numeric: tabular-nums; }
+        .counter b { color: #d50707; }
+
+        /* Checklist */
+        .check { list-style: none; padding: 0 !important; }
+        .check li { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; border-bottom: 1px dashed var(--line); }
+        .check input { margin-top: 5px; width: 17px; height: 17px; accent-color: var(--ok); flex-shrink: 0; }
+        .check li.done span { color: var(--ink-3); text-decoration: line-through; }
+        .progress { height: 6px; background: var(--bg-3); border-radius: 3px; overflow: hidden; margin: 6px 0 14px; }
+        .progress i { display: block; height: 100%; width: 0; background: var(--ok); transition: width var(--motion-base) var(--ease-standard); }
+
+        .switchrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13.5px; color: var(--ink-2); }
+        .switchrow .tgl { transform: scale(.8); transform-origin: right center; }
+
+        @media (max-width: 900px) {
+            .layout { grid-template-columns: 1fr; }
+            .toc {
+                position: fixed; top: 56px; left: 0; bottom: 0; width: 280px; z-index: 19; background: var(--bg);
+                transform: translateX(-100%); transition: transform var(--motion-slow) var(--ease-ios); box-shadow: 8px 0 30px rgba(0,0,0,.12);
+            }
+            body.toc-open .toc { transform: none; }
+            .toc-btn { display: inline-flex; }
+            .topbar nav .lbl { display: none; }
+            .crumb { display: none; }
+        }
+        @media (max-width: 600px) {
+            .dodont { grid-template-columns: 1fr; }
+            .wiz__grid { grid-template-columns: 1fr 1fr; }
+            .doc h1 { font-size: 28px; }
+            .demo__body { padding: 14px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <button class="tb-btn toc-btn" id="toc-btn" aria-label="Índice"><span class="ms">menu</span></button>
+        <a class="brand" href="./index.html"><span class="brand__mark">P</span>Pichibank app</a>
+        <span class="crumb">/ Design System / Guía de feedback y movimiento</span>
+        <span class="topbar__sp"></span>
+        <nav>
+            <a href="./index.html"><span class="ms">smartphone</span><span class="lbl">App</span></a>
+            <a href="./duo.html"><span class="ms">menu_book</span><span class="lbl">iPhone Duo</span></a>
+        </nav>
+        <button class="tb-btn" id="theme-btn" aria-label="Cambiar tema"><span class="ms">contrast</span></button>
+    </header>
+
+    <div class="layout">
+        <aside class="toc" id="toc">
+            <h6>En esta página</h6>
+            <ol>
+                <li><a href="#intro">Introducción</a></li>
+                <li><a href="#principios">1. Principios</a></li>
+                <li><a href="#decision">2. Cuándo usar qué</a></li>
+                <li><a href="#micro">3. Microinteracciones</a></li>
+                <li><a href="#haptica">4. Feedback háptico</a></li>
+                <li><a href="#sonido">5. Feedback sonoro</a></li>
+                <li><a href="#transiciones">6. Transiciones</a></li>
+                <li><a href="#tokens">7. Tokens y API</a></li>
+                <li><a href="#a11y">8. Accesibilidad</a></li>
+                <li><a href="#antipatrones">9. Anti-patrones</a></li>
+                <li><a href="#checklist">10. Checklist</a></li>
+            </ol>
+            <div class="prefs">
+                <h6>Preferencias de los demos</h6>
+                <label class="switchrow">Vibración <span class="tgl"><input type="checkbox" id="pref-hap" checked><span></span></span></label>
+                <label class="switchrow">Sonidos <span class="tgl"><input type="checkbox" id="pref-snd" checked><span></span></span></label>
+                <label class="switchrow">Reducir movimiento <span class="tgl"><input type="checkbox" id="pref-rm"><span></span></span></label>
+            </div>
+        </aside>
+
+        <main class="doc">
+            <!-- ================================================= -->
+            <section id="intro">
+                <h1>Guía de feedback y movimiento</h1>
+                <p class="lead">Criterios para decidir cuándo Pichibank app usa microinteracciones, vibración, sonido y transiciones, y cuándo no los usa.</p>
+                <div class="meta">
+                    <span class="pill"><span class="ms">tag</span>v1.0</span>
+                    <span class="pill"><span class="ms">devices</span>iOS · Android · PWA</span>
+                    <span class="pill"><span class="ms">code</span>haptics.js</span>
+                    <span class="pill"><span class="ms">update</span>Septiembre 2026</span>
+                </div>
+                <p>Esta guía aplica a todas las pantallas de la app y a sus variantes (pantalla exterior e interior del iPhone Duo). Los demos usan el mismo módulo <code>haptics.js</code> de producción: en un teléfono vibran y suenan igual que en la app.</p>
+                <div class="callout note">
+                    <b><span class="ms">info</span>Cómo leer esta guía</b>
+                    <p>Los niveles de exigencia siguen RFC 2119: <b>DEBE</b> es obligatorio, <b>DEBERÍA</b> es la recomendación por defecto y sólo se incumple con una razón documentada, <b>PUEDE</b> es opcional.</p>
+                </div>
+            </section>
+
+            <!-- ================================================= -->
+            <section id="principios">
+                <h2><span class="num">1.</span>Principios</h2>
+                <ol>
+                    <li><b>Feedback con propósito.</b> Cada efecto responde a una pregunta del usuario: <i>¿me escuchó?</i>, <i>¿funcionó?</i>, <i>¿dónde estoy?</i>, <i>¿qué cambió?</i>. Si no responde ninguna, no se agrega.</li>
+                    <li><b>Proporcional a la consecuencia.</b> Tocar un tab es un clic; mover dinero es un acontecimiento. La intensidad sube con lo que está en juego.</li>
+                    <li><b>Nunca un solo canal.</b> Vibración y sonido refuerzan lo que ya se ve. Toda información DEBE existir en pantalla; el resto es opcional para el usuario.</li>
+                    <li><b>Consistencia antes que creatividad.</b> El mismo evento produce siempre el mismo efecto en toda la app. Un "éxito" suena y vibra igual en transferencias, pagos y recargas.</li>
+                    <li><b>El usuario manda.</b> Se respetan <i>Reducir movimiento</i>, el modo silencio y los interruptores de Vibración y Sonidos del perfil. Sin excepciones.</li>
+                </ol>
+            </section>
+
+            <!-- ================================================= -->
+            <section id="decision">
+                <h2><span class="num">2.</span>Cuándo usar qué</h2>
+                <p>Matriz de referencia: en qué eventos se usa cada tipo de feedback. <span class="y">●</span> DEBE · <span class="opt">◐</span> PUEDE · <span class="n">—</span> no se usa.</p>
+                <div class="tbl"><table>
+                    <thead><tr><th>Evento</th><th>Ejemplo en Pichibank</th><th>Micro</th><th>Háptica</th><th>Sonido</th><th>Transición</th></tr></thead>
+                    <tbody>
+                        <tr><td>Toque en control</td><td>Botón, fila, acceso rápido</td><td class="y">●</td><td class="opt">◐ <code>tap</code></td><td class="n">—</td><td class="n">—</td></tr>
+                        <tr><td>Selección</td><td>Tab, chip de monto, segmento</td><td class="y">●</td><td class="y">● <code>select</code></td><td class="n">—</td><td class="opt">◐ fade</td></tr>
+                        <tr><td>Cambio de estado</td><td>Ocultar saldo, toggle</td><td class="y">●</td><td class="y">● <code>toggle</code></td><td class="n">—</td><td class="n">—</td></tr>
+                        <tr><td>Cruzar un umbral</td><td>Arrastrar sheet, swipe, pasos de slider</td><td class="y">●</td><td class="y">● <code>detent</code></td><td class="n">—</td><td class="n">—</td></tr>
+                        <tr><td>Navegar en profundidad</td><td>Abrir detalle de cuenta</td><td class="n">—</td><td class="opt">◐ <code>open</code></td><td class="n">—</td><td class="y">● push</td></tr>
+                        <tr><td>Tarea modal</td><td>Más acciones, pagar servicio</td><td class="n">—</td><td class="y">● <code>open</code>/<code>close</code></td><td class="opt">◐</td><td class="y">● sheet</td></tr>
+                        <tr><td>Operación exitosa con dinero</td><td>Transferencia, pago, recarga</td><td class="y">●</td><td class="y">● <code>success</code></td><td class="y">● <code>success</code></td><td class="y">● éxito</td></tr>
+                        <tr><td>Error recuperable</td><td>Fondos insuficientes, dato inválido</td><td class="y">● shake</td><td class="y">● <code>error</code></td><td class="opt">◐</td><td class="n">—</td></tr>
+                        <tr><td>Advertencia</td><td>Permiso denegado, verificación cancelada</td><td class="y">●</td><td class="y">● <code>warning</code></td><td class="n">—</td><td class="n">—</td></tr>
+                        <tr><td>Hito de sesión</td><td>Ingreso con Face ID</td><td class="y">●</td><td class="y">● <code>welcome</code></td><td class="y">● <code>welcome</code></td><td class="y">● splash</td></tr>
+                        <tr><td>Contenido sensible revelado</td><td>Ver datos de tarjeta</td><td class="y">●</td><td class="y">● <code>reveal</code></td><td class="opt">◐</td><td class="y">● flip</td></tr>
+                        <tr><td>Cambios automáticos</td><td>Carrusel, carga, datos que llegan</td><td class="opt">◐</td><td class="n">— nunca</td><td class="n">— nunca</td><td class="opt">◐ fade</td></tr>
+                        <tr><td>Scroll y lectura</td><td>Listas, movimientos</td><td class="n">—</td><td class="n">— nunca</td><td class="n">— nunca</td><td class="n">—</td></tr>
+                    </tbody>
+                </table></div>
+
+                <div class="demo">
+                    <div class="demo__head"><b>Asistente de decisión</b><span>Responde y prueba el resultado</span></div>
+                    <div class="demo__body">
+                        <div class="wiz" id="wiz">
+                            <div class="wiz__q"><span>¿Lo inicia el usuario con un gesto?</span><span class="seg" data-q="user"><button aria-pressed="true" data-v="1">Sí</button><button aria-pressed="false" data-v="0">No</button></span></div>
+                            <div class="wiz__q"><span>¿Qué produce?</span><span class="seg" data-q="kind"><button aria-pressed="false" data-v="select">Selección</button><button aria-pressed="false" data-v="state">Estado</button><button aria-pressed="true" data-v="money">Dinero</button><button aria-pressed="false" data-v="nav">Navega</button></span></div>
+                            <div class="wiz__q"><span>¿Cuál es el resultado?</span><span class="seg" data-q="out"><button aria-pressed="true" data-v="ok">Éxito</button><button aria-pressed="false" data-v="err">Error</button><button aria-pressed="false" data-v="na">N/A</button></span></div>
+                            <div class="wiz__q"><span>¿Ocurre muchas veces por minuto?</span><span class="seg" data-q="freq"><button aria-pressed="false" data-v="1">Sí</button><button aria-pressed="true" data-v="0">No</button></span></div>
+                            <div class="wiz__out" id="wiz-out"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================================================= -->
+            <section id="micro">
+                <h2><span class="num">3.</span>Microinteracciones</h2>
+                <p><b>Definición.</b> Una respuesta visual breve y contenida en un solo componente, disparada por una acción puntual: presionar, cambiar un estado, validar, copiar. No cambia de pantalla ni de contexto.</p>
+
+                <h3>Cuándo usarlas</h3>
+                <div class="dodont">
+                    <div class="do"><h5><span class="ms">check</span>Usar cuando</h5><ul>
+                        <li>El usuario necesita saber que su toque fue recibido (&lt; 100 ms).</li>
+                        <li>Un valor cambia y conviene mostrar <i>cómo</i> cambió (saldo, contador).</li>
+                        <li>Un dato no es válido y hay que señalar <i>dónde</i>.</li>
+                        <li>Una acción invisible terminó (copiar, guardar).</li>
+                    </ul></div>
+                    <div class="dont"><h5><span class="ms">close</span>Evitar cuando</h5><ul>
+                        <li>Retrasa la tarea: la animación DEBE poder interrumpirse.</li>
+                        <li>Decora sin informar (brillos, rebotes gratuitos en reposo).</li>
+                        <li>Se repite en bucle sobre contenido que el usuario está leyendo.</li>
+                        <li>Mueve el layout de alrededor (el componente no DEBE cambiar su tamaño).</li>
+                    </ul></div>
+                </div>
+
+                <h3>Especificación</h3>
+                <div class="tbl"><table>
+                    <thead><tr><th>Propiedad</th><th>Valor</th><th>Nota</th></tr></thead>
+                    <tbody>
+                        <tr><td>Respuesta al toque</td><td><code>--motion-instant</code> 80 ms</td><td>Estado <code>:active</code>: escala 0,96 o cambio de fondo.</td></tr>
+                        <tr><td>Retorno</td><td><code>--motion-slow</code> 400 ms · <code>--ease-spring</code></td><td>Baja rápido, vuelve con resorte.</td></tr>
+                        <tr><td>Cambio de estado</td><td><code>--motion-base</code> 250 ms</td><td>Toggles, ocultar saldo, íconos que cambian.</td></tr>
+                        <tr><td>Conteo numérico</td><td>600–700 ms · ease-out</td><td>Sólo al revelar un monto, nunca en cada render.</td></tr>
+                        <tr><td>Error (shake)</td><td>400 ms · 4 oscilaciones · 6 px</td><td>Acompañado de mensaje y háptica <code>error</code>.</td></tr>
+                        <tr><td>Escala máxima</td><td>0,95 – 1,05</td><td>Más allá se percibe como "salto".</td></tr>
+                    </tbody>
+                </table></div>
+
+                <div class="demo">
+                    <div class="demo__head"><b>Estado de presión</b><span>Toca ambos botones</span></div>
+                    <div class="demo__body">
+                        <button class="pb-btn" data-fx="tap">Con respuesta<span class="ms">check</span></button>
+                        <button class="pb-btn pb-btn--flat" data-nofx>Sin respuesta</button>
+                    </div>
+                    <div class="demo__foot">El de la izquierda baja en 80 ms y vuelve con resorte. El de la derecha deja la duda de si el toque llegó.</div>
+                </div>
+
+                <div class="demo">
+                    <div class="demo__head"><b>Ocultar saldo + conteo</b><span>Toca el ojo</span></div>
+                    <div class="demo__body">
+                        <div class="pb-card">
+                            <div class="pb-label"><span>Cuenta PRINCIPAL</span><button class="pb-eye" id="d-eye" aria-label="Ocultar saldo"><span class="ms">visibility</span></button></div>
+                            <div class="pb-amount" id="d-amt">$ 1.906,04</div>
+                        </div>
+                    </div>
+                    <div class="demo__foot">Al ocultar: desenfoque de 250 ms. Al mostrar: el monto cuenta desde 0 para confirmar que es el valor real. Háptica <code>toggle</code>.</div>
+                </div>
+
+                <div class="demo">
+                    <div class="demo__head"><b>Validación de monto</b><span>Escribe más de $ 1.906,04</span></div>
+                    <div class="demo__body">
+                        <div class="pb-field" id="d-field">
+                            <label for="d-in">Monto a transferir</label>
+                            <input id="d-in" inputmode="decimal" placeholder="$ 0,00" autocomplete="off">
+                            <div class="hint" id="d-hint">Disponible: $ 1.906,04</div>
+                        </div>
+                        <button class="pb-btn" id="d-send" disabled>Continuar</button>
+                    </div>
+                    <div class="demo__foot">El error se señala en el campo (borde, texto, shake) y bloquea el botón. La háptica <code>error</code> se dispara una sola vez al entrar en error, no en cada tecla.</div>
+                </div>
+
+                <div class="demo">
+                    <div class="demo__head"><b>Acción invisible confirmada</b><span>Copia el número de cuenta</span></div>
+                    <div class="demo__body">
+                        <div class="pb-card">
+                            <div class="pb-row"><span class="pb-ic"><span class="ms">account_balance_wallet</span></span><span class="pb-row__t">Número de cuenta<small>2201 4478 7890</small></span><button class="pb-copy" id="d-copy" aria-label="Copiar"><span class="ms cp">content_copy</span><span class="ms ok">check</span></button></div>
+                        </div>
+                    </div>
+                    <div class="demo__foot">El ícono se transforma en un check durante 1,5 s. Sin toast: el feedback vive donde ocurrió la acción.</div>
+                </div>
+
+                <div class="demo">
+                    <div class="demo__head"><b>Carga: skeleton → contenido</b><button class="pb-btn pb-btn--sec" id="d-load" style="height:30px;font-size:13px;padding:0 10px">Recargar</button></div>
+                    <div class="demo__body"><div class="pb-card" id="d-list"></div></div>
+                    <div class="demo__foot">El skeleton reserva el espacio exacto del contenido (sin saltos). Al llegar los datos, entran escalonados cada 50 ms. Carga automática: <b>sin</b> háptica ni sonido.</div>
+                </div>
+            </section>
+
+            <!-- ================================================= -->
+            <section id="haptica">
+                <h2><span class="num">4.</span>Feedback háptico</h2>
+                <p><b>Definición.</b> Una vibración breve que confirma físicamente una acción o un resultado. Equivale a los generadores de iOS (<code>UIImpactFeedbackGenerator</code>, <code>UISelectionFeedbackGenerator</code>, <code>UINotificationFeedbackGenerator</code>) y a <code>HapticFeedbackConstants</code> en Android.</p>
+
+                <h3>Reglas</h3>
+                <ul>
+                    <li>DEBE responder a un gesto del usuario o al resultado directo de ese gesto. Nunca a eventos automáticos (carga, push, carrusel).</li>
+                    <li>DEBE coincidir con algo visible en el mismo instante (± 50 ms).</li>
+                    <li>DEBERÍA usarse <b>como máximo una vez por acción</b>. Una transferencia completa tiene 3: selección de contacto, umbral de confirmación, éxito.</li>
+                    <li>En gestos continuos (slider, arrastre) vibra sólo en <b>pasos discretos</b>, nunca por píxel.</li>
+                    <li>Los patrones de notificación (<code>success</code>, <code>warning</code>, <code>error</code>) se reservan para resultados. No se usan como decoración.</li>
+                </ul>
+
+                <h3>Catálogo</h3>
+                <div class="tbl"><table>
+                    <thead><tr><th>Tipo</th><th>API</th><th>Android (ms)</th><th>iOS</th><th>Se usa en</th></tr></thead>
+                    <tbody>
+                        <tr><td>Toque</td><td><code>Haptics.tap()</code></td><td>15</td><td>impact · light</td><td>Botones y filas (automático)</td></tr>
+                        <tr><td>Selección</td><td><code>Haptics.select()</code></td><td>20</td><td>selection</td><td>Tabs, chips, segmentos, nav</td></tr>
+                        <tr><td>Umbral</td><td><code>fx('detent')</code></td><td>12</td><td>impact · rigid</td><td>Slider, swipe, arrastre de sheet</td></tr>
+                        <tr><td>Cambio de estado</td><td><code>Haptics.toggle()</code></td><td>20·40·20</td><td>impact · medium</td><td>Toggles, ocultar saldo</td></tr>
+                        <tr><td>Abrir / cerrar</td><td><code>fx('open')</code> <code>fx('close')</code></td><td>18 / 12</td><td>impact · soft</td><td>Sheets, detalle, páginas</td></tr>
+                        <tr><td>Éxito</td><td><code>Haptics.success()</code></td><td>25·60·45</td><td>notification · success</td><td>Pagos, transferencias</td></tr>
+                        <tr><td>Advertencia</td><td><code>Haptics.warning()</code></td><td>35·60·35</td><td>notification · warning</td><td>Permisos, cancelaciones</td></tr>
+                        <tr><td>Error</td><td><code>Haptics.error()</code></td><td>50·50·50·50·90</td><td>notification · error</td><td>Validaciones, fondos</td></tr>
+                    </tbody>
+                </table></div>
+
+                <div class="demo">
+                    <div class="demo__head"><b>Catálogo en vivo</b><span class="demo__log" id="hap-support"></span></div>
+                    <div class="demo__body">
+                        <div class="fxgrid">
+                            <button class="fxbtn" data-try="tap"><b><span class="ms">touch_app</span>Toque</b><small>Impacto leve</small></button>
+                            <button class="fxbtn" data-try="select"><b><span class="ms">radio_button_checked</span>Selección</b><small>Cambio de opción</small></button>
+                            <button class="fxbtn" data-try="detent"><b><span class="ms">linear_scale</span>Umbral</b><small>Paso discreto</small></button>
+                            <button class="fxbtn" data-try="toggle"><b><span class="ms">toggle_on</span>Estado</b><small>Doble pulso</small></button>
+                            <button class="fxbtn" data-try="open"><b><span class="ms">expand_less</span>Abrir</b><small>Sheet o detalle</small></button>
+                            <button class="fxbtn" data-try="success"><b><span class="ms">check_circle</span>Éxito</b><small>Notificación</small></button>
+                            <button class="fxbtn" data-try="warning"><b><span class="ms">warning</span>Advertencia</b><small>Notificación</small></button>
+                            <button class="fxbtn" data-try="error"><b><span class="ms">error</span>Error</b><small>Notificación</small></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="demo">
+                    <div class="demo__head"><b>Gestos continuos: pasos vs. píxeles</b><span>Mueve ambos sliders</span></div>
+                    <div class="demo__body">
+                        <div class="slider">
+                            <div class="slider__top"><span><span class="y">✓</span> Límite diario</span><b id="s1-v">$ 500</b></div>
+                            <input type="range" min="100" max="2000" step="100" value="500" id="s1">
+                            <div class="counter">Vibraciones: <span id="s1-c">0</span> (una por paso de $ 100)</div>
+                        </div>
+                        <div class="slider">
+                            <div class="slider__top"><span><span style="color:#d50707">✗</span> Por píxel</span><b id="s2-v">$ 500</b></div>
+                            <input type="range" min="100" max="2000" step="1" value="500" id="s2">
+                            <div class="counter">Eventos: <b id="s2-c">0</b> · se simulan, no vibra</div>
+                        </div>
+                    </div>
+                    <div class="demo__foot">Vibrar en cada evento <code>input</code> produce decenas de pulsos por segundo: se siente como un zumbido y agota la batería. Por eso el segundo slider sólo los cuenta.</div>
+                </div>
+
+                <div class="callout warn">
+                    <b><span class="ms">phone_iphone</span>Limitaciones de plataforma</b>
+                    <ul>
+                        <li><b>iOS / Safari</b> no expone <code>navigator.vibrate</code>. <code>haptics.js</code> usa el control <code>&lt;input switch&gt;</code> nativo (iOS 17.4+), que sólo vibra dentro de un gesto: los efectos asíncronos (éxito tras "procesando") pueden no vibrar.</li>
+                        <li><b>Android / Chrome</b> ignora pulsos menores a ~15 ms en muchos motores. Por eso ningún patrón baja de 12 ms.</li>
+                        <li>En la app nativa los mismos nombres deben mapearse a los generadores del sistema.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- ================================================= -->
+            <section id="sonido">
+                <h2><span class="num">5.</span>Feedback sonoro</h2>
+                <p><b>Definición.</b> Un sonido corto que confirma un resultado importante cuando el usuario puede no estar mirando la pantalla. Es el canal más invasivo, así que es el más restringido.</p>
+
+                <h3>Cuándo sí y cuándo no</h3>
+                <div class="dodont">
+                    <div class="do"><h5><span class="ms">check</span>Usar para</h5><ul>
+                        <li>Confirmar que el dinero se movió (transferencia, pago, recarga).</li>
+                        <li>Marcar el ingreso a la app (una vez por sesión).</li>
+                        <li>Un error que bloquea la operación.</li>
+                        <li>Revelar datos sensibles, como aviso de privacidad.</li>
+                    </ul></div>
+                    <div class="dont"><h5><span class="ms">close</span>Nunca para</h5><ul>
+                        <li>Navegación, scroll, tabs o toques en listas.</li>
+                        <li>Notificaciones de marketing o promociones.</li>
+                        <li>Contenido que llega solo (carga, actualización).</li>
+                        <li>Transmitir información que no esté en pantalla.</li>
+                    </ul></div>
+                </div>
+
+                <h3>Especificación</h3>
+                <div class="tbl"><table>
+                    <thead><tr><th>Sonido</th><th>Duración</th><th>Carácter</th><th>Síntesis</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>tap</code> / <code>select</code></td><td>&lt; 60 ms</td><td>Clic táctil, sin tono</td><td>Ruido filtrado</td></tr>
+                        <tr><td><code>toggle</code></td><td>~200 ms</td><td>Dos notas ascendentes suaves</td><td>Campana FM</td></tr>
+                        <tr><td><code>open</code> / <code>close</code></td><td>~300 ms</td><td>Whoosh que sube / baja</td><td>Ruido con pasabanda</td></tr>
+                        <tr><td><code>success</code></td><td>~1,4 s con cola</td><td>Golpe suave + dos campanas + brillo</td><td>FM + reverb</td></tr>
+                        <tr><td><code>error</code></td><td>~0,5 s</td><td>Dos golpes graves, disonante</td><td>Seno con caída de tono</td></tr>
+                        <tr><td><code>welcome</code></td><td>~3 s con cola</td><td>Barrido, golpe, acorde y campanas</td><td>Todas las capas</td></tr>
+                    </tbody>
+                </table></div>
+                <ul>
+                    <li>DEBE ir siempre acompañado de un cambio visual y, si aplica, de háptica.</li>
+                    <li>DEBE respetar el interruptor <b>Sonidos</b> del perfil. DEBERÍA respetar el modo silencio del sistema (en la app nativa, categoría de audio <code>ambient</code>).</li>
+                    <li>Volumen por debajo del de un video: son confirmaciones, no alertas.</li>
+                    <li>Nada de archivos de audio: se sintetizan con WebAudio (0 KB, 0 red, sin latencia de carga).</li>
+                </ul>
+
+                <div class="demo">
+                    <div class="demo__head"><b>Paleta sonora</b><span>Con volumen</span></div>
+                    <div class="demo__body">
+                        <div class="fxgrid">
+                            <button class="fxbtn" data-try="select"><b><span class="ms">graphic_eq</span>Clic</b><small>tap / select</small></button>
+                            <button class="fxbtn" data-try="toggle"><b><span class="ms">graphic_eq</span>Toggle</b><small>~200 ms</small></button>
+                            <button class="fxbtn" data-try="open"><b><span class="ms">graphic_eq</span>Abrir</b><small>whoosh</small></button>
+                            <button class="fxbtn" data-try="success"><b><span class="ms">graphic_eq</span>Éxito</b><small>~1,4 s</small></button>
+                            <button class="fxbtn" data-try="error"><b><span class="ms">graphic_eq</span>Error</b><small>~0,5 s</small></button>
+                            <button class="fxbtn" data-try="welcome"><b><span class="ms">graphic_eq</span>Ingreso</b><small>~3 s · 1 por sesión</small></button>
+                        </div>
+                    </div>
+                    <div class="demo__foot">En iPhone el audio se activa con el primer toque de la página y respeta el volumen de medios.</div>
+                </div>
+            </section>
+
+            <!-- ================================================= -->
+            <section id="transiciones">
+                <h2><span class="num">6.</span>Transiciones</h2>
+                <p><b>Definición.</b> El movimiento que conecta dos estados de pantalla. Su trabajo es explicar la relación espacial: de dónde vino el contenido nuevo y a dónde se fue el anterior.</p>
+
+                <div class="tbl"><table>
+                    <thead><tr><th>Tipo</th><th>Cuándo</th><th>Duración</th><th>Easing</th></tr></thead>
+                    <tbody>
+                        <tr><td><b>Push / pop</b></td><td>Ir a un detalle y volver (jerarquía)</td><td>400 ms</td><td><code>--ease-ios</code></td></tr>
+                        <tr><td><b>Sheet</b></td><td>Tarea breve que no saca de contexto</td><td>400 ms entra · 250 ms sale</td><td><code>--ease-ios</code></td></tr>
+                        <tr><td><b>Fade</b></td><td>Cambiar entre pares (tabs, filtros)</td><td>150–250 ms</td><td><code>--ease-standard</code></td></tr>
+                        <tr><td><b>Morph</b> (elemento compartido)</td><td>El mismo objeto crece a su detalle (tarjeta)</td><td>400–600 ms</td><td><code>--ease-ios</code></td></tr>
+                        <tr><td><b>Escalonado</b></td><td>Aparición de una lista de elementos</td><td>50 ms entre items, máx. 5</td><td><code>--ease-decelerate</code></td></tr>
+                    </tbody>
+                </table></div>
+                <ul>
+                    <li>Las salidas DEBERÍAN ser más rápidas que las entradas: el usuario ya decidió irse.</li>
+                    <li>Toda transición DEBE poder interrumpirse: un toque durante la animación actúa de inmediato.</li>
+                    <li>Los cambios entre tabs del nav inferior son <b>instantáneos</b>: son lugares hermanos, no hay dirección que explicar.</li>
+                    <li>Con <i>Reducir movimiento</i>, los desplazamientos se reemplazan por fades cortos o cortes directos.</li>
+                </ul>
+
+                <div class="demo">
+                    <div class="demo__head"><b>Transiciones en contexto</b><label class="spd"><input type="checkbox" id="slowmo"> Cámara lenta ×4</label></div>
+                    <div class="demo__body">
+                        <div class="phone" id="phone"><div class="phone__scr" id="pscr"></div></div>
+                        <div class="tr-controls">
+                            <button class="pb-btn pb-btn--sec" data-tr="push"><span class="ms">arrow_forward</span>Push (detalle)</button>
+                            <button class="pb-btn pb-btn--sec" data-tr="pop"><span class="ms">arrow_back</span>Pop (volver)</button>
+                            <button class="pb-btn pb-btn--sec" data-tr="sheet"><span class="ms">expand_less</span>Sheet</button>
+                            <button class="pb-btn pb-btn--sec" data-tr="fade"><span class="ms">tab</span>Fade (cambio de tab)</button>
+                            <button class="pb-btn pb-btn--sec" data-tr="stagger"><span class="ms">view_list</span>Escalonado</button>
+                            <button class="pb-btn pb-btn--sec" data-tr="success"><span class="ms">check_circle</span>Éxito completo</button>
+                        </div>
+                    </div>
+                    <div class="demo__foot">"Éxito completo" combina los cuatro canales en el orden correcto: transición a la pantalla de resultado, check dibujado, háptica <code>success</code> y sonido, todo en los primeros 200 ms.</div>
+                </div>
+            </section>
+
+            <!-- ================================================= -->
+            <section id="tokens">
+                <h2><span class="num">7.</span>Tokens y API</h2>
+                <h3>Tokens de movimiento</h3>
+<pre><span class="c">/* Duraciones */</span>
+--motion-instant:  <span class="s">80ms</span>;   <span class="c">/* respuesta a :active */</span>
+--motion-fast:     <span class="s">150ms</span>;  <span class="c">/* hover, fades de tab */</span>
+--motion-base:     <span class="s">250ms</span>;  <span class="c">/* toggles, estados */</span>
+--motion-slow:     <span class="s">400ms</span>;  <span class="c">/* push, sheet, resortes */</span>
+--motion-emphasis: <span class="s">600ms</span>;  <span class="c">/* morph, éxito */</span>
+
+<span class="c">/* Curvas */</span>
+--ease-standard:   cubic-bezier(<span class="s">.2, 0, 0, 1</span>);
+--ease-decelerate: cubic-bezier(<span class="s">.22, 1, .36, 1</span>);   <span class="c">/* entradas */</span>
+--ease-accelerate: cubic-bezier(<span class="s">.4, 0, 1, 1</span>);      <span class="c">/* salidas */</span>
+--ease-spring:     cubic-bezier(<span class="s">.34, 1.56, .64, 1</span>); <span class="c">/* retorno con rebote */</span>
+--ease-ios:        cubic-bezier(<span class="s">.32, .72, 0, 1</span>);    <span class="c">/* sheets, push */</span></pre>
+
+                <h3>API de feedback (<code>haptics.js</code>)</h3>
+<pre><span class="c">// Botones, filas, tabs y chips reciben tap/select automáticamente.</span>
+<span class="c">// Para resultados y gestos, llamar explícitamente:</span>
+Haptics.success();            <span class="c">// vibración + sonido de éxito</span>
+Haptics.error();
+Haptics.fx(<span class="s">'detent'</span>);        <span class="c">// open | close | swipe | flip | reveal | detent</span>
+Haptics.welcome();            <span class="c">// sólo tras autenticar, 1 vez por sesión</span>
+
+<span class="c">// Preferencias del usuario (persisten en localStorage)</span>
+Haptics.setEnabled(<span class="k">false</span>);
+Haptics.setSoundEnabled(<span class="k">false</span>);</pre>
+                <div class="callout tip">
+                    <b><span class="ms">lightbulb</span>Excluir un elemento</b>
+                    <p>Los controles que ya disparan su propio efecto (por ejemplo, las pruebas de este documento) llevan <code>data-fx-test</code> para no sumar el <code>tap</code> automático.</p>
+                </div>
+            </section>
+
+            <!-- ================================================= -->
+            <section id="a11y">
+                <h2><span class="num">8.</span>Accesibilidad y preferencias</h2>
+                <div class="tbl"><table>
+                    <thead><tr><th>Preferencia</th><th>Qué cambia</th><th>Qué se mantiene</th></tr></thead>
+                    <tbody>
+                        <tr><td><b>Reducir movimiento</b> (sistema)</td><td>Sin desplazamientos, rebotes, conteos ni escalonados. Transiciones → fade ≤ 150 ms.</td><td>Háptica y sonido; cambios de color y opacidad.</td></tr>
+                        <tr><td><b>Vibración</b> apagada (perfil)</td><td>Ningún patrón háptico.</td><td>Todo lo visual y el sonido.</td></tr>
+                        <tr><td><b>Sonidos</b> apagados (perfil)</td><td>Ningún sonido.</td><td>Todo lo visual y la háptica.</td></tr>
+                        <tr><td><b>VoiceOver / TalkBack</b></td><td>Los resultados se anuncian con <code>role="status"</code>/<code>aria-live</code>.</td><td>La háptica del sistema del lector.</td></tr>
+                    </tbody>
+                </table></div>
+                <div class="callout note">
+                    <b><span class="ms">tune</span>Prueba las preferencias</b>
+                    <p>Los interruptores del índice (<b>Vibración</b>, <b>Sonidos</b>, <b>Reducir movimiento</b>) afectan a todos los demos de esta página. Con <i>Reducir movimiento</i> activo, repite las transiciones de la sección 6.</p>
+                </div>
+                <ul>
+                    <li>Ningún efecto DEBE parpadear más de 3 veces por segundo.</li>
+                    <li>Los estados (error, éxito, seleccionado) DEBEN distinguirse sin color: ícono, texto o forma.</li>
+                    <li>Las animaciones de más de 5 s (carruseles) DEBEN poder pausarse.</li>
+                </ul>
+            </section>
+
+            <!-- ================================================= -->
+            <section id="antipatrones">
+                <h2><span class="num">9.</span>Anti-patrones</h2>
+                <div class="tbl"><table>
+                    <thead><tr><th>Anti-patrón</th><th>Por qué falla</th><th>Alternativa</th></tr></thead>
+                    <tbody>
+                        <tr><td>Vibrar en cada evento de scroll o arrastre</td><td>Zumbido constante, batería, fatiga</td><td>Sólo en pasos o umbrales (<code>detent</code>)</td></tr>
+                        <tr><td>Sonido de éxito antes de la confirmación del servidor</td><td>Promete algo que puede fallar</td><td>Sonar al recibir la respuesta</td></tr>
+                        <tr><td>Animaciones de carga que bloquean la interacción</td><td>El usuario espera a la animación, no al dato</td><td>Skeleton + contenido interactivo apenas llega</td></tr>
+                        <tr><td>Rebotes y escalas en elementos de navegación con scroll</td><td>Los tabs "saltan" dentro de su fila</td><td>Feedback por color en tabs</td></tr>
+                        <tr><td>Toast para confirmar cada acción</td><td>Ruido; el feedback queda lejos de la acción</td><td>Microinteracción en el mismo componente</td></tr>
+                        <tr><td>Efectos distintos para el mismo evento</td><td>El usuario no aprende el lenguaje</td><td>Un evento = un efecto, en toda la app</td></tr>
+                        <tr><td>Reproducir audio mientras hay otra app sonando</td><td>Interrumpe música o llamadas</td><td>Sesión de audio mezclable, volumen bajo</td></tr>
+                    </tbody>
+                </table></div>
+            </section>
+
+            <!-- ================================================= -->
+            <section id="checklist">
+                <h2><span class="num">10.</span>Checklist antes de publicar</h2>
+                <p>Revisa cada pantalla nueva contra esta lista. El progreso se guarda en este navegador.</p>
+                <div class="progress"><i id="chk-bar"></i></div>
+                <ul class="check" id="chk">
+                    <li><input type="checkbox"><span>Cada efecto responde a una pregunta del usuario (§1).</span></li>
+                    <li><input type="checkbox"><span>El tipo de feedback coincide con la matriz de decisión (§2).</span></li>
+                    <li><input type="checkbox"><span>Todo botón responde en &lt; 100 ms con estado <code>:active</code>.</span></li>
+                    <li><input type="checkbox"><span>Ningún componente cambia de tamaño al animarse.</span></li>
+                    <li><input type="checkbox"><span>La háptica sólo se dispara por gestos o sus resultados, nunca por eventos automáticos.</span></li>
+                    <li><input type="checkbox"><span>Los gestos continuos vibran por pasos, no por píxel.</span></li>
+                    <li><input type="checkbox"><span>El sonido se limita a dinero movido, ingreso, errores bloqueantes y datos sensibles.</span></li>
+                    <li><input type="checkbox"><span>El éxito se comunica después de la confirmación, no antes.</span></li>
+                    <li><input type="checkbox"><span>Las transiciones usan los tokens de §7 y se pueden interrumpir.</span></li>
+                    <li><input type="checkbox"><span>Probado con Reducir movimiento, Vibración apagada y Sonidos apagados.</span></li>
+                    <li><input type="checkbox"><span>Probado en iPhone (Safari) y en Android (Chrome).</span></li>
+                </ul>
+            </section>
+        </main>
+    </div>
+
+    <script src="./haptics.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        const $ = s => document.querySelector(s);
+        const fx = n => { if (window.Haptics) window.Haptics.fx(n); };
+        const money = v => { const [e, d] = v.toFixed(2).split('.'); return '$ ' + e.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + d; };
+        const rm = () => document.documentElement.classList.contains('rm') || matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // Íconos: visibles sólo cuando la fuente cargó
+        if (document.fonts && document.fonts.load) document.fonts.load('20px "Material Symbols Rounded"').then(f => { if (f && f.length) document.documentElement.classList.add('icons-ready'); }).catch(() => {});
+
+        // Tema
+        const root = document.documentElement;
+        try { const t = localStorage.getItem('pb_guide_theme'); if (t) root.dataset.theme = t; } catch (e) {}
+        $('#theme-btn').addEventListener('click', () => {
+            const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+            root.dataset.theme = dark ? 'light' : 'dark';
+            try { localStorage.setItem('pb_guide_theme', root.dataset.theme); } catch (e) {}
+        });
+
+        // Índice: scrollspy + menú móvil
+        $('#toc-btn').addEventListener('click', () => document.body.classList.toggle('toc-open'));
+        const links = [...document.querySelectorAll('.toc a')];
+        links.forEach(a => a.addEventListener('click', () => document.body.classList.remove('toc-open')));
+        const spy = new IntersectionObserver(es => {
+            es.forEach(e => { if (e.isIntersecting) links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id)); });
+        }, { rootMargin: '-40% 0px -55% 0px' });
+        document.querySelectorAll('main section[id]').forEach(s => spy.observe(s));
+
+        // Preferencias
+        const H = window.Haptics;
+        if (H) { $('#pref-hap').checked = H.isEnabled(); $('#pref-snd').checked = H.isSoundEnabled(); }
+        $('#pref-hap').addEventListener('change', e => H && H.setEnabled(e.target.checked));
+        $('#pref-snd').addEventListener('change', e => H && H.setSoundEnabled(e.target.checked));
+        $('#pref-rm').addEventListener('change', e => root.classList.toggle('rm', e.target.checked));
+        $('#hap-support').textContent = typeof navigator.vibrate === 'function' ? 'Vibración nativa disponible' : (/iP(hone|ad)/.test(navigator.userAgent) ? 'iOS: háptica vía switch nativo' : 'Sin vibración en este dispositivo: sólo sonido');
+
+        // Botones de prueba
+        document.querySelectorAll('[data-try]').forEach(b => {
+            b.setAttribute('data-fx-test', '');
+            b.addEventListener('click', () => {
+                const k = b.dataset.try;
+                if (k === 'welcome') H && H.welcome(); else fx(k);
+                b.classList.remove('play'); void b.offsetWidth; b.classList.add('play');
+            });
+        });
+        document.querySelectorAll('[data-nofx]').forEach(b => b.setAttribute('data-fx-test', ''));
+
+        // ---- Asistente de decisión ----
+        const wiz = { user: '1', kind: 'money', out: 'ok', freq: '0' };
+        const NAMES = { tap: 'tap', select: 'select', toggle: 'toggle', success: 'success', error: 'error', open: 'open', detent: 'detent', warning: 'warning' };
+        function decide() {
+            const w = wiz; let micro = 'Sí · estado :active', hap = '—', snd = '—', tr = '—', why = '';
+            if (w.user === '0') { hap = 'No (automático)'; snd = 'No (automático)'; micro = 'Opcional'; tr = 'Fade opcional'; why = 'Los eventos automáticos nunca vibran ni suenan.'; }
+            else if (w.freq === '1') { hap = w.kind === 'select' ? 'select, por paso' : 'detent, sólo en umbrales'; snd = 'No'; tr = '—'; why = 'Frecuente: háptica mínima y sin sonido para no saturar.'; }
+            else if (w.kind === 'money') {
+                if (w.out === 'ok') { hap = 'success'; snd = 'success'; tr = 'Pantalla de éxito'; micro = 'Check dibujado + conteo'; why = 'Mover dinero es el evento de mayor consecuencia: todos los canales.'; }
+                else if (w.out === 'err') { hap = 'error'; snd = 'error (opcional)'; tr = '—'; micro = 'Shake + mensaje en el campo'; why = 'El error se señala donde ocurrió y bloquea la acción.'; }
+                else { hap = 'tap'; snd = 'No'; tr = '—'; why = 'Sin resultado todavía: sólo confirmar el toque.'; }
+            } else if (w.kind === 'nav') { hap = 'open (opcional)'; snd = 'No'; tr = 'Push o sheet'; micro = 'Estado :active'; why = 'La transición explica a dónde fuiste; el sonido sobra.'; }
+            else if (w.kind === 'state') { hap = w.out === 'err' ? 'warning' : 'toggle'; snd = 'No'; tr = '—'; micro = 'Cambio animado del componente'; why = 'El cambio se ve en el propio control.'; }
+            else { hap = 'select'; snd = 'No'; tr = 'Fade si cambia el contenido'; micro = 'Cambio de color'; why = 'Selección entre pares: clic sutil, sin sonido.'; }
+            const pick = (w.user === '0') ? null : (w.freq === '1' ? (w.kind === 'select' ? 'select' : 'detent') :
+                w.kind === 'money' ? (w.out === 'ok' ? 'success' : w.out === 'err' ? 'error' : 'tap') :
+                w.kind === 'nav' ? 'open' : w.kind === 'state' ? (w.out === 'err' ? 'warning' : 'toggle') : 'select');
+            $('#wiz-out').innerHTML = `<h5>Recomendación</h5>
+                <div class="wiz__grid">
+                    <div class="wiz__cell"><small>Microinteracción</small><b>${micro}</b></div>
+                    <div class="wiz__cell"><small>Háptica</small><b>${hap}</b></div>
+                    <div class="wiz__cell"><small>Sonido</small><b>${snd}</b></div>
+                    <div class="wiz__cell"><small>Transición</small><b>${tr}</b></div>
+                </div>
+                <p style="margin:10px 0 0;opacity:.85">${why}</p>
+                ${pick ? `<button class="wiz__try" data-fx-test data-pick="${pick}">Probar «${pick}»</button>` : ''}`;
+        }
+        document.querySelectorAll('#wiz .seg').forEach(seg => seg.addEventListener('click', e => {
+            const b = e.target.closest('button'); if (!b) return;
+            seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+            wiz[seg.dataset.q] = b.dataset.v; decide();
+        }));
+        $('#wiz-out').addEventListener('click', e => { const b = e.target.closest('[data-pick]'); if (b) fx(b.dataset.pick); });
+        decide();
+
+        // ---- Demo: ocultar saldo + conteo ----
+        let masked = false;
+        $('#d-eye').setAttribute('data-fx-test', '');
+        $('#d-eye').addEventListener('click', () => {
+            masked = !masked; fx('toggle');
+            const a = $('#d-amt'); a.classList.toggle('masked', masked);
+            $('#d-eye .ms').textContent = masked ? 'visibility_off' : 'visibility';
+            if (!masked && !rm()) {
+                const t0 = performance.now(), T = 1906.04;
+                const step = n => { const k = Math.min(1, (n - t0) / 650); a.textContent = money(T * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); };
+                requestAnimationFrame(step);
+            }
+        });
+
+        // ---- Demo: validación ----
+        const field = $('#d-field'), inp = $('#d-in'), hint = $('#d-hint'), send = $('#d-send');
+        let inErr = false;
+        inp.addEventListener('input', () => {
+            const v = parseFloat(inp.value.replace(/\./g, '').replace(',', '.')) || 0;
+            const err = v > 1906.04;
+            field.classList.toggle('err', err);
+            hint.textContent = err ? 'Supera tu saldo disponible' : 'Disponible: $ 1.906,04';
+            send.disabled = err || v <= 0;
+            if (err && !inErr) { fx('error'); inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake'); }
+            inErr = err;
+        });
+        send.addEventListener('click', () => { fx('success'); send.textContent = 'Listo ✓'; setTimeout(() => { send.textContent = 'Continuar'; }, 1400); });
+        send.setAttribute('data-fx-test', '');
+
+        // ---- Demo: copiar ----
+        const cp = $('#d-copy'); cp.setAttribute('data-fx-test', '');
+        cp.addEventListener('click', () => {
+            try { navigator.clipboard && navigator.clipboard.writeText('220144787890'); } catch (e) {}
+            cp.classList.add('done'); fx('toggle');
+            setTimeout(() => cp.classList.remove('done'), 1500);
+        });
+
+        // ---- Demo: skeleton ----
+        const MOVS = [['shopping_cart', 'Supermercado', 'Hoy', '- $ 48,20'], ['work', 'Pago de nómina', 'Ayer', '+ $ 1.225,00'], ['bolt', 'Luz de la casa', 'Ayer', '- $ 24,80'], ['local_cafe', 'Cafetería', '27 sep', '- $ 6,50']];
+        function load() {
+            const box = $('#d-list');
+            box.innerHTML = MOVS.map(() => `<div class="pb-row"><span class="pb-ic skel" style="border-radius:50%"></span><span class="pb-row__t"><span class="skel" style="display:block;height:12px;width:60%"></span><span class="skel" style="display:block;height:10px;width:30%;margin-top:6px"></span></span><span class="skel" style="height:12px;width:60px"></span></div>`).join('');
+            setTimeout(() => {
+                box.innerHTML = MOVS.map((m, i) => `<div class="pb-row rise" style="animation-delay:${i * 50}ms"><span class="pb-ic"><span class="ms">${m[0]}</span></span><span class="pb-row__t">${m[1]}<small>${m[2]}</small></span><b style="font-size:14px;color:${m[3][0] === '+' ? '#218c3b' : '#1f1f1f'}">${m[3]}</b></div>`).join('');
+            }, 1200);
+        }
+        $('#d-load').setAttribute('data-fx-test', '');
+        $('#d-load').addEventListener('click', load);
+        load();
+
+        // ---- Demo: sliders ----
+        let c1 = 0, c2 = 0, last1 = 500;
+        $('#s1').addEventListener('input', e => { const v = +e.target.value; if (v !== last1) { last1 = v; c1++; fx('detent'); } $('#s1-v').textContent = money(v).replace(',00', ''); $('#s1-c').textContent = c1; });
+        $('#s2').addEventListener('input', e => { c2++; $('#s2-v').textContent = money(+e.target.value).replace(',00', ''); $('#s2-c').textContent = c2; });
+
+        // ---- Demo: transiciones en mini teléfono ----
+        const scr = $('#pscr'), phone = $('#phone');
+        const K = () => ($('#slowmo').checked ? 4 : 1) * (rm() ? 0 : 1);
+        const HOME = `<h4>Mis cuentas</h4>${[['account_balance_wallet', 'Principal', '$ 1.906,04'], ['savings', 'Flexible', '$ 5.420,10'], ['payments', 'Corriente', '$ 320,55']].map(r => `<div class="pb-row"><span class="pb-ic"><span class="ms">${r[0]}</span></span><span class="pb-row__t">${r[1]}<small>${r[2]}</small></span><span class="ms" style="color:#9e9e9e">chevron_right</span></div>`).join('')}`;
+        const DETAIL = `<button class="scr-back" data-tr="pop" data-fx-test><span class="ms">chevron_left</span>Cuentas</button><h4>Principal</h4><div style="font-size:26px;font-weight:700">$ 1.906,04</div><div style="font-size:12px;color:#5c5c5c;margin-bottom:10px">Ahorro · ****7890</div>${MOVS.slice(0, 3).map(m => `<div class="pb-row"><span class="pb-ic"><span class="ms">${m[0]}</span></span><span class="pb-row__t">${m[1]}<small>${m[3]}</small></span></div>`).join('')}`;
+        const TAB2 = `<h4>Tarjetas</h4><div style="aspect-ratio:1.586;border-radius:12px;background:linear-gradient(135deg,#0f265c,#1f60ac);color:#fff;padding:12px;font-size:11px;display:flex;flex-direction:column;justify-content:space-between"><b>PICHIBANK</b><span style="font-family:monospace;letter-spacing:.1em">•••• 1234</span></div>`;
+        const SHEET = `<div class="sheet-back" data-tr="close"></div><div class="sheet"><b style="font-size:14px;color:#1f1f1f">Más acciones</b>${[['qr_code_scanner', 'Pagar con QR'], ['phone_android', 'Recargar celular'], ['payments', 'Retirar sin tarjeta']].map(r => `<div class="pb-row"><span class="pb-ic"><span class="ms">${r[0]}</span></span><span class="pb-row__t">${r[1]}</span></div>`).join('')}</div>`;
+        let cur = 'home', tab = 0;
+        function layer(html) { const d = document.createElement('div'); d.className = 'scr'; d.innerHTML = html; return d; }
+        function show(html, inAnim, outAnim) {
+            const k = K(); const old = scr.querySelector('.scr'); const nw = layer(html);
+            scr.insertBefore(nw, scr.querySelector('.sheet-back'));
+            if (!k) { if (old) old.remove(); return; }
+            if (inAnim) nw.animate(inAnim[0], { duration: inAnim[1] * k, easing: inAnim[2], fill: 'both' });
+            if (old) { const a = old.animate(outAnim[0], { duration: outAnim[1] * k, easing: outAnim[2], fill: 'forwards' }); a.onfinish = () => old.remove(); }
+        }
+        function base() { scr.innerHTML = SHEET; scr.insertBefore(layer(HOME), scr.firstChild); cur = 'home'; tab = 0; }
+        base();
+        const IOS = 'cubic-bezier(.32,.72,0,1)';
+        function tr(kind) {
+            const k = K();
+            phone.style.setProperty('--k', k);
+            scr.querySelector('.sheet').style.transitionDuration = (400 * (k || 0.001)) + 'ms';
+            scr.querySelector('.sheet-back').style.transitionDuration = (250 * (k || 0.001)) + 'ms';
+            if (kind === 'push' && cur !== 'detail') { fx('open'); show(DETAIL, [[{ transform: 'translateX(100%)' }, { transform: 'none' }], 400, IOS], [[{ transform: 'none' }, { transform: 'translateX(-30%)', opacity: .6 }], 400, IOS]); cur = 'detail'; }
+            else if (kind === 'pop' && cur === 'detail') { fx('close'); show(HOME, [[{ transform: 'translateX(-30%)', opacity: .6 }, { transform: 'none', opacity: 1 }], 300, IOS], [[{ transform: 'none' }, { transform: 'translateX(100%)' }], 300, IOS]); cur = 'home'; }
+            else if (kind === 'sheet') { fx('open'); phone.classList.add('sheet-open'); }
+            else if (kind === 'close') { fx('close'); phone.classList.remove('sheet-open'); }
+            else if (kind === 'fade') { fx('select'); tab = 1 - tab; show(tab ? TAB2 : HOME, [[{ opacity: 0 }, { opacity: 1 }], 200, 'ease'], [[{ opacity: 1 }, { opacity: 0 }], 150, 'ease']); cur = tab ? 'tab2' : 'home'; }
+            else if (kind === 'stagger') {
+                const s = layer(HOME); const old = scr.querySelector('.scr'); scr.insertBefore(s, scr.querySelector('.sheet-back')); if (old) old.remove(); cur = 'home';
+                s.querySelectorAll('h4, .pb-row').forEach((el, i) => el.animate([{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }], { duration: 400 * (k || 0.001), delay: i * 50 * k, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'both' }));
+            }
+            else if (kind === 'success') {
+                phone.classList.remove('sheet-open');
+                show(`<div style="text-align:center;padding-top:60px"><svg viewBox="0 0 84 84" width="72" height="72"><circle cx="42" cy="42" r="40" fill="#31a451"/><path d="M26 43 l11 11 l21 -23" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="50" stroke-dashoffset="50" class="chk"/></svg><h4 style="margin-top:12px">¡Transferencia enviada!</h4><div style="font-size:24px;font-weight:700">$ 25,00</div><div style="font-size:12px;color:#5c5c5c">a Carlos Vega</div><button class="pb-btn" data-tr="pop2" data-fx-test style="height:36px;margin-top:18px;font-size:13px">Listo</button></div>`,
+                    [[{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }], 300, 'cubic-bezier(.22,1,.36,1)'], [[{ opacity: 1 }, { opacity: 0 }], 150, 'ease']);
+                const chk = scr.querySelector('.scr:last-of-type .chk') || scr.querySelector('.chk');
+                const doIt = () => { if (chk) chk.animate([{ strokeDashoffset: 50 }, { strokeDashoffset: 0 }], { duration: 400 * (k || 0.001), easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards' }); fx('success'); };
+                setTimeout(doIt, 150 * k);
+                cur = 'success';
+            }
+            else if (kind === 'pop2') { fx('close'); show(HOME, [[{ opacity: 0 }, { opacity: 1 }], 250, 'ease'], [[{ opacity: 1 }, { opacity: 0 }], 150, 'ease']); cur = 'home'; }
+        }
+        document.addEventListener('click', e => { const b = e.target.closest('[data-tr]'); if (b) tr(b.dataset.tr); });
+        document.querySelectorAll('[data-tr]').forEach(b => b.setAttribute('data-fx-test', ''));
+
+        // ---- Checklist con progreso persistente ----
+        const items = [...document.querySelectorAll('#chk input')];
+        let saved = [];
+        try { saved = JSON.parse(localStorage.getItem('pb_guide_chk') || '[]'); } catch (e) {}
+        items.forEach((c, i) => { c.checked = !!saved[i]; c.closest('li').classList.toggle('done', c.checked); });
+        const prog = () => { const n = items.filter(c => c.checked).length; $('#chk-bar').style.width = (n / items.length * 100) + '%'; };
+        prog();
+        items.forEach(c => c.addEventListener('change', () => {
+            c.closest('li').classList.toggle('done', c.checked); prog();
+            try { localStorage.setItem('pb_guide_chk', JSON.stringify(items.map(x => x.checked))); } catch (e) {}
+            if (items.every(x => x.checked)) fx('success');
+        }));
+    })();
+    </script>
+</body>
+</html>
