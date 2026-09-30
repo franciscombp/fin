@@ -504,7 +504,7 @@
 
                 <h3>Catálogo</h3>
                 <div class="tbl"><table>
-                    <thead><tr><th>Tipo</th><th>API</th><th>Android (ms)</th><th>iOS</th><th>Se usa en</th></tr></thead>
+                    <thead><tr><th>Tipo</th><th>API</th><th>Android (ms)</th><th>iOS nativo</th><th>Se usa en</th></tr></thead>
                     <tbody>
                         <tr><td>Toque</td><td><code>Haptics.tap()</code></td><td>15</td><td>impact · light</td><td>Botones y filas (automático)</td></tr>
                         <tr><td>Selección</td><td><code>Haptics.select()</code></td><td>20</td><td>selection</td><td>Tabs, chips, segmentos, nav</td></tr>
@@ -553,9 +553,10 @@
                 <div class="callout warn">
                     <b><span class="ms">phone_iphone</span>Limitaciones de plataforma</b>
                     <ul>
-                        <li><b>iOS / Safari</b> no expone <code>navigator.vibrate</code>. <code>haptics.js</code> usa el control <code>&lt;input switch&gt;</code> nativo (iOS 17.4+), que sólo vibra dentro de un gesto: los efectos asíncronos (éxito tras "procesando") pueden no vibrar.</li>
+                        <li><b>iOS / Safari</b> no expone ninguna API de vibración para la web. <b>No se simula</b>: en iPhone el feedback es visual y sonoro. La háptica real llega con la app nativa (<code>UIFeedbackGenerator</code>).</li>
                         <li><b>Android / Chrome</b> ignora pulsos menores a ~15 ms en muchos motores. Por eso ningún patrón baja de 12 ms.</li>
                         <li>En la app nativa los mismos nombres deben mapearse a los generadores del sistema.</li>
+                        <li>Ningún efecto DEBE depender de trucos con elementos ocultos del DOM: generan eventos sintéticos que otros listeners pueden confundir con acciones del usuario.</li>
                     </ul>
                 </div>
             </section>
@@ -595,7 +596,8 @@
                 </table></div>
                 <ul>
                     <li>DEBE ir siempre acompañado de un cambio visual y, si aplica, de háptica.</li>
-                    <li>DEBE respetar el interruptor <b>Sonidos</b> del perfil. DEBERÍA respetar el modo silencio del sistema (en la app nativa, categoría de audio <code>ambient</code>).</li>
+                    <li>DEBE respetar el interruptor <b>Sonidos</b> del perfil y el modo silencio del sistema (en la app nativa, categoría de audio <code>ambient</code>). La web no cambia la sesión de audio de iOS.</li>
+                    <li>DEBE apagarse solo: el contexto de audio se cierra a los pocos segundos sin sonidos, y una ráfaga anómala de efectos sin gestos del usuario se corta automáticamente.</li>
                     <li>Volumen por debajo del de un video: son confirmaciones, no alertas.</li>
                     <li>Nada de archivos de audio: se sintetizan con WebAudio (0 KB, 0 red, sin latencia de carga).</li>
                 </ul>
@@ -612,7 +614,7 @@
                             <button class="fxbtn" data-try="welcome"><b><span class="ms">graphic_eq</span>Ingreso</b><small>~3 s · 1 por sesión</small></button>
                         </div>
                     </div>
-                    <div class="demo__foot">En iPhone el audio se activa con el primer toque de la página y respeta el volumen de medios.</div>
+                    <div class="demo__foot">En iPhone el audio se activa con el primer toque de la página y respeta el switch de silencio: si no suena, revisa que no esté en silencio.</div>
                 </div>
             </section>
 
@@ -788,7 +790,7 @@ Haptics.setSoundEnabled(<span class="k">false</span>);</pre>
         $('#pref-hap').addEventListener('change', e => H && H.setEnabled(e.target.checked));
         $('#pref-snd').addEventListener('change', e => H && H.setSoundEnabled(e.target.checked));
         $('#pref-rm').addEventListener('change', e => root.classList.toggle('rm', e.target.checked));
-        $('#hap-support').textContent = typeof navigator.vibrate === 'function' ? 'Vibración nativa disponible' : (/iP(hone|ad)/.test(navigator.userAgent) ? 'iOS: háptica vía switch nativo' : 'Sin vibración en este dispositivo: sólo sonido');
+        $('#hap-support').textContent = typeof navigator.vibrate === 'function' ? 'Vibración nativa disponible' : (/iP(hone|ad)/.test(navigator.userAgent) ? 'iOS: sin vibración web, sólo sonido' : 'Sin vibración en este dispositivo: sólo sonido');
 
         // Botones de prueba
         document.querySelectorAll('[data-try]').forEach(b => {

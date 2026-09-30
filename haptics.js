@@ -2,16 +2,13 @@
 //
 // Los sonidos se sintetizan con WebAudio (sin archivos): cero assets, cero red.
 //
-// - Android/Chrome: navigator.vibrate con patrones cortos (en pointerdown).
-// - iOS 17.4+ (Safari/PWA): no existe vibrate(); el truco es hacer click en un
-//   <input type="checkbox" switch> oculto, que dispara el motor háptico nativo.
-//   iOS sólo lo permite dentro de un gesto del usuario, así que allí la háptica
-//   se dispara en "click" y no en pointerdown, y los efectos asíncronos (éxito
-//   tras el procesamiento) pueden no vibrar.
-// - Audio: iOS/Chrome exigen desbloquear el AudioContext dentro de un gesto
-//   (touchend/click; pointerdown no cuenta en iOS). Además en iOS el switch de
-//   silencio mutea WebAudio salvo que audioSession.type = 'playback'.
-// - Sin soporte (escritorio) todo es no-op silencioso.
+// - Háptica: sólo donde existe navigator.vibrate (Android/Chrome). En iOS no
+//   hay API de vibración para la web y NO se simula: allí sólo hay sonido.
+// - Audio: se desbloquea dentro de un gesto (touchend/click). No se toca la
+//   sesión de audio de iOS: respeta el switch de silencio.
+// - Seguridad: el contexto de audio se CIERRA tras unos segundos sin sonidos
+//   (nada puede quedar sonando de fondo) y un freno corta cualquier ráfaga
+//   anómala de efectos que no venga de gestos del usuario.
 // Interruptores persistidos en localStorage (Haptics.setEnabled / setSoundEnabled).
 (function () {
   var KEY = 'bp_haptics';
@@ -23,50 +20,22 @@
 
   var canVibrate = typeof navigator.vibrate === 'function';
 
-  // ---------- Háptica ----------
-  var iosEl = null;
-  var ticking = false;
-  // ¿El evento viene del switch oculto que usamos para la háptica de iOS?
-  function isInternal(t) { return ticking || (iosEl && t && iosEl.contains(t)); }
-  function iosTick() {
-    try {
-      if (!iosEl) {
-        var label = document.createElement('label');
-        label.setAttribute('aria-hidden', 'true');
-        label.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none';
-        var input = document.createElement('input');
-        input.type = 'checkbox';
-        input.setAttribute('switch', '');
-        input.tabIndex = -1;
-        label.appendChild(input);
-        document.body.appendChild(label);
-        iosEl = label;
-      }
-      // El click sintético cambia el checkbox y dispara 'click'/'change' en el
-      // documento. Sin esta marca, el listener de 'change' lo tomaba por un
-      // toggle del usuario → fire('toggle') → otro iosTick → bucle infinito
-      // de sonido y vibración (sólo en iOS, que no tiene navigator.vibrate).
-      ticking = true;
-      try { iosEl.click(); } finally { ticking = false; }
-    } catch (e) {}
-  }
-
   // Patrones en ms: [vibra, pausa, vibra...]. Por debajo de ~15ms muchos
-  // motores Android ni se sienten. En iOS se emula con N ticks.
+  // motores Android ni se sienten.
   var PATTERNS = {
-    tap:       { android: 15,                   ios: 1 },
-    select:    { android: 20,                   ios: 1 },
-    detent:    { android: 12,                   ios: 1 },
-    toggle:    { android: [20, 40, 20],         ios: 2 },
-    swipe:     { android: [10, 30, 18],         ios: 1 },
-    open:      { android: 18,                   ios: 1 },
-    close:     { android: 12,                   ios: 1 },
-    flip:      { android: [15, 70, 25],         ios: 2 },
-    reveal:    { android: [10, 40, 10, 40, 30], ios: 3 },
-    success:   { android: [25, 60, 45],         ios: 2 },
-    warning:   { android: [35, 60, 35],         ios: 2 },
-    error:     { android: [50, 50, 50, 50, 90], ios: 3 },
-    welcome:   { android: [15, 90, 15, 90, 20, 140, 60], ios: 3 }
+    tap:       { android: 15 },
+    select:    { android: 20 },
+    detent:    { android: 12 },
+    toggle:    { android: [20, 40, 20] },
+    swipe:     { android: [10, 30, 18] },
+    open:      { android: 18 },
+    close:     { android: 12 },
+    flip:      { android: [15, 70, 25] },
+    reveal:    { android: [10, 40, 10, 40, 30] },
+    success:   { android: [25, 60, 45] },
+    warning:   { android: [35, 60, 35] },
+    error:     { android: [50, 50, 50, 50, 90] },
+    welcome:   { android: [15, 90, 15, 90, 20, 140, 60] }
   };
 
   // ---------- Sonido: síntesis por capas ----------
@@ -76,15 +45,6 @@
   // generada por código. Todo pasa por un compresor para que suene lleno
   // sin saturar.
   var actx = null, master = null, dry = null, wet = null;
-  // iOS: la sesión de audio se fija UNA vez y ANTES de crear el contexto.
-  // Cambiarla con un AudioContext vivo (o que Face ID/WebAuthn la
-  // interrumpa) deja a WebKit emitiendo ruido/zumbido sin fin.
-  var sessionSet = false;
-  function setSession() {
-    if (sessionSet) return;
-    sessionSet = true;
-    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
-  }
   // Tira el contexto por completo: corta cualquier sonido colgado y el
   // próximo efecto crea uno limpio.
   function killCtx() {
@@ -95,19 +55,18 @@
     noiseBuf = null;
     try { old.close(); } catch (e) {}
   }
-  // En reposo el contexto se suspende: nada puede seguir sonando de fondo.
+  // En reposo el contexto se CIERRA (no sólo se suspende): así ningún
+  // nodo, cola de reverb o salida trabada de WebKit puede seguir sonando.
+  // El siguiente gesto crea uno nuevo.
   var idleTimer = null;
   function scheduleIdle(ms) {
     clearTimeout(idleTimer);
-    idleTimer = setTimeout(function () {
-      if (actx && actx.state === 'running') { try { actx.suspend(); } catch (e) {} }
-    }, ms);
+    idleTimer = setTimeout(killCtx, ms);
   }
   function ctx() {
     if (actx) return actx;
     var AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return null;
-    setSession();
     try {
       actx = new AC();
       actx.onstatechange = function () {
@@ -288,8 +247,8 @@
 
   // Desbloqueo: se reintenta en cada gesto hasta que el contexto queda
   // 'running' (en iOS puede volver a 'interrupted' y hay que reanudarlo).
-  function unlock(e) {
-    if (e && isInternal(e.target)) return;
+  function unlock() {
+    if (!soundOn) return;
     var a = ctx();
     if (!a) return;
     try {
@@ -309,7 +268,29 @@
 
   // ---------- Disparo ----------
   var lastAt = 0, lastStrongAt = 0;
+  // Freno: más de 12 efectos en 1,5 s sin un gesto del usuario en medio es
+  // un bucle (nunca un uso real). Se corta el audio y se ignoran efectos
+  // hasta el próximo gesto.
+  var burst = [], tripped = false, lastGesture = 0;
+  ['pointerdown', 'keydown', 'touchstart'].forEach(function (ev) {
+    document.addEventListener(ev, function () { lastGesture = Date.now(); tripped = false; burst = []; }, { capture: true, passive: true });
+  });
+  function guard() {
+    if (tripped) return false;
+    var now = Date.now();
+    burst.push(now);
+    while (burst.length && now - burst[0] > 1500) burst.shift();
+    if (burst.length > 12 && now - lastGesture > 1500) {
+      tripped = true; killCtx();
+      try { if (canVibrate) navigator.vibrate(0); } catch (e) {}
+      if (window.console) console.warn('[haptics] ráfaga anómala de efectos detenida');
+      return false;
+    }
+    return true;
+  }
+
   function fire(name) {
+    if (!guard()) return;
     // Tap/select se agrupan (evita doble disparo pointerdown+click); el resto
     // (toggle, éxito, error…) siempre suena, aunque siga a un tap.
     var soft = name === 'tap' || name === 'select' || name === 'detent';
@@ -321,12 +302,8 @@
     play(name);
     if (!enabled) return;
     var p = PATTERNS[name] || PATTERNS.tap;
-    try {
-      if (canVibrate) { navigator.vibrate(p.android); return; }
-      for (var i = 0; i < p.ios; i++) {
-        if (i === 0) iosTick(); else setTimeout(iosTick, i * 90);
-      }
-    } catch (e) {}
+    if (!canVibrate) return; // iOS y escritorio: sin háptica, sólo sonido
+    try { navigator.vibrate(p.android); } catch (e) {}
   }
 
   window.Haptics = {
@@ -365,7 +342,7 @@
     fire(el.matches(SELECT) ? 'select' : 'tap');
   }
 
-  // Android: al tocar (baja latencia). iOS: en click, único gesto válido.
+  // Android: al tocar (baja latencia). Resto: en click (sólo sonido).
   var lastTouchDown = 0;
   if (canVibrate) {
     document.addEventListener('pointerdown', function (e) {
@@ -375,16 +352,14 @@
     }, { passive: true, capture: true });
   }
   document.addEventListener('click', function (e) {
-    if (isInternal(e.target)) return;
     // Android ya respondió en pointerdown: el click que sigue a ese toque no
-    // debe repetir vibración ni sonido. Sólo actúa en iOS y con mouse.
+    // debe repetir vibración ni sonido. Sólo actúa donde no hay vibración.
     if (canVibrate && Date.now() - lastTouchDown < 1500) return;
     feedbackFor(e.target);
   }, true);
 
   document.addEventListener('change', function (e) {
     var t = e.target;
-    if (isInternal(t)) return;
     if (t && (t.tagName === 'SELECT' || t.type === 'checkbox' || t.type === 'radio')) fire('toggle');
   }, true);
 
@@ -431,7 +406,7 @@
     // Menú "Probar efectos" del perfil
     var status = document.getElementById('fx-test-status');
     if (status) {
-      var hap = canVibrate ? 'vibración nativa (Android)' : (/iP(hone|ad)/.test(navigator.userAgent) ? 'háptica iOS 17.4+ (emulada)' : 'sin vibración en este dispositivo');
+      var hap = canVibrate ? 'vibración nativa (Android)' : (/iP(hone|ad)/.test(navigator.userAgent) ? 'iOS no permite vibración web (sólo sonido)' : 'sin vibración en este dispositivo');
       status.textContent = 'Soporte: ' + hap + ' · audio ' + ((window.AudioContext || window.webkitAudioContext) ? 'sí' : 'no');
     }
     document.querySelectorAll('[data-fx-test]').forEach(function (btn) {
