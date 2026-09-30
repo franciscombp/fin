@@ -4,18 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="format-detection" content="telephone=no">
-    <meta name="description" content="Banca Móvil - POC Rediseño">
+    <meta name="description" content="Pichibank app - POC Rediseño">
     <!-- En Android el theme-color pinta la barra superior; usamos el gris del
          fondo (no el amarillo de marca) para que la cabecera no se vea amarilla. -->
     <meta name="theme-color" content="#f5f5f5">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Banca Movil">
+    <meta name="apple-mobile-web-app-title" content="Pichibank">
 
     <link rel="manifest" href="./manifest.json">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23fcd000' width='192' height='192'/><text x='96' y='125' font-size='96' font-weight='bold' fill='%230f265c' text-anchor='middle' font-family='Arial'>BP</text></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23fcd000' width='192' height='192' rx='44'/><text x='96' y='125' font-size='96' font-weight='bold' fill='%230f265c' text-anchor='middle' font-family='Arial'>BP</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23fcd000' width='192' height='192'/><text x='96' y='125' font-size='96' font-weight='bold' fill='%230f265c' text-anchor='middle' font-family='Arial'>PB</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23fcd000' width='192' height='192' rx='44'/><text x='96' y='125' font-size='96' font-weight='bold' fill='%230f265c' text-anchor='middle' font-family='Arial'>PB</text></svg>">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0">
@@ -78,7 +78,7 @@
     <!-- Biometría real (WebAuthn). Debe cargar antes del script inline y app.js. -->
     <script src="./webauthn.js"></script>
 
-    <title>Banca Móvil</title>
+    <title>Pichibank app</title>
     <style>
         /* Prelo se carga desde ./assets/fonts/, no desde un CDN externo.
            Los .woff2 no se versionan (ver .gitignore): se colocan a mano en
@@ -4180,7 +4180,7 @@
         <!-- Header -->
         <div class="login-screen__header">
             <div class="login-screen__header-logo">
-                <img src="./assets/bp-brand-logo.svg" alt="Logo del banco" class="login-logo">
+                <img src="./assets/pichibank-logo.svg" alt="Pichibank" class="login-logo">
             </div>
             <div class="login-screen__header-actions">
                 <button class="icon-button" aria-label="Clave digital" data-action="Clave digital">
@@ -4255,9 +4255,9 @@
 
     <!-- Splash de bienvenida (amarillo) mientras autentica -->
     <div class="welcome-splash" id="welcome-splash" aria-hidden="true">
-        <img src="./assets/bp-brand-logo--blue.svg" alt="Logo del banco" class="welcome-splash__logo">
+        <img src="./assets/pichibank-logo--blue.svg" alt="Pichibank" class="welcome-splash__logo">
         <h1 class="welcome-splash__title">¡Bienvenido de nuevo!</h1>
-        <p class="welcome-splash__subtitle">Estamos preparando tu Banca Móvil…</p>
+        <p class="welcome-splash__subtitle">Estamos preparando tu Pichibank…</p>
     </div>
 
     <div class="page" id="home-page">
@@ -4363,7 +4363,7 @@
                     <!-- Estado sin tarjeta de débito activa (otra cuenta) -->
                     <div class="debit-card-disabled is-hidden" id="debit-card-disabled">
                         <div class="debit-card-disabled__row">
-                            <img src="./assets/bp-brand-logo--blue.svg" alt="Logo del banco" class="debit-card-disabled__logo">
+                            <img src="./assets/pichibank-logo--blue.svg" alt="Pichibank" class="debit-card-disabled__logo">
                             <span class="debit-card-disabled__visa">VISA</span>
                         </div>
                         <p class="debit-card-disabled__text">Para tus compras y pagos por internet</p>
@@ -4570,7 +4570,7 @@
                 <div class="card">
                     <button class="product-row" data-action="Visa Débito">
                         <span class="card-thumb card-thumb--visa">
-                            <span class="card-thumb__brand">MI<br>BANCO</span>
+                            <span class="card-thumb__brand">PICHI<br>BANK</span>
                             <span class="card-thumb__foot"><span class="card-thumb__visa">VISA</span></span>
                         </span>
                         <span class="product-row__info">
@@ -4582,7 +4582,7 @@
 
                 <button class="cta-dashed" data-action="Solicitar Débito Digital">
                     <span class="card-thumb card-thumb--ghost">
-                        <span class="card-thumb__brand">MI<br>BANCO</span>
+                        <span class="card-thumb__brand">PICHI<br>BANK</span>
                         <span class="card-thumb__foot"><span class="card-thumb__visa">VISA</span></span>
                     </span>
                     <span class="cta-dashed__text">
@@ -4602,7 +4602,7 @@
                 <div class="card">
                     <button class="product-row" data-action="Mastercard Black">
                         <span class="card-thumb card-thumb--black">
-                            <span class="card-thumb__brand">MI<br>BANCO</span>
+                            <span class="card-thumb__brand">PICHI<br>BANK</span>
                             <span class="card-thumb__foot"><span class="mc-dots"><i></i><i></i></span></span>
                         </span>
                         <span class="product-row__info">
@@ -5009,7 +5009,7 @@
                         <img class="cd-card__img" id="cd-card-img" src="./assets/card-debit.png" alt="Tarjeta de débito internacional">
                         <div class="cd-card__art" id="cd-card-art">
                             <div class="cd-card__art-top">
-                                <span class="cd-card__art-brand">MI<br>BANCO</span>
+                                <span class="cd-card__art-brand">PICHI<br>BANK</span>
                                 <span class="cd-card__art-mark" id="cd-card-art-mark"></span>
                             </div>
                             <span class="cd-card__art-number" id="cd-card-art-number"></span>
@@ -5285,7 +5285,7 @@
                 <div class="card">
                     <button class="product-row" data-action="Mastercard Black">
                         <span class="card-thumb card-thumb--black">
-                            <span class="card-thumb__brand">MI<br>BANCO</span>
+                            <span class="card-thumb__brand">PICHI<br>BANK</span>
                             <span class="card-thumb__foot"><span class="mc-dots"><i></i><i></i></span></span>
                         </span>
                         <span class="product-row__info"><span class="product-row__name">Mastercard Black</span></span>
@@ -5375,7 +5375,7 @@
         <div class="story-progress" id="story-progress"></div>
         <div class="story-header">
             <span class="story-header__avatar" style="background: var(--bp-surface-brand); color: var(--bp-text-brand);">B</span>
-            <span class="story-header__name">Mi Banco</span>
+            <span class="story-header__name">Pichibank</span>
             <button class="story-close" id="story-close" aria-label="Cerrar stories">
                 <span class="material-symbols-rounded">close</span>
             </button>
@@ -6275,7 +6275,7 @@
 
         // ---------- Banner de ofertas: carrusel infinito ----------
         const BANNER_SLIDES = [
-            { theme: 1, title: 'Ofertas todo el año con Tarjetas del banco y Deuna', cta: 'Ver ofertas' },
+            { theme: 1, title: 'Ofertas todo el año con Tarjetas Pichibank y Deuna', cta: 'Ver ofertas' },
             { theme: 2, title: 'Acumula millas en cada compra con tu tarjeta de crédito', cta: 'Conocer más' },
             { theme: 3, title: 'Activa Modo finanzas y controla todo tu dinero en un solo lugar', cta: 'Activar' },
         ];
