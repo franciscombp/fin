@@ -459,3 +459,173 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 
 /* Foco visible coherente en el resto de controles */
 button:focus-visible, a:focus-visible, [role="button"]:focus-visible { outline: none; box-shadow: var(--sol-focus); }
+
+/* =====================================================================
+   PARTE 3 — Componentes pendientes + modo oscuro
+   Todo color sale de tokens de tema (--bp-theme-color-*), así que cada
+   regla funciona igual en :root[data-theme="light"] y [data-theme="dark"].
+   ===================================================================== */
+:root {
+  --sol-body-md-medium:   var(--bp-semantic-typography-brand-body-md-medium-font-weight) var(--bp-semantic-typography-brand-body-md-medium-font-size)/var(--bp-semantic-typography-brand-body-md-medium-line-height) var(--sol-font);
+  --sol-body-md-semibold: var(--bp-semantic-typography-brand-body-md-semibold-font-weight) var(--bp-semantic-typography-brand-body-md-semibold-font-size)/var(--bp-semantic-typography-brand-body-md-semibold-line-height) var(--sol-font);
+  --sol-body-sm-medium:   var(--bp-semantic-typography-brand-body-sm-medium-font-weight) var(--bp-semantic-typography-brand-body-sm-medium-font-size)/var(--bp-semantic-typography-brand-body-sm-medium-line-height) var(--sol-font);
+  --sol-body-sm-semibold: var(--bp-semantic-typography-brand-body-sm-semibold-font-weight) var(--bp-semantic-typography-brand-body-sm-semibold-font-size)/var(--bp-semantic-typography-brand-body-sm-semibold-line-height) var(--sol-font);
+  --sol-body-xs-semibold: var(--bp-semantic-typography-brand-body-xs-semibold-font-weight) var(--bp-semantic-typography-brand-body-xs-semibold-font-size)/var(--bp-semantic-typography-brand-body-xs-semibold-line-height) var(--sol-font);
+  --sol-title-sm:         var(--bp-semantic-typography-brand-title-sm-font-weight) var(--bp-semantic-typography-brand-title-sm-font-size)/var(--bp-semantic-typography-brand-title-sm-line-height) var(--sol-font);
+  --sol-numeric-sm:       var(--bp-semantic-typography-brand-numeric-sm-font-weight) var(--bp-semantic-typography-brand-numeric-sm-font-size)/var(--bp-semantic-typography-brand-numeric-sm-line-height) var(--sol-font);
+}
+
+/* Fondo de página y alias locales que estaban fijos en claro */
+html { background: var(--bp-theme-color-surface-page-alt); }
+:root { --bp-border-elevated: var(--bp-theme-color-border-divider-alt, rgba(47, 49, 56, 0.04)); }
+
+/* Filas de producto / meta / sub-ítem → bp-list-item (row-bg-*) */
+.product-row, .goal-row {
+  min-height: var(--bp-semantic-size-interactive-md, 56px);
+  padding: var(--bp-semantic-spacing-micro-lg, 12px) var(--bp-layout-grid-margin, 16px);
+  gap: var(--bp-semantic-spacing-gap-item, 12px);
+  color: var(--bp-theme-color-text-primary);
+}
+.product-row { border-bottom: var(--bp-semantic-border-thin, 1px) solid var(--bp-theme-color-border-divider); }
+.product-row:hover, .goal-row:hover, .sub-item:hover, .list-item:hover { background: var(--bp-theme-color-row-bg-hover); }
+.product-row:active, .goal-row:active, .sub-item:active, .list-item:active { background: var(--bp-theme-color-row-bg-active); }
+.product-row:focus-visible, .goal-row:focus-visible { outline: none; box-shadow: inset var(--sol-focus); }
+.product-row__name, .goal-row__name { font: var(--sol-body-md-semibold); color: var(--bp-theme-color-text-primary); }
+.product-row__sub, .goal-row__meta { font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-secondary); }
+.product-row__masked, .product-row__label { font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-helper); }
+.product-row__amount, .goal-row__amount { font: var(--sol-numeric-sm); font-variant-numeric: tabular-nums; color: var(--bp-theme-color-text-primary); }
+.card__footer { border-top-color: var(--bp-theme-color-border-divider); }
+.card__footer-label { font: var(--sol-body-md-semibold); color: var(--bp-theme-color-text-secondary); }
+.card__footer-value { font: var(--sol-title-sm); font-variant-numeric: tabular-nums; color: var(--bp-theme-color-text-primary); }
+
+/* Avatares de ícono → bp-avatar (avatar-bg / avatar-fg) */
+.avatar-cat, .avatar-lg { background: var(--bp-theme-color-avatar-bg); color: var(--bp-theme-color-avatar-fg); }
+.avatar-lg { border-radius: var(--bp-semantic-radius-md); }
+.quick-action:hover .quick-action__icon { box-shadow: 0 0 0 8px var(--bp-theme-color-interaction-selection-bg-hover); }
+
+/* CTA punteado → bp-widget dashed */
+.cta-dashed, .debit-card-disabled {
+  border: var(--bp-semantic-border-thin, 1px) dashed var(--bp-theme-color-border-strong);
+  background: var(--bp-theme-color-surface-container-alt);
+  border-radius: var(--bp-semantic-radius-md);
+}
+.cta-dashed:hover { background: var(--bp-theme-color-interaction-tertiary-bg-hover); }
+.cta-dashed:active { background: var(--bp-theme-color-interaction-tertiary-bg-pressed); }
+.cta-dashed__text { font: var(--sol-body-md-medium); color: var(--bp-theme-color-text-primary); }
+.cta-dashed__link { color: var(--bp-theme-color-text-interactive); font-weight: var(--bp-semantic-typography-brand-body-md-semibold-font-weight); }
+
+/* Miniatura de tarjeta "fantasma" (por emitir) */
+.card-thumb--ghost { background: var(--bp-theme-color-surface-container-default); border-color: var(--bp-theme-color-border-default); }
+
+/* Campos de formulario → bp-select / bp-input */
+.push-field__label {
+  font: var(--sol-body-sm-semibold); color: var(--bp-theme-color-text-primary);
+  margin-bottom: var(--bp-semantic-spacing-micro-md, 8px);
+}
+.push-field__hint { font: var(--sol-body-xs-semibold); color: var(--bp-theme-color-text-helper); }
+.push-field__hint--error { color: var(--bp-theme-color-status-error-text); }
+.push-input, .push-select,
+.push-page.is-form-flow .push-input, .push-page.is-form-flow .push-select {
+  height: var(--bp-semantic-size-interactive-sm, 48px);
+  padding: 0 var(--bp-semantic-spacing-micro-lg, 12px);
+  border: var(--bp-semantic-border-thin, 1px) solid var(--bp-theme-color-field-border);
+  border-radius: var(--bp-semantic-radius-sm);
+  background: var(--bp-theme-color-field-bg);
+  color: var(--bp-theme-color-text-primary);
+  font: var(--sol-body-md-medium);
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.push-select { padding-right: 40px; }
+.push-input:hover, .push-select:hover { border-color: var(--bp-theme-color-field-border-hover); }
+.push-input:focus, .push-select:focus,
+.push-input:focus-visible, .push-select:focus-visible {
+  outline: none; border-color: var(--bp-theme-color-border-focus);
+  box-shadow: inset 0 0 0 1px var(--bp-theme-color-border-focus);
+}
+.push-input[aria-invalid="true"], .push-input.is-error { border-color: var(--bp-theme-color-field-border-error); }
+.push-input:disabled, .push-select:disabled {
+  background: var(--bp-theme-color-field-bg-disabled); border-color: var(--bp-theme-color-field-border-disabled);
+  color: var(--bp-theme-color-text-disabled);
+}
+.push-input::placeholder { color: var(--bp-theme-color-text-placeholder); }
+.push-select option { background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); }
+
+/* Chips de monto → bp-chip. Seleccionado: el spec usa texto blanco sobre
+   amarillo (≈1.3:1); acá va interaction-primary-fg para cumplir contraste. */
+.push-chip {
+  height: var(--bp-action-button-size, 40px);
+  padding: 0 var(--bp-semantic-spacing-micro-lg, 12px);
+  border-radius: var(--bp-semantic-radius-full, 999px);
+  border: var(--bp-semantic-border-thin, 1px) solid var(--bp-theme-color-border-default);
+  background: var(--bp-theme-color-interaction-tertiary-bg);
+  color: var(--bp-theme-color-text-primary);
+  font: var(--sol-body-sm-semibold);
+}
+.push-chip:hover { background: var(--bp-theme-color-interaction-tertiary-bg-hover); }
+.push-chip.is-selected {
+  background: var(--bp-theme-color-interaction-primary-bg);
+  border-color: var(--bp-theme-color-interaction-primary-bg);
+  color: var(--bp-theme-color-interaction-primary-fg);
+}
+.push-chip:disabled { border-color: var(--bp-theme-color-border-subtle); color: var(--bp-theme-color-text-disabled); }
+.push-chip:focus-visible { outline: none; box-shadow: var(--sol-focus); }
+
+/* Interruptor de preferencias → bp-switch (field-control-*) */
+.pref-switch { background: var(--bp-theme-color-field-control-inactive); }
+.pref-switch__knob { background: var(--bp-theme-color-field-thumb); }
+[aria-pressed="true"] .pref-switch { background: var(--bp-theme-color-field-control-active); }
+
+/* Superficies elevadas: sheet, modal, skeleton */
+.sheet, .gyro-modal__content { background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); }
+.sheet__handle { background: var(--bp-theme-color-border-default); }
+.gyro-modal__btn--secondary { background: var(--bp-theme-color-interaction-secondary-bg); color: var(--bp-theme-color-interaction-secondary-fg); }
+.skeleton {
+  background: linear-gradient(90deg,
+    var(--bp-theme-color-interaction-selection-bg-active-subtle) 25%,
+    var(--bp-theme-color-interaction-selection-bg-hover) 50%,
+    var(--bp-theme-color-interaction-selection-bg-active-subtle) 75%);
+  background-size: 200% 100%;
+}
+
+/* Hover de pestañas y nav sin grises fijos */
+.tab:hover:not(.active) { background: var(--bp-theme-color-interaction-selection-bg-hover); }
+.nav-item:hover:not(.active) .nav-item__wrap { background: transparent; }
+
+/* Montos positivos / tendencia → data-positive / status-success */
+.amount-trend .material-symbols-rounded,
+.finance-hero__value--positive,
+.finance-networth.is-positive strong { color: var(--bp-theme-color-status-success-text); }
+.goal-progress__fill { background: linear-gradient(90deg, var(--bp-theme-color-data-chart-primary-2), var(--bp-theme-color-data-positive)); }
+
+/* ---------- Ajustes exclusivos del modo oscuro ----------
+   Lo que no puede resolverse con un token (degradados decorativos,
+   ilustraciones claras) se atenúa sólo bajo data-theme="dark". */
+:root[data-theme="dark"] .home-banner__slide--1 { background: color-mix(in srgb, var(--bp-base-color-yellow-500) 14%, var(--bp-theme-color-surface-container-default)); }
+:root[data-theme="dark"] .home-banner__slide--2 { background: color-mix(in srgb, var(--bp-base-color-sky-500, #2f7abf) 18%, var(--bp-theme-color-surface-container-default)); }
+:root[data-theme="dark"] .home-banner__slide--3 { background: color-mix(in srgb, var(--bp-base-color-green-500, #1e9e5a) 18%, var(--bp-theme-color-surface-container-default)); }
+:root[data-theme="dark"] .home-banner__title { color: var(--bp-theme-color-text-primary); }
+:root[data-theme="dark"] .home-banner__figure,
+:root[data-theme="dark"] .grow-cta__art { opacity: .35; }
+:root[data-theme="dark"] .card-thumb--diners { background: var(--bp-base-color-neutral-300, #bdbdbd); }
+:root[data-theme="dark"] .push-qr__code { background: #fff; } /* el QR necesita fondo claro para escanearse */
+
+/* Filas sobre la misma superficie que las tarjetas: en oscuro row-bg
+   (#121212) quedaba más hundido que el contenedor (#303030), y el divisor
+   (= surface-page-default) se volvía invisible sobre él. */
+:root[data-theme="dark"] .list-item { background: var(--bp-theme-color-surface-container-default); }
+:root[data-theme="dark"] .list-item,
+:root[data-theme="dark"] .product-row,
+:root[data-theme="dark"] .card__footer { border-color: var(--bp-theme-color-border-divider-alt); }
+/* Logo con texto blanco sobre fondo oscuro (content: url() en <img> lo
+   soportan Safari y Chromium) */
+:root[data-theme="dark"] .login-logo { content: url("./pichibank-logo--white.svg"); }
+
+/* Fondo sólido de íconos decorativos (filas de detalle, logos de
+   suscripción): navy en claro; en oscuro selection-bg-active es blanco,
+   así que se usa la superficie elevada para mantener el ícono blanco. */
+:root { --bp-icon-solid-bg: var(--bp-theme-color-interaction-selection-bg-active); }
+:root[data-theme="dark"] { --bp-icon-solid-bg: var(--bp-theme-color-interaction-selection-bg-elevated); }
+.profile-head__avatar { background: var(--bp-icon-solid-bg); color: var(--bp-theme-color-icon-on-solid); }
+.gyro-modal__btn--primary { background: var(--bp-theme-color-interaction-primary-bg); color: var(--bp-theme-color-interaction-primary-fg); }
+.push-loading__spinner { border-top-color: var(--bp-theme-color-loading-spinner-on-page); }
+:root[data-theme="dark"] .push-loading__spinner { border-top-color: var(--bp-theme-color-icon-primary); }
