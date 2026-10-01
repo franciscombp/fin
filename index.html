@@ -8,6 +8,28 @@
     <!-- En Android el theme-color pinta la barra superior; usamos el gris del
          fondo (no el amarillo de marca) para que la cabecera no se vea amarilla. -->
     <meta name="theme-color" content="#f5f5f5">
+    <!-- Tema Solar claro/oscuro: se resuelve antes del primer pintado para
+         evitar el destello blanco. Preferencia guardada (pb_theme = light |
+         dark) o, si no hay, la del sistema (prefers-color-scheme). -->
+    <script>
+        (function () {
+            var KEY = 'pb_theme', root = document.documentElement;
+            var mq = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+            function saved() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+            function apply(t) {
+                root.setAttribute('data-theme', t);
+                var m = document.querySelector('meta[name="theme-color"]');
+                if (m) m.setAttribute('content', t === 'dark' ? '#1f1f1f' : '#f5f5f5');
+            }
+            function resolve() { var s = saved(); return s === 'dark' || s === 'light' ? s : (mq && mq.matches ? 'dark' : 'light'); }
+            apply(resolve());
+            if (mq && mq.addEventListener) mq.addEventListener('change', function () { if (!saved()) apply(resolve()); });
+            window.PBTheme = {
+                get: function () { return root.getAttribute('data-theme'); },
+                set: function (t) { try { localStorage.setItem(KEY, t); } catch (e) {} apply(t); }
+            };
+        })();
+    </script>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -4847,6 +4869,11 @@
                          --bp-* para color, así que un tema nuevo es sólo
                          reasignar esos tokens (ver bloque html.theme-y2k
                          más abajo) — nada de HTML/JS distinto por tema. -->
+                    <button class="list-item" id="dark-toggle-row" aria-pressed="false">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">dark_mode</span></span>
+                        <span class="list-item__title">Modo oscuro</span>
+                        <span class="pref-switch" aria-hidden="true"><span class="pref-switch__knob"></span></span>
+                    </button>
                     <button class="list-item" id="theme-toggle-row" aria-pressed="false">
                         <span class="avatar-cat"><span class="material-symbols-rounded">palette</span></span>
                         <span class="list-item__title">Tema Y2K</span>
@@ -5143,7 +5170,7 @@
                 <h2 class="cd-subtitle">Beneficios de tu tarjeta</h2>
                 <div class="cd-subs">
                     <button class="sub-item" data-action="Millas">
-                        <span class="sub-item__logo" style="background:var(--bp-selection-bg-active);"><span class="material-symbols-rounded">flight</span></span>
+                        <span class="sub-item__logo" style="background:var(--bp-icon-solid-bg);"><span class="material-symbols-rounded">flight</span></span>
                         <span class="sub-item__info"><span class="sub-item__name">Acumula millas</span><span class="sub-item__meta">1 milla por cada $1</span></span>
                         <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
                     </button>
@@ -5432,6 +5459,19 @@
             showToast(on ? 'Tema Y2K activado' : 'Tema Y2K desactivado');
         });
 
+        // ---------- Modo oscuro (tema Solar data-theme="dark") ----------
+        // El valor inicial ya lo resolvió el script del <head>; acá sólo
+        // se refleja en el switch y se persiste la elección explícita.
+        const darkToggleRow = document.getElementById('dark-toggle-row');
+        const syncDarkRow = () => darkToggleRow.setAttribute('aria-pressed', String(PBTheme.get() === 'dark'));
+        syncDarkRow();
+        new MutationObserver(syncDarkRow).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+        darkToggleRow.addEventListener('click', () => {
+            const on = PBTheme.get() !== 'dark';
+            PBTheme.set(on ? 'dark' : 'light');
+            showToast(on ? 'Modo oscuro activado' : 'Modo claro activado');
+        });
+
         /* ---------- Cabecera colapsable (título grande → barra fija) ---------- */
         function setupCollapsingHeader(container, bigTitle, topbar) {
             const onScroll = () => {
@@ -5494,7 +5534,7 @@
         const DEFAULT_SUMMARY = {
             title: 'Resumen',
             stats: [
-                ['schedule', 'Disponible', 'Actualizado hoy', '$ 1.906,04', 'var(--bp-selection-bg-active)'],
+                ['schedule', 'Disponible', 'Actualizado hoy', '$ 1.906,04', 'var(--bp-icon-solid-bg)'],
                 ['trending_up', 'Ingresos del mes', 'Mayo 2026', '$ 2.430,00', '#1e9e5a'],
                 ['trending_down', 'Gastos del mes', 'Mayo 2026', '$ 1.284,45', '#f76800'],
             ],
@@ -5507,45 +5547,45 @@
         // datos (cupo, saldo a pagar, fecha de corte, etc.).
         const PRODUCT_DETAILS = {
             'Cuenta Ahorro transaccional': { icon: 'account_balance_wallet', stats: [
-                ['account_balance_wallet', 'Saldo disponible', '******7980', '$ 100,00', 'var(--bp-selection-bg-active)'],
+                ['account_balance_wallet', 'Saldo disponible', '******7980', '$ 100,00', 'var(--bp-icon-solid-bg)'],
                 ['trending_up', 'Interés generado', 'Este mes', '$ 0,42', '#1e9e5a'],
             ]},
             'Cuenta Corriente': { icon: 'payments', stats: [
-                ['account_balance_wallet', 'Saldo disponible', '******1234', '$ 1.440,35', 'var(--bp-selection-bg-active)'],
+                ['account_balance_wallet', 'Saldo disponible', '******1234', '$ 1.440,35', 'var(--bp-icon-solid-bg)'],
                 ['trending_down', 'Gastos del mes', 'Mayo 2026', '$ 812,40', '#f76800'],
             ]},
             'Visa Débito': { icon: 'credit_card', stats: [
-                ['account_balance_wallet', 'Cuenta asociada', 'Sueldo ******1234', '', 'var(--bp-selection-bg-active)'],
+                ['account_balance_wallet', 'Cuenta asociada', 'Sueldo ******1234', '', 'var(--bp-icon-solid-bg)'],
                 ['point_of_sale', 'Consumo del mes', 'Mayo 2026', '$ 312,45', '#f76800'],
             ]},
             'Mastercard Black': { icon: 'credit_card', stats: [
                 ['account_balance_wallet', 'Cupo disponible', 'De $ 5.000,00', '$ 4.985,00', '#1e9e5a'],
                 ['event', 'Saldo a pagar', 'Corte: 28 de cada mes', '$ 15,00', '#f76800'],
-                ['calendar_today', 'Fecha límite de pago', '', '05 jun', 'var(--bp-selection-bg-active)'],
+                ['calendar_today', 'Fecha límite de pago', '', '05 jun', 'var(--bp-icon-solid-bg)'],
             ]},
             'Diners Club': { icon: 'credit_card', stats: [
                 ['account_balance_wallet', 'Cupo disponible', 'De $ 2.000,00', '$ 2.000,00', '#1e9e5a'],
-                ['event', 'Saldo a pagar', 'Corte: 28 de cada mes', '$ 0,00', 'var(--bp-selection-bg-active)'],
+                ['event', 'Saldo a pagar', 'Corte: 28 de cada mes', '$ 0,00', 'var(--bp-icon-solid-bg)'],
             ]},
             'Tarjeta Movilidad': { icon: 'directions_bus', stats: [
-                ['account_balance_wallet', 'Saldo', 'Transporte y peajes', '$ 8,50', 'var(--bp-selection-bg-active)'],
+                ['account_balance_wallet', 'Saldo', 'Transporte y peajes', '$ 8,50', 'var(--bp-icon-solid-bg)'],
             ]},
             'Préstamo de consumo': { icon: 'real_estate_agent', stats: [
                 ['account_balance', 'Saldo pendiente', 'De $ 9.000,00 originales', '$ 7.380,50', '#f76800'],
-                ['event', 'Próxima cuota', 'Cuota 6 de 36', '$ 245,90', 'var(--bp-selection-bg-active)'],
-                ['calendar_today', 'Fecha de pago', '', '05 jun', 'var(--bp-selection-bg-active)'],
+                ['event', 'Próxima cuota', 'Cuota 6 de 36', '$ 245,90', 'var(--bp-icon-solid-bg)'],
+                ['calendar_today', 'Fecha de pago', '', '05 jun', 'var(--bp-icon-solid-bg)'],
             ]},
             'Depósito a plazo': { icon: 'trending_up', stats: [
-                ['savings', 'Capital invertido', 'Tasa 7,25% anual', '$ 3.000,00', 'var(--bp-selection-bg-active)'],
+                ['savings', 'Capital invertido', 'Tasa 7,25% anual', '$ 3.000,00', 'var(--bp-icon-solid-bg)'],
                 ['trending_up', 'Interés proyectado', 'Al vencimiento', '$ 217,50', '#1e9e5a'],
-                ['event', 'Vencimiento', '', '12 nov 2026', 'var(--bp-selection-bg-active)'],
+                ['event', 'Vencimiento', '', '12 nov 2026', 'var(--bp-icon-solid-bg)'],
             ]},
             'Seguro de vida': { icon: 'health_and_safety', stats: [
-                ['payments', 'Prima mensual', 'Débito automático', '$ 12,90', 'var(--bp-selection-bg-active)'],
+                ['payments', 'Prima mensual', 'Débito automático', '$ 12,90', 'var(--bp-icon-solid-bg)'],
                 ['event', 'Próxima renovación', '', '01 ene 2027', '#1e9e5a'],
             ]},
             'Seguro de tarjetas': { icon: 'shield', stats: [
-                ['payments', 'Prima mensual', 'Débito automático', '$ 3,50', 'var(--bp-selection-bg-active)'],
+                ['payments', 'Prima mensual', 'Débito automático', '$ 3,50', 'var(--bp-icon-solid-bg)'],
                 ['verified_user', 'Cobertura', 'Fraude y clonación', 'Activa', '#1e9e5a'],
             ]},
         };
@@ -5941,7 +5981,7 @@
                 const found = BENEFICIARIES.find(x => x[1] === key);
                 const b = found
                     ? { initials: found[0], name: found[1], color: found[2], acct: found[3] }
-                    : { initials: 'NB', name: 'Nuevo beneficiario', color: 'var(--bp-selection-bg-active)', acct: '0000' };
+                    : { initials: 'NB', name: 'Nuevo beneficiario', color: 'var(--bp-theme-color-status-info-bg)', acct: '0000' };
                 transferFlow = { beneficiary: b, amount: 0 };
                 extra.innerHTML = transferAmountHTML(b);
                 return;

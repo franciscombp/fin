@@ -5,12 +5,11 @@
  * Arquitectura (ver Figma › Guías › Token Architecture):
  *   base      → primitivos privados. Los componentes NUNCA los consumen directo.
  *   semantic  → API pública: tamaños, espaciado, radios, tipografía, elevación.
- *   theme     → color por modo (light; dark pendiente de export).
+ *   theme     → color por modo: light y dark (data-theme en <html>).
  *   layout    → grilla por breakpoint (mode = data-layout).
  *   bp-*      → recetas por componente: sólo remapean tokens semánticos por tamaño.
  *
- * Este archivo cubre lo que consume el prototipo; al recibir el export completo
- * (dark, system, product) se reemplaza sin tocar componentes.
+ * Pendiente de export: colecciones system (email) y product (tarjetas por emisor).
  */
 
 @layer tokens.base, tokens.layout, tokens.semantic, tokens.theme, tokens.product;
@@ -669,6 +668,202 @@
     /* Anillo de foco (efecto interaction/focus: 2px gap + 4px color) */
     --bp-focus-ring-gap: var(--bp-theme-color-surface-page-default);
     --bp-focus-ring-color: var(--bp-theme-color-border-focus);
+    color-scheme: light;
+  }
+
+  /* Tema oscuro — export de Figma (theme · mode "dark"). */
+  :root[data-theme="dark"] {
+    --bp-theme-color-avatar-bg: color-mix(in srgb, var(--bp-base-color-neutral-0) 4%, transparent);
+    --bp-theme-color-avatar-fg: var(--bp-base-color-blue-50);
+    --bp-theme-color-border-default: var(--bp-base-color-neutral-700);
+    --bp-theme-color-border-divider: var(--bp-theme-color-surface-page-default);
+    --bp-theme-color-border-divider-alt: color-mix(in srgb, var(--bp-base-color-neutral-0) 6%, transparent);
+    --bp-theme-color-border-focus: var(--bp-base-color-sky-50);
+    --bp-theme-color-border-subtle: var(--bp-base-color-neutral-800);
+    --bp-theme-color-brand-main: var(--bp-base-color-yellow-500);
+    --bp-theme-color-brand-support: var(--bp-base-color-blue-500);
+    --bp-theme-color-data-accent: var(--bp-base-color-yellow-500);
+    --bp-theme-color-data-accent-dim: var(--bp-base-color-yellow-300);
+    --bp-theme-color-data-chart-alt-1: var(--bp-base-color-amber-800);
+    --bp-theme-color-data-chart-alt-2: var(--bp-base-color-amber-600);
+    --bp-theme-color-data-chart-alt-3: var(--bp-base-color-amber-400);
+    --bp-theme-color-data-chart-alt-4: var(--bp-base-color-amber-200);
+    --bp-theme-color-data-chart-comparison: var(--bp-base-color-neutral-300);
+    --bp-theme-color-data-chart-reference: var(--bp-base-color-neutral-600);
+    --bp-theme-color-data-negative: var(--bp-base-color-red-400);
+    --bp-theme-color-data-neutral: var(--bp-base-color-blue-200);
+    --bp-theme-color-data-positive: var(--bp-base-color-green-400);
+    --bp-theme-color-data-chart-primary-1: var(--bp-base-color-blue-500);
+    --bp-theme-color-data-chart-primary-2: var(--bp-base-color-blue-400);
+    --bp-theme-color-data-chart-primary-3: var(--bp-base-color-blue-300);
+    --bp-theme-color-data-chart-primary-4: var(--bp-base-color-blue-200);
+    --bp-theme-color-data-chart-primary-5: var(--bp-base-color-blue-100);
+    --bp-theme-color-data-chart-primary-6: var(--bp-base-color-blue-75);
+    --bp-theme-color-data-chart-track: var(--bp-base-color-neutral-100);
+    --bp-theme-color-data-chart-grid: var(--bp-base-color-blue-75);
+    --bp-theme-color-data-surface-raised: var(--bp-base-color-neutral-50);
+    --bp-theme-color-data-text-default: var(--bp-base-color-blue-500);
+    --bp-theme-color-data-text-muted: var(--bp-base-color-blue-300);
+    --bp-theme-color-field-bg: var(--bp-base-color-neutral-1000);
+    --bp-theme-color-field-bg-disabled: var(--bp-base-color-neutral-900);
+    --bp-theme-color-field-bg-readonly: var(--bp-theme-color-field-bg-disabled);
+    --bp-theme-color-field-border: var(--bp-base-color-neutral-600);
+    --bp-theme-color-field-border-disabled: var(--bp-base-color-neutral-800);
+    --bp-theme-color-field-border-error: var(--bp-base-color-red-400);
+    --bp-theme-color-field-border-hover: var(--bp-base-color-neutral-400);
+    --bp-theme-color-field-control-active: var(--bp-base-color-sky-500);
+    --bp-theme-color-field-control-active-disabled: var(--bp-base-color-sky-800);
+    --bp-theme-color-field-control-hover: color-mix(in srgb, var(--bp-base-color-neutral-0) 32%, transparent);
+    --bp-theme-color-field-control-inactive: var(--bp-base-color-neutral-700);
+    --bp-theme-color-field-control-inactive-disabled: var(--bp-base-color-neutral-800);
+    --bp-theme-color-field-thumb: var(--bp-base-color-neutral-0);
+    --bp-theme-color-icon-brand: var(--bp-theme-color-brand-support);
+    --bp-theme-color-icon-disabled: var(--bp-base-color-neutral-850);
+    --bp-theme-color-icon-helper: var(--bp-base-color-neutral-400);
+    --bp-theme-color-icon-interactive: var(--bp-base-color-blue-50);
+    --bp-theme-color-icon-interactive-hover: var(--bp-base-color-neutral-0);
+    --bp-theme-color-icon-inverse: var(--bp-base-color-neutral-950);
+    --bp-theme-color-icon-on-brand: var(--bp-base-color-blue-500);
+    --bp-theme-color-icon-on-solid: var(--bp-base-color-neutral-0);
+    --bp-theme-color-icon-placeholder: var(--bp-base-color-neutral-600);
+    --bp-theme-color-icon-primary: var(--bp-base-color-neutral-50);
+    --bp-theme-color-icon-secondary: var(--bp-base-color-neutral-300);
+    --bp-theme-color-icon-tertiary: var(--bp-base-color-neutral-500);
+    --bp-theme-color-interaction-accent-bg: var(--bp-base-color-neutral-0);
+    --bp-theme-color-interaction-accent-bg-disabled: color-mix(in srgb, var(--bp-base-color-neutral-0) 16%, transparent);
+    --bp-theme-color-interaction-accent-bg-hover: var(--bp-base-color-neutral-100);
+    --bp-theme-color-interaction-accent-bg-pressed: var(--bp-base-color-neutral-200);
+    --bp-theme-color-interaction-accent-fg: var(--bp-theme-color-text-inverse);
+    --bp-theme-color-interaction-accent-fg-disabled: color-mix(in srgb, var(--bp-base-color-neutral-1050) 48%, transparent);
+    --bp-theme-color-interaction-destructive-bg: color-mix(in srgb, var(--bp-base-color-red-500) 16%, transparent);
+    --bp-theme-color-interaction-destructive-bg-disabled: color-mix(in srgb, var(--bp-base-color-red-500) 8%, transparent);
+    --bp-theme-color-interaction-destructive-bg-hover: color-mix(in srgb, var(--bp-base-color-red-500) 32%, transparent);
+    --bp-theme-color-interaction-destructive-bg-pressed: color-mix(in srgb, var(--bp-base-color-red-500) 48%, transparent);
+    --bp-theme-color-interaction-destructive-fg: var(--bp-theme-color-text-on-solid);
+    --bp-theme-color-interaction-destructive-fg-disabled: color-mix(in srgb, var(--bp-base-color-neutral-0) 16%, transparent);
+    --bp-theme-color-interaction-primary-bg: var(--bp-base-color-yellow-500);
+    --bp-theme-color-interaction-primary-bg-disabled: color-mix(in srgb, var(--bp-base-color-amber-500) 16%, transparent);
+    --bp-theme-color-interaction-primary-bg-hover: var(--bp-base-color-yellow-300);
+    --bp-theme-color-interaction-primary-bg-pressed: var(--bp-base-color-amber-600);
+    --bp-theme-color-interaction-primary-fg: var(--bp-theme-color-text-on-brand);
+    --bp-theme-color-interaction-primary-fg-disabled: color-mix(in srgb, var(--bp-base-color-blue-500) 32%, transparent);
+    --bp-theme-color-interaction-secondary-bg: color-mix(in srgb, var(--bp-base-color-neutral-0) 12%, transparent);
+    --bp-theme-color-interaction-secondary-bg-disabled: color-mix(in srgb, var(--bp-base-color-neutral-0) 4%, transparent);
+    --bp-theme-color-interaction-secondary-bg-hover: color-mix(in srgb, var(--bp-base-color-neutral-0) 24%, transparent);
+    --bp-theme-color-interaction-secondary-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-0) 32%, transparent);
+    --bp-theme-color-interaction-secondary-fg: var(--bp-base-color-sky-50);
+    --bp-theme-color-interaction-secondary-fg-disabled: color-mix(in srgb, var(--bp-base-color-neutral-0) 32%, transparent);
+    --bp-theme-color-interaction-selection-bg: var(--bp-base-color-neutral-850);
+    --bp-theme-color-interaction-selection-bg-active: var(--bp-theme-color-interaction-accent-bg);
+    --bp-theme-color-interaction-selection-bg-active-subtle: color-mix(in srgb, var(--bp-base-color-neutral-0) 16%, transparent);
+    --bp-theme-color-interaction-selection-bg-disabled: color-mix(in srgb, var(--bp-base-color-neutral-0) 4%, transparent);
+    --bp-theme-color-interaction-selection-bg-elevated: var(--bp-base-color-neutral-800);
+    --bp-theme-color-interaction-selection-bg-hover: color-mix(in srgb, var(--bp-base-color-neutral-0) 4%, transparent);
+    --bp-theme-color-interaction-selection-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-0) 8%, transparent);
+    --bp-theme-color-interaction-selection-fg: var(--bp-theme-color-text-primary);
+    --bp-theme-color-interaction-selection-fg-disabled: color-mix(in srgb, var(--bp-base-color-blue-500) 32%, transparent);
+    --bp-theme-color-interaction-selection-fg-on-active: var(--bp-theme-color-interaction-accent-fg);
+    --bp-theme-color-interaction-selection-fg-subtle: var(--bp-theme-color-text-secondary);
+    --bp-theme-color-interaction-tertiary-bg: var(--bp-base-color-transparent);
+    --bp-theme-color-interaction-tertiary-bg-disabled: color-mix(in srgb, var(--bp-base-color-neutral-0) 4%, transparent);
+    --bp-theme-color-interaction-tertiary-bg-hover: color-mix(in srgb, var(--bp-base-color-neutral-0) 4%, transparent);
+    --bp-theme-color-interaction-tertiary-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-0) 8%, transparent);
+    --bp-theme-color-interaction-tertiary-fg: var(--bp-base-color-neutral-0);
+    --bp-theme-color-interaction-tertiary-fg-disabled: color-mix(in srgb, var(--bp-base-color-neutral-0) 12%, transparent);
+    --bp-theme-color-loading-backdrop-on-brand: color-mix(in srgb, var(--bp-base-color-neutral-900) 16%, transparent);
+    --bp-theme-color-loading-backdrop-on-inverse: color-mix(in srgb, var(--bp-base-color-neutral-900) 16%, transparent);
+    --bp-theme-color-loading-backdrop-on-page: color-mix(in srgb, var(--bp-base-color-neutral-0) 24%, transparent);
+    --bp-theme-color-loading-backdrop-on-solid: color-mix(in srgb, var(--bp-base-color-neutral-0) 24%, transparent);
+    --bp-theme-color-loading-spinner-on-brand: var(--bp-theme-color-icon-on-brand);
+    --bp-theme-color-loading-spinner-on-inverse: var(--bp-theme-color-icon-on-brand);
+    --bp-theme-color-loading-spinner-on-page: var(--bp-theme-color-icon-brand);
+    --bp-theme-color-loading-spinner-on-solid: var(--bp-theme-color-icon-on-solid);
+    --bp-theme-color-row-bg: var(--bp-base-color-neutral-1000);
+    --bp-theme-color-row-bg-active: color-mix(in srgb, var(--bp-base-color-neutral-0) 8%, transparent);
+    --bp-theme-color-row-bg-hover: color-mix(in srgb, var(--bp-base-color-neutral-0) 4%, transparent);
+    --bp-theme-color-row-bg-selected: color-mix(in srgb, var(--bp-base-color-blue-400) 16%, transparent);
+    --bp-theme-color-status-caution-bg: var(--bp-base-color-amber-800);
+    --bp-theme-color-status-caution-bg-subtle: color-mix(in srgb, var(--bp-base-color-amber-500) 16%, transparent);
+    --bp-theme-color-status-caution-border: var(--bp-base-color-amber-400);
+    --bp-theme-color-status-caution-icon: var(--bp-base-color-amber-400);
+    --bp-theme-color-status-caution-text: var(--bp-base-color-amber-300);
+    --bp-theme-color-status-error-bg: var(--bp-base-color-red-500);
+    --bp-theme-color-status-error-bg-subtle: color-mix(in srgb, var(--bp-base-color-red-500) 16%, transparent);
+    --bp-theme-color-status-error-border: var(--bp-base-color-red-400);
+    --bp-theme-color-status-error-icon: var(--bp-base-color-red-400);
+    --bp-theme-color-status-error-text: var(--bp-base-color-red-300);
+    --bp-theme-color-status-info-bg: var(--bp-base-color-sky-500);
+    --bp-theme-color-status-info-bg-subtle: color-mix(in srgb, var(--bp-base-color-sky-500) 16%, transparent);
+    --bp-theme-color-status-info-border: var(--bp-base-color-sky-300);
+    --bp-theme-color-status-info-icon: var(--bp-base-color-sky-400);
+    --bp-theme-color-status-info-text: var(--bp-base-color-sky-300);
+    --bp-theme-color-status-neutral-bg: var(--bp-base-color-neutral-800);
+    --bp-theme-color-status-neutral-bg-subtle: color-mix(in srgb, var(--bp-base-color-neutral-900) 16%, transparent);
+    --bp-theme-color-status-neutral-border: var(--bp-base-color-neutral-600);
+    --bp-theme-color-status-neutral-icon: var(--bp-base-color-neutral-400);
+    --bp-theme-color-status-neutral-text: var(--bp-base-color-neutral-400);
+    --bp-theme-color-status-new-bg: var(--bp-base-color-teal-500);
+    --bp-theme-color-status-new-bg-subtle: color-mix(in srgb, var(--bp-base-color-teal-500) 16%, transparent);
+    --bp-theme-color-status-new-border: var(--bp-base-color-teal-400);
+    --bp-theme-color-status-new-icon: var(--bp-base-color-teal-400);
+    --bp-theme-color-status-new-text: var(--bp-base-color-teal-300);
+    --bp-theme-color-status-notification-bg: var(--bp-base-color-red-500);
+    --bp-theme-color-status-notification-fg: var(--bp-base-color-neutral-0);
+    --bp-theme-color-status-pending-bg: var(--bp-base-color-blue-500);
+    --bp-theme-color-status-pending-bg-subtle: color-mix(in srgb, var(--bp-base-color-blue-500) 16%, transparent);
+    --bp-theme-color-status-pending-border: var(--bp-base-color-blue-300);
+    --bp-theme-color-status-pending-icon: var(--bp-base-color-blue-300);
+    --bp-theme-color-status-pending-text: var(--bp-base-color-blue-200);
+    --bp-theme-color-status-promo-bg: var(--bp-base-color-purple-500);
+    --bp-theme-color-status-promo-bg-subtle: color-mix(in srgb, var(--bp-base-color-purple-500) 16%, transparent);
+    --bp-theme-color-status-promo-border: var(--bp-base-color-purple-400);
+    --bp-theme-color-status-promo-icon: var(--bp-base-color-purple-400);
+    --bp-theme-color-status-promo-text: var(--bp-base-color-purple-300);
+    --bp-theme-color-status-success-bg: var(--bp-base-color-green-500);
+    --bp-theme-color-status-success-bg-subtle: color-mix(in srgb, var(--bp-base-color-green-500) 16%, transparent);
+    --bp-theme-color-status-success-border: var(--bp-base-color-green-400);
+    --bp-theme-color-status-success-icon: var(--bp-base-color-green-400);
+    --bp-theme-color-status-success-text: var(--bp-base-color-green-300);
+    --bp-theme-color-status-warning-bg: var(--bp-base-color-tangerine-500);
+    --bp-theme-color-status-warning-bg-subtle: color-mix(in srgb, var(--bp-base-color-tangerine-500) 16%, transparent);
+    --bp-theme-color-status-warning-border: var(--bp-base-color-tangerine-400);
+    --bp-theme-color-status-warning-icon: var(--bp-base-color-tangerine-400);
+    --bp-theme-color-status-warning-text: var(--bp-base-color-tangerine-300);
+    --bp-theme-color-surface-brand-alt: var(--bp-base-color-blue-500);
+    --bp-theme-color-surface-brand-alt-subtle: var(--bp-base-color-blue-900);
+    --bp-theme-color-surface-brand-default: var(--bp-theme-color-brand-main);
+    --bp-theme-color-surface-brand-preferred: var(--bp-base-color-neutral-950);
+    --bp-theme-color-surface-brand-subtle: color-mix(in srgb, var(--bp-base-color-yellow-500) 16%, transparent);
+    --bp-theme-color-surface-container-adaptive: color-mix(in srgb, var(--bp-base-color-neutral-0) 12%, transparent);
+    --bp-theme-color-surface-container-alt: color-mix(in srgb, var(--bp-base-color-neutral-1000) 48%, transparent);
+    --bp-theme-color-surface-container-default: var(--bp-base-color-neutral-900);
+    --bp-theme-color-surface-container-fixed: color-mix(in srgb, var(--bp-base-color-neutral-900) 96%, transparent);
+    --bp-theme-color-surface-page-alt: var(--bp-base-color-neutral-950);
+    --bp-theme-color-surface-page-default: var(--bp-base-color-neutral-900);
+    --bp-theme-color-surface-scrim-alt: color-mix(in srgb, var(--bp-base-color-neutral-1050) 48%, transparent);
+    --bp-theme-color-surface-scrim-default: color-mix(in srgb, var(--bp-base-color-neutral-1050) 32%, transparent);
+    --bp-theme-color-surface-scrim-subtle: color-mix(in srgb, var(--bp-base-color-neutral-0) 4%, transparent);
+    --bp-theme-color-text-brand: var(--bp-base-color-neutral-0);
+    --bp-theme-color-text-disabled: var(--bp-base-color-neutral-850);
+    --bp-theme-color-text-helper: var(--bp-base-color-neutral-500);
+    --bp-theme-color-text-interactive: var(--bp-base-color-blue-50);
+    --bp-theme-color-text-interactive-hover: var(--bp-base-color-neutral-0);
+    --bp-theme-color-text-inverse: var(--bp-base-color-neutral-950);
+    --bp-theme-color-text-on-brand: var(--bp-base-color-blue-500);
+    --bp-theme-color-text-on-solid: var(--bp-base-color-neutral-0);
+    --bp-theme-color-text-placeholder: var(--bp-theme-color-text-helper);
+    --bp-theme-color-text-primary: var(--bp-base-color-neutral-0);
+    --bp-theme-color-text-secondary: var(--bp-base-color-neutral-300);
+    --bp-theme-color-text-tertiary: var(--bp-base-color-neutral-500);
+    /* No exportados en el CSS; equivalentes de la paleta (pendiente confirmar en Figma) */
+    --bp-theme-color-border-strong: var(--bp-base-color-neutral-800);
+    --bp-theme-color-icon-subtle: var(--bp-base-color-blue-200);
+    --bp-theme-color-interaction-tertiary-bg-adaptive: color-mix(in srgb, var(--bp-base-color-neutral-0) 12%, transparent);
+    --bp-theme-color-status-important-bg: var(--bp-base-color-red-600);
+    --bp-theme-color-brand-on-solid: var(--bp-base-color-neutral-0);
+    --bp-focus-ring-gap: var(--bp-theme-color-surface-page-alt);
+    --bp-focus-ring-color: var(--bp-theme-color-border-focus);
+    color-scheme: dark;
   }
 }
 
