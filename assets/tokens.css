@@ -9,7 +9,6 @@
  *   layout    → grilla por breakpoint (mode = data-layout).
  *   bp-*      → recetas por componente: sólo remapean tokens semánticos por tamaño.
  *
- * Pendiente de export: colecciones system (email) y product (tarjetas por emisor).
  */
 
 @layer tokens.base, tokens.layout, tokens.semantic, tokens.theme, tokens.product;
@@ -200,8 +199,8 @@
     --bp-base-opacity-88: 0.88;
     --bp-base-opacity-96: 0.96;
     --bp-base-opacity-100: 1;
-    --bp-base-typography-font-family-sans: Prelo;
-    --bp-base-typography-font-family-slab: Prelo Slab;
+    --bp-base-typography-font-family-sans: Roboto; /* Prelo en Figma (comercial) */
+    --bp-base-typography-font-family-slab: "Roboto Slab", Roboto, serif; /* Prelo Slab en Figma */
     --bp-base-typography-font-family-system: Arial;
     --bp-base-typography-font-size-8: 8px;
     --bp-base-typography-font-size-12: 12px;
