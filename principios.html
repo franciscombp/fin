@@ -1,0 +1,1897 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Conversational Design · Pichibank app</title>
+    <meta name="description" content="Principios visuales, de audio y háptica de Pichibank app, con ejemplos construidos con los tokens y componentes de Solar.">
+    <!-- Tema antes del primer pintado: preferencia guardada de esta página o,
+         si no hay, la del sistema. Los tokens de Solar cambian con data-theme. -->
+    <script>
+        (function () {
+            var KEY = 'pb_docs_theme', root = document.documentElement, t = null;
+            try { t = localStorage.getItem(KEY); } catch (e) {}
+            if (t !== 'dark' && t !== 'light') t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            root.setAttribute('data-theme', t);
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Roboto+Slab:wght@400;600&display=swap">
+    <link rel="stylesheet" href="./assets/tokens.css">
+    <link rel="stylesheet" href="./assets/solar.css">
+    <style>
+        /* =====================================================================
+           Página de documentación. Todo color, radio, espaciado y tipografía
+           sale de tokens Solar (theme / semantic), así que la página y sus
+           ejemplos funcionan igual en data-theme="light" y "dark".
+           Las clases propias llevan prefijo d- para no chocar con solar.css
+           (que mapea clases heredadas como .tab, .card, .sheet o .toast).
+           ===================================================================== */
+        :root {
+            --d-bg: var(--bp-theme-color-surface-page-default);
+            --d-stage: var(--bp-theme-color-surface-page-alt);
+            /* Escenario de los ejemplos: un tono por debajo del fondo de página
+               de la app, para que se lean tres niveles: escenario › pantalla
+               (surface-page-alt, como la app) › contenedores (container-default). */
+            --d-demo-bg: color-mix(in srgb, var(--bp-theme-color-text-primary) 6%, var(--bp-theme-color-surface-page-alt));
+            --d-surface: var(--bp-theme-color-surface-container-default);
+            --d-ink: var(--bp-theme-color-text-primary);
+            --d-ink-2: var(--bp-theme-color-text-secondary);
+            --d-ink-3: var(--bp-theme-color-text-helper);
+            --d-line: var(--bp-theme-color-border-subtle);
+            --d-link: var(--bp-theme-color-text-interactive);
+            --d-ok: var(--bp-theme-color-status-success-icon);
+            --d-no: var(--bp-theme-color-status-error-icon);
+            --d-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+            --d-title-lg: var(--bp-semantic-typography-brand-title-lg-font-weight) var(--bp-semantic-typography-brand-title-lg-font-size)/var(--bp-semantic-typography-brand-title-lg-line-height) var(--sol-font);
+            --d-title-md: var(--bp-semantic-typography-brand-title-md-font-weight) var(--bp-semantic-typography-brand-title-md-font-size)/var(--bp-semantic-typography-brand-title-md-line-height) var(--sol-font);
+            --d-body-md: var(--bp-semantic-typography-brand-body-md-regular-font-weight) var(--bp-semantic-typography-brand-body-md-regular-font-size)/var(--bp-semantic-typography-brand-body-md-regular-line-height) var(--sol-font);
+            --d-body-sm: var(--bp-semantic-typography-brand-body-sm-regular-font-weight) var(--bp-semantic-typography-brand-body-sm-regular-font-size)/var(--bp-semantic-typography-brand-body-sm-regular-line-height) var(--sol-font);
+            --d-label-sm: var(--bp-semantic-typography-brand-label-sm-semibold-font-weight) var(--bp-semantic-typography-brand-label-sm-semibold-font-size)/var(--bp-semantic-typography-brand-label-sm-semibold-line-height) var(--sol-font);
+
+            /* Movimiento: mismos valores que la Guía de feedback (§7) */
+            --motion-instant: 80ms;
+            --motion-fast: 150ms;
+            --motion-base: 250ms;
+            --motion-slow: 400ms;
+            --ease-standard: cubic-bezier(.2, 0, 0, 1);
+            --ease-decelerate: cubic-bezier(.22, 1, .36, 1);
+            --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+            --ease-ios: cubic-bezier(.32, .72, 0, 1);
+        }
+
+        /* Base en una capa propia: los componentes de solar.css (sin capa)
+           siempre ganan sobre estos valores por defecto. */
+        @layer doc.base {
+            *, *::before, *::after { box-sizing: border-box; }
+            html { scroll-behavior: smooth; scroll-padding-top: 72px; -webkit-text-size-adjust: 100%; }
+            body { margin: 0; min-height: 100vh; background: var(--d-bg); color: var(--d-ink); font: var(--d-body-md); -webkit-font-smoothing: antialiased; }
+            a { color: var(--d-link); text-decoration: none; }
+            a:hover { text-decoration: underline; }
+            button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+            figure, blockquote { margin: 0; }
+            .ms {
+                font-family: 'Material Symbols Rounded'; font-weight: normal; font-style: normal;
+                font-size: 20px; line-height: 1; display: inline-flex; width: 1em; height: 1em; overflow: hidden;
+                visibility: hidden; flex-shrink: 0; letter-spacing: normal; text-transform: none; white-space: nowrap;
+                font-feature-settings: 'liga'; font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            }
+            html.icons-ready .ms { visibility: visible; }
+            .ms.fill { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        }
+
+        /* Reducir movimiento: preferencia del sistema o el interruptor de la página */
+        html.rm *, html.rm *::before, html.rm *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+        }
+
+        /* ---------- Barra superior ---------- */
+        .d-topbar {
+            position: sticky; top: 0; z-index: var(--bp-semantic-z-index-sticky);
+            display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-lg);
+            height: var(--bp-semantic-size-interactive-md); padding: 0 var(--bp-semantic-spacing-macro-sm);
+            background: color-mix(in srgb, var(--d-bg) 88%, transparent);
+            -webkit-backdrop-filter: var(--sol-blur-fixed); backdrop-filter: var(--sol-blur-fixed);
+            border-bottom: var(--bp-semantic-border-thin) solid var(--d-line);
+        }
+        .d-brand { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md); font-weight: 700; color: var(--d-ink); white-space: nowrap; }
+        .d-brand:hover { text-decoration: none; }
+        .d-brand__mark { width: 28px; height: 28px; border-radius: 0 0 10px 0; background: var(--bp-theme-color-brand-main); color: var(--bp-theme-color-text-on-brand); display: grid; place-items: center; font-weight: 800; font-size: 15px; }
+        .d-crumb { color: var(--d-ink-3); font: var(--d-body-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .d-topbar__sp { flex: 1; }
+        .d-topbar nav { display: flex; gap: var(--bp-semantic-spacing-micro-sm); }
+        .d-toc-btn { display: none; }
+
+        /* ---------- Layout ---------- */
+        .d-layout { display: grid; grid-template-columns: 264px minmax(0, 1fr); max-width: 1240px; margin: 0 auto; }
+        .d-toc {
+            position: sticky; top: var(--bp-semantic-size-interactive-md); height: calc(100vh - var(--bp-semantic-size-interactive-md)); overflow-y: auto;
+            padding: var(--bp-semantic-spacing-macro-md) var(--bp-semantic-spacing-micro-lg) var(--bp-semantic-spacing-macro-xl) var(--bp-semantic-spacing-macro-sm);
+            border-right: var(--bp-semantic-border-thin) solid var(--d-line); font: var(--d-body-sm);
+        }
+        .d-toc h6 { margin: 0 0 var(--bp-semantic-spacing-micro-md); font: var(--d-label-sm); text-transform: uppercase; letter-spacing: .06em; color: var(--d-ink-3); }
+        .d-toc ol { list-style: none; margin: 0; padding: 0; }
+        .d-toc ol ol { margin: 2px 0 6px var(--bp-semantic-spacing-micro-lg); border-left: var(--bp-semantic-border-thin) solid var(--d-line); }
+        .d-toc a { display: block; padding: 5px 10px; border-radius: var(--bp-semantic-radius-sm); color: var(--d-ink-2); }
+        .d-toc ol ol a { padding: 3px 10px; font-size: 13px; color: var(--d-ink-3); }
+        .d-toc a:hover { background: var(--bp-theme-color-interaction-tertiary-bg-hover); text-decoration: none; }
+        .d-toc a.is-active { color: var(--d-ink); font-weight: 600; background: var(--bp-theme-color-interaction-selection-bg); box-shadow: inset 2px 0 0 var(--bp-theme-color-brand-main); }
+        .d-prefs { margin-top: var(--bp-semantic-spacing-macro-md); padding-top: var(--bp-semantic-spacing-macro-sm); border-top: var(--bp-semantic-border-thin) solid var(--d-line); display: grid; gap: 10px; }
+        main.d-doc { padding: var(--bp-semantic-spacing-macro-lg) clamp(16px, 5vw, 56px) 120px; min-width: 0; max-width: 940px; }
+
+        /* ---------- Tipografía de documento ---------- */
+        .d-eyebrow { margin: 0 0 var(--bp-semantic-spacing-micro-md); font: var(--d-label-sm); text-transform: uppercase; letter-spacing: .08em; color: var(--d-ink-3); }
+        .d-h1 { margin: 0 0 var(--bp-semantic-spacing-micro-md); color: var(--d-ink); font: var(--bp-semantic-typography-brand-headline-md-font-weight) var(--bp-semantic-typography-brand-headline-md-font-size)/var(--bp-semantic-typography-brand-headline-md-line-height) var(--bp-semantic-typography-brand-headline-md-font-family); }
+        .d-h2 { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-lg); margin: 72px 0 var(--bp-semantic-spacing-micro-lg); padding-bottom: var(--bp-semantic-spacing-micro-lg); border-bottom: var(--bp-semantic-border-thin) solid var(--d-line); font: var(--d-title-lg); }
+        .d-h2__num { width: 36px; height: 36px; flex-shrink: 0; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-brand-main); color: var(--bp-theme-color-text-on-brand); font-size: 18px; }
+        .d-h3 { margin: 0; font: var(--d-title-md); }
+        .d-h4 { margin: var(--bp-semantic-spacing-macro-md) 0 var(--bp-semantic-spacing-micro-md); font: var(--bp-semantic-typography-brand-body-md-semibold-font-weight) var(--bp-semantic-typography-brand-body-md-semibold-font-size)/var(--bp-semantic-typography-brand-body-md-semibold-line-height) var(--sol-font); }
+        .d-doc p, .d-doc ul, .d-doc ol { margin: 0 0 var(--bp-semantic-spacing-gap-content); }
+        .d-doc ul, .d-doc ol { padding-left: var(--bp-semantic-spacing-macro-md); }
+        .d-doc li { margin: 4px 0; }
+        .d-lead { font-size: 18px; line-height: 28px; color: var(--d-ink-2); }
+        .d-muted { color: var(--d-ink-3); }
+        .d-meta { display: flex; flex-wrap: wrap; gap: var(--bp-semantic-spacing-micro-md); margin: var(--bp-semantic-spacing-macro-sm) 0 var(--bp-semantic-spacing-macro-md); }
+        code, kbd { font-family: var(--d-mono); font-size: .86em; }
+        :not(pre) > code { background: var(--d-stage); border: var(--bp-semantic-border-thin) solid var(--d-line); padding: .1em .4em; border-radius: var(--bp-semantic-radius-xs); overflow-wrap: anywhere; }
+        .d-doc .bp-alert { margin: 0 0 var(--bp-semantic-spacing-gap-content); }
+        .d-doc .bp-alert p { margin: 0; }
+        .d-doc .bp-alert ul { margin: 4px 0 0; padding-left: 20px; }
+        .d-screen .bp-alert, .d-mixer .bp-alert { margin: 0; }
+
+        /* Tablas */
+        .d-tbl { overflow-x: auto; margin: 0 0 var(--bp-semantic-spacing-macro-md); border: var(--bp-semantic-border-thin) solid var(--d-line); border-radius: var(--bp-semantic-radius-md); }
+        .d-tbl table { border-collapse: collapse; width: 100%; font: var(--d-body-sm); }
+        .d-tbl th, .d-tbl td { text-align: left; padding: 10px 12px; border-bottom: var(--bp-semantic-border-thin) solid var(--d-line); vertical-align: top; }
+        .d-tbl th { background: var(--d-stage); font-weight: 600; white-space: nowrap; }
+        .d-tbl tr:last-child td { border-bottom: 0; }
+        .d-tbl td code { white-space: nowrap; }
+
+        /* ---------- Mapa (intro) y tarjetas de índice ---------- */
+        .d-map { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--bp-semantic-spacing-micro-lg); margin: 0 0 var(--bp-semantic-spacing-macro-md); }
+        .d-map a { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md); padding: var(--bp-semantic-spacing-macro-sm); border-radius: var(--bp-semantic-radius-md); background: var(--d-stage); color: var(--d-ink); border: var(--bp-semantic-border-thin) solid transparent; transition: border-color var(--motion-fast) var(--ease-standard); }
+        .d-map a:hover { text-decoration: none; border-color: var(--d-line); }
+        .d-map__ic { width: 40px; height: 40px; border-radius: var(--bp-semantic-radius-sm); display: grid; place-items: center; background: var(--bp-theme-color-surface-brand-subtle); color: var(--bp-theme-color-icon-interactive); }
+        .d-map__ic .ms { font-size: 24px; }
+        .d-map b { font: var(--bp-semantic-typography-brand-title-sm-font-weight) var(--bp-semantic-typography-brand-title-sm-font-size)/var(--bp-semantic-typography-brand-title-sm-line-height) var(--sol-font); }
+        .d-map a > span:last-child { font: var(--d-body-sm); color: var(--d-ink-2); }
+        .d-index { list-style: none; padding: 0 !important; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--bp-semantic-spacing-micro-md); }
+        .d-index li { margin: 0 !important; }
+        .d-index a { display: flex; align-items: center; gap: 10px; height: 100%; padding: 10px 12px; border-radius: var(--bp-semantic-radius-sm); border: var(--bp-semantic-border-thin) solid var(--d-line); color: var(--d-ink); font: var(--bp-semantic-typography-brand-body-sm-semibold-font-weight) var(--bp-semantic-typography-brand-body-sm-semibold-font-size)/var(--bp-semantic-typography-brand-body-sm-semibold-line-height) var(--sol-font); }
+        .d-index a:hover { text-decoration: none; background: var(--bp-theme-color-interaction-tertiary-bg-hover); }
+        .d-index b { min-width: 28px; height: 24px; border-radius: var(--bp-semantic-radius-xs); display: grid; place-items: center; background: var(--d-stage); color: var(--d-ink-2); font-size: 12px; }
+
+        /* ---------- Principio ---------- */
+        .d-principle { margin: 56px 0 0; }
+        .d-principle__head { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-lg); margin-bottom: var(--bp-semantic-spacing-micro-lg); }
+        .d-num { height: 28px; padding: 0 8px; border-radius: var(--bp-semantic-radius-xs); display: inline-grid; place-items: center; background: var(--bp-theme-color-interaction-accent-bg); color: var(--bp-theme-color-interaction-accent-fg); font: var(--d-label-sm); font-variant-numeric: tabular-nums; }
+        .d-statement { margin: 0 0 var(--bp-semantic-spacing-macro-sm); padding: 2px 0 2px var(--bp-semantic-spacing-macro-sm); border-left: 4px solid var(--bp-theme-color-brand-main); font-size: 17px; line-height: 27px; color: var(--d-ink); }
+        .d-practice { list-style: none; padding: 0 !important; margin: 0 0 var(--bp-semantic-spacing-gap-content); display: grid; gap: var(--bp-semantic-spacing-micro-md); }
+        .d-practice li { display: flex; gap: 10px; margin: 0 !important; font: var(--d-body-sm); color: var(--d-ink-2); }
+        .d-practice li::before { content: ''; width: 6px; height: 6px; margin-top: 7px; border-radius: 50%; background: var(--bp-theme-color-icon-subtle); flex-shrink: 0; }
+        .d-practice__t { margin: 0 0 var(--bp-semantic-spacing-micro-md) !important; font: var(--d-label-sm); text-transform: uppercase; letter-spacing: .06em; color: var(--d-ink-3); }
+
+        /* ---------- Bloque de demo ---------- */
+        .d-demo { border: var(--bp-semantic-border-thin) solid var(--d-line); border-radius: var(--bp-semantic-radius-lg); margin: 0 0 var(--bp-semantic-spacing-macro-md); overflow: hidden; }
+        .d-demo__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; padding: 10px 14px; border-bottom: var(--bp-semantic-border-thin) solid var(--d-line); font: var(--d-body-sm); color: var(--d-ink-2); }
+        .d-demo__title { display: inline-flex; align-items: center; gap: 8px; color: var(--d-ink); font-weight: 600; }
+        .d-demo__title::before { content: 'EJEMPLO'; font: var(--bp-semantic-typography-brand-label-xs-semibold-font-weight) 10px/16px var(--sol-font); letter-spacing: .08em; padding: 1px 6px; border-radius: var(--bp-semantic-radius-xs); background: var(--bp-theme-color-brand-main); color: var(--bp-theme-color-text-on-brand); }
+        .d-demo__body { position: relative; padding: var(--bp-semantic-spacing-macro-md); background: var(--d-demo-bg); display: flex; flex-wrap: wrap; gap: var(--bp-semantic-spacing-macro-sm); align-items: flex-start; justify-content: center; }
+        .d-demo__foot { padding: 10px 14px; border-top: var(--bp-semantic-border-thin) solid var(--d-line); font: var(--d-body-sm); color: var(--d-ink-2); }
+        .d-controls { width: 100%; display: flex; flex-wrap: wrap; gap: var(--bp-semantic-spacing-micro-lg) var(--bp-semantic-spacing-macro-md); align-items: center; justify-content: center; }
+        .d-controls label { display: inline-flex; align-items: center; gap: 10px; font: var(--d-body-sm); color: var(--d-ink-2); }
+        .d-controls output { min-width: 56px; font-weight: 600; color: var(--d-ink); font-variant-numeric: tabular-nums; }
+        .d-demo input[type="range"] { accent-color: var(--bp-theme-color-field-control-active); width: 180px; }
+
+        /* Comparación Hacer / Evitar */
+        .d-cmp { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--bp-semantic-spacing-macro-md); }
+        .d-cmp__col { display: flex; flex-direction: column; align-items: center; gap: var(--bp-semantic-spacing-micro-lg); min-width: 0; }
+        .d-verdict { align-self: stretch; width: 100%; max-width: 340px; margin: 0 auto; font: var(--d-body-sm); color: var(--d-ink-2); }
+        .d-verdict .bp-tag { display: flex; width: max-content; margin-bottom: 6px; }
+
+        /* Pantalla de teléfono mínima: fondo de página de la app */
+        .d-screen {
+            position: relative; width: 100%; max-width: 340px;
+            display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-gap-content);
+            padding: 28px var(--bp-layout-grid-margin) var(--bp-semantic-spacing-macro-sm);
+            border-radius: 28px; background: var(--bp-theme-color-surface-page-alt);
+            border: var(--bp-semantic-border-medium) solid var(--d-line);
+            color: var(--d-ink); text-align: left; overflow: hidden;
+        }
+        .d-screen::before { content: ''; position: absolute; top: 10px; left: 50%; width: 64px; height: 6px; margin-left: -32px; border-radius: 3px; background: var(--d-line); }
+        :root[data-theme="dark"] .d-screen { border-color: var(--bp-theme-color-border-default); }
+        .d-screen .bp-widget { flex-shrink: 0; }
+        .d-screen div.bp-list-item { cursor: default; }
+        .d-screen .bp-list-item { padding-right: var(--bp-semantic-spacing-macro-sm); }
+        .d-screen .bp-widget .bp-list-item { background: transparent; }
+        :root[data-theme="dark"] .d-screen .bp-list-item { border-color: var(--bp-theme-color-border-divider-alt); }
+        :root[data-theme="dark"] .d-screen .bp-widget { background: var(--bp-theme-color-surface-container-default); }
+        .d-fake { pointer-events: none; }
+
+        /* Piezas de contenido reutilizables */
+        .d-li__t { flex: 1; min-width: 0; display: flex; flex-direction: column; font: var(--bp-semantic-typography-brand-body-md-medium-font-weight) 15px/20px var(--sol-font); color: var(--d-ink); }
+        .d-li__t small { font: var(--d-body-sm); font-size: 13px; color: var(--d-ink-3); }
+        .d-li__amt { font: var(--bp-semantic-typography-brand-body-md-semibold-font-weight) 15px/20px var(--sol-font); font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--d-ink); }
+        .d-li__amt.is-in { color: var(--bp-theme-color-status-success-text); }
+        .d-caption { font: var(--d-body-sm); color: var(--d-ink-3); }
+        .d-amount { font: var(--bp-semantic-typography-brand-numeric-sm-font-weight) var(--bp-semantic-typography-brand-numeric-sm-font-size)/var(--bp-semantic-typography-brand-numeric-sm-line-height) var(--sol-font); font-variant-numeric: tabular-nums; color: var(--d-ink); }
+        .d-num-md { font: var(--bp-semantic-typography-brand-numeric-md-font-weight) var(--bp-semantic-typography-brand-numeric-md-font-size)/var(--bp-semantic-typography-brand-numeric-md-line-height) var(--sol-font); font-variant-numeric: tabular-nums; }
+        .d-title-sm { font: var(--bp-semantic-typography-brand-title-sm-font-weight) var(--bp-semantic-typography-brand-title-sm-font-size)/var(--bp-semantic-typography-brand-title-sm-line-height) var(--sol-font); }
+        .d-pad { padding: var(--bp-semantic-spacing-padding-container-compact); }
+        .d-stack { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-gap-related); }
+        .d-row { display: flex; align-items: center; gap: var(--bp-semantic-spacing-gap-item); }
+        .d-progress { height: 8px; border-radius: var(--bp-semantic-radius-full); background: var(--bp-theme-color-interaction-selection-bg-active-subtle); overflow: hidden; }
+        .d-progress i { display: block; height: 100%; border-radius: inherit; background: var(--bp-theme-color-data-positive); transition: width var(--motion-slow) var(--ease-decelerate); }
+        .d-collapse { display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--motion-base) var(--ease-standard), visibility var(--motion-base); visibility: hidden; }
+        .d-collapse > div { overflow: hidden; min-height: 0; }
+        .d-collapse.is-open { grid-template-rows: 1fr; visibility: visible; }
+        .d-dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font: var(--d-body-sm); }
+        .d-dl dt { color: var(--d-ink-3); }
+        .d-dl dd { margin: 0; text-align: right; color: var(--d-ink); font-weight: 500; font-variant-numeric: tabular-nums; }
+        .d-spin { width: 18px; height: 18px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: d-spin .7s linear infinite; }
+        @keyframes d-spin { to { transform: rotate(360deg); } }
+        .d-switch { position: relative; width: 44px; height: 26px; flex-shrink: 0; display: inline-block; }
+        .d-switch input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
+        .d-switch span { position: absolute; inset: 0; border-radius: 13px; background: var(--bp-theme-color-field-control-inactive); transition: background var(--motion-base) var(--ease-standard); }
+        .d-switch span::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--bp-theme-color-field-thumb); box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform var(--motion-base) var(--ease-ios); }
+        .d-switch input:checked + span { background: var(--bp-theme-color-field-control-active); }
+        .d-switch input:checked + span::after { transform: translateX(18px); }
+        .d-switch input:focus-visible + span { box-shadow: var(--sol-focus); }
+        .d-switchrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--d-ink-2); }
+        .d-play { flex-shrink: 0; }
+        .d-play .ms { font-size: 18px; }
+        .fx-test--play, .d-pop { animation: d-pop 300ms var(--ease-spring); }
+        @keyframes d-pop { 50% { transform: scale(1.06); } }
+        .d-shake { animation: d-shake 400ms var(--ease-standard); }
+        @keyframes d-shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+
+        /* ---------- 1.1 Claridad: versión densa ---------- */
+        .d-dense { gap: 6px; font: 400 11px/14px var(--sol-font); letter-spacing: .01em; }
+        .d-dense__h { font-weight: 700; text-transform: uppercase; }
+        .d-dense table { width: 100%; border-collapse: collapse; }
+        .d-dense td { padding: 1px 0; border-bottom: var(--bp-semantic-border-thin) solid var(--d-line); white-space: nowrap; }
+        .d-dense td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+        .d-dense__btns { display: flex; gap: 4px; }
+        .d-dense__btns span { flex: 1; padding: 4px 0; text-align: center; border: var(--bp-semantic-border-thin) solid var(--d-ink-3); font-size: 10px; font-weight: 700; text-transform: uppercase; }
+
+        /* ---------- 1.2 Anotaciones ---------- */
+        [data-note]:not(.d-deco__blob) { position: relative; }
+        .d-annot [data-note] { outline: 2px dashed color-mix(in srgb, var(--d-note) 70%, transparent); outline-offset: 2px; }
+        .d-annot [data-note]::after {
+            content: attr(data-note); position: absolute; top: -10px; right: -10px; z-index: 3;
+            min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; display: grid; place-items: center;
+            background: var(--d-note); color: var(--bp-theme-color-text-on-solid); font: 700 11px/20px var(--sol-font);
+        }
+        .d-cmp__col--do { --d-note: var(--bp-theme-color-status-success-bg); }
+        .d-cmp__col--no { --d-note: var(--bp-theme-color-status-error-bg); }
+        .d-legend { display: none; margin: 0 !important; padding: 0 !important; list-style: none; font: var(--d-body-sm); color: var(--d-ink-2); }
+        .d-annot .d-legend { display: grid; gap: 6px; }
+        .d-legend li { display: flex; gap: 8px; margin: 0 !important; }
+        .d-legend b { min-width: 20px; height: 20px; border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; background: var(--d-note); color: var(--bp-theme-color-text-on-solid); font-size: 11px; }
+        .d-deco { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 18px; border-radius: 22px; overflow: visible;
+            background: linear-gradient(135deg, var(--bp-theme-color-status-promo-bg-subtle), var(--bp-theme-color-status-warning-bg-subtle));
+            box-shadow: 0 var(--bp-semantic-elevation-overlay-offset-y) var(--bp-semantic-elevation-overlay-blur) var(--bp-semantic-elevation-overlay-color); }
+        .d-deco__blob { position: absolute; top: -14px; right: 18px; width: 64px; height: 64px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, var(--bp-theme-color-status-warning-bg), var(--bp-theme-color-status-promo-bg)); opacity: .85; }
+        .d-deco__badge { align-self: flex-start; display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 99px; background: var(--bp-theme-color-status-error-bg); color: var(--bp-theme-color-text-on-solid); font: 800 11px/16px var(--sol-font); text-transform: uppercase; letter-spacing: .04em; }
+        .d-deco__badge .ms { font-size: 14px; }
+        .d-deco__title { display: flex; align-items: center; gap: 8px; font: 700 17px/22px var(--sol-font); }
+        .d-deco__title .ms { width: 34px; height: 34px; font-size: 20px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, var(--bp-theme-color-status-warning-bg), var(--bp-theme-color-status-error-bg)); color: var(--bp-theme-color-text-on-solid); }
+        .d-deco__amt { align-self: flex-start; font: 800 34px/40px var(--sol-font); background: linear-gradient(90deg, var(--bp-theme-color-status-promo-bg), var(--bp-theme-color-status-warning-bg)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .d-deco__btns { display: flex; gap: 6px; }
+        .d-deco__btns span { flex: 1; padding: 10px 0; border-radius: 99px; text-align: center; font: 800 12px/16px var(--sol-font); text-transform: uppercase; background: linear-gradient(180deg, var(--bp-theme-color-interaction-primary-bg), var(--bp-theme-color-status-caution-bg)); color: var(--bp-theme-color-text-on-brand); box-shadow: 0 4px 0 var(--bp-theme-color-status-caution-icon); }
+
+        /* ---------- 1.3 Plantilla fija ---------- */
+        .d-fixed { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .d-fixed > div { height: 112px; padding: 12px; border-radius: var(--bp-semantic-radius-md); background: var(--d-surface); overflow: hidden; display: flex; flex-direction: column; gap: 6px; }
+        .d-fixed b { font: var(--d-label-sm); color: var(--d-ink-3); text-transform: uppercase; letter-spacing: .04em; }
+        .d-fixed span { font: var(--d-body-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .d-fixed .d-fixed__big { font: 600 20px/24px var(--sol-font); }
+
+        /* ---------- 1.4 Simplificar ---------- */
+        .d-terms { width: 100%; border-collapse: collapse; font: 400 11.5px/15px var(--sol-font); }
+        .d-terms td { padding: 4px 0; border-bottom: var(--bp-semantic-border-thin) solid var(--d-line); vertical-align: top; }
+        .d-terms td:last-child { text-align: right; font-variant-numeric: tabular-nums; padding-left: 8px; }
+        .d-fine { font: 400 9.5px/12px var(--sol-font); color: var(--d-ink-3); }
+        .d-sentence { margin: 0 !important; font: 500 20px/28px var(--sol-font); }
+        .d-sentence b { font-weight: 700; font-variant-numeric: tabular-nums; }
+        .d-hl { padding: 0 4px; border-radius: var(--bp-semantic-radius-xs); background: var(--bp-theme-color-surface-brand-subtle); }
+        .d-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .d-split > div { padding: 10px 12px; border-radius: var(--bp-semantic-radius-sm); background: var(--d-surface); display: flex; flex-direction: column; }
+        .d-split small { font: var(--d-body-sm); font-size: 12px; color: var(--d-ink-3); }
+        .d-split b { font-variant-numeric: tabular-nums; }
+        .d-bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; }
+        .d-bar i { transition: width var(--motion-slow) var(--ease-decelerate); }
+        .d-bar__a { background: var(--bp-theme-color-data-chart-primary-1); }
+        .d-bar__b { background: var(--bp-theme-color-data-accent); }
+        :root[data-theme="dark"] .d-bar__a { background: var(--bp-theme-color-data-chart-primary-3); }
+        .d-key { display: flex; gap: 14px; font: var(--d-body-sm); font-size: 12px; color: var(--d-ink-2); }
+        .d-key span::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; background: var(--k); }
+
+        /* ---------- 1.5 Jerarquía ---------- */
+        .d-squint .d-screen { filter: blur(var(--squint, 0px)); transition: filter var(--motion-fast); }
+        .d-flat { gap: 6px; font: 600 13px/18px var(--sol-font); }
+        .d-flat__h { font: 700 13px/18px var(--sol-font); text-transform: uppercase; color: var(--d-link); }
+        .d-flat__row { padding: 5px 0; border-bottom: var(--bp-semantic-border-thin) solid var(--d-line); color: var(--d-link); }
+        .d-flat__btns { display: grid; gap: 6px; margin-top: 6px; }
+        .d-flat__btns span { padding: 10px 0; border-radius: var(--bp-semantic-radius-sm); text-align: center; font: 700 13px/18px var(--sol-font); text-transform: uppercase; background: var(--bp-theme-color-interaction-primary-bg); color: var(--bp-theme-color-text-on-brand); }
+        .d-appbar { display: flex; align-items: center; gap: 8px; margin: -6px 0 0 -6px; }
+        .d-appbar .ms { font-size: 24px; color: var(--bp-theme-color-icon-interactive); }
+        .d-push { flex: 1; }
+
+        /* ---------- 1.6 Moderación ---------- */
+        .d-mod-wrap { width: 100%; display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: var(--bp-semantic-spacing-macro-md); align-items: start; justify-content: center; }
+        .d-mod { display: flex; flex-direction: column; gap: 12px; transition: all var(--motion-base) var(--ease-standard); }
+        .d-mod__ic .ms { font-size: 18px; }
+        .d-mod[data-level="0"] { padding: 4px 0; }
+        .d-mod[data-level="0"] .d-mod__ic { background: transparent; }
+        .d-mod[data-level="0"] .d-mod__tag { background: transparent; padding: 0; color: var(--d-ink-2); }
+        .d-mod[data-level="0"] .d-mod__btn { background: transparent; padding: 0; height: auto; justify-content: flex-start; text-decoration: underline; }
+        .d-mod[data-level="1"] { padding: var(--bp-semantic-spacing-padding-container-compact); border-radius: var(--bp-semantic-radius-md); background: var(--d-surface); }
+        .d-mod[data-level="2"] { padding: var(--bp-semantic-spacing-padding-container-compact); border-radius: var(--bp-semantic-radius-lg); background: var(--d-surface); border: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-default); box-shadow: 0 var(--bp-semantic-elevation-mid-offset-y) var(--bp-semantic-elevation-mid-blur) var(--bp-semantic-elevation-mid-color); }
+        .d-mod[data-level="2"] .d-mod__ic { background: var(--bp-theme-color-brand-main); color: var(--bp-theme-color-text-on-brand); }
+        .d-mod[data-level="2"] .d-mod__btn { background: var(--bp-theme-color-interaction-primary-bg); color: var(--bp-theme-color-interaction-primary-fg); }
+        .d-mod[data-level="3"] { padding: 20px; border-radius: calc(var(--bp-semantic-radius-lg) * 1.75); border: var(--bp-semantic-border-medium) solid var(--bp-theme-color-brand-main);
+            background: linear-gradient(135deg, var(--bp-theme-color-surface-brand-subtle), var(--bp-theme-color-status-promo-bg-subtle));
+            box-shadow: 0 0 0 6px color-mix(in srgb, var(--bp-theme-color-brand-main) 30%, transparent), 0 var(--bp-semantic-elevation-overlay-offset-y) var(--bp-semantic-elevation-overlay-blur) var(--bp-semantic-elevation-overlay-color); }
+        .d-mod[data-level="3"] .d-mod__ic { background: linear-gradient(135deg, var(--bp-theme-color-status-promo-bg), var(--bp-theme-color-status-warning-bg)); color: var(--bp-theme-color-text-on-solid); animation: d-pulse 1.2s ease-in-out infinite; }
+        .d-mod[data-level="3"] .d-mod__tag { background: var(--bp-theme-color-status-success-bg); color: var(--bp-theme-color-text-on-solid); animation: d-pulse 1.2s ease-in-out infinite .3s; }
+        .d-mod[data-level="3"] .d-amount { background: linear-gradient(90deg, var(--bp-theme-color-status-promo-bg), var(--bp-theme-color-status-warning-bg)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .d-mod[data-level="3"] .d-mod__btn { background: linear-gradient(180deg, var(--bp-theme-color-interaction-primary-bg), var(--bp-theme-color-status-caution-bg)); color: var(--bp-theme-color-text-on-brand); text-transform: uppercase; box-shadow: 0 4px 0 var(--bp-theme-color-status-caution-icon); }
+        @keyframes d-pulse { 50% { transform: scale(1.08); } }
+        .d-res { display: grid; gap: 10px; padding: var(--bp-semantic-spacing-macro-sm); border-radius: var(--bp-semantic-radius-md); background: var(--d-surface); }
+        .d-res__row { display: flex; justify-content: space-between; gap: 12px; font: var(--d-body-sm); border-bottom: var(--bp-semantic-border-thin) solid var(--d-line); padding-bottom: 8px; }
+        .d-res__row span:first-child { color: var(--d-ink-3); }
+        .d-res__row span:last-child { text-align: right; font-weight: 500; }
+        .d-meter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+        .d-meter i { height: 8px; border-radius: 4px; background: var(--bp-theme-color-interaction-selection-bg-active-subtle); transition: background var(--motion-base); }
+        .d-meter[data-n="1"] i:nth-child(-n+1), .d-meter[data-n="2"] i:nth-child(-n+2) { background: var(--bp-theme-color-status-success-bg); }
+        .d-meter[data-n="3"] i:nth-child(-n+3) { background: var(--bp-theme-color-status-warning-bg); }
+        .d-meter[data-n="4"] i { background: var(--bp-theme-color-status-error-bg); }
+        .d-elev { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--bp-semantic-spacing-macro-sm); width: 100%; }
+        .d-elev div { height: 76px; border-radius: var(--bp-semantic-radius-md); background: var(--d-surface); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font: var(--d-body-sm); }
+        .d-elev small { font-family: var(--d-mono); font-size: 11px; color: var(--d-ink-3); }
+
+        /* ---------- 1.7 Color ---------- */
+        .d-palette { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--bp-semantic-spacing-micro-lg); margin: 0 0 var(--bp-semantic-spacing-macro-md); }
+        .d-swatch { display: flex; flex-direction: column; border-radius: var(--bp-semantic-radius-md); border: var(--bp-semantic-border-thin) solid var(--d-line); overflow: hidden; background: var(--d-bg); }
+        .d-swatch__chip { height: 44px; display: flex; align-items: center; justify-content: flex-end; padding: 0 10px; }
+        .d-swatch__body { padding: 10px 12px 12px; display: grid; gap: 6px; }
+        .d-swatch__body b { font: var(--bp-semantic-typography-brand-body-sm-semibold-font-weight) var(--bp-semantic-typography-brand-body-sm-semibold-font-size)/var(--bp-semantic-typography-brand-body-sm-semibold-line-height) var(--sol-font); }
+        .d-swatch__body span { font: var(--d-body-sm); font-size: 13px; color: var(--d-ink-2); }
+        .d-swatch__body code { font-size: 10.5px !important; justify-self: start; }
+        .d-gray { filter: grayscale(1); }
+        .d-gray-target { transition: filter var(--motion-base) var(--ease-standard); }
+        .d-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+        /* ---------- 1.8 Respuesta ---------- */
+        .d-pay-btn { width: 100%; }
+        .d-pay-btn.is-busy { pointer-events: none; }
+        .d-noresp, .d-noresp:hover, .d-noresp:active { background: var(--bp-theme-color-interaction-primary-bg) !important; transition: none; }
+        .d-timeline { width: 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; margin-top: 4px; }
+        .d-step { position: relative; padding: 26px 8px 0; text-align: center; font: var(--d-body-sm); font-size: 13px; color: var(--d-ink-3); transition: color var(--motion-base); }
+        .d-step::before { content: ''; position: absolute; top: 9px; left: 0; right: 0; height: 2px; background: var(--d-line); }
+        .d-step:first-child::before { left: 50%; } .d-step:last-child::before { right: 50%; }
+        .d-step::after { content: ''; position: absolute; top: 3px; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--d-demo-bg); border: 2px solid var(--d-line); transition: background var(--motion-base), border-color var(--motion-base), transform var(--motion-base) var(--ease-spring); }
+        .d-step b { display: block; color: var(--d-ink); font-size: 13px; }
+        .d-step.is-on { color: var(--d-ink-2); }
+        .d-step.is-on::after { background: var(--bp-theme-color-brand-main); border-color: var(--bp-theme-color-brand-main); transform: scale(1.25); }
+
+        /* ---------- 1.9 Crecer ---------- */
+        .d-grow-wrap { width: 100%; display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: var(--bp-semantic-spacing-macro-md); align-items: start; justify-content: center; }
+        .d-screen .bp-filter { padding: 0; }
+        .d-screen .bp-filter-item { height: 32px; }
+        .d-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+        .d-chips code { transition: opacity var(--motion-base), background var(--motion-base); }
+        .d-chips code.is-off { opacity: .35; }
+        .d-chips code.is-new { background: var(--bp-theme-color-status-success-bg-subtle); border-color: var(--bp-theme-color-status-success-border); }
+        .d-search { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; border-radius: var(--bp-semantic-radius-sm); border: var(--bp-semantic-border-thin) solid var(--bp-theme-color-field-border); background: var(--bp-theme-color-field-bg); color: var(--bp-theme-color-text-placeholder); font: var(--d-body-sm); }
+        .d-group { padding: 10px var(--bp-semantic-spacing-macro-sm) 2px; font: var(--d-label-sm); color: var(--d-ink-3); text-transform: uppercase; letter-spacing: .04em; }
+        .d-sum { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .d-sum div { padding: 8px 10px; border-radius: var(--bp-semantic-radius-sm); background: var(--d-surface); display: flex; flex-direction: column; font: var(--d-body-sm); font-size: 12px; color: var(--d-ink-3); }
+        .d-sum b { font: 600 15px/20px var(--sol-font); color: var(--d-ink); font-variant-numeric: tabular-nums; }
+        .d-arch { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; margin: 0 0 var(--bp-semantic-spacing-macro-md); }
+        .d-arch > div { position: relative; padding: 12px; border-radius: var(--bp-semantic-radius-md); border: var(--bp-semantic-border-thin) solid var(--d-line); display: flex; flex-direction: column; gap: 6px; font: var(--d-body-sm); font-size: 13px; color: var(--d-ink-2); }
+        .d-arch > div + div::before { content: 'arrow_forward'; font-family: 'Material Symbols Rounded'; position: absolute; left: -21px; top: 50%; margin-top: -10px; font-size: 20px; line-height: 20px; color: var(--d-ink-3); visibility: hidden; }
+        html.icons-ready .d-arch > div + div::before { visibility: visible; }
+        .d-arch b { color: var(--d-ink); font-size: 14px; }
+        .d-arch code { font-size: 10.5px !important; align-self: flex-start; }
+        .d-arch__chip { height: 28px; border-radius: var(--bp-semantic-radius-sm); }
+
+        /* ---------- Audio ---------- */
+        .d-events { width: 100%; display: grid; gap: 8px; }
+        .d-event { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--bp-semantic-radius-md); background: var(--d-surface); }
+        .d-event__t { display: flex; flex-direction: column; font: 500 15px/20px var(--sol-font); }
+        .d-event__t small { font: var(--d-body-sm); font-size: 13px; color: var(--d-ink-3); }
+        .d-event__none { width: 96px; text-align: center; font: var(--d-body-sm); font-size: 12px; color: var(--d-ink-3); }
+        .d-event .bp-action-button { width: 96px; }
+        .d-mixer { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 340px); gap: var(--bp-semantic-spacing-macro-md); align-items: start; }
+        .d-mixer__ctl { display: grid; gap: 10px; padding: var(--bp-semantic-spacing-macro-sm); border-radius: var(--bp-semantic-radius-md); background: var(--d-surface); }
+        .d-mixer__ctl label { display: flex; align-items: center; gap: 10px; font: var(--d-body-sm); }
+        .d-mixer__ctl label .ms { color: var(--bp-theme-color-icon-subtle); }
+        .d-mixer__ctl label span:nth-child(2) { flex: 1; }
+        .d-mixer__out { min-height: 140px; justify-content: center; }
+        .d-ladder { width: 100%; display: grid; gap: 10px; }
+        .d-rung { display: grid; grid-template-columns: 116px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--bp-semantic-radius-md); background: var(--d-surface); }
+        .d-rung__name { display: flex; flex-direction: column; font: 600 14px/18px var(--sol-font); }
+        .d-rung__name small { font: var(--d-body-sm); font-size: 12px; color: var(--d-ink-3); font-weight: 400; }
+        .d-rung__bar { display: flex; flex-direction: column; gap: 4px; min-width: 0; font: var(--d-body-sm); font-size: 12px; color: var(--d-ink-3); }
+        .d-rung__bar i { display: block; height: 10px; border-radius: 5px; background: linear-gradient(90deg, var(--bp-theme-color-data-chart-primary-3), var(--bp-theme-color-data-accent)); }
+        .d-axis { display: flex; justify-content: space-between; gap: 12px; font: var(--d-body-sm); font-size: 12px; color: var(--d-ink-3); }
+        .d-axis span { display: inline-flex; align-items: center; gap: 4px; }
+        .d-flows { display: grid; gap: 8px; width: 100%; }
+        .d-flow { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--bp-semantic-radius-md); background: var(--d-surface); }
+        .d-flow .d-li__t { font-size: 14px; }
+        .d-glyph { width: 52px; height: 20px; color: var(--bp-theme-color-icon-interactive); }
+        .d-cmp__col--no .d-glyph { color: var(--d-no); }
+
+        /* Foundations */
+        .d-cats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--bp-semantic-spacing-micro-lg); margin: 0 0 var(--bp-semantic-spacing-macro-md); }
+        .d-cat { display: flex; flex-direction: column; gap: 12px; padding: var(--bp-semantic-spacing-macro-sm); border-radius: var(--bp-semantic-radius-lg); border: var(--bp-semantic-border-thin) solid var(--d-line); background: var(--d-bg); }
+        .d-cat__head { display: flex; align-items: center; gap: 10px; }
+        .d-cat__ic { width: 40px; height: 40px; border-radius: var(--bp-semantic-radius-sm); display: grid; place-items: center; flex-shrink: 0; }
+        .d-cat__ic .ms { font-size: 22px; }
+        .d-cat__head b { display: block; font: var(--bp-semantic-typography-brand-title-sm-font-weight) 17px/22px var(--sol-font); }
+        .d-cat__head small { font: var(--d-body-sm); font-size: 12px; color: var(--d-ink-3); }
+        .d-cat p { margin: 0 !important; font: var(--d-body-sm); color: var(--d-ink-2); }
+        .d-cat__facts { display: grid; gap: 6px; padding: 10px 0; border-top: var(--bp-semantic-border-thin) solid var(--d-line); border-bottom: var(--bp-semantic-border-thin) solid var(--d-line); font: var(--d-body-sm); font-size: 13px; }
+        .d-cat__facts div { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .d-cat__facts span:first-child { color: var(--d-ink-3); }
+        .d-dots { display: inline-flex; gap: 3px; }
+        .d-dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--bp-theme-color-interaction-selection-bg-active-subtle); }
+        .d-dots[data-n="1"] i:nth-child(-n+1), .d-dots[data-n="2"] i:nth-child(-n+2), .d-dots[data-n="3"] i { background: var(--bp-theme-color-brand-main); }
+        .d-cases { list-style: none; padding: 0 !important; margin: 0 !important; display: grid; gap: 6px; }
+        .d-cases li { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 !important; font: var(--d-body-sm); }
+        .d-cases li > span { display: flex; flex-direction: column; }
+        .d-cases small { font-size: 11.5px; color: var(--d-ink-3); }
+        .d-goal-wrap { position: relative; width: 100%; max-width: 340px; }
+        .d-confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: 28px; }
+        .d-confetti i { position: absolute; top: -12px; width: 8px; height: 12px; border-radius: 2px; }
+
+        /* Háptica */
+        .d-hap { width: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+        .d-hap button { display: flex; flex-direction: column; align-items: stretch; gap: 8px; padding: 12px; border: 0; border-radius: var(--bp-semantic-radius-md); background: var(--d-surface); text-align: left; transition: transform var(--motion-fast) var(--ease-spring); }
+        .d-hap button:active { transform: scale(.97); }
+        .d-hap button:focus-visible { outline: none; box-shadow: var(--sol-focus); }
+        .d-hap__t { display: flex; align-items: center; gap: 6px; font: 600 14px/18px var(--sol-font); color: var(--bp-theme-color-text-brand); }
+        .d-hap__t code { margin-left: auto; font-size: 11px !important; }
+        .d-hap small { font: var(--d-body-sm); font-size: 12px; color: var(--d-ink-3); }
+        .d-pattern { position: relative; height: 18px; border-radius: 4px; background: var(--d-stage); overflow: hidden; }
+        .d-pattern i { position: absolute; top: 3px; bottom: 3px; border-radius: 2px; background: var(--bp-theme-color-icon-interactive); }
+        .d-hap button.is-buzz .d-pattern i { animation: d-buzz 120ms linear 3; }
+        @keyframes d-buzz { 50% { transform: translateX(1px); } }
+
+        /* Sistema: carriles */
+        .d-lanes-wrap { width: 100%; display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: var(--bp-semantic-spacing-macro-md); align-items: center; }
+        .d-lanes-scroll { overflow-x: auto; min-width: 0; }
+        .d-lanes { display: grid; grid-template-columns: 92px repeat(4, minmax(96px, 1fr)); gap: 6px; min-width: 500px; font: var(--d-body-sm); font-size: 13px; }
+        .d-lanes__col { padding: 6px 8px; font-weight: 600; color: var(--d-ink); }
+        .d-lanes__col small { display: block; font-weight: 400; color: var(--d-ink-3); font-size: 11.5px; }
+        .d-lanes__lane { display: flex; align-items: center; gap: 6px; padding: 8px; font-weight: 600; color: var(--d-ink-2); }
+        .d-lanes__lane .ms { font-size: 18px; color: var(--bp-theme-color-icon-subtle); }
+        .d-lanes__cell { display: flex; align-items: center; padding: 8px; min-height: 48px; overflow-wrap: anywhere; hyphens: auto; border-radius: var(--bp-semantic-radius-sm); background: var(--d-surface); color: var(--d-ink-2); transition: background var(--motion-base), box-shadow var(--motion-base), color var(--motion-base); }
+        .d-lanes__cell.is-empty { color: var(--d-ink-3); background: transparent; border: var(--bp-semantic-border-thin) dashed var(--d-line); }
+        .d-lanes__col.is-on { color: var(--bp-theme-color-text-brand); }
+        .d-lanes__cell.is-on { background: var(--bp-theme-color-surface-brand-subtle); color: var(--d-ink); box-shadow: inset 0 0 0 2px var(--bp-theme-color-brand-main); }
+        .d-lanes__cell.is-empty.is-on { background: transparent; box-shadow: none; }
+        .d-mini { width: 100%; max-width: 200px; min-height: 260px; margin: 0 auto; padding: 28px 14px 14px; justify-content: flex-end; gap: 10px; }
+        .d-mini__res { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; }
+        .d-mini__res .ms { font-size: 44px; color: var(--bp-theme-color-status-success-icon); }
+        .d-mini.is-done .d-mini__res { display: flex; animation: d-rise var(--motion-slow) var(--ease-decelerate); }
+        .d-mini.is-done .d-mini__idle { display: none; }
+        .d-mini__idle { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+        .d-mini .bp-button { font-size: 14px; }
+        .d-mini .bp-button.is-pressed { background: var(--bp-theme-color-interaction-primary-bg-pressed); transform: scale(.96); }
+        @keyframes d-rise { from { opacity: 0; transform: translateY(10px); } }
+        .d-pillars { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--bp-semantic-spacing-micro-lg); margin: var(--bp-semantic-spacing-macro-sm) 0 var(--bp-semantic-spacing-macro-md); }
+        .d-pillars div { padding: var(--bp-semantic-spacing-macro-sm); border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-interaction-accent-bg); color: var(--bp-theme-color-interaction-accent-fg); display: flex; flex-direction: column; gap: 6px; }
+        .d-pillars b { font: var(--d-title-md); color: var(--bp-theme-color-brand-main); }
+        :root[data-theme="dark"] .d-pillars b { color: var(--bp-theme-color-text-on-brand); }
+        .d-pillars span { font: var(--d-body-sm); opacity: .9; }
+        .d-roles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--bp-semantic-spacing-micro-lg); margin: 0 0 var(--bp-semantic-spacing-macro-sm); }
+        .d-roles div { display: flex; flex-direction: column; gap: 6px; padding: var(--bp-semantic-spacing-macro-sm); border-radius: var(--bp-semantic-radius-md); background: var(--d-stage); }
+        .d-roles .ms { font-size: 24px; color: var(--bp-theme-color-icon-interactive); }
+        .d-roles b { font: var(--bp-semantic-typography-brand-title-sm-font-weight) 17px/22px var(--sol-font); }
+        .d-roles span:last-child { font: var(--d-body-sm); color: var(--d-ink-2); }
+        .d-footer { margin-top: 72px; padding-top: var(--bp-semantic-spacing-macro-sm); border-top: var(--bp-semantic-border-thin) solid var(--d-line); font: var(--d-body-sm); color: var(--d-ink-3); }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 960px) {
+            .d-layout { grid-template-columns: 1fr; }
+            .d-toc {
+                position: fixed; top: var(--bp-semantic-size-interactive-md); left: 0; bottom: 0; width: 288px; height: auto; z-index: var(--bp-semantic-z-index-overlay); background: var(--d-bg);
+                transform: translateX(-100%); transition: transform var(--motion-slow) var(--ease-ios); box-shadow: 0 var(--bp-semantic-elevation-high-offset-y) var(--bp-semantic-elevation-high-blur) var(--bp-semantic-elevation-high-color);
+            }
+            body.toc-open .d-toc { transform: none; }
+            .d-toc-btn { display: inline-grid; }
+            .d-topbar nav .d-lbl, .d-crumb { display: none; }
+        }
+        @media (max-width: 760px) {
+            .d-cmp, .d-mod-wrap, .d-grow-wrap, .d-mixer, .d-lanes-wrap { grid-template-columns: minmax(0, 1fr); }
+            .d-mod-wrap > *, .d-grow-wrap > * { justify-self: center; width: 100%; max-width: 340px; }
+            .d-map, .d-cats, .d-roles, .d-pillars { grid-template-columns: 1fr; }
+            .d-index { grid-template-columns: 1fr 1fr; }
+            .d-arch { grid-template-columns: 1fr; gap: 26px; }
+            .d-arch > div + div::before { content: 'arrow_downward'; left: 50%; top: -24px; margin: 0 0 0 -10px; }
+            .d-elev { grid-template-columns: 1fr 1fr; }
+            .d-demo__body { padding: var(--bp-semantic-spacing-macro-sm) var(--bp-semantic-spacing-micro-lg); }
+            .d-h1 { font-size: 28px; line-height: 34px; }
+            .d-rung { grid-template-columns: 96px minmax(0, 1fr) auto; }
+            /* Carriles traspuestos: el orden del DOM (fila por canal) llena
+               columnas, así las fases quedan como filas y no hay scroll lateral. */
+            .d-lanes { min-width: 0; grid-template-columns: 76px repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(5, auto); grid-auto-flow: column; font-size: 12.5px; }
+            .d-lanes__lane { flex-direction: column; justify-content: flex-end; gap: 2px; padding: 4px; }
+            .d-lanes__col { padding: 8px 4px; display: flex; flex-direction: column; justify-content: center; }
+        }
+        @media (max-width: 420px) {
+            .d-index { grid-template-columns: 1fr; }
+            .d-event { grid-template-columns: minmax(0, 1fr) auto; }
+            .d-event > .bp-tag { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header class="d-topbar">
+        <button class="bp-navigation-button d-toc-btn" id="toc-btn" aria-label="Índice" aria-controls="toc" aria-expanded="false"><span class="ms">menu</span></button>
+        <a class="d-brand" href="./index.html"><span class="d-brand__mark">P</span>Pichibank app</a>
+        <span class="d-crumb">/ Design System / Conversational Design</span>
+        <span class="d-topbar__sp"></span>
+        <nav>
+            <a class="bp-action-button bp-action-button--tertiary bp-action-button--icon-left" href="./index.html"><span class="ms">smartphone</span><span class="d-lbl">App</span></a>
+            <a class="bp-action-button bp-action-button--tertiary bp-action-button--icon-left" href="./guia.html"><span class="ms">menu_book</span><span class="d-lbl">Guía de feedback</span></a>
+        </nav>
+        <button class="bp-navigation-button" id="theme-btn" aria-label="Cambiar entre modo claro y oscuro"><span class="ms">contrast</span></button>
+    </header>
+
+    <div class="d-layout">
+        <aside class="d-toc" id="toc">
+            <h6>En esta página</h6>
+            <ol>
+                <li><a href="#intro">Introducción</a></li>
+                <li><a href="#visual">1. Visual</a>
+                    <ol>
+                        <li><a href="#v1">1.1 Claridad sobre densidad</a></li>
+                        <li><a href="#v2">1.2 La funcionalidad lidera la forma</a></li>
+                        <li><a href="#v3">1.3 El contenido define la estructura</a></li>
+                        <li><a href="#v4">1.4 Simplificamos la complejidad</a></li>
+                        <li><a href="#v5">1.5 La jerarquía guía la atención</a></li>
+                        <li><a href="#v6">1.6 Diseñamos con moderación</a></li>
+                        <li><a href="#v7">1.7 El color comunica intención</a></li>
+                        <li><a href="#v8">1.8 Cada interacción tiene respuesta</a></li>
+                        <li><a href="#v9">1.9 Diseñamos para crecer</a></li>
+                    </ol>
+                </li>
+                <li><a href="#audio">2. Audio</a>
+                    <ol>
+                        <li><a href="#a1">2.1 Funcional antes que emocional</a></li>
+                        <li><a href="#a2">2.2 Audio como refuerzo</a></li>
+                        <li><a href="#a3">2.3 Discreto por defecto</a></li>
+                        <li><a href="#a4">2.4 Consistente</a></li>
+                    </ol>
+                </li>
+                <li><a href="#foundations">3. Foundations de audio</a></li>
+                <li><a href="#haptica">4. Háptica</a></li>
+                <li><a href="#sistema">5. Idea central del sistema</a></li>
+            </ol>
+            <div class="d-prefs">
+                <h6>Preferencias de los ejemplos</h6>
+                <label class="d-switchrow">Vibración <span class="d-switch"><input type="checkbox" id="pref-hap" checked><span></span></span></label>
+                <label class="d-switchrow">Sonidos <span class="d-switch"><input type="checkbox" id="pref-snd" checked><span></span></span></label>
+                <label class="d-switchrow">Reducir movimiento <span class="d-switch"><input type="checkbox" id="pref-rm"><span></span></span></label>
+            </div>
+        </aside>
+
+        <main class="d-doc">
+            <!-- ============================================================= -->
+            <section id="intro" data-spy>
+                <p class="d-eyebrow">Design System · Solar</p>
+                <h1 class="d-h1">Conversational Design</h1>
+                <p class="d-lead">Principios visuales, audio y háptica: criterios para crear experiencias digitales claras, coherentes y capaces de responder mediante recursos visuales, sonoros y hápticos.</p>
+                <div class="d-meta">
+                    <span class="bp-tag bp-tag--caution">Borrador v0.1</span>
+                    <span class="bp-tag bp-tag--has-icon"><span class="ms">visibility</span>9 principios visuales</span>
+                    <span class="bp-tag bp-tag--has-icon"><span class="ms">graphic_eq</span>4 principios de audio</span>
+                    <span class="bp-tag bp-tag--has-icon"><span class="ms">vibration</span>Háptica en definición</span>
+                </div>
+                <p>Este documento recoge el contenido de las ocho pantallas seleccionadas del material y acompaña cada principio con un ejemplo. Los ejemplos están construidos con los mismos tokens (<code>assets/tokens.css</code>) y componentes (<code>assets/solar.css</code>) de la app; los que suenan o vibran usan <code>haptics.js</code>, el módulo de producción.</p>
+
+                <div class="d-map">
+                    <a href="#visual"><span class="d-map__ic"><span class="ms">visibility</span></span><b>Visual</b><span>Organiza, prioriza y hace comprensible la información.</span></a>
+                    <a href="#audio"><span class="d-map__ic"><span class="ms">graphic_eq</span></span><b>Audio</b><span>Confirma o refuerza eventos sin sustituir otros canales.</span></a>
+                    <a href="#haptica"><span class="d-map__ic"><span class="ms">vibration</span></span><b>Háptica</b><span>Comunica que una acción ha sido reconocida.</span></a>
+                </div>
+
+                <div class="bp-alert">
+                    <div class="bp-alert__content">
+                        <span class="ms bp-alert__icon">info</span>
+                        <div class="bp-alert__text">
+                            <span class="bp-alert__title">Cómo leer los ejemplos</span>
+                            <p class="bp-alert__body">Cada principio tiene su enunciado, un ejemplo interactivo y notas «En la práctica». Las comparaciones marcan <b>Hacer</b> y <b>Evitar</b>. Prueba el botón de contraste de la barra superior: todos los ejemplos cambian a modo oscuro porque usan tokens de tema, no colores fijos.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================= -->
+            <section id="visual" data-spy>
+                <h2 class="d-h2"><span class="d-h2__num">1</span>Visual</h2>
+                <p>La dimensión visual reúne las decisiones relacionadas con la presentación, organización y jerarquía de la interfaz. Su finalidad es facilitar la comprensión y ayudar a completar tareas sin distracciones ni esfuerzo innecesario.</p>
+                <ol class="d-index">
+                    <li><a href="#v1"><b>1.1</b>Claridad sobre densidad</a></li>
+                    <li><a href="#v2"><b>1.2</b>La funcionalidad lidera la forma</a></li>
+                    <li><a href="#v3"><b>1.3</b>El contenido define la estructura</a></li>
+                    <li><a href="#v4"><b>1.4</b>Simplificamos la complejidad</a></li>
+                    <li><a href="#v5"><b>1.5</b>La jerarquía guía la atención</a></li>
+                    <li><a href="#v6"><b>1.6</b>Diseñamos con moderación</a></li>
+                    <li><a href="#v7"><b>1.7</b>El color comunica intención</a></li>
+                    <li><a href="#v8"><b>1.8</b>Cada interacción debe tener una respuesta</a></li>
+                    <li><a href="#v9"><b>1.9</b>Diseñamos para crecer</a></li>
+                </ol>
+
+                <!-- 1.1 ------------------------------------------------------ -->
+                <article class="d-principle" id="v1" data-spy>
+                    <header class="d-principle__head"><span class="d-num">1.1</span><h3 class="d-h3">Claridad sobre densidad</h3></header>
+                    <blockquote class="d-statement">Las experiencias deben ser fáciles de comprender incluso cuando presentan mucha información. El contenido necesita espacio, una organización natural y una presentación progresiva. Así se evita saturar a la persona o exigirle un esfuerzo cognitivo innecesario.</blockquote>
+                    <div class="d-demo">
+                        <div class="d-demo__head"><span class="d-demo__title">Resumen de cuenta</span><span>Toca «Ver detalle de saldos»</span></div>
+                        <div class="d-demo__body">
+                            <div class="d-cmp">
+                                <figure class="d-cmp__col d-cmp__col--no">
+                                    <div class="d-screen d-dense" aria-label="Ejemplo a evitar: resumen denso">
+                                        <div class="d-dense__h">Cta. ahorros N.º 2201447890 · Titular: M. J. Andrade P.</div>
+                                        <table>
+                                            <tr><td>Saldo contable</td><td>$1.906,04</td></tr>
+                                            <tr><td>Saldo disponible</td><td>$1.906,04</td></tr>
+                                            <tr><td>Saldo bloqueado</td><td>$0,00</td></tr>
+                                            <tr><td>Saldo diferido</td><td>$0,00</td></tr>
+                                            <tr><td>Cheques en canje</td><td>$0,00</td></tr>
+                                            <tr><td>Interés ganado (mes)</td><td>$0,12</td></tr>
+                                            <tr><td>Tasa nominal anual</td><td>1,50%</td></tr>
+                                        </table>
+                                        <div class="d-dense__h">Últimos movimientos</div>
+                                        <table>
+                                            <tr><td>27/09 SUPERMERCADO NORTE DEB.</td><td>-48,20</td></tr>
+                                            <tr><td>26/09 TRANSF. RECIBIDA NÓMINA</td><td>+1.225,00</td></tr>
+                                            <tr><td>26/09 PAGO EMPRESA ELÉCTRICA</td><td>-24,80</td></tr>
+                                            <tr><td>25/09 CAFETERÍA CENTRO</td><td>-6,50</td></tr>
+                                            <tr><td>24/09 RETIRO CAJERO 0412</td><td>-40,00</td></tr>
+                                        </table>
+                                        <div class="d-dense__btns"><span>Detalle</span><span>Estado</span><span>Transferir</span><span>Pagar</span></div>
+                                    </div>
+                                    <figcaption class="d-verdict"><span class="bp-tag bp-tag--error bp-tag--has-icon"><span class="ms">close</span>Evitar</span>Todos los datos al mismo nivel y sin aire: hay que leerlo todo para encontrar el saldo.</figcaption>
+                                </figure>
+                                <figure class="d-cmp__col d-cmp__col--do">
+                                    <div class="d-screen">
+                                        <div class="d-stack" style="gap:2px">
+                                            <span class="d-caption">Cuenta de ahorros ****7890</span>
+                                            <span class="d-amount">$ 1.906,04</span>
+                                            <span class="d-caption">Disponible</span>
+                                        </div>
+                                        <div class="bp-widget">
+                                            <div class="bp-widget__header"><span class="bp-widget__title">Últimos movimientos</span><span class="bp-widget__meta">Ver todo</span></div>
+                                            <div class="bp-list-item"><span class="bp-avatar"><span class="ms">shopping_cart</span></span><span class="d-li__t">Supermercado<small>Hoy</small></span><span class="d-li__amt">− $ 48,20</span></div>
+                                            <div class="bp-list-item"><span class="bp-avatar"><span class="ms">work</span></span><span class="d-li__t">Nómina<small>Ayer</small></span><span class="d-li__amt is-in">+ $ 1.225,00</span></div>
+                                            <div class="bp-list-item"><span class="bp-avatar"><span class="ms">bolt</span></span><span class="d-li__t">Luz eléctrica<small>Ayer</small></span><span class="d-li__amt">− $ 24,80</span></div>
+                                        </div>
+                                        <div>
+                                            <button class="bp-action-button bp-action-button--tertiary bp-action-button--icon-right" id="v1-more" aria-expanded="false" aria-controls="v1-detail">Ver detalle de saldos<span class="ms">expand_more</span></button>
+                                            <div class="d-collapse" id="v1-detail"><div>
+                                                <dl class="d-dl" style="padding:8px 4px 0">
+                                                    <dt>Contable</dt><dd>$ 1.906,04</dd>
+                                                    <dt>Bloqueado</dt><dd>$ 0,00</dd>
+                                                    <dt>Diferido</dt><dd>$ 0,00</dd>
+                                                    <dt>Interés del mes</dt><dd>$ 0,12</dd>
+                                                </dl>
+                                            </div></div>
+                                        </div>
+                                    </div>
+                                    <figcaption class="d-verdict"><span class="bp-tag bp-tag--success bp-tag--has-icon"><span class="ms">check</span>Hacer</span>Primero lo que responde a «¿cuánto tengo?»; el resto aparece cuando la persona lo pide.</figcaption>
+                                </figure>
+                            </div>
+                        </div>
+                        <div class="d-demo__foot">Los dos muestran la misma cuenta. La diferencia está en el orden, el espacio y la presentación progresiva.</div>
+                    </div>
+                    <p class="d-practice__t">En la práctica</p>
+                    <ul class="d-practice">
+                        <li><span>El espacio también agrupa: <code>--bp-semantic-spacing-gap-related</code> (8 px) une lo relacionado y <code>--bp-semantic-spacing-gap-content</code> (16 px) separa bloques.</span></li>
+                        <li><span>Cada pantalla responde primero a una pregunta principal. Lo secundario se revela con una acción explícita («Ver detalle», «Ver todo»).</span></li>
+                        <li><span>Los resúmenes muestran pocos elementos y enlazan al listado completo, en lugar de comprimirlo todo en la vista inicial.</span></li>
+                    </ul>
+                </article>
+
+                <!-- 1.2 ------------------------------------------------------ -->
+                <article class="d-principle" id="v2" data-spy>
+                    <header class="d-principle__head"><span class="d-num">1.2</span><h3 class="d-h3">La funcionalidad lidera la forma</h3></header>
+                    <blockquote class="d-statement">Cada elemento visual debe aportar valor real. La utilidad, la comprensión y la ejecución de tareas tienen prioridad sobre la ornamentación o las tendencias visuales. La apariencia debe estar al servicio de la función.</blockquote>
+                    <div class="d-demo">
+                        <div class="d-demo__head"><span class="d-demo__title">Recordatorio de pago</span>
+                            <label class="d-switchrow" style="gap:10px">Mostrar anotaciones <span class="d-switch"><input type="checkbox" id="v2-annot"><span></span></span></label>
+                        </div>
+                        <div class="d-demo__body" id="v2-body">
+                            <div class="d-cmp">
+                                <figure class="d-cmp__col d-cmp__col--no">
+                                    <div class="d-screen">
+                                        <div class="d-deco">
+                                            <span class="d-deco__blob" data-note="A"></span>
+                                            <span class="d-deco__badge" data-note="B"><span class="ms">auto_awesome</span>¡No te olvides!<span class="ms">auto_awesome</span></span>
+                                            <span class="d-deco__title" data-note="C"><span class="ms fill">bolt</span>Tu factura de luz</span>
+                                            <span class="d-deco__amt" data-note="D">$24,80</span>
+                                            <span class="d-deco__btns" data-note="E"><span>¡Pagar ya!</span><span>Luego</span><span>Compartir</span></span>
+                                        </div>
+                                    </div>
+                                    <ol class="d-legend">
+                                        <li><b>A</b>Forma decorativa: no informa nada.</li>
+                                        <li><b>B</b>Urgencia exagerada, pero sin fecha de vencimiento.</li>
+                                        <li><b>C</b>Ícono en degradado: adorna en lugar de identificar el servicio.</li>
+                                        <li><b>D</b>Degradado sobre el monto: le quita legibilidad al dato clave.</li>
+                                        <li><b>E</b>Tres acciones con el mismo peso visual.</li>
+                                    </ol>
+                                    <figcaption class="d-verdict"><span class="bp-tag bp-tag--error bp-tag--has-icon"><span class="ms">close</span>Evitar</span>Mucho estilo, poca información: falta lo que se necesita para decidir.</figcaption>
+                                </figure>
+                                <figure class="d-cmp__col d-cmp__col--do">
+                                    <div class="d-screen">
+                                        <div class="bp-widget d-pad d-stack" style="gap:var(--bp-semantic-spacing-gap-content)">
+                                            <div class="d-row">
+                                                <span class="bp-avatar" data-note="1"><span class="ms">bolt</span></span>
+                                                <span class="d-li__t" data-note="2">Luz eléctrica<small>Contrato 0045-7781</small></span>
+                                            </div>
+                                            <span class="bp-tag bp-tag--warning bp-tag--has-icon" data-note="3" style="align-self:flex-start"><span class="ms">schedule</span>Vence el 4 de octubre</span>
+                                            <span class="d-amount" data-note="4">$ 24,80</span>
+                                            <span class="bp-button bp-button--block d-fake" data-size="md" data-note="5">Pagar</span>
+                                        </div>
+                                    </div>
+                                    <ol class="d-legend">
+                                        <li><b>1</b>Identifica el servicio de un vistazo.</li>
+                                        <li><b>2</b>Nombre y referencia para confirmar que es el correcto.</li>
+                                        <li><b>3</b>Urgencia con fecha concreta (color, ícono y texto).</li>
+                                        <li><b>4</b>El dato que hay que decidir, en tamaño numérico.</li>
+                                        <li><b>5</b>Una sola acción principal.</li>
+                                    </ol>
+                                    <figcaption class="d-verdict"><span class="bp-tag bp-tag--success bp-tag--has-icon"><span class="ms">check</span>Hacer</span>Cada elemento cumple una función que se puede nombrar.</figcaption>
+                                </figure>
+                            </div>
+                        </div>
+                        <div class="d-demo__foot">Activa las anotaciones: si un elemento no se puede justificar con una función, sobra.</div>
+                    </div>
+                    <p class="d-practice__t">En la práctica</p>
+                    <ul class="d-practice">
+                        <li><span>Antes de agregar un recurso visual (ilustración, degradado, sombra, insignia), nombra qué pregunta de la persona responde.</span></li>
+                        <li><span>Los íconos identifican o indican una acción; no se duplican como fondo ni se usan como relleno.</span></li>
+                        <li><span>Las ilustraciones se reservan para estados vacíos, bienvenidas o hitos, donde explican o acompañan.</span></li>
+                    </ul>
+                </article>
+
+                <!-- 1.3 ------------------------------------------------------ -->
+                <article class="d-principle" id="v3" data-spy>
+                    <header class="d-principle__head"><span class="d-num">1.3</span><h3 class="d-h3">El contenido define la estructura</h3></header>
+                    <blockquote class="d-statement">La interfaz debe adaptarse al contenido, no obligar al contenido a encajar en una estructura predeterminada. Los contenedores, módulos y agrupaciones son útiles cuando mejoran la claridad, pero no deben utilizarse como una solución universal.</blockquote>
+                    <div class="d-demo">
+                        <div class="d-demo__head"><span class="d-demo__title">Inicio con cuatro tipos de contenido</span><span>Saldo · movimientos · consejo · meta</span></div>
+                        <div class="d-demo__body">
+                            <div class="d-cmp">
+                                <figure class="d-cmp__col d-cmp__col--no">
+                                    <div class="d-screen">
+                                        <div class="d-fixed">
+                                            <div><b>Saldo</b><span class="d-fixed__big">$ 1.906,04</span></div>
+                                            <div><b>Movimientos</b><span>Supermercado −48,20</span><span>Nómina +1.225,00</span><span>Luz eléctrica −24,80</span></div>
+                                            <div><b>Consejo</b><span>Activa tu tarjeta para compras en línea y suscripciones</span></div>
+                                            <div><b>Meta</b><span>Viaje: 62 %</span><div class="d-progress"><i style="width:62%"></i></div></div>
+                                        </div>
+                                    </div>
+                                    <figcaption class="d-verdict"><span class="bp-tag bp-tag--error bp-tag--has-icon"><span class="ms">close</span>Evitar</span>Una grilla de cajas iguales: la lista se corta, el consejo queda truncado y al saldo le sobra caja.</figcaption>
+                                </figure>
+                                <figure class="d-cmp__col d-cmp__col--do">
+                                    <div class="d-screen">
+                                        <div class="d-stack" style="gap:2px"><span class="d-caption">Disponible</span><span class="d-amount">$ 1.906,04</span></div>
+                                        <div class="bp-widget">
+                                            <div class="bp-widget__header"><span class="bp-widget__title">Movimientos</span><span class="bp-widget__meta">Ver todo</span></div>
+                                            <div class="bp-list-item"><span class="bp-avatar"><span class="ms">shopping_cart</span></span><span class="d-li__t">Supermercado</span><span class="d-li__amt">− $ 48,20</span></div>
+                                            <div class="bp-list-item"><span class="bp-avatar"><span class="ms">work</span></span><span class="d-li__t">Nómina</span><span class="d-li__amt is-in">+ $ 1.225,00</span></div>
+                                        </div>
+                                        <div class="bp-alert">
+                                            <div class="bp-alert__content"><span class="ms bp-alert__icon">lightbulb</span>
+                                                <div class="bp-alert__text"><span class="bp-alert__title">Activa tu tarjeta</span><span class="bp-alert__body">Úsala para compras en línea y suscripciones.</span></div>
+                                            </div>
+                                        </div>
+                                        <div class="d-stack">
+                                            <div class="d-row" style="justify-content:space-between"><span class="d-li__t">Viaje<small>$ 930 de $ 1.500</small></span><span class="d-li__amt">62 %</span></div>
+                                            <div class="d-progress"><i style="width:62%"></i></div>
+                                        </div>
+                                    </div>
+                                    <figcaption class="d-verdict"><span class="bp-tag bp-tag--success bp-tag--has-icon"><span class="ms">check</span>Hacer</span>El saldo va sin caja, la lista en un widget, el consejo como mensaje en línea y la meta como progreso.</figcaption>
+                                </figure>
+                            </div>
+                        </div>
+                        <div class="d-demo__foot">Componentes usados en «Hacer»: <code>bp-widget</code>, <code>bp-list-item</code>, <code>bp-alert</code> y una barra de progreso. Ninguno es obligatorio: se elige según el contenido.</div>
+                    </div>
+                    <p class="d-practice__t">En la práctica</p>
+                    <ul class="d-practice">
+                        <li><span>Empieza por el contenido real (longitudes, cantidad de ítems, casos vacíos) y después elige el contenedor.</span></li>
+                        <li><span>Un dato único y protagonista no necesita caja; una colección sí se beneficia de un contenedor y divisores.</span></li>
+                        <li><span>Si el texto se trunca para encajar en el módulo, el que está mal es el módulo.</span></li>
+                    </ul>
+                </article>
+
+                <!-- 1.4 ------------------------------------------------------ -->
+                <article class="d-principle" id="v4" data-spy>
+                    <header class="d-principle__head"><span class="d-num">1.4</span><h3 class="d-h3">Simplificamos la complejidad</h3></header>
+                    <blockquote class="d-statement">Aunque los productos financieros pueden ser complejos, su experiencia de uso no debería serlo. Los procesos, datos y reglas deben transformarse en experiencias comprensibles, distribuyendo la información para que pueda interpretarse sin esfuerzo.</blockquote>
+                    <div class="d-demo">
+                        <div class="d-demo__head"><span class="d-demo__title">Simulador de crédito</span><span>Mueve el monto y elige el plazo</span></div>
+                        <div class="d-demo__body">
+                            <div class="d-controls">
+                                <label for="v4-p">Monto <input type="range" id="v4-p" min="500" max="5000" step="250" value="2000"><output id="v4-p-out" for="v4-p">$ 2.000</output></label>
+                                <div class="bp-segmented" style="padding:0;min-width:260px">
+                                    <div class="bp-segmented__track" id="v4-n" role="tablist" aria-label="Plazo">
+                                        <button class="bp-segmented-item" role="tab" aria-selected="false" data-n="6">6 m</button>
+                                        <button class="bp-segmented-item" role="tab" aria-selected="true" data-n="12">12 m</button>
+                                        <button class="bp-segmented-item" role="tab" aria-selected="false" data-n="24">24 m</button>
+                                        <button class="bp-segmented-item" role="tab" aria-selected="false" data-n="36">36 m</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-cmp">
+                                <figure class="d-cmp__col d-cmp__col--no">
+                                    <div class="d-screen" style="gap:8px">
+                                        <span class="d-dense__h" style="font:700 12px/16px var(--sol-font);text-transform:uppercase">Condiciones del crédito</span>
+                                        <table class="d-terms">
+                                            <tr><td>Monto solicitado</td><td data-v4="p">USD 2.000,00</td></tr>
+                                            <tr><td>Plazo (meses)</td><td data-v4="n">12</td></tr>
+                                            <tr><td>Tasa nominal anual (TNA)</td><td>15,60 %</td></tr>
+                                            <tr><td>Tasa efectiva anual (TEA)</td><td>16,77 %</td></tr>
+                                            <tr><td>Sistema de amortización</td><td>Francés</td></tr>
+                                            <tr><td>Cuota referencial*</td><td data-v4="c">USD 181,08</td></tr>
+                                            <tr><td>Total intereses</td><td data-v4="i">USD 173,00</td></tr>
+                                            <tr><td>Seguro de desgravamen</td><td>0,0587 % mensual s/ saldo</td></tr>
+                                            <tr><td>Carga financiera total</td><td data-v4="t">USD 2.173,00</td></tr>
+                                        </table>
+                                        <span class="d-fine">*Cuota referencial calculada con TNA y sistema francés; no incluye seguro de desgravamen, impuestos ni cargos adicionales. Sujeto a aprobación crediticia y condiciones vigentes a la fecha del desembolso.</span>
+                                    </div>
+                                    <figcaption class="d-verdict"><span class="bp-tag bp-tag--error bp-tag--has-icon"><span class="ms">close</span>Evitar</span>Exacto, pero exige saber qué es una TNA o el sistema francés para entender cuánto se paga.</figcaption>
+                                </figure>
+                                <figure class="d-cmp__col d-cmp__col--do">
+                                    <div class="d-screen">
+                                        <span class="d-caption">Tu crédito</span>
+                                        <p class="d-sentence">Pagarás <b class="d-hl" id="v4-c">$ 181,08</b> al mes durante <b id="v4-nt">12 meses</b>.</p>
+                                        <div class="d-split">
+                                            <div><small>Recibes</small><b id="v4-pr">$ 2.000,00</b></div>
+                                            <div><small>Pagas en total</small><b id="v4-t">$ 2.173,00</b></div>
+                                        </div>
+                                        <div class="d-stack">
+                                            <div class="d-bar" aria-hidden="true"><i class="d-bar__a" id="v4-ba" style="width:92%"></i><i class="d-bar__b" id="v4-bb" style="width:8%"></i></div>
+                                            <div class="d-key"><span style="--k:var(--bp-theme-color-data-chart-primary-1)">Lo que recibes</span><span style="--k:var(--bp-theme-color-data-accent)">Intereses <b id="v4-i">$ 173,00</b></span></div>
+                                        </div>
+                                        <div>
+                                            <button class="bp-action-button bp-action-button--tertiary bp-action-button--icon-right" id="v4-how" aria-expanded="false" aria-controls="v4-detail">¿Cómo se calcula?<span class="ms">expand_more</span></button>
+                                            <div class="d-collapse" id="v4-detail"><div>
+                                                <ul class="d-practice" style="margin:8px 0 0">
+                                                    <li><span>Pagas lo mismo cada mes (cuota fija).</span></li>
+                                                    <li><span>Tasa anual de 15,60 % (efectiva 16,77 %).</span></li>
+                                                    <li><span>Se suma un seguro que depende de lo que te falta pagar.</span></li>
+                                                </ul>
+                                            </div></div>
+                                        </div>
+                                    </div>
+                                    <figcaption class="d-verdict"><span class="bp-tag bp-tag--success bp-tag--has-icon"><span class="ms">check</span>Hacer</span>Una frase responde «¿cuánto pago?»; la regla técnica queda disponible, en lenguaje simple.</figcaption>
+                                </figure>
+                            </div>
+                        </div>
+                        <div class="d-demo__foot">Valores ilustrativos (cuota fija con TNA 15,60 %). Ambas pantallas se actualizan con los mismos controles: la información es idéntica, cambia cómo se distribuye.</div>
+                    </div>
+                    <p class="d-practice__t">En la práctica</p>
+                    <ul class="d-practice">
+                        <li><span>Traduce reglas a consecuencias: «pagarás X al mes» antes que «TNA, TEA, sistema francés».</span></li>
+                        <li><span>Divide procesos largos en pasos con un solo objetivo cada uno.</span></li>
+                        <li><span>Los términos técnicos y legales siguen disponibles, pero en una capa de detalle y con explicación.</span></li>
+                    </ul>
+                </article>
+
+                <!-- 1.5 ------------------------------------------------------ -->
+                <article class="d-principle" id="v5" data-spy>
+                    <header class="d-principle__head"><span class="d-num">1.5</span><h3 class="d-h3">La jerarquía guía la atención</h3></header>
+                    <blockquote class="d-statement">Las personas deben reconocer rápidamente qué es importante, qué es secundario y cuál es el siguiente paso disponible. La interfaz debe dirigir la atención intencionalmente y reducir la exploración innecesaria.</blockquote>
+                    <div class="d-demo">
+                        <div class="d-demo__head"><span class="d-demo__title">Confirmar transferencia</span>
+                            <label for="v5-blur" style="display:inline-flex;align-items:center;gap:10px">Entrecerrar los ojos <input type="range" id="v5-blur" min="0" max="8" step="1" value="0"></label>
+                        </div>
+                        <div class="d-demo__body">
+                            <div class="d-cmp d-squint" id="v5-cmp">
+                                <figure class="d-cmp__col d-cmp__col--no">
+                                    <div class="d-screen d-flat">
+                                        <div class="d-flat__h">Confirmación de transferencia</div>
+                                        <div class="d-flat__row">Monto: $ 25,00</div>
+                                        <div class="d-flat__row">Beneficiario: Carlos Vega</div>
+                                        <div class="d-flat__row">Banco: Pichibank</div>
+                                        <div class="d-flat__row">Cuenta: ****4521</div>
+                                        <div class="d-flat__row">Desde: Cuenta principal</div>
+                                        <div class="d-flat__row">Costo: $ 0,00</div>
+                                        <div class="d-flat__row">Referencia: Almuerzo</div>
+                                        <div class="d-flat__btns"><span>Transferir</span><span>Programar</span><span>Guardar contacto</span></div>
+                                    </div>
+                                    <figcaption class="d-verdict"><span class="bp-tag bp-tag--error bp-tag--has-icon"><span class="ms">close</span>Evitar</span>Todo pesa igual: el monto se pierde entre los datos y hay tres «siguientes pasos».</figcaption>
+                                </figure>
+                                <figure class="d-cmp__col d-cmp__col--do">
+                                    <div class="d-screen">
+                                        <div class="d-appbar"><span class="ms">arrow_back</span><span class="d-title-sm">Confirma tu transferencia</span></div>
+                                        <div class="d-stack" style="gap:0"><span class="d-caption">Vas a enviar</span><span class="d-num-md">$ 25,00</span></div>
+                                        <div class="bp-widget">
+                                            <div class="bp-list-item"><span class="bp-avatar" style="font:600 13px/1 var(--sol-font)">CV</span><span class="d-li__t">Carlos Vega<small>Pichibank · ****4521</small></span></div>
+                                        </div>
+                                        <dl class="d-dl">
+                                            <dt>Desde</dt><dd>Cuenta principal</dd>
+                                            <dt>Costo</dt><dd>$ 0,00</dd>
+                                            <dt>Referencia</dt><dd>Almuerzo</dd>
+                                        </dl>
+                                        <span class="d-push"></span>
+                                        <div class="d-stack">
+                                            <span class="bp-button bp-button--block d-fake" data-size="md">Transferir</span>
+                                            <span class="bp-button bp-button--tertiary bp-button--block d-fake" data-size="md">Programar para después</span>
+                                        </div>
+                                    </div>
+                                    <figcaption class="d-verdict"><span class="bp-tag bp-tag--success bp-tag--has-icon"><span class="ms">check</span>Hacer</span>Monto, destinatario, detalles y una acción principal: cuatro niveles claros.</figcaption>
+                                </figure>
+                            </div>
+                        </div>
+                        <div class="d-demo__foot">Mueve «Entrecerrar los ojos»: aunque no se lea el texto, en una buena jerarquía siguen distinguiéndose el monto y la acción principal.</div>
+                    </div>
+                    <p class="d-practice__t">En la práctica</p>
+                    <ul class="d-practice">
+                        <li><span>Un solo botón primario (<code>bp-button</code> amarillo) por vista; las alternativas van como secundarias o terciarias.</span></li>
+                        <li><span>Usa la escala tipográfica para ordenar: <code>numeric</code> para el dato clave, <code>title</code> para encabezados, <code>body-sm</code> en <code>text-helper</code> para lo secundario.</span></li>
+                        <li><span>El orden de lectura sigue el orden de decisión: qué, a quién, desde dónde y, al final, la acción.</span></li>
+                    </ul>
+                </article>
+
+                <!-- 1.6 ------------------------------------------------------ -->
+                <article class="d-principle" id="v6" data-spy>
+                    <header class="d-principle__head"><span class="d-num">1.6</span><h3 class="d-h3">Diseñamos con moderación</h3></header>
+                    <blockquote class="d-statement">Los recursos visuales deben emplearse de forma consciente y proporcional. El color, la elevación, los bordes redondeados, las sombras y las animaciones tienen que reforzar la experiencia, no convertirse por sí solos en el lenguaje principal de la interfaz.</blockquote>
+                    <div class="d-demo">
+                        <div class="d-demo__head"><span class="d-demo__title">Intensidad de los recursos</span><span>Elige un nivel</span></div>
+                        <div class="d-demo__body">
+                            <div class="bp-segmented" style="padding:0;width:100%;max-width:560px">
+                                    <div class="bp-segmented__track" id="v6-level" role="tablist" aria-label="Nivel de recursos visuales">
+                                    <button class="bp-segmented-item" role="tab" aria-selected="false" data-level="0">Mínima</button>
+                                    <button class="bp-segmented-item" role="tab" aria-selected="true" data-level="1">Proporcional</button>
+                                    <button class="bp-segmented-item" role="tab" aria-selected="false" data-level="2">Recargada</button>
+                                    <button class="bp-segmented-item" role="tab" aria-selected="false" data-level="3">Excesiva</button>
+                                </div>
+                            </div>
+                            <div class="d-mod-wrap">
+                                <div class="d-screen" style="min-height:300px;justify-content:center">
+                                    <div class="d-mod" id="v6-card" data-level="1">
+                                        <div class="d-row"><span class="bp-avatar d-mod__ic"><span class="ms">savings</span></span><span class="d-li__t">Cuenta Flexible<small>****3312</small></span><span class="bp-tag bp-tag--success d-mod__tag">+1,2 % este mes</span></div>
+                                        <span class="d-amount">$ 5.420,10</span>
+                                        <span class="bp-button bp-button--secondary d-mod__btn d-fake" data-size="md">Ahorrar más</span>
+                                    </div>
+                                </div>
+                                <div class="d-res" aria-live="polite">
+                                    <div class="d-row" style="justify-content:space-between"><b>Recursos en uso</b><span id="v6-verdict"></span></div>
+                                    <div class="d-res__row"><span>Color</span><span id="v6-color"></span></div>
+                                    <div class="d-res__row"><span>Radio</span><span id="v6-radius"></span></div>
+                                    <div class="d-res__row"><span>Elevación y bordes</span><span id="v6-elev"></span></div>
+                                    <div class="d-res__row"><span>Animación</span><span id="v6-anim"></span></div>
+                                    <div class="d-stack"><span class="d-caption">Ruido visual</span><div class="d-meter" id="v6-meter" data-n="2"><i></i><i></i><i></i><i></i></div></div>
+                                    <p class="d-caption" id="v6-note" style="margin:0"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-demo__foot">El contenido no cambia entre niveles. A partir de «Recargada», los recursos compiten con el saldo por la atención.</div>
+                    </div>
+                    <h4 class="d-h4">Elevación disponible en Solar</h4>
+                    <div class="d-demo">
+                        <div class="d-demo__body">
+                            <div class="d-elev">
+                                <div style="box-shadow:0 var(--bp-semantic-elevation-low-offset-y) var(--bp-semantic-elevation-low-blur) var(--bp-semantic-elevation-low-color)">Baja<small>elevation-low</small></div>
+                                <div style="box-shadow:0 var(--bp-semantic-elevation-mid-offset-y) var(--bp-semantic-elevation-mid-blur) var(--bp-semantic-elevation-mid-color)">Media<small>elevation-mid</small></div>
+                                <div style="box-shadow:0 var(--bp-semantic-elevation-high-offset-y) var(--bp-semantic-elevation-high-blur) var(--bp-semantic-elevation-high-color)">Alta<small>elevation-high</small></div>
+                                <div style="box-shadow:0 var(--bp-semantic-elevation-overlay-offset-y) var(--bp-semantic-elevation-overlay-blur) var(--bp-semantic-elevation-overlay-color)">Overlay<small>elevation-overlay</small></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-tbl"><table>
+                        <thead><tr><th>Recurso</th><th>Uso proporcional</th><th>Tokens</th></tr></thead>
+                        <tbody>
+                            <tr><td>Color de marca</td><td>La acción principal y acentos puntuales, no fondos completos.</td><td><code>--bp-theme-color-interaction-primary-bg</code></td></tr>
+                            <tr><td>Radio</td><td>8 px en controles, 12 px en contenedores, 16 px en superficies flotantes y completo en tags y avatares.</td><td><code>--bp-semantic-radius-sm · md · lg · full</code></td></tr>
+                            <tr><td>Elevación</td><td>Lo que flota sobre el contenido (sheets, menús, toasts). Los widgets del inicio no llevan sombra.</td><td><code>--bp-semantic-elevation-*</code></td></tr>
+                            <tr><td>Bordes</td><td>Divisores entre filas y campos de formulario.</td><td><code>--bp-semantic-border-thin</code></td></tr>
+                            <tr><td>Animación</td><td>Para explicar un cambio, nunca en reposo. Tiempos en la <a href="./guia.html#micro">Guía de feedback §3</a>.</td><td><code>--motion-*</code></td></tr>
+                        </tbody>
+                    </table></div>
+                </article>
+
+                <!-- 1.7 ------------------------------------------------------ -->
+                <article class="d-principle" id="v7" data-spy>
+                    <header class="d-principle__head"><span class="d-num">1.7</span><h3 class="d-h3">El color comunica intención</h3></header>
+                    <blockquote class="d-statement">El color sirve para orientar, destacar y comunicar significado. Debe mejorar la comprensión de la interfaz, pero nunca sustituir una jerarquía o estructura correctamente construida.</blockquote>
+                    <h4 class="d-h4">Paleta de intención</h4>
+                    <p>Cada color de estado tiene un significado fijo. Se aplican siempre como pareja de tokens (<code>bg-subtle</code> + <code>text</code>) para mantener el contraste en claro y oscuro.</p>
+                    <div class="d-palette" id="v7-palette"></div>
+
+                    <div class="d-demo">
+                        <div class="d-demo__head"><span class="d-demo__title">¿Se entiende sin color?</span>
+                            <label class="d-switchrow" style="gap:10px">Escala de grises <span class="d-switch"><input type="checkbox" id="v7-gray"><span></span></span></label>
+                        </div>
+                        <div class="d-demo__body d-gray-target" id="v7-body">
+                            <div class="d-cmp">
+                                <figure class="d-cmp__col d-cmp__col--no">
+                                    <div class="d-screen" style="min-height:0">
+                                        <div class="bp-widget">
+                                            <div class="bp-widget__header"><span class="bp-widget__title">Movimientos</span></div>
+                                            <div class="bp-list-item"><span class="d-dot" style="background:var(--bp-theme-color-status-success-bg)"></span><span class="d-li__t">Nómina</span><span class="d-li__amt" style="color:var(--bp-theme-color-status-success-text)">$ 1.225,00</span></div>
+                                            <div class="bp-list-item"><span class="d-dot" style="background:var(--bp-theme-color-status-pending-bg)"></span><span class="d-li__t">A Carlos Vega</span><span class="d-li__amt" style="color:var(--bp-theme-color-status-pending-text)">$ 25,00</span></div>
+                                            <div class="bp-list-item"><span class="d-dot" style="background:var(--bp-theme-color-status-error-bg)"></span><span class="d-li__t">Tienda en línea</span><span class="d-li__amt" style="color:var(--bp-theme-color-status-error-text)">$ 89,90</span></div>
+                                        </div>
+                                    </div>
+                                    <figcaption class="d-verdict"><span class="bp-tag bp-tag--error bp-tag--has-icon"><span class="ms">close</span>Evitar</span>El estado y el sentido del dinero dependen sólo del color.</figcaption>
+                                </figure>
+                                <figure class="d-cmp__col d-cmp__col--do">
+                                    <div class="d-screen" style="min-height:0">
+                                        <div class="bp-widget">
+                                            <div class="bp-widget__header"><span class="bp-widget__title">Movimientos</span></div>
+                                            <div class="bp-list-item"><span class="bp-avatar"><span class="ms">work</span></span><span class="d-li__t">Nómina<span><span class="bp-tag bp-tag--success bp-tag--has-icon" data-size="sm"><span class="ms">check</span>Acreditado</span></span></span><span class="d-li__amt is-in">+ $ 1.225,00</span></div>
+                                            <div class="bp-list-item"><span class="bp-avatar"><span class="ms">person</span></span><span class="d-li__t">A Carlos Vega<span><span class="bp-tag bp-tag--pending bp-tag--has-icon" data-size="sm"><span class="ms">schedule</span>En proceso</span></span></span><span class="d-li__amt">− $ 25,00</span></div>
+                                            <div class="bp-list-item"><span class="bp-avatar"><span class="ms">shopping_bag</span></span><span class="d-li__t">Tienda en línea<span><span class="bp-tag bp-tag--error bp-tag--has-icon" data-size="sm"><span class="ms">block</span>Rechazado</span></span></span><span class="d-li__amt">− $ 89,90</span></div>
+                                        </div>
+                                    </div>
+                                    <figcaption class="d-verdict"><span class="bp-tag bp-tag--success bp-tag--has-icon"><span class="ms">check</span>Hacer</span>Color + ícono + texto, y signo en los montos: el significado sobrevive sin color.</figcaption>
+                                </figure>
+                            </div>
+                        </div>
+                        <div class="d-demo__foot">Activa «Escala de grises»: así ve la pantalla alguien con daltonismo severo, con el brillo al mínimo o al sol.</div>
+                    </div>
+                    <p class="d-practice__t">En la práctica</p>
+                    <ul class="d-practice">
+                        <li><span>El amarillo de marca indica la acción principal; no se usa para decorar ni para estados.</span></li>
+                        <li><span>Los estados usan su familia de tokens <code>--bp-theme-color-status-*</code>, nunca un color base directo.</span></li>
+                        <li><span>Si al quitar el color se pierde información, falta jerarquía, ícono o texto.</span></li>
+                    </ul>
+                </article>
+
+                <!-- 1.8 ------------------------------------------------------ -->
+                <article class="d-principle" id="v8" data-spy>
+                    <header class="d-principle__head"><span class="d-num">1.8</span><h3 class="d-h3">Cada interacción debe tener una respuesta</h3></header>
+                    <blockquote class="d-statement">El sistema debe responder de forma clara y consistente a las acciones de las personas. Las transiciones, animaciones, gestos y respuestas hápticas o sonoras deben comunicar lo ocurrido y generar confianza, no actuar únicamente como decoración.</blockquote>
+                    <div class="d-demo">
+                        <div class="d-demo__head"><span class="d-demo__title">Pagar un servicio</span><button class="bp-action-button bp-action-button--tertiary bp-action-button--icon-left" data-size="sm" id="v8-reset" data-own-fx><span class="ms">restart_alt</span>Reiniciar</button></div>
+                        <div class="d-demo__body">
+                            <div class="d-cmp">
+                                <figure class="d-cmp__col d-cmp__col--no">
+                                    <div class="d-screen" style="min-height:270px">
+                                        <div class="d-row"><span class="bp-avatar"><span class="ms">bolt</span></span><span class="d-li__t">Luz eléctrica<small>Contrato 0045-7781</small></span></div>
+                                        <span class="d-amount" id="v8-a-amt">$ 24,80</span>
+                                        <span class="d-push"></span>
+                                        <button class="bp-button d-pay-btn d-noresp" data-size="md" id="v8-a" data-own-fx>Pagar</button>
+                                    </div>
+                                    <figcaption class="d-verdict"><span class="bp-tag bp-tag--error bp-tag--has-icon"><span class="ms">close</span>Evitar</span>Sin estado presionado ni carga: ¿se tocó?, ¿se pagó? El monto cambia en silencio.</figcaption>
+                                </figure>
+                                <figure class="d-cmp__col d-cmp__col--do">
+                                    <div class="d-screen" style="min-height:270px">
+                                        <div class="d-row"><span class="bp-avatar"><span class="ms">bolt</span></span><span class="d-li__t">Luz eléctrica<small>Contrato 0045-7781</small></span></div>
+                                        <span class="d-amount" id="v8-b-amt">$ 24,80</span>
+                                        <div role="status" aria-live="polite" id="v8-b-msg"></div>
+                                        <span class="d-push"></span>
+                                        <button class="bp-button d-pay-btn" data-size="md" id="v8-b" data-own-fx>Pagar</button>
+                                    </div>
+                                    <figcaption class="d-verdict"><span class="bp-tag bp-tag--success bp-tag--has-icon"><span class="ms">check</span>Hacer</span>Presión inmediata, estado de carga y un resultado que se ve, se siente y se oye.</figcaption>
+                                </figure>
+                            </div>
+                            <div class="d-timeline" id="v8-steps" aria-hidden="true">
+                                <div class="d-step" data-s="0"><b>Toque</b>0 ms · estado presionado</div>
+                                <div class="d-step" data-s="1"><b>Respuesta</b>&lt; 100 ms · indicador de carga</div>
+                                <div class="d-step" data-s="2"><b>Espera</b>el estado se mantiene visible</div>
+                                <div class="d-step" data-s="3"><b>Resultado</b>visual + háptica + sonido</div>
+                            </div>
+                        </div>
+                        <div class="d-demo__foot">La línea de tiempo sigue al botón de «Hacer». El catálogo completo de respuestas y sus tiempos está en la <a href="./guia.html#decision">Guía de feedback y movimiento</a>.</div>
+                    </div>
+                    <p class="d-practice__t">En la práctica</p>
+                    <ul class="d-practice">
+                        <li><span>Todo control responde en menos de 100 ms con su estado <code>:active</code> (tokens <code>*-bg-pressed</code>).</span></li>
+                        <li><span>Si el resultado tarda, la espera se muestra; si falla, el error aparece donde ocurrió.</span></li>
+                        <li><span>La respuesta es proporcional: un toque es un clic; mover dinero es un acontecimiento.</span></li>
+                    </ul>
+                </article>
+
+                <!-- 1.9 ------------------------------------------------------ -->
+                <article class="d-principle" id="v9" data-spy>
+                    <header class="d-principle__head"><span class="d-num">1.9</span><h3 class="d-h3">Diseñamos para crecer</h3></header>
+                    <blockquote class="d-statement">Cada solución debe poder evolucionar desde escenarios simples hasta experiencias complejas sin perder coherencia. El lenguaje visual, los patrones y las interacciones tienen que escalar consistentemente a medida que crecen los productos.</blockquote>
+                    <div class="d-demo">
+                        <div class="d-demo__head"><span class="d-demo__title">Movimientos, de simple a complejo</span><span>Mismos componentes en cada nivel</span></div>
+                        <div class="d-demo__body">
+                            <div class="bp-segmented" style="padding:0;width:100%;max-width:560px">
+                                    <div class="bp-segmented__track" id="v9-level" role="tablist" aria-label="Nivel de complejidad">
+                                    <button class="bp-segmented-item" role="tab" aria-selected="true" data-level="1">1 · Dato</button>
+                                    <button class="bp-segmented-item" role="tab" aria-selected="false" data-level="2">2 · Lista</button>
+                                    <button class="bp-segmented-item" role="tab" aria-selected="false" data-level="3">3 · Filtros</button>
+                                    <button class="bp-segmented-item" role="tab" aria-selected="false" data-level="4">4 · Historial</button>
+                                </div>
+                            </div>
+                            <div class="d-grow-wrap">
+                                <div class="d-screen" id="v9-screen" style="min-height:260px"></div>
+                                <div class="d-res">
+                                    <b>Componentes en uso</b>
+                                    <div class="d-chips" id="v9-chips"></div>
+                                    <p class="d-caption" id="v9-note" style="margin:0"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-demo__foot">Cada nivel suma piezas, pero ninguna cambia: la fila y el avatar del nivel 1 son los mismos en el nivel 4, y la etiqueta del nivel 3 se mantiene en el 4.</div>
+                    </div>
+                    <h4 class="d-h4">La arquitectura de tokens también escala</h4>
+                    <div class="d-arch">
+                        <div><b>Base</b>Primitivos privados. Los componentes nunca los usan directo.<code>--bp-base-color-yellow-500</code><span class="d-arch__chip" style="background:var(--bp-base-color-yellow-500)"></span></div>
+                        <div><b>Semantic</b>API pública: tamaños, espaciado, radios, tipografía.<code>--bp-semantic-radius-sm</code><span class="d-arch__chip" style="border:2px solid var(--d-ink-3);border-radius:var(--bp-semantic-radius-sm)"></span></div>
+                        <div><b>Theme</b>Color por modo: claro y oscuro.<code>--bp-theme-color-interaction-primary-bg</code><span class="d-arch__chip" style="background:var(--bp-theme-color-interaction-primary-bg)"></span></div>
+                        <div><b>Componente</b>Recetas que sólo remapean semánticos.<code>.bp-button</code><span class="bp-button d-fake" data-size="md" style="height:28px;font-size:13px">Pagar</span></div>
+                    </div>
+                    <div class="d-tbl"><table>
+                        <thead><tr><th>Layout (<code>data-layout</code>)</th><th>Ancho</th><th>Columnas</th><th>Margen</th><th>Gutter</th><th>Inset</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>mobile-xs</code></td><td>360 px</td><td>4</td><td>16</td><td>16</td><td>8</td></tr>
+                            <tr><td><code>mobile-sm</code> (por defecto)</td><td>390 px</td><td>4</td><td>16</td><td>24</td><td>8</td></tr>
+                            <tr><td><code>mobile-lg</code></td><td>440 px</td><td>4</td><td>24</td><td>24</td><td>16</td></tr>
+                        </tbody>
+                    </table></div>
+                </article>
+            </section>
+
+            <!-- ============================================================= -->
+            <section id="audio" data-spy>
+                <h2 class="d-h2"><span class="d-h2__num">2</span>Audio</h2>
+                <p>El audio utiliza señales sonoras breves para reforzar eventos relevantes, comunicar resultados y complementar otros mecanismos de feedback. No debe convertirse en el medio principal de comunicación.</p>
+                <p>Además de aclarar el significado de una interacción, el sonido puede reforzar la estética, la emoción y la personalidad del producto. Estas señales se denominan <b>earcons</b> o iconos auditivos y pueden representar información, acciones o eventos.</p>
+                <div class="bp-alert bp-alert--neutral">
+                    <div class="bp-alert__content"><span class="ms bp-alert__icon">volume_up</span>
+                        <div class="bp-alert__text"><span class="bp-alert__title">Antes de probar</span>
+                            <p class="bp-alert__body">Los ejemplos suenan con el volumen del dispositivo. En iPhone respetan el interruptor de silencio. Puedes apagar el sonido o la vibración desde «Preferencias de los ejemplos» en el índice.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.1 ------------------------------------------------------ -->
+                <article class="d-principle" id="a1" data-spy>
+                    <header class="d-principle__head"><span class="d-num">2.1</span><h3 class="d-h3">Funcional antes que emocional</h3></header>
+                    <blockquote class="d-statement">Un sonido debe comunicar algo útil antes de intentar provocar una emoción. Tiene que reforzar una acción, un resultado o un momento relevante, aportando claridad y comprensión.</blockquote>
+                    <div class="d-demo">
+                        <div class="d-demo__head"><span class="d-demo__title">¿Qué comunica este sonido?</span><span>Sólo suenan los que comunican algo</span></div>
+                        <div class="d-demo__body">
+                            <div class="d-events">
+                                <div class="d-event"><span class="d-event__t">Transferencia completada<small>El dinero salió y la operación terminó.</small></span><span class="bp-tag bp-tag--success">Útil</span><button class="bp-action-button bp-action-button--icon-left d-play" data-size="sm" data-play="success" data-own-fx><span class="ms">play_arrow</span>success</button></div>
+                                <div class="d-event"><span class="d-event__t">Error que bloquea un pago<small>Hay que corregir algo para seguir.</small></span><span class="bp-tag bp-tag--success">Útil</span><button class="bp-action-button bp-action-button--icon-left d-play" data-size="sm" data-play="error" data-own-fx><span class="ms">play_arrow</span>error</button></div>
+                                <div class="d-event"><span class="d-event__t">Ocultar el saldo<small>Cambió un estado: señal leve.</small></span><span class="bp-tag bp-tag--success">Útil</span><button class="bp-action-button bp-action-button--icon-left d-play" data-size="sm" data-play="toggle" data-own-fx><span class="ms">play_arrow</span>toggle</button></div>
+                                <div class="d-event"><span class="d-event__t">Abrir la sección de promociones<small>Sólo buscaría emoción: no informa nada.</small></span><span class="bp-tag bp-tag--error">Sin sonido</span><span class="d-event__none"><span class="ms">volume_off</span></span></div>
+                                <div class="d-event"><span class="d-event__t">Desplazarse por los movimientos<small>Es lectura, no un evento.</small></span><span class="bp-tag bp-tag--error">Sin sonido</span><span class="d-event__none"><span class="ms">volume_off</span></span></div>
+                            </div>
+                        </div>
+                        <div class="d-demo__foot">Prueba: si el sonido se quitara, ¿la persona perdería una confirmación útil? Si la respuesta es no, ese sonido no hace falta.</div>
+                    </div>
+                </article>
+
+                <!-- 2.2 ------------------------------------------------------ -->
+                <article class="d-principle" id="a2" data-spy>
+                    <header class="d-principle__head"><span class="d-num">2.2</span><h3 class="d-h3">Audio como refuerzo</h3></header>
+                    <blockquote class="d-statement">El audio complementa las señales visuales, textuales o hápticas, pero no las reemplaza. Su propósito es mejorar la percepción de respuesta, confianza y cierre en momentos importantes.</blockquote>
+                    <div class="d-demo">
+                        <div class="d-demo__head"><span class="d-demo__title">Pago completado: ¿qué canales?</span><span>Apaga canales y vuelve a pagar</span></div>
+                        <div class="d-demo__body">
+                            <div class="d-mixer">
+                                <div class="d-mixer__ctl">
+                                    <label><span class="ms">visibility</span><span>Visual (pantalla y texto)</span><span class="d-switch"><input type="checkbox" id="a2-vis" checked><span></span></span></label>
+                                    <label><span class="ms">graphic_eq</span><span>Sonido</span><span class="d-switch"><input type="checkbox" id="a2-snd" checked><span></span></span></label>
+                                    <label><span class="ms">vibration</span><span>Háptica</span><span class="d-switch"><input type="checkbox" id="a2-hap" checked><span></span></span></label>
+                                    <button class="bp-button bp-button--block" data-size="md" id="a2-go" data-own-fx>Pagar $ 24,80</button>
+                                    <div id="a2-verdict" role="status" aria-live="polite"></div>
+                                </div>
+                                <div class="d-screen d-mixer__out" id="a2-screen">
+                                    <span class="d-caption" style="text-align:center">La pantalla del pago aparecerá aquí.</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-demo__foot">Con el canal visual apagado, el sonido confirma que «algo pasó», pero no qué ni cuánto. Por eso el audio refuerza y nunca va solo.</div>
+                    </div>
+                </article>
+
+                <!-- 2.3 ------------------------------------------------------ -->
+                <article class="d-principle" id="a3" data-spy>
+                    <header class="d-principle__head"><span class="d-num">2.3</span><h3 class="d-h3">Discreto por defecto</h3></header>
+                    <blockquote class="d-statement">El audio debe integrarse con naturalidad y evitar interrupciones o distracciones. Se priorizan señales breves, claras y proporcionales al contexto. Las expresiones sonoras más evidentes se reservan para momentos de mayor valor o relevancia.</blockquote>
+                    <div class="d-demo">
+                        <div class="d-demo__head"><span class="d-demo__title">Escala de presencia sonora</span><span>La barra representa la duración</span></div>
+                        <div class="d-demo__body">
+                            <div class="d-ladder">
+                                <div class="d-axis"><span><span class="ms">arrow_upward</span>Más frecuente, más discreto</span></div>
+                                <div class="d-rung"><span class="d-rung__name">Micro<small>tap · select</small></span><span class="d-rung__bar"><i style="width:4%"></i>&lt; 60 ms · muchas veces por minuto</span><button class="bp-action-button bp-action-button--icon-only d-play" data-size="sm" data-play="select" data-own-fx aria-label="Reproducir select"><span class="ms">play_arrow</span></button></div>
+                                <div class="d-rung"><span class="d-rung__name">Estado<small>toggle</small></span><span class="d-rung__bar"><i style="width:12%"></i>~200 ms · varias veces por sesión</span><button class="bp-action-button bp-action-button--icon-only d-play" data-size="sm" data-play="toggle" data-own-fx aria-label="Reproducir toggle"><span class="ms">play_arrow</span></button></div>
+                                <div class="d-rung"><span class="d-rung__name">Resultado<small>success · error</small></span><span class="d-rung__bar"><i style="width:46%"></i>0,5–1,4 s · al terminar una operación</span><button class="bp-action-button bp-action-button--icon-only d-play" data-size="sm" data-play="success" data-own-fx aria-label="Reproducir success"><span class="ms">play_arrow</span></button></div>
+                                <div class="d-rung"><span class="d-rung__name">Hito<small>welcome · celebración</small></span><span class="d-rung__bar"><i style="width:100%"></i>~3 s · una vez por sesión o excepcional</span><button class="bp-action-button bp-action-button--icon-only d-play" data-size="sm" data-play="welcome" data-own-fx aria-label="Reproducir welcome"><span class="ms">play_arrow</span></button></div>
+                                <div class="d-axis"><span><span class="ms">arrow_downward</span>Más relevante, más expresivo</span></div>
+                            </div>
+                        </div>
+                        <div class="d-demo__foot">Cuanto más frecuente es un evento, más breve y suave es su sonido. Los sonidos largos se reservan para momentos que ocurren pocas veces.</div>
+                    </div>
+                </article>
+
+                <!-- 2.4 ------------------------------------------------------ -->
+                <article class="d-principle" id="a4" data-spy>
+                    <header class="d-principle__head"><span class="d-num">2.4</span><h3 class="d-h3">Consistente</h3></header>
+                    <blockquote class="d-statement">Los sonidos deben conservar significados claros y predecibles en toda la experiencia. Una misma señal debe comunicar siempre la misma intención, sin importar el flujo o la funcionalidad donde aparezca.</blockquote>
+                    <div class="d-demo">
+                        <div class="d-demo__head"><span class="d-demo__title">Mismo significado, misma señal</span><span>Confirma en cada flujo</span></div>
+                        <div class="d-demo__body">
+                            <div class="d-cmp">
+                                <figure class="d-cmp__col d-cmp__col--no">
+                                    <div class="d-flows">
+                                        <div class="d-flow"><span class="bp-avatar"><span class="ms">swap_horiz</span></span><span class="d-li__t">Transferencia</span><svg class="d-glyph" data-glyph="success" aria-hidden="true"></svg><button class="bp-action-button bp-action-button--icon-only d-play" data-size="sm" data-play="success" data-own-fx aria-label="Confirmar transferencia"><span class="ms">play_arrow</span></button></div>
+                                        <div class="d-flow"><span class="bp-avatar"><span class="ms">receipt_long</span></span><span class="d-li__t">Pago de servicio</span><svg class="d-glyph" data-glyph="toggle" aria-hidden="true"></svg><button class="bp-action-button bp-action-button--icon-only d-play" data-size="sm" data-play="toggle" data-own-fx aria-label="Confirmar pago"><span class="ms">play_arrow</span></button></div>
+                                        <div class="d-flow"><span class="bp-avatar"><span class="ms">phone_android</span></span><span class="d-li__t">Recarga celular</span><svg class="d-glyph" data-glyph="reveal" aria-hidden="true"></svg><button class="bp-action-button bp-action-button--icon-only d-play" data-size="sm" data-play="reveal" data-own-fx aria-label="Confirmar recarga"><span class="ms">play_arrow</span></button></div>
+                                    </div>
+                                    <figcaption class="d-verdict"><span class="bp-tag bp-tag--error bp-tag--has-icon"><span class="ms">close</span>Evitar</span>Tres éxitos, tres sonidos distintos: la persona no aprende qué significa cada uno.</figcaption>
+                                </figure>
+                                <figure class="d-cmp__col d-cmp__col--do">
+                                    <div class="d-flows">
+                                        <div class="d-flow"><span class="bp-avatar"><span class="ms">swap_horiz</span></span><span class="d-li__t">Transferencia</span><svg class="d-glyph" data-glyph="success" aria-hidden="true"></svg><button class="bp-action-button bp-action-button--icon-only d-play" data-size="sm" data-play="success" data-own-fx aria-label="Confirmar transferencia"><span class="ms">play_arrow</span></button></div>
+                                        <div class="d-flow"><span class="bp-avatar"><span class="ms">receipt_long</span></span><span class="d-li__t">Pago de servicio</span><svg class="d-glyph" data-glyph="success" aria-hidden="true"></svg><button class="bp-action-button bp-action-button--icon-only d-play" data-size="sm" data-play="success" data-own-fx aria-label="Confirmar pago"><span class="ms">play_arrow</span></button></div>
+                                        <div class="d-flow"><span class="bp-avatar"><span class="ms">phone_android</span></span><span class="d-li__t">Recarga celular</span><svg class="d-glyph" data-glyph="success" aria-hidden="true"></svg><button class="bp-action-button bp-action-button--icon-only d-play" data-size="sm" data-play="success" data-own-fx aria-label="Confirmar recarga"><span class="ms">play_arrow</span></button></div>
+                                    </div>
+                                    <figcaption class="d-verdict"><span class="bp-tag bp-tag--success bp-tag--has-icon"><span class="ms">check</span>Hacer</span>Un resultado exitoso con dinero suena siempre igual: <code>success</code>.</figcaption>
+                                </figure>
+                            </div>
+                        </div>
+                        <div class="d-demo__foot">Cada sonido tiene una «firma» (la forma dibujada a la derecha). Si dos eventos con la misma intención tienen firmas distintas, el sistema es inconsistente.</div>
+                    </div>
+                    <div class="d-tbl"><table>
+                        <thead><tr><th>Earcon</th><th>Intención única</th><th>Nunca se usa para</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>success</code></td><td>Una operación con dinero terminó bien.</td><td>Abrir pantallas, cambios de estado menores.</td></tr>
+                            <tr><td><code>error</code></td><td>Algo bloqueó la operación.</td><td>Advertencias que no impiden seguir.</td></tr>
+                            <tr><td><code>warning</code></td><td>Requiere atención (permiso denegado, verificación cancelada).</td><td>Errores bloqueantes.</td></tr>
+                            <tr><td><code>toggle</code></td><td>Cambió un estado (ocultar saldo, activar una opción).</td><td>Resultados de operaciones.</td></tr>
+                            <tr><td><code>reveal</code></td><td>Se mostraron datos sensibles.</td><td>Cualquier otra confirmación.</td></tr>
+                        </tbody>
+                    </table></div>
+                </article>
+            </section>
+
+            <!-- ============================================================= -->
+            <section id="foundations" data-spy>
+                <h2 class="d-h2"><span class="d-h2__num">3</span>Foundations de audio</h2>
+                <p>El material divide los sonidos en tres categorías según su finalidad. La expresividad sube de una a otra y la frecuencia baja.</p>
+                <div class="d-cats">
+                    <div class="d-cat">
+                        <div class="d-cat__head"><span class="d-cat__ic" style="background:var(--bp-theme-color-status-info-bg-subtle);color:var(--bp-theme-color-status-info-icon)"><span class="ms">task_alt</span></span><span><b>Functional sounds</b><small>3.1 · Funcionales</small></span></div>
+                        <p>Señales diseñadas para reforzar acciones, estados o eventos relevantes. Comunican información útil, confirman resultados y aumentan la percepción de que el sistema ha respondido.</p>
+                        <div class="d-cat__facts">
+                            <div><span>Expresión</span><span class="d-dots" data-n="1"><i></i><i></i><i></i></span></div>
+                            <div><span>Frecuencia</span><span>Cada vez que ocurre el evento</span></div>
+                        </div>
+                        <ul class="d-cases">
+                            <li><span>Transferencia completada<small><code>success</code></small></span><button class="bp-action-button bp-action-button--icon-only d-play" data-size="sm" data-play="success" data-own-fx aria-label="Reproducir transferencia completada"><span class="ms">play_arrow</span></button></li>
+                            <li><span>Dinero recibido<small><code>success</code> · ver pregunta abierta</small></span><button class="bp-action-button bp-action-button--icon-only d-play" data-size="sm" data-play="success" data-own-fx aria-label="Reproducir dinero recibido"><span class="ms">play_arrow</span></button></li>
+                            <li><span>Pago de un servicio<small><code>success</code></small></span><button class="bp-action-button bp-action-button--icon-only d-play" data-size="sm" data-play="success" data-own-fx aria-label="Reproducir pago de un servicio"><span class="ms">play_arrow</span></button></li>
+                            <li><span>Confirmación de una acción relevante<small><code>success</code></small></span><button class="bp-action-button bp-action-button--icon-only d-play" data-size="sm" data-play="success" data-own-fx aria-label="Reproducir confirmación"><span class="ms">play_arrow</span></button></li>
+                        </ul>
+                    </div>
+                    <div class="d-cat">
+                        <div class="d-cat__head"><span class="d-cat__ic" style="background:var(--bp-theme-color-surface-brand-subtle);color:var(--bp-theme-color-icon-interactive)"><span class="ms">verified</span></span><span><b>Brand sounds</b><small>3.2 · De marca</small></span></div>
+                        <p>Expresiones sonoras que representan la identidad, personalidad y reconocimiento de la marca. Buscan construir familiaridad y diferenciación mediante experiencias auditivas coherentes con sus atributos.</p>
+                        <div class="d-cat__facts">
+                            <div><span>Expresión</span><span class="d-dots" data-n="2"><i></i><i></i><i></i></span></div>
+                            <div><span>Frecuencia</span><span>Momentos de marca</span></div>
+                        </div>
+                        <ul class="d-cases">
+                            <li><span>Audio logo<small>Prototipo · sin definir</small></span><button class="bp-action-button bp-action-button--icon-only d-play" data-size="sm" data-play="proto-logo" data-own-fx aria-label="Reproducir prototipo de audio logo"><span class="ms">play_arrow</span></button></li>
+                            <li><span>Apertura de la aplicación<small><code>welcome</code></small></span><button class="bp-action-button bp-action-button--icon-only d-play" data-size="sm" data-play="welcome" data-own-fx aria-label="Reproducir apertura"><span class="ms">play_arrow</span></button></li>
+                        </ul>
+                    </div>
+                    <div class="d-cat">
+                        <div class="d-cat__head"><span class="d-cat__ic" style="background:var(--bp-theme-color-status-success-bg-subtle);color:var(--bp-theme-color-status-success-icon)"><span class="ms">celebration</span></span><span><b>Celebratory sounds</b><small>3.3 · De celebración</small></span></div>
+                        <p>Sonidos que refuerzan momentos significativos, memorables o emocionalmente positivos. Se usan excepcionalmente para destacar hitos y generar una sensación de logro, progreso o confianza.</p>
+                        <div class="d-cat__facts">
+                            <div><span>Expresión</span><span class="d-dots" data-n="3"><i></i><i></i><i></i></span></div>
+                            <div><span>Frecuencia</span><span>Excepcional</span></div>
+                        </div>
+                        <ul class="d-cases">
+                            <li><span>Finalización del onboarding<small>Prototipo · sin definir</small></span><button class="bp-action-button bp-action-button--icon-only d-play" data-size="sm" data-play="proto-celebrate" data-own-fx aria-label="Reproducir prototipo de finalización del onboarding"><span class="ms">play_arrow</span></button></li>
+                            <li><span>Alcanzar una meta de ahorro<small>Prototipo · ver ejemplo abajo</small></span><button class="bp-action-button bp-action-button--icon-only d-play" data-size="sm" data-play="proto-celebrate" data-own-fx aria-label="Reproducir prototipo de meta de ahorro"><span class="ms">play_arrow</span></button></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="d-tbl"><table>
+                    <thead><tr><th>Categoría</th><th>Finalidad</th><th>Casos de uso</th><th>Earcon hoy</th></tr></thead>
+                    <tbody>
+                        <tr><td><b>Functional</b></td><td>Confirmar resultados y estados</td><td>Transferencia completada, dinero recibido, pago de un servicio, confirmación de una acción relevante</td><td><code>success</code> (y <code>error</code>, <code>warning</code>, <code>toggle</code> para sus casos)</td></tr>
+                        <tr><td><b>Brand</b></td><td>Identidad y reconocimiento</td><td>Audio logo, apertura de la aplicación</td><td><code>welcome</code> · audio logo pendiente</td></tr>
+                        <tr><td><b>Celebratory</b></td><td>Destacar hitos</td><td>Finalización del onboarding, alcanzar una meta de ahorro</td><td>Pendiente</td></tr>
+                    </tbody>
+                </table></div>
+
+                <div class="d-demo">
+                    <div class="d-demo__head"><span class="d-demo__title">Meta de ahorro: de funcional a celebratorio</span><button class="bp-action-button bp-action-button--tertiary bp-action-button--icon-left" data-size="sm" id="goal-reset" data-own-fx><span class="ms">restart_alt</span>Reiniciar</button></div>
+                    <div class="d-demo__body">
+                        <div class="d-goal-wrap">
+                            <div class="d-screen" style="min-height:300px">
+                                <div class="d-row"><span class="bp-avatar"><span class="ms">flight</span></span><span class="d-li__t">Viaje de fin de año<small>Meta de ahorro</small></span></div>
+                                <div class="d-stack" style="gap:6px">
+                                    <div class="d-row" style="justify-content:space-between;align-items:baseline"><span class="d-amount" id="goal-amt">$ 1.240</span><span class="d-caption">de $ 1.500</span></div>
+                                    <div class="d-progress" style="height:12px"><i id="goal-bar" style="width:83%"></i></div>
+                                </div>
+                                <div id="goal-msg" role="status" aria-live="polite"></div>
+                                <span class="d-push"></span>
+                                <button class="bp-button bp-button--block" data-size="md" id="goal-btn" data-own-fx>Ahorrar $ 130</button>
+                            </div>
+                            <div class="d-confetti" id="goal-confetti" aria-hidden="true"></div>
+                        </div>
+                    </div>
+                    <div class="d-demo__foot">Cada aporte suena con <code>success</code> (functional: se movió dinero). El aporte que completa la meta suena con el sonido celebratorio en su lugar: no se encadenan dos sonidos para un mismo evento.</div>
+                </div>
+
+                <div class="bp-alert bp-alert--warning">
+                    <div class="bp-alert__content"><span class="ms bp-alert__icon">science</span>
+                        <div class="bp-alert__text"><span class="bp-alert__title">Prototipos, no identidad sonora final</span>
+                            <p class="bp-alert__body">El audio logo y los sonidos de celebración todavía no existen en <code>haptics.js</code>. Los de esta página se sintetizan aquí sólo para ilustrar cada categoría.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bp-alert">
+                    <div class="bp-alert__content"><span class="ms bp-alert__icon">help</span>
+                        <div class="bp-alert__text"><span class="bp-alert__title">Pregunta abierta: «Dinero recibido»</span>
+                            <p class="bp-alert__body">La <a href="./guia.html#decision">Guía de feedback §2</a> indica que los eventos que no inicia la persona nunca suenan. «Dinero recibido» llega sin un gesto previo. Falta decidir si suena sólo como notificación del sistema, también dentro de la app cuando está en primer plano, o si queda sólo en lo visual.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================= -->
+            <section id="haptica" data-spy>
+                <h2 class="d-h2"><span class="d-h2__num">4</span>Háptica</h2>
+                <div class="bp-alert bp-alert--warning">
+                    <div class="bp-alert__content"><span class="ms bp-alert__icon">construction</span>
+                        <div class="bp-alert__text"><span class="bp-alert__title">Sección en definición</span>
+                            <p class="bp-alert__body">La última pantalla del material introduce la categoría <b>Haptic</b>, relacionada con respuestas táctiles o vibraciones, pero todavía no contiene una definición ni principios. El único texto visible («kdsdkjaldjakljalkajl») es contenido provisional y no aporta información conceptual.</p>
+                        </div>
+                    </div>
+                </div>
+                <p>Mientras se define, la app ya usa un catálogo de patrones en <code>haptics.js</code>. Las reglas actuales de uso están en la <a href="./guia.html#haptica">Guía de feedback §4</a>. Este es el catálogo con su forma de vibración:</p>
+                <div class="d-demo">
+                    <div class="d-demo__head"><span class="d-demo__title">Catálogo actual</span><span id="hap-support"></span></div>
+                    <div class="d-demo__body">
+                        <div class="d-hap" id="hap-grid"></div>
+                    </div>
+                    <div class="d-demo__foot">Cada barra representa un pulso de vibración (Android). En iPhone la web no tiene API de vibración y no se simula: allí estos botones sólo suenan.</div>
+                </div>
+                <h4 class="d-h4">Qué falta definir</h4>
+                <ul>
+                    <li>Si la háptica tiene principios propios o adopta los cuatro del audio (funcional, refuerzo, discreto, consistente).</li>
+                    <li>Si cada earcon tiene siempre su par háptico, o hay sonidos sin vibración y vibraciones sin sonido.</li>
+                    <li>Si existen patrones de marca o de celebración, como en las foundations de audio.</li>
+                </ul>
+            </section>
+
+            <!-- ============================================================= -->
+            <section id="sistema" data-spy>
+                <h2 class="d-h2"><span class="d-h2__num">5</span>Idea central del sistema</h2>
+                <p>En conjunto, estas reglas proponen una experiencia multimodal en la que cada canal tiene un papel:</p>
+                <div class="d-roles">
+                    <div><span class="ms">visibility</span><b>Visual</b><span>Organiza, prioriza y hace comprensible la información.</span></div>
+                    <div><span class="ms">graphic_eq</span><b>Audio</b><span>Confirma o refuerza eventos sin sustituir otros canales.</span></div>
+                    <div><span class="ms">vibration</span><b>Háptica</b><span>Forma parte del feedback que comunica que una acción ha sido reconocida.</span></div>
+                </div>
+                <ul>
+                    <li>Cada recurso debe tener una intención funcional, utilizarse con moderación y mantener un significado consistente.</li>
+                    <li>Las soluciones deben funcionar tanto en escenarios simples como en productos más complejos.</li>
+                </ul>
+
+                <div class="d-demo">
+                    <div class="d-demo__head"><span class="d-demo__title">Una transferencia, tres canales</span><button class="bp-action-button bp-action-button--icon-left" data-size="sm" id="s5-run" data-own-fx><span class="ms">play_arrow</span>Reproducir</button></div>
+                    <div class="d-demo__body">
+                        <div class="d-lanes-wrap">
+                            <div class="d-screen d-mini" id="s5-mini">
+                                <div class="d-mini__idle"><span class="d-caption">Vas a enviar</span><span class="d-amount">$ 25,00</span><span class="d-caption">a Carlos Vega</span></div>
+                                <div class="d-mini__res"><span class="ms fill">check_circle</span><b>¡Enviado!</b><span class="d-caption">$ 25,00 a Carlos Vega</span></div>
+                                <span class="bp-button bp-button--block d-fake" data-size="md" id="s5-btn">Transferir</span>
+                            </div>
+                            <div class="d-lanes-scroll">
+                                <div class="d-lanes" id="s5-lanes">
+                                    <span></span>
+                                    <div class="d-lanes__col" data-c="0">Toque<small>0 ms</small></div>
+                                    <div class="d-lanes__col" data-c="1">Procesando<small>&lt; 100 ms</small></div>
+                                    <div class="d-lanes__col" data-c="2">Resultado<small>al confirmar</small></div>
+                                    <div class="d-lanes__col" data-c="3">Después<small>cierre</small></div>
+                                    <div class="d-lanes__lane"><span class="ms">visibility</span>Visual</div>
+                                    <div class="d-lanes__cell" data-c="0">Botón presionado</div>
+                                    <div class="d-lanes__cell" data-c="1">Indicador de carga</div>
+                                    <div class="d-lanes__cell" data-c="2">Check y monto enviado</div>
+                                    <div class="d-lanes__cell" data-c="3">Comprobante disponible</div>
+                                    <div class="d-lanes__lane"><span class="ms">vibration</span>Háptica</div>
+                                    <div class="d-lanes__cell" data-c="0"><code>tap</code></div>
+                                    <div class="d-lanes__cell is-empty" data-c="1">—</div>
+                                    <div class="d-lanes__cell" data-c="2"><code>success</code></div>
+                                    <div class="d-lanes__cell is-empty" data-c="3">—</div>
+                                    <div class="d-lanes__lane"><span class="ms">graphic_eq</span>Audio</div>
+                                    <div class="d-lanes__cell is-empty" data-c="0">—</div>
+                                    <div class="d-lanes__cell is-empty" data-c="1">—</div>
+                                    <div class="d-lanes__cell" data-c="2"><code>success</code></div>
+                                    <div class="d-lanes__cell is-empty" data-c="3">—</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-demo__foot">Tiempos ampliados para poder seguirlos. Lo visual está en todas las fases; la háptica marca el toque y el resultado; el audio sólo refuerza el resultado.</div>
+                </div>
+
+                <p>El principio común es que toda decisión de diseño debe ayudar a:</p>
+                <div class="d-pillars">
+                    <div><b>Comprender</b><span>Qué pasa, qué es importante y qué sigue.</span></div>
+                    <div><b>Actuar</b><span>Completar la tarea sin esfuerzo innecesario.</span></div>
+                    <div><b>Confiar</b><span>Saber que el sistema reconoció la acción y respondió.</span></div>
+                </div>
+            </section>
+
+            <footer class="d-footer">
+                Fuente: material «Conversational Design: principios visuales, audio y háptica» (ocho pantallas). Ejemplos construidos con Solar (<code>assets/tokens.css</code>, <code>assets/solar.css</code>) y <code>haptics.js</code>. Ver también la <a href="./guia.html">Guía de feedback y movimiento</a>.
+            </footer>
+        </main>
+    </div>
+
+    <script src="./haptics.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        const $ = s => document.querySelector(s);
+        const $$ = s => [...document.querySelectorAll(s)];
+        const root = document.documentElement;
+        const H = () => window.Haptics;
+        const fx = n => { const h = H(); if (h) h.fx(n); };
+        const rm = () => root.classList.contains('rm') || matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const money = (v, dec = 2) => { const [e, d] = v.toFixed(dec).split('.'); return '$ ' + e.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (d ? ',' + d : ''); };
+        const canVibrate = typeof navigator.vibrate === 'function';
+        const vibrate = p => { const h = H(); if (canVibrate && h && h.isEnabled()) { try { navigator.vibrate(p); } catch (e) {} } };
+        const pop = el => { el.classList.remove('d-pop'); void el.offsetWidth; el.classList.add('d-pop'); };
+
+        // ---------- Íconos: visibles sólo cuando la fuente real cargó ----------
+        // Mismo criterio que index.html: se mide el ancho de un glifo de prueba.
+        (function () {
+            function loaded() {
+                const t = document.createElement('span');
+                t.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font-family:"Material Symbols Rounded";font-size:48px;left:-9999px;top:-9999px;';
+                t.textContent = 'settings';
+                document.body.appendChild(t);
+                const w = t.offsetWidth; t.remove();
+                return w > 0 && w < 60;
+            }
+            if (loaded()) { root.classList.add('icons-ready'); return; }
+            let n = 0;
+            const poll = setInterval(() => { n++; if (loaded()) { clearInterval(poll); root.classList.add('icons-ready'); } else if (n > 25) clearInterval(poll); }, 200);
+        })();
+
+        // ---------- Tema ----------
+        $('#theme-btn').addEventListener('click', () => {
+            const t = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', t);
+            try { localStorage.setItem('pb_docs_theme', t); } catch (e) {}
+        });
+
+        // ---------- Índice: menú móvil + sección activa ----------
+        const tocBtn = $('#toc-btn');
+        tocBtn.addEventListener('click', () => {
+            const open = document.body.classList.toggle('toc-open');
+            tocBtn.setAttribute('aria-expanded', String(open));
+        });
+        const tocLinks = $$('.d-toc a');
+        tocLinks.forEach(a => a.addEventListener('click', () => { document.body.classList.remove('toc-open'); tocBtn.setAttribute('aria-expanded', 'false'); }));
+        const spyEls = $$('[data-spy]');
+        let spyQueued = false;
+        function spy() {
+            spyQueued = false;
+            let cur = spyEls[0];
+            for (const el of spyEls) if (el.getBoundingClientRect().top < 160) cur = el;
+            tocLinks.forEach(a => a.classList.toggle('is-active', a.getAttribute('href') === '#' + cur.id));
+        }
+        addEventListener('scroll', () => { if (!spyQueued) { spyQueued = true; requestAnimationFrame(spy); } }, { passive: true });
+        spy();
+
+        // ---------- Prototipos sonoros (audio logo y celebración) ----------
+        // No existen en haptics.js: se sintetizan sólo para esta página, con su
+        // propio contexto de audio que se cierra a los pocos segundos.
+        const Proto = (function () {
+            let ac = null, bus = null, idle = null;
+            function close() { clearTimeout(idle); if (ac) { try { ac.close(); } catch (e) {} } ac = bus = null; }
+            function ctx() {
+                const AC = window.AudioContext || window.webkitAudioContext;
+                if (!AC) return null;
+                if (!ac) {
+                    try {
+                        ac = new AC();
+                        const comp = ac.createDynamicsCompressor();
+                        comp.threshold.value = -18; comp.ratio.value = 4;
+                        bus = ac.createGain(); bus.gain.value = 0.8;
+                        bus.connect(comp); comp.connect(ac.destination);
+                    } catch (e) { ac = null; return null; }
+                }
+                if (ac.state !== 'running') { try { ac.resume(); } catch (e) {} }
+                clearTimeout(idle); idle = setTimeout(close, 5000);
+                return ac;
+            }
+            // Campana FM: portadora + moduladora cuyo índice decae
+            function bell(a, t, f, dur, vol, ratio) {
+                const car = a.createOscillator(), mod = a.createOscillator(), mg = a.createGain(), g = a.createGain();
+                car.frequency.value = f; mod.frequency.value = f * (ratio || 3.5);
+                mg.gain.setValueAtTime(f * 2, t); mg.gain.exponentialRampToValueAtTime(f * 0.05, t + dur * 0.6);
+                mod.connect(mg); mg.connect(car.frequency); car.connect(g); g.connect(bus);
+                g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+                car.start(t); mod.start(t); car.stop(t + dur + 0.05); mod.stop(t + dur + 0.05);
+            }
+            const N = { C5: 523.25, E5: 659.25, G5: 783.99, C6: 1046.5, D6: 1174.66, E6: 1318.5, G6: 1568, C7: 2093 };
+            function play(fn) {
+                const h = H();
+                if (h && !h.isSoundEnabled()) return;
+                const a = ctx(); if (!a) return;
+                try { fn(a, a.currentTime + 0.02); } catch (e) {}
+            }
+            document.addEventListener('visibilitychange', () => { if (document.hidden) close(); });
+            return {
+                // Motivo corto de tres notas que resuelve en un acorde
+                logo: () => play((a, t) => {
+                    bell(a, t, N.G5, 0.5, 0.12); bell(a, t + 0.14, N.C6, 0.5, 0.12); bell(a, t + 0.28, N.E6, 1.2, 0.12);
+                    bell(a, t + 0.28, N.C5, 1.4, 0.06, 2); bell(a, t + 0.28, N.G5, 1.4, 0.05, 2);
+                }),
+                // Arpegio ascendente rápido + acorde abierto + destellos
+                celebrate: () => play((a, t) => {
+                    [N.C5, N.E5, N.G5, N.C6, N.E6, N.G6].forEach((f, i) => bell(a, t + i * 0.06, f, 0.6, 0.09));
+                    [N.C6, N.E6, N.G6].forEach(f => bell(a, t + 0.4, f, 1.6, 0.07, 2.01));
+                    for (let i = 0; i < 6; i++) bell(a, t + 0.55 + i * 0.09 + Math.random() * 0.03, N.C7 * (1 + (i % 3) * 0.25), 0.5, 0.03, 4.1);
+                })
+            };
+        })();
+
+        function play(name) {
+            if (name === 'proto-logo') { Proto.logo(); return; }
+            if (name === 'proto-celebrate') { Proto.celebrate(); vibrate([25, 60, 45]); return; }
+            fx(name);
+        }
+
+        // ---------- Inicialización tras haptics.js ----------
+        // haptics.js agrega listeners a [data-fx-test] en DOMContentLoaded.
+        // Los botones de esta página que disparan su propio efecto se excluyen
+        // del "tap" automático DESPUÉS de eso, para no sumarles un segundo
+        // efecto (en Android, una vibración posterior cancela la anterior).
+        function init() {
+            $$('[data-own-fx], .bp-segmented-item').forEach(el => el.setAttribute('data-fx-test', ''));
+            setupPrefs(); setupPlay(); setupSegmented();
+            v1(); v2(); v4(); v5(); v6(); v7(); v8(); v9(); a2(); glyphs(); goal(); haptics(); s5();
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+
+        function setupPrefs() {
+            const h = H();
+            if (h) { $('#pref-hap').checked = h.isEnabled(); $('#pref-snd').checked = h.isSoundEnabled(); }
+            $('#pref-hap').addEventListener('change', e => { const x = H(); if (x) x.setEnabled(e.target.checked); });
+            $('#pref-snd').addEventListener('change', e => { const x = H(); if (x) x.setSoundEnabled(e.target.checked); });
+            $('#pref-rm').addEventListener('change', e => root.classList.toggle('rm', e.target.checked));
+        }
+
+        function setupPlay() {
+            document.addEventListener('click', e => {
+                const b = e.target.closest('[data-play]');
+                if (!b) return;
+                play(b.dataset.play); pop(b);
+            });
+        }
+
+        // Segmentados: selección exclusiva + háptica "select" (Guía §2)
+        function setupSegmented() {
+            $$('.bp-segmented__track').forEach(track => track.addEventListener('click', e => {
+                const b = e.target.closest('.bp-segmented-item');
+                if (!b || b.getAttribute('aria-selected') === 'true') return;
+                track.querySelectorAll('.bp-segmented-item').forEach(x => x.setAttribute('aria-selected', String(x === b)));
+                fx('select');
+                track.dispatchEvent(new CustomEvent('d-change', { detail: b.dataset }));
+            }));
+        }
+
+        function disclosure(btn, panel) {
+            btn.addEventListener('click', () => {
+                const open = btn.getAttribute('aria-expanded') !== 'true';
+                btn.setAttribute('aria-expanded', String(open));
+                panel.classList.toggle('is-open', open);
+                btn.querySelector('.ms').textContent = open ? 'expand_less' : 'expand_more';
+            });
+        }
+
+        // ---------- 1.1 ----------
+        function v1() { disclosure($('#v1-more'), $('#v1-detail')); }
+
+        // ---------- 1.2 ----------
+        function v2() { $('#v2-annot').addEventListener('change', e => $('#v2-body').classList.toggle('d-annot', e.target.checked)); }
+
+        // ---------- 1.4 Simulador ----------
+        function v4() {
+            const TNA = 0.156;
+            let P = 2000, n = 12;
+            function render() {
+                const i = TNA / 12, c = P * i / (1 - Math.pow(1 + i, -n)), tot = c * n, int = tot - P;
+                const usd = v => 'USD ' + money(v).slice(2);
+                $('#v4-p-out').textContent = money(P, 0);
+                $('[data-v4="p"]').textContent = usd(P);
+                $('[data-v4="n"]').textContent = n;
+                $('[data-v4="c"]').textContent = usd(c);
+                $('[data-v4="i"]').textContent = usd(int);
+                $('[data-v4="t"]').textContent = usd(tot);
+                $('#v4-c').textContent = money(c);
+                $('#v4-nt').textContent = n + ' meses';
+                $('#v4-pr').textContent = money(P);
+                $('#v4-t').textContent = money(tot);
+                $('#v4-i').textContent = money(int);
+                $('#v4-ba').style.width = (P / tot * 100) + '%';
+                $('#v4-bb').style.width = (int / tot * 100) + '%';
+            }
+            const range = $('#v4-p');
+            range.addEventListener('input', () => { const v = +range.value; if (v !== P) { P = v; fx('detent'); render(); } });
+            $('#v4-n').addEventListener('d-change', e => { n = +e.detail.n; render(); });
+            disclosure($('#v4-how'), $('#v4-detail'));
+            render();
+        }
+
+        // ---------- 1.5 Entrecerrar ----------
+        function v5() {
+            const r = $('#v5-blur'); let last = 0;
+            r.addEventListener('input', () => { const v = +r.value; if (v !== last) { last = v; fx('detent'); } $('#v5-cmp').style.setProperty('--squint', v + 'px'); });
+        }
+
+        // ---------- 1.6 Moderación ----------
+        function v6() {
+            const L = [
+                { color: 'Sin color de estado', radius: 'Ninguno', elev: 'Ninguna', anim: 'No', n: 1, tag: ['bp-tag--warning', 'Falta agrupar'], note: 'Sin contenedor, la tarjeta se confunde con lo que la rodea y la acción parece un enlace más.' },
+                { color: 'Éxito sólo en el dato que cambia', radius: 'radius-md (12)', elev: 'Sin sombra', anim: 'Sólo al interactuar', n: 2, tag: ['bp-tag--success', 'Recomendado'], note: 'Lo justo para agrupar y destacar: es como se ven los widgets del inicio en Solar.' },
+                { color: 'Marca en ícono y botón', radius: 'radius-lg (16)', elev: 'elevation-mid + borde', anim: 'Sólo al interactuar', n: 3, tag: ['bp-tag--warning', 'Compite'], note: 'Cada recurso por separado es correcto, pero sumados le quitan protagonismo al saldo.' },
+                { color: 'Degradados en todo', radius: '28 px (fuera de escala)', elev: 'overlay + halo', anim: 'Pulsos en reposo', n: 4, tag: ['bp-tag--error', 'Decoración'], note: 'La decoración se volvió el mensaje: el ojo va a los efectos, no al dato.' }
+            ];
+            function set(k) {
+                const l = L[k];
+                $('#v6-card').dataset.level = k;
+                $('#v6-color').textContent = l.color; $('#v6-radius').textContent = l.radius;
+                $('#v6-elev').textContent = l.elev; $('#v6-anim').textContent = l.anim;
+                $('#v6-meter').dataset.n = l.n; $('#v6-note').textContent = l.note;
+                $('#v6-verdict').innerHTML = `<span class="bp-tag ${l.tag[0]}">${l.tag[1]}</span>`;
+            }
+            $('#v6-level').addEventListener('d-change', e => set(+e.detail.level));
+            set(1);
+        }
+
+        // ---------- 1.7 Color ----------
+        function v7() {
+            const P = [
+                ['Acción principal', 'Lo siguiente que puedes hacer.', '--bp-theme-color-interaction-primary-bg', null, 'Pagar'],
+                ['Marca de soporte', 'Identidad, títulos y texto de marca.', '--bp-theme-color-brand-support', null, 'Pichibank'],
+                ['Éxito', 'Operación completada, dinero acreditado.', '--bp-theme-color-status-success-bg', 'success', 'Acreditado'],
+                ['Advertencia', 'Requiere atención pronto.', '--bp-theme-color-status-warning-bg', 'warning', 'Vence pronto'],
+                ['Error', 'Algo bloqueó la operación.', '--bp-theme-color-status-error-bg', 'error', 'Rechazado'],
+                ['Información', 'Contexto útil, sin urgencia.', '--bp-theme-color-status-info-bg', 'info', 'Dato útil'],
+                ['Pendiente', 'En proceso, todavía sin resultado.', '--bp-theme-color-status-pending-bg', 'pending', 'En proceso'],
+                ['Promoción', 'Oferta comercial.', '--bp-theme-color-status-promo-bg', 'promo', 'Oferta'],
+                ['Nuevo', 'Función o producto recién llegado.', '--bp-theme-color-status-new-bg', 'new', 'Nuevo'],
+                ['Neutral', 'Estado sin carga emocional.', '--bp-theme-color-status-neutral-bg', null, 'Inactivo']
+            ];
+            $('#v7-palette').innerHTML = P.map(([n, d, tok, tag, sample], i) => {
+                // Franja: el color puro. Debajo, cómo se usa.
+                const use = i === 0 ? `<span class="bp-button d-fake" data-size="md" style="height:28px;padding:0 12px;font-size:13px">${sample}</span>`
+                    : i === 1 ? `<b style="color:var(--bp-theme-color-text-brand);font:700 15px/20px var(--sol-font)">${sample}</b>`
+                    : `<span class="bp-tag${tag ? ' bp-tag--' + tag : ''}">${sample}</span>`;
+                return `<div class="d-swatch"><div class="d-swatch__chip" style="background:var(${tok})"></div>
+                    <div class="d-swatch__body"><b>${n}</b><span>${d}</span><div>${use}</div><code>${tok.replace('--bp-theme-color-', '')}</code></div></div>`;
+            }).join('');
+            $('#v7-gray').addEventListener('change', e => $('#v7-body').classList.toggle('d-gray', e.target.checked));
+        }
+
+        // ---------- 1.8 Respuesta ----------
+        let v8Timers = [];
+        function v8() {
+            const a = $('#v8-a'), b = $('#v8-b'), steps = $$('#v8-steps .d-step');
+            const stepOn = k => steps.forEach((s, i) => s.classList.toggle('is-on', i <= k));
+            const later = (f, ms) => v8Timers.push(setTimeout(f, ms));
+            function reset() {
+                v8Timers.forEach(clearTimeout); v8Timers = [];
+                a.disabled = false; a.textContent = 'Pagar'; $('#v8-a-amt').textContent = '$ 24,80';
+                b.disabled = false; b.classList.remove('is-busy'); b.removeAttribute('aria-busy'); b.textContent = 'Pagar';
+                $('#v8-b-amt').textContent = '$ 24,80'; $('#v8-b-msg').innerHTML = ''; stepOn(-1);
+            }
+            a.addEventListener('click', () => {
+                if (a.dataset.done) return;
+                a.dataset.done = '1';
+                later(() => { $('#v8-a-amt').textContent = '$ 0,00'; delete a.dataset.done; }, 1600);
+            });
+            b.addEventListener('click', () => {
+                if (b.classList.contains('is-busy') || b.dataset.done) return;
+                fx('tap'); stepOn(0);
+                later(() => { b.classList.add('is-busy'); b.setAttribute('aria-busy', 'true'); b.innerHTML = '<span class="d-spin" aria-hidden="true"></span>Procesando…'; stepOn(1); }, 80);
+                later(() => stepOn(2), 600);
+                later(() => {
+                    b.classList.remove('is-busy'); b.removeAttribute('aria-busy'); b.dataset.done = '1';
+                    b.innerHTML = '<span class="ms">check</span>Listo'; stepOn(3);
+                    $('#v8-b-amt').textContent = '$ 0,00';
+                    $('#v8-b-msg').innerHTML = '<div class="bp-alert bp-alert--success"><div class="bp-alert__content"><span class="ms bp-alert__icon">check_circle</span><div class="bp-alert__text"><span class="bp-alert__title">Pago realizado</span><span class="bp-alert__body">$ 24,80 · Luz eléctrica</span></div></div></div>';
+                    fx('success');
+                }, 1700);
+                later(() => delete b.dataset.done, 1800);
+            });
+            $('#v8-reset').addEventListener('click', () => { fx('tap'); reset(); });
+            reset();
+        }
+
+        // ---------- 1.9 Crecer ----------
+        function v9() {
+            const MOV = [
+                { ic: 'shopping_cart', t: 'Supermercado', d: 'Hoy', a: -48.2, g: 'Hoy' },
+                { ic: 'work', t: 'Nómina', d: 'Hoy', a: 1225, g: 'Hoy' },
+                { ic: 'person', t: 'A Carlos Vega', d: 'Ayer', a: -25, g: 'Ayer', tag: ['pending', 'schedule', 'En proceso'] },
+                { ic: 'bolt', t: 'Luz eléctrica', d: 'Ayer', a: -24.8, g: 'Ayer' },
+                { ic: 'local_cafe', t: 'Cafetería', d: '27 sep', a: -6.5, g: '27 sep' }
+            ];
+            const amt = v => `<span class="d-li__amt${v > 0 ? ' is-in' : ''}">${v > 0 ? '+' : '−'} ${money(Math.abs(v))}</span>`;
+            const row = (m, lvl) => `<div class="bp-list-item" data-k="${m.a > 0 ? 'in' : 'out'}"><span class="bp-avatar"><span class="ms">${m.ic}</span></span><span class="d-li__t">${m.t}${lvl >= 2 && lvl < 4 ? `<small>${m.d}</small>` : ''}${lvl >= 3 && m.tag ? `<span><span class="bp-tag bp-tag--${m.tag[0]} bp-tag--has-icon" data-size="sm"><span class="ms">${m.tag[1]}</span>${m.tag[2]}</span></span>` : ''}</span>${amt(m.a)}</div>`;
+            const filters = `<div class="bp-filter" role="group" aria-label="Filtrar movimientos"><button class="bp-filter-item" aria-pressed="true" data-f="all" data-fx-test="">Todos</button><button class="bp-filter-item" aria-pressed="false" data-f="in" data-fx-test="">Ingresos</button><button class="bp-filter-item" aria-pressed="false" data-f="out" data-fx-test="">Gastos</button></div>`;
+            const V = {
+                1: () => `<span class="d-title-sm">Movimientos</span><div class="bp-widget">${row(MOV[0], 1)}</div>`,
+                2: () => `<span class="d-title-sm">Movimientos</span><div class="bp-widget"><div class="bp-widget__header"><span class="bp-widget__title">Recientes</span><span class="bp-widget__meta">Ver todo</span></div>${MOV.slice(0, 4).map(m => row(m, 2)).join('')}</div>`,
+                3: () => `<span class="d-title-sm">Movimientos</span>${filters}<div class="bp-widget" data-list>${MOV.slice(0, 4).map(m => row(m, 3)).join('')}</div>`,
+                4: () => {
+                    const groups = [...new Set(MOV.map(m => m.g))];
+                    return `<span class="d-title-sm">Movimientos</span><div class="d-search"><span class="ms">search</span>Buscar movimientos</div>
+                        <div class="d-sum"><div>Ingresos del mes<b>+ $ 1.225,00</b></div><div>Gastos del mes<b>− $ 104,50</b></div></div>${filters}
+                        <div class="bp-widget" data-list>${groups.map(g => `<div class="d-group" data-g>${g}</div>${MOV.filter(m => m.g === g).map(m => row(m, 4)).join('')}`).join('')}</div>`;
+                }
+            };
+            const ALL = ['bp-widget', 'bp-list-item', 'bp-avatar', 'bp-filter', 'bp-tag', 'búsqueda', 'resumen'];
+            const USE = { 1: 3, 2: 3, 3: 5, 4: 7 };
+            const NOTE = {
+                1: 'Un solo dato: la fila basta.',
+                2: 'Varias filas: el widget agrupa y ofrece «Ver todo».',
+                3: 'Con más volumen aparecen filtros y etiquetas de estado.',
+                4: 'Historial completo: búsqueda, resumen y grupos por día, sin cambiar la fila.'
+            };
+            let prev = 1;
+            function set(k) {
+                const scr = $('#v9-screen');
+                scr.innerHTML = V[k]();
+                $('#v9-chips').innerHTML = ALL.map((c, i) => `<code class="${i >= USE[k] ? 'is-off' : (i >= USE[prev] && k > prev ? 'is-new' : '')}">${c}</code>`).join('');
+                $('#v9-note').textContent = NOTE[k];
+                if (!rm()) scr.querySelectorAll('.bp-widget, .bp-filter, .d-search, .d-sum').forEach((el, i) => el.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 300, delay: i * 50, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'both' }));
+                prev = k;
+            }
+            $('#v9-level').addEventListener('d-change', e => set(+e.detail.level));
+            // Filtros vivos en los niveles 3 y 4
+            $('#v9-screen').addEventListener('click', e => {
+                const f = e.target.closest('.bp-filter-item'); if (!f || f.getAttribute('aria-pressed') === 'true') return;
+                fx('select');
+                $$('#v9-screen .bp-filter-item').forEach(x => x.setAttribute('aria-pressed', String(x === f)));
+                $$('#v9-screen [data-list] .bp-list-item').forEach(r => { r.style.display = f.dataset.f === 'all' || r.dataset.k === f.dataset.f ? '' : 'none'; });
+                $$('#v9-screen [data-g]').forEach(g => {
+                    let n = g.nextElementSibling, any = false;
+                    while (n && !n.hasAttribute('data-g')) { if (n.style.display !== 'none') any = true; n = n.nextElementSibling; }
+                    g.style.display = any ? '' : 'none';
+                });
+            });
+            set(1);
+        }
+
+        // ---------- 2.2 Canales ----------
+        function a2() {
+            const vis = $('#a2-vis'), snd = $('#a2-snd'), hap = $('#a2-hap'), scr = $('#a2-screen'), out = $('#a2-verdict');
+            const alert = (k, icon, t, b) => `<div class="bp-alert bp-alert--${k}"><div class="bp-alert__content"><span class="ms bp-alert__icon">${icon}</span><div class="bp-alert__text"><span class="bp-alert__title">${t}</span><span class="bp-alert__body">${b}</span></div></div></div>`;
+            $('#a2-go').addEventListener('click', () => {
+                const v = vis.checked, s = snd.checked, h = hap.checked;
+                scr.innerHTML = v
+                    ? `<div class="d-stack" style="align-items:center;text-align:center;gap:6px"><span class="ms fill" style="font-size:44px;color:var(--bp-theme-color-status-success-icon)">check_circle</span><b class="d-title-sm">Pago realizado</b><span class="d-amount">$ 24,80</span><span class="d-caption">Luz eléctrica · Comprobante 004512</span></div>`
+                    : `<span class="d-caption" style="text-align:center">(pantalla sin cambios)</span>`;
+                if (v && !rm()) scr.firstElementChild.animate([{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 300, easing: 'cubic-bezier(.22,1,.36,1)' });
+                // Sonido con o sin vibración: haptics.js dispara ambos; si la
+                // háptica está apagada en el ejemplo, se cancela al instante.
+                if (s) { fx('success'); if (!h && canVibrate) navigator.vibrate(0); }
+                else if (h) vibrate([25, 60, 45]);
+                out.innerHTML = !v && !s && !h ? alert('error', 'error', 'Sin respuesta', '¿Se pagó o no? La persona no tiene forma de saberlo.')
+                    : !v ? alert('warning', 'warning', 'El refuerzo quedó solo', 'Se percibe que algo pasó, pero no qué ni cuánto. Con el teléfono en silencio, no llega nada.')
+                    : alert('success', 'check_circle', s || h ? 'Refuerzo correcto' : 'Funciona igual', s || h ? 'La pantalla explica; ' + [s && 'el sonido', h && 'la vibración'].filter(Boolean).join(' y ') + ' confirma' + (s && h ? 'n' : '') + ' el cierre.' : 'Sin sonido ni vibración la información sigue completa: el audio es un refuerzo, no el mensaje.');
+            });
+        }
+
+        // ---------- 2.4 Firmas de sonido ----------
+        function glyphs() {
+            const SIG = {
+                success: [3, 9, 14, 11, 8, 6, 5, 4, 3, 2],
+                toggle: [7, 12, 4, 8, 13, 5, 2, 2, 1, 1],
+                reveal: [2, 4, 7, 10, 13, 10, 7, 4, 2, 1]
+            };
+            $$('[data-glyph]').forEach(svg => {
+                const s = SIG[svg.dataset.glyph];
+                svg.setAttribute('viewBox', '0 0 52 20');
+                svg.innerHTML = s.map((h, i) => `<rect x="${i * 5 + 1}" y="${(20 - h) / 2}" width="3" height="${h}" rx="1.5" fill="currentColor"/>`).join('');
+            });
+        }
+
+        // ---------- 3 Meta de ahorro ----------
+        function goal() {
+            const GOAL = 1500, STEP = 130, START = 1240;
+            let v = START;
+            const btn = $('#goal-btn'), msg = $('#goal-msg');
+            function render() {
+                $('#goal-amt').textContent = money(v, 0);
+                $('#goal-bar').style.width = Math.min(100, v / GOAL * 100) + '%';
+            }
+            function confetti() {
+                if (rm()) return;
+                const box = $('#goal-confetti');
+                const C = ['--bp-theme-color-brand-main', '--bp-theme-color-status-success-bg', '--bp-theme-color-status-info-bg', '--bp-theme-color-status-promo-bg', '--bp-theme-color-status-warning-bg'];
+                for (let i = 0; i < 48; i++) {
+                    const p = document.createElement('i');
+                    p.style.left = (Math.random() * 100) + '%';
+                    p.style.background = `var(${C[i % C.length]})`;
+                    box.appendChild(p);
+                    const dx = (Math.random() - .5) * 120, rot = (Math.random() - .5) * 720;
+                    p.animate([{ transform: 'translate(0,0) rotate(0)', opacity: 1 }, { transform: `translate(${dx}px, ${300 + Math.random() * 120}px) rotate(${rot}deg)`, opacity: 0 }],
+                        { duration: 1400 + Math.random() * 900, delay: Math.random() * 250, easing: 'cubic-bezier(.2,.6,.4,1)', fill: 'forwards' }).onfinish = () => p.remove();
+                }
+            }
+            btn.addEventListener('click', () => {
+                if (v >= GOAL) return;
+                v = Math.min(GOAL, v + STEP); render();
+                if (v >= GOAL) {
+                    Proto.celebrate(); vibrate([25, 60, 45]); confetti();
+                    msg.innerHTML = '<div class="bp-alert bp-alert--success"><div class="bp-alert__content"><span class="ms bp-alert__icon">celebration</span><div class="bp-alert__text"><span class="bp-alert__title">¡Meta cumplida!</span><span class="bp-alert__body">Juntaste $ 1.500 para tu viaje.</span></div></div></div>';
+                    btn.disabled = true; btn.textContent = 'Meta cumplida';
+                } else {
+                    fx('success');
+                    msg.innerHTML = `<span class="d-caption">Aporte de $ 130 recibido. Te faltan ${money(GOAL - v, 0)}.</span>`;
+                }
+            });
+            $('#goal-reset').addEventListener('click', () => { fx('tap'); v = START; render(); msg.innerHTML = ''; btn.disabled = false; btn.textContent = 'Ahorrar $ 130'; });
+            render();
+        }
+
+        // ---------- 4 Catálogo háptico ----------
+        function haptics() {
+            // Patrones de haptics.js (ms: vibra, pausa, vibra…)
+            const CAT = [
+                ['tap', 'Toque', 'touch_app', 15, 'Botones y filas'],
+                ['select', 'Selección', 'radio_button_checked', 20, 'Tabs, chips, segmentos'],
+                ['detent', 'Umbral', 'linear_scale', 12, 'Pasos de slider, arrastre'],
+                ['toggle', 'Estado', 'toggle_on', [20, 40, 20], 'Toggles, ocultar saldo'],
+                ['open', 'Abrir', 'expand_less', 18, 'Sheets y detalle'],
+                ['success', 'Éxito', 'check_circle', [25, 60, 45], 'Pagos, transferencias'],
+                ['warning', 'Advertencia', 'warning', [35, 60, 35], 'Permisos, cancelaciones'],
+                ['error', 'Error', 'error', [50, 50, 50, 50, 90], 'Validaciones, fondos']
+            ];
+            const SCALE = 300;
+            $('#hap-grid').innerHTML = CAT.map(([k, n, ic, p, use]) => {
+                const arr = Array.isArray(p) ? p : [p];
+                let x = 0; const bars = arr.map((ms, i) => { const s = i % 2 === 0 ? `<i style="left:${x / SCALE * 100}%;width:${ms / SCALE * 100}%"></i>` : ''; x += ms; return s; }).join('');
+                return `<button data-play="${k}" data-own-fx data-fx-test="" data-hap><span class="d-hap__t"><span class="ms">${ic}</span>${n}<code>${k}</code></span><span class="d-pattern">${bars}</span><small>${arr.join(' · ')} ms · ${use}</small></button>`;
+            }).join('');
+            $('#hap-grid').addEventListener('click', e => { const b = e.target.closest('[data-hap]'); if (!b) return; b.classList.remove('is-buzz'); void b.offsetWidth; b.classList.add('is-buzz'); });
+            $('#hap-support').textContent = canVibrate ? 'El navegador expone la API de vibración' : (/iP(hone|ad)/.test(navigator.userAgent) ? 'iPhone: sin vibración web, sólo sonido' : 'Sin vibración en este dispositivo: sólo sonido');
+        }
+
+        // ---------- 5 Carriles ----------
+        function s5() {
+            const run = $('#s5-run'), mini = $('#s5-mini'), btn = $('#s5-btn');
+            let timers = [];
+            const col = k => $$('#s5-lanes [data-c]').forEach(el => el.classList.toggle('is-on', +el.dataset.c === k));
+            run.addEventListener('click', () => {
+                timers.forEach(clearTimeout); timers = [];
+                const at = (ms, f) => timers.push(setTimeout(f, ms));
+                mini.classList.remove('is-done'); btn.textContent = 'Transferir';
+                at(0, () => { col(0); btn.classList.add('is-pressed'); fx('tap'); });
+                at(500, () => { col(1); btn.classList.remove('is-pressed'); btn.innerHTML = '<span class="d-spin" aria-hidden="true"></span>Procesando…'; });
+                at(1900, () => { col(2); mini.classList.add('is-done'); btn.textContent = 'Ver comprobante'; fx('success'); });
+                at(3400, () => col(3));
+                at(4600, () => col(-1));
+            });
+        }
+    })();
+    </script>
+</body>
+</html>
