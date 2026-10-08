@@ -631,8 +631,10 @@
 
   /* El portal 3D vive en la tarjeta del hub; en el chat pasa al fondo. */
   function place3D(g) {
-    var el = page.classList.contains('is-chat') ? page.querySelector('.as-land-wrap .b3d') : page.querySelector('.as-tile--portal .b3d');
-    mount3D(el, D.score, g);
+    // En el chat el oso no queda detrás del texto: se pausa la escena y
+    // Uku aparece en la cabecera de cada mensaje.
+    if (page.classList.contains('is-chat')) { if (b3d) b3d.detach(page.querySelector('.as-tile--portal .b3d')); return; }
+    mount3D(page.querySelector('.as-tile--portal .b3d'), D.score, g);
   }
   var TOPICS = [['pie_chart', 'Gastos', '¿En qué se me va la plata?'], ['flag', 'Metas', '¿Cómo voy con mis metas?'], ['credit_card', 'Tarjetas', '¿Cuánto debo en mi tarjeta?'],
     ['savings', 'Ahorro', '¿Cuánto más puedo ahorrar?'], ['autorenew', 'Suscripciones', 'Mis suscripciones']];
@@ -666,25 +668,51 @@
     m.innerHTML = '<div class="as-msg__bubble"><p>' + esc(text) + '</p></div>';
     chat.appendChild(m); scrollEnd();
   }
+  /* Respuestas "masticadas": una idea por burbuja. El texto se parte en
+     oraciones (máx. 3 burbujas) y el gráfico va después de la primera, que
+     siempre trae el dato principal. */
+  function chunks(t) {
+    var parts = [];
+    t.split(/<br><br>/).forEach(function (p) {
+      p.replace(/([.!?])\s+(?=[A-ZÁÉÍÓÚ¿¡<])/g, '$1\u0001').split('\u0001').forEach(function (x) { if (x.trim()) parts.push(x.trim()); });
+    });
+    if (parts.length > 3) parts = [parts[0], parts[1], parts.slice(2).join(' ')];
+    return parts;
+  }
   function bot(a) {
     var m = document.createElement('div');
     m.className = 'as-msg as-msg--uku';
-    m.innerHTML = '<div class="as-msg__who"><span class="as-msg__av">' + C().face() + '</span><b>' + C().name + '</b></div>' +
-      '<div class="as-msg__bubble"><span class="as-typing" aria-label="' + C().name + ' está escribiendo"><i></i><i></i><i></i></span></div>';
-    chat.appendChild(m); scrollEnd();
+    m.innerHTML = '<div class="as-msg__who"><span class="as-msg__av">' + C().face() + '</span><b>' + C().name + '</b></div>';
+    var typing = document.createElement('div');
+    typing.className = 'as-msg__bubble';
+    typing.innerHTML = '<span class="as-typing" aria-label="' + C().name + ' está escribiendo"><i></i><i></i><i></i></span>';
+    m.appendChild(typing); chat.appendChild(m); scrollEnd();
     setPet('is-talking');
-    setTimeout(function () {
-      m.querySelector('.as-msg__bubble').innerHTML = '<p>' + a.t + '</p>' + (a.h || '');
-      // Respuestas sugeridas: la conversación sigue con un toque
-      if (a.s && a.s.length) {
-        var r = document.createElement('div');
-        r.className = 'as-replies';
-        r.innerHTML = a.s.map(function (q) { return '<button class="as-reply" type="button" data-reply="' + esc(q) + '">' + esc(q) + '</button>'; }).join('');
-        m.appendChild(r);
-      }
-      scrollEnd(); fx('reveal');
-      setTimeout(function () { setPet(''); }, 900);
-    }, 650 + Math.random() * 300);
+    var parts = chunks(a.t), seq = [];
+    parts.forEach(function (p, i) {
+      seq.push('<p>' + p + '</p>');
+      if (i === 0 && a.h) seq.push({ card: a.h });
+    });
+    var i = 0;
+    (function next() {
+      setTimeout(function () {
+        var it = seq[i++], el = document.createElement('div');
+        el.className = 'as-msg__bubble' + (it.card ? ' as-msg__card' : '');
+        el.innerHTML = it.card || it;
+        m.insertBefore(el, typing);
+        if (i < seq.length) { scrollEnd(); return next(); }
+        typing.remove();
+        // Respuestas sugeridas: del lado de quien pregunta, listas para tocar
+        if (a.s && a.s.length) {
+          var r = document.createElement('div');
+          r.className = 'as-replies';
+          r.innerHTML = a.s.map(function (q) { return '<button class="as-reply" type="button" data-reply="' + esc(q) + '">' + esc(q) + '</button>'; }).join('');
+          chat.appendChild(r);
+        }
+        scrollEnd(); fx('reveal');
+        setTimeout(function () { setPet(''); }, 900);
+      }, i === 0 ? 600 + Math.random() * 250 : (seq[i] && seq[i].card ? 250 : 700));
+    })();
   }
   function ask(q) {
     ST.history = [q].concat((ST.history || []).filter(function (x) { return x !== q; })).slice(0, 6); persist();
@@ -1003,7 +1031,40 @@
     fx('close');
   }
 
-  function init() { build(); mountEntries(); paintEntries(); }
+  /* Arrastrar el uñero hacia abajo cierra cualquier hoja .as-sheet (las del
+     asistente, Mis finanzas y Destacados). Cierra "tocando" su fondo, así
+     cada módulo usa su propio cierre. */
+  function sheetDrag() {
+    var sh = null, y0 = 0, dy = 0, t0 = 0;
+    document.addEventListener('pointerdown', function (e) {
+      if (!e.target.closest('.as-sheet__handle')) return;
+      sh = e.target.closest('.as-sheet.open'); if (!sh) return;
+      y0 = e.clientY; dy = 0; t0 = Date.now(); sh.style.transition = 'none';
+      try { e.target.setPointerCapture(e.pointerId); } catch (x) {}
+      e.preventDefault();
+    });
+    document.addEventListener('pointermove', function (e) {
+      if (!sh) return;
+      var was = dy > 90;
+      dy = Math.max(0, e.clientY - y0);
+      if (was !== dy > 90) fx('detent');
+      sh.style.transform = 'translate(-50%, ' + dy + 'px)';
+    });
+    function end() {
+      if (!sh) return;
+      var el = sh, fast = dy > 30 && dy / Math.max(1, Date.now() - t0) > .6;
+      sh = null; el.style.transition = '';
+      if (dy > 90 || fast) {
+        var bk = el.previousElementSibling;
+        if (bk && bk.classList.contains('as-sheet-back')) bk.click(); else el.classList.remove('open');
+        fx('close');
+      }
+      requestAnimationFrame(function () { el.style.transform = ''; });
+    }
+    document.addEventListener('pointerup', end);
+    document.addEventListener('pointercancel', end);
+  }
+  function init() { build(); mountEntries(); paintEntries(); sheetDrag(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   window.Asistente = { petSVG: function () { return C().svg(); }, faceIMG: function () { return C().face(); }, name: function () { return C().name; }, open: open, openPF: function () { openPF(); }, ask: function (q) { open(); ask(q); }, data: function () { return D; } };
 })();

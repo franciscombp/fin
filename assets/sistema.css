@@ -64,39 +64,44 @@
 /* ---------- Píldoras y enlaces de acción ---------- */
 .pf-link, .dw-cta, .pf-pill { font: 600 14px/1 var(--sol-font, Roboto, sans-serif); height: 40px; padding: 0 16px; border-radius: 99px; }
 
-/* ---------- Chat con Uku: aire, lectura cómoda y respuestas sugeridas ----------
-   Uku escribe en una tarjeta ancha (nombre y cara arriba, no al costado) para
-   que el texto use todo el ancho; lo tuyo va a la derecha en una burbuja
-   compacta. Debajo de cada respuesta, sugerencias para seguir con un toque. */
-.as-chat { bottom: calc(var(--comp) + 12px); gap: 28px; padding: 24px 20px 32px; }
-.as-msg--uku { flex-direction: column; align-items: stretch; gap: 10px; }
-.as-msg__who { display: flex; align-items: center; gap: 10px; font: var(--cx-caption); color: var(--cx-ink); }
+/* ---------- Chat con Uku: corto, con aire y sin nada detrás del texto ----------
+   Uku responde en burbujas cortas (una idea cada una), con su cara y nombre
+   arriba. Las respuestas sugeridas van a la derecha, del lado de quien
+   pregunta, con la forma de tus propias burbujas. */
+.as-page.is-chat .as-land-wrap { display: none; }
+.as-chat { bottom: calc(var(--comp) + 12px); gap: 24px; padding: 24px 20px 32px; }
+.as-msg--uku { flex-direction: column; align-items: flex-start; gap: 6px; }
+.as-msg__who { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; font: var(--cx-caption); color: var(--cx-muted); }
 .as-msg__av { width: 28px; height: 28px; flex: 0 0 28px; border-radius: 50%; overflow: hidden; background: var(--cx-fill); box-shadow: none; }
 .as-msg__av img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
-.as-msg__bubble { font: 400 17px/26px var(--sol-font, Roboto, sans-serif); color: var(--cx-ink); }
-.as-msg--uku .as-msg__bubble {
-  max-width: none; padding: 20px; border-radius: 6px 24px 24px 24px; border: 0;
-  background: var(--cx-surface); box-shadow: 0 1px 2px rgb(0 0 0 / .04), 0 8px 24px rgb(0 0 0 / .05);
-}
-.as-msg--uku .as-msg__bubble b { font-weight: 600; }
-.as-msg__bubble p + * { margin-top: 20px; }
-.as-msg--me .as-msg__bubble { max-width: 80%; padding: 12px 18px; border-radius: 24px 24px 6px 24px; border: 0; background: var(--cx-ink); color: var(--cx-surface); font-weight: 500; }
-.as-msg--uku .as-bars { gap: 14px; }
+.as-msg__bubble { font: 400 17px/25px var(--sol-font, Roboto, sans-serif); color: var(--cx-ink); animation: asIn .28s var(--cx-ease); }
+.as-msg--uku .as-msg__bubble { max-width: 86%; padding: 12px 16px; border-radius: 6px 22px 22px 22px; border: 0; background: color-mix(in srgb, var(--cx-ink) 7%, transparent); }
+.as-msg--uku .as-msg__bubble + .as-msg__bubble { border-radius: 22px; }
+.as-msg--uku .as-msg__bubble b { font-weight: 700; }
+.as-msg--uku .as-msg__card { width: 86%; padding: 16px; background: var(--cx-surface); border: 1px solid var(--cx-line); }
+.as-msg__bubble p + * { margin-top: 12px; }
+.as-msg--me .as-msg__bubble { max-width: 78%; padding: 12px 16px; border-radius: 22px 22px 6px 22px; border: 0; background: var(--cx-ink); color: var(--cx-surface); font-weight: 500; }
+.as-msg--uku .as-bars { gap: 12px; }
 .as-msg--uku .as-bar { font: var(--cx-sub); }
-.as-msg--uku .as-stat { padding: 12px 14px; border-radius: 16px; background: var(--cx-fill); }
-.as-msg--uku .as-stat small { font: var(--cx-caption); font-weight: 500; color: var(--cx-muted); margin-bottom: 2px; }
+.as-msg--uku .as-bar:nth-child(n+4) { display: none; } /* en el chat, solo lo principal */
+.as-msg--uku .as-stat { padding: 10px 12px; border-radius: 14px; background: var(--cx-fill); }
+.as-msg--uku .as-stat small { font: var(--cx-caption); font-weight: 500; color: var(--cx-muted); }
 .as-msg--uku .as-stat b { font: 600 17px/24px var(--sol-font, Roboto, sans-serif); }
-.as-msg--uku .as-report__row { font: var(--cx-sub); padding: 12px 0; border-color: var(--cx-line); }
+.as-msg--uku .as-report__row { font: var(--cx-sub); padding: 10px 0; border-color: var(--cx-line); }
 .as-msg--uku .as-note { font: 400 13px/18px var(--sol-font, Roboto, sans-serif); color: var(--cx-muted); }
-.as-replies { display: flex; flex-wrap: wrap; gap: 8px; animation: asIn .3s ease .1s both; }
+.as-replies { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; margin-top: -8px; animation: asIn .3s var(--cx-ease) .1s both; }
 .as-reply {
-  min-height: 40px; padding: 8px 16px; border-radius: 99px; border: 1px solid var(--cx-line); background: var(--cx-surface);
-  color: var(--cx-ink); font: 500 15px/20px var(--sol-font, Roboto, sans-serif); text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  max-width: 78%; min-height: 44px; padding: 10px 16px; border-radius: 22px 22px 6px 22px;
+  border: 1.5px solid color-mix(in srgb, var(--cx-ink) 22%, transparent); background: transparent;
+  color: var(--cx-ink); font: 500 16px/22px var(--sol-font, Roboto, sans-serif); text-align: right; cursor: pointer; -webkit-tap-highlight-color: transparent;
   transition: transform .15s ease, background-color .15s ease;
 }
-.as-reply:active { transform: scale(.96); background: var(--cx-fill); }
+.as-reply:active { transform: scale(.97); background: var(--cx-fill); }
 .sx-row__ic--uku { overflow: hidden; padding: 0; background: var(--cx-fill); }
 .sx-row__ic--uku img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
 .as-top .as-level { max-width: 100%; min-width: 0; white-space: nowrap; overflow: hidden; }
 .as-top .as-level span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; }
-.as-page.is-chat .as-land-wrap { opacity: .3; }
+
+/* Uñero: zona de agarre amplia para arrastrar y cerrar la hoja */
+.as-sheet__handle { position: relative !important; cursor: grab; touch-action: none; }
+.as-sheet__handle::before { content: ''; position: absolute; left: -80px; right: -80px; top: -16px; bottom: -14px; }
