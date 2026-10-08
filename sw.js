@@ -43,7 +43,8 @@ self.addEventListener('fetch', (event) => {
 
   if (isAppFile(req, url)) {
     event.respondWith(
-      fetch(req, { cache: 'no-cache' })
+      // Una navegación no admite RequestInit propio: se pide por URL.
+      (req.mode === 'navigate' ? fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' }) : fetch(req, { cache: 'no-cache' }))
         .then((res) => {
           if (res && res.ok) {
             const copy = res.clone();
