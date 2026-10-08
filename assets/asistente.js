@@ -1,5 +1,5 @@
 /* =====================================================================
-   Asistente financiero — Candado (perro) y PIA (pollito amarillo)
+   Mis finanzas (PFM) + asistente — Candado (perro) y PIA (pollito amarillo)
 
    - Vive en Modo finanzas (PFM) y tiene una entrada en Inicio.
    - Responde preguntas sobre tus finanzas usando SOLO los movimientos de
@@ -15,8 +15,8 @@
 (function () {
   'use strict';
 
-  var KEY = 'pb_asistente_v1';
-  var ST = { who: 'candado', scenario: 'normal' };
+  var KEY = 'pb_asistente_v2';
+  var ST = { who: 'candado', scenario: 'normal', linked: ['andino'], month: 1, mods: { extraSave: 0, paidLate: false, paidLateAmt: 0, ccPaid: 0, efund: 0 } };
   try { var saved = JSON.parse(localStorage.getItem(KEY)); if (saved) ST = Object.assign(ST, saved); } catch (e) {}
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(ST)); } catch (e) {} }
   function fx(n) { try { window.Haptics && Haptics.fx && Haptics.fx(n); } catch (e) {} }
@@ -43,46 +43,79 @@
     { y: 2026, m: 9, name: 'octubre', short: 'Oct', days: 8, partial: true }
   ];
   var CATS = {
-    super:     { name: 'Supermercado', c: '#31a451', budget: 320, m: ['Supermaxi', 'Mi Comisariato', 'Tía'], n: 6, a: [25, 70] },
-    delivery:  { name: 'Restaurantes y delivery', c: '#f08c2e', budget: 100, m: ['PedidosYa', 'Rappi', 'Uber Eats', 'KFC'], n: 6, a: [8, 22] },
-    transporte:{ name: 'Transporte', c: '#2f7abf', budget: 75, m: ['Uber', 'Cabify', 'Primax'], n: 9, a: [2.5, 9] },
-    servicios: { name: 'Servicios básicos', c: '#7c5cd6', budget: 100, fixed: [['Luz', 24.8], ['Agua', 18.35], ['Internet', 32.5], ['Celular', 20]] },
-    subs:      { name: 'Suscripciones', c: '#e0409a', budget: 60, fixed: [['Netflix', 10.99], ['Spotify', 5.99], ['iCloud', 2.99], ['Gimnasio', 35]] },
-    compras:   { name: 'Compras', c: '#c98945', budget: 100, m: ['Amazon', 'De Prati', 'Kywi'], n: 2, a: [18, 75] },
-    cafe:      { name: 'Cafés y antojos', c: '#8a5a36', budget: 35, m: ['Sweet & Coffee', 'Juan Valdez', 'Tienda del barrio'], n: 13, a: [1.8, 4.6], hormiga: true },
-    salud:     { name: 'Salud', c: '#1aa3a3', budget: 40, m: ['Fybeca', 'Pharmacys'], n: 1, a: [12, 38] },
-    ocio:      { name: 'Ocio', c: '#ffb300', budget: 40, m: ['Cinemark', 'Bar La Ronda', 'Steam'], n: 2, a: [9, 28] }
+    super:     { name: 'Supermercado', budget: 360, m: ['Supermaxi', 'Mi Comisariato', 'Tía'], n: 6, a: [25, 70] },
+    delivery:  { name: 'Restaurantes y delivery', budget: 160, m: ['PedidosYa', 'Rappi', 'Uber Eats', 'KFC'], n: 6, a: [8, 22] },
+    transporte:{ name: 'Transporte', budget: 90, m: ['Uber', 'Cabify', 'Primax'], n: 9, a: [2.5, 9] },
+    servicios: { name: 'Servicios básicos', budget: 100, fixed: [['Luz', 24.8], ['Agua', 18.35], ['Internet', 32.5], ['Celular', 20]] },
+    subs:      { name: 'Suscripciones', budget: 60, fixed: [['Netflix', 10.99], ['Spotify', 5.99], ['iCloud', 2.99], ['Gimnasio', 35]] },
+    compras:   { name: 'Compras', budget: 260, m: ['Amazon', 'De Prati', 'Kywi'], n: 2, a: [18, 75] },
+    cafe:      { name: 'Cafés y antojos', budget: 45, m: ['Sweet & Coffee', 'Juan Valdez', 'Tienda del barrio'], n: 13, a: [1.8, 4.6], hormiga: true },
+    salud:     { name: 'Salud', budget: 40, m: ['Fybeca', 'Pharmacys'], n: 1, a: [12, 38] },
+    ocio:      { name: 'Ocio', budget: 90, m: ['Cinemark', 'Bar La Ronda', 'Steam'], n: 2, a: [9, 28] }
   };
   var SCEN = {
-    dificil:   { label: 'Mes difícil', mul: { delivery: 1.8, cafe: 2.1, compras: 2.6, ocio: 1.6 }, save: 0, late: 1, income: 1200 },
-    normal:    { label: 'Normal', mul: {}, save: 110, late: 0, income: 1200 },
-    excelente: { label: 'Excelente', mul: { delivery: .5, cafe: .35, compras: .5, ocio: .7 }, save: 240, late: 0, income: 1200 }
+    dificil:   { label: 'Mes difícil', mul: { delivery: 1.8, cafe: 2.1, compras: 2.6, ocio: 1.6 }, save: 0, late: 1, income: 1200, debt: 1.7 },
+    normal:    { label: 'Normal', mul: {}, save: 110, late: 0, income: 1200, debt: 1 },
+    excelente: { label: 'Excelente', mul: { delivery: .5, cafe: .35, compras: .5, ocio: .7 }, save: 240, late: 0, income: 1200, debt: .5 }
   };
   var GOALS = [
-    { name: 'Fondo de emergencia', target: 1500, base: 820, due: 'junio de 2027', share: .6, left: 8 },
-    { name: 'Viaje a Galápagos', target: 1200, base: 310, due: 'diciembre de 2027', share: .4, left: 14 }
+    { id: 'efund', name: 'Fondo de emergencia', target: 1500, base: 820, due: 'junio de 2027', share: .6, left: 8 },
+    { id: 'trip', name: 'Viaje a Galápagos', target: 1200, base: 310, due: 'diciembre de 2027', share: .4, left: 14 }
   ];
 
+  /* Cuentas: las de Pichibank vienen solas; las de otros bancos se
+     conectan con consentimiento (solo lectura, últimos 3 meses). */
+  var BANKS = {
+    pb:       { name: 'Pichibank', ini: 'PB', own: true },
+    andino:   { name: 'Banco Andino', ini: 'BA', what: 'Tarjeta de crédito' },
+    sierra:   { name: 'Cooperativa Sierra', ini: 'CS', what: 'Ahorro programado' },
+    costa:    { name: 'Banco Costa', ini: 'BC', what: 'Cuenta de ahorros' },
+    efectivo: { name: 'Efectivo', ini: '$', what: 'Lo registras tú', manual: true }
+  };
+  var ACCTS = [
+    { id: 'pb1', bank: 'pb', name: 'Cuenta PRINCIPAL', mask: '7890', type: 'ahorro', bal: 1906.04 },
+    { id: 'pb2', bank: 'pb', name: 'Corriente', mask: '1234', type: 'corriente', bal: 1440.35 },
+    { id: 'and1', bank: 'andino', name: 'Visa Andino', mask: '4417', type: 'credito', limit: 2000, base: 420 },
+    { id: 'sie1', bank: 'sierra', name: 'Ahorro programado', mask: '2210', type: 'ahorro', bal: 1350 },
+    { id: 'cos1', bank: 'costa', name: 'Cuenta de ahorros', mask: '0921', type: 'ahorro', bal: 640 },
+    { id: 'efe1', bank: 'efectivo', name: 'Billetera', mask: '', type: 'efectivo', bal: 60 }
+  ];
+  var EXT = {
+    and1: [['compras', 2, [30, 120], ['Mercado Libre', 'Etafashion', 'De Prati']], ['delivery', 3, [10, 25], ['PedidosYa', 'Rappi']], ['ocio', 2, [15, 40], ['Cinemark', 'Ticketshow']]],
+    cos1: [['super', 2, [20, 50], ['Tía', 'Gran Aki']], ['transporte', 3, [3, 8], ['Uber', 'Primax']]],
+    efe1: [['cafe', 6, [1, 3], ['Tienda del barrio']], ['transporte', 6, [.35, .45], ['Bus']]]
+  };
+  function connected(bank) { return BANKS[bank].own || ST.linked.indexOf(bank) >= 0; }
+
   function rng(seed) { return function () { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }; }
-  var D; // datos derivados del escenario
+  var D; // datos derivados del escenario + cuentas conectadas + acciones tomadas
   function build() {
-    var sc = SCEN[ST.scenario] || SCEN.normal, r = rng(97 + ST.scenario.length * 13), tx = [];
+    var sc = SCEN[ST.scenario] || SCEN.normal, r = rng(97 + ST.scenario.length * 13), tx = [], mods = ST.mods;
+    var save = sc.save + mods.extraSave;
     MONTHS.forEach(function (mo, mi) {
       var f = mo.partial ? mo.days / 30 : 1;
-      tx.push({ mi: mi, day: 1, cat: 'ingreso', who: 'Sueldo', amt: sc.income });
-      if (sc.save && !mo.partial) tx.push({ mi: mi, day: 2, cat: 'ahorro', who: 'Ahorro a metas', amt: sc.save });
-      if (sc.save && mo.partial) tx.push({ mi: mi, day: 2, cat: 'ahorro', who: 'Ahorro a metas', amt: Math.round(sc.save * .5) });
+      tx.push({ mi: mi, day: 1, cat: 'ingreso', who: 'Sueldo', amt: sc.income, acct: 'pb1' });
+      if (save) tx.push({ mi: mi, day: 2, cat: 'ahorro', who: 'Ahorro a metas', amt: mo.partial ? Math.round(save * .5) : save, acct: 'pb1' });
       Object.keys(CATS).forEach(function (k) {
         var c = CATS[k];
         if (c.fixed) {
-          c.fixed.forEach(function (p, i) { var d = 3 + i * 4; if (d <= mo.days) tx.push({ mi: mi, day: d, cat: k, who: p[0], amt: p[1], late: k === 'servicios' && sc.late && i === 1 && mi === 1 }); });
+          c.fixed.forEach(function (p, i) { var d = 3 + i * 4; if (d <= mo.days) tx.push({ mi: mi, day: d, cat: k, who: p[0], amt: p[1], acct: 'pb1', late: k === 'servicios' && sc.late && !mods.paidLate && i === 1 && mi === 1 }); });
           return;
         }
         var n = Math.max(0, Math.round(c.n * (sc.mul[k] || 1) * f + (r() - .5)));
-        for (var i = 0; i < n; i++) {
-          tx.push({ mi: mi, day: 1 + Math.floor(r() * mo.days), cat: k, who: c.m[Math.floor(r() * c.m.length)], amt: +(c.a[0] + r() * (c.a[1] - c.a[0])).toFixed(2) });
-        }
+        for (var i = 0; i < n; i++) tx.push({ mi: mi, day: 1 + Math.floor(r() * mo.days), cat: k, who: c.m[Math.floor(r() * c.m.length)], amt: +(c.a[0] + r() * (c.a[1] - c.a[0])).toFixed(2), acct: r() < .7 ? 'pb1' : 'pb2' });
       });
+      // Cuentas de otros bancos conectadas
+      Object.keys(EXT).forEach(function (id) {
+        var ac = ACCTS.filter(function (a) { return a.id === id; })[0];
+        if (!connected(ac.bank)) return;
+        EXT[id].forEach(function (t) {
+          var n = Math.max(0, Math.round(t[1] * (id === 'and1' ? sc.debt : 1) * f + (r() - .5)));
+          for (var i = 0; i < n; i++) tx.push({ mi: mi, day: 1 + Math.floor(r() * mo.days), cat: t[0], who: t[3][Math.floor(r() * t[3].length)], amt: +(t[2][0] + r() * (t[2][1] - t[2][0])).toFixed(2), acct: id });
+        });
+      });
+      if (connected('costa') && !mo.partial) tx.push({ mi: mi, day: 15, cat: 'ingreso', who: 'Pago freelance', amt: 250, acct: 'cos1' });
+      if (connected('sierra')) tx.push({ mi: mi, day: 1, cat: 'ingreso', who: 'Intereses', amt: 6.4, acct: 'sie1' });
     });
     var by = MONTHS.map(function () { var o = {}; Object.keys(CATS).forEach(function (k) { o[k] = 0; }); o._spend = 0; o._save = 0; o._in = 0; o._hormigaN = 0; return o; });
     tx.forEach(function (t) {
@@ -93,21 +126,46 @@
     });
     var totalSaved = by.reduce(function (s, b) { return s + b._save; }, 0);
     var goals = GOALS.map(function (g) {
-      var have = g.base + totalSaved * g.share, monthly = sc.save * g.share;
-      var monthsLeft = g.left;
-      return { name: g.name, target: g.target, have: have, due: g.due, need: (g.target - have) / monthsLeft, monthly: monthly, onTrack: monthly >= (g.target - have) / monthsLeft };
+      var have = g.base + totalSaved * g.share + (g.id === 'efund' ? mods.efund : 0), monthly = save * g.share;
+      return { id: g.id, name: g.name, target: g.target, have: have, due: g.due, need: (g.target - have) / g.left, monthly: monthly, onTrack: monthly >= (g.target - have) / g.left };
     });
+    // Saldos y deuda
+    var cardSpend = tx.filter(function (t) { return t.acct === 'and1' && t.mi >= 1; }).reduce(function (s, t) { return s + t.amt; }, 0);
+    var accts = ACCTS.filter(function (a) { return connected(a.bank); }).map(function (a) {
+      var o = Object.assign({}, a);
+      if (a.type === 'credito') { o.owed = Math.max(0, a.base * sc.debt + cardSpend - mods.ccPaid); o.bal = -o.owed; }
+      if (a.id === 'pb1') o.bal = a.bal - mods.efund - mods.ccPaid - mods.paidLateAmt;
+      return o;
+    });
+    var assets = accts.filter(function (a) { return a.type !== 'credito'; }).reduce(function (s, a) { return s + a.bal; }, 0);
+    var card = accts.filter(function (a) { return a.type === 'credito'; })[0];
+    var debt = card ? card.owed : 0, util = card ? debt / card.limit : 0;
+    var avgSpend = (by[0]._spend + by[1]._spend) / 2;
+    var cushion = goals[0].have + (connected('sierra') ? ACCTS[3].bal : 0);
+    var months = cushion / avgSpend;
+
     var sep = by[1], overCats = Object.keys(CATS).filter(function (k) { return sep[k] > CATS[k].budget; });
-    var lateN = tx.filter(function (t) { return t.late; }).length;
+    var lateTx = tx.filter(function (t) { return t.late; }), lateN = lateTx.length;
     var rate = sep._save / sep._in;
     var f = {
-      ahorro:      { v: Math.min(1, rate / .15), label: 'Ahorro', icon: 'savings', c: '#f08c2e', val: pct(rate) + ' del sueldo', ok: rate >= .08, note: rate >= .08 ? 'Por eso crecen las hojas' : 'Con el 8% del sueldo empiezan a crecer' },
-      metas:       { v: goals.filter(function (g) { return g.onTrack; }).length / goals.length, label: 'Metas', icon: 'flag', c: '#31a451', val: goals.filter(function (g) { return g.onTrack; }).length + ' de ' + goals.length + ' al día', ok: goals.every(function (g) { return g.onTrack; }), note: goals.every(function (g) { return g.onTrack; }) ? 'Por eso aparecen árboles' : 'Un aporte más y aparecen árboles' },
-      pagos:       { v: lateN ? 0 : 1, label: 'Pagos a tiempo', icon: 'event_available', c: '#2f7abf', val: lateN ? lateN + ' pago tarde' : 'Todo al día', ok: !lateN, note: lateN ? 'Ponte al día y vuelven las flores' : 'Por eso hay flores' },
-      presupuesto: { v: 1 - Math.min(1, overCats.length / 3), label: 'Presupuesto', icon: 'pie_chart', c: '#7c5cd6', val: overCats.length ? overCats.length + ' sobre el tope' : 'Dentro del tope', ok: !overCats.length, note: overCats.length ? 'Vuelve al tope y regresan los pájaros' : 'Por eso hay pájaros' }
+      ahorro: { v: Math.min(1, rate / .15), label: 'Ahorro', icon: 'savings', ok: rate >= .08, val: pct(rate) + ' de tus ingresos',
+        tip: rate >= .08 ? 'Guardas más del 8% de lo que entra. Por eso crecen las hojas.' : 'Apunta a guardar al menos el 8% de lo que entra; es lo que hace crecer las hojas.',
+        act: rate >= .15 ? null : { id: 'save50', label: 'Programar $ 50 más al mes' } },
+      pagos: { v: lateN ? 0 : 1, label: 'Pagos a tiempo', icon: 'event_available', ok: !lateN, val: lateN ? lateN + ' pago tarde' : 'Todo al día',
+        tip: lateN ? 'El agua de septiembre sigue pendiente. Pagarla hoy evita el recargo y devuelve las flores.' : 'Nada atrasado en los últimos 3 meses. Por eso hay flores.',
+        act: lateN ? { id: 'payLate', label: 'Pagar agua (' + money(18.35) + ')' } : null },
+      presupuesto: { v: 1 - Math.min(1, overCats.length / 3), label: 'Presupuesto', icon: 'pie_chart', ok: !overCats.length, val: overCats.length ? overCats.length + ' sobre el tope' : 'Dentro del tope',
+        tip: overCats.length ? 'Te pasaste en ' + overCats.map(function (k) { return CATS[k].name.toLowerCase(); }).join(', ') + '. Volver al tope trae de vuelta a los pájaros.' : 'Septiembre quedó dentro de todos tus topes.',
+        act: overCats.length ? { id: 'cat:' + overCats[0], label: 'Ver ' + CATS[overCats[0]].name.toLowerCase() } : null },
+      deuda: { v: card ? 1 - Math.min(1, util / .6) : 1, label: 'Uso de tarjetas', icon: 'credit_card', ok: util < .3, val: card ? pct(util) + ' del cupo' : 'Sin tarjetas conectadas',
+        tip: !card ? 'Conecta tus tarjetas de otros bancos para verlas aquí.' : util < .3 ? 'Usas menos del 30% de tu cupo. Así cuidas tu historial.' : 'Usar más del 30% del cupo pesa en tu historial. Bajarlo es lo que más mueve tu salud este mes.',
+        act: card && util >= .3 ? { id: 'payCard', label: 'Abonar $ 200 a Visa Andino' } : null },
+      colchon: { v: Math.min(1, months / 6), label: 'Colchón para imprevistos', icon: 'shield', ok: months >= 3, val: months.toFixed(1).replace('.', ',') + ' meses de gastos',
+        tip: months >= 3 ? 'Si mañana no entra plata, cubres más de 3 meses. Es lo que recomiendan como mínimo.' : 'Lo recomendable es tener al menos 3 meses de gastos guardados. Hoy cubres ' + months.toFixed(1).replace('.', ',') + '.',
+        act: months >= 6 ? null : { id: 'efund100', label: 'Mover $ 100 al fondo' } }
     };
-    var score = Math.round(30 * f.ahorro.v + 25 * f.metas.v + 25 * f.pagos.v + 20 * f.presupuesto.v);
-    D = { tx: tx, by: by, goals: goals, f: f, score: score, overCats: overCats, lateN: lateN, sc: sc };
+    var score = Math.round(25 * f.ahorro.v + 20 * f.pagos.v + 20 * f.presupuesto.v + 15 * f.deuda.v + 20 * f.colchon.v);
+    D = { tx: tx, by: by, goals: goals, f: f, score: score, overCats: overCats, lateN: lateN, sc: sc, accts: accts, assets: assets, debt: debt, util: util, card: card, months: months };
   }
   function level(s) {
     if (s >= 80) return { n: 'Bosque frondoso', c: '#2e9d4a', k: 4 };
@@ -229,6 +287,18 @@
     var sep = D.by[1], oct = D.by[2], ago = D.by[0];
     if (/^(hola|buenas|buenos|hey|que tal)\b/.test(s)) return { t: 'Hola. ¿Qué quieres revisar? Puedo decirte en qué se te va la plata, cómo vas con tus metas o dónde te pasaste del tope.' };
     if (OLD.test(s)) return reports(s);
+    if (/cuenta|banco|saldo|tengo|patrimonio|total/.test(s)) {
+      return { t: 'Entre tus ' + D.accts.length + ' cuentas tienes <b>' + money(D.assets) + '</b>' + (D.debt ? ' y debes ' + money(D.debt) + ' en tarjetas' : '') + '. ' +
+        (ST.linked.length < 3 ? 'Si conectas tus otros bancos, el panorama queda completo.' : ''),
+        h: bars(D.accts.filter(function (a) { return a.type !== 'credito'; }).map(function (a) { return { label: BANKS[a.bank].name + ' · ' + a.name, v: a.bal }; }).sort(function (a, b) { return b.v - a.v; })) };
+    }
+    if (/deuda|debo|tarjeta|credito|cupo/.test(s)) {
+      return D.card ? { t: 'Debes <b>' + money(D.debt) + '</b> en tu Visa Andino, el ' + pct(D.util) + ' de tu cupo. ' + (D.util >= .3 ? 'Si lo bajas del 30%, tu historial lo nota. Con ' + money(Math.max(0, D.debt - D.card.limit * .3)) + ' llegas.' : 'Estás por debajo del 30%, que es lo sano.') }
+        : { t: 'No veo tarjetas de crédito. Si tienes alguna en otro banco, conéctala desde Mis finanzas.' };
+    }
+    if (/colchon|imprevisto|emergencia sin|cuantos meses/.test(s)) {
+      return { t: 'Con lo que tienes guardado cubres <b>' + D.months.toFixed(1).replace('.', ',') + ' meses</b> de gastos. Lo recomendable es al menos 3.' };
+    }
     if (/hormiga|cafe|antojo|cafecito/.test(s)) {
       var n = sep._hormigaN, v = sep.cafe, year = v * 12;
       return { t: 'Fueron <b>' + n + ' cafés y antojos</b> en septiembre, ' + money(v) + ' en total. Uno por uno no se nota, pero al año son ' + money(year) + '. ' +
@@ -308,10 +378,12 @@
 
   function insight() {
     if (D.lateN) return 'El agua de septiembre se pagó tarde. Págala hoy y evitas el recargo del próximo mes.';
+    if (D.card && D.util >= .5) return 'Tu Visa Andino va en ' + pct(D.util) + ' del cupo. Es lo que más baja tu salud financiera ahora.';
     if (D.overCats.length) {
       var k = D.overCats.slice().sort(function (a, b) { return (D.by[1][b] - CATS[b].budget) - (D.by[1][a] - CATS[a].budget); })[0];
       return 'En septiembre gastaste ' + money(D.by[1][k] - CATS[k].budget) + ' más de lo previsto en ' + CATS[k].name.toLowerCase() + '.';
     }
+    if (D.months < 3) return 'Tus ahorros cubren ' + D.months.toFixed(1).replace('.', ',') + ' meses de gastos. Lo sano es llegar a 3.';
     var g = D.goals.filter(function (x) { return !x.onTrack; })[0];
     if (g) return 'Para tener tu ' + g.name.toLowerCase() + ' en ' + g.due + ', súmale ' + money(g.need - g.monthly) + ' al mes a lo que ya pones.';
     return 'Septiembre cerró con ' + money(D.by[1]._save) + ' guardados y todo pagado a tiempo.';
@@ -321,7 +393,7 @@
      Tarjeta aireada: ilustración centrada sobre un círculo neutro,
      un solo mensaje y un link. */
   function entryHTML(where) {
-    return '<button class="as-entry" data-as-open="' + where + '" aria-label="Abrir asistente de finanzas">' +
+    return '<button class="as-entry" data-as-open="' + where + '" aria-label="Abrir Mis finanzas">' +
       '<span class="as-entry__art"><span class="as-entry__blob"></span><span class="as-entry__pet"></span></span>' +
       '<span class="as-entry__eyebrow"></span>' +
       '<span class="as-entry__title"></span>' +
@@ -347,14 +419,14 @@
     }
     document.querySelectorAll('[data-as-open]').forEach(function (b) {
       if (b._as) return; b._as = 1;
-      b.addEventListener('click', function () { open(); });
+      b.addEventListener('click', function () { openPF(); });
     });
   }
   function paintEntries() {
     document.querySelectorAll('[data-as-open]').forEach(function (b) {
       b.querySelector('.as-entry__pet').innerHTML = C().svg();
-      b.querySelector('.as-entry__eyebrow').textContent = C().name + ' revisó tu septiembre';
-      b.querySelector('.as-entry__cta').textContent = 'Preguntarle a ' + C().name;
+      b.querySelector('.as-entry__eyebrow').textContent = 'Salud financiera ' + D.score + '/100 · ' + D.accts.length + ' cuentas';
+      b.querySelector('.as-entry__cta').textContent = 'Ver mis finanzas';
       b.querySelector('.as-entry__title').textContent = insight();
     });
   }
@@ -387,11 +459,7 @@
         '<form class="as-input"><input type="text" enterkeyhint="send" autocomplete="off" aria-label="Escribe tu pregunta">' +
         '<button class="as-send" type="submit" aria-label="Enviar"><span class="material-symbols-rounded">arrow_upward</span></button></form></div>';
     document.body.appendChild(page);
-    back = document.createElement('div'); back.className = 'as-sheet-back';
-    sheet = document.createElement('div'); sheet.className = 'as-sheet'; sheet.setAttribute('role', 'dialog');
-    document.body.appendChild(back); document.body.appendChild(sheet);
-    back.addEventListener('click', closeSheet);
-    sheet.addEventListener('click', onSheetClick);
+    ensureSheet();
 
     chat = page.querySelector('.as-chat');
     input = page.querySelector('input');
@@ -433,15 +501,31 @@
     input.placeholder = 'Escribe tu pregunta';
   }
 
-  /* Hojas inferiores */
+  /* Hojas inferiores (compartidas por el PFM y el asistente) */
+  function ensureSheet() {
+    if (sheet) return;
+    back = document.createElement('div'); back.className = 'as-sheet-back';
+    sheet = document.createElement('div'); sheet.className = 'as-sheet'; sheet.setAttribute('role', 'dialog');
+    document.body.appendChild(back); document.body.appendChild(sheet);
+    back.addEventListener('click', closeSheet);
+    sheet.addEventListener('click', onSheetClick);
+  }
+  function showSheet(html) {
+    ensureSheet();
+    sheet.innerHTML = '<div class="as-sheet__handle"></div>' + html;
+    sheet.scrollTop = 0;
+    if (!sheet.classList.contains('open')) fx('open');
+    back.classList.add('open'); sheet.classList.add('open');
+  }
   function openSheet(kind) {
+    ensureSheet();
     var lv = level(D.score), html = '<div class="as-sheet__handle"></div>';
     if (kind === 'land') {
-      html += '<h3>' + lv.n + '</h3><p>' + C().name + ' no cambia; cambia el lugar donde vive. Depende de cómo te va con estos cuatro hábitos.</p>' +
+      html += '<h3>' + lv.n + '</h3><p>' + C().name + ' no cambia; cambia el lugar donde vive. Depende de cómo te va con estos cinco hábitos.</p>' +
         '<div class="as-rows">' + Object.keys(D.f).map(function (k) {
           var f = D.f[k];
           return '<div class="as-row"><span class="as-row__icon material-symbols-rounded">' + f.icon + '</span>' +
-            '<span class="as-row__main"><b>' + f.label + '</b><small>' + f.note + '</small></span>' +
+            '<span class="as-row__main"><b>' + f.label + '</b><small>' + f.tip + '</small></span>' +
             '<span class="as-row__val' + (f.ok ? '' : ' is-warn') + '">' + f.val + '</span></div>';
         }).join('') + '</div>';
     } else {
@@ -460,11 +544,13 @@
   }
   function closeSheet() { back.classList.remove('open'); sheet.classList.remove('open'); }
   function onSheetClick(e) {
+    var sb = e.target.closest('[data-sheet]');
+    if (sb) return onSheetPF(sb);
     var b = e.target.closest('[data-who],[data-sc]');
     if (!b) return;
     if (b.dataset.who && ST.who !== b.dataset.who) { ST.who = b.dataset.who; fx('toggle'); }
     if (b.dataset.sc && ST.scenario !== b.dataset.sc) { ST.scenario = b.dataset.sc; build(); fx(D.score >= 55 ? 'success' : 'select'); }
-    persist(); paintAll();
+    persist(); paintAll(); paintPF();
     sheet.querySelectorAll('[data-who]').forEach(function (x) { x.setAttribute('aria-pressed', String(x.dataset.who === ST.who)); });
     sheet.querySelectorAll('[data-sc]').forEach(function (x) { x.setAttribute('aria-pressed', String(x.dataset.sc === ST.scenario)); });
   }
@@ -502,12 +588,243 @@
   }
   function close() {
     page.classList.remove('open');
+    if (!document.querySelector('#finance-page.open, .pf-page.open')) document.body.style.overflow = '';
+    fx('close');
+    paintEntries(); paintPF();
+  }
+
+  /* =====================================================================
+     PFM — Mis finanzas
+     Todas tus cuentas (Pichibank + otros bancos conectados), a dónde se
+     va tu dinero, presupuesto, salud financiera con acciones concretas,
+     pagos recurrentes, metas y movimientos. El asistente es una capa más.
+     ===================================================================== */
+  var pf;
+  var NEUTRAL = ['var(--as-line)', '#5b6478', '#8b93a5', '#b7bcc8', '#d9dce3'];
+  function bankAv(bank) { return '<span class="pf-av' + (BANKS[bank].own ? ' is-own' : '') + '">' + BANKS[bank].ini + '</span>'; }
+  function acctOf(id) { return ACCTS.filter(function (a) { return a.id === id; })[0]; }
+  function catTotals(mi) {
+    var b = D.by[mi];
+    return Object.keys(CATS).map(function (k) { return { k: k, v: b[k] }; }).filter(function (c) { return c.v > 0; }).sort(function (a, b) { return b.v - a.v; });
+  }
+  function donut(rows, total) {
+    var R = 54, C = 2 * Math.PI * R, off = 0, segs = [];
+    var top = rows.slice(0, 4), rest = rows.slice(4).reduce(function (s, r) { return s + r.v; }, 0);
+    if (rest) top = top.concat([{ k: '_o', v: rest }]);
+    top.forEach(function (r, i) {
+      var len = r.v / total * C;
+      segs.push('<circle r="' + R + '" cx="70" cy="70" fill="none" stroke="' + NEUTRAL[i] + '" stroke-width="18" stroke-dasharray="' + Math.max(0, len - 2).toFixed(1) + ' ' + C.toFixed(1) + '" stroke-dashoffset="' + (-off).toFixed(1) + '" transform="rotate(-90 70 70)"/>');
+      off += len;
+    });
+    return '<svg class="pf-donut" viewBox="0 0 140 140" aria-hidden="true">' + segs.join('') + '</svg>';
+  }
+  function txRow(t) {
+    var a = acctOf(t.acct), inc = t.cat === 'ingreso', sav = t.cat === 'ahorro';
+    var cat = inc ? 'Ingreso' : sav ? 'Ahorro' : CATS[t.cat].name;
+    return '<div class="pf-tx">' + bankAv(a.bank) + '<span class="pf-tx__main"><b>' + esc(t.who) + '</b><small>' + cat + ' · ' + t.day + ' ' + MONTHS[t.mi].short.toLowerCase() + ' · ' + BANKS[a.bank].name + '</small></span>' +
+      '<span class="pf-tx__amt' + (inc ? ' is-in' : '') + '">' + (inc ? '+' : sav ? '' : '-') + money(t.amt) + '</span></div>';
+  }
+  function sortedTx(filter) {
+    return D.tx.filter(filter || function () { return true; }).sort(function (a, b) { return (b.mi * 40 + b.day) - (a.mi * 40 + a.day); });
+  }
+
+  function mountPF() {
+    pf = document.createElement('div');
+    pf.className = 'pf-page';
+    pf.setAttribute('role', 'dialog');
+    pf.setAttribute('aria-modal', 'true');
+    pf.innerHTML =
+      '<div class="pf-top"><button class="as-icon-btn" data-pf="close" aria-label="Volver"><span class="material-symbols-rounded">arrow_back</span></button>' +
+        '<b>Mis finanzas</b><button class="as-icon-btn" data-pf="settings" aria-label="Ajustes"><span class="material-symbols-rounded">tune</span></button></div>' +
+      '<div class="pf-scroll"></div>';
+    document.body.appendChild(pf);
+    pf.addEventListener('click', onPF);
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape' || !pf.classList.contains('open') || (page && page.classList.contains('open'))) return;
+      e.stopImmediatePropagation();
+      if (sheet && sheet.classList.contains('open')) closeSheet(); else closePF();
+    }, true);
+  }
+  function paintPF() {
+    if (!pf) return;
+    var lv = level(D.score), mi = ST.month, rows = catTotals(mi), total = D.by[mi]._spend;
+    var oct = D.by[2], day = MONTHS[2].days, monthDays = 31, pace = day / monthDays;
+    var recurring = [];
+    ['servicios', 'subs'].forEach(function (k) { CATS[k].fixed.forEach(function (p, i) { var d = 3 + i * 4; recurring.push({ who: p[0], amt: p[1], day: d, next: d > day ? d + ' oct' : d + ' nov' }); }); });
+    if (D.card) recurring.push({ who: 'Visa Andino (pago mínimo)', amt: Math.max(25, D.debt * .05), day: 20, next: '20 oct' });
+    recurring.sort(function (a, b) { return (a.next.indexOf('oct') >= 0 ? a.day : a.day + 40) - (b.next.indexOf('oct') >= 0 ? b.day : b.day + 40); });
+    var recTotal = recurring.reduce(function (s, r) { return s + r.amt; }, 0);
+    var html =
+      /* Héroe: salud financiera + asistente */
+      '<section class="pf-hero"><div class="pf-hero__land">' + landSVG(D.score).replace('xMidYMax slice', 'xMidYMax meet') + '</div>' +
+        '<div class="pf-hero__pet">' + C().svg() + '</div>' +
+        '<div class="pf-hero__score"><small>Salud financiera</small><b>' + D.score + '<i>/100</i></b><span>' + lv.n + '</span></div></section>' +
+      '<p class="pf-insight">' + esc(insight()) + '</p>' +
+      '<button class="pf-ask" data-pf="ask"><span class="pf-ask__av">' + C().svg() + '</span><span>Pregúntale a ' + C().name + '</span><span class="material-symbols-rounded">arrow_forward</span></button>' +
+
+      /* Cuentas */
+      '<section class="pf-sec"><h2>Tus cuentas</h2><p class="pf-sub">Tienes ' + money(D.assets) + (D.debt ? ' · Debes ' + money(D.debt) : '') + '</p><div class="pf-card">' +
+        D.accts.map(function (a) {
+          return '<div class="pf-row">' + bankAv(a.bank) + '<span class="pf-row__main"><b>' + a.name + '</b><small>' + BANKS[a.bank].name + (a.mask ? ' ·••' + a.mask : '') + '</small></span>' +
+            '<span class="pf-row__val">' + (a.type === 'credito' ? '<b>-' + money(a.owed) + '</b><small>Cupo ' + money(a.limit) + '</small>' : '<b>' + money(a.bal) + '</b>') + '</span></div>';
+        }).join('') +
+        '<button class="pf-row pf-row--add" data-pf="connect"><span class="pf-av pf-av--add material-symbols-rounded">add</span><span class="pf-row__main"><b>Conectar otra cuenta</b><small>Otros bancos, cooperativas o efectivo</small></span></button>' +
+      '</div></section>' +
+
+      /* Gastos por categoría */
+      '<section class="pf-sec"><h2>En qué se va tu dinero</h2>' +
+        '<div class="pf-seg" role="group">' + MONTHS.map(function (m, i) { return '<button data-pf="month:' + i + '" aria-pressed="' + (i === mi) + '">' + m.short + (m.partial ? ' (hasta hoy)' : '') + '</button>'; }).join('') + '</div>' +
+        '<div class="pf-card pf-spend"><div class="pf-donut-wrap">' + donut(rows, total) + '<span><small>Gastaste</small><b>' + money(total) + '</b></span></div>' +
+        '<div class="pf-legend">' + rows.map(function (r, i) {
+          return '<button class="pf-legend__row" data-pf="cat:' + r.k + '"><i style="background:' + NEUTRAL[Math.min(i, 4)] + '"></i><span>' + CATS[r.k].name + '</span><b>' + money(r.v) + '</b><small>' + pct(r.v / total) + '</small></button>';
+        }).join('') + '</div></div></section>' +
+
+      /* Presupuesto del mes en curso */
+      '<section class="pf-sec"><h2>Presupuesto de octubre</h2><p class="pf-sub">Día ' + day + ' de ' + monthDays + '. La línea marca dónde deberías ir.</p><div class="pf-card pf-budget">' +
+        Object.keys(CATS).filter(function (k) { return !CATS[k].fixed; }).map(function (k) {
+          var used = oct[k] / CATS[k].budget, fast = used > pace + .12;
+          return '<div class="pf-bud"><div class="pf-bud__top"><span>' + CATS[k].name + '</span><span><b>' + money(oct[k]) + '</b> de ' + money(CATS[k].budget) + '</span></div>' +
+            '<div class="pf-bud__bar"><i style="width:' + Math.min(100, used * 100).toFixed(0) + '%"' + (fast ? ' class="is-fast"' : '') + '></i><u style="left:' + (pace * 100).toFixed(0) + '%"></u></div>' +
+            (fast ? '<small>Vas más rápido de lo previsto</small>' : '') + '</div>';
+        }).join('') + '</div></section>' +
+
+      /* Salud financiera: pilares + acción */
+      '<section class="pf-sec"><h2>Cómo mejorar tu salud financiera</h2><p class="pf-sub">Cada paso cambia el paisaje de ' + C().name + '.</p><div class="pf-card">' +
+        Object.keys(D.f).map(function (k) {
+          var f = D.f[k];
+          return '<div class="pf-pillar"><div class="pf-pillar__top"><span class="as-row__icon material-symbols-rounded">' + f.icon + '</span><span class="pf-row__main"><b>' + f.label + '</b><small' + (f.ok ? '' : ' class="is-warn"') + '>' + f.val + '</small></span>' +
+            '<span class="pf-meter"><i style="width:' + Math.round(f.v * 100) + '%"></i></span></div><p>' + f.tip + '</p>' +
+            (f.act ? '<button class="pf-btn" data-pf="act:' + f.act.id + '">' + f.act.label + '</button>' : '') + '</div>';
+        }).join('') + '</div></section>' +
+
+      /* Recurrentes */
+      '<section class="pf-sec"><h2>Pagos que se repiten</h2><p class="pf-sub">' + money(recTotal) + ' al mes en ' + recurring.length + ' pagos</p><div class="pf-card">' +
+        recurring.map(function (r) { return '<div class="pf-row"><span class="pf-date">' + r.next.split(' ')[0] + '<small>' + r.next.split(' ')[1] + '</small></span><span class="pf-row__main"><b>' + r.who + '</b></span><span class="pf-row__val"><b>' + money(r.amt) + '</b></span></div>'; }).join('') +
+      '</div></section>' +
+
+      /* Metas */
+      '<section class="pf-sec"><h2>Tus metas</h2><div class="pf-card">' +
+        D.goals.map(function (g) {
+          return '<div class="pf-goal"><div class="pf-bud__top"><span><b>' + g.name + '</b></span><span>' + money(g.have) + ' de ' + money(g.target) + '</span></div>' +
+            '<div class="pf-bud__bar"><i style="width:' + Math.min(100, g.have / g.target * 100).toFixed(0) + '%"></i></div>' +
+            '<small>' + (g.onTrack ? 'Al ritmo actual llegas a ' + g.due + '.' : 'Para llegar a ' + g.due + ' faltan ' + money(g.need - g.monthly) + ' más al mes.') + '</small></div>';
+        }).join('') + '</div></section>' +
+
+      /* Movimientos */
+      '<section class="pf-sec"><h2>Últimos movimientos</h2><div class="pf-card">' + sortedTx().slice(0, 6).map(txRow).join('') +
+        '<button class="pf-more" data-pf="alltx">Ver todos</button></div>' +
+        '<p class="pf-note">Vemos los movimientos de los últimos 3 meses, de agosto a hoy. Los bancos conectados se actualizan una vez al día y solo podemos leer, nunca mover tu dinero.</p></section>';
+    pf.querySelector('.pf-scroll').innerHTML = html;
+  }
+
+  function onPF(e) {
+    var b = e.target.closest('[data-pf]');
+    if (!b) return;
+    var k = b.dataset.pf;
+    if (k === 'close') return closePF();
+    if (k === 'settings') return openSheet('settings');
+    if (k === 'ask') return open();
+    if (k === 'connect') return connectSheet();
+    if (k === 'alltx') return allTxSheet('all');
+    if (k.indexOf('month:') === 0) { ST.month = +k.slice(6); persist(); fx('select'); return paintPF(); }
+    if (k.indexOf('cat:') === 0) return catSheet(k.slice(4));
+    if (k.indexOf('act:') === 0) return doAction(k.slice(4), b);
+  }
+  function doAction(id, btn) {
+    if (id.indexOf('cat:') === 0) return catSheet(id.slice(4));
+    var before = D.score, m = ST.mods, msg;
+    if (id === 'save50') { m.extraSave += 50; msg = 'Listo. Desde el próximo mes se mueven $ 50 más a tus metas el día 2.'; }
+    if (id === 'payLate') { m.paidLate = true; m.paidLateAmt += 18.35; msg = 'Pagaste el agua. Ya no tienes pagos atrasados.'; }
+    if (id === 'payCard') { m.ccPaid += 200; msg = 'Abonaste $ 200 a tu Visa Andino desde tu cuenta PRINCIPAL.'; }
+    if (id === 'efund100') { m.efund += 100; msg = 'Moviste $ 100 a tu fondo de emergencia.'; }
+    persist(); build();
+    fx(D.score > before ? 'success' : 'select');
+    paintPF(); paintEntries();
+    toast(msg + (D.score > before ? ' Tu salud subió a ' + D.score + '.' : ''));
+  }
+  var toastT;
+  function toast(t) {
+    var el = document.querySelector('.pf-toast');
+    if (!el) { el = document.createElement('div'); el.className = 'pf-toast'; el.setAttribute('role', 'status'); document.body.appendChild(el); }
+    el.textContent = t; el.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(function () { el.classList.remove('show'); }, 3200);
+  }
+
+  /* Hojas del PFM */
+  function catSheet(k) {
+    var mi = ST.month, list = sortedTx(function (t) { return t.cat === k && t.mi === mi; }), by = {};
+    list.forEach(function (t) { by[t.who] = (by[t.who] || 0) + t.amt; });
+    var tot = D.by[mi][k], avg = (D.by[0][k] + D.by[1][k]) / 2;
+    showSheet('<h3>' + CATS[k].name + '</h3><p>' + money(tot) + ' en ' + MONTHS[mi].name + (MONTHS[mi].partial ? ' hasta hoy' : '') + '. Tu promedio es ' + money(avg) + ' al mes.</p>' +
+      bars(Object.keys(by).map(function (w) { return { label: w, v: by[w] }; }).sort(function (a, b) { return b.v - a.v; })) +
+      '<p class="as-sheet__label">Movimientos</p><div class="pf-sheet-list">' + list.map(txRow).join('') + '</div>');
+  }
+  function allTxSheet(acct) {
+    var ids = D.accts.map(function (a) { return a.id; });
+    var list = sortedTx(function (t) { return acct === 'all' || t.acct === acct; });
+    showSheet('<h3>Movimientos</h3><p>Últimos 3 meses en todas tus cuentas.</p>' +
+      '<div class="as-chips pf-chips"><button class="as-chip" data-sheet="tx:all" aria-pressed="' + (acct === 'all') + '">Todas</button>' +
+      ids.map(function (id) { var a = acctOf(id); return '<button class="as-chip" data-sheet="tx:' + id + '" aria-pressed="' + (acct === id) + '">' + BANKS[a.bank].name + (a.mask ? ' ··' + a.mask : '') + '</button>'; }).join('') + '</div>' +
+      '<div class="pf-sheet-list">' + list.slice(0, 60).map(txRow).join('') + '</div>');
+  }
+  function connectSheet() {
+    var avail = Object.keys(BANKS).filter(function (k) { return !BANKS[k].own; });
+    showSheet('<h3>Conectar una cuenta</h3><p>Suma tus otros bancos para ver todo tu dinero en un solo lugar. Solo leemos saldos y movimientos; no podemos mover tu dinero.</p><div class="as-rows">' +
+      avail.map(function (k) {
+        var on = ST.linked.indexOf(k) >= 0;
+        return '<button class="as-row as-row--btn" data-sheet="' + (on ? 'unlink:' : 'link:') + k + '">' + bankAv(k) + '<span class="as-row__main"><b>' + BANKS[k].name + '</b><small>' + BANKS[k].what + '</small></span>' +
+          '<span class="pf-tag' + (on ? ' is-on' : '') + '">' + (on ? 'Conectada' : BANKS[k].manual ? 'Agregar' : 'Conectar') + '</span></button>';
+      }).join('') + '</div>');
+  }
+  function consentSheet(k) {
+    if (BANKS[k].manual) return finishLink(k);
+    showSheet('<div class="pf-consent">' + bankAv('pb') + '<span class="pf-consent__link"></span>' + bankAv(k) + '</div>' +
+      '<h3>Pichibank quiere ver tu ' + BANKS[k].what.toLowerCase() + ' de ' + BANKS[k].name + '</h3>' +
+      '<div class="as-rows">' +
+        '<div class="as-row"><span class="as-row__icon material-symbols-rounded">visibility</span><span class="as-row__main"><b>Saldos y movimientos</b><small>De los últimos 3 meses, actualizados una vez al día</small></span></div>' +
+        '<div class="as-row"><span class="as-row__icon material-symbols-rounded">block</span><span class="as-row__main"><b>No puede mover tu dinero</b><small>Ni pagar, ni transferir, ni ver tus claves</small></span></div>' +
+        '<div class="as-row"><span class="as-row__icon material-symbols-rounded">link_off</span><span class="as-row__main"><b>Lo desconectas cuando quieras</b><small>Desde esta misma pantalla</small></span></div>' +
+      '</div><button class="pf-cta" data-sheet="auth:' + k + '">Continuar en ' + BANKS[k].name + '</button>');
+  }
+  function finishLink(k) {
+    showSheet('<div class="pf-linking"><span class="pf-spinner"></span><h3>Conectando con ' + BANKS[k].name + '…</h3><p>Trayendo tus movimientos de los últimos 3 meses.</p></div>');
+    setTimeout(function () {
+      ST.linked.push(k); persist(); build(); paintPF(); paintEntries();
+      var n = D.tx.filter(function (t) { var a = acctOf(t.acct); return a.bank === k; }).length;
+      fx('success');
+      showSheet('<div class="pf-linking"><span class="pf-done material-symbols-rounded">check</span><h3>' + BANKS[k].name + ' conectado</h3><p>' +
+        (BANKS[k].manual ? 'Registra tus gastos en efectivo y los sumamos al resto.' : 'Sumamos ' + n + ' movimientos a tus finanzas. Tu salud financiera ahora es ' + D.score + '.') + '</p>' +
+        '<button class="pf-cta" data-sheet="close">Listo</button></div>');
+    }, 1400);
+  }
+  function onSheetPF(b) {
+    var k = b.dataset.sheet;
+    if (k === 'close') return closeSheet();
+    if (k.indexOf('tx:') === 0) return allTxSheet(k.slice(3));
+    if (k.indexOf('link:') === 0) return consentSheet(k.slice(5));
+    if (k.indexOf('auth:') === 0) return finishLink(k.slice(5));
+    if (k.indexOf('unlink:') === 0) {
+      var bank = k.slice(7);
+      ST.linked = ST.linked.filter(function (x) { return x !== bank; }); persist(); build(); paintPF(); paintEntries(); fx('toggle');
+      return connectSheet();
+    }
+  }
+
+  function openPF() {
+    if (!pf) mountPF();
+    paintPF();
+    pf.querySelector('.pf-scroll').scrollTop = 0;
+    pf.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    fx('open');
+  }
+  function closePF() {
+    pf.classList.remove('open');
     if (!document.querySelector('#finance-page.open')) document.body.style.overflow = '';
     fx('close');
-    paintEntries();
   }
 
   function init() { build(); mountEntries(); paintEntries(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
-  window.Asistente = { open: open, ask: function (q) { open(); ask(q); }, data: function () { return D; } };
+  window.Asistente = { open: open, openPF: function () { openPF(); }, ask: function (q) { open(); ask(q); }, data: function () { return D; } };
 })();
