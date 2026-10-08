@@ -72,10 +72,14 @@ def smooth_normals(P, IDX):
     for k in range(3): np.add.at(acc, inv[F[:, k]], fn)
     acc /= np.linalg.norm(acc, axis=1, keepdims=True) + 1e-12
     return acc[inv].astype(np.float32)
+def sstep(e0, e1, v):
+    t = np.clip((v - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t)
+def armness(p):
+    # Manga = cerca del eje del brazo (y=.095, z=0). La panza y los costados
+    # del suéter quedan a más de 11 cm del eje aunque estén a la misma |x|.
+    return 1 - sstep(.08, .11, np.hypot(p[:, 1] - .095, p[:, 2]))
 def arm_mask(p):
-    ax = np.abs(p[:, 0]); y = p[:, 1]
-    t = np.clip((ax - .13) / .07, 0, 1); t = t * t * (3 - 2 * t)
-    return t * ((y > -.04) & (y < .19))
+    return sstep(.13, .20, np.abs(p[:, 0])) * armness(p)
 n0 = len(P)
 P, UV, IDX = subdivide(P, UV, IDX, arm_mask)
 N0 = N; N = smooth_normals(P, IDX)
@@ -161,6 +165,14 @@ for s_, L in ((1, 'L'), (-1, 'R')):
     hb = ss(-.14, -.24, y)
     W[hipz] = W[hipz] * (1 - hb[hipz, None])
     W[hipz, idx['thigh_' + L]] += hb[hipz]
+# Costados y panza: aunque estén a la altura del brazo, siguen al torso.
+am = armness(P.astype(float))
+torso = np.stack([idx['chest'], idx['spine'], idx['hips']])
+Wt = np.zeros_like(W); Wt[:, torso] = 1.0 / (D[:, torso] + .012) ** 4
+Wt /= Wt.sum(1, keepdims=True)
+armz = (ax > .13) & (am < 1)
+Wn = W[armz] / np.maximum(W[armz].sum(1, keepdims=True), 1e-12)
+W[armz] = Wn * am[armz, None] + Wt[armz] * (1 - am[armz, None])
 none = W.sum(1) == 0
 W[none] = 1.0 / (D[none] + .012) ** 4  # respaldo: cualquier hueso cercano
 top = np.argsort(-W, 1)[:, :4]
