@@ -68,13 +68,12 @@
     el.innerHTML =
       '<div class="sx-back" data-sx="close"></div>' +
       '<div class="sx-panel">' +
-        '<form class="sx-field" role="search">' +
+        '<div class="sx-head"><form class="sx-field" role="search">' +
           '<span class="material-symbols-rounded" aria-hidden="true">search</span>' +
           '<input type="search" enterkeyhint="search" autocomplete="off" placeholder="Busca o pregunta" aria-label="Busca o pregunta">' +
           '<button type="button" class="sx-mic" data-sx="mic" aria-label="Dictar"><span class="material-symbols-rounded">mic</span></button>' +
-        '</form>' +
+        '</form><button class="sx-cancel" data-sx="close">Cancelar</button></div>' +
         '<div class="sx-results"></div>' +
-        '<button class="sx-cancel" data-sx="close">Cancelar</button>' +
       '</div>';
     document.body.appendChild(el);
     input = el.querySelector('input');
@@ -95,12 +94,27 @@
       if (i === 'pfm') return runAction(ACTIONS[4]);
       if (i.indexOf('a:') === 0) return runAction(ACTIONS[+i.slice(2)]);
     });
-    // deslizar el panel hacia arriba lo cierra
+    // Al deslizar los resultados se esconde el teclado (como en iOS) y
+    // quedan a la vista todas las acciones.
     var sy = null;
-    el.querySelector('.sx-panel').addEventListener('touchstart', function (e) { sy = e.touches[0].clientY; }, { passive: true });
-    el.querySelector('.sx-panel').addEventListener('touchmove', function (e) {
-      if (sy !== null && sy - e.touches[0].clientY > 70 && results.scrollTop <= 0 && !input.value) { sy = null; close(); }
+    results.addEventListener('touchstart', function (e) { sy = e.touches[0].clientY; }, { passive: true });
+    results.addEventListener('touchmove', function (e) {
+      if (sy !== null && Math.abs(e.touches[0].clientY - sy) > 8 && document.activeElement === input) input.blur();
     }, { passive: true });
+    results.addEventListener('scroll', function () { if (document.activeElement === input) input.blur(); }, { passive: true });
+    // El panel ocupa sólo el alto visible: con teclado abierto termina
+    // justo encima de él y los resultados hacen scroll.
+    if (window.visualViewport) {
+      var fit = function () {
+        if (!open_) return;
+        var vv = window.visualViewport;
+        el.style.setProperty('--sx-h', vv.height + 'px');
+        el.style.setProperty('--sx-top', vv.offsetTop + 'px');
+      };
+      visualViewport.addEventListener('resize', fit);
+      visualViewport.addEventListener('scroll', fit);
+      el._fit = fit;
+    }
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && open_) { e.stopImmediatePropagation(); close(); } }, true);
   }
 
@@ -154,6 +168,7 @@
     input.value = '';
     render();
     el.classList.add('open');
+    if (el._fit) el._fit();
     document.documentElement.classList.add('sx-open');
     input.focus({ preventScroll: true }); // dentro del gesto: iOS sí muestra el teclado
     fx('open');

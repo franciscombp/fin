@@ -2,8 +2,8 @@
   "name": "Pichibank app",
   "short_name": "Pichibank",
   "description": "POC de rediseño de Pichibank app con micro interacciones, login biométrico y PWA",
-  "start_url": "/bm/index.html",
-  "scope": "/bm/",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#f5f5f5",
@@ -35,13 +35,15 @@
       "form_factor": "narrow"
     }
   ],
-  "categories": ["finance"],
+  "categories": [
+    "finance"
+  ],
   "shortcuts": [
     {
       "name": "Ingresar",
       "short_name": "Ingresar",
       "description": "Ingresa a tu cuenta con biometría",
-      "url": "/bm/index.html?action=login",
+      "url": "./index.html?action=login",
       "icons": [
         {
           "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%230f265c' width='96' height='96' rx='24'/><text x='48' y='60' font-size='48' font-weight='bold' fill='%23fcd000' text-anchor='middle' font-family='Arial'>→</text></svg>",
@@ -50,5 +52,6 @@
         }
       ]
     }
-  ]
+  ],
+  "id": "./"
 }

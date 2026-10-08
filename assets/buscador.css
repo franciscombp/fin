@@ -11,16 +11,17 @@
 }
 .sx.open .sx-back { opacity: 1; }
 .sx-panel {
-  position: absolute; left: 0; right: 0; top: 0; max-width: 480px; margin: 0 auto;
-  display: flex; flex-direction: column; max-height: 100%;
+  position: absolute; left: 0; right: 0; top: var(--sx-top, 0px); max-width: 480px; margin: 0 auto;
+  display: flex; flex-direction: column; height: var(--sx-h, 100%);
   padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 0;
   transform: translateY(-24px) scale(.98); opacity: 0;
   transition: transform .42s cubic-bezier(.32,.72,0,1), opacity .25s ease;
 }
 .sx.open .sx-panel { transform: none; opacity: 1; }
 
+.sx-head { flex: 0 0 auto; display: flex; align-items: center; gap: 4px; }
 .sx-field {
-  position: relative; display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 8px 0 18px; border-radius: 99px;
+  flex: 1; min-width: 0; position: relative; display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 8px 0 18px; border-radius: 99px;
   background: color-mix(in srgb, var(--bp-theme-color-surface-container-default, #fff) 82%, transparent);
   border: 1px solid color-mix(in srgb, var(--bp-theme-color-text-primary, #000) 8%, transparent);
   box-shadow: 0 10px 30px rgb(0 0 0 / .08);
@@ -34,7 +35,7 @@
 .sx.is-listening .sx-mic { background: var(--bp-theme-color-interaction-primary-bg, #ffdd00); color: #0f265c; animation: sxPulse 1.2s ease-in-out infinite; }
 @keyframes sxPulse { 50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--bp-theme-color-interaction-primary-bg, #ffdd00) 30%, transparent); } }
 
-.sx-results { overflow-y: auto; overscroll-behavior: contain; padding: 16px 0 8px; display: flex; flex-direction: column; gap: 12px; }
+.sx-results { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 16px 0 calc(24px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 12px; }
 .sx-card {
   padding: 16px 16px 8px; border-radius: 24px;
   background: color-mix(in srgb, var(--bp-theme-color-surface-container-default, #fff) 78%, transparent);
@@ -61,7 +62,7 @@
 .sx-row__main b { font-size: 16px; line-height: 22px; font-weight: 600; }
 .sx-row__main small { font-size: 13px; line-height: 18px; color: var(--bp-theme-color-text-helper); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sx-row__r { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.sx-cancel { align-self: center; margin: 4px 0 calc(12px + env(safe-area-inset-bottom, 0px)); height: 44px; padding: 0 20px; border: 0; background: transparent; color: var(--bp-theme-color-text-interactive); font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; }
+.sx-cancel { flex: 0 0 auto; height: 44px; padding: 0 4px 0 10px; border: 0; background: transparent; color: var(--bp-theme-color-text-interactive); font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; }
 
 /* Pista mientras se desliza */
 .sx-hint {
