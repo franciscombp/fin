@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pichibank-v43';
+const CACHE_NAME = 'pichibank-v44';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
