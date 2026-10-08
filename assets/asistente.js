@@ -210,8 +210,10 @@
   }
   function bars(rows, max) {
     max = max || Math.max.apply(null, rows.map(function (r) { return r.v; }));
-    return '<div class="as-bars">' + rows.map(function (r) {
-      return '<div class="as-bar" style="--c:' + (r.c || CATS[r.k].c) + '"><span>' + esc(r.label || CATS[r.k].name) + '</span><span>' + money(r.v) + '</span><u><i style="width:' + Math.max(3, r.v / max * 100).toFixed(0) + '%"></i></u></div>';
+    return '<div class="as-bars">' + rows.map(function (r, i) {
+      // Neutro: la barra principal en tinta, el resto en gris; rojo sólo si se excede.
+      var c = r.c === '#c20505' ? 'var(--bp-theme-color-status-error-text, #c20505)' : (i === 0 ? 'var(--as-line)' : 'var(--as-g2)');
+      return '<div class="as-bar" style="--c:' + c + '"><span>' + esc(r.label || CATS[r.k].name) + '</span><span>' + money(r.v) + '</span><u><i style="width:' + Math.max(3, r.v / max * 100).toFixed(0) + '%"></i></u></div>';
     }).join('') + '</div>';
   }
   function stat(label, value, cls) { return '<div class="as-stat"><small>' + label + '</small><b class="' + (cls || '') + '">' + value + '</b></div>'; }
@@ -307,16 +309,18 @@
     if (D.overCats.length) return 'Te pasaste en ' + CATS[D.overCats[0]].name.toLowerCase() + '. ¿Lo revisamos juntos?';
     var g = D.goals.filter(function (x) { return !x.onTrack; })[0];
     if (g) return 'Tu meta ' + g.name + ' necesita ' + money(g.need) + ' al mes para llegar a tiempo.';
-    return 'Vas en ritmo con tus metas y tu paisaje está ' + level(D.score).n.toLowerCase() + ' 🌳';
+    return 'Vas en ritmo con tus metas. Tu paisaje está en su mejor momento.';
   }
 
-  /* ---------- Entradas: Inicio y Modo finanzas ---------- */
+  /* ---------- Entradas: Inicio y Modo finanzas ----------
+     Tarjeta aireada: ilustración centrada sobre un círculo neutro,
+     un solo mensaje y un link. */
   function entryHTML(where) {
     return '<button class="as-entry" data-as-open="' + where + '" aria-label="Abrir asistente de finanzas">' +
-      '<span class="as-entry__scene"></span><span class="as-entry__pet"></span>' +
-      '<span class="as-entry__body"><span class="as-entry__eyebrow">Asistente de finanzas</span>' +
-      '<span class="as-entry__title"></span><span class="as-entry__insight"></span>' +
-      '<span class="as-entry__ask"><span class="material-symbols-rounded">chat_bubble</span>Pregúntame</span></span></button>';
+      '<span class="as-entry__art"><span class="as-entry__blob"></span><span class="as-entry__pet"></span></span>' +
+      '<span class="as-entry__eyebrow"></span>' +
+      '<span class="as-entry__title"></span>' +
+      '<span class="as-entry__cta">Preguntarle</span></button>';
   }
   function mountEntries() {
     var home = document.querySelector('.tab-panel[data-panel="Destacado"]');
@@ -326,7 +330,7 @@
       });
       var sec = document.createElement('section');
       sec.className = 'section';
-      sec.innerHTML = '<div class="section__title"><h2>Tu asistente</h2></div>' + entryHTML('home');
+      sec.innerHTML = entryHTML('home');
       if (anchor) home.insertBefore(sec, anchor); else home.appendChild(sec);
     }
     var fin = document.querySelector('#finance-page .finance-subtitle');
@@ -343,60 +347,68 @@
   }
   function paintEntries() {
     document.querySelectorAll('[data-as-open]').forEach(function (b) {
-      b.querySelector('.as-entry__scene').innerHTML = landSVG(D.score);
       b.querySelector('.as-entry__pet').innerHTML = C().svg();
-      b.querySelector('.as-entry__title').textContent = 'Pregúntale a ' + C().name;
-      b.querySelector('.as-entry__insight').textContent = insight();
+      b.querySelector('.as-entry__eyebrow').textContent = C().name + ' · tu asistente de finanzas';
+      b.querySelector('.as-entry__title').textContent = insight();
     });
   }
 
-  /* ---------- Pantalla del asistente ---------- */
-  var page, chat, input, heroPet;
+  /* ---------- Pantalla del asistente ----------
+     Dos estados: "escena" (personaje grande, un mensaje, mucho aire) y
+     "chat" (el personaje se hace chico abajo y las burbujas flotan sobre
+     el paisaje). Factores y ajustes viven en hojas inferiores. */
+  var page, chat, input, sheet, back;
   function mount() {
     page = document.createElement('div');
     page.className = 'as-page';
     page.setAttribute('role', 'dialog');
     page.setAttribute('aria-modal', 'true');
     page.innerHTML =
+      '<div class="as-land-wrap"></div>' +
       '<div class="as-top">' +
-        '<button class="as-icon-btn" data-as="close" aria-label="Volver"><span class="material-symbols-rounded">arrow_back</span></button>' +
-        '<div class="as-top__title"><b class="as-name"></b><span class="as-role"></span></div>' +
-        '<div class="as-switch" role="group" aria-label="Elegir asistente">' +
-          '<button data-who="candado">Candado</button><button data-who="pia">PIA</button></div>' +
+        '<button class="as-icon-btn" data-as="back" aria-label="Volver"><span class="material-symbols-rounded">close</span></button>' +
+        '<button class="as-level" data-as="land" aria-label="Ver qué hace crecer tu paisaje"><i></i><span></span><span class="material-symbols-rounded">expand_more</span></button>' +
+        '<button class="as-icon-btn" data-as="settings" aria-label="Ajustes del asistente"><span class="material-symbols-rounded">tune</span></button>' +
       '</div>' +
-      '<div class="as-scroll">' +
-        '<div class="as-hero"><div class="as-land-wrap"></div>' +
-          '<div class="as-hero__badge"><i></i><span></span></div>' +
-          '<div class="as-hero__demo"><div class="as-demo" role="group" aria-label="Simular escenario (demo)">' +
-            '<button data-sc="dificil">Difícil</button><button data-sc="normal">Normal</button><button data-sc="excelente">Excelente</button></div></div>' +
-          '<div class="as-hero__pet" role="button" tabindex="0" aria-label="Saludar"></div>' +
-        '</div>' +
-        '<div class="as-section"><h2>Qué hace crecer tu paisaje</h2><p>Tu asistente siempre está contigo; tus hábitos cambian su entorno.</p><div class="as-growth"></div></div>' +
-        '<div class="as-chat" aria-live="polite"></div>' +
+      '<div class="as-intro">' +
+        '<p class="as-intro__eyebrow"></p>' +
+        '<h1 class="as-intro__title"></h1>' +
+        '<p class="as-intro__text">Analizo tus movimientos de los últimos 3 meses. Pregúntame lo que quieras.</p>' +
       '</div>' +
+      '<div class="as-chat" aria-live="polite"></div>' +
+      '<div class="as-pet" role="button" tabindex="0" aria-label="Saludar"></div>' +
       '<div class="as-composer"><div class="as-chips"></div>' +
-        '<form class="as-input"><input type="text" enterkeyhint="send" autocomplete="off" placeholder="Pregunta sobre tus finanzas…" aria-label="Escribe tu pregunta">' +
+        '<form class="as-input"><input type="text" enterkeyhint="send" autocomplete="off" aria-label="Escribe tu pregunta">' +
         '<button class="as-send" type="submit" aria-label="Enviar"><span class="material-symbols-rounded">arrow_upward</span></button></form></div>';
     document.body.appendChild(page);
+    back = document.createElement('div'); back.className = 'as-sheet-back';
+    sheet = document.createElement('div'); sheet.className = 'as-sheet'; sheet.setAttribute('role', 'dialog');
+    document.body.appendChild(back); document.body.appendChild(sheet);
+    back.addEventListener('click', closeSheet);
+    sheet.addEventListener('click', onSheetClick);
+
     chat = page.querySelector('.as-chat');
     input = page.querySelector('input');
-    page.querySelector('.as-chips').innerHTML = SUGGEST.map(function (q) { return '<button class="as-chip" type="button">' + q + '</button>'; }).join('');
+    page.querySelector('.as-chips').innerHTML = SUGGEST.slice(0, 5).map(function (q) { return '<button class="as-chip" type="button">' + q + '</button>'; }).join('');
     page.addEventListener('click', function (e) {
       var b;
-      if ((b = e.target.closest('[data-as="close"]'))) return close();
-      if ((b = e.target.closest('[data-who]'))) { if (ST.who !== b.dataset.who) { ST.who = b.dataset.who; persist(); fx('toggle'); paintAll(); greet(true); } return; }
-      if ((b = e.target.closest('[data-sc]'))) { if (ST.scenario !== b.dataset.sc) { ST.scenario = b.dataset.sc; persist(); build(); fx(D.score >= 55 ? 'success' : 'select'); paintAll(); bot(summary()); } return; }
+      if ((b = e.target.closest('[data-as="back"]'))) { if (page.classList.contains('is-chat')) leaveChat(); else close(); return; }
+      if ((b = e.target.closest('[data-as="land"]'))) return openSheet('land');
+      if ((b = e.target.closest('[data-as="settings"]'))) return openSheet('settings');
       if ((b = e.target.closest('.as-chip'))) return ask(b.textContent);
     });
     page.querySelector('form').addEventListener('submit', function (e) { e.preventDefault(); var v = input.value.trim(); if (v) { input.value = ''; ask(v); } });
     input.addEventListener('focus', function () { setPet('is-listening'); });
     input.addEventListener('blur', function () { setPet(''); });
-    var hp = page.querySelector('.as-hero__pet');
-    hp.addEventListener('click', function () { fx('select'); setPet('is-happy'); setTimeout(function () { setPet(''); }, 650); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && page.classList.contains('open')) { e.stopImmediatePropagation(); close(); } }, true);
+    page.querySelector('.as-pet').addEventListener('click', function () { fx('select'); setPet('is-happy'); setTimeout(function () { setPet(''); }, 650); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape' || !page.classList.contains('open')) return;
+      e.stopImmediatePropagation();
+      if (sheet.classList.contains('open')) closeSheet(); else if (page.classList.contains('is-chat')) leaveChat(); else close();
+    }, true);
   }
   function setPet(cls) {
-    var svg = page && page.querySelector('.as-hero__pet .as-char');
+    var svg = page && page.querySelector('.as-pet .as-char');
     if (!svg) return;
     svg.classList.remove('is-listening', 'is-happy', 'is-talking');
     if (cls) svg.classList.add(cls);
@@ -405,57 +417,84 @@
     paintEntries();
     if (!page) return;
     var lv = level(D.score);
-    page.querySelector('.as-name').textContent = C().name;
-    page.querySelector('.as-role').textContent = 'Analiza tus últimos 3 meses';
-    page.querySelectorAll('[data-who]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.who === ST.who)); });
-    page.querySelectorAll('[data-sc]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.sc === ST.scenario)); });
-    page.querySelector('.as-land-wrap').innerHTML = landSVG(D.score);
-    page.querySelector('.as-hero__pet').innerHTML = C().svg();
-    var badge = page.querySelector('.as-hero__badge');
-    badge.style.setProperty('--lvl', lv.c);
-    badge.querySelector('span').textContent = lv.n;
-    page.querySelector('.as-growth').innerHTML = Object.keys(D.f).map(function (k) {
-      var f = D.f[k];
-      return '<div class="as-factor ' + (f.ok ? 'is-good' : 'is-warn') + '" style="--c:' + f.c + '"><span class="as-factor__top"><span class="material-symbols-rounded">' + f.icon + '</span>' + f.label + '</span><b>' + f.val + '</b><small>' + f.note + '</small></div>';
-    }).join('');
+    page.querySelector('.as-land-wrap').innerHTML = landSVG(D.score).replace('xMidYMax slice', 'xMidYMax meet');
+    page.querySelector('.as-pet').innerHTML = C().svg();
+    page.querySelector('.as-level span').textContent = lv.n;
+    page.querySelector('.as-level').style.setProperty('--lvl', 'var(--as-accent)');
+    page.querySelector('.as-intro__eyebrow').textContent = 'Hola, soy ' + C().name;
+    page.querySelector('.as-intro__title').textContent = insight();
+    input.placeholder = 'Pregúntale a ' + C().name + '…';
   }
-  function avatar() { return '<div class="as-msg__av">' + C().svg() + '</div>'; }
+
+  /* Hojas inferiores */
+  function openSheet(kind) {
+    var lv = level(D.score), html = '<div class="as-sheet__handle"></div>';
+    if (kind === 'land') {
+      html += '<h3>' + lv.n + '</h3><p>' + C().name + ' siempre está contigo. Lo que cambia con tus hábitos es su paisaje.</p>' +
+        '<div class="as-rows">' + Object.keys(D.f).map(function (k) {
+          var f = D.f[k];
+          return '<div class="as-row"><span class="as-row__icon material-symbols-rounded">' + f.icon + '</span>' +
+            '<span class="as-row__main"><b>' + f.label + '</b><small>' + f.note + '</small></span>' +
+            '<span class="as-row__val' + (f.ok ? '' : ' is-warn') + '">' + f.val + '</span></div>';
+        }).join('') + '</div>';
+    } else {
+      html += '<h3>Ajustes</h3><p class="as-sheet__label">Tu asistente</p><div class="as-rows">' +
+        Object.keys(CHARS).map(function (k) {
+          return '<button class="as-row as-row--btn" data-who="' + k + '" aria-pressed="' + (ST.who === k) + '"><span class="as-row__av">' + CHARS[k].svg() + '</span>' +
+            '<span class="as-row__main"><b>' + CHARS[k].name + '</b><small>' + CHARS[k].role + '</small></span><span class="as-radio"></span></button>';
+        }).join('') + '</div>' +
+        '<p class="as-sheet__label">Simular escenario (demo)</p><div class="as-rows">' +
+        Object.keys(SCEN).map(function (k) {
+          return '<button class="as-row as-row--btn" data-sc="' + k + '" aria-pressed="' + (ST.scenario === k) + '"><span class="as-row__main"><b>' + SCEN[k].label + '</b></span><span class="as-radio"></span></button>';
+        }).join('') + '</div>';
+    }
+    sheet.innerHTML = html;
+    back.classList.add('open'); sheet.classList.add('open'); fx('open');
+  }
+  function closeSheet() { back.classList.remove('open'); sheet.classList.remove('open'); }
+  function onSheetClick(e) {
+    var b = e.target.closest('[data-who],[data-sc]');
+    if (!b) return;
+    if (b.dataset.who && ST.who !== b.dataset.who) { ST.who = b.dataset.who; fx('toggle'); }
+    if (b.dataset.sc && ST.scenario !== b.dataset.sc) { ST.scenario = b.dataset.sc; build(); fx(D.score >= 55 ? 'success' : 'select'); }
+    persist(); paintAll();
+    sheet.querySelectorAll('[data-who]').forEach(function (x) { x.setAttribute('aria-pressed', String(x.dataset.who === ST.who)); });
+    sheet.querySelectorAll('[data-sc]').forEach(function (x) { x.setAttribute('aria-pressed', String(x.dataset.sc === ST.scenario)); });
+  }
+
+  /* Chat */
+  function enterChat() { if (!page.classList.contains('is-chat')) { page.classList.add('is-chat'); page.querySelector('[data-as="back"] span').textContent = 'arrow_back'; } }
+  function leaveChat() { page.classList.remove('is-chat'); page.querySelector('[data-as="back"] span').textContent = 'close'; fx('close'); }
   function me(text) {
     var m = document.createElement('div');
     m.className = 'as-msg as-msg--me';
     m.innerHTML = '<div class="as-msg__bubble"><p>' + esc(text) + '</p></div>';
     chat.appendChild(m); scrollEnd();
   }
-  function bot(a, delay, quiet) {
+  function bot(a) {
     var m = document.createElement('div');
     m.className = 'as-msg';
-    m.innerHTML = avatar() + '<div class="as-msg__bubble"><span class="as-typing" aria-label="Escribiendo"><i></i><i></i><i></i></span></div>';
-    chat.appendChild(m); if (!quiet) scrollEnd();
+    m.innerHTML = '<div class="as-msg__bubble"><span class="as-typing" aria-label="Escribiendo"><i></i><i></i><i></i></span></div>';
+    chat.appendChild(m); scrollEnd();
     setPet('is-talking');
     setTimeout(function () {
       m.querySelector('.as-msg__bubble').innerHTML = '<p>' + a.t + '</p>' + (a.h || '');
-      if (!quiet) scrollEnd(); fx('reveal');
+      scrollEnd(); fx('reveal');
       setTimeout(function () { setPet(''); }, 900);
-    }, delay == null ? 650 + Math.random() * 300 : delay);
+    }, 650 + Math.random() * 300);
   }
-  function ask(q) { me(q); fx('tap'); bot(answer(q)); }
-  function scrollEnd() { var sc = page.querySelector('.as-scroll'); requestAnimationFrame(function () { sc.scrollTo({ top: sc.scrollHeight, behavior: 'smooth' }); }); }
-  function greet(switched) {
-    bot({ t: (switched ? C().hi + ' Desde ahora te acompaño yo. ' : C().hi + ' ') + 'Analizo tus movimientos de los últimos 3 meses. ' + insight() }, switched ? 400 : 500, !switched);
-  }
+  function ask(q) { enterChat(); me(q); fx('tap'); bot(answer(q)); }
+  function scrollEnd() { requestAnimationFrame(function () { chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' }); }); }
 
   function open() {
-    if (!page) { mount(); }
+    if (!page) mount();
     paintAll();
-    if (!chat.children.length) greet(false);
     page.classList.add('open');
     document.body.style.overflow = 'hidden';
     fx('open');
   }
   function close() {
     page.classList.remove('open');
-    // Si se abrió desde Modo finanzas, éste sigue abierto debajo y
-    // necesita el scroll del body bloqueado.
     if (!document.querySelector('#finance-page.open')) document.body.style.overflow = '';
     fx('close');
     paintEntries();
