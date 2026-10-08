@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pichibank-v39';
+const CACHE_NAME = 'pichibank-v40';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
@@ -8,8 +8,8 @@ const ASSETS_TO_CACHE = [
   './haptics.js',
   './assets/tokens.css',
   './assets/solar.css',
-  './assets/firu.css',
-  './assets/firu.js'
+  './assets/asistente.css',
+  './assets/asistente.js'
 ];
 
 self.addEventListener('install', (event) => {
