@@ -659,8 +659,8 @@
       '<section class="pf-hero"><div class="pf-hero__land">' + landSVG(D.score).replace('xMidYMax slice', 'xMidYMax meet') + '</div>' +
         '<div class="pf-hero__pet">' + C().svg() + '</div>' +
         '<div class="pf-hero__score"><small>Salud financiera</small><b>' + D.score + '<i>/100</i></b><span>' + lv.n + '</span></div></section>' +
-      '<p class="pf-insight">' + esc(insight()) + '</p>' +
-      '<button class="pf-ask" data-pf="ask"><span class="pf-ask__av">' + C().svg() + '</span><span>Pregúntale a ' + C().name + '</span><span class="material-symbols-rounded">arrow_forward</span></button>' +
+      '<div class="pf-intro"><p class="pf-insight">' + esc(insight()) + '</p>' +
+      '<button class="pf-ask" data-pf="ask"><span class="pf-ask__av">' + C().svg() + '</span><span>Pregúntale a ' + C().name + '</span><span class="material-symbols-rounded">arrow_forward</span></button></div>' +
 
       /* Cuentas */
       '<section class="pf-sec"><h2>Tus cuentas</h2><p class="pf-sub">Tienes ' + money(D.assets) + (D.debt ? ' · Debes ' + money(D.debt) : '') + '</p><div class="pf-card">' +

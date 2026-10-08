@@ -31,6 +31,8 @@ jobs:
           mkdir _site
           cp index.html duo.html guia.html app.js fiesta.js haptics.js webauthn.js sw.js manifest.json .nojekyll _site/
           cp -r assets _site/assets
+      - name: Versiona la caché del service worker con este despliegue
+        run: sed -i "s/__BUILD__/${GITHUB_SHA::8}-${GITHUB_RUN_NUMBER}/" _site/sw.js
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site

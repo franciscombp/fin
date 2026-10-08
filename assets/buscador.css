@@ -1,0 +1,79 @@
+/* =====================================================================
+   Buscador tipo Siri — panel de vidrio sobre la app desenfocada
+   ===================================================================== */
+.sx { position: fixed; inset: 0; z-index: 500; visibility: hidden; pointer-events: none; }
+.sx.open { visibility: visible; pointer-events: auto; }
+.sx-back {
+  position: absolute; inset: 0;
+  background: color-mix(in srgb, var(--bp-theme-color-surface-page-alt, #f5f5f5) 55%, transparent);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4);
+  opacity: 0; transition: opacity .3s ease;
+}
+.sx.open .sx-back { opacity: 1; }
+.sx-panel {
+  position: absolute; left: 0; right: 0; top: 0; max-width: 480px; margin: 0 auto;
+  display: flex; flex-direction: column; max-height: 100%;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 0;
+  transform: translateY(-24px) scale(.98); opacity: 0;
+  transition: transform .42s cubic-bezier(.32,.72,0,1), opacity .25s ease;
+}
+.sx.open .sx-panel { transform: none; opacity: 1; }
+
+.sx-field {
+  position: relative; display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 8px 0 18px; border-radius: 99px;
+  background: color-mix(in srgb, var(--bp-theme-color-surface-container-default, #fff) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bp-theme-color-text-primary, #000) 8%, transparent);
+  box-shadow: 0 10px 30px rgb(0 0 0 / .08);
+  -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+}
+.sx-field > .material-symbols-rounded { color: var(--bp-theme-color-icon-helper, #888); font-size: 22px; }
+.sx-field input { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: var(--bp-theme-color-text-primary); font: inherit; font-size: 18px; outline: none; -webkit-appearance: none; }
+.sx-field input::-webkit-search-cancel-button { display: none; }
+.sx-field input::placeholder { color: var(--bp-theme-color-text-helper); }
+.sx-mic { width: 44px; height: 44px; border: 0; border-radius: 50%; background: transparent; color: var(--bp-theme-color-icon-secondary, #555); display: grid; place-items: center; cursor: pointer; }
+.sx.is-listening .sx-mic { background: var(--bp-theme-color-interaction-primary-bg, #ffdd00); color: #0f265c; animation: sxPulse 1.2s ease-in-out infinite; }
+@keyframes sxPulse { 50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--bp-theme-color-interaction-primary-bg, #ffdd00) 30%, transparent); } }
+
+.sx-results { overflow-y: auto; overscroll-behavior: contain; padding: 16px 0 8px; display: flex; flex-direction: column; gap: 12px; }
+.sx-card {
+  padding: 16px 16px 8px; border-radius: 24px;
+  background: color-mix(in srgb, var(--bp-theme-color-surface-container-default, #fff) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bp-theme-color-text-primary, #000) 6%, transparent);
+  -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+  animation: sxIn .4s cubic-bezier(.32,.72,0,1) both;
+}
+.sx-card + .sx-card { animation-delay: .05s; }
+@keyframes sxIn { from { opacity: 0; transform: translateY(-8px); } }
+.sx-card h3 { margin: 0 4px 12px; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--bp-theme-color-text-helper); }
+.sx-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 8px; padding-bottom: 8px; }
+.sx-app { display: flex; flex-direction: column; align-items: center; gap: 8px; border: 0; background: transparent; color: var(--bp-theme-color-text-primary); font: inherit; font-size: 12px; line-height: 15px; font-weight: 500; text-align: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.sx-app__ic {
+  width: 60px; height: 60px; border-radius: 18px; display: grid; place-items: center; font-size: 28px;
+  background: var(--bp-theme-color-surface-page-alt, #f2f2f2); color: var(--bp-theme-color-icon-primary, #1f1f1f);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bp-theme-color-text-primary, #000) 6%, transparent);
+  transition: transform .15s ease;
+}
+.sx-app:active .sx-app__ic { transform: scale(.92); }
+.sx-row { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 60px; padding: 8px 4px; border: 0; border-top: 1px solid color-mix(in srgb, var(--bp-theme-color-text-primary, #000) 7%, transparent); background: transparent; color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
+.sx-card h3 + .sx-row { border-top: 0; }
+.sx-row__ic { width: 40px; height: 40px; flex: 0 0 40px; border-radius: 12px; display: grid; place-items: center; font-size: 22px; background: var(--bp-theme-color-surface-page-alt, #f2f2f2); color: var(--bp-theme-color-icon-primary, #1f1f1f); }
+.sx-row__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.sx-row__main b { font-size: 16px; line-height: 22px; font-weight: 600; }
+.sx-row__main small { font-size: 13px; line-height: 18px; color: var(--bp-theme-color-text-helper); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sx-row__r { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.sx-cancel { align-self: center; margin: 4px 0 calc(12px + env(safe-area-inset-bottom, 0px)); height: 44px; padding: 0 20px; border: 0; background: transparent; color: var(--bp-theme-color-text-interactive); font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; }
+
+/* Pista mientras se desliza */
+.sx-hint {
+  position: fixed; left: 50%; top: calc(8px + env(safe-area-inset-top, 0px)); z-index: 499;
+  display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: 99px;
+  background: color-mix(in srgb, var(--bp-theme-color-surface-container-default, #fff) 85%, transparent);
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+  box-shadow: 0 6px 20px rgb(0 0 0 / .1); color: var(--bp-theme-color-text-helper); font-size: 15px; font-weight: 500;
+  opacity: 0; transform: translate(-50%, -60px) scale(.9); pointer-events: none;
+  transition: opacity .25s ease, transform .35s cubic-bezier(.32,.72,0,1), background .2s ease, color .2s ease;
+}
+.sx-hint.is-armed { color: var(--bp-theme-color-text-primary); }
+html.sx-open #home-page { filter: none; }
+
+@media (prefers-reduced-motion: reduce) { .sx-card, .sx-panel, .sx-back { animation: none; transition: none; } }
