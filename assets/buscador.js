@@ -122,7 +122,8 @@
     return '<button class="sx-app" data-sx-i="a:' + ACTIONS.indexOf(a) + '"><span class="sx-app__ic material-symbols-rounded">' + a.icon + '</span><span>' + a.label + '</span></button>';
   }
   function row(id, icon, main, sub, right) {
-    return '<button class="sx-row" data-sx-i="' + id + '"><span class="sx-row__ic material-symbols-rounded">' + icon + '</span><span class="sx-row__main"><b>' + main + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (right ? '<span class="sx-row__r">' + right + '</span>' : '') + '</button>';
+    var ic = icon === 'uku' && window.Asistente ? '<span class="sx-row__ic sx-row__ic--uku">' + Asistente.faceIMG() + '</span>' : '<span class="sx-row__ic material-symbols-rounded">' + icon + '</span>';
+    return '<button class="sx-row" data-sx-i="' + id + '">' + ic + '<span class="sx-row__main"><b>' + main + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (right ? '<span class="sx-row__r">' + right + '</span>' : '') + '</button>';
   }
   function render() {
     var q = norm(input.value.trim()), html = '';
@@ -132,7 +133,7 @@
       html += '<section class="sx-card"><h3>Sugerencias</h3><div class="sx-grid">' +
         FEATURED.map(function (l) { return tile(ACTIONS.filter(function (a) { return a.label === l; })[0]); }).join('') + '</div></section>';
       html += '<section class="sx-card"><h3>' + m.title + '</h3>' + row('a:' + ACTIONS.indexOf(m.a), m.icon, m.main, m.sub) +
-        (data ? row('pfm', 'insights', 'Salud financiera ' + data.score + '/100', 'Toca para ver en qué se va tu dinero') : '') + '</section>';
+        (data ? row('pfm', 'uku', 'Salud financiera ' + data.score + ' · Mis finanzas', 'Tu resumen de septiembre está listo') : '') + '</section>';
     } else {
       var acts = ACTIONS.filter(function (a) { return norm(a.label + ' ' + a.k).indexOf(q) >= 0 || q.split(' ').every(function (w) { return norm(a.k + ' ' + a.label).indexOf(w) >= 0; }); });
       if (acts.length) html += '<section class="sx-card"><h3>Acciones</h3>' + acts.slice(0, 5).map(function (a) { return row('a:' + ACTIONS.indexOf(a), a.icon, a.label); }).join('') + '</section>';
@@ -146,7 +147,7 @@
           return row('pfm', inc ? 'south_west' : 'north_east', esc(t.who), t.day + ' ' + MON[t.mi], (inc ? '+' : '-') + money(t.amt));
         }).join('') + '</section>';
       }
-      html += '<section class="sx-card">' + row('ask', 'chat_bubble', 'Pregúntale a ' + ((window.Asistente && Asistente.name && Asistente.name()) || 'Uku'), '«' + esc(input.value.trim()) + '»') + '</section>';
+      html += '<section class="sx-card">' + row('ask', 'uku', 'Pregúntale a ' + ((window.Asistente && Asistente.name && Asistente.name()) || 'Uku'), '«' + esc(input.value.trim()) + '»') + '</section>';
     }
     results.innerHTML = html;
   }

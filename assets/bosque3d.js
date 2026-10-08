@@ -142,52 +142,38 @@ function buildDust() {
 }
 
 /* ---------- Oso: pose base y gestos ---------- */
-const REST = {
-  upperarm_L: [0, 0, -72], upperarm_R: [0, 0, 72], forearm_L: [0, -12, -8], forearm_R: [0, 12, 8],
-  shoulder_L: [0, 0, -4], shoulder_R: [0, 0, 4]
+/* Ejes: el brazo derecho apunta a -X (z+ lo baja, y+ lo lleva al frente);
+   el izquierdo es su espejo. Cada gesto reparte el movimiento entre
+   hombro, codo y muñeca (ninguna articulación pasa de ~70°), como un
+   cuerpo real: así la piel del codo y la pata no se pliegan raro. */
+function mirror(v) { return [v[0], -v[1], -v[2]]; }
+const REST_R = { upperarm: [0, 6, 70], forearm: [0, 16, 6], hand: [0, 8, 4], shoulder: [0, 0, 4] };
+const REST = {};
+Object.keys(REST_R).forEach(k => { REST[k + '_R'] = REST_R[k]; REST[k + '_L'] = mirror(REST_R[k]); });
+const POSES = {
+  // brazo derecho (el izquierdo se refleja si el gesto lo pide)
+  wave:  t => ({ upperarm_R: [0, 22, -30], forearm_R: [0, 12, -52 + Math.sin(t * 7) * 6], hand_R: [0, 0, -8 + Math.sin(t * 9) * 20], head: [0, -6, 6] }),
+  nod:   t => ({ head: [12 + Math.sin(t * 7) * 9, 0, 0] }),
+  talk:  t => ({ upperarm_R: [0, 38, 50], forearm_R: [0, 34, -18 + Math.sin(t * 4) * 10], hand_R: [0, 6, -12 + Math.sin(t * 5) * 8],
+                 upperarm_L: mirror([0, 20, 60]), forearm_L: mirror([0, 28, 8]), head: [Math.sin(t * 5) * 3, Math.sin(t * 1.7) * 6, Math.sin(t * 2.3) * 3] }),
+  think: t => ({ upperarm_R: [0, 52, 46], forearm_R: [0, 42, -64], hand_R: [0, 10, -22], head: [8, -7, -8] }),
+  hold:  t => ({ upperarm_R: [0, 46, 50], forearm_R: [0, 34, -36], hand_R: [0, 4, -18], head: [14, -12, 0] }),
+  happy: t => ({ upperarm_R: [0, 14, 18 - Math.sin(t * 8) * 6], forearm_R: [0, 10, -28], hand_R: [0, 0, -10],
+                 upperarm_L: mirror([0, 14, 18 - Math.sin(t * 8) * 6]), forearm_L: mirror([0, 10, -28]), hand_L: mirror([0, 0, -10]),
+                 head: [-6, 0, Math.sin(t * 6) * 7] })
 };
 function target(name, t) {
-  const r = REST[name] ? REST[name].slice() : [0, 0, 0];
-  const breath = Math.sin(t * 1.6) * 1.2;
-  if (name === 'chest') r[0] += breath;
+  let r = REST[name] ? REST[name].slice() : [0, 0, 0];
+  // vida en reposo: respiración, mirada y un balanceo leve de brazos
+  if (name === 'chest') r[0] += Math.sin(t * 1.6) * 1.2;
   if (name === 'head') { r[1] += Math.sin(t * .35) * 9; r[0] += Math.sin(t * .5) * 2; }
   if (name === 'spine') r[2] += Math.sin(t * .8) * 1.2;
-  if (!gesture) return r;
-  const k = gestureT, s = Math.sin;
-  switch (gesture) {
-    case 'wave':
-      // brazo derecho apunta a -X: z negativo lo sube, y positivo lo trae al frente
-      if (name === 'upperarm_R') return [0, 15, -25];
-      if (name === 'forearm_R') return [0, 0, -75 + s(k * 9) * 25];
-      if (name === 'head') return [0, -6, 6];
-      break;
-    case 'nod':
-      if (name === 'head') return [12 + s(k * 7) * 10, 0, 0];
-      break;
-    case 'talk':
-      if (name === 'head') return [s(k * 5) * 4, s(k * 1.7) * 6, s(k * 2.3) * 3];
-      if (name === 'upperarm_R') return [0, 45, 50];
-      if (name === 'forearm_R') return [0, 25, -45 + s(k * 4) * 15];
-      break;
-    case 'think':
-      if (name === 'upperarm_R') return [0, 55, 52];
-      if (name === 'forearm_R') return [0, 35, -115];
-      if (name === 'head') return [10, -8, -8];
-      break;
-    case 'hold':
-      if (name === 'upperarm_R') return [0, 50, 45];
-      if (name === 'forearm_R') return [0, 30, -50];
-      if (name === 'head') return [16, -14, 0];
-      break;
-    case 'happy':
-      if (name === 'upperarm_L') return [0, 0, -18 + s(k * 8) * 8];
-      if (name === 'upperarm_R') return [0, 0, 18 - s(k * 8) * 8];
-      if (name === 'head') return [-6, 0, s(k * 6) * 8];
-      break;
-  }
-  return r;
+  if (name === 'upperarm_R' || name === 'upperarm_L') r[1] += Math.sin(t * .9 + (name === 'upperarm_L' ? 1.5 : 0)) * 3;
+  if (!gesture || !POSES[gesture]) return r;
+  const g = POSES[gesture](gestureT)[name];
+  return g || r;
 }
-const BONES = ['hips', 'spine', 'chest', 'neck', 'head', 'shoulder_L', 'shoulder_R', 'upperarm_L', 'upperarm_R', 'forearm_L', 'forearm_R', 'thigh_L', 'thigh_R'];
+const BONES = ['hips', 'spine', 'chest', 'neck', 'head', 'shoulder_L', 'shoulder_R', 'upperarm_L', 'upperarm_R', 'forearm_L', 'forearm_R', 'hand_L', 'hand_R', 'thigh_L', 'thigh_R'];
 
 function holdObject(kind) {
   if (held) { held.parent && held.parent.remove(held); held = null; }
@@ -212,7 +198,7 @@ function frame(now) {
   const dt = clock.getDelta(), t = clock.elapsedTime;
   if (gesture) { gestureT += dt; if (gestureT > (gesture === 'hold' ? 3.2 : 2)) { gesture = null; holdObject(null); } }
   if (bear) {
-    const a = RM ? 1 : Math.min(1, dt * 7);
+    const a = RM ? 1 : Math.min(1, dt * 4.5); // suavizado: entra y sale de cada gesto sin golpes
     BONES.forEach(n => {
       const b = bones[n]; if (!b) return;
       const g = target(n, RM ? 0 : t);

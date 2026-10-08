@@ -58,6 +58,40 @@ for s, L in ((1, 'L'), (-1, 'R')):
     allow[:, idx['shin_' + L]] = side & (y < -.27)
     allow[:, idx['foot_' + L]] = side & (y < -.38)
 W = np.where(allow, 1.0 / (D + .012) ** 4, 0.0)
+
+# ---- Brazos y piernas: pesos por posición a lo largo del miembro ----
+# La manga es casi tan gruesa como el hueso es largo, así que la distancia
+# al segmento mezcla mal codo y muñeca. A lo largo del eje, cada articulación
+# reparte el peso con una curva suave (como un codo real: la piel se pliega
+# en una zona, no en una línea).
+def ss(e0, e1, v):
+    t = np.clip((v - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t)
+for s_, L in ((1, 'L'), (-1, 'R')):
+    side = (x * s_) > .02
+    arm = side & (ax > .15) & (y > -.02) & (y < .165)
+    u = ax
+    sh = 1 - ss(.15, .22, u)                      # hombro → brazo
+    el = ss(.27, .35, u)                          # codo (zona amplia)
+    wr = ss(.39, .44, u)                          # muñeca
+    w_sh, w_up = sh, (1 - sh) * (1 - el)
+    w_fo, w_ha = (1 - sh) * el * (1 - wr), (1 - sh) * el * wr
+    W[arm] = 0
+    W[arm, idx['shoulder_' + L]] = w_sh[arm]
+    W[arm, idx['upperarm_' + L]] = w_up[arm]
+    W[arm, idx['forearm_' + L]] = w_fo[arm]
+    W[arm, idx['hand_' + L]] = w_ha[arm]
+    leg = side & (y < -.24) & (ax > .02)
+    v = -y
+    kn = ss(.30, .37, v); ft = ss(.41, .445, v)
+    W[leg] = 0
+    W[leg, idx['thigh_' + L]] = (1 - kn)[leg]
+    W[leg, idx['shin_' + L]] = (kn * (1 - ft))[leg]
+    W[leg, idx['foot_' + L]] = (kn * ft)[leg]
+    # cadera ↔ muslo: transición suave en la ingle
+    hipz = side & (y >= -.24) & (y < -.14)
+    hb = ss(-.14, -.24, y)
+    W[hipz] = W[hipz] * (1 - hb[hipz, None])
+    W[hipz, idx['thigh_' + L]] += hb[hipz]
 none = W.sum(1) == 0
 W[none] = 1.0 / (D[none] + .012) ** 4  # respaldo: cualquier hueso cercano
 top = np.argsort(-W, 1)[:, :4]
