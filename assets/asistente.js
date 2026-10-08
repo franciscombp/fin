@@ -475,9 +475,9 @@
     page.innerHTML =
       '<div class="as-land-wrap"></div>' +
       '<div class="as-top">' +
-        '<button class="as-icon-btn" data-as="back" aria-label="Volver"><span class="material-symbols-rounded">close</span></button>' +
+        '<button class="as-icon-btn pf-round" data-as="back" aria-label="Volver"><span class="material-symbols-rounded">close</span></button>' +
         '<button class="as-level" data-as="land" aria-label="Ver qué hace crecer tu paisaje"><i></i><span></span><span class="material-symbols-rounded">expand_more</span></button>' +
-        '<button class="as-icon-btn" data-as="settings" aria-label="Ajustes del asistente"><span class="material-symbols-rounded">tune</span></button>' +
+        '<button class="as-icon-btn pf-round" data-as="settings" aria-label="Ajustes del asistente"><span class="material-symbols-rounded">tune</span></button>' +
       '</div>' +
       // Hub (estado inicial): saludo, bento, temas e historial
       '<div class="as-hub">' +
@@ -488,7 +488,7 @@
             '<span class="as-tile__ic material-symbols-rounded">graphic_eq</span><span class="as-tile__go material-symbols-rounded">north_east</span>' +
             '<span class="as-tile__t">Habla con <span class="as-hub__uku"></span></span></button>' +
           '<button class="as-tile as-tile--accent" data-hub="write"><span class="as-tile__ic material-symbols-rounded">chat_bubble</span><span class="as-tile__go material-symbols-rounded">north_east</span>' +
-            '<span class="as-tile__t">Escríbele</span></button>' +
+            '<span class="as-tile__t">Escríbele a <span class="as-hub__uku"></span></span></button>' +
           '<button class="as-tile" data-hub="month"><span class="as-tile__ic material-symbols-rounded">insights</span><span class="as-tile__go material-symbols-rounded">north_east</span>' +
             '<span class="as-tile__t">Tu resumen de <span class="as-hub__mes"></span></span></button>' +
         '</div>' +
@@ -548,7 +548,7 @@
     page.querySelector('.as-tile--portal .b3d').innerHTML = '<div class="b3d__fallback">' + C().svg() + '</div>';
     place3D('wave');
     page.querySelector('.as-pet').innerHTML = '';
-    page.querySelector('.as-level span').textContent = lv.n;
+    page.querySelector('.as-level span').textContent = 'Salud financiera ' + D.score + ' · ' + lv.n;
     page.querySelector('.as-level').style.setProperty('--lvl', 'var(--as-accent)');
     paintHub();
     input.placeholder = 'Pregúntale a ' + C().name;
@@ -618,7 +618,7 @@
   function paintHub() {
     var n = document.querySelector('.profile-head__name');
     page.querySelector('.as-hub__name').textContent = n ? ', ' + n.textContent.trim().split(' ')[0] : '';
-    page.querySelector('.as-hub__uku').textContent = C().name;
+    page.querySelectorAll('.as-hub__uku').forEach(function (e) { e.textContent = C().name; });
     page.querySelector('.as-hub__mes').textContent = MONTHS[lastClosedMi()].name;
     page.querySelector('.as-topics').innerHTML = TOPICS.map(function (t) {
       return '<button class="as-topic" data-topic="' + t[2] + '"><span class="material-symbols-rounded">' + t[0] + '</span>' + t[1] + '</button>';
@@ -647,8 +647,8 @@
   }
   function bot(a) {
     var m = document.createElement('div');
-    m.className = 'as-msg';
-    m.innerHTML = '<div class="as-msg__bubble"><span class="as-typing" aria-label="Escribiendo"><i></i><i></i><i></i></span></div>';
+    m.className = 'as-msg as-msg--uku';
+    m.innerHTML = '<span class="as-msg__av">' + C().face() + '</span><div class="as-msg__bubble"><span class="as-typing" aria-label="' + C().name + ' está escribiendo"><i></i><i></i><i></i></span></div>';
     chat.appendChild(m); scrollEnd();
     setPet('is-talking');
     setTimeout(function () {
@@ -746,7 +746,7 @@
         '<div class="pf-ins__body"><h3>' + x.title + '</h3><p>' + x.sub + '</p>' +
         ((withDetail && x.det) || x.ask ? '<div class="pf-ins__acts">' +
           (withDetail && x.det ? '<button class="pf-link" data-pf="det:' + i + '">Ver detalle</button>' : '') +
-          (x.ask ? '<button class="pf-link" data-pf="why:' + i + '">Preguntar a ' + C().name + '</button>' : '') + '</div>' : '') +
+          (x.ask ? '<button class="pf-link" data-pf="why:' + i + '">Pregúntale a ' + C().name + '</button>' : '') + '</div>' : '') +
         '</div></article>';
     }).join('') + '</div></section>';
   }

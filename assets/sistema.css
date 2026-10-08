@@ -1,0 +1,77 @@
+/* =====================================================================
+   Sistema visual común — se carga al final para homogeneizar
+   Mis finanzas, el hub de Uku, el chat, Destacados, productos y buscador.
+   Escala (Cash App como referencia):
+     página 32/38 · cifra 40/46 (tarjeta 28/34) · sección 20/26 ·
+     cuerpo 17/24 · secundario 15/21 · etiqueta 13/18
+   Movimiento: páginas entran desde la derecha en 0,36 s; hojas suben en
+   0,36 s; misma curva para todo. Toque: escala 0,97 en 0,15 s.
+   ===================================================================== */
+:root {
+  --cx-ease: cubic-bezier(.32, .72, 0, 1);
+  --cx-dur: .36s;
+  --cx-page: 700 32px/38px var(--sol-font, Roboto, sans-serif);
+  --cx-amount: 700 40px/46px var(--sol-font, Roboto, sans-serif);
+  --cx-amount-sm: 700 28px/34px var(--sol-font, Roboto, sans-serif);
+}
+
+/* ---------- Transiciones ---------- */
+.pf-page, .as-page {
+  transform: translateX(100%);
+  transition: transform var(--cx-dur) var(--cx-ease), visibility 0s linear var(--cx-dur);
+}
+.pf-page.open, .as-page.open { transform: none; transition: transform var(--cx-dur) var(--cx-ease); }
+.as-sheet, .sheet { transition-duration: var(--cx-dur) !important; transition-timing-function: var(--cx-ease) !important; }
+.as-sheet-back { transition: opacity var(--cx-dur) ease; }
+.sx-panel { transition: transform var(--cx-dur) var(--cx-ease), opacity .25s ease; }
+.as-hub, .as-chat, .as-land-wrap { transition: opacity var(--cx-dur) ease, transform var(--cx-dur) var(--cx-ease); }
+.dw:active, .as-tile:active, .pf-ins:active, .pf-navrow:active, .as-hist__row:active, .pv-acts button:active, .as-topic:active, .sx-app:active .sx-app__ic { transform: scale(.97); }
+.dw, .as-tile, .pf-ins, .as-hist__row { transition: transform .15s ease; }
+
+/* ---------- Títulos de página ---------- */
+.pf-head h1, .as-hub__hi { font: var(--cx-page); letter-spacing: -.6px; }
+.as-hub__hi { color: var(--cx-muted); }
+.as-hub__sub { font: var(--cx-body); margin: 6px 0 24px; }
+
+/* ---------- Cifras ---------- */
+.pf-total__value, .pv-value { font: var(--cx-amount); font-size: 40px; line-height: 46px; letter-spacing: -1px; }
+.dw-value { font: var(--cx-amount-sm); letter-spacing: -.5px; }
+.pf-total__label, .pv-label { font: var(--cx-sub); color: var(--cx-muted); }
+.pf-total__sub, .pv-sub { font: var(--cx-sub); color: var(--cx-muted); }
+.pf-total { padding-top: 28px; }
+
+/* ---------- Encabezados de sección (iguales en todas las pantallas) ---------- */
+.pf-sec h2, .as-hub__head h2, .pv-sec h2, .dw-section .section__title h2 { font: var(--cx-headline); letter-spacing: -.2px; margin: 0; }
+.pf-sec h2 { margin-bottom: 4px; }
+.pv-sec h2 { margin-bottom: 8px; }
+.pf-sec, .as-hub__sec { padding-top: 0; margin-top: 40px; }
+.pf-sec { padding-left: 24px; padding-right: 24px; }
+
+/* ---------- Tarjetas: un solo radio, un solo relleno ---------- */
+.dw, .as-tile, .pf-ins { border-radius: 20px; }
+.dw, .pf-ins { padding: 20px; }
+.as-tile { padding: 16px; }
+.as-tile__t { font: var(--cx-headline); }
+.as-tile--portal .as-tile__t { font: var(--cx-headline); font-size: 22px; line-height: 28px; }
+.pf-ins h3 { font: 600 17px/23px var(--sol-font, Roboto, sans-serif); }
+
+/* ---------- Botones redondos superiores (mismo tamaño en todas) ---------- */
+.pf-round, .as-icon-btn.pf-round { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--cx-line); background: var(--cx-surface); color: var(--cx-ink); display: grid; place-items: center; }
+.as-top { padding-left: 16px; padding-right: 16px; }
+.as-top .as-level, .pf-hero__badge { font: var(--cx-caption); color: var(--cx-muted); border-color: var(--cx-line); height: 36px; }
+.as-level i { display: none; }
+
+/* ---------- Píldoras y enlaces de acción ---------- */
+.pf-link, .dw-cta, .pf-pill { font: 600 14px/1 var(--sol-font, Roboto, sans-serif); height: 40px; padding: 0 16px; border-radius: 99px; }
+
+/* ---------- Uku en el chat ---------- */
+.as-msg--uku { align-items: flex-end; gap: 8px; }
+.as-msg__av { width: 32px; height: 32px; flex: 0 0 32px; border-radius: 50%; overflow: hidden; background: var(--cx-fill); box-shadow: none; }
+.as-msg--uku .as-msg__bubble { max-width: calc(88% - 40px); }
+.as-msg__bubble { font: var(--cx-body); border-radius: 20px 20px 20px 6px; }
+.as-msg--me .as-msg__bubble { border-radius: 20px 20px 6px 20px; }
+.sx-row__ic--uku { overflow: hidden; padding: 0; background: var(--cx-fill); }
+.sx-row__ic--uku img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+.as-top .as-level { max-width: 100%; min-width: 0; white-space: nowrap; overflow: hidden; }
+.as-top .as-level span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; }
+.as-page.is-chat .as-land-wrap { opacity: .3; }
