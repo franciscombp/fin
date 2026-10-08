@@ -1,6 +1,5 @@
 /* =====================================================================
-   Mis finanzas (PFM) + asistente — Uku, el oso andino (3D, ver assets/bosque3d.js)
-   La versión anterior (Candado y PIA en SVG) está en respaldo/asistente-candado-pia/.
+   Mis finanzas (PFM) + asistente — Candado (perro) y PIA (pollito amarillo)
 
    - Vive en Modo finanzas (PFM) y tiene una entrada en Inicio.
    - Responde preguntas sobre tus finanzas usando SOLO los movimientos de
@@ -23,32 +22,10 @@
   function fx(n) { try { window.Haptics && Haptics.fx && Haptics.fx(n); } catch (e) {} }
 
   var CHARS = {
-    // Uku (de ukuku/ukumari, oso andino en quechua). Un solo personaje:
-    // el oso no cambia; cambia el bosque donde vive.
-    uku: { name: 'Uku', role: 'Tu oso de las finanzas',
-      svg: function () { return '<img class="as-oso" src="' + ASSET + 'oso/oso.webp" alt="" draggable="false">'; },
-      face: function () { return '<img class="as-oso as-oso--cara" src="' + ASSET + 'oso/oso-cara.webp" alt="" draggable="false">'; } }
+    candado: { name: 'Candado', role: 'Cuida que tus cuentas cuadren', svg: candadoSVG },
+    pia:     { name: 'PIA', role: 'Te cuenta en qué se va tu plata', svg: piaSVG }
   };
-  function C() { return CHARS.uku; }
-
-  /* ---------- Escena 3D (carga diferida) ---------- */
-  var ASSET = (document.currentScript && document.currentScript.src || location.href).replace(/[^/]*$/, '');
-  var b3d = null, b3dP = null;
-  function load3D() {
-    if (!b3dP) b3dP = import(ASSET + 'bosque3d.js').then(function (m) { b3d = m.supported() ? m : null; return b3d; }).catch(function () { return null; });
-    return b3dP;
-  }
-  function mount3D(el, score, gesture) {
-    if (!el) return;
-    el.classList.add('is-loading');
-    load3D().then(function (m) {
-      if (!m || !el.isConnected) return;
-      m.attach(el, { score: score, onTap: function () { fx('select'); } });
-      el.classList.remove('is-loading'); el.classList.add('is-3d');
-      if (gesture) m.play(gesture.name || gesture, gesture.opts);
-    });
-  }
-  function gest(name, opts) { if (b3d) b3d.play(name, opts); }
+  function C() { return CHARS[ST.who] || CHARS.candado; }
 
   /* ---------- Formato ---------- */
   function money(v) {
@@ -201,6 +178,45 @@
   var uidN = 0;
   /* Estilo de la marca: línea navy fina, rellenos gris claro, amarillo
      como único acento y mucho aire. Sin degradados ni sombras. */
+  function candadoSVG() {
+    return '<svg class="as-char" viewBox="0 0 200 220" aria-hidden="true">' +
+    '<g class="c-body" fill="none" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path class="c-tail" d="M148 200 C172 198 186 178 178 156 C190 166 196 190 182 206 C172 214 156 212 148 208Z" fill="var(--as-g1)"/>' +
+      '<path d="M66 212 C60 182 64 150 82 132 L98 122 C114 126 126 138 132 156 C146 168 154 190 150 212 Z" fill="var(--as-g1)"/>' +
+      '<path d="M104 212 C100 192 108 172 128 168 C146 172 152 194 148 212Z" fill="var(--as-g2)"/>' +
+      '<path d="M78 150 C74 172 74 196 80 212" stroke="var(--as-line)" stroke-width="1.4"/>' +
+      '<path d="M66 212 H156" stroke="var(--as-line)" stroke-width="1.4"/>' +
+      '<g class="c-head">' +
+        '<path d="M86 84 L88 46 L106 76Z" fill="var(--as-g1)"/><path d="M92 74 L92 56 L101 72" stroke="var(--as-line)" stroke-width="1.2"/>' +
+        '<path d="M104 80 L118 48 L122 86Z" fill="var(--as-g2)"/>' +
+        '<path d="M120 100 C120 80 106 72 92 74 C78 76 70 86 68 96 C56 98 44 104 42 112 C42 120 54 124 70 122 C80 128 96 130 108 124 C116 118 120 110 120 100Z" fill="var(--as-g1)"/>' +
+        '<g class="c-eyes"><circle cx="80" cy="96" r="3.2" fill="var(--as-line)"/></g>' +
+        '<ellipse cx="43" cy="110" rx="4" ry="3.2" fill="var(--as-line)"/>' +
+        '<path class="c-mouth-closed" d="M48 118 Q58 123 68 119" stroke="var(--as-line)" stroke-width="1.4"/>' +
+        '<path class="c-mouth-open" d="M48 117 Q58 128 68 118" stroke="var(--as-line)" stroke-width="1.4" fill="var(--as-paper)"/>' +
+        '<path d="M80 124 Q98 136 116 120" stroke="var(--as-line)" stroke-width="4"/>' +
+        '<g transform="translate(96 138)"><path d="M-3.5 -2 v-3 a3.5 3.5 0 0 1 7 0 v3" stroke="var(--as-line)" stroke-width="1.2"/><rect x="-5.5" y="-2" width="11" height="9" rx="2" fill="var(--as-accent)"/></g>' +
+      '</g>' +
+    '</g></svg>';
+  }
+  function piaSVG() {
+    return '<svg class="as-char" viewBox="0 0 200 220" aria-hidden="true">' +
+    '<g class="c-body" fill="none" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M88 190 v20 M80 212 l8 -3 8 3 M112 190 v20 M104 212 l8 -3 8 3" stroke="var(--as-line)" stroke-width="1.6"/>' +
+      '<path d="M60 212 H140" stroke="var(--as-line)" stroke-width="1.4"/>' +
+      '<g class="c-head">' +
+        '<path d="M100 82 C96 70 98 62 104 58 M102 82 C106 72 114 68 120 70" stroke="var(--as-line)" stroke-width="1.4"/>' +
+        '<circle cx="100" cy="138" r="56" fill="var(--as-accent)"/>' +
+        '<path d="M62 120 C60 140 66 160 82 172" stroke="#fff" stroke-width="1.4" opacity=".9"/>' +
+        '<g class="c-eyes"><circle cx="86" cy="120" r="3.6" fill="var(--as-line)"/><circle cx="116" cy="120" r="3.6" fill="var(--as-line)"/></g>' +
+        '<path class="c-mouth-closed" d="M94 132 L101 128 L108 132 L101 137Z" fill="#fff" stroke="var(--as-line)" stroke-width="1.3"/>' +
+        '<path class="c-mouth-open" d="M93 130 L101 126 L109 130 M94 134 L101 141 L108 134" fill="#fff" stroke="var(--as-line)" stroke-width="1.3"/>' +
+        '<path d="M92 176 L100 188 L108 176Z" fill="var(--as-line)"/>' +
+      '</g>' +
+      '<path class="c-wing-r" d="M150 134 C166 140 168 160 156 170 C150 160 146 150 146 140Z" fill="var(--as-g1)"/>' +
+    '</g></svg>';
+  }
+
   /* ---------- Paisaje: misma línea gráfica, el amarillo crece con los hábitos ---------- */
   function leaf(x, y, s, i, tone) {
     return '<g transform="translate(' + x + ' ' + y + ') scale(' + s + ')"><g class="l-grow" style="animation-delay:' + (i * 90) + 'ms"><g class="l-sway" style="animation-delay:-' + i + 's">' +
@@ -513,25 +529,22 @@
     }, true);
   }
   function setPet(cls) {
-    // Gestos del oso 3D: escuchar → pensar, hablar, alegrarse.
-    if (cls === 'is-listening') gest('think');
-    else if (cls === 'is-talking') gest('talk');
-    else if (cls === 'is-happy') gest('happy');
+    var svg = page && page.querySelector('.as-pet .as-char');
+    if (!svg) return;
+    svg.classList.remove('is-listening', 'is-happy', 'is-talking');
+    if (cls) svg.classList.add(cls);
   }
-
   function paintAll() {
     paintEntries();
     if (!page) return;
     var lv = level(D.score);
-    var lw = page.querySelector('.as-land-wrap');
-    lw.innerHTML = '<div class="b3d"><div class="b3d__fallback">' + C().svg() + '</div></div>';
-    mount3D(lw.firstChild, D.score, 'wave');
-    page.querySelector('.as-pet').innerHTML = '';
+    page.querySelector('.as-land-wrap').innerHTML = landSVG(D.score).replace('xMidYMax slice', 'xMidYMax meet');
+    page.querySelector('.as-pet').innerHTML = C().svg();
     page.querySelector('.as-level span').textContent = lv.n;
     page.querySelector('.as-level').style.setProperty('--lvl', 'var(--as-accent)');
     page.querySelector('.as-intro__eyebrow').textContent = C().name;
     page.querySelector('.as-intro__text').textContent = 'Tengo tus movimientos desde agosto. Pregunta como lo dirías tú: «¿cuánto se me fue en Uber?»';
-    page.querySelector('.as-intro__title').textContent = monthInsights(lastClosedMi())[0].title + '.';
+    page.querySelector('.as-intro__title').textContent = insight();
     input.placeholder = 'Escribe tu pregunta';
   }
 
@@ -563,7 +576,11 @@
             '<span class="as-row__val' + (f.ok ? '' : ' is-warn') + '">' + f.val + '</span></div>';
         }).join('') + '</div>';
     } else {
-      html += '<h3>Ajustes</h3>' +
+      html += '<h3>Ajustes</h3><p class="as-sheet__label">Quién te acompaña</p><div class="as-rows">' +
+        Object.keys(CHARS).map(function (k) {
+          return '<button class="as-row as-row--btn" data-who="' + k + '" aria-pressed="' + (ST.who === k) + '"><span class="as-row__av">' + CHARS[k].svg() + '</span>' +
+            '<span class="as-row__main"><b>' + CHARS[k].name + '</b><small>' + CHARS[k].role + '</small></span><span class="as-radio"></span></button>';
+        }).join('') + '</div>' +
         '<p class="as-sheet__label">Ver otro escenario (solo demo)</p><div class="as-rows">' +
         Object.keys(SCEN).map(function (k) {
           return '<button class="as-row as-row--btn" data-sc="' + k + '" aria-pressed="' + (ST.scenario === k) + '"><span class="as-row__main"><b>' + SCEN[k].label + '</b></span><span class="as-radio"></span></button>';
@@ -682,7 +699,8 @@
     return '<div class="pf-total"><p class="pf-total__label">' + label + '</p><p class="pf-total__value">' + value + '</p><p class="pf-total__sub">' + sub + '</p></div>';
   }
   function heroHTML(score, label) {
-    return '<section class="pf-hero"><div class="b3d" data-score="' + score + '"><div class="b3d__fallback">' + C().svg() + '</div></div>' +
+    return '<section class="pf-hero"><div class="pf-hero__land">' + landSVG(score).replace('xMidYMax slice', 'xMidYMax meet') + '</div>' +
+      '<div class="pf-hero__pet">' + C().svg() + '</div>' +
       '<button class="pf-hero__badge" data-pf="health"><i></i>' + label + '<span class="material-symbols-rounded">chevron_right</span></button></section>';
   }
   function insHTML(list, withDetail) {
@@ -700,7 +718,7 @@
     return '<section class="pf-sec pf-foot">' +
       '<button class="pf-navrow" data-pf="accounts"><span class="material-symbols-rounded">account_balance</span><span><b>Cuentas conectadas</b><small>' + D.accts.length + ' cuentas · ' + Object.keys(BANKS).filter(connected).map(function (k) { return BANKS[k].name; }).join(', ') + '</small></span><span class="material-symbols-rounded">chevron_right</span></button>' +
       '<button class="pf-navrow" data-pf="health"><span class="material-symbols-rounded">favorite</span><span><b>Salud financiera</b><small>Qué la mueve y cómo mejorarla</small></span><span class="material-symbols-rounded">chevron_right</span></button>' +
-      '<button class="pf-navrow" data-pf="ask"><span class="pf-navrow__av">' + C().face() + '</span><span><b>Pregúntale a ' + C().name + '</b><small>Cualquier duda sobre tus últimos 3 meses</small></span><span class="material-symbols-rounded">chevron_right</span></button>' +
+      '<button class="pf-navrow" data-pf="ask"><span class="pf-navrow__av">' + C().svg() + '</span><span><b>Pregúntale a ' + C().name + '</b><small>Cualquier duda sobre tus últimos 3 meses</small></span><span class="material-symbols-rounded">chevron_right</span></button>' +
       '<p class="pf-note">Los resúmenes se preparan al cierre de cada mes. El mes en curso se calcula solo cuando lo pides, para que la app cargue rápido.</p></section>';
   }
   function paintPF() {
@@ -736,11 +754,6 @@
     }
     html += footHTML();
     pf.querySelector('.pf-scroll').innerHTML = html;
-    var hero = pf.querySelector('.pf-hero .b3d');
-    if (hero) {
-      var vv = viewOf(ST.view), saved = !vv.report && !vv.current && D.by[vv.mi]._save / D.by[vv.mi]._in >= .08;
-      mount3D(hero, +hero.dataset.score, saved ? { name: 'hold', opts: { hold: 'coin' } } : 'wave');
-    }
     var sel = pf.querySelector('.pf-months [aria-selected="true"]');
     if (sel) sel.scrollIntoView({ inline: 'center', block: 'nearest' });
   }
@@ -790,7 +803,6 @@
     persist(); build();
     fx(D.score > before ? 'success' : 'select');
     paintPF(); paintEntries();
-    if (D.score > before) setTimeout(function () { gest('happy'); }, 500);
     toast(msg + (D.score > before ? ' Tu salud subió a ' + D.score + '.' : ''));
   }
   var toastT;
@@ -921,5 +933,5 @@
 
   function init() { build(); mountEntries(); paintEntries(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
-  window.Asistente = { petSVG: function () { return C().svg(); }, faceIMG: function () { return C().face(); }, name: function () { return C().name; }, open: open, openPF: function () { openPF(); }, ask: function (q) { open(); ask(q); }, data: function () { return D; } };
+  window.Asistente = { petSVG: function () { return C().svg(); }, open: open, openPF: function () { openPF(); }, ask: function (q) { open(); ask(q); }, data: function () { return D; } };
 })();

@@ -146,7 +146,7 @@
           return row('pfm', inc ? 'south_west' : 'north_east', esc(t.who), t.day + ' ' + MON[t.mi], (inc ? '+' : '-') + money(t.amt));
         }).join('') + '</section>';
       }
-      html += '<section class="sx-card">' + row('ask', 'chat_bubble', 'Pregúntale a Candado', '«' + esc(input.value.trim()) + '»') + '</section>';
+      html += '<section class="sx-card">' + row('ask', 'chat_bubble', 'Pregúntale a ' + ((window.Asistente && Asistente.name && Asistente.name()) || 'Uku'), '«' + esc(input.value.trim()) + '»') + '</section>';
     }
     results.innerHTML = html;
   }
