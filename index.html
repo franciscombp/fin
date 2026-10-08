@@ -98,6 +98,10 @@
         })();
     </script>
 
+    <!-- Idiomas: catálogos gettext en /locales (ver locales/README.md). Va
+         primero para traducir la página mientras se arma. -->
+    <script src="./assets/i18n.js"></script>
+
     <!-- Biometría real (WebAuthn). Debe cargar antes del script inline y app.js. -->
     <script src="./webauthn.js"></script>
 
@@ -4170,6 +4174,9 @@
                 <img src="./assets/pichibank-logo.svg" alt="Pichibank" class="login-logo">
             </div>
             <div class="login-screen__header-actions">
+                <button class="icon-button login-lang" aria-label="Idioma" data-i18n-picker>
+                    <span class="material-symbols-rounded">translate</span>
+                </button>
                 <button class="icon-button" aria-label="Clave digital" data-action="Clave digital">
                     <span class="material-symbols-rounded">vpn_key</span>
                 </button>
@@ -4211,19 +4218,19 @@
             <div class="login-qa">
                 <button class="quick-action" data-action="Transferir dinero">
                     <span class="quick-action__icon"><span class="material-symbols-rounded">send_money</span></span>
-                    <span class="quick-action__label">Transferir<br>dinero</span>
+                    <span class="quick-action__label">Transferir dinero</span>
                 </button>
                 <button class="quick-action" data-action="Retirar sin tarjeta">
                     <span class="quick-action__icon"><span class="material-symbols-rounded">payments</span></span>
-                    <span class="quick-action__label">Retirar sin<br>tarjeta</span>
+                    <span class="quick-action__label">Retirar sin tarjeta</span>
                 </button>
                 <button class="quick-action" data-action="Pagar transporte">
                     <span class="quick-action__icon"><span class="material-symbols-rounded">directions_transit</span></span>
-                    <span class="quick-action__label">Pagar<br>transporte</span>
+                    <span class="quick-action__label">Pagar transporte</span>
                 </button>
                 <button class="quick-action" data-action="Verificar pago">
                     <span class="quick-action__icon"><span class="badge-new">Nuevo</span><span class="material-symbols-rounded">verified_user</span></span>
-                    <span class="quick-action__label">Verificar<br>pago</span>
+                    <span class="quick-action__label">Verificar pago</span>
                 </button>
             </div>
 
@@ -4363,35 +4370,35 @@
             <div class="quick-actions">
                 <button class="quick-action" data-action="Pagar con QR">
                     <span class="quick-action__icon"><span class="material-symbols-rounded">qr_code_scanner</span></span>
-                    <span class="quick-action__label">Pagar<br>con QR</span>
+                    <span class="quick-action__label">Pagar con QR</span>
                 </button>
                 <button class="quick-action" data-action="Transferir dinero">
                     <span class="quick-action__icon"><span class="material-symbols-rounded">send_money</span></span>
-                    <span class="quick-action__label">Transferir<br>dinero</span>
+                    <span class="quick-action__label">Transferir dinero</span>
                 </button>
                 <button class="quick-action" data-action="Recibir dinero">
                     <span class="quick-action__icon"><span class="material-symbols-rounded">control_point_duplicate</span></span>
-                    <span class="quick-action__label">Recibir<br>dinero</span>
+                    <span class="quick-action__label">Recibir dinero</span>
                 </button>
                 <button class="quick-action" data-action="Pagar servicios">
                     <span class="quick-action__icon"><span class="material-symbols-rounded">emoji_objects</span></span>
-                    <span class="quick-action__label">Pagar<br>servicios</span>
+                    <span class="quick-action__label">Pagar servicios</span>
                 </button>
                 <button class="quick-action" data-action="Pagar tarjeta">
                     <span class="quick-action__icon"><span class="material-symbols-rounded">credit_card</span></span>
-                    <span class="quick-action__label">Pagar<br>tarjeta</span>
+                    <span class="quick-action__label">Pagar tarjeta</span>
                 </button>
                 <button class="quick-action" data-action="Retirar sin tarjeta">
                     <span class="quick-action__icon"><span class="material-symbols-rounded">payments</span></span>
-                    <span class="quick-action__label">Retirar sin<br>tarjeta</span>
+                    <span class="quick-action__label">Retirar sin tarjeta</span>
                 </button>
                 <button class="quick-action" data-action="Recargar celular">
                     <span class="quick-action__icon"><span class="material-symbols-rounded">phone_android</span></span>
-                    <span class="quick-action__label">Recargar<br>celular</span>
+                    <span class="quick-action__label">Recargar celular</span>
                 </button>
                 <button class="quick-action" data-sheet="actions">
                     <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
-                    <span class="quick-action__label">Más<br>acciones</span>
+                    <span class="quick-action__label">Más acciones</span>
                 </button>
             </div>
         </section>
@@ -4560,7 +4567,7 @@
                 <div class="card">
                     <button class="product-row" data-action="Visa Débito">
                         <span class="card-thumb card-thumb--visa">
-                            <span class="card-thumb__brand">PICHI<br>BANK</span>
+                            <span class="card-thumb__brand" translate="no">PICHI<br>BANK</span>
                             <span class="card-thumb__foot"><span class="card-thumb__visa">VISA</span></span>
                         </span>
                         <span class="product-row__info">
@@ -4572,7 +4579,7 @@
 
                 <button class="cta-dashed" data-action="Solicitar Débito Digital">
                     <span class="card-thumb card-thumb--ghost">
-                        <span class="card-thumb__brand">PICHI<br>BANK</span>
+                        <span class="card-thumb__brand" translate="no">PICHI<br>BANK</span>
                         <span class="card-thumb__foot"><span class="card-thumb__visa">VISA</span></span>
                     </span>
                     <span class="cta-dashed__text">
@@ -4592,7 +4599,7 @@
                 <div class="card">
                     <button class="product-row" data-action="Mastercard Black">
                         <span class="card-thumb card-thumb--black">
-                            <span class="card-thumb__brand">PICHI<br>BANK</span>
+                            <span class="card-thumb__brand" translate="no">PICHI<br>BANK</span>
                             <span class="card-thumb__foot"><span class="mc-dots"><i></i><i></i></span></span>
                         </span>
                         <span class="product-row__info">
@@ -4830,6 +4837,12 @@
 
                 <div class="section__title"><h2>Preferencias</h2></div>
                 <div class="card">
+                    <button class="list-item" id="pref-lang" data-i18n-picker>
+                        <span class="avatar-cat"><span class="material-symbols-rounded">translate</span></span>
+                        <span class="list-item__title">Idioma</span>
+                        <span class="list-item__value" data-i18n-current translate="no">Español</span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">chevron_right</span>
+                    </button>
                     <!-- POC de theming: el resto de la app usa tokens
                          --bp-* para color, así que un tema nuevo es sólo
                          reasignar esos tokens (ver bloque html.theme-y2k
@@ -5004,7 +5017,7 @@
                         <img class="cd-card__img" id="cd-card-img" src="./assets/card-debit.svg" alt="Tarjeta de débito internacional">
                         <div class="cd-card__art" id="cd-card-art">
                             <div class="cd-card__art-top">
-                                <span class="cd-card__art-brand">PICHI<br>BANK</span>
+                                <span class="cd-card__art-brand" translate="no">PICHI<br>BANK</span>
                                 <span class="cd-card__art-mark" id="cd-card-art-mark"></span>
                             </div>
                             <span class="cd-card__art-number" id="cd-card-art-number"></span>
@@ -5280,7 +5293,7 @@
                 <div class="card">
                     <button class="product-row" data-action="Mastercard Black">
                         <span class="card-thumb card-thumb--black">
-                            <span class="card-thumb__brand">PICHI<br>BANK</span>
+                            <span class="card-thumb__brand" translate="no">PICHI<br>BANK</span>
                             <span class="card-thumb__foot"><span class="mc-dots"><i></i><i></i></span></span>
                         </span>
                         <span class="product-row__info"><span class="product-row__name">Mastercard Black</span></span>

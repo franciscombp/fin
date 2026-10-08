@@ -16,6 +16,7 @@
   var CONFIG = { slotsMax: 2, baseOrder: ['inversiones', 'creditos', 'seguros', 'pfm', 'pagos', 'tarjetas', 'cuentas', 'acciones'] };
   function fx(n) { try { window.Haptics && Haptics.fx && Haptics.fx(n); } catch (e) {} }
   function money(v) { var s = Math.abs(v).toFixed(2).split('.'); return '$ ' + s[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + s[1]; }
+  function T(x, v) { return window.I18n ? I18n.t(x, v) : x.replace(/\{(\w+)\}/g, function (m, k) { return v && k in v ? v[k] : m; }); }
   function sens(v) { return '<span class="dw-s"><span class="dw-s__v">' + v + '</span><span class="dw-s__m" aria-hidden="true">••••</span></span>'; }
 
   /* Catálogo (configuración). eligible = elegibilidad de captación;
@@ -75,7 +76,7 @@
       return { body: '<p class="dw-label">Lo que más usas</p><div class="dw-short">' + s.map(function (x) { return '<button data-dw-act="' + x[2] + '"><span class="material-symbols-rounded">' + x[0] + '</span>' + x[1] + '</button>'; }).join('') + '</div>' };
     },
     inversiones: function () {
-      return { body: '<p class="dw-label">Inversiones</p><p class="dw-promo">Tu dinero puede crecer <b>7,25% al año</b> mientras sigue disponible.</p><span class="dw-cta">Invertir desde $ 100</span>', go: function () { act('Crear inversión'); } };
+      return { body: '<p class="dw-label">Inversiones</p><p class="dw-promo">' + T('Tu dinero puede crecer <b>{tasa}</b> mientras sigue disponible.', { tasa: T('{pct} al año', { pct: '7,25%' }) }) + '</p><span class="dw-cta">Invertir desde $ 100</span>', go: function () { act('Crear inversión'); } };
     },
     creditos: function () {
       return { body: '<p class="dw-label">Créditos</p><p class="dw-promo">Tienes un crédito <b>preaprobado</b> listo para usar.</p><span class="dw-cta">Simular</span>', go: function () { act('Simular crédito preaprobado'); } };
@@ -141,7 +142,7 @@
     var active = resolveActive();
     var rest = CONFIG.baseOrder.filter(function (id) { return active.indexOf(id) < 0; });
     sheet.innerHTML = '<div class="as-sheet__handle"></div><h3>Destacados</h3>' +
-      '<p>Elige hasta ' + CONFIG.slotsMax + ' para ver en Inicio. ' + (pref.mode === 'custom' ? 'Elegidos por ti.' : 'Ahora ves los sugeridos.') + '</p>' +
+      '<p>' + T('Elige hasta {n} para ver en Inicio.', { n: CONFIG.slotsMax }) + ' ' + (pref.mode === 'custom' ? T('Elegidos por ti.') : T('Ahora ves los sugeridos.')) + '</p>' +
       '<p class="as-sheet__label">En Inicio</p><div class="dw-ed">' +
       (active.length ? active.map(function (id, i) {
         return '<div class="dw-ed__row"><span class="dw-ed__n">' + (i + 1) + '</span><span class="dw-ed__name">' + CATALOG[id].name + '</span>' +
@@ -172,5 +173,6 @@
 
   function init() { mount(); paint(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  document.addEventListener('i18n:change', function () { paint(); });
   window.Destacados = { repaint: paint };
 })();
