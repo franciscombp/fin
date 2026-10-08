@@ -78,3 +78,9 @@
 html.sx-open #home-page { filter: none; }
 
 @media (prefers-reduced-motion: reduce) { .sx-card, .sx-panel, .sx-back { animation: none; transition: none; } }
+
+/* Dictado: escuchando (anillo y pulso) → entendido (check) → cerrado */
+.sx.is-listening .sx-field { box-shadow: 0 0 0 2px var(--bp-theme-color-interaction-primary-bg, #ffdd00); }
+.sx.is-listening .sx-field input::placeholder { color: var(--bp-theme-color-text-primary); }
+.sx.is-heard .sx-mic { background: var(--bp-theme-color-status-success-bg, #1b8a3a); color: #fff; animation: sxPop .4s cubic-bezier(.3,1.5,.5,1); }
+@keyframes sxPop { from { transform: scale(.6); } }

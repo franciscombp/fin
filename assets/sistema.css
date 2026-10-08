@@ -105,3 +105,59 @@
 /* Uñero: zona de agarre amplia para arrastrar y cerrar la hoja */
 .as-sheet__handle { position: relative !important; cursor: grab; touch-action: none; }
 .as-sheet__handle::before { content: ''; position: absolute; left: -80px; right: -80px; top: -16px; bottom: -14px; }
+
+/* ---------- Mis finanzas en escritorio ----------
+   Pantalla completa con dos columnas: la escena y el total del mes quedan
+   fijos a la izquierda mientras el detalle hace scroll a la derecha. */
+@media (min-width: 960px) {
+  .pf-page { max-width: none; }
+  .pf-top { max-width: 1160px; width: 100%; margin: 0 auto; padding-left: 32px; padding-right: 32px; }
+  .pf-scroll { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 0 56px; align-items: start; max-width: 1160px; width: 100%; margin: 0 auto; padding: 0 32px 64px; box-sizing: border-box; }
+  .pf-col--main { position: sticky; top: 0; }
+  .pf-col--main .pf-hero { height: 420px; border-radius: 28px; }
+  .pf-col--main .pf-head, .pf-col--main .pf-total { padding-left: 0; padding-right: 0; }
+  .pf-col--side { padding-top: 64px; }
+  .pf-col--side .pf-sec { padding-left: 0; padding-right: 0; }
+  .pf-col--side .pf-sec:first-child { margin-top: 0; }
+  /* El asistente y las hojas se abren como panel centrado sobre un velo */
+  .as-page.open { box-shadow: 0 0 0 100vmax rgb(0 0 0 / .32); }
+}
+
+/* ---------- Montos en listas: legibles, no gritan ----------
+   La cifra grande es una por pantalla (saldo principal); en filas de cuentas,
+   tarjetas y metas el monto va al tamaño del cuerpo. */
+.product-row__amount, .goal-row__amount { font: 600 17px/24px var(--sol-font, Roboto, sans-serif) !important; letter-spacing: -.1px; }
+.card__footer-value { font: 600 17px/24px var(--sol-font, Roboto, sans-serif) !important; }
+.card__footer-label { font: var(--cx-sub) !important; color: var(--cx-muted) !important; }
+
+/* ---------- Banners de Inicio: ilustración + texto tranquilo ---------- */
+.home-banner__figure { display: none; }
+.home-banner__slide { padding: 16px 18px; }
+.home-banner__slide--1 { background: #fbf6e3; }
+.home-banner__slide--2 { background: #eef1f6; }
+.home-banner__slide--3 { background: #edf2ee; }
+:root[data-theme="dark"] .home-banner__slide--1,
+:root[data-theme="dark"] .home-banner__slide--2,
+:root[data-theme="dark"] .home-banner__slide--3 { background: var(--cx-surface); }
+.home-banner__img { position: absolute; right: 4px; bottom: 6px; height: calc(100% - 12px); width: auto; max-width: 46%; object-fit: contain; object-position: right bottom; pointer-events: none; }
+.home-banner__text { max-width: 56%; }
+.home-banner__title { font: 500 15px/21px var(--sol-font, Roboto, sans-serif) !important; color: var(--cx-ink) !important; letter-spacing: 0 !important; }
+.home-banner__cta {
+  height: auto !important; padding: 0 !important; background: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  border-radius: 0 !important; font: 600 14px/20px var(--sol-font, Roboto, sans-serif) !important; color: var(--cx-muted) !important; gap: 4px !important;
+}
+.home-banner__cta .material-symbols-rounded { font-size: 16px !important; }
+
+/* ---------- Promociones: tarjeta neutra con imagen, título discreto ---------- */
+.promo { background: var(--cx-surface) !important; color: var(--cx-ink) !important; justify-content: flex-end; flex-direction: column; align-items: stretch !important; padding: 14px !important; height: 236px !important; box-shadow: none; }
+.promo::after { display: none !important; }
+.promo .promo__img { position: absolute; left: 10px; right: 10px; top: 12px; height: 130px; width: calc(100% - 20px); object-fit: contain; pointer-events: none; }
+.promo .promo__title { position: relative; font: 500 14px/19px var(--sol-font, Roboto, sans-serif) !important; color: var(--cx-ink) !important; padding-right: 30px; }
+.promo .promo__go { background: var(--cx-fill) !important; color: var(--cx-ink); -webkit-backdrop-filter: none; backdrop-filter: none; width: 28px !important; height: 28px !important; border-radius: 50% !important; }
+.promo span { text-shadow: none !important; }
+.promo .promo__go { top: 10px !important; right: 10px !important; bottom: auto !important; }
+.promo .promo__title { padding-right: 0; }
+
+/* En escritorio la tarjeta de débito conserva su proporción de celular
+   (el arte se recortaba gigante al estirarse a todo el ancho). */
+@media (min-width: 720px) { .debit-card { max-width: 420px; } }

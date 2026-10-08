@@ -4203,7 +4203,7 @@
                 </button>
                 <button class="login-feature" data-action="Pagar con QR">
                     <span class="login-feature__label">Pagar con QR</span>
-                    <span class="login-feature__icon login-feature__icon--deuna">d!</span>
+                    <span class="login-feature__icon"><span class="material-symbols-rounded">qr_code_scanner</span></span>
                 </button>
             </div>
 
@@ -4448,14 +4448,17 @@
             </div>
             <div class="promos">
                 <button class="promo promo--1" data-action="Promoción cashback">
+                    <img class="promo__img" src="./assets/banners/cashback.webp" alt="" loading="lazy" draggable="false">
                     <span class="promo__title">30% cashback comprando con tu tarjeta</span>
                     <span class="promo__go"><span class="material-symbols-rounded">chevron_right</span></span>
                 </button>
                 <button class="promo promo--2" data-action="Promoción cafetería">
+                    <img class="promo__img" src="./assets/banners/regalo.webp" alt="" loading="lazy" draggable="false">
                     <span class="promo__title">Giftcard y descuentos del 15%</span>
                     <span class="promo__go"><span class="material-symbols-rounded">chevron_right</span></span>
                 </button>
                 <button class="promo promo--3" data-action="Promoción vinos">
+                    <img class="promo__img" src="./assets/banners/vinos.webp" alt="" loading="lazy" draggable="false">
                     <span class="promo__title">Hasta 30% dcto. en vinos seleccionados</span>
                     <span class="promo__go"><span class="material-symbols-rounded">chevron_right</span></span>
                 </button>
@@ -6288,18 +6291,18 @@
 
         // ---------- Banner de ofertas: carrusel infinito ----------
         const BANNER_SLIDES = [
-            { theme: 1, title: 'Ofertas todo el año con Tarjetas Pichibank y Deuna', cta: 'Ver ofertas' },
-            { theme: 2, title: 'Acumula millas en cada compra con tu tarjeta de crédito', cta: 'Conocer más' },
-            { theme: 3, title: 'Activa Modo finanzas y controla todo tu dinero en un solo lugar', cta: 'Activar' },
+            { theme: 1, title: 'Ofertas todo el año con tus tarjetas Pichibank', cta: 'Ver ofertas', img: 'ofertas' },
+            { theme: 2, title: 'Acumula millas en cada compra con tu tarjeta de crédito', cta: 'Conocer más', img: 'millas' },
+            { theme: 3, title: 'Mira en qué se va tu plata con Mis finanzas', cta: 'Ver Mis finanzas', act: 'Modo finanzas', img: 'finanzas' },
         ];
 
         function bannerSlideHTML(s) {
             return `
-                <div class="home-banner__slide home-banner__slide--${s.theme}" data-action="${s.cta}">
-                    <div class="home-banner__figure"></div>
+                <div class="home-banner__slide home-banner__slide--${s.theme}" data-action="${s.act || s.cta}">
+                    <img class="home-banner__img" src="./assets/banners/${s.img}.webp" alt="" loading="lazy" draggable="false">
                     <div class="home-banner__text">
                         <p class="home-banner__title">${s.title}</p>
-                        <button class="home-banner__cta" data-action="${s.cta}">${s.cta}<span class="material-symbols-rounded">arrow_forward</span></button>
+                        <button class="home-banner__cta" data-action="${s.act || s.cta}">${s.cta}<span class="material-symbols-rounded">arrow_forward</span></button>
                     </div>
                 </div>`;
         }

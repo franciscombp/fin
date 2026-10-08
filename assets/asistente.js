@@ -17,8 +17,10 @@
   'use strict';
 
   var KEY = 'pb_asistente_v3';
-  var ST = { who: 'candado', scenario: 'normal', linked: ['andino'], view: 'sep', mods: { extraSave: 0, paidLate: false, paidLateAmt: 0, ccPaid: 0, efund: 0, autopay: false } };
+  var ST = { who: 'candado', scenario: 'normal', linked: [], view: 'sep', mods: { extraSave: 0, paidLate: false, paidLateAmt: 0, ccPaid: 0, efund: 0, autopay: false } };
   try { var saved = JSON.parse(localStorage.getItem(KEY)); if (saved) ST = Object.assign(ST, saved); } catch (e) {}
+  // La tarjeta de crédito ahora es de Pichibank (antes "Banco Andino", externo)
+  ST.linked = (ST.linked || []).filter(function (b) { return b !== 'andino'; });
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(ST)); } catch (e) {} }
   function fx(n) { try { window.Haptics && Haptics.fx && Haptics.fx(n); } catch (e) {} }
 
@@ -90,7 +92,6 @@
      conectan con consentimiento (solo lectura, últimos 3 meses). */
   var BANKS = {
     pb:       { name: 'Pichibank', ini: 'PB', own: true },
-    andino:   { name: 'Banco Andino', ini: 'BA', what: 'Tarjeta de crédito' },
     sierra:   { name: 'Cooperativa Sierra', ini: 'CS', what: 'Ahorro programado' },
     costa:    { name: 'Banco Costa', ini: 'BC', what: 'Cuenta de ahorros' },
     efectivo: { name: 'Efectivo', ini: '$', what: 'Lo registras tú', manual: true }
@@ -98,7 +99,7 @@
   var ACCTS = [
     { id: 'pb1', bank: 'pb', name: 'Cuenta PRINCIPAL', mask: '7890', type: 'ahorro', bal: 1906.04 },
     { id: 'pb2', bank: 'pb', name: 'Corriente', mask: '1234', type: 'corriente', bal: 1440.35 },
-    { id: 'and1', bank: 'andino', name: 'Visa Andino', mask: '4417', type: 'credito', limit: 2000, base: 420 },
+    { id: 'and1', bank: 'pb', name: 'Visa Pichibank', mask: '4417', type: 'credito', limit: 2000, base: 420 },
     { id: 'sie1', bank: 'sierra', name: 'Ahorro programado', mask: '2210', type: 'ahorro', bal: 1350 },
     { id: 'cos1', bank: 'costa', name: 'Cuenta de ahorros', mask: '0921', type: 'ahorro', bal: 640 },
     { id: 'efe1', bank: 'efectivo', name: 'Billetera', mask: '', type: 'efectivo', bal: 60 }
@@ -182,7 +183,7 @@
         act: overCats.length ? { id: 'cat:' + overCats[0], label: 'Ver ' + CATS[overCats[0]].name.toLowerCase() } : null },
       deuda: { v: card ? 1 - Math.min(1, util / .6) : 1, label: 'Uso de tarjetas', icon: 'credit_card', ok: util < .3, val: card ? pct(util) + ' del cupo' : 'Sin tarjetas conectadas',
         tip: !card ? 'Conecta tus tarjetas de otros bancos para verlas aquí.' : util < .3 ? 'Usas menos del 30% de tu cupo, que es lo ideal para tu historial.' : 'Estás usando más del 30% de tu cupo y eso pesa en tu historial. Bajarlo es lo que más te ayuda este mes.',
-        act: card && util >= .3 ? { id: 'payCard', label: 'Abonar $ 200 a Visa Andino' } : null },
+        act: card && util >= .3 ? { id: 'payCard', label: 'Abonar $ 200 a Visa Pichibank' } : null },
       colchon: { v: Math.min(1, months / 6), label: 'Ahorro para emergencias', icon: 'shield', ok: months >= 3, val: 'Te alcanza para ' + months.toFixed(1).replace('.', ',') + ' meses',
         tip: months >= 3 ? 'Si un mes no te entra plata, puedes cubrir más de 3 meses de gastos. Ese es el mínimo recomendado.' : 'Lo recomendable es tener ahorrados por lo menos 3 meses de gastos. Ahora te alcanza para ' + months.toFixed(1).replace('.', ',') + '.',
         act: months >= 6 ? null : { id: 'efund100', label: 'Pasar $ 100 al fondo' } }
@@ -282,17 +283,17 @@
     }
     if (/interes/.test(s)) {
       var i1 = cardInterest(0), i2 = cardInterest(1);
-      return { t: (i1 + i2) ? 'Entre agosto y septiembre pagaste ' + money(i1 + i2) + ' de intereses en tu Visa Andino, porque solo pagaste el mínimo. Si pagas el total antes de la fecha de corte, no te cobran intereses.' : 'Nada. Estos meses no pagaste intereses en tus tarjetas. ¡Bien ahí!',
+      return { t: (i1 + i2) ? 'Entre agosto y septiembre pagaste ' + money(i1 + i2) + ' de intereses en tu Visa Pichibank, porque solo pagaste el mínimo. Si pagas el total antes de la fecha de corte, no te cobran intereses.' : 'Nada. Estos meses no pagaste intereses en tus tarjetas. ¡Bien ahí!',
         s: ['¿Cuánto debo en mi tarjeta?', '¿Cuánto más puedo ahorrar?'] };
     }
     if (/cuenta|banco|saldo|tengo|patrimonio|total/.test(s)) {
       return { t: 'Sumando tus ' + D.accts.length + ' cuentas tienes <b>' + money(D.assets) + '</b>' + (D.debt ? ', y en tarjetas debes ' + money(D.debt) : '') + '.' +
-        (ST.linked.length < 3 ? ' Si conectas tus otros bancos, te muestro el panorama completo.' : ''),
+        (ST.linked.length < 2 ? ' Si conectas tus otros bancos, te muestro el panorama completo.' : ''),
         h: bars(D.accts.filter(function (a) { return a.type !== 'credito'; }).map(function (a) { return { label: BANKS[a.bank].name + ' · ' + a.name, v: a.bal }; }).sort(function (a, b) { return b.v - a.v; })),
         s: ['¿Cuánto debo en mi tarjeta?', '¿Para cuántos meses me alcanza?'] };
     }
     if (/deuda|debo|tarjeta|credito|cupo/.test(s)) {
-      return D.card ? { t: 'Debes <b>' + money(D.debt) + '</b> en tu Visa Andino, o sea el ' + pct(D.util) + ' de tu cupo. ' + (D.util >= .3 ? 'Lo ideal es usar menos del 30%. Con un abono de ' + money(Math.max(0, D.debt - D.card.limit * .3)) + ' llegas.' : 'Estás por debajo del 30%, que es lo ideal.'),
+      return D.card ? { t: 'Debes <b>' + money(D.debt) + '</b> en tu Visa Pichibank, o sea el ' + pct(D.util) + ' de tu cupo. ' + (D.util >= .3 ? 'Lo ideal es usar menos del 30%. Con un abono de ' + money(Math.max(0, D.debt - D.card.limit * .3)) + ' llegas.' : 'Estás por debajo del 30%, que es lo ideal.'),
           s: ['¿Cuánto pago de intereses?', '¿Cuánto más puedo ahorrar?'] }
         : { t: 'No veo ninguna tarjeta de crédito. Si tienes una en otro banco, conéctala desde Mis finanzas y la reviso contigo.', s: ['¿Cuánto tengo en total?'] };
     }
@@ -414,7 +415,7 @@
   function viewOf(key) { return VIEWS.filter(function (v) { return v.key === key; })[0] || VIEWS[3]; }
 
   function cardInterest(mi) {
-    if (!connected('andino') || D.sc.debt < 1 || ST.mods.ccPaid >= 200) return 0;
+    if (D.sc.debt < 1 || ST.mods.ccPaid >= 200) return 0;
     return +(ACCTS[2].base * D.sc.debt * .0135 * (mi === 0 ? .9 : 1)).toFixed(2);
   }
   function monthScore(mi) {
@@ -431,7 +432,7 @@
     var late = D.tx.filter(function (t) { return t.late && t.mi === mi; })[0];
     if (late) warn.push({ kind: 'warn', icon: 'event_busy', title: 'Pagaste tarde el ' + late.who.toLowerCase(), sub: 'Vencía el 7 de ' + name + ' y lo pagaste el 12, así que te cobraron ' + money(1.5) + ' de recargo.', det: 'late:' + mi, ask: '¿Qué pasa si pago tarde un servicio?' });
     var int = cardInterest(mi);
-    if (int) warn.push({ kind: 'warn', icon: 'credit_card', title: 'Pagaste solo el mínimo de tu Visa Andino', sub: 'Por eso te cobraron ' + money(int) + ' de intereses en ' + name + '. Si pagas el total, no pagas intereses.', det: 'card:' + mi, ask: '¿Cuánto pago de intereses en mi tarjeta?' });
+    if (int) warn.push({ kind: 'warn', icon: 'credit_card', title: 'Pagaste solo el mínimo de tu Visa Pichibank', sub: 'Por eso te cobraron ' + money(int) + ' de intereses en ' + name + '. Si pagas el total, no pagas intereses.', det: 'card:' + mi, ask: '¿Cuánto pago de intereses en mi tarjeta?' });
     var spikes = Object.keys(HAB).filter(function (k) { return !CATS[k].fixed && b[k] > HAB[k] * 1.25 && b[k] - HAB[k] > 15; })
       .sort(function (x, y) { return (b[y] - HAB[y]) - (b[x] - HAB[x]); });
     if (spikes.length) {
@@ -653,14 +654,23 @@
     page.querySelector('[data-hub="clear"]').hidden = !(ST.history && ST.history.length);
   }
   /* Hablar con Uku: dictado del navegador; si no hay, se escribe */
+  var rec = null;
   function listen() {
     var R = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!R) { input.focus(); return; }
-    var r = new R(); r.lang = 'es-EC'; r.interimResults = false;
+    if (rec) { rec.stop(); return; }
+    var r = rec = new R(), cap, done = false;
+    r.lang = 'es-EC'; r.interimResults = false; r.continuous = false;
     page.classList.add('is-listening'); gest('think'); fx('select');
-    r.onresult = function (e) { var q = e.results[0][0].transcript; if (q) ask(q); };
-    r.onend = function () { page.classList.remove('is-listening'); };
-    try { r.start(); } catch (e) { page.classList.remove('is-listening'); input.focus(); }
+    var hint = input.placeholder; input.placeholder = 'Te escucho…';
+    cap = setTimeout(function () { try { r.stop(); } catch (e) {} }, 8000); // nunca queda abierto
+    r.onresult = function (e) {
+      var q = e.results[0][0].transcript;
+      if (q && !done) { done = true; try { r.stop(); } catch (x) {} fx('success'); ask(q); }
+    };
+    r.onerror = function () { try { r.stop(); } catch (e) {} };
+    r.onend = function () { clearTimeout(cap); rec = null; input.placeholder = hint; page.classList.remove('is-listening'); };
+    try { r.start(); } catch (e) { clearTimeout(cap); rec = null; input.placeholder = hint; page.classList.remove('is-listening'); input.focus(); }
   }
   function me(text) {
     var m = document.createElement('div');
@@ -847,12 +857,36 @@
       }).join('') + '</div><button class="pf-link pf-link--block" data-pf="breakdown:' + mi + '">Ver todas las categorías</button></section>';
     }
     html += footHTML();
-    pf.querySelector('.pf-scroll').innerHTML = html;
-    var hero = pf.querySelector('.pf-hero .b3d');
-    if (hero) {
-      var vv = viewOf(ST.view), saved = !vv.report && !vv.current && D.by[vv.mi]._save / D.by[vv.mi]._in >= .08;
-      mount3D(hero, +hero.dataset.score, saved ? { name: 'hold', opts: { hold: 'coin' } } : 'wave');
+    // La escena 3D sobrevive al cambio de mes: se reutiliza el mismo nodo y
+    // sólo se actualiza el puntaje (el bosque crece o se encoge, sin parpadeo).
+    var scroll = pf.querySelector('.pf-scroll'), oldHero = scroll.querySelector('.pf-hero');
+    var live = oldHero && oldHero.querySelector('.b3d.is-3d');
+    if (oldHero) oldHero.remove();
+    scroll.innerHTML = html;
+    var vv = viewOf(ST.view), saved = !vv.report && !vv.current && D.by[vv.mi]._save / D.by[vv.mi]._in >= .08;
+    var g = saved ? { name: 'hold', opts: { hold: 'coin' } } : 'wave';
+    var fresh = scroll.querySelector('.pf-hero');
+    if (live && fresh) {
+      var sc = +fresh.querySelector('.b3d').dataset.score;
+      oldHero.querySelector('.pf-hero__badge').innerHTML = fresh.querySelector('.pf-hero__badge').innerHTML;
+      fresh.replaceWith(oldHero);
+      live.dataset.score = sc;
+      if (!live.querySelector('canvas')) mount3D(live, sc, g); // el lienzo estaba en el hub de Uku
+      else if (b3d) { b3d.setScore(sc); if (live.dataset.g !== JSON.stringify(g)) b3d.play(g.name || g, g.opts); }
+      live.dataset.g = JSON.stringify(g);
+    } else if (fresh) {
+      var hero = fresh.querySelector('.b3d');
+      hero.dataset.g = JSON.stringify(g);
+      mount3D(hero, +hero.dataset.score, g);
     }
+    // Dos columnas en escritorio: a la izquierda el mes (escena y total), a la
+    // derecha el detalle. En el celular los contenedores no cambian nada.
+    var L = document.createElement('div'), Rr = document.createElement('div');
+    L.className = 'pf-col pf-col--main'; Rr.className = 'pf-col pf-col--side';
+    Array.prototype.slice.call(scroll.children).forEach(function (n) {
+      (n.matches('.pf-head, .pf-hero, .pf-total, .pf-empty') ? L : Rr).appendChild(n);
+    });
+    scroll.appendChild(L); scroll.appendChild(Rr);
     var sel = pf.querySelector('.pf-months [aria-selected="true"]');
     if (sel) sel.scrollIntoView({ inline: 'center', block: 'nearest' });
   }
@@ -896,7 +930,7 @@
     var before = D.score, m = ST.mods, msg;
     if (id === 'save50') { m.extraSave += 50; msg = 'Listo. Desde el próximo mes se van a pasar $ 50 más a tus metas cada día 2.'; }
     if (id === 'payLate') { m.paidLate = true; m.paidLateAmt += 18.35; msg = 'Listo, pagaste el agua. Ya no tienes nada atrasado.'; }
-    if (id === 'payCard') { m.ccPaid += 200; msg = 'Listo, abonaste $ 200 a tu Visa Andino desde tu cuenta PRINCIPAL.'; }
+    if (id === 'payCard') { m.ccPaid += 200; msg = 'Listo, abonaste $ 200 a tu Visa Pichibank desde tu cuenta PRINCIPAL.'; }
     if (id === 'efund100') { m.efund += 100; msg = 'Listo, pasaste $ 100 a tu fondo de emergencia.'; }
     if (id === 'autopay') { m.autopay = true; msg = 'Listo, activaste el pago automático. Tus servicios se pagan solos el día que vencen.'; }
     persist(); build();
@@ -939,7 +973,7 @@
     }
     if (p[0] === 'card') {
       var mi = +p[1], int = cardInterest(mi), owed = ACCTS[2].base * D.sc.debt;
-      return showSheet('<h3>Visa Andino · ' + MONTHS[mi].name + '</h3><p>Si pagas solo el mínimo, lo que queda te genera intereses el mes siguiente.</p>' +
+      return showSheet('<h3>Visa Pichibank · ' + MONTHS[mi].name + '</h3><p>Si pagas solo el mínimo, lo que queda te genera intereses el mes siguiente.</p>' +
         '<div class="as-stats">' + stat('Saldo al corte', money(owed)) + stat('Pago mínimo', money(Math.max(25, owed * .05))) + stat('Pagaste', money(Math.max(25, owed * .05))) + stat('Intereses', money(int)) + '</div>' +
         '<button class="pf-cta" data-sheet="act:payCard">Abonar $ 200 ahora</button>');
     }
