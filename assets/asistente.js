@@ -479,10 +479,21 @@
         '<button class="as-level" data-as="land" aria-label="Ver qué hace crecer tu paisaje"><i></i><span></span><span class="material-symbols-rounded">expand_more</span></button>' +
         '<button class="as-icon-btn" data-as="settings" aria-label="Ajustes del asistente"><span class="material-symbols-rounded">tune</span></button>' +
       '</div>' +
-      '<div class="as-intro">' +
-        '<p class="as-intro__eyebrow"></p>' +
-        '<h1 class="as-intro__title"></h1>' +
-        '<p class="as-intro__text"></p>' +
+      // Hub (estado inicial): saludo, bento, temas e historial
+      '<div class="as-hub">' +
+        '<h1 class="as-hub__hi">Hola<span class="as-hub__name"></span></h1>' +
+        '<p class="as-hub__sub">¿En qué te ayudo hoy?</p>' +
+        '<div class="as-bento">' +
+          '<button class="as-tile as-tile--portal" data-hub="voice"><div class="b3d"></div>' +
+            '<span class="as-tile__ic material-symbols-rounded">graphic_eq</span><span class="as-tile__go material-symbols-rounded">north_east</span>' +
+            '<span class="as-tile__t">Habla con <span class="as-hub__uku"></span></span></button>' +
+          '<button class="as-tile as-tile--accent" data-hub="write"><span class="as-tile__ic material-symbols-rounded">chat_bubble</span><span class="as-tile__go material-symbols-rounded">north_east</span>' +
+            '<span class="as-tile__t">Escríbele</span></button>' +
+          '<button class="as-tile" data-hub="month"><span class="as-tile__ic material-symbols-rounded">insights</span><span class="as-tile__go material-symbols-rounded">north_east</span>' +
+            '<span class="as-tile__t">Tu resumen de <span class="as-hub__mes"></span></span></button>' +
+        '</div>' +
+        '<section class="as-hub__sec"><div class="as-hub__head"><h2>Temas</h2></div><div class="as-topics"></div></section>' +
+        '<section class="as-hub__sec"><div class="as-hub__head"><h2>Historial</h2><button class="as-hub__all" data-hub="clear">Borrar</button></div><div class="as-hist"></div></section>' +
       '</div>' +
       '<div class="as-chat" aria-live="polite"></div>' +
       '<div class="as-pet" role="button" tabindex="0" aria-label="Saludar"></div>' +
@@ -501,6 +512,15 @@
       if ((b = e.target.closest('[data-as="land"]'))) return openSheet('land');
       if ((b = e.target.closest('[data-as="settings"]'))) return openSheet('settings');
       if ((b = e.target.closest('.as-chip'))) return ask(b.textContent);
+      if ((b = e.target.closest('[data-topic]'))) return ask(b.dataset.topic);
+      if ((b = e.target.closest('[data-hist]'))) return ask(b.dataset.hist);
+      if ((b = e.target.closest('[data-hub]'))) {
+        var h = b.dataset.hub;
+        if (h === 'write') { input.focus(); return; }
+        if (h === 'month') { close(); openPF(); return; }
+        if (h === 'voice') return listen();
+        if (h === 'clear') { ST.history = []; persist(); paintHub(); return; }
+      }
     });
     page.querySelector('form').addEventListener('submit', function (e) { e.preventDefault(); var v = input.value.trim(); if (v) { input.value = ''; ask(v); } });
     input.addEventListener('focus', function () { setPet('is-listening'); });
@@ -524,15 +544,14 @@
     if (!page) return;
     var lv = level(D.score);
     var lw = page.querySelector('.as-land-wrap');
-    lw.innerHTML = '<div class="b3d"><div class="b3d__fallback">' + C().svg() + '</div></div>';
-    mount3D(lw.firstChild, D.score, 'wave');
+    lw.innerHTML = '<div class="b3d"></div>';
+    page.querySelector('.as-tile--portal .b3d').innerHTML = '<div class="b3d__fallback">' + C().svg() + '</div>';
+    place3D('wave');
     page.querySelector('.as-pet').innerHTML = '';
     page.querySelector('.as-level span').textContent = lv.n;
     page.querySelector('.as-level').style.setProperty('--lvl', 'var(--as-accent)');
-    page.querySelector('.as-intro__eyebrow').textContent = C().name;
-    page.querySelector('.as-intro__text').textContent = 'Tengo tus movimientos desde agosto. Pregunta como lo dirías tú: «¿cuánto se me fue en Uber?»';
-    page.querySelector('.as-intro__title').textContent = monthInsights(lastClosedMi())[0].title + '.';
-    input.placeholder = 'Escribe tu pregunta';
+    paintHub();
+    input.placeholder = 'Pregúntale a ' + C().name;
   }
 
   /* Hojas inferiores (compartidas por el PFM y el asistente) */
@@ -586,8 +605,40 @@
   }
 
   /* Chat */
-  function enterChat() { if (!page.classList.contains('is-chat')) { page.classList.add('is-chat'); page.querySelector('[data-as="back"] span').textContent = 'arrow_back'; } }
-  function leaveChat() { page.classList.remove('is-chat'); page.querySelector('[data-as="back"] span').textContent = 'close'; fx('close'); }
+  function enterChat() { if (!page.classList.contains('is-chat')) { page.classList.add('is-chat'); page.querySelector('[data-as="back"] span').textContent = 'arrow_back'; place3D(); } }
+  function leaveChat() { page.classList.remove('is-chat'); page.querySelector('[data-as="back"] span').textContent = 'close'; fx('close'); place3D('wave'); }
+
+  /* El portal 3D vive en la tarjeta del hub; en el chat pasa al fondo. */
+  function place3D(g) {
+    var el = page.classList.contains('is-chat') ? page.querySelector('.as-land-wrap .b3d') : page.querySelector('.as-tile--portal .b3d');
+    mount3D(el, D.score, g);
+  }
+  var TOPICS = [['pie_chart', 'Gastos', '¿En qué se me va la plata?'], ['flag', 'Metas', '¿Llego a mis metas?'], ['credit_card', 'Tarjetas', '¿Cuánto debo en mi tarjeta?'],
+    ['savings', 'Ahorro', '¿Cuánto más puedo ahorrar?'], ['autorenew', 'Suscripciones', 'Mis suscripciones']];
+  function paintHub() {
+    var n = document.querySelector('.profile-head__name');
+    page.querySelector('.as-hub__name').textContent = n ? ', ' + n.textContent.trim().split(' ')[0] : '';
+    page.querySelector('.as-hub__uku').textContent = C().name;
+    page.querySelector('.as-hub__mes').textContent = MONTHS[lastClosedMi()].name;
+    page.querySelector('.as-topics').innerHTML = TOPICS.map(function (t) {
+      return '<button class="as-topic" data-topic="' + t[2] + '"><span class="material-symbols-rounded">' + t[0] + '</span>' + t[1] + '</button>';
+    }).join('');
+    var hist = (ST.history && ST.history.length ? ST.history : ['¿Cómo me fue en mayo?', 'Mis gastos hormiga']).slice(0, 4);
+    page.querySelector('.as-hist').innerHTML = hist.map(function (q) {
+      return '<button class="as-hist__row" data-hist="' + esc(q) + '"><span class="material-symbols-rounded">history</span><span>' + esc(q) + '</span><span class="material-symbols-rounded">chevron_right</span></button>';
+    }).join('');
+    page.querySelector('[data-hub="clear"]').hidden = !(ST.history && ST.history.length);
+  }
+  /* Hablar con Uku: dictado del navegador; si no hay, se escribe */
+  function listen() {
+    var R = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!R) { input.focus(); return; }
+    var r = new R(); r.lang = 'es-EC'; r.interimResults = false;
+    page.classList.add('is-listening'); gest('think'); fx('select');
+    r.onresult = function (e) { var q = e.results[0][0].transcript; if (q) ask(q); };
+    r.onend = function () { page.classList.remove('is-listening'); };
+    try { r.start(); } catch (e) { page.classList.remove('is-listening'); input.focus(); }
+  }
   function me(text) {
     var m = document.createElement('div');
     m.className = 'as-msg as-msg--me';
@@ -606,7 +657,10 @@
       setTimeout(function () { setPet(''); }, 900);
     }, 650 + Math.random() * 300);
   }
-  function ask(q) { enterChat(); me(q); fx('tap'); bot(answer(q)); }
+  function ask(q) {
+    ST.history = [q].concat((ST.history || []).filter(function (x) { return x !== q; })).slice(0, 6); persist();
+    enterChat(); me(q); fx('tap'); bot(answer(q));
+  }
   function scrollEnd() { requestAnimationFrame(function () { chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' }); }); }
 
   function open() {
