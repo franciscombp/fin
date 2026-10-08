@@ -4157,6 +4157,8 @@
     <link rel="stylesheet" href="./assets/solar.css">
     <link rel="stylesheet" href="./assets/asistente.css">
     <link rel="stylesheet" href="./assets/buscador.css">
+    <link rel="stylesheet" href="./assets/destacados.css">
+    <link rel="stylesheet" href="./assets/producto.css">
 </head>
 <body>
     <!-- Login Screen -->
@@ -4843,7 +4845,7 @@
                         <span class="list-item__title">Vibración</span>
                         <span class="pref-switch" aria-hidden="true"><span class="pref-switch__knob"></span></span>
                     </button>
-                    <button class="list-item" id="pref-sound" aria-pressed="true">
+                    <button class="list-item" id="pref-sound" aria-pressed="false">
                         <span class="avatar-cat"><span class="material-symbols-rounded">volume_up</span></span>
                         <span class="list-item__title">Sonidos</span>
                         <span class="pref-switch" aria-hidden="true"><span class="pref-switch__knob"></span></span>
@@ -6041,6 +6043,13 @@
         }
 
         function renderPushSummary(title) {
+            // Productos: página propia (assets/producto.js), sin el bloque
+            // genérico de Resumen/Movimientos que se repetía en todos.
+            if (window.ProductView && ProductView.has(title)) {
+                pushPage.classList.add('is-product');
+                document.getElementById('push-extra').innerHTML = ProductView.html(title);
+                return;
+            }
             const product = PRODUCT_DETAILS[title];
             const summary = product ? { title: 'Detalle', stats: product.stats } : DEFAULT_SUMMARY;
             document.getElementById('push-summary-title').textContent = summary.title;
@@ -6059,6 +6068,7 @@
 
         function openPushPage(title, originEl) {
             fx('open');
+            pushPage.classList.remove('is-product');
             pushTitle.textContent = title;
             pushTopbarTitle.textContent = title;
             transferFlow = null; // reinicia el flujo si había quedado a medias
@@ -7442,6 +7452,8 @@
     <script src="./haptics.js"></script>
     <script src="./assets/asistente.js"></script>
     <script src="./assets/buscador.js"></script>
+    <script src="./assets/producto.js"></script>
+    <script src="./assets/destacados.js"></script>
     <script src="./fiesta.js"></script>
 </body>
 </html>

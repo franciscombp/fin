@@ -1,0 +1,26 @@
+/* Páginas de producto (ver assets/producto.js) */
+.push-page.is-product #push-hero,
+.push-page.is-product .section,
+.push-page.is-product #push-cta,
+.push-page.is-product #push-title { display: none !important; }
+.push-page.is-product { background: var(--cx-surface); }
+.pv { padding: 8px 0 48px; color: var(--cx-ink); }
+.pv p { margin: 0; }
+.pv-kind { font: var(--cx-caption); color: var(--cx-muted); margin-bottom: 24px !important; }
+.pv-label { font: var(--cx-sub); color: var(--cx-muted); }
+.pv-value { font: 700 44px/50px var(--sol-font, Roboto, sans-serif); letter-spacing: -1px; font-variant-numeric: tabular-nums; margin: 4px 0 6px !important; }
+.pv-sub { font: var(--cx-sub); color: var(--cx-muted); }
+.pv-bar { height: 6px; margin-top: 16px; border-radius: 99px; background: var(--cx-fill); overflow: hidden; }
+.pv-bar i { display: block; height: 100%; background: var(--cx-ink); border-radius: inherit; }
+.pv-acts { display: flex; gap: 12px; margin: 32px 0 8px; }
+.pv-acts button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0; border: 0; background: transparent; color: var(--cx-ink); font: 500 13px/16px var(--sol-font, Roboto, sans-serif); cursor: pointer; }
+.pv-acts .material-symbols-rounded { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--cx-fill); font-size: 24px; }
+.pv-sec { margin-top: 40px; }
+.pv-sec h2 { margin: 0 0 8px; font: var(--cx-headline); }
+.pv-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 56px; padding: 12px 0; border-bottom: 1px solid var(--cx-line); font: var(--cx-body); }
+.pv-row > span { color: var(--cx-muted); }
+.pv-row > b { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.pv-row--mov > span { display: flex; flex-direction: column; color: var(--cx-ink); }
+.pv-row--mov > span b { font-weight: 500; }
+.pv-row--mov small { font: var(--cx-sub); color: var(--cx-muted); }
+.pv-row b.is-in { color: var(--cx-ink); }
