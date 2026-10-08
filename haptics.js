@@ -14,9 +14,9 @@
   var KEY = 'bp_haptics';
   var SKEY = 'bp_sound';
   var enabled = true;
-  var soundOn = true;
+  var soundOn = false;
   try { enabled = localStorage.getItem(KEY) !== 'off'; } catch (e) {}
-  try { soundOn = localStorage.getItem(SKEY) !== 'off'; } catch (e) {}
+  try { soundOn = localStorage.getItem(SKEY) === 'on'; } catch (e) { soundOn = false; } // apagado por defecto
 
   var canVibrate = typeof navigator.vibrate === 'function';
 

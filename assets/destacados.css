@@ -1,0 +1,60 @@
+/* =====================================================================
+   Escala visual común (benchmark: Cash App)
+   Una cifra protagonista por bloque, etiquetas pequeñas en gris, cuerpo
+   legible y superficies neutras. El amarillo de marca solo como acento.
+   ===================================================================== */
+:root {
+  --cx-display: 700 40px/44px var(--sol-font, Roboto, sans-serif);
+  --cx-title: 700 28px/34px var(--sol-font, Roboto, sans-serif);
+  --cx-headline: 600 20px/26px var(--sol-font, Roboto, sans-serif);
+  --cx-body: 500 17px/24px var(--sol-font, Roboto, sans-serif);
+  --cx-sub: 400 15px/21px var(--sol-font, Roboto, sans-serif);
+  --cx-caption: 600 13px/18px var(--sol-font, Roboto, sans-serif);
+  --cx-ink: var(--bp-theme-color-text-primary, #1f1f1f);
+  --cx-muted: var(--bp-theme-color-text-helper, #6b6b6b);
+  --cx-surface: var(--bp-theme-color-surface-container-default, #fff);
+  --cx-fill: var(--bp-theme-color-surface-page-alt, #f5f5f5);
+  --cx-line: color-mix(in srgb, var(--cx-ink) 9%, transparent);
+}
+
+/* ---------- Destacados (widgets del Home) ---------- */
+.dw-section .section__title { margin-bottom: 12px; }
+.dw-list { display: grid; gap: 12px; }
+.dw {
+  position: relative; display: block; padding: 20px; border-radius: 20px; background: var(--cx-surface);
+  color: var(--cx-ink); text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .15s ease;
+}
+.dw:active { transform: scale(.985); }
+.dw p { margin: 0; }
+.dw-label { font: var(--cx-caption); color: var(--cx-muted); margin-bottom: 8px !important; }
+.dw-value { font: 700 30px/36px var(--sol-font, Roboto, sans-serif); letter-spacing: -.5px; font-variant-numeric: tabular-nums; }
+.dw-sub { font: var(--cx-sub); color: var(--cx-muted); margin-top: 4px !important; }
+.dw-promo { font: var(--cx-headline); letter-spacing: -.2px; max-width: 300px; }
+.dw-promo b { font-weight: 700; }
+.dw-cta { display: inline-flex; align-items: center; height: 40px; margin-top: 16px; padding: 0 18px; border-radius: 99px; background: var(--cx-fill); font: 600 15px/1 var(--sol-font, Roboto, sans-serif); }
+.dw-item { display: grid; grid-template-columns: 1fr auto; width: 100%; padding: 12px 0; border: 0; border-top: 1px solid var(--cx-line); background: transparent; color: inherit; text-align: left; cursor: pointer; }
+.dw-label + .dw-item { border-top: 0; padding-top: 4px; }
+.dw-item span:first-child { font: var(--cx-body); }
+.dw-item span:nth-child(2) { font: 600 17px/24px var(--sol-font, Roboto, sans-serif); font-variant-numeric: tabular-nums; }
+.dw-item small { grid-column: 1 / 3; font: var(--cx-sub); color: var(--cx-muted); }
+.dw-pfm { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.dw-pet { width: 76px; height: 84px; flex: 0 0 76px; margin: -8px -4px -20px 0; }
+.dw-pet svg { width: 100%; height: 100%; }
+.dw-short { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.dw-short button { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0; border: 0; background: transparent; color: inherit; font: 500 13px/16px var(--sol-font, Roboto, sans-serif); cursor: pointer; }
+.dw-short .material-symbols-rounded { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: var(--cx-fill); font-size: 24px; }
+.dw-empty { font: var(--cx-sub); color: var(--cx-muted); }
+
+/* Ojo de saldo: enmascara todo lo marcado como sensible */
+.dw-s__m { display: none; letter-spacing: 2px; }
+html.pb-masked .dw-s__v { display: none; }
+html.pb-masked .dw-s__m { display: inline; }
+
+/* Editor de Destacados */
+.dw-ed { display: flex; flex-direction: column; }
+.dw-ed__row { display: flex; align-items: center; gap: 14px; min-height: 60px; border-bottom: 1px solid var(--cx-line); }
+.dw-ed__row:last-child { border-bottom: 0; }
+.dw-ed__n { width: 36px; height: 36px; flex: 0 0 36px; border-radius: 50%; display: grid; place-items: center; background: var(--cx-fill); font: 600 15px/1 var(--sol-font, Roboto, sans-serif); font-size: 18px; }
+.dw-ed__name { flex: 1; font: var(--cx-body); }
+.dw-ed__row button { width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--cx-fill); color: var(--cx-ink); display: grid; place-items: center; cursor: pointer; }
+.dw-ed__row button:disabled { opacity: .3; cursor: default; }

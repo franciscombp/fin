@@ -339,3 +339,45 @@
 .pf-card--flat { padding: 0; background: transparent; }
 .as-sheet .pf-donut-wrap { margin-top: 8px; }
 .pf-health .pf-pillar:last-child { border-bottom: 0; }
+
+/* =====================================================================
+   Jerarquía y color (escala --cx-*, benchmark Cash App)
+   ===================================================================== */
+.pf-head { padding: 4px 24px 0; }
+.pf-head h1 { font: var(--cx-title); font-size: 32px; line-height: 38px; letter-spacing: -.6px; margin-bottom: 12px; }
+.pf-months button { font: 600 17px/24px var(--sol-font, Roboto, sans-serif); color: var(--cx-muted); min-width: 52px; height: 40px; border-radius: 99px; }
+.pf-months button[aria-selected="true"] { color: var(--as-paper); background: var(--cx-ink); }
+.pf-total { padding: 32px 24px 0; }
+.pf-total p { margin: 0; }
+.pf-total__label { font: var(--cx-sub); color: var(--cx-muted); }
+.pf-total__value { font: var(--cx-display); font-size: 48px; line-height: 54px; letter-spacing: -1.4px; font-variant-numeric: tabular-nums; margin: 4px 0 6px !important; }
+.pf-total__sub { font: var(--cx-sub); color: var(--cx-muted); }
+.pf-hero { height: 220px; margin-top: 16px; }
+.pf-hero__badge { left: auto; right: 24px; top: 8px; font: var(--cx-caption); border-color: var(--cx-line); color: var(--cx-muted); }
+.pf-hero__badge i { display: none; }
+.pf-sec { padding: 40px 24px 0; }
+.pf-sec h2 { font: var(--cx-headline); margin: 0 0 4px; letter-spacing: -.2px; }
+.pf-ins-list { gap: 8px; }
+.pf-ins { padding: 20px; border-radius: 20px; background: var(--cx-fill); gap: 14px; }
+.pf-ins__ic, .pf-ins--warn .pf-ins__ic, .pf-ins--good .pf-ins__ic { width: 36px; height: 36px; flex-basis: 36px; background: var(--cx-surface); color: var(--cx-ink); font-size: 20px; }
+.pf-ins h3 { font: 600 17px/23px var(--sol-font, Roboto, sans-serif); margin-bottom: 4px; }
+.pf-ins p { font: var(--cx-sub); color: var(--cx-muted); }
+.pf-ins__acts { gap: 8px; margin-top: 14px; }
+.pf-link { height: 36px; padding: 0 14px; border-radius: 99px; background: var(--cx-surface); color: var(--cx-ink); text-decoration: none; font: 600 14px/1 var(--sol-font, Roboto, sans-serif); }
+.pf-link--block { display: flex; align-items: center; margin: 16px 0 0; background: var(--cx-fill); }
+.pf-top3__row { font: var(--cx-body); padding: 16px 0; }
+.pf-top3__row u { height: 4px; }
+.pf-empty p { font: var(--cx-headline); color: var(--cx-ink); }
+.pf-pill { background: var(--cx-ink); color: var(--as-paper); border: 0; }
+.pf-foot { padding-top: 40px; }
+.pf-navrow b { font: 600 17px/23px var(--sol-font, Roboto, sans-serif); }
+.pf-navrow small { font: var(--cx-sub); color: var(--cx-muted); }
+.pf-note { font: var(--cx-sub); color: var(--cx-muted); }
+.pf-row__main small.is-warn, .pf-ins--warn h3 { color: var(--cx-ink); }
+.pf-bud__bar i.is-fast, .pf-bud small { background: var(--cx-ink); color: var(--cx-muted); }
+.pf-bud small { background: transparent; }
+.as-row__val.is-warn { color: var(--cx-ink); }
+.pf-av.is-own { background: var(--cx-fill); color: var(--cx-ink); }
+.pf-tx__amt.is-in { color: var(--cx-ink); }
+.as-sheet h3 { font: var(--cx-title); font-size: 24px; line-height: 30px; }
+.as-sheet > p { font: var(--cx-sub); color: var(--cx-muted); }

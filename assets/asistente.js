@@ -457,29 +457,19 @@
       '<span class="as-entry__cta"></span></button>';
   }
   function mountEntries() {
-    var home = document.querySelector('.tab-panel[data-panel="Destacado"]');
-    if (home && !home.querySelector('[data-as-open]')) {
-      var anchor = Array.prototype.find.call(home.querySelectorAll('.section'), function (s) {
-        var h = s.querySelector('.section__title h2'); return h && /Novedades/.test(h.textContent);
-      });
-      var sec = document.createElement('section');
-      sec.className = 'section';
-      sec.innerHTML = entryHTML('home');
-      if (anchor) home.insertBefore(sec, anchor); else home.appendChild(sec);
-    }
-    var fin = document.querySelector('#finance-page .finance-subtitle');
-    if (fin && !document.querySelector('.finance-page-assistant')) {
-      var w = document.createElement('div');
-      w.className = 'finance-page-assistant';
-      w.innerHTML = entryHTML('pfm');
-      fin.parentNode.insertBefore(w, fin.nextSibling);
-    }
-    document.querySelectorAll('[data-as-open]').forEach(function (b) {
-      if (b._as) return; b._as = 1;
-      b.addEventListener('click', function () { openPF(); });
-    });
+    // Mis finanzas reemplaza al antiguo "Modo finanzas" (activos/pasivos/
+    // cuentas duplicaban esta vista): el acceso abre directamente el PFM.
+    // En Inicio, Mis finanzas vive como un widget de Destacados.
+    if (mountEntries._done) return; mountEntries._done = true;
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-action="Modo finanzas"]');
+      if (!b) return;
+      e.stopImmediatePropagation(); e.preventDefault();
+      openPF();
+    }, true);
   }
   function paintEntries() {
+    if (window.Destacados) Destacados.repaint();
     document.querySelectorAll('[data-as-open]').forEach(function (b) {
       b.querySelector('.as-entry__pet').innerHTML = C().svg();
       b.querySelector('.as-entry__eyebrow').textContent = 'Tu resumen de ' + MONTHS[lastClosedMi()].name + ' está listo';
@@ -705,6 +695,9 @@
   }
 
   var curIns = [], onDemand = null;
+  function totalHTML(label, value, sub) {
+    return '<div class="pf-total"><p class="pf-total__label">' + label + '</p><p class="pf-total__value">' + value + '</p><p class="pf-total__sub">' + sub + '</p></div>';
+  }
   function heroHTML(score, label) {
     return '<section class="pf-hero"><div class="pf-hero__land">' + landSVG(score).replace('xMidYMax slice', 'xMidYMax meet') + '</div>' +
       '<div class="pf-hero__pet">' + C().svg() + '</div>' +
@@ -738,7 +731,7 @@
     if (v.report) {
       var r = REPORTS[v.key];
       html += heroHTML(r.score, 'Salud financiera ' + r.score + ' · ' + level(r.score).n);
-      html += '<p class="pf-big"><span>Gastaste</span> <b>' + money(r.spend) + '</b> <span>en ' + r.name + ' y guardaste</span> <b>' + money(r.save) + '</b></p>';
+      html += totalHTML('Gastaste en ' + r.name, money(r.spend), 'Guardaste ' + money(r.save));
       html += insHTML(r.ins, false);
       html += '<section class="pf-sec"><p class="pf-note pf-note--box">De ' + r.name + ' solo guardamos este resumen. El detalle de movimientos está disponible desde agosto.</p></section>';
     } else if (v.current) {
@@ -752,7 +745,7 @@
     } else {
       var mi = v.mi, b = D.by[mi], sc = monthScore(mi);
       html += heroHTML(sc, 'Salud financiera ' + sc + ' · ' + level(sc).n);
-      html += '<p class="pf-big"><span>Gastaste</span> <b>' + money(b._spend) + '</b> <span>en ' + MONTHS[mi].name + ' y guardaste</span> <b>' + money(b._save) + '</b></p>';
+      html += totalHTML('Gastaste en ' + MONTHS[mi].name, money(b._spend), 'Guardaste ' + money(b._save) + ' · Salud financiera ' + sc);
       html += insHTML(monthInsights(mi), true);
       var tc = catTotals(mi).slice(0, 3);
       html += '<section class="pf-sec"><h2>Hacia dónde fue</h2><div class="pf-top3">' + tc.map(function (c) {
@@ -772,7 +765,7 @@
       .sort(function (a, b) { return o[b] / CATS[b].budget - o[a] / CATS[a].budget; })[0];
     var next = [];
     ['servicios', 'subs'].forEach(function (k) { CATS[k].fixed.forEach(function (p, i) { var d = 3 + i * 4; if (d > day && d <= day + 7) next.push({ who: p[0], amt: p[1], d: d }); }); });
-    return '<p class="pf-big"><span>Llevas</span> <b>' + money(o._spend) + '</b> <span>gastados en ' + day + ' días de octubre</span></p>' +
+    return totalHTML('Llevas gastado en octubre', money(o._spend), 'En ' + day + ' días') +
       '<section class="pf-sec"><div class="pf-ins-list">' +
         '<article class="pf-ins pf-ins--info"><span class="pf-ins__ic material-symbols-rounded">speed</span><div class="pf-ins__body"><h3>A este ritmo cerrarías en ' + money(proj) + '</h3><p>' + (proj > prev ? money(proj - prev) + ' más' : money(prev - proj) + ' menos') + ' que septiembre.</p></div></article>' +
         (hot ? '<article class="pf-ins pf-ins--warn"><span class="pf-ins__ic material-symbols-rounded">pie_chart</span><div class="pf-ins__body"><h3>Ya usaste el ' + pct(o[hot] / CATS[hot].budget) + ' de tu tope de ' + CATS[hot].name.toLowerCase() + '</h3><p>Y apenas va el ' + pct(day / 31) + ' del mes.</p></div></article>' : '') +
@@ -940,5 +933,5 @@
 
   function init() { build(); mountEntries(); paintEntries(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
-  window.Asistente = { open: open, openPF: function () { openPF(); }, ask: function (q) { open(); ask(q); }, data: function () { return D; } };
+  window.Asistente = { petSVG: function () { return C().svg(); }, open: open, openPF: function () { openPF(); }, ask: function (q) { open(); ask(q); }, data: function () { return D; } };
 })();

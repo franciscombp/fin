@@ -8,7 +8,7 @@ const BUILD = '__BUILD__';
 const CACHE_NAME = 'pichibank-' + (BUILD.indexOf('__') === 0 ? 'dev' : BUILD);
 const CORE = [
   './', './index.html', './manifest.json', './app.js', './webauthn.js', './fiesta.js', './haptics.js',
-  './assets/tokens.css', './assets/solar.css', './assets/asistente.css', './assets/asistente.js', './assets/buscador.css', './assets/buscador.js'
+  './assets/tokens.css', './assets/solar.css', './assets/asistente.css', './assets/asistente.js', './assets/buscador.css', './assets/buscador.js', './assets/destacados.css', './assets/destacados.js', './assets/producto.css', './assets/producto.js'
 ];
 
 self.addEventListener('install', (event) => {
