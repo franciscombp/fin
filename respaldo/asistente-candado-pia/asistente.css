@@ -381,31 +381,3 @@
 .pf-tx__amt.is-in { color: var(--cx-ink); }
 .as-sheet h3 { font: var(--cx-title); font-size: 24px; line-height: 30px; }
 .as-sheet > p { font: var(--cx-sub); color: var(--cx-muted); }
-
-/* =====================================================================
-   Uku, el oso andino: escena 3D (bosque3d.js) y versiones 2D
-   ===================================================================== */
-.as-oso { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; user-select: none; -webkit-user-drag: none; }
-.as-oso--cara { object-fit: cover; object-position: center 20%; }
-.b3d { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--cx-fill, #f5f5f5); }
-.b3d .b3d-canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; touch-action: pan-y; animation: b3dIn .5s ease both; }
-@keyframes b3dIn { from { opacity: 0; } }
-.b3d__fallback { position: absolute; left: 50%; bottom: 8%; width: 40%; max-width: 180px; height: 78%; transform: translateX(-50%); transition: opacity .3s ease; }
-.b3d.is-3d .b3d__fallback { opacity: 0; pointer-events: none; }
-.b3d.is-loading .b3d__fallback { animation: b3dPulse 1.6s ease-in-out infinite; }
-@keyframes b3dPulse { 50% { opacity: .75; } }
-
-/* Mis finanzas: el bosque ocupa el héroe completo */
-.pf-hero { height: 300px; margin-top: 16px; background: transparent; }
-.pf-hero .b3d { position: absolute; inset: 0; }
-.pf-hero__badge { z-index: 2; }
-
-/* Chat: el bosque llena la escena; el oso vive dentro del 3D */
-.as-page .as-land-wrap { top: calc(250px + env(safe-area-inset-top, 0px)); height: auto; }
-.as-page .as-pet { display: none; }
-.as-page.is-chat .as-land-wrap { opacity: .45; top: 30%; }
-
-/* Avatares y widget con la imagen del oso */
-.pf-navrow__av, .pf-ask__av { background: var(--cx-fill, #f2f2f2); }
-.pf-navrow__av .as-oso, .pf-ask__av .as-oso { transform: none; }
-.dw-pet { width: 72px; height: 92px; flex-basis: 72px; margin: -12px 0 -20px; }
