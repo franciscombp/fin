@@ -22,15 +22,15 @@
   function fx(n) { try { window.Haptics && Haptics.fx && Haptics.fx(n); } catch (e) {} }
 
   var CHARS = {
-    candado: { name: 'Candado', role: 'Tu guardián financiero', hi: '¡Guau! Soy Candado.', ok: '¡Listo!', svg: candadoSVG },
-    pia:     { name: 'PIA', role: 'Tu asistente de finanzas', hi: '¡Pío! Soy PIA.', ok: '¡Pío, aquí va!', svg: piaSVG }
+    candado: { name: 'Candado', role: 'Cuida que tus cuentas cuadren', svg: candadoSVG },
+    pia:     { name: 'PIA', role: 'Te cuenta en qué se va tu plata', svg: piaSVG }
   };
   function C() { return CHARS[ST.who] || CHARS.candado; }
 
   /* ---------- Formato ---------- */
   function money(v) {
     var s = Math.abs(v).toFixed(2).split('.');
-    return (v < 0 ? '-' : '') + '$ ' + s[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + s[1];
+    return (v < 0 ? '-' : '') + '$\u00a0' + s[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + s[1];
   }
   function pct(v) { return Math.round(v * 100) + '%'; }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -59,8 +59,8 @@
     excelente: { label: 'Excelente', mul: { delivery: .5, cafe: .35, compras: .5, ocio: .7 }, save: 240, late: 0, income: 1200 }
   };
   var GOALS = [
-    { name: 'Fondo de emergencia', target: 1500, base: 820, due: 'jun 2027', share: .6, left: 8 },
-    { name: 'Viaje a Galápagos', target: 1200, base: 310, due: 'dic 2027', share: .4, left: 14 }
+    { name: 'Fondo de emergencia', target: 1500, base: 820, due: 'junio de 2027', share: .6, left: 8 },
+    { name: 'Viaje a Galápagos', target: 1200, base: 310, due: 'diciembre de 2027', share: .4, left: 14 }
   ];
 
   function rng(seed) { return function () { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }; }
@@ -101,10 +101,10 @@
     var lateN = tx.filter(function (t) { return t.late; }).length;
     var rate = sep._save / sep._in;
     var f = {
-      ahorro:      { v: Math.min(1, rate / .15), label: 'Ahorro', icon: 'savings', c: '#f08c2e', val: pct(rate) + ' del sueldo', ok: rate >= .08, note: rate >= .08 ? 'Riega el paisaje' : 'Ahorra 10% para que llueva' },
-      metas:       { v: goals.filter(function (g) { return g.onTrack; }).length / goals.length, label: 'Metas', icon: 'flag', c: '#31a451', val: goals.filter(function (g) { return g.onTrack; }).length + ' de ' + goals.length + ' en ritmo', ok: goals.every(function (g) { return g.onTrack; }), note: goals.every(function (g) { return g.onTrack; }) ? 'Crecen árboles' : 'Faltan aportes' },
-      pagos:       { v: lateN ? 0 : 1, label: 'Pagos a tiempo', icon: 'event_available', c: '#2f7abf', val: lateN ? lateN + ' atrasado' : 'Todos a tiempo', ok: !lateN, note: lateN ? 'El río baja' : 'El río fluye' },
-      presupuesto: { v: 1 - Math.min(1, overCats.length / 3), label: 'Presupuesto', icon: 'pie_chart', c: '#7c5cd6', val: overCats.length ? overCats.length + ' categoría' + (overCats.length > 1 ? 's' : '') + ' excedida' + (overCats.length > 1 ? 's' : '') : 'Dentro del plan', ok: !overCats.length, note: overCats.length ? 'Se secan flores' : 'Florece el prado' }
+      ahorro:      { v: Math.min(1, rate / .15), label: 'Ahorro', icon: 'savings', c: '#f08c2e', val: pct(rate) + ' del sueldo', ok: rate >= .08, note: rate >= .08 ? 'Por eso crecen las hojas' : 'Con el 8% del sueldo empiezan a crecer' },
+      metas:       { v: goals.filter(function (g) { return g.onTrack; }).length / goals.length, label: 'Metas', icon: 'flag', c: '#31a451', val: goals.filter(function (g) { return g.onTrack; }).length + ' de ' + goals.length + ' al día', ok: goals.every(function (g) { return g.onTrack; }), note: goals.every(function (g) { return g.onTrack; }) ? 'Por eso aparecen árboles' : 'Un aporte más y aparecen árboles' },
+      pagos:       { v: lateN ? 0 : 1, label: 'Pagos a tiempo', icon: 'event_available', c: '#2f7abf', val: lateN ? lateN + ' pago tarde' : 'Todo al día', ok: !lateN, note: lateN ? 'Ponte al día y vuelven las flores' : 'Por eso hay flores' },
+      presupuesto: { v: 1 - Math.min(1, overCats.length / 3), label: 'Presupuesto', icon: 'pie_chart', c: '#7c5cd6', val: overCats.length ? overCats.length + ' sobre el tope' : 'Dentro del tope', ok: !overCats.length, note: overCats.length ? 'Vuelve al tope y regresan los pájaros' : 'Por eso hay pájaros' }
     };
     var score = Math.round(30 * f.ahorro.v + 25 * f.metas.v + 25 * f.pagos.v + 20 * f.presupuesto.v);
     D = { tx: tx, by: by, goals: goals, f: f, score: score, overCats: overCats, lateN: lateN, sc: sc };
@@ -222,94 +222,99 @@
     transporte: /transporte|uber|taxi|gasolina|movilidad/, servicios: /servicio|luz|agua|internet|celular/,
     subs: /suscrip|netflix|spotify|gimnasio|gym/, compras: /compra|ropa|amazon/, salud: /salud|farmacia|medic/, ocio: /ocio|cine|salir|diversi|bar/
   };
-  var OLD = /(hace|el año|año pasado|enero|febrero|marzo|abril|mayo|junio|julio|2025|seis meses|6 meses|semestre|histori|antes)/;
+  var OLD = /(hace \d|hace un|el año|año pasado|enero|febrero|marzo|abril|mayo|junio|julio|2025|seis meses|6 meses|semestre|histori|antes)/;
 
   function answer(q) {
     var s = q.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
     var sep = D.by[1], oct = D.by[2], ago = D.by[0];
+    if (/^(hola|buenas|buenos|hey|que tal)\b/.test(s)) return { t: 'Hola. ¿Qué quieres revisar? Puedo decirte en qué se te va la plata, cómo vas con tus metas o dónde te pasaste del tope.' };
     if (OLD.test(s)) return reports(s);
     if (/hormiga|cafe|antojo|cafecito/.test(s)) {
       var n = sep._hormigaN, v = sep.cafe, year = v * 12;
-      return { t: 'En septiembre tuviste <b>' + n + ' gastos hormiga</b> (cafés y antojos) por ' + money(v) + '. Al año serían ' + money(year) + '. ' +
-        (v > CATS.cafe.budget ? 'Si los bajas a la mitad, ahorras ' + money(year / 2) + ' al año: casi ' + Math.round(year / 2 / 9) + ' semanas de supermercado.' : '¡Están bajo control! Sigue así.'),
-        h: '<div class="as-stats">' + stat('Septiembre', money(v)) + stat('Octubre (8 días)', money(oct.cafe)) + '</div>' };
+      return { t: 'Fueron <b>' + n + ' cafés y antojos</b> en septiembre, ' + money(v) + ' en total. Uno por uno no se nota, pero al año son ' + money(year) + '. ' +
+        (v > CATS.cafe.budget ? 'Con la mitad te quedan ' + money(year / 2) + ' libres al año, más o menos lo que gastas en supermercado en ' + Math.max(1, Math.round(year / 2 / sep.super)) + ' meses.' : 'Estás dentro de lo que te propusiste.'),
+        h: '<div class="as-stats">' + stat('Septiembre', money(v)) + stat('Octubre, hasta hoy', money(oct.cafe)) + '</div>' };
     }
     if (/suscrip|netflix|spotify|recurrent|fijo/.test(s) && !/servicio/.test(s)) {
-      return { t: 'Tienes 4 suscripciones activas por <b>' + money(sep.subs) + '</b> al mes. El gimnasio es el 59%: ¿lo usas al menos 8 veces al mes?',
-        h: bars(CATS.subs.fixed.map(function (p) { return { label: p[0], v: p[1], c: CATS.subs.c }; })) };
+      return { t: 'Pagas <b>' + money(sep.subs) + ' al mes</b> en 4 suscripciones. La más cara es el gimnasio: si fuiste menos de 8 veces en septiembre, cada visita te salió a más de ' + money(35 / 8) + '.',
+        h: bars(CATS.subs.fixed.map(function (p) { return { label: p[0], v: p[1] }; }).sort(function (a, b) { return b.v - a.v; })) };
     }
     if (/meta|objetivo|galapagos|emergencia|viaje/.test(s)) {
       return { t: D.goals.map(function (g) {
-          return '<b>' + g.name + '</b>: ' + pct(g.have / g.target) + ' (' + money(g.have) + ' de ' + money(g.target) + '). ' +
-            (g.onTrack ? 'Vas en ritmo para ' + g.due + '.' : 'Para llegar en ' + g.due + ' necesitas ' + money(g.need) + ' al mes; hoy aportas ' + money(g.monthly) + '.');
-        }).join('<br>'),
-        h: bars(D.goals.map(function (g) { return { label: g.name, v: g.have, c: g.onTrack ? '#31a451' : '#f08c2e' }; }), 1500) };
+          return '<b>' + g.name + '</b>: llevas ' + money(g.have) + ' de ' + money(g.target) + '. ' +
+            (g.onTrack ? 'Con ' + money(g.monthly) + ' al mes llegas a ' + g.due + '.' : 'Para llegar a ' + g.due + ' te faltan ' + money(g.need) + ' al mes y hoy pones ' + money(g.monthly) + '.');
+        }).join('<br><br>'),
+        h: bars(D.goals.map(function (g) { return { label: g.name + ' · ' + pct(g.have / g.target), v: g.have }; }), 1500) };
     }
     if (/ahorr|puedo|alcanza|sobra/.test(s)) {
       var free = sep._in - sep._spend - sep._save;
       var cut = Math.max(0, sep.delivery - CATS.delivery.budget) + Math.max(0, sep.cafe - CATS.cafe.budget) + Math.max(0, sep.compras - CATS.compras.budget);
-      return { t: 'En septiembre ahorraste <b>' + money(sep._save) + '</b> (' + pct(sep._save / sep._in) + ' de tu sueldo) y te quedaron ' + money(free) + ' libres. ' +
-        (cut > 5 ? 'Si vuelves al presupuesto en delivery, cafés y compras liberas ' + money(cut) + ' más al mes.' : 'Podrías programar ' + money(Math.max(20, Math.round(free * .3))) + ' más al mes a tus metas sin apretarte.'),
-        h: '<div class="as-stats">' + stat('Ingresos', money(sep._in)) + stat('Gastos', money(sep._spend)) + stat('Ahorro', money(sep._save), 'down') + stat('Libre', money(free)) + '</div>' };
+      return { t: 'En septiembre guardaste <b>' + money(sep._save) + '</b>, el ' + pct(sep._save / sep._in) + ' de lo que entró, y te quedaron ' + money(free) + ' sin asignar. ' +
+        (cut > 5 ? 'Si delivery, cafés y compras vuelven a su tope, son ' + money(cut) + ' más cada mes.' : 'Podrías mover ' + money(Math.max(20, Math.round(free * .3))) + ' más a tus metas cada mes sin quedarte corto.'),
+        h: '<div class="as-stats">' + stat('Entró', money(sep._in)) + stat('Gastaste', money(sep._spend)) + stat('Guardaste', money(sep._save)) + stat('Sin asignar', money(free)) + '</div>' };
     }
     if (/compar|mes pasado|vs|anterior|subi|baje|aument/.test(s)) {
       var rows = Object.keys(CATS).map(function (k) { return { k: k, d: sep[k] - ago[k] }; }).sort(function (a, b) { return Math.abs(b.d) - Math.abs(a.d); }).slice(0, 3);
       var d = sep._spend - ago._spend;
-      return { t: 'Septiembre vs agosto: gastaste <b>' + money(Math.abs(d)) + (d > 0 ? ' más' : ' menos') + '</b>. Lo que más cambió: ' +
+      return { t: 'Septiembre te costó <b>' + money(Math.abs(d)) + (d > 0 ? ' más' : ' menos') + '</b> que agosto. Donde más se movió: ' +
         rows.map(function (r) { return CATS[r.k].name.toLowerCase() + ' (' + (r.d > 0 ? '+' : '') + money(r.d) + ')'; }).join(', ') + '.',
         h: '<div class="as-stats">' + stat('Agosto', money(ago._spend)) + stat('Septiembre', money(sep._spend), d > 0 ? 'up' : 'down') + '</div>' };
     }
-    if (/presupuesto|pase|exced|limite/.test(s)) {
-      return { t: D.overCats.length ? 'En septiembre te pasaste en <b>' + D.overCats.map(function (k) { return CATS[k].name.toLowerCase(); }).join(', ') + '</b>. El resto va dentro del plan.' : 'En septiembre todo quedó dentro del presupuesto. ¡El prado lo agradece! 🌼',
-        h: bars(Object.keys(CATS).filter(function (k) { return !CATS[k].fixed; }).map(function (k) { return { k: k, v: sep[k], c: sep[k] > CATS[k].budget ? '#c20505' : CATS[k].c, label: CATS[k].name + ' · tope ' + money(CATS[k].budget) }; })) };
+    if (/presupuesto|pase|exced|limite|tope/.test(s)) {
+      return { t: D.overCats.length ? 'Te pasaste en <b>' + list(D.overCats.map(function (k) { return CATS[k].name.toLowerCase(); })) + '</b>. En lo demás quedaste dentro del tope.' : 'Septiembre quedó dentro de todos tus topes.',
+        h: bars(Object.keys(CATS).filter(function (k) { return !CATS[k].fixed; }).map(function (k) { return { k: k, v: sep[k], c: sep[k] > CATS[k].budget ? '#c20505' : '', label: CATS[k].name + ' · tope ' + money(CATS[k].budget) }; }).sort(function (a, b) { return b.v - a.v; })) };
     }
     for (var k in CAT_WORDS) {
       if (CAT_WORDS[k].test(s)) {
         var mv = D.tx.filter(function (t) { return t.cat === k && t.mi === 1; }), by = {};
         mv.forEach(function (t) { by[t.who] = (by[t.who] || 0) + t.amt; });
-        var rowsM = Object.keys(by).map(function (w) { return { label: w, v: by[w], c: CATS[k].c }; }).sort(function (a, b) { return b.v - a.v; });
+        var rowsM = Object.keys(by).map(function (w) { return { label: w, v: by[w] }; }).sort(function (a, b) { return b.v - a.v; });
         var a3 = (ago[k] + sep[k]) / 2;
-        return { t: 'En septiembre gastaste <b>' + money(sep[k]) + '</b> en ' + CATS[k].name.toLowerCase() + ' (' + mv.length + ' movimientos). Tu promedio es ' + money(a3) + ' y en octubre llevas ' + money(oct[k]) + '.',
+        return { t: 'En septiembre se fueron <b>' + money(sep[k]) + '</b> en ' + CATS[k].name.toLowerCase() + ', en ' + mv.length + (mv.length === 1 ? ' pago' : ' pagos') + '. Tu promedio es ' + money(a3) + ' y en lo que va de octubre llevas ' + money(oct[k]) + '.',
           h: rowsM.length ? bars(rowsM) : '' };
       }
     }
-    if (/en que|mas gasto|gasto mas|gastos|donde se va|analiza|categor/.test(s)) {
+    if (/en que|mas gasto|gasto mas|gastos|donde se va|se me va|analiza|categor/.test(s)) {
       var tc = topCats(1, 5);
-      return { t: 'En septiembre gastaste <b>' + money(sep._spend) + '</b>. Tus 3 categorías principales son ' + tc.slice(0, 3).map(function (c) { return CATS[c.k].name.toLowerCase(); }).join(', ') + '.',
+      return { t: 'En septiembre gastaste <b>' + money(sep._spend) + '</b>. Lo que más pesa es ' + CATS[tc[0].k].name.toLowerCase() + ' (' + pct(tc[0].v / sep._spend) + '), después ' + CATS[tc[1].k].name.toLowerCase() + ' y ' + CATS[tc[2].k].name.toLowerCase() + '.',
         h: bars(tc) };
     }
-    if (/resumen|como voy|como estoy|paisaje|bosque|salud|estado/.test(s) || s.length < 3) return summary();
-    return { t: 'Aún estoy aprendiendo 🐾. Puedo ayudarte con tus gastos, presupuesto, metas, ahorro y gastos hormiga de los últimos 3 meses. Prueba con una de estas:', chips: true };
+    if (/resumen|como voy|como estoy|paisaje|bosque|crecer|estado/.test(s) || s.length < 3) return summary();
+    return { t: 'Eso todavía no lo sé responder. Puedo contarte de tus gastos, topes, metas, ahorro y suscripciones desde agosto.' };
   }
+  function list(a) { return a.length > 1 ? a.slice(0, -1).join(', ') + ' y ' + a[a.length - 1] : a[0]; }
   function summary() {
     var lv = level(D.score), f = D.f;
     var good = Object.keys(f).filter(function (k) { return f[k].ok; }).map(function (k) { return f[k].label.toLowerCase(); });
     var bad = Object.keys(f).filter(function (k) { return !f[k].ok; }).map(function (k) { return f[k].label.toLowerCase(); });
-    return { t: 'Tu paisaje está en <b>' + lv.n.toLowerCase() + '</b>. ' + (good.length ? 'Lo hacen crecer: ' + good.join(', ') + '. ' : '') +
-      (bad.length ? 'Para que reverdezca más, enfócate en ' + bad.join(' y ') + '.' : '¡Todo suma! Este es el mejor paisaje posible 🌳') };
+    return { t: 'Tu paisaje está en <b>' + lv.n.toLowerCase() + '</b>. ' + (good.length ? 'Lo sostienen ' + list(good) + '. ' : '') +
+      (bad.length ? 'Lo que más lo haría crecer: ' + list(bad) + '.' : 'Este mes no hay nada que corregir.') };
   }
   function reports() {
     var base = { dificil: [-1, 0], normal: [0, 0], excelente: [1, 1] }[ST.scenario];
     var rows = [
-      ['Jul', 'Ahorro 9%', 'Metas en ritmo', 62 + base[0] * 6],
-      ['Jun', 'Ahorro 7%', '1 pago atrasado', 48 + base[0] * 4],
-      ['May', 'Ahorro 11%', 'Meta cumplida: laptop', 81 + base[1] * 4],
-      ['Abr', 'Ahorro 5%', 'Presupuesto excedido', 39 + base[0] * 3]
+      ['Jul', 'Guardaste 9%', 'metas al día', 62 + base[0] * 6],
+      ['Jun', 'Guardaste 7%', 'un pago tarde', 48 + base[0] * 4],
+      ['May', 'Guardaste 11%', 'cumpliste la meta laptop', 81 + base[1] * 4],
+      ['Abr', 'Guardaste 5%', 'te pasaste del tope', 39 + base[0] * 3]
     ];
-    return { t: 'Solo puedo ver el detalle de tus movimientos de los <b>últimos 3 meses</b> (agosto a octubre). De antes guardo tus <b>informes mensuales</b>: cómo te fue con metas, ahorro y pagos.',
+    return { t: 'El detalle de movimientos lo tengo desde agosto. De los meses anteriores me queda el resumen de cada uno:',
       h: '<div class="as-report">' + rows.map(function (r) {
           var lv = level(r[3]);
-          return '<div class="as-report__row" style="--c:' + lv.c + '"><b>' + r[0] + '</b><span>' + r[1] + ' · ' + r[2] + '</span><em>' + lv.n.split(' ')[0] + '</em></div>';
-        }).join('') + '</div><p class="as-note">Los informes no incluyen movimientos individuales.</p>' };
+          return '<div class="as-report__row"><b>' + r[0] + '</b><span>' + r[1] + ', ' + r[2] + '</span><em>' + lv.n.split(' ')[0] + '</em></div>';
+        }).join('') + '</div><p class="as-note">Es un resumen; no incluye cada movimiento.</p>' };
   }
-  var SUGGEST = ['¿En qué gasto más?', '¿Cómo voy con mis metas?', 'Gastos hormiga', '¿Puedo ahorrar más?', 'Compara con el mes pasado', '¿Me pasé del presupuesto?', 'Suscripciones', '¿Cómo me fue en mayo?', '¿Cómo está mi paisaje?'];
+  var SUGGEST = ['¿En qué se me va la plata?', '¿Llego a mis metas?', 'Mis gastos hormiga', '¿Cuánto más puedo ahorrar?', 'Septiembre vs. agosto', '¿Dónde me pasé del tope?', 'Mis suscripciones', '¿Cómo me fue en mayo?', '¿Qué hace crecer mi paisaje?'];
 
   function insight() {
-    if (D.lateN) return 'Tienes un pago atrasado. Págalo para que el río vuelva a fluir.';
-    if (D.overCats.length) return 'Te pasaste en ' + CATS[D.overCats[0]].name.toLowerCase() + '. ¿Lo revisamos juntos?';
+    if (D.lateN) return 'El agua de septiembre se pagó tarde. Págala hoy y evitas el recargo del próximo mes.';
+    if (D.overCats.length) {
+      var k = D.overCats.slice().sort(function (a, b) { return (D.by[1][b] - CATS[b].budget) - (D.by[1][a] - CATS[a].budget); })[0];
+      return 'En septiembre gastaste ' + money(D.by[1][k] - CATS[k].budget) + ' más de lo previsto en ' + CATS[k].name.toLowerCase() + '.';
+    }
     var g = D.goals.filter(function (x) { return !x.onTrack; })[0];
-    if (g) return 'Tu meta ' + g.name + ' necesita ' + money(g.need) + ' al mes para llegar a tiempo.';
-    return 'Vas en ritmo con tus metas. Tu paisaje está en su mejor momento.';
+    if (g) return 'Para tener tu ' + g.name.toLowerCase() + ' en ' + g.due + ', súmale ' + money(g.need - g.monthly) + ' al mes a lo que ya pones.';
+    return 'Septiembre cerró con ' + money(D.by[1]._save) + ' guardados y todo pagado a tiempo.';
   }
 
   /* ---------- Entradas: Inicio y Modo finanzas ----------
@@ -320,7 +325,7 @@
       '<span class="as-entry__art"><span class="as-entry__blob"></span><span class="as-entry__pet"></span></span>' +
       '<span class="as-entry__eyebrow"></span>' +
       '<span class="as-entry__title"></span>' +
-      '<span class="as-entry__cta">Preguntarle</span></button>';
+      '<span class="as-entry__cta"></span></button>';
   }
   function mountEntries() {
     var home = document.querySelector('.tab-panel[data-panel="Destacado"]');
@@ -348,7 +353,8 @@
   function paintEntries() {
     document.querySelectorAll('[data-as-open]').forEach(function (b) {
       b.querySelector('.as-entry__pet').innerHTML = C().svg();
-      b.querySelector('.as-entry__eyebrow').textContent = C().name + ' · tu asistente de finanzas';
+      b.querySelector('.as-entry__eyebrow').textContent = C().name + ' revisó tu septiembre';
+      b.querySelector('.as-entry__cta').textContent = 'Preguntarle a ' + C().name;
       b.querySelector('.as-entry__title').textContent = insight();
     });
   }
@@ -373,7 +379,7 @@
       '<div class="as-intro">' +
         '<p class="as-intro__eyebrow"></p>' +
         '<h1 class="as-intro__title"></h1>' +
-        '<p class="as-intro__text">Analizo tus movimientos de los últimos 3 meses. Pregúntame lo que quieras.</p>' +
+        '<p class="as-intro__text"></p>' +
       '</div>' +
       '<div class="as-chat" aria-live="polite"></div>' +
       '<div class="as-pet" role="button" tabindex="0" aria-label="Saludar"></div>' +
@@ -421,16 +427,17 @@
     page.querySelector('.as-pet').innerHTML = C().svg();
     page.querySelector('.as-level span').textContent = lv.n;
     page.querySelector('.as-level').style.setProperty('--lvl', 'var(--as-accent)');
-    page.querySelector('.as-intro__eyebrow').textContent = 'Hola, soy ' + C().name;
+    page.querySelector('.as-intro__eyebrow').textContent = C().name;
+    page.querySelector('.as-intro__text').textContent = 'Tengo tus movimientos desde agosto. Pregunta como lo dirías tú: «¿cuánto se me fue en Uber?»';
     page.querySelector('.as-intro__title').textContent = insight();
-    input.placeholder = 'Pregúntale a ' + C().name + '…';
+    input.placeholder = 'Escribe tu pregunta';
   }
 
   /* Hojas inferiores */
   function openSheet(kind) {
     var lv = level(D.score), html = '<div class="as-sheet__handle"></div>';
     if (kind === 'land') {
-      html += '<h3>' + lv.n + '</h3><p>' + C().name + ' siempre está contigo. Lo que cambia con tus hábitos es su paisaje.</p>' +
+      html += '<h3>' + lv.n + '</h3><p>' + C().name + ' no cambia; cambia el lugar donde vive. Depende de cómo te va con estos cuatro hábitos.</p>' +
         '<div class="as-rows">' + Object.keys(D.f).map(function (k) {
           var f = D.f[k];
           return '<div class="as-row"><span class="as-row__icon material-symbols-rounded">' + f.icon + '</span>' +
@@ -438,12 +445,12 @@
             '<span class="as-row__val' + (f.ok ? '' : ' is-warn') + '">' + f.val + '</span></div>';
         }).join('') + '</div>';
     } else {
-      html += '<h3>Ajustes</h3><p class="as-sheet__label">Tu asistente</p><div class="as-rows">' +
+      html += '<h3>Ajustes</h3><p class="as-sheet__label">Quién te acompaña</p><div class="as-rows">' +
         Object.keys(CHARS).map(function (k) {
           return '<button class="as-row as-row--btn" data-who="' + k + '" aria-pressed="' + (ST.who === k) + '"><span class="as-row__av">' + CHARS[k].svg() + '</span>' +
             '<span class="as-row__main"><b>' + CHARS[k].name + '</b><small>' + CHARS[k].role + '</small></span><span class="as-radio"></span></button>';
         }).join('') + '</div>' +
-        '<p class="as-sheet__label">Simular escenario (demo)</p><div class="as-rows">' +
+        '<p class="as-sheet__label">Ver otro escenario (solo demo)</p><div class="as-rows">' +
         Object.keys(SCEN).map(function (k) {
           return '<button class="as-row as-row--btn" data-sc="' + k + '" aria-pressed="' + (ST.scenario === k) + '"><span class="as-row__main"><b>' + SCEN[k].label + '</b></span><span class="as-radio"></span></button>';
         }).join('') + '</div>';
