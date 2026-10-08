@@ -133,7 +133,7 @@
       html += '<section class="sx-card"><h3>Sugerencias</h3><div class="sx-grid">' +
         FEATURED.map(function (l) { return tile(ACTIONS.filter(function (a) { return a.label === l; })[0]); }).join('') + '</div></section>';
       html += '<section class="sx-card"><h3>' + m.title + '</h3>' + row('a:' + ACTIONS.indexOf(m.a), m.icon, m.main, m.sub) +
-        (data ? row('pfm', 'uku', 'Salud financiera ' + data.score + ' · Mis finanzas', 'Tu resumen de septiembre está listo') : '') + '</section>';
+        (data ? row('pfm', 'uku', 'Mis finanzas', 'Tu resumen de septiembre ya está listo · Salud financiera ' + data.score) : '') + '</section>';
     } else {
       var acts = ACTIONS.filter(function (a) { return norm(a.label + ' ' + a.k).indexOf(q) >= 0 || q.split(' ').every(function (w) { return norm(a.k + ' ' + a.label).indexOf(w) >= 0; }); });
       if (acts.length) html += '<section class="sx-card"><h3>Acciones</h3>' + acts.slice(0, 5).map(function (a) { return row('a:' + ACTIONS.indexOf(a), a.icon, a.label); }).join('') + '</section>';

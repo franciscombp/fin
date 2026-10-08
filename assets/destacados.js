@@ -66,7 +66,7 @@
         top = Object.keys(cats).sort(function (a, b) { return sep[b] - sep[a]; })[0];
         top = cats[top];
       }
-      return { body: '<div class="dw-pfm"><div><p class="dw-label">Tus gastos de septiembre</p><p class="dw-value">' + sens(money(sep ? sep._spend : 0)) + '</p><p class="dw-sub">Lo que más: ' + top.toLowerCase() + '</p></div>' +
+      return { body: '<div class="dw-pfm"><div><p class="dw-label">Tus gastos de septiembre</p><p class="dw-value">' + sens(money(sep ? sep._spend : 0)) + '</p><p class="dw-sub">En lo que más gastaste: ' + top.toLowerCase() + '</p></div>' +
         '<span class="dw-pet">' + (window.Asistente && Asistente.petSVG ? Asistente.petSVG() : '') + '</span></div>',
         go: function () { window.Asistente && Asistente.openPF(); } };
     },
