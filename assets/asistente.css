@@ -409,3 +409,4 @@
 .pf-navrow__av, .pf-ask__av { background: var(--cx-fill, #f2f2f2); }
 .pf-navrow__av .as-oso, .pf-ask__av .as-oso { transform: none; }
 .dw-pet { width: 72px; height: 92px; flex-basis: 72px; margin: -12px 0 -20px; }
+.pf-ins { background: var(--as-g0); }
