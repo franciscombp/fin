@@ -13,6 +13,75 @@ def acc(i, n, dt):
 P = acc(0, 3, np.float32); UV = acc(1, 2, np.float32); N = acc(2, 3, np.float32)
 IDX = acc(3, 1, np.uint32).ravel()
 
+# ---- Malla: subdivisión de Loop en los brazos + normales suaves ----
+# El modelo viene muy decimado (~3k vértices) y se usaba con un mapa de
+# normales que aquí no llevamos: los brazos se veían facetados y con
+# "costuras" de luz donde la UV corta la malla. Se suelda por posición,
+# se subdivide una vez (Loop) suavizando sólo brazos (la cara, anteojos y
+# bufanda quedan igual) y se recalculan normales compartidas en las costuras.
+def subdivide(P, UV, IDX, mask_fn, iters=1):
+    for _ in range(iters):
+        key = np.round(P / 1e-5).astype(np.int64)
+        _, pid, inv = np.unique(key, axis=0, return_index=True, return_inverse=True)
+        inv = inv.ravel(); WP = P[pid].astype(float); nW = len(WP)
+        F = IDX.reshape(-1, 3); T = inv[F]
+        # aristas soldadas → vértices opuestos
+        e_opp = {}
+        for t in T:
+            for k in range(3):
+                a, b, c = t[k], t[(k + 1) % 3], t[(k + 2) % 3]
+                e_opp.setdefault((min(a, b), max(a, b)), []).append(c)
+        nb = [set() for _ in range(nW)]; bnb = [[] for _ in range(nW)]
+        for (a, b), o in e_opp.items():
+            nb[a].add(b); nb[b].add(a)
+            if len(o) != 2: bnb[a].append(b); bnb[b].append(a)
+        loopV = np.empty_like(WP)
+        for v in range(nW):
+            if bnb[v]:
+                q = bnb[v][:2]; loopV[v] = WP[v] * .75 + WP[q].sum(0) * (.25 / len(q))
+            else:
+                n = len(nb[v]); beta = 3 / 16 if n == 3 else 3 / (8 * n)
+                loopV[v] = WP[v] * (1 - n * beta) + beta * WP[list(nb[v])].sum(0)
+        m = mask_fn(WP)
+        evenP = WP + (loopV - WP) * m[:, None]
+        def edge_pt(a, b):
+            o = e_opp[(min(a, b), max(a, b))]
+            mid = (WP[a] + WP[b]) / 2
+            if len(o) != 2: return mid
+            lp = (WP[a] + WP[b]) * .375 + (WP[o[0]] + WP[o[1]]) * .125
+            mm = (m[a] + m[b]) / 2
+            return mid + (lp - mid) * mm
+        newP = [evenP[inv[i]] for i in range(len(P))]; newUV = [UV[i] for i in range(len(P))]
+        emap = {}; NF = []
+        def mid_v(i, j):
+            k = (min(i, j), max(i, j))
+            if k not in emap:
+                emap[k] = len(newP); newP.append(edge_pt(inv[i], inv[j])); newUV.append((UV[i] + UV[j]) / 2)
+            return emap[k]
+        for f in F:
+            a, b, c = f; ab, bc, ca = mid_v(a, b), mid_v(b, c), mid_v(c, a)
+            NF += [(a, ab, ca), (ab, b, bc), (ca, bc, c), (ab, bc, ca)]
+        P = np.array(newP, np.float32); UV = np.array(newUV, np.float32); IDX = np.array(NF, np.uint32).ravel()
+    return P, UV, IDX
+def smooth_normals(P, IDX):
+    key = np.round(P / 1e-5).astype(np.int64)
+    _, inv = np.unique(key, axis=0, return_inverse=True); inv = inv.ravel()
+    F = IDX.reshape(-1, 3); a, b, c = P[F[:, 0]], P[F[:, 1]], P[F[:, 2]]
+    fn = np.cross(b - a, c - a)  # ponderado por área
+    acc = np.zeros((inv.max() + 1, 3))
+    for k in range(3): np.add.at(acc, inv[F[:, k]], fn)
+    acc /= np.linalg.norm(acc, axis=1, keepdims=True) + 1e-12
+    return acc[inv].astype(np.float32)
+def arm_mask(p):
+    ax = np.abs(p[:, 0]); y = p[:, 1]
+    t = np.clip((ax - .13) / .07, 0, 1); t = t * t * (3 - 2 * t)
+    return t * ((y > -.04) & (y < .19))
+n0 = len(P)
+P, UV, IDX = subdivide(P, UV, IDX, arm_mask)
+N0 = N; N = smooth_normals(P, IDX)
+# conserva la orientación original (la malla es de doble cara)
+print('vértices', n0, '→', len(P))
+
 # ---- Huesos: nombre, padre, cabeza (pos. mundial), cola ----
 A = 0.095
 bones = [
@@ -97,13 +166,35 @@ W[none] = 1.0 / (D[none] + .012) ** 4  # respaldo: cualquier hueso cercano
 top = np.argsort(-W, 1)[:, :4]
 TW = np.take_along_axis(W, top, 1); TW[TW < TW[:, :1] * .02] = 0
 TW = TW / TW.sum(1, keepdims=True)
-JOINTS = top.astype(np.uint16); WEIGHTS = TW.astype(np.float32)
+JOINTS = top.astype(np.uint8)
+# pesos en bytes normalizados (núcleo de glTF): la suma exacta debe ser 255
+WB = np.floor(TW * 255 + .5).astype(int); WB[np.arange(len(WB)), 0] += 255 - WB.sum(1); WEIGHTS = WB.astype(np.uint8)
 print('vértices sin zona:', int(none.sum()))
 
 # ---- Textura base a 1024 px ----
 img = J['images'][0]; bv = J['bufferViews'][img['bufferView']]
 im = Image.open(io.BytesIO(src[B0 + bv['byteOffset']: B0 + bv['byteOffset'] + bv['byteLength']])).convert('RGB')
-im = im.resize((1024, 1024), Image.LANCZOS); jb = io.BytesIO(); im.save(jb, 'JPEG', quality=82, optimize=True); JPG = jb.getvalue()
+im = im.resize((1024, 1024), Image.LANCZOS)
+# Mangas y patas con color más limpio: la textura trae sombras horneadas y
+# manchas que, al doblar el brazo, se leen como costuras. En las islas UV de
+# los brazos se aplana la luz (se conserva el tono y, suave, el tejido del puño).
+from PIL import ImageDraw, ImageFilter
+S = 1024; mimg = Image.new('L', (S, S), 0); dr = ImageDraw.Draw(mimg)
+am = arm_mask(P.astype(float)); F3 = IDX.reshape(-1, 3)
+for f in F3:
+    if am[f].min() > .5:
+        dr.polygon([(UV[i, 0] * S, UV[i, 1] * S) for i in f], fill=255)
+mimg = mimg.filter(ImageFilter.MaxFilter(9))
+A = np.asarray(im).astype(float); M = np.asarray(mimg) > 0
+lum = A @ [.299, .587, .114]
+yel = M & (A[..., 0] > 140) & (A[..., 2] < 110) & (A[..., 0] - A[..., 2] > 80)
+gry = M & (np.abs(A[..., 0] - A[..., 2]) < 45) & (lum > 70) & (lum < 200)
+for sel, k in ((yel, .3), (gry, .25)):
+    base = np.median(A[sel], 0); bl = base @ [.299, .587, .114]
+    ratio = np.clip(lum[sel] / bl, .5, 1.4) ** k
+    A[sel] = np.clip(base[None, :] * ratio[:, None], 0, 255)
+im = Image.fromarray(A.astype(np.uint8)); im.save('tex-arms.png')
+jb = io.BytesIO(); im.save(jb, 'JPEG', quality=82, optimize=True); JPG = jb.getvalue()
 
 # ---- Armado del GLB ----
 blob = bytearray(); views = []; accs = []
@@ -118,13 +209,13 @@ def add_acc(arr, ctype, typ, target=None, minmax=False):
     a = {'bufferView': v, 'componentType': ctype, 'count': int(arr.shape[0]), 'type': typ}
     if minmax: a['min'] = arr.min(0).tolist(); a['max'] = arr.max(0).tolist()
     accs.append(a); return len(accs) - 1
-iI = add_acc(IDX.reshape(-1, 1).astype(np.uint32), 5125, 'SCALAR', 34963)
+iI = add_acc(IDX.reshape(-1, 1).astype(np.uint16), 5123, 'SCALAR', 34963)
 accs[iI]['count'] = int(IDX.size)
 iP = add_acc(P, 5126, 'VEC3', 34962, True)
 iN = add_acc(N, 5126, 'VEC3', 34962)
 iU = add_acc(UV, 5126, 'VEC2', 34962)
-iJ = add_acc(JOINTS, 5123, 'VEC4', 34962)
-iW = add_acc(WEIGHTS, 5126, 'VEC4', 34962)
+iJ = add_acc(JOINTS, 5121, 'VEC4', 34962)
+iW = add_acc(WEIGHTS, 5121, 'VEC4', 34962); accs[iW]['normalized'] = True
 IBM = np.zeros((len(bones), 16), np.float32)
 for i in range(len(bones)):
     m = np.eye(4); m[:3, 3] = -H[i]; IBM[i] = m.T.ravel()  # column-major
