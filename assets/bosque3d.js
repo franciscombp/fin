@@ -27,12 +27,14 @@ let gesture = null, gestureT = 0, onTap = null;
 /* ---------- Colores (claro / oscuro) ---------- */
 function palette() {
   const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  // Paleta onírica: tonos lavados, casi blancos, para que el oso (que
+  // conserva sus colores) sea lo único nítido de la escena.
   return dark ? {
-    bg: '#1f1f1f', ground: '#2a2d2b', dry: '#33302b', trunk: '#4a4643', pine: ['#3d4f49', '#46594f', '#52645a'],
-    round: ['#4b5a52', '#56655c'], rock: '#3a3c3e', grass: '#3f5047', flower: '#e6c200'
+    bg: '#1f1f1f', ground: '#2b2c2c', dry: '#2f2e2c', trunk: '#4a4a4a', pine: ['#3f4744', '#454d4a', '#4c5451'],
+    round: ['#474f4c', '#4f5754'], rock: '#3a3b3c', grass: '#434b47', flower: '#d9c25a', dust: '#ffffff'
   } : {
-    bg: '#f5f5f5', ground: '#dfe3dc', dry: '#e6e0d4', trunk: '#8a837c', pine: ['#93a69b', '#7f958a', '#a3b3a8'],
-    round: ['#a9b8ab', '#98aa9d'], rock: '#c4c7c9', grass: '#b4c2b5', flower: '#ffd200'
+    bg: '#f6f6f5', ground: '#eceeeb', dry: '#efece6', trunk: '#cfcac4', pine: ['#d3dbd6', '#c8d2cc', '#dde3df'],
+    round: ['#d9dfda', '#cfd7d1'], rock: '#e1e2e2', grass: '#d4dcd6', flower: '#f2d64b', dust: '#ffffff'
   };
 }
 
@@ -115,6 +117,28 @@ function buildForest() {
   });
   scene.add(forest);
   shown = score;
+}
+
+/* ---------- Polvo de luz (motas blancas que flotan) ---------- */
+let dust = null;
+function dotTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const g = c.getContext('2d'), r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(.35, 'rgba(255,255,255,.75)'); r.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = r; g.fillRect(0, 0, 64, 64);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+function buildDust() {
+  const n = 170, pos = new Float32Array(n * 3), speed = new Float32Array(n), r = rng(53);
+  for (let i = 0; i < n; i++) {
+    const a = r() * Math.PI * 2, d = .3 + r() * 2.6;
+    pos[i * 3] = Math.cos(a) * d; pos[i * 3 + 1] = r() * 2.2; pos[i * 3 + 2] = Math.sin(a) * d * .8 + .2;
+    speed[i] = .03 + r() * .07;
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  dust = new THREE.Points(g, new THREE.PointsMaterial({ map: dotTexture(), size: .045, transparent: true, opacity: .9, depthWrite: false, color: palette().dust, fog: false }));
+  dust.userData.speed = speed;
+  scene.add(dust);
 }
 
 /* ---------- Oso: pose base y gestos ---------- */
@@ -206,6 +230,15 @@ function frame(now) {
       o.scale.setScalar(Math.max(.001, o.userData.base * e));
     }
   });
+  if (dust && !RM) {
+    const a = dust.geometry.attributes.position, sp = dust.userData.speed;
+    for (let i = 0; i < a.count; i++) {
+      let y = a.getY(i) + sp[i] * dt;
+      if (y > 2.2) y = -.05;
+      a.setY(i, y); a.setX(i, a.getX(i) + Math.sin(t * .6 + i) * .0009);
+    }
+    a.needsUpdate = true;
+  }
   if (!RM) { camera.position.x = Math.sin(t * .15) * .12; camera.lookAt(0, .55, 0); }
   renderer.render(scene, camera);
 }
@@ -223,14 +256,15 @@ function resize() {
 }
 
 function init() {
-  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'low-power' });
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power' });
+  renderer.setClearColor(0x000000, 0);
   renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.domElement.className = 'b3d-canvas';
   scene = new THREE.Scene();
   const pal = palette();
-  scene.background = new THREE.Color(pal.bg);
-  scene.fog = new THREE.Fog(pal.bg, 3.2, 6.5);
+  scene.background = null; // transparente: la máscara del contenedor funde la escena con la página
+  scene.fog = new THREE.Fog(pal.bg, 2.0, 5.2);
   camera = new THREE.PerspectiveCamera(30, 1, .05, 20);
   camera.position.set(0, .75, 2.6);
   scene.add(new THREE.HemisphereLight('#ffffff', '#9aa29c', 1.6));
@@ -249,9 +283,10 @@ function init() {
   renderer.domElement.addEventListener('pointerup', () => { play(['wave', 'nod', 'happy'][Math.floor(Math.random() * 3)]); onTap && onTap(); });
   new ResizeObserver(resize).observe(document.documentElement);
   document.addEventListener('visibilitychange', () => { visible = document.visibilityState === 'visible'; });
-  new MutationObserver(() => { const p = palette(); scene.background.set(p.bg); scene.fog.color.set(p.bg); buildForest(); })
+  new MutationObserver(() => { const p = palette(); scene.fog.color.set(p.bg); buildForest(); })
     .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   buildForest();
+  buildDust();
   raf = requestAnimationFrame(frame);
 }
 
