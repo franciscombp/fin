@@ -156,6 +156,7 @@
     var ic = icon === 'uku' && window.Asistente ? '<span class="sx-row__ic sx-row__ic--uku">' + Asistente.faceIMG() + '</span>' : '<span class="sx-row__ic material-symbols-rounded">' + icon + '</span>';
     return '<button class="sx-row" data-sx-i="' + id + '">' + ic + '<span class="sx-row__main"><b>' + main + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (right ? '<span class="sx-row__r">' + right + '</span>' : '') + '</button>';
   }
+  function T(x, v) { return window.I18n ? I18n.t(x, v) : x; }
   function ukuName() { return (window.Asistente && Asistente.name && Asistente.name()) || 'Uku'; }
   function render() {
     var q = norm(input.value.trim()), html = '';
@@ -168,9 +169,9 @@
         (data ? row('pfm', 'uku', 'Mis finanzas', 'Tu resumen de septiembre ya está listo · Salud financiera ' + data.score) : '') + '</section>';
     } else {
       var ws = words(input.value);
-      var acts = rank(ACTIONS, ws, function (a) { return a.label + ' ' + a.k; });
+      var acts = rank(ACTIONS, ws, function (a) { return a.label + ' ' + a.k + ' ' + T(a.label); }); // también en el idioma elegido
       if (acts.length) html += '<section class="sx-card"><h3>Acciones</h3>' + acts.slice(0, 4).map(function (a) { return row('a:' + ACTIONS.indexOf(a), a.icon, a.label); }).join('') + '</section>';
-      var asks = rank(ASKS, ws, function (a) { return a.q + ' ' + a.k; }).slice(0, 3);
+      var asks = rank(ASKS, ws, function (a) { return a.q + ' ' + a.k + ' ' + T(a.q); }).slice(0, 3);
       if (asks.length) html += '<section class="sx-card"><h3>Pregúntale a ' + ukuName() + '</h3>' + asks.map(function (a) { return row('q:' + ASKS.indexOf(a), 'uku', a.q); }).join('') + '</section>';
       var d = window.Asistente && Asistente.data && Asistente.data();
       if (d && q.length > 1) {

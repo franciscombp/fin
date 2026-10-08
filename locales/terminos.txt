@@ -1,0 +1,85 @@
+# Términos sueltos que el código traduce con T(variable) y que no aparecen
+# como texto fijo: meses, categorías, niveles, servicios, metas, cuentas.
+# Una línea = un msgid. tools/i18n-extraer.py los suma a messages.pot.
+y
+junio
+julio
+agosto
+septiembre
+octubre
+noviembre
+junio de 2027
+diciembre de 2027
+Agosto
+Septiembre
+Octubre
+Jun
+Jul
+May
+Abr
+oct
+Supermercado
+Restaurantes y delivery
+Transporte
+Servicios básicos
+Suscripciones
+Compras
+Cafés y antojos
+Salud
+Ocio
+supermercado
+restaurantes y delivery
+transporte
+servicios básicos
+suscripciones
+compras
+cafés y antojos
+salud
+ocio
+Excelente
+Muy bien
+Regular
+Por mejorar
+Luz
+Agua
+Internet
+Celular
+Gimnasio
+agua
+internet
+Ahorro
+Pagos a tiempo
+Presupuesto
+Uso de tarjetas
+Ahorro para emergencias
+Fondo de emergencia
+Viaje a Galápagos
+Cuenta PRINCIPAL
+Corriente
+Ahorro programado
+Cuenta de ahorros
+Billetera
+Tarjeta de crédito
+Lo registras tú
+Ahorraste el 9%
+Ahorraste el 7%
+Ahorraste el 11%
+Ahorraste el 5%
+pagaste todo a tiempo
+un pago atrasado
+completaste la meta de la laptop
+te pasaste del presupuesto
+Mes difícil
+Normal
+Ecuador · kichwa unificado
+Te escucho…
+Acciones
+Pregúntale a {nombre}
+Elige hasta {n} para ver en Inicio.
+Elegidos por ti.
+Ahora ves los sugeridos.
+En Inicio
+Disponibles
+Subir
+Quitar
+Conectar otra cuenta

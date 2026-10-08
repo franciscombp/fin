@@ -1,0 +1,4 @@
+[
+  { "code": "es-EC", "name": "Español" },
+  { "code": "qu-EC", "name": "Kichwa", "file": "qu-EC.po", "note": "Ecuador · kichwa unificado" }
+]

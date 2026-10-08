@@ -161,3 +161,9 @@
 /* En escritorio la tarjeta de débito conserva su proporción de celular
    (el arte se recortaba gigante al estirarse a todo el ancho). */
 @media (min-width: 720px) { .debit-card { max-width: 420px; } }
+
+/* Idioma: valor actual a la derecha de la fila de Perfil */
+.list-item__value { margin-left: auto; font: var(--cx-sub); color: var(--cx-muted); }
+.list-item__value + .material-symbols-rounded { margin-left: 4px; }
+/* Etiquetas de accesos: una sola frase (traducible) que se parte sola en dos líneas parejas */
+.quick-action__label { text-wrap: balance; max-width: 84px; margin-left: auto; margin-right: auto; }
