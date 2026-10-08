@@ -19,22 +19,52 @@
   /* Acciones: reutilizan los mismos botones de la app (data-action), así
      el buscador abre exactamente el mismo flujo. */
   var ACTIONS = [
-    { label: 'Transferir', icon: 'send_money', action: 'Transferir dinero', k: 'transferir enviar pasar plata dinero' },
-    { label: 'Pagar con QR', icon: 'qr_code_scanner', action: 'Pagar con QR', k: 'pagar qr escanear codigo' },
-    { label: 'Pagar servicios', icon: 'bolt', action: 'Pagar servicios', k: 'pagar servicios luz agua internet planilla' },
-    { label: 'Recargar celular', icon: 'smartphone', action: 'Recargar celular', k: 'recargar celular saldo telefono' },
-    { label: 'Mis finanzas', icon: 'insights', run: function () { window.Asistente && Asistente.openPF(); }, k: 'mis finanzas pfm gastos presupuesto salud financiera cuentas' },
-    { label: 'Retirar sin tarjeta', icon: 'atm', action: 'Retirar sin tarjeta', k: 'retirar efectivo cajero sin tarjeta' },
-    { label: 'Pagar tarjeta', icon: 'credit_card', action: 'Pagar tarjeta', k: 'pagar tarjeta credito deuda' },
-    { label: 'Cobrar con QR', icon: 'qr_code_2', action: 'Cobrar con QR', k: 'cobrar qr recibir' },
-    { label: 'Recibir dinero', icon: 'call_received', action: 'Recibir dinero', k: 'recibir dinero cuenta datos' },
-    { label: 'Pagar transporte', icon: 'directions_bus', action: 'Pagar transporte', k: 'pagar transporte bus metro movilidad' },
-    { label: 'Mis tarjetas', icon: 'wallet', tab: 'Tarjetas', k: 'tarjetas debito credito visa mastercard' },
-    { label: 'Mis cuentas', icon: 'account_balance', tab: 'Cuentas', k: 'cuentas saldo ahorro corriente' },
-    { label: 'Préstamos', icon: 'request_quote', tab: 'Prestamos', k: 'prestamo credito simular' },
-    { label: 'Seguridad', icon: 'lock', action: 'Seguridad', k: 'seguridad clave bloquear' }
+    { label: 'Transferir', icon: 'send_money', action: 'Transferir dinero', k: 'transferir transferencia enviar mandar pasar plata dinero platita depositar deposito pagarle mandarle prestarle a ana interbancaria otro banco' },
+    { label: 'Pagar con QR', icon: 'qr_code_scanner', action: 'Pagar con QR', k: 'pagar qr escanear codigo pichipay tienda local comercio camara' },
+    { label: 'Pagar servicios', icon: 'bolt', action: 'Pagar servicios', k: 'pagar servicios luz agua internet telefono cnt planilla factura cuentas por pagar empresa electrica basicos gas tv cable' },
+    { label: 'Recargar celular', icon: 'smartphone', action: 'Recargar celular', k: 'recargar recarga celular saldo telefono claro movistar tuenti cnt megas datos plan prepago' },
+    { label: 'Mis finanzas', icon: 'insights', run: function () { window.Asistente && Asistente.openPF(); }, k: 'mis finanzas pfm gastos gaste gasto presupuesto ahorro ahorrar metas salud financiera resumen mes cuanto gaste en que gasto' },
+    { label: 'Retirar sin tarjeta', icon: 'atm', action: 'Retirar sin tarjeta', k: 'retirar retiro sacar plata efectivo cajero sin tarjeta codigo' },
+    { label: 'Pagar tarjeta', icon: 'credit_card', action: 'Pagar tarjeta', k: 'pagar tarjeta credito deuda pago minimo total estado de cuenta corte' },
+    { label: 'Cobrar con QR', icon: 'qr_code_2', action: 'Cobrar con QR', k: 'cobrar qr recibir vender negocio' },
+    { label: 'Recibir dinero', icon: 'call_received', action: 'Recibir dinero', k: 'recibir dinero numero de cuenta mis datos compartir datos que me paguen' },
+    { label: 'Pagar transporte', icon: 'directions_bus', action: 'Pagar transporte', k: 'pagar transporte bus metro movilidad pasaje' },
+    { label: 'Mis tarjetas', icon: 'wallet', tab: 'Tarjetas', k: 'tarjetas tarjeta debito credito visa mastercard congelar bloquear perdi robaron' },
+    { label: 'Mis cuentas', icon: 'account_balance', tab: 'Cuentas', k: 'cuentas cuenta saldo cuanto tengo ahorro corriente movimientos estado de cuenta' },
+    { label: 'Préstamos', icon: 'request_quote', tab: 'Prestamos', k: 'prestamo prestamos credito simular cuota pedir prestado' },
+    { label: 'Inversiones', icon: 'trending_up', tab: 'Inversiones', k: 'inversiones invertir poliza deposito a plazo rendimiento interes ganar' },
+    { label: 'Seguros', icon: 'shield', tab: 'Seguros', k: 'seguros seguro vida salud auto proteccion' },
+    { label: 'Seguridad', icon: 'lock', action: 'Seguridad', k: 'seguridad clave contrasena pin cambiar clave bloquear fraude robo' }
   ];
   var FEATURED = ['Transferir', 'Pagar con QR', 'Pagar servicios', 'Mis finanzas', 'Recargar celular', 'Retirar sin tarjeta', 'Pagar tarjeta', 'Mis tarjetas'];
+  /* Preguntas típicas: las responde Uku con reglas (sin IA). */
+  var ASKS = [
+    { q: '¿En qué se me va la plata?', k: 'gasto gastos gaste plata dinero se me va en que' },
+    { q: '¿Cuánto tengo en total?', k: 'cuanto tengo saldo total plata dinero cuentas' },
+    { q: '¿Cuánto debo en mi tarjeta?', k: 'debo deuda tarjeta credito cupo' },
+    { q: '¿Cuánto más puedo ahorrar?', k: 'ahorrar ahorro guardar sobra alcanza' },
+    { q: '¿Cómo voy con mis metas?', k: 'metas meta viaje galapagos fondo emergencia objetivo' },
+    { q: '¿En qué me pasé?', k: 'presupuesto pase exceso limite tope' },
+    { q: 'Mis gastos hormiga', k: 'hormiga cafe cafecito antojos snacks' },
+    { q: 'Mis suscripciones', k: 'suscripciones netflix spotify gimnasio gym' },
+    { q: '¿Cuánto pago de intereses?', k: 'intereses interes tarjeta minimo' },
+    { q: '¿Cuánto gasté en supermercado?', k: 'supermercado super mercado comida viveres supermaxi tia' },
+    { q: '¿Cuánto gasté en restaurantes y delivery?', k: 'restaurantes delivery comer fuera pedidos rappi' },
+    { q: '¿Cómo voy en general?', k: 'como voy resumen salud financiera estado general' }
+  ];
+  var STOP = { de: 1, la: 1, el: 1, en: 1, mi: 1, mis: 1, a: 1, un: 1, una: 1, para: 1, por: 1, con: 1, que: 1, quiero: 1, como: 1, hacer: 1, me: 1, y: 1, lo: 1, los: 1, las: 1, al: 1, del: 1, se: 1 };
+  function words(q) { return norm(q).replace(/[¿?¡!.,]/g, ' ').split(/\s+/).filter(function (w) { return w && !STOP[w]; }); }
+  // Puntaje: cada palabra de la búsqueda que aparece (también a medias, para
+  // cuando todavía se está escribiendo) en la etiqueta o las palabras clave.
+  function score(text, ws) {
+    var t = ' ' + norm(text) + ' ', n = 0;
+    ws.forEach(function (w) { if (t.indexOf(' ' + w) >= 0) n += 2; else if (w.length > 3 && t.indexOf(w) >= 0) n += 1; });
+    return n;
+  }
+  function rank(list, ws, f) {
+    return list.map(function (x) { return { x: x, s: score(f(x), ws) }; }).filter(function (r) { return r.s > 0; })
+      .sort(function (a, b) { return b.s - a.s; }).map(function (r) { return r.x; });
+  }
 
   function runAction(a) {
     close(true);
@@ -92,6 +122,7 @@
       var i = b.dataset.sxI;
       if (i === 'ask') { var q = input.value.trim(); close(true); setTimeout(function () { window.Asistente && Asistente.ask(q); }, 280); return; }
       if (i === 'pfm') return runAction(ACTIONS[4]);
+      if (i.indexOf('q:') === 0) { var aq = ASKS[+i.slice(2)].q; close(true); setTimeout(function () { window.Asistente && Asistente.ask(aq); }, 280); return; }
       if (i.indexOf('a:') === 0) return runAction(ACTIONS[+i.slice(2)]);
     });
     // Al deslizar los resultados se esconde el teclado (como en iOS) y
@@ -125,6 +156,7 @@
     var ic = icon === 'uku' && window.Asistente ? '<span class="sx-row__ic sx-row__ic--uku">' + Asistente.faceIMG() + '</span>' : '<span class="sx-row__ic material-symbols-rounded">' + icon + '</span>';
     return '<button class="sx-row" data-sx-i="' + id + '">' + ic + '<span class="sx-row__main"><b>' + main + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (right ? '<span class="sx-row__r">' + right + '</span>' : '') + '</button>';
   }
+  function ukuName() { return (window.Asistente && Asistente.name && Asistente.name()) || 'Uku'; }
   function render() {
     var q = norm(input.value.trim()), html = '';
     if (!q) {
@@ -135,8 +167,11 @@
       html += '<section class="sx-card"><h3>' + m.title + '</h3>' + row('a:' + ACTIONS.indexOf(m.a), m.icon, m.main, m.sub) +
         (data ? row('pfm', 'uku', 'Mis finanzas', 'Tu resumen de septiembre ya está listo · Salud financiera ' + data.score) : '') + '</section>';
     } else {
-      var acts = ACTIONS.filter(function (a) { return norm(a.label + ' ' + a.k).indexOf(q) >= 0 || q.split(' ').every(function (w) { return norm(a.k + ' ' + a.label).indexOf(w) >= 0; }); });
-      if (acts.length) html += '<section class="sx-card"><h3>Acciones</h3>' + acts.slice(0, 5).map(function (a) { return row('a:' + ACTIONS.indexOf(a), a.icon, a.label); }).join('') + '</section>';
+      var ws = words(input.value);
+      var acts = rank(ACTIONS, ws, function (a) { return a.label + ' ' + a.k; });
+      if (acts.length) html += '<section class="sx-card"><h3>Acciones</h3>' + acts.slice(0, 4).map(function (a) { return row('a:' + ACTIONS.indexOf(a), a.icon, a.label); }).join('') + '</section>';
+      var asks = rank(ASKS, ws, function (a) { return a.q + ' ' + a.k; }).slice(0, 3);
+      if (asks.length) html += '<section class="sx-card"><h3>Pregúntale a ' + ukuName() + '</h3>' + asks.map(function (a) { return row('q:' + ASKS.indexOf(a), 'uku', a.q); }).join('') + '</section>';
       var d = window.Asistente && Asistente.data && Asistente.data();
       if (d && q.length > 1) {
         var MON = ['ago', 'sep', 'oct'];
@@ -147,19 +182,42 @@
           return row('pfm', inc ? 'south_west' : 'north_east', esc(t.who), t.day + ' ' + MON[t.mi], (inc ? '+' : '-') + money(t.amt));
         }).join('') + '</section>';
       }
-      html += '<section class="sx-card">' + row('ask', 'uku', 'Pregúntale a ' + ((window.Asistente && Asistente.name && Asistente.name()) || 'Uku'), '«' + esc(input.value.trim()) + '»') + '</section>';
+      if (!asks.length) html += '<section class="sx-card">' + row('ask', 'uku', 'Pregúntale a ' + ukuName(), '«' + esc(input.value.trim()) + '»') + '</section>';
     }
     results.innerHTML = html;
   }
 
+  /* Dictado: se cierra solo apenas llega una frase (o tras 1,2 s de silencio,
+     o a los 8 s como máximo) y muestra lo que entendió antes de buscar. */
+  var rec = null;
   function dictate() {
     var R = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!R) { input.focus(); return; }
-    var r = new R(); r.lang = 'es-EC'; r.interimResults = true;
-    el.classList.add('is-listening'); fx('select');
-    r.onresult = function (e) { input.value = Array.prototype.map.call(e.results, function (x) { return x[0].transcript; }).join(''); render(); };
-    r.onend = function () { el.classList.remove('is-listening'); };
-    try { r.start(); } catch (e) { el.classList.remove('is-listening'); }
+    if (rec) { rec.stop(); return; } // tocar de nuevo = parar
+    var r = rec = new R(), quiet, cap, got = '';
+    r.lang = 'es-EC'; r.interimResults = true; r.continuous = false; r.maxAlternatives = 1;
+    input.blur(); input.value = ''; input.placeholder = 'Te escucho…';
+    el.classList.add('is-listening'); el.classList.remove('is-heard'); fx('select');
+    function stop() { clearTimeout(quiet); clearTimeout(cap); try { r.stop(); } catch (e) {} }
+    cap = setTimeout(stop, 8000);
+    r.onresult = function (e) {
+      var fin = false;
+      got = Array.prototype.map.call(e.results, function (x) { if (x.isFinal) fin = true; return x[0].transcript; }).join('');
+      input.value = got; render();
+      clearTimeout(quiet);
+      if (fin) stop(); else quiet = setTimeout(stop, 1200);
+    };
+    r.onerror = stop;
+    r.onend = function () {
+      clearTimeout(quiet); clearTimeout(cap); rec = null;
+      el.classList.remove('is-listening'); input.placeholder = 'Busca o pregunta';
+      if (got.trim()) {
+        var ic = el.querySelector('.sx-mic span');
+        el.classList.add('is-heard'); ic.textContent = 'check'; fx('success');
+        setTimeout(function () { el.classList.remove('is-heard'); ic.textContent = 'mic'; }, 1400);
+      }
+    };
+    try { r.start(); } catch (e) { rec = null; el.classList.remove('is-listening'); input.placeholder = 'Busca o pregunta'; }
   }
 
   function open() {
@@ -177,6 +235,7 @@
   function close(silent) {
     if (!open_) return;
     open_ = false;
+    if (rec) try { rec.abort(); } catch (e) {}
     input.blur();
     el.classList.remove('open');
     document.documentElement.classList.remove('sx-open');

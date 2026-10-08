@@ -23,6 +23,7 @@ let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
 let bear = null, bones = {}, forest, held = null, ground;
 let score = 50, shown = 0; // shown: puntaje con el que está dibujado el bosque
 let gesture = null, gestureT = 0, onTap = null;
+let yaw = 0, yawTo = 0, camDist = 2.6, drag = null, idleAt = 0; // giro con el dedo
 
 /* ---------- Colores (claro / oscuro) ---------- */
 function palette() {
@@ -96,26 +97,39 @@ function makeDecor(p, pal) {
   const g = new THREE.Group(); g.add(m); g.position.set(p.x, 0, p.z); g.userData.base = p.s; return g;
 }
 
-function buildForest() {
-  if (forest) { scene.remove(forest); forest.traverse(o => { o.geometry && o.geometry.dispose(); o.material && o.material.dispose(); }); }
+/* El bosque se actualiza por diferencia: al cambiar el puntaje sólo crecen
+   los árboles que faltan y se encogen los que sobran; nada se recrea de
+   golpe, así cambiar de mes no parpadea. (full = rehacer, p. ej. al cambiar
+   de tema claro/oscuro.) */
+const groundTo = new THREE.Color();
+function buildForest(full) {
   const pal = palette();
-  forest = new THREE.Group();
-  ground.material.color.set(new THREE.Color(pal.dry).lerp(new THREE.Color(pal.ground), Math.min(1, score / 70)));
+  if (!forest) { forest = new THREE.Group(); scene.add(forest); }
+  if (full) {
+    forest.children.slice().forEach(o => { forest.remove(o); o.traverse(c => { c.geometry && c.geometry.dispose(); c.material && c.material.dispose(); }); });
+  }
+  groundTo.set(pal.dry).lerp(new THREE.Color(pal.ground), Math.min(1, score / 70));
+  if (full || !shown) ground.material.color.copy(groundTo);
+  const want = {};
   // Cuántos árboles según el puntaje: 0 → solo tocones; 100 → bosque tupido.
   const nTrees = Math.round((score / 100) ** 1.2 * SPOTS.length);
   SPOTS.forEach((p, i) => {
-    const o = i < nTrees ? makeTree(p, pal) : (i < nTrees + 6 && score < 60 ? makeStump(p, pal) : null);
-    if (!o) return;
-    o.userData.grow = i >= Math.round((shown / 100) ** 1.2 * SPOTS.length) ? 0 : 1; // los nuevos crecen
-    o.scale.setScalar(o.userData.base * (o.userData.grow ? 1 : .001));
+    if (i < nTrees) want['T' + i] = () => makeTree(p, pal);
+    else if (i < nTrees + 6 && score < 60) want['S' + i] = () => makeStump(p, pal);
+  });
+  DECOR.forEach((p, i) => {
+    const need = p.kind === 'flower' ? 70 : p.kind === 'grass' ? 30 : 0;
+    if (score >= need && p.t <= score + 10) want['D' + i] = () => makeDecor(p, pal);
+  });
+  const have = {};
+  forest.children.forEach(o => { have[o.userData.key] = o; });
+  Object.keys(have).forEach(k => { have[k].userData.dir = want[k] ? 1 : -1; });
+  Object.keys(want).forEach(k => {
+    if (have[k]) return;
+    const o = want[k](); o.userData.key = k; o.userData.dir = 1;
+    o.userData.grow = full ? 1 : 0; o.scale.setScalar(o.userData.base * (full ? 1 : .001));
     forest.add(o);
   });
-  DECOR.forEach(p => {
-    const need = p.kind === 'flower' ? 70 : p.kind === 'grass' ? 30 : 0;
-    if (score < need || p.t > score + 10) return;
-    const o = makeDecor(p, pal); o.userData.grow = 0; o.scale.setScalar(.001); forest.add(o);
-  });
-  scene.add(forest);
   shown = score;
 }
 
@@ -154,20 +168,22 @@ function buildDust() {
    El giro se reparte entre antebrazo y muñeca (como el radio y el cúbito),
    así la piel de la muñeca no se retuerce. Ninguna articulación pasa de ~70°. */
 function mirror(v) { return [v[0], -v[1], -v[2]]; }
-const REST_R = { upperarm: [0, 6, 70], forearm: [14, 16, 6], hand: [12, 8, 4], shoulder: [0, 0, 4] };
+// El hombro también baja (16°): así la manga cae redonda desde el hombro y no
+// forma un ángulo recto; el brazo queda un poco separado de la panza.
+const REST_R = { upperarm: [0, 6, 56], forearm: [14, 18, 8], hand: [12, 8, 4], shoulder: [0, 0, 16] };
 const REST = {};
 Object.keys(REST_R).forEach(k => { REST[k + '_R'] = REST_R[k]; REST[k + '_L'] = mirror(REST_R[k]); });
 const POSES = {
   // brazo derecho (el izquierdo se refleja si el gesto lo pide)
-  wave:  t => ({ upperarm_R: [0, 22, -30], forearm_R: [-34, 12, -52 + Math.sin(t * 7) * 8], hand_R: [-29, 0, -6 + Math.sin(t * 9) * 14], head: [0, -6, 6] }),
+  wave:  t => ({ upperarm_R: [0, 22, -42], forearm_R: [-34, 12, -52 + Math.sin(t * 7) * 8], hand_R: [-29, 0, -6 + Math.sin(t * 9) * 14], head: [0, -6, 6] }),
   nod:   t => ({ head: [12 + Math.sin(t * 7) * 9, 0, 0] }),
-  talk:  t => ({ upperarm_R: [0, 38, 50], forearm_R: [-48, 34, -18 + Math.sin(t * 4) * 10], hand_R: [-36, 6, -10 + Math.sin(t * 5) * 6],
-                 upperarm_L: mirror([0, 20, 60]), forearm_L: mirror([10, 28, 8]), hand_L: mirror([10, 6, 4]),
+  talk:  t => ({ upperarm_R: [0, 38, 38], forearm_R: [-48, 34, -18 + Math.sin(t * 4) * 10], hand_R: [-36, 6, -10 + Math.sin(t * 5) * 6],
+                 upperarm_L: mirror([0, 20, 48]), forearm_L: mirror([10, 28, 8]), hand_L: mirror([10, 6, 4]),
                  head: [Math.sin(t * 5) * 3, Math.sin(t * 1.7) * 6, Math.sin(t * 2.3) * 3] }),
-  think: t => ({ upperarm_R: [0, 52, 46], forearm_R: [-30, 42, -64], hand_R: [-24, 10, -18], head: [8, -7, -8] }),
-  hold:  t => ({ upperarm_R: [0, 46, 50], forearm_R: [-62, 34, -36], hand_R: [-48, 4, -14], head: [14, -12, 0] }),
-  happy: t => ({ upperarm_R: [0, 14, 18 - Math.sin(t * 8) * 6], forearm_R: [-30, 10, -28], hand_R: [-24, 0, -10],
-                 upperarm_L: mirror([0, 14, 18 - Math.sin(t * 8) * 6]), forearm_L: mirror([-30, 10, -28]), hand_L: mirror([-24, 0, -10]),
+  think: t => ({ upperarm_R: [0, 52, 34], forearm_R: [-30, 42, -64], hand_R: [-24, 10, -18], head: [8, -7, -8] }),
+  hold:  t => ({ upperarm_R: [0, 46, 38], forearm_R: [-62, 34, -36], hand_R: [-48, 4, -14], head: [14, -12, 0] }),
+  happy: t => ({ upperarm_R: [0, 14, 6 - Math.sin(t * 8) * 6], forearm_R: [-30, 10, -28], hand_R: [-24, 0, -10],
+                 upperarm_L: mirror([0, 14, 6 - Math.sin(t * 8) * 6]), forearm_L: mirror([-30, 10, -28]), hand_L: mirror([-24, 0, -10]),
                  head: [-6, 0, Math.sin(t * 6) * 7] })
 };
 function target(name, t) {
@@ -218,13 +234,16 @@ function frame(now) {
     const hop = gesture === 'happy' ? Math.abs(Math.sin(gestureT * 6)) * .05 : 0;
     bear.position.y = lerp(bear.position.y, .45 + hop, Math.min(1, dt * 10));
   }
-  if (forest) forest.children.forEach(o => {
-    if (o.userData.grow < 1) {
-      o.userData.grow = Math.min(1, o.userData.grow + dt * (RM ? 10 : 1.4));
-      const e = 1 - Math.pow(1 - o.userData.grow, 3);
-      o.scale.setScalar(Math.max(.001, o.userData.base * e));
+  if (forest) forest.children.slice().forEach(o => {
+    const u = o.userData;
+    if ((u.dir > 0 && u.grow < 1) || (u.dir < 0 && u.grow > 0)) {
+      u.grow = Math.max(0, Math.min(1, u.grow + u.dir * dt * (RM ? 10 : 1.4)));
+      const e = 1 - Math.pow(1 - u.grow, 3);
+      o.scale.setScalar(Math.max(.001, u.base * e));
+      if (u.grow <= 0) { forest.remove(o); o.traverse(c => { c.geometry && c.geometry.dispose(); c.material && c.material.dispose(); }); }
     }
   });
+  if (ground) ground.material.color.lerp(groundTo, Math.min(1, dt * 2));
   if (dust && !RM) {
     const a = dust.geometry.attributes.position, sp = dust.userData.speed;
     for (let i = 0; i < a.count; i++) {
@@ -234,7 +253,12 @@ function frame(now) {
     }
     a.needsUpdate = true;
   }
-  if (!RM) { camera.position.x = Math.sin(t * .15) * .12; camera.lookAt(0, .55, 0); }
+  // Giro: el dedo manda (con un pequeño rebote en los topes); a los 3 s vuelve de frente.
+  if (!drag) { if (performance.now() - idleAt > 3000) yawTo = 0; else yawTo = Math.max(-1.13, Math.min(1.13, yawTo)); }
+  yaw = RM ? yawTo : lerp(yaw, yawTo, Math.min(1, dt * (drag ? 14 : 2.5)));
+  const sway = RM || drag ? 0 : Math.sin(t * .15) * .12;
+  camera.position.set(Math.sin(yaw) * camDist + Math.cos(yaw) * sway, .75, Math.cos(yaw) * camDist - Math.sin(yaw) * sway);
+  camera.lookAt(0, .55, 0);
   renderer.render(scene, camera);
 }
 
@@ -246,7 +270,7 @@ function resize() {
   camera.aspect = w / h;
   // Encuadre: el oso siempre entra completo, más cerca en pantallas altas.
   camera.fov = camera.aspect < .8 ? 38 : 30;
-  camera.position.z = camera.aspect < .8 ? 3.1 : 2.6;
+  camDist = camera.aspect < .8 ? 3.1 : 2.6;
   camera.updateProjectionMatrix();
 }
 
@@ -275,10 +299,33 @@ function init() {
     scene.add(bear);
     play('wave');
   });
-  renderer.domElement.addEventListener('pointerup', () => { play(['wave', 'nod', 'happy'][Math.floor(Math.random() * 3)]); onTap && onTap(); });
+  const cv = renderer.domElement;
+  cv.style.touchAction = 'pan-y'; // el scroll vertical de la página sigue funcionando
+  cv.addEventListener('pointerdown', e => { drag = { x: e.clientX, y0: yawTo, moved: false, id: e.pointerId }; });
+  cv.addEventListener('pointermove', e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const dx = e.clientX - drag.x;
+    if (!drag.moved && Math.abs(dx) > 8) { drag.moved = true; try { cv.setPointerCapture(e.pointerId); } catch (x) {} }
+    // ±65°: el bosque está detrás del oso, así nunca queda un árbol delante de la cámara
+    if (drag.moved) { const v = drag.y0 - dx * .011, L = 1.13; yawTo = Math.max(-L - .15, Math.min(L + .15, v)); idleAt = performance.now(); }
+  });
+  const end = e => {
+    if (!drag) return;
+    const moved = drag.moved; drag = null; idleAt = performance.now();
+    if (moved) {
+      // el arrastre no cuenta como toque (el portal del hub es un botón)
+      const stop = ev => { ev.stopPropagation(); ev.preventDefault(); };
+      window.addEventListener('click', stop, { capture: true, once: true });
+      setTimeout(() => window.removeEventListener('click', stop, true), 400);
+      return;
+    }
+    if (e.type === 'pointerup') { play(['wave', 'nod', 'happy'][Math.floor(Math.random() * 3)]); onTap && onTap(); }
+  };
+  cv.addEventListener('pointerup', end);
+  cv.addEventListener('pointercancel', end);
   new ResizeObserver(resize).observe(document.documentElement);
   document.addEventListener('visibilitychange', () => { visible = document.visibilityState === 'visible'; });
-  new MutationObserver(() => { const p = palette(); scene.fog.color.set(p.bg); buildForest(); })
+  new MutationObserver(() => { const p = palette(); scene.fog.color.set(p.bg); buildForest(true); })
     .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   buildForest();
   buildDust();

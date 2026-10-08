@@ -8,7 +8,7 @@ const BUILD = '__BUILD__';
 const CACHE_NAME = 'pichibank-' + (BUILD.indexOf('__') === 0 ? 'dev' : BUILD);
 const CORE = [
   './', './index.html', './manifest.json', './app.js', './webauthn.js', './fiesta.js', './haptics.js',
-  './assets/tokens.css', './assets/solar.css', './assets/asistente.css', './assets/asistente.js', './assets/buscador.css', './assets/buscador.js', './assets/destacados.css', './assets/destacados.js', './assets/producto.css', './assets/producto.js', './assets/sistema.css', './assets/bosque3d.js', './assets/oso/oso.webp', './assets/oso/oso-cara.webp'
+  './assets/tokens.css', './assets/solar.css', './assets/asistente.css', './assets/asistente.js', './assets/buscador.css', './assets/buscador.js', './assets/destacados.css', './assets/destacados.js', './assets/producto.css', './assets/producto.js', './assets/sistema.css', './assets/bosque3d.js', './assets/oso/oso.webp', './assets/oso/oso-cara.webp', './assets/banners/ofertas.webp', './assets/banners/millas.webp', './assets/banners/finanzas.webp', './assets/banners/cashback.webp', './assets/banners/regalo.webp', './assets/banners/vinos.webp'
 ];
 
 self.addEventListener('install', (event) => {

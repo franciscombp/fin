@@ -30,13 +30,15 @@
   input[type=range] { width: 100%; accent-color: var(--cx-ink); }
   .note { font: var(--cx-sub); color: var(--cx-muted); margin: 0; }
   code { font-size: 13px; }
+  .dl { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: 99px; background: var(--cx-ink); color: var(--cx-surface); font: 600 15px/1 Roboto, sans-serif; text-decoration: none; }
+  .dl .material-symbols-rounded { font-size: 20px; }
 </style>
 </head>
 <body>
 <main>
   <header>
     <h1>Uku</h1>
-    <p>Oso andino 3D con esqueleto de 20 huesos. Tócalo para que reaccione.</p>
+    <p>Oso andino 3D con esqueleto de 20 huesos. Tócalo para que reaccione o arrástralo para girar.</p>
   </header>
   <div class="stage"><div class="b3d is-loading" id="b3d"><div class="b3d__fallback"><img class="as-oso" src="./assets/oso/oso.webp" alt=""></div></div></div>
   <section class="ctl">
@@ -56,7 +58,12 @@
       <label for="s"><span>El bosque crece con tus hábitos</span><b id="sv">50</b></label>
       <input id="s" type="range" min="0" max="100" value="50">
     </div>
-    <p class="note">Huesos: <code>root · hips · spine · chest · neck · head · shoulder · upperarm · forearm · hand · thigh · shin · foot</code> (_L y _R). Los objetos se sujetan del hueso <code>hand_R</code>.</p>
+    <div>
+      <h2>Archivo 3D</h2>
+      <p class="note" style="margin-bottom:12px">Modelo con esqueleto (20 huesos) y pesos de piel, en pose T. Ábrelo en Blender con <i>File → Import → glTF 2.0</i>; los huesos aparecen como una armadura lista para posar o animar.</p>
+      <div class="row"><a class="dl" href="./assets/oso/oso.glb" download="uku-oso-esqueleto.glb"><span class="material-symbols-rounded">download</span>Descargar .glb</a></div>
+    </div>
+    <p class="note">Arrastra al oso de lado a lado para girar la escena. Huesos: <code>root · hips · spine · chest · neck · head · shoulder · upperarm · forearm · hand · thigh · shin · foot</code> (_L y _R). Los objetos se sujetan del hueso <code>hand_R</code>.</p>
   </section>
 </main>
 <script type="module">

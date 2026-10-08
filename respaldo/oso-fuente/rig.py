@@ -191,20 +191,29 @@ im = im.resize((1024, 1024), Image.LANCZOS)
 # manchas que, al doblar el brazo, se leen como costuras. En las islas UV de
 # los brazos se aplana la luz (se conserva el tono y, suave, el tejido del puño).
 from PIL import ImageDraw, ImageFilter
-S = 1024; mimg = Image.new('L', (S, S), 0); dr = ImageDraw.Draw(mimg)
-am = arm_mask(P.astype(float)); F3 = IDX.reshape(-1, 3)
-for f in F3:
-    if am[f].min() > .5:
-        dr.polygon([(UV[i, 0] * S, UV[i, 1] * S) for i in f], fill=255)
-mimg = mimg.filter(ImageFilter.MaxFilter(9))
-A = np.asarray(im).astype(float); M = np.asarray(mimg) > 0
+S = 1024
+am = arm_mask(P.astype(float)); F3 = IDX.reshape(-1, 3); axv = np.abs(P[:, 0])
+def raster(pred, grow):
+    m = Image.new('L', (S, S), 0); dr = ImageDraw.Draw(m)
+    for f in F3:
+        if pred(f): dr.polygon([(UV[i, 0] * S, UV[i, 1] * S) for i in f], fill=255)
+    return np.asarray(m.filter(ImageFilter.MaxFilter(grow)) if grow > 1 else m) > 0
+# manga (sin la pata) y pata, sólo triángulos claramente del brazo
+SLV = raster(lambda f: am[f].min() > .9 and axv[f].max() < .395, 3)
+PAW = raster(lambda f: am[f].min() > .9 and axv[f].min() > .405, 3)
+A = np.asarray(im).astype(float)
 lum = A @ [.299, .587, .114]
-yel = M & (A[..., 0] > 140) & (A[..., 2] < 110) & (A[..., 0] - A[..., 2] > 80)
-gry = M & (np.abs(A[..., 0] - A[..., 2]) < 45) & (lum > 70) & (lum < 200)
-for sel, k in ((yel, .3), (gry, .25)):
-    base = np.median(A[sel], 0); bl = base @ [.299, .587, .114]
-    ratio = np.clip(lum[sel] / bl, .5, 1.4) ** k
+isY = (A[..., 0] > 120) & (A[..., 2] < 130) & (A[..., 0] - A[..., 2] > 50)
+isG = (np.abs(A[..., 0] - A[..., 2]) < 50) & (A[..., 2] >= A[..., 0] - 10) & ~isY
+isB = (A[..., 2] > A[..., 0] + 40)  # garras azules: se respetan
+yb = np.median(A[SLV & isY], 0); gb = np.median(A[PAW & isG], 0)
+def flat(sel, base, k):
+    bl = base @ [.299, .587, .114]; ratio = np.clip(lum[sel] / bl, .5, 1.4) ** k
     A[sel] = np.clip(base[None, :] * ratio[:, None], 0, 255)
+# Manga: todo amarillo parejo (el gris que se colaba del puño desaparece)
+flat(SLV & ~isB, yb, .12)
+# Pata: gris parejo salvo las garras
+flat(PAW & ~isB, gb, .2)
 im = Image.fromarray(A.astype(np.uint8)); im.save('tex-arms.png')
 jb = io.BytesIO(); im.save(jb, 'JPEG', quality=82, optimize=True); JPG = jb.getvalue()
 
