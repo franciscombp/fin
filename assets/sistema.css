@@ -64,12 +64,37 @@
 /* ---------- Píldoras y enlaces de acción ---------- */
 .pf-link, .dw-cta, .pf-pill { font: 600 14px/1 var(--sol-font, Roboto, sans-serif); height: 40px; padding: 0 16px; border-radius: 99px; }
 
-/* ---------- Uku en el chat ---------- */
-.as-msg--uku { align-items: flex-end; gap: 8px; }
-.as-msg__av { width: 32px; height: 32px; flex: 0 0 32px; border-radius: 50%; overflow: hidden; background: var(--cx-fill); box-shadow: none; }
-.as-msg--uku .as-msg__bubble { max-width: calc(88% - 40px); }
-.as-msg__bubble { font: var(--cx-body); border-radius: 20px 20px 20px 6px; }
-.as-msg--me .as-msg__bubble { border-radius: 20px 20px 6px 20px; }
+/* ---------- Chat con Uku: aire, lectura cómoda y respuestas sugeridas ----------
+   Uku escribe en una tarjeta ancha (nombre y cara arriba, no al costado) para
+   que el texto use todo el ancho; lo tuyo va a la derecha en una burbuja
+   compacta. Debajo de cada respuesta, sugerencias para seguir con un toque. */
+.as-chat { bottom: calc(var(--comp) + 12px); gap: 28px; padding: 24px 20px 32px; }
+.as-msg--uku { flex-direction: column; align-items: stretch; gap: 10px; }
+.as-msg__who { display: flex; align-items: center; gap: 10px; font: var(--cx-caption); color: var(--cx-ink); }
+.as-msg__av { width: 28px; height: 28px; flex: 0 0 28px; border-radius: 50%; overflow: hidden; background: var(--cx-fill); box-shadow: none; }
+.as-msg__av img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+.as-msg__bubble { font: 400 17px/26px var(--sol-font, Roboto, sans-serif); color: var(--cx-ink); }
+.as-msg--uku .as-msg__bubble {
+  max-width: none; padding: 20px; border-radius: 6px 24px 24px 24px; border: 0;
+  background: var(--cx-surface); box-shadow: 0 1px 2px rgb(0 0 0 / .04), 0 8px 24px rgb(0 0 0 / .05);
+}
+.as-msg--uku .as-msg__bubble b { font-weight: 600; }
+.as-msg__bubble p + * { margin-top: 20px; }
+.as-msg--me .as-msg__bubble { max-width: 80%; padding: 12px 18px; border-radius: 24px 24px 6px 24px; border: 0; background: var(--cx-ink); color: var(--cx-surface); font-weight: 500; }
+.as-msg--uku .as-bars { gap: 14px; }
+.as-msg--uku .as-bar { font: var(--cx-sub); }
+.as-msg--uku .as-stat { padding: 12px 14px; border-radius: 16px; background: var(--cx-fill); }
+.as-msg--uku .as-stat small { font: var(--cx-caption); font-weight: 500; color: var(--cx-muted); margin-bottom: 2px; }
+.as-msg--uku .as-stat b { font: 600 17px/24px var(--sol-font, Roboto, sans-serif); }
+.as-msg--uku .as-report__row { font: var(--cx-sub); padding: 12px 0; border-color: var(--cx-line); }
+.as-msg--uku .as-note { font: 400 13px/18px var(--sol-font, Roboto, sans-serif); color: var(--cx-muted); }
+.as-replies { display: flex; flex-wrap: wrap; gap: 8px; animation: asIn .3s ease .1s both; }
+.as-reply {
+  min-height: 40px; padding: 8px 16px; border-radius: 99px; border: 1px solid var(--cx-line); background: var(--cx-surface);
+  color: var(--cx-ink); font: 500 15px/20px var(--sol-font, Roboto, sans-serif); text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: transform .15s ease, background-color .15s ease;
+}
+.as-reply:active { transform: scale(.96); background: var(--cx-fill); }
 .sx-row__ic--uku { overflow: hidden; padding: 0; background: var(--cx-fill); }
 .sx-row__ic--uku img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
 .as-top .as-level { max-width: 100%; min-width: 0; white-space: nowrap; overflow: hidden; }

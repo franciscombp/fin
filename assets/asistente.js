@@ -172,29 +172,29 @@
     var rate = sep._save / sep._in;
     var f = {
       ahorro: { v: Math.min(1, rate / .15), label: 'Ahorro', icon: 'savings', ok: rate >= .08, val: pct(rate) + ' de tus ingresos',
-        tip: rate >= .08 ? 'Guardas más del 8% de lo que entra. Por eso crecen las hojas.' : 'Apunta a guardar al menos el 8% de lo que entra; es lo que hace crecer las hojas.',
-        act: rate >= .15 ? null : { id: 'save50', label: 'Programar $ 50 más al mes' } },
-      pagos: { v: lateN ? 0 : 1, label: 'Pagos a tiempo', icon: 'event_available', ok: !lateN, val: lateN ? lateN + ' pago tarde' : 'Todo al día',
-        tip: lateN ? 'El agua de septiembre sigue pendiente. Pagarla hoy evita el recargo y devuelve las flores.' : 'Nada atrasado en los últimos 3 meses. Por eso hay flores.',
+        tip: rate >= .08 ? 'Estás ahorrando más del 8% de lo que te entra. ¡Sigue así!' : 'Intenta ahorrar por lo menos el 8% de lo que te entra cada mes.',
+        act: rate >= .15 ? null : { id: 'save50', label: 'Ahorrar $ 50 más al mes' } },
+      pagos: { v: lateN ? 0 : 1, label: 'Pagos a tiempo', icon: 'event_available', ok: !lateN, val: lateN ? lateN + ' pago atrasado' : 'Todo al día',
+        tip: lateN ? 'Todavía tienes pendiente el agua de septiembre. Si la pagas hoy, evitas otro recargo.' : 'No tienes nada atrasado en los últimos 3 meses.',
         act: lateN ? { id: 'payLate', label: 'Pagar agua (' + money(18.35) + ')' } : null },
-      presupuesto: { v: 1 - Math.min(1, overCats.length / 3), label: 'Presupuesto', icon: 'pie_chart', ok: !overCats.length, val: overCats.length ? overCats.length + ' sobre el tope' : 'Dentro del tope',
-        tip: overCats.length ? 'Te pasaste en ' + overCats.map(function (k) { return CATS[k].name.toLowerCase(); }).join(', ') + '. Volver al tope trae de vuelta a los pájaros.' : 'Septiembre quedó dentro de todos tus topes.',
+      presupuesto: { v: 1 - Math.min(1, overCats.length / 3), label: 'Presupuesto', icon: 'pie_chart', ok: !overCats.length, val: overCats.length ? 'Te pasaste en ' + overCats.length : 'Todo en orden',
+        tip: overCats.length ? 'Te pasaste en ' + list(overCats.map(function (k) { return CATS[k].name.toLowerCase(); })) + '. Si vuelves a lo presupuestado, tu salud sube.' : 'En septiembre no te pasaste en nada.',
         act: overCats.length ? { id: 'cat:' + overCats[0], label: 'Ver ' + CATS[overCats[0]].name.toLowerCase() } : null },
       deuda: { v: card ? 1 - Math.min(1, util / .6) : 1, label: 'Uso de tarjetas', icon: 'credit_card', ok: util < .3, val: card ? pct(util) + ' del cupo' : 'Sin tarjetas conectadas',
-        tip: !card ? 'Conecta tus tarjetas de otros bancos para verlas aquí.' : util < .3 ? 'Usas menos del 30% de tu cupo. Así cuidas tu historial.' : 'Usar más del 30% del cupo pesa en tu historial. Bajarlo es lo que más mueve tu salud este mes.',
+        tip: !card ? 'Conecta tus tarjetas de otros bancos para verlas aquí.' : util < .3 ? 'Usas menos del 30% de tu cupo, que es lo ideal para tu historial.' : 'Estás usando más del 30% de tu cupo y eso pesa en tu historial. Bajarlo es lo que más te ayuda este mes.',
         act: card && util >= .3 ? { id: 'payCard', label: 'Abonar $ 200 a Visa Andino' } : null },
-      colchon: { v: Math.min(1, months / 6), label: 'Colchón para imprevistos', icon: 'shield', ok: months >= 3, val: months.toFixed(1).replace('.', ',') + ' meses de gastos',
-        tip: months >= 3 ? 'Si mañana no entra plata, cubres más de 3 meses. Es lo que recomiendan como mínimo.' : 'Lo recomendable es tener al menos 3 meses de gastos guardados. Hoy cubres ' + months.toFixed(1).replace('.', ',') + '.',
-        act: months >= 6 ? null : { id: 'efund100', label: 'Mover $ 100 al fondo' } }
+      colchon: { v: Math.min(1, months / 6), label: 'Ahorro para emergencias', icon: 'shield', ok: months >= 3, val: 'Te alcanza para ' + months.toFixed(1).replace('.', ',') + ' meses',
+        tip: months >= 3 ? 'Si un mes no te entra plata, puedes cubrir más de 3 meses de gastos. Ese es el mínimo recomendado.' : 'Lo recomendable es tener ahorrados por lo menos 3 meses de gastos. Ahora te alcanza para ' + months.toFixed(1).replace('.', ',') + '.',
+        act: months >= 6 ? null : { id: 'efund100', label: 'Pasar $ 100 al fondo' } }
     };
     var score = Math.round(25 * f.ahorro.v + 20 * f.pagos.v + 20 * f.presupuesto.v + 15 * f.deuda.v + 20 * f.colchon.v);
     D = { tx: tx, by: by, goals: goals, f: f, score: score, overCats: overCats, lateN: lateN, sc: sc, accts: accts, assets: assets, debt: debt, util: util, card: card, months: months };
   }
   function level(s) {
-    if (s >= 80) return { n: 'Bosque frondoso', c: '#2e9d4a', k: 4 };
-    if (s >= 55) return { n: 'Pradera en flor', c: '#6cbf3c', k: 3 };
-    if (s >= 30) return { n: 'Brotes nuevos', c: '#c7a22a', k: 2 };
-    return { n: 'Tierra seca', c: '#c0742c', k: 1 };
+    if (s >= 80) return { n: 'Excelente', c: '#2e9d4a', k: 4 };
+    if (s >= 55) return { n: 'Muy bien', c: '#6cbf3c', k: 3 };
+    if (s >= 30) return { n: 'Regular', c: '#c7a22a', k: 2 };
+    return { n: 'Por mejorar', c: '#c0742c', k: 1 };
   }
 
   /* ---------- Personajes ---------- */
@@ -266,64 +266,80 @@
   };
   var OLD = /(hace \d|hace un|el año|año pasado|enero|febrero|marzo|abril|mayo|junio|julio|2025|seis meses|6 meses|semestre|histori|antes)/;
 
+  /* Cada respuesta trae "s": respuestas sugeridas que siguen la conversación.
+     Así casi todo se resuelve tocando, con el motor de reglas y sin costo.
+     La IA (en producción) entraría sólo cuando el texto libre no calza con
+     ninguna intención: el último "return" de answer(). */
   function answer(q) {
     var s = q.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
     var sep = D.by[1], oct = D.by[2], ago = D.by[0];
-    if (/^(hola|buenas|buenos|hey|que tal)\b/.test(s)) return { t: 'Hola. ¿Qué quieres revisar? Puedo decirte en qué se te va la plata, cómo vas con tus metas o dónde te pasaste del tope.' };
+    if (/^(hola|buenas|buenos|hey|que tal)\b/.test(s)) return { t: 'Hola, ¿qué tal? Cuéntame qué quieres revisar. Te puedo decir en qué se te está yendo la plata, cómo vas con tus metas o en qué te pasaste del presupuesto.',
+      s: ['¿En qué se me va la plata?', '¿Cómo voy con mis metas?', '¿En qué me pasé?'] };
     if (OLD.test(s)) return reports(s);
     if (/tarde|atras|recargo|vencid/.test(s)) {
-      return { t: D.lateN ? 'El agua de septiembre se pagó 5 días tarde y eso sumó ' + money(1.5) + ' de recargo. Con el pago automático de servicios se debita el día que vence y no vuelve a pasar.' : 'En los últimos 3 meses pagaste todo a tiempo. Si un servicio se paga tarde, suelen cobrar un recargo y puede afectar tu historial.' };
+      return { t: D.lateN ? 'En septiembre pagaste el agua 5 días tarde y te cobraron ' + money(1.5) + ' de recargo. Si activas el pago automático, se paga solito el día que vence y no te vuelve a pasar.' : 'Tranquilo, en los últimos 3 meses pagaste todo a tiempo. Si algún día se te pasa una fecha, te pueden cobrar un recargo y eso queda en tu historial.',
+        s: ['¿Cuánto pago en servicios?', '¿Cómo voy en general?'] };
     }
     if (/interes/.test(s)) {
       var i1 = cardInterest(0), i2 = cardInterest(1);
-      return { t: (i1 + i2) ? 'En agosto y septiembre pagaste ' + money(i1 + i2) + ' de intereses en tu Visa Andino porque pagaste el mínimo. Si pagas el total antes del corte, no pagas intereses.' : 'No pagaste intereses en tus tarjetas en los últimos meses.' };
+      return { t: (i1 + i2) ? 'Entre agosto y septiembre pagaste ' + money(i1 + i2) + ' de intereses en tu Visa Andino, porque solo pagaste el mínimo. Si pagas el total antes de la fecha de corte, no te cobran intereses.' : 'Nada. Estos meses no pagaste intereses en tus tarjetas. ¡Bien ahí!',
+        s: ['¿Cuánto debo en mi tarjeta?', '¿Cuánto más puedo ahorrar?'] };
     }
     if (/cuenta|banco|saldo|tengo|patrimonio|total/.test(s)) {
-      return { t: 'Entre tus ' + D.accts.length + ' cuentas tienes <b>' + money(D.assets) + '</b>' + (D.debt ? ' y debes ' + money(D.debt) + ' en tarjetas' : '') + '. ' +
-        (ST.linked.length < 3 ? 'Si conectas tus otros bancos, el panorama queda completo.' : ''),
-        h: bars(D.accts.filter(function (a) { return a.type !== 'credito'; }).map(function (a) { return { label: BANKS[a.bank].name + ' · ' + a.name, v: a.bal }; }).sort(function (a, b) { return b.v - a.v; })) };
+      return { t: 'Sumando tus ' + D.accts.length + ' cuentas tienes <b>' + money(D.assets) + '</b>' + (D.debt ? ', y en tarjetas debes ' + money(D.debt) : '') + '.' +
+        (ST.linked.length < 3 ? ' Si conectas tus otros bancos, te muestro el panorama completo.' : ''),
+        h: bars(D.accts.filter(function (a) { return a.type !== 'credito'; }).map(function (a) { return { label: BANKS[a.bank].name + ' · ' + a.name, v: a.bal }; }).sort(function (a, b) { return b.v - a.v; })),
+        s: ['¿Cuánto debo en mi tarjeta?', '¿Para cuántos meses me alcanza?'] };
     }
     if (/deuda|debo|tarjeta|credito|cupo/.test(s)) {
-      return D.card ? { t: 'Debes <b>' + money(D.debt) + '</b> en tu Visa Andino, el ' + pct(D.util) + ' de tu cupo. ' + (D.util >= .3 ? 'Si lo bajas del 30%, tu historial lo nota. Con ' + money(Math.max(0, D.debt - D.card.limit * .3)) + ' llegas.' : 'Estás por debajo del 30%, que es lo sano.') }
-        : { t: 'No veo tarjetas de crédito. Si tienes alguna en otro banco, conéctala desde Mis finanzas.' };
+      return D.card ? { t: 'Debes <b>' + money(D.debt) + '</b> en tu Visa Andino, o sea el ' + pct(D.util) + ' de tu cupo. ' + (D.util >= .3 ? 'Lo ideal es usar menos del 30%. Con un abono de ' + money(Math.max(0, D.debt - D.card.limit * .3)) + ' llegas.' : 'Estás por debajo del 30%, que es lo ideal.'),
+          s: ['¿Cuánto pago de intereses?', '¿Cuánto más puedo ahorrar?'] }
+        : { t: 'No veo ninguna tarjeta de crédito. Si tienes una en otro banco, conéctala desde Mis finanzas y la reviso contigo.', s: ['¿Cuánto tengo en total?'] };
     }
     if (/colchon|imprevisto|emergencia sin|cuantos meses/.test(s)) {
-      return { t: 'Con lo que tienes guardado cubres <b>' + D.months.toFixed(1).replace('.', ',') + ' meses</b> de gastos. Lo recomendable es al menos 3.' };
+      return { t: 'Con lo que tienes ahorrado te alcanza para <b>' + D.months.toFixed(1).replace('.', ',') + ' meses</b> de gastos. Lo recomendable es tener por lo menos 3.',
+        s: ['¿Cómo voy con mis metas?', '¿Cuánto más puedo ahorrar?'] };
     }
     if (/hormiga|cafe|antojo|cafecito/.test(s)) {
       var n = sep._hormigaN, v = sep.cafe, year = v * 12;
-      return { t: 'Fueron <b>' + n + ' cafés y antojos</b> en septiembre, ' + money(v) + ' en total. Uno por uno no se nota, pero al año son ' + money(year) + '. ' +
-        (v > CATS.cafe.budget ? 'Con la mitad te quedan ' + money(year / 2) + ' libres al año, más o menos lo que gastas en supermercado en ' + Math.max(1, Math.round(year / 2 / sep.super)) + ' meses.' : 'Estás dentro de lo que te propusiste.'),
-        h: '<div class="as-stats">' + stat('Septiembre', money(v)) + stat('Octubre, hasta hoy', money(oct.cafe)) + '</div>' };
+      return { t: 'En septiembre fueron <b>' + n + ' cafés y antojitos</b>, ' + money(v) + ' en total. Así, de a poquito, no se siente, pero en un año son ' + money(year) + '. ' +
+        (v > CATS.cafe.budget ? 'Si los bajas a la mitad, te ahorras ' + money(year / 2) + ' al año. Es como ' + Math.max(1, Math.round(year / 2 / sep.super)) + ' meses de supermercado.' : 'Igual vas bien: estás dentro de lo que te propusiste.'),
+        h: '<div class="as-stats">' + stat('Septiembre', money(v)) + stat('Octubre, hasta hoy', money(oct.cafe)) + '</div>',
+        s: ['¿En qué se me va la plata?', 'Mis suscripciones'] };
     }
     if (/suscrip|netflix|spotify|recurrent|fijo/.test(s) && !/servicio/.test(s)) {
-      return { t: 'Pagas <b>' + money(sep.subs) + ' al mes</b> en 4 suscripciones. La más cara es el gimnasio: si fuiste menos de 8 veces en septiembre, cada visita te salió a más de ' + money(35 / 8) + '.',
-        h: bars(CATS.subs.fixed.map(function (p) { return { label: p[0], v: p[1] }; }).sort(function (a, b) { return b.v - a.v; })) };
+      return { t: 'Pagas <b>' + money(sep.subs) + ' al mes</b> en 4 suscripciones. La más cara es el gimnasio: si fuiste menos de 8 veces en septiembre, cada ida te salió en más de ' + money(35 / 8) + '.',
+        h: bars(CATS.subs.fixed.map(function (p) { return { label: p[0], v: p[1] }; }).sort(function (a, b) { return b.v - a.v; })),
+        s: ['Mis gastos hormiga', '¿Cuánto más puedo ahorrar?'] };
     }
     if (/meta|objetivo|galapagos|emergencia|viaje/.test(s)) {
       return { t: D.goals.map(function (g) {
           return '<b>' + g.name + '</b>: llevas ' + money(g.have) + ' de ' + money(g.target) + '. ' +
-            (g.onTrack ? 'Con ' + money(g.monthly) + ' al mes llegas a ' + g.due + '.' : 'Para llegar a ' + g.due + ' te faltan ' + money(g.need) + ' al mes y hoy pones ' + money(g.monthly) + '.');
+            (g.onTrack ? 'Si sigues poniendo ' + money(g.monthly) + ' al mes, llegas en ' + g.due + '.' : 'Para llegar en ' + g.due + ' necesitas poner ' + money(g.need) + ' al mes, y ahora estás poniendo ' + money(g.monthly) + '.');
         }).join('<br><br>'),
-        h: bars(D.goals.map(function (g) { return { label: g.name + ' · ' + pct(g.have / g.target), v: g.have }; }), 1500) };
+        h: bars(D.goals.map(function (g) { return { label: g.name + ' · ' + pct(g.have / g.target), v: g.have }; }), 1500),
+        s: ['¿Cuánto más puedo ahorrar?', '¿Para cuántos meses me alcanza?'] };
     }
     if (/ahorr|puedo|alcanza|sobra/.test(s)) {
       var free = sep._in - sep._spend - sep._save;
       var cut = Math.max(0, sep.delivery - CATS.delivery.budget) + Math.max(0, sep.cafe - CATS.cafe.budget) + Math.max(0, sep.compras - CATS.compras.budget);
-      return { t: 'En septiembre guardaste <b>' + money(sep._save) + '</b>, el ' + pct(sep._save / sep._in) + ' de lo que entró, y te quedaron ' + money(free) + ' sin asignar. ' +
-        (cut > 5 ? 'Si delivery, cafés y compras vuelven a su tope, son ' + money(cut) + ' más cada mes.' : 'Podrías mover ' + money(Math.max(20, Math.round(free * .3))) + ' más a tus metas cada mes sin quedarte corto.'),
-        h: '<div class="as-stats">' + stat('Entró', money(sep._in)) + stat('Gastaste', money(sep._spend)) + stat('Guardaste', money(sep._save)) + stat('Sin asignar', money(free)) + '</div>' };
+      return { t: 'En septiembre ahorraste <b>' + money(sep._save) + '</b>, el ' + pct(sep._save / sep._in) + ' de lo que te entró, y te sobraron ' + money(free) + ' sin un destino fijo. ' +
+        (cut > 5 ? 'Si delivery, cafés y compras vuelven a lo que tenías presupuestado, son ' + money(cut) + ' más cada mes.' : 'Podrías mandar ' + money(Math.max(20, Math.round(free * .3))) + ' más a tus metas cada mes sin quedarte corto.'),
+        h: '<div class="as-stats">' + stat('Te entró', money(sep._in)) + stat('Gastaste', money(sep._spend)) + stat('Ahorraste', money(sep._save)) + stat('Te sobró', money(free)) + '</div>',
+        s: ['¿Cómo voy con mis metas?', '¿En qué me pasé?'] };
     }
     if (/compar|mes pasado|vs|anterior|subi|baje|aument/.test(s)) {
       var rows = Object.keys(CATS).map(function (k) { return { k: k, d: sep[k] - ago[k] }; }).sort(function (a, b) { return Math.abs(b.d) - Math.abs(a.d); }).slice(0, 3);
       var d = sep._spend - ago._spend;
-      return { t: 'Septiembre te costó <b>' + money(Math.abs(d)) + (d > 0 ? ' más' : ' menos') + '</b> que agosto. Donde más se movió: ' +
+      return { t: 'En septiembre gastaste <b>' + money(Math.abs(d)) + (d > 0 ? ' más' : ' menos') + '</b> que en agosto. Lo que más cambió: ' +
         rows.map(function (r) { return CATS[r.k].name.toLowerCase() + ' (' + (r.d > 0 ? '+' : '') + money(r.d) + ')'; }).join(', ') + '.',
-        h: '<div class="as-stats">' + stat('Agosto', money(ago._spend)) + stat('Septiembre', money(sep._spend), d > 0 ? 'up' : 'down') + '</div>' };
+        h: '<div class="as-stats">' + stat('Agosto', money(ago._spend)) + stat('Septiembre', money(sep._spend), d > 0 ? 'up' : 'down') + '</div>',
+        s: ['¿En qué se me va la plata?', '¿En qué me pasé?'] };
     }
     if (/presupuesto|pase|exced|limite|tope/.test(s)) {
-      return { t: D.overCats.length ? 'Te pasaste en <b>' + list(D.overCats.map(function (k) { return CATS[k].name.toLowerCase(); })) + '</b>. En lo demás quedaste dentro del tope.' : 'Septiembre quedó dentro de todos tus topes.',
-        h: bars(Object.keys(CATS).filter(function (k) { return !CATS[k].fixed; }).map(function (k) { return { k: k, v: sep[k], c: sep[k] > CATS[k].budget ? '#c20505' : '', label: CATS[k].name + ' · tope ' + money(CATS[k].budget) }; }).sort(function (a, b) { return b.v - a.v; })) };
+      return { t: D.overCats.length ? 'Te pasaste del presupuesto en <b>' + list(D.overCats.map(function (k) { return CATS[k].name.toLowerCase(); })) + '</b>. En lo demás vas bien.' : 'En septiembre no te pasaste en nada. ¡Todo dentro del presupuesto!',
+        h: bars(Object.keys(CATS).filter(function (k) { return !CATS[k].fixed; }).map(function (k) { return { k: k, v: sep[k], c: sep[k] > CATS[k].budget ? '#c20505' : '', label: CATS[k].name + ' · de ' + money(CATS[k].budget) }; }).sort(function (a, b) { return b.v - a.v; })),
+        s: D.overCats.length ? ['¿Cuánto gasté en ' + CATS[D.overCats[0]].name.toLowerCase() + '?', '¿Cuánto más puedo ahorrar?'] : ['¿Cuánto más puedo ahorrar?', '¿Cómo voy con mis metas?'] };
     }
     for (var k in CAT_WORDS) {
       if (CAT_WORDS[k].test(s)) {
@@ -331,41 +347,45 @@
         mv.forEach(function (t) { by[t.who] = (by[t.who] || 0) + t.amt; });
         var rowsM = Object.keys(by).map(function (w) { return { label: w, v: by[w] }; }).sort(function (a, b) { return b.v - a.v; });
         var a3 = (ago[k] + sep[k]) / 2;
-        return { t: 'En septiembre se fueron <b>' + money(sep[k]) + '</b> en ' + CATS[k].name.toLowerCase() + ', en ' + mv.length + (mv.length === 1 ? ' pago' : ' pagos') + '. Tu promedio es ' + money(a3) + ' y en lo que va de octubre llevas ' + money(oct[k]) + '.',
-          h: rowsM.length ? bars(rowsM) : '' };
+        return { t: 'En septiembre gastaste <b>' + money(sep[k]) + '</b> en ' + CATS[k].name.toLowerCase() + ', en ' + mv.length + (mv.length === 1 ? ' pago' : ' pagos') + '. Normalmente gastas unos ' + money(a3) + ' y en lo que va de octubre llevas ' + money(oct[k]) + '.',
+          h: rowsM.length ? bars(rowsM) : '', s: ['¿En qué me pasé?', 'Septiembre vs. agosto'] };
       }
     }
     if (/en que|mas gasto|gasto mas|gastos|donde se va|se me va|analiza|categor/.test(s)) {
       var tc = topCats(1, 5);
-      return { t: 'En septiembre gastaste <b>' + money(sep._spend) + '</b>. Lo que más pesa es ' + CATS[tc[0].k].name.toLowerCase() + ' (' + pct(tc[0].v / sep._spend) + '), después ' + CATS[tc[1].k].name.toLowerCase() + ' y ' + CATS[tc[2].k].name.toLowerCase() + '.',
-        h: bars(tc) };
+      return { t: 'En septiembre gastaste <b>' + money(sep._spend) + '</b>. Lo que más se lleva es ' + CATS[tc[0].k].name.toLowerCase() + ' (' + pct(tc[0].v / sep._spend) + '), y después ' + CATS[tc[1].k].name.toLowerCase() + ' y ' + CATS[tc[2].k].name.toLowerCase() + '.',
+        h: bars(tc), s: ['¿En qué me pasé?', 'Mis gastos hormiga', 'Septiembre vs. agosto'] };
     }
-    if (/resumen|como voy|como estoy|paisaje|bosque|crecer|estado/.test(s) || s.length < 3) return summary();
-    return { t: 'Eso todavía no lo sé responder. Puedo contarte de tus gastos, topes, metas, ahorro y suscripciones desde agosto.' };
+    if (/resumen|como voy|como estoy|general|paisaje|bosque|crecer|estado|mejorar/.test(s) || s.length < 3) return summary();
+    // Aquí entraría la IA: sólo para preguntas libres que las reglas no entienden.
+    return { t: 'Mmm, eso todavía no lo sé responder. Te puedo ayudar con tus gastos, tu presupuesto, tus metas, el ahorro o tus suscripciones de los últimos 3 meses. ¿Es sobre algo de esto?',
+      s: ['¿En qué se me va la plata?', '¿Cómo voy con mis metas?', '¿Cuánto más puedo ahorrar?'] };
   }
   function list(a) { return a.length > 1 ? a.slice(0, -1).join(', ') + ' y ' + a[a.length - 1] : a[0]; }
+  var FIX = { ahorro: '¿Cuánto más puedo ahorrar?', pagos: '¿Qué pasa si pago tarde un servicio?', presupuesto: '¿En qué me pasé?', deuda: '¿Cuánto debo en mi tarjeta?', colchon: '¿Para cuántos meses me alcanza?' };
   function summary() {
-    var lv = level(D.score), f = D.f;
+    var f = D.f;
     var good = Object.keys(f).filter(function (k) { return f[k].ok; }).map(function (k) { return f[k].label.toLowerCase(); });
-    var bad = Object.keys(f).filter(function (k) { return !f[k].ok; }).map(function (k) { return f[k].label.toLowerCase(); });
-    return { t: 'Tu paisaje está en <b>' + lv.n.toLowerCase() + '</b>. ' + (good.length ? 'Lo sostienen ' + list(good) + '. ' : '') +
-      (bad.length ? 'Lo que más lo haría crecer: ' + list(bad) + '.' : 'Este mes no hay nada que corregir.') };
+    var badK = Object.keys(f).filter(function (k) { return !f[k].ok; }), bad = badK.map(function (k) { return f[k].label.toLowerCase(); });
+    return { t: 'Tu salud financiera está en <b>' + D.score + ' de 100</b>. ' + (good.length ? 'Vas bien en ' + list(good) + '. ' : '') +
+      (bad.length ? 'Donde más puedes mejorar: ' + list(bad) + '.' : 'Este mes no hay nada que corregir. ¡Sigue así!'),
+      s: badK.length ? badK.slice(0, 2).map(function (k) { return FIX[k]; }) : ['¿Cómo voy con mis metas?', '¿Cuánto más puedo ahorrar?'] };
   }
   function reports() {
     var base = { dificil: [-1, 0], normal: [0, 0], excelente: [1, 1] }[ST.scenario];
     var rows = [
-      ['Jul', 'Guardaste 9%', 'metas al día', 62 + base[0] * 6],
-      ['Jun', 'Guardaste 7%', 'un pago tarde', 48 + base[0] * 4],
-      ['May', 'Guardaste 11%', 'cumpliste la meta laptop', 81 + base[1] * 4],
-      ['Abr', 'Guardaste 5%', 'te pasaste del tope', 39 + base[0] * 3]
+      ['Jul', 'Ahorraste el 9%', 'pagaste todo a tiempo', 62 + base[0] * 6],
+      ['Jun', 'Ahorraste el 7%', 'un pago atrasado', 48 + base[0] * 4],
+      ['May', 'Ahorraste el 11%', 'completaste la meta de la laptop', 81 + base[1] * 4],
+      ['Abr', 'Ahorraste el 5%', 'te pasaste del presupuesto', 39 + base[0] * 3]
     ];
-    return { t: 'El detalle de movimientos lo tengo desde agosto. De los meses anteriores me queda el resumen de cada uno:',
+    return { t: 'El detalle de cada movimiento lo tengo solo desde agosto. De los meses anteriores te puedo mostrar un resumen:',
       h: '<div class="as-report">' + rows.map(function (r) {
-          var lv = level(r[3]);
-          return '<div class="as-report__row"><b>' + r[0] + '</b><span>' + r[1] + ', ' + r[2] + '</span><em>' + lv.n.split(' ')[0] + '</em></div>';
-        }).join('') + '</div><p class="as-note">Es un resumen; no incluye cada movimiento.</p>' };
+          return '<div class="as-report__row"><b>' + r[0] + '</b><span>' + r[1] + ', ' + r[2] + '</span><em>' + r[3] + '</em></div>';
+        }).join('') + '</div><p class="as-note">El número es tu salud financiera de ese mes.</p>',
+      s: ['¿Cómo voy en general?', 'Septiembre vs. agosto'] };
   }
-  var SUGGEST = ['¿En qué se me va la plata?', '¿Llego a mis metas?', 'Mis gastos hormiga', '¿Cuánto más puedo ahorrar?', 'Septiembre vs. agosto', '¿Dónde me pasé del tope?', 'Mis suscripciones', '¿Cómo me fue en mayo?', '¿Qué hace crecer mi paisaje?'];
+  var SUGGEST = ['¿En qué se me va la plata?', '¿Cómo voy con mis metas?', 'Mis gastos hormiga', '¿Cuánto más puedo ahorrar?', 'Septiembre vs. agosto', '¿En qué me pasé?', 'Mis suscripciones', '¿Cómo me fue en mayo?', '¿Cómo voy en general?'];
 
   // El mensaje principal es siempre el primer insight del último mes
   // cerrado: lo mismo en Inicio, en Mis finanzas y en el asistente.
@@ -381,11 +401,11 @@
   var HAB = { super: 300, delivery: 110, transporte: 55, servicios: 96, subs: 55, compras: 150, cafe: 32, salud: 25, ocio: 55 };
   var REPORTS = {
     jun: { name: 'junio', spend: 984.2, save: 84, rate: .07, score: 46, ins: [
-      { kind: 'warn', icon: 'event_busy', title: 'Pagaste tarde el internet', sub: 'Se pagó 4 días después del vencimiento. Te cobraron $ 1,50 de recargo.' },
-      { kind: 'good', icon: 'savings', title: 'Guardaste $ 84', sub: 'El 7% de lo que entró.' }] },
+      { kind: 'warn', icon: 'event_busy', title: 'Pagaste tarde el internet', sub: 'Lo pagaste 4 días después de la fecha y te cobraron $ 1,50 de recargo.' },
+      { kind: 'good', icon: 'savings', title: 'Ahorraste $ 84', sub: 'Es el 7% de lo que te entró.' }] },
     jul: { name: 'julio', spend: 1012.6, save: 108, rate: .09, score: 61, ins: [
-      { kind: 'warn', icon: 'trending_up', title: 'Gastaste 41% más en compras de lo habitual', sub: 'Fueron las compras de vacaciones: $ 212 frente a $ 150 que sueles gastar.' },
-      { kind: 'good', icon: 'event_available', title: 'Todo pagado a tiempo', sub: 'Ningún recargo en servicios ni tarjetas.' }] }
+      { kind: 'warn', icon: 'trending_up', title: 'Gastaste 41% más de lo normal en compras', sub: 'Fueron las compras de vacaciones: $ 212, cuando normalmente gastas $ 150.' },
+      { kind: 'good', icon: 'event_available', title: 'Pagaste todo a tiempo', sub: 'Sin recargos en servicios ni tarjetas.' }] }
   };
   var VIEWS = [
     { key: 'jun', short: 'jun', report: true }, { key: 'jul', short: 'jul', report: true },
@@ -409,21 +429,21 @@
     if (insCache[ck]) return insCache[ck];
     var b = D.by[mi], name = MONTHS[mi].name, warn = [], good = [];
     var late = D.tx.filter(function (t) { return t.late && t.mi === mi; })[0];
-    if (late) warn.push({ kind: 'warn', icon: 'event_busy', title: 'Pagaste tarde el ' + late.who.toLowerCase(), sub: 'Vencía el 7 de ' + name + ' y se pagó el 12. Te cobraron ' + money(1.5) + ' de recargo.', det: 'late:' + mi, ask: '¿Qué pasa si pago tarde un servicio?' });
+    if (late) warn.push({ kind: 'warn', icon: 'event_busy', title: 'Pagaste tarde el ' + late.who.toLowerCase(), sub: 'Vencía el 7 de ' + name + ' y lo pagaste el 12, así que te cobraron ' + money(1.5) + ' de recargo.', det: 'late:' + mi, ask: '¿Qué pasa si pago tarde un servicio?' });
     var int = cardInterest(mi);
-    if (int) warn.push({ kind: 'warn', icon: 'credit_card', title: 'Pagaste solo el mínimo de tu Visa Andino', sub: 'Eso sumó ' + money(int) + ' de intereses en ' + name + '. Pagando el total no pagas nada.', det: 'card:' + mi, ask: '¿Cuánto pago de intereses en mi tarjeta?' });
+    if (int) warn.push({ kind: 'warn', icon: 'credit_card', title: 'Pagaste solo el mínimo de tu Visa Andino', sub: 'Por eso te cobraron ' + money(int) + ' de intereses en ' + name + '. Si pagas el total, no pagas intereses.', det: 'card:' + mi, ask: '¿Cuánto pago de intereses en mi tarjeta?' });
     var spikes = Object.keys(HAB).filter(function (k) { return !CATS[k].fixed && b[k] > HAB[k] * 1.25 && b[k] - HAB[k] > 15; })
       .sort(function (x, y) { return (b[y] - HAB[y]) - (b[x] - HAB[x]); });
     if (spikes.length) {
       var k = spikes[0], by = {};
       D.tx.forEach(function (t) { if (t.cat === k && t.mi === mi) by[t.who] = (by[t.who] || 0) + t.amt; });
       var top = Object.keys(by).sort(function (x, y) { return by[y] - by[x]; })[0];
-      warn.push({ kind: 'warn', icon: 'trending_up', title: 'Gastaste ' + pct(b[k] / HAB[k] - 1) + ' más en ' + CATS[k].name.toLowerCase() + ' de lo habitual', sub: money(b[k]) + ' frente a ' + money(HAB[k]) + ' que sueles gastar.' + (top ? ' Lo que más pesó: ' + top + '.' : ''), det: 'cat:' + k + ':' + mi, ask: '¿Cuánto gasté en ' + CATS[k].name.toLowerCase() + '?' });
+      warn.push({ kind: 'warn', icon: 'trending_up', title: 'Gastaste ' + pct(b[k] / HAB[k] - 1) + ' más de lo normal en ' + CATS[k].name.toLowerCase(), sub: 'Fueron ' + money(b[k]) + ', cuando normalmente gastas ' + money(HAB[k]) + '.' + (top ? ' Donde más gastaste: ' + top + '.' : ''), det: 'cat:' + k + ':' + mi, ask: '¿Cuánto gasté en ' + CATS[k].name.toLowerCase() + '?' });
     }
     var rate = b._save / b._in;
-    if (rate >= .08) good.push({ kind: 'good', icon: 'savings', title: 'Guardaste ' + money(b._save), sub: 'El ' + pct(rate) + ' de lo que entró. Por eso crecen las hojas.', ask: '¿Cuánto más puedo ahorrar?' });
-    else good.push({ kind: 'info', icon: 'savings', title: rate ? 'Guardaste ' + money(b._save) + ', el ' + pct(rate) : 'Este mes no guardaste nada', sub: 'Lo sano es al menos el 8% de lo que entra. ' + (rate ? '' : 'Un ahorro automático el día de pago ayuda.'), ask: '¿Cuánto más puedo ahorrar?' });
-    if (!late) good.push({ kind: 'good', icon: 'event_available', title: 'Todo pagado a tiempo', sub: 'Ningún recargo en servicios este mes.' });
+    if (rate >= .08) good.push({ kind: 'good', icon: 'savings', title: 'Ahorraste ' + money(b._save), sub: 'Es el ' + pct(rate) + ' de lo que te entró. ¡Bien!', ask: '¿Cuánto más puedo ahorrar?' });
+    else good.push({ kind: 'info', icon: 'savings', title: rate ? 'Ahorraste ' + money(b._save) + ', el ' + pct(rate) : 'Este mes no ahorraste nada', sub: 'Lo ideal es ahorrar por lo menos el 8% de lo que te entra.' + (rate ? '' : ' Programar un ahorro automático el día de pago ayuda mucho.'), ask: '¿Cuánto más puedo ahorrar?' });
+    if (!late) good.push({ kind: 'good', icon: 'event_available', title: 'Pagaste todo a tiempo', sub: 'No te cobraron ningún recargo este mes.' });
     var out = warn.slice(0, 3).concat(good).slice(0, 4);
     insCache[ck] = out;
     return out;
@@ -456,7 +476,7 @@
     if (window.Destacados) Destacados.repaint();
     document.querySelectorAll('[data-as-open]').forEach(function (b) {
       b.querySelector('.as-entry__pet').innerHTML = C().svg();
-      b.querySelector('.as-entry__eyebrow').textContent = 'Tu resumen de ' + MONTHS[lastClosedMi()].name + ' está listo';
+      b.querySelector('.as-entry__eyebrow').textContent = 'Tu resumen de ' + MONTHS[lastClosedMi()].name + ' ya está listo';
       b.querySelector('.as-entry__cta').textContent = 'Ver resumen';
       b.querySelector('.as-entry__title').textContent = monthInsights(lastClosedMi())[0].title;
     });
@@ -476,7 +496,7 @@
       '<div class="as-land-wrap"></div>' +
       '<div class="as-top">' +
         '<button class="as-icon-btn pf-round" data-as="back" aria-label="Volver"><span class="material-symbols-rounded">close</span></button>' +
-        '<button class="as-level" data-as="land" aria-label="Ver qué hace crecer tu paisaje"><i></i><span></span><span class="material-symbols-rounded">expand_more</span></button>' +
+        '<button class="as-level" data-as="land" aria-label="Ver tu salud financiera"><i></i><span></span><span class="material-symbols-rounded">expand_more</span></button>' +
         '<button class="as-icon-btn pf-round" data-as="settings" aria-label="Ajustes del asistente"><span class="material-symbols-rounded">tune</span></button>' +
       '</div>' +
       // Hub (estado inicial): saludo, bento, temas e historial
@@ -512,6 +532,7 @@
       if ((b = e.target.closest('[data-as="land"]'))) return openSheet('land');
       if ((b = e.target.closest('[data-as="settings"]'))) return openSheet('settings');
       if ((b = e.target.closest('.as-chip'))) return ask(b.textContent);
+      if ((b = e.target.closest('[data-reply]'))) return ask(b.dataset.reply);
       if ((b = e.target.closest('[data-topic]'))) return ask(b.dataset.topic);
       if ((b = e.target.closest('[data-hist]'))) return ask(b.dataset.hist);
       if ((b = e.target.closest('[data-hub]'))) {
@@ -574,7 +595,7 @@
     ensureSheet();
     var lv = level(D.score), html = '<div class="as-sheet__handle"></div>';
     if (kind === 'land') {
-      html += '<h3>' + lv.n + '</h3><p>' + C().name + ' no cambia; cambia el lugar donde vive. Depende de cómo te va con estos cinco hábitos.</p>' +
+      html += '<h3>Salud financiera ' + D.score + '</h3><p>Se calcula con estos cinco hábitos. Mientras mejor te va, más crece el bosque de ' + C().name + '.</p>' +
         '<div class="as-rows">' + Object.keys(D.f).map(function (k) {
           var f = D.f[k];
           return '<div class="as-row"><span class="as-row__icon material-symbols-rounded">' + f.icon + '</span>' +
@@ -583,7 +604,7 @@
         }).join('') + '</div>';
     } else {
       html += '<h3>Ajustes</h3>' +
-        '<p class="as-sheet__label">Ver otro escenario (solo demo)</p><div class="as-rows">' +
+        '<p class="as-sheet__label">Probar otro escenario (solo demo)</p><div class="as-rows">' +
         Object.keys(SCEN).map(function (k) {
           return '<button class="as-row as-row--btn" data-sc="' + k + '" aria-pressed="' + (ST.scenario === k) + '"><span class="as-row__main"><b>' + SCEN[k].label + '</b></span><span class="as-radio"></span></button>';
         }).join('') + '</div>';
@@ -613,7 +634,7 @@
     var el = page.classList.contains('is-chat') ? page.querySelector('.as-land-wrap .b3d') : page.querySelector('.as-tile--portal .b3d');
     mount3D(el, D.score, g);
   }
-  var TOPICS = [['pie_chart', 'Gastos', '¿En qué se me va la plata?'], ['flag', 'Metas', '¿Llego a mis metas?'], ['credit_card', 'Tarjetas', '¿Cuánto debo en mi tarjeta?'],
+  var TOPICS = [['pie_chart', 'Gastos', '¿En qué se me va la plata?'], ['flag', 'Metas', '¿Cómo voy con mis metas?'], ['credit_card', 'Tarjetas', '¿Cuánto debo en mi tarjeta?'],
     ['savings', 'Ahorro', '¿Cuánto más puedo ahorrar?'], ['autorenew', 'Suscripciones', 'Mis suscripciones']];
   function paintHub() {
     var n = document.querySelector('.profile-head__name');
@@ -648,17 +669,26 @@
   function bot(a) {
     var m = document.createElement('div');
     m.className = 'as-msg as-msg--uku';
-    m.innerHTML = '<span class="as-msg__av">' + C().face() + '</span><div class="as-msg__bubble"><span class="as-typing" aria-label="' + C().name + ' está escribiendo"><i></i><i></i><i></i></span></div>';
+    m.innerHTML = '<div class="as-msg__who"><span class="as-msg__av">' + C().face() + '</span><b>' + C().name + '</b></div>' +
+      '<div class="as-msg__bubble"><span class="as-typing" aria-label="' + C().name + ' está escribiendo"><i></i><i></i><i></i></span></div>';
     chat.appendChild(m); scrollEnd();
     setPet('is-talking');
     setTimeout(function () {
       m.querySelector('.as-msg__bubble').innerHTML = '<p>' + a.t + '</p>' + (a.h || '');
+      // Respuestas sugeridas: la conversación sigue con un toque
+      if (a.s && a.s.length) {
+        var r = document.createElement('div');
+        r.className = 'as-replies';
+        r.innerHTML = a.s.map(function (q) { return '<button class="as-reply" type="button" data-reply="' + esc(q) + '">' + esc(q) + '</button>'; }).join('');
+        m.appendChild(r);
+      }
       scrollEnd(); fx('reveal');
       setTimeout(function () { setPet(''); }, 900);
     }, 650 + Math.random() * 300);
   }
   function ask(q) {
     ST.history = [q].concat((ST.history || []).filter(function (x) { return x !== q; })).slice(0, 6); persist();
+    if (chat) chat.querySelectorAll('.as-replies').forEach(function (r) { r.remove(); });
     enterChat(); me(q); fx('tap'); bot(answer(q));
   }
   function scrollEnd() { requestAnimationFrame(function () { chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' }); }); }
@@ -741,7 +771,7 @@
   }
   function insHTML(list, withDetail) {
     curIns = list;
-    return '<section class="pf-sec"><h2>Lo que tienes que saber</h2><div class="pf-ins-list">' + list.map(function (x, i) {
+    return '<section class="pf-sec"><h2>Lo más importante</h2><div class="pf-ins-list">' + list.map(function (x, i) {
       return '<article class="pf-ins pf-ins--' + x.kind + '"><span class="pf-ins__ic material-symbols-rounded">' + x.icon + '</span>' +
         '<div class="pf-ins__body"><h3>' + x.title + '</h3><p>' + x.sub + '</p>' +
         ((withDetail && x.det) || x.ask ? '<div class="pf-ins__acts">' +
@@ -753,9 +783,9 @@
   function footHTML() {
     return '<section class="pf-sec pf-foot">' +
       '<button class="pf-navrow" data-pf="accounts"><span class="material-symbols-rounded">account_balance</span><span><b>Cuentas conectadas</b><small>' + D.accts.length + ' cuentas · ' + Object.keys(BANKS).filter(connected).map(function (k) { return BANKS[k].name; }).join(', ') + '</small></span><span class="material-symbols-rounded">chevron_right</span></button>' +
-      '<button class="pf-navrow" data-pf="health"><span class="material-symbols-rounded">favorite</span><span><b>Salud financiera</b><small>Qué la mueve y cómo mejorarla</small></span><span class="material-symbols-rounded">chevron_right</span></button>' +
-      '<button class="pf-navrow" data-pf="ask"><span class="pf-navrow__av">' + C().face() + '</span><span><b>Pregúntale a ' + C().name + '</b><small>Cualquier duda sobre tus últimos 3 meses</small></span><span class="material-symbols-rounded">chevron_right</span></button>' +
-      '<p class="pf-note">Los resúmenes se preparan al cierre de cada mes. El mes en curso se calcula solo cuando lo pides, para que la app cargue rápido.</p></section>';
+      '<button class="pf-navrow" data-pf="health"><span class="material-symbols-rounded">favorite</span><span><b>Salud financiera</b><small>Cómo se calcula y cómo subirla</small></span><span class="material-symbols-rounded">chevron_right</span></button>' +
+      '<button class="pf-navrow" data-pf="ask"><span class="pf-navrow__av">' + C().face() + '</span><span><b>Pregúntale a ' + C().name + '</b><small>Lo que quieras saber de tus últimos 3 meses</small></span><span class="material-symbols-rounded">chevron_right</span></button>' +
+      '<p class="pf-note">Tu resumen se arma al cierre de cada mes. El del mes en curso lo calculamos solo cuando lo pides, así la app carga más rápido.</p></section>';
   }
   function paintPF() {
     if (!pf) return;
@@ -767,13 +797,13 @@
     if (v.report) {
       var r = REPORTS[v.key];
       html += heroHTML(r.score, 'Salud financiera ' + r.score + ' · ' + level(r.score).n);
-      html += totalHTML('Gastaste en ' + r.name, money(r.spend), 'Guardaste ' + money(r.save));
+      html += totalHTML('Gastaste en ' + r.name, money(r.spend), 'Ahorraste ' + money(r.save));
       html += insHTML(r.ins, false);
-      html += '<section class="pf-sec"><p class="pf-note pf-note--box">De ' + r.name + ' solo guardamos este resumen. El detalle de movimientos está disponible desde agosto.</p></section>';
+      html += '<section class="pf-sec"><p class="pf-note pf-note--box">De ' + r.name + ' solo tenemos este resumen. El detalle de cada movimiento lo tienes desde agosto.</p></section>';
     } else if (v.current) {
       html += heroHTML(D.score, 'Salud financiera hoy ' + D.score + ' · ' + level(D.score).n);
       if (!onDemand) {
-        html += '<div class="pf-empty"><p>Estamos preparando tu resumen de octubre. Llega a inicios de noviembre.</p>' +
+        html += '<div class="pf-empty"><p>Tu resumen de octubre va a estar listo a inicios de noviembre.</p>' +
           '<button class="pf-pill" data-pf="ondemand">Ver cómo va octubre</button></div>';
       } else if (onDemand === 'loading') {
         html += '<div class="pf-empty"><span class="pf-spinner"></span><p>Revisando tus movimientos de octubre…</p></div>';
@@ -781,10 +811,10 @@
     } else {
       var mi = v.mi, b = D.by[mi], sc = monthScore(mi);
       html += heroHTML(sc, 'Salud financiera ' + sc + ' · ' + level(sc).n);
-      html += totalHTML('Gastaste en ' + MONTHS[mi].name, money(b._spend), 'Guardaste ' + money(b._save) + ' · Salud financiera ' + sc);
+      html += totalHTML('Gastaste en ' + MONTHS[mi].name, money(b._spend), 'Ahorraste ' + money(b._save) + ' · Salud financiera ' + sc);
       html += insHTML(monthInsights(mi), true);
       var tc = catTotals(mi).slice(0, 3);
-      html += '<section class="pf-sec"><h2>Hacia dónde fue</h2><div class="pf-top3">' + tc.map(function (c) {
+      html += '<section class="pf-sec"><h2>En qué gastaste</h2><div class="pf-top3">' + tc.map(function (c) {
         return '<button class="pf-top3__row" data-pf="cat:' + c.k + ':' + mi + '"><span>' + CATS[c.k].name + '</span><b>' + money(c.v) + '</b><u><i style="width:' + Math.round(c.v / tc[0].v * 100) + '%"></i></u></button>';
       }).join('') + '</div><button class="pf-link pf-link--block" data-pf="breakdown:' + mi + '">Ver todas las categorías</button></section>';
     }
@@ -806,11 +836,11 @@
       .sort(function (a, b) { return o[b] / CATS[b].budget - o[a] / CATS[a].budget; })[0];
     var next = [];
     ['servicios', 'subs'].forEach(function (k) { CATS[k].fixed.forEach(function (p, i) { var d = 3 + i * 4; if (d > day && d <= day + 7) next.push({ who: p[0], amt: p[1], d: d }); }); });
-    return totalHTML('Llevas gastado en octubre', money(o._spend), 'En ' + day + ' días') +
+    return totalHTML('Llevas gastado en octubre', money(o._spend), 'En los primeros ' + day + ' días') +
       '<section class="pf-sec"><div class="pf-ins-list">' +
-        '<article class="pf-ins pf-ins--info"><span class="pf-ins__ic material-symbols-rounded">speed</span><div class="pf-ins__body"><h3>A este ritmo cerrarías en ' + money(proj) + '</h3><p>' + (proj > prev ? money(proj - prev) + ' más' : money(prev - proj) + ' menos') + ' que septiembre.</p></div></article>' +
-        (hot ? '<article class="pf-ins pf-ins--warn"><span class="pf-ins__ic material-symbols-rounded">pie_chart</span><div class="pf-ins__body"><h3>Ya usaste el ' + pct(o[hot] / CATS[hot].budget) + ' de tu tope de ' + CATS[hot].name.toLowerCase() + '</h3><p>Y apenas va el ' + pct(day / 31) + ' del mes.</p></div></article>' : '') +
-        (next.length ? '<article class="pf-ins pf-ins--info"><span class="pf-ins__ic material-symbols-rounded">event</span><div class="pf-ins__body"><h3>Esta semana se cobran ' + money(next.reduce(function (s, n) { return s + n.amt; }, 0)) + '</h3><p>' + next.map(function (n) { return n.who + ' (' + n.d + ' oct)'; }).join(', ') + '.</p></div></article>' : '') +
+        '<article class="pf-ins pf-ins--info"><span class="pf-ins__ic material-symbols-rounded">speed</span><div class="pf-ins__body"><h3>Si sigues así, cerrarías el mes en ' + money(proj) + '</h3><p>Eso es ' + (proj > prev ? money(proj - prev) + ' más' : money(prev - proj) + ' menos') + ' que en septiembre.</p></div></article>' +
+        (hot ? '<article class="pf-ins pf-ins--warn"><span class="pf-ins__ic material-symbols-rounded">pie_chart</span><div class="pf-ins__body"><h3>Ya usaste el ' + pct(o[hot] / CATS[hot].budget) + ' de tu presupuesto de ' + CATS[hot].name.toLowerCase() + '</h3><p>Y apenas vamos por el ' + pct(day / 31) + ' del mes.</p></div></article>' : '') +
+        (next.length ? '<article class="pf-ins pf-ins--info"><span class="pf-ins__ic material-symbols-rounded">event</span><div class="pf-ins__body"><h3>Esta semana te cobran ' + money(next.reduce(function (s, n) { return s + n.amt; }, 0)) + '</h3><p>' + next.map(function (n) { return n.who + ' (' + n.d + ' oct)'; }).join(', ') + '.</p></div></article>' : '') +
       '</div></section>';
   }
 
@@ -836,16 +866,16 @@
   }
   function doAction(id) {
     var before = D.score, m = ST.mods, msg;
-    if (id === 'save50') { m.extraSave += 50; msg = 'Listo. Desde el próximo mes se mueven $ 50 más a tus metas el día 2.'; }
-    if (id === 'payLate') { m.paidLate = true; m.paidLateAmt += 18.35; msg = 'Pagaste el agua. Ya no tienes pagos atrasados.'; }
-    if (id === 'payCard') { m.ccPaid += 200; msg = 'Abonaste $ 200 a tu Visa Andino desde tu cuenta PRINCIPAL.'; }
-    if (id === 'efund100') { m.efund += 100; msg = 'Moviste $ 100 a tu fondo de emergencia.'; }
-    if (id === 'autopay') { m.autopay = true; msg = 'Activaste el pago automático de servicios. Se debitan el día que vencen.'; }
+    if (id === 'save50') { m.extraSave += 50; msg = 'Listo. Desde el próximo mes se van a pasar $ 50 más a tus metas cada día 2.'; }
+    if (id === 'payLate') { m.paidLate = true; m.paidLateAmt += 18.35; msg = 'Listo, pagaste el agua. Ya no tienes nada atrasado.'; }
+    if (id === 'payCard') { m.ccPaid += 200; msg = 'Listo, abonaste $ 200 a tu Visa Andino desde tu cuenta PRINCIPAL.'; }
+    if (id === 'efund100') { m.efund += 100; msg = 'Listo, pasaste $ 100 a tu fondo de emergencia.'; }
+    if (id === 'autopay') { m.autopay = true; msg = 'Listo, activaste el pago automático. Tus servicios se pagan solos el día que vencen.'; }
     persist(); build();
     fx(D.score > before ? 'success' : 'select');
     paintPF(); paintEntries();
     if (D.score > before) setTimeout(function () { gest('happy'); }, 500);
-    toast(msg + (D.score > before ? ' Tu salud subió a ' + D.score + '.' : ''));
+    toast(msg + (D.score > before ? ' Tu salud financiera subió a ' + D.score + '.' : ''));
   }
   var toastT;
   function toast(t) {
@@ -859,13 +889,13 @@
   function catSheet(k, mi) {
     var list = sortedTx(function (t) { return t.cat === k && t.mi === mi; }), by = {};
     list.forEach(function (t) { by[t.who] = (by[t.who] || 0) + t.amt; });
-    showSheet('<h3>' + CATS[k].name + '</h3><p>' + money(D.by[mi][k]) + ' en ' + MONTHS[mi].name + '. Sueles gastar ' + money(HAB[k] || 0) + ' al mes.</p>' +
+    showSheet('<h3>' + CATS[k].name + '</h3><p>' + money(D.by[mi][k]) + ' en ' + MONTHS[mi].name + '. Normalmente gastas unos ' + money(HAB[k] || 0) + ' al mes.</p>' +
       bars(Object.keys(by).map(function (w) { return { label: w, v: by[w] }; }).sort(function (a, b) { return b.v - a.v; })) +
       '<p class="as-sheet__label">Movimientos</p><div class="pf-sheet-list">' + list.map(txRow).join('') + '</div>');
   }
   function breakdownSheet(mi) {
     var rows = catTotals(mi), total = D.by[mi]._spend;
-    showSheet('<h3>Hacia dónde fue en ' + MONTHS[mi].name + '</h3><p>Toca una categoría para ver sus movimientos.</p>' +
+    showSheet('<h3>En qué gastaste en ' + MONTHS[mi].name + '</h3><p>Toca una categoría para ver sus movimientos.</p>' +
       '<div class="pf-donut-wrap">' + donut(rows, total) + '<span><small>Gastaste</small><b>' + money(total) + '</b></span></div>' +
       '<div class="pf-legend">' + rows.map(function (r, i) {
         return '<button class="pf-legend__row" data-sheet="cat:' + r.k + ':' + mi + '"><i style="background:' + NEUTRAL[Math.min(i, 4)] + '"></i><span>' + CATS[r.k].name + '</span><b>' + money(r.v) + '</b><small>' + pct(r.v / total) + '</small></button>';
@@ -875,20 +905,20 @@
     var p = det.split(':');
     if (p[0] === 'cat') return catSheet(p[1], +p[2]);
     if (p[0] === 'late') {
-      return showSheet('<h3>Agua · ' + MONTHS[+p[1]].name + '</h3><p>Cuando un servicio se paga tarde, la empresa suma un recargo y puede quedar en tu historial.</p>' +
-        '<div class="as-stats">' + stat('Vencía', '7 sep') + stat('Se pagó', '12 sep') + stat('Monto', money(18.35)) + stat('Recargo', money(1.5)) + '</div>' +
-        (ST.mods.autopay ? '<p class="as-note" style="margin-top:16px">Pago automático activo.</p>' : '<button class="pf-cta" data-sheet="act:autopay">Activar pago automático</button>'));
+      return showSheet('<h3>Agua · ' + MONTHS[+p[1]].name + '</h3><p>Cuando pagas un servicio tarde, te cobran un recargo y puede quedar en tu historial.</p>' +
+        '<div class="as-stats">' + stat('Vencía', '7 sep') + stat('Lo pagaste', '12 sep') + stat('Monto', money(18.35)) + stat('Recargo', money(1.5)) + '</div>' +
+        (ST.mods.autopay ? '<p class="as-note" style="margin-top:16px">Ya tienes el pago automático activo.</p>' : '<button class="pf-cta" data-sheet="act:autopay">Activar pago automático</button>'));
     }
     if (p[0] === 'card') {
       var mi = +p[1], int = cardInterest(mi), owed = ACCTS[2].base * D.sc.debt;
-      return showSheet('<h3>Visa Andino · ' + MONTHS[mi].name + '</h3><p>Pagar solo el mínimo deja el resto generando intereses al mes siguiente.</p>' +
+      return showSheet('<h3>Visa Andino · ' + MONTHS[mi].name + '</h3><p>Si pagas solo el mínimo, lo que queda te genera intereses el mes siguiente.</p>' +
         '<div class="as-stats">' + stat('Saldo al corte', money(owed)) + stat('Pago mínimo', money(Math.max(25, owed * .05))) + stat('Pagaste', money(Math.max(25, owed * .05))) + stat('Intereses', money(int)) + '</div>' +
         '<button class="pf-cta" data-sheet="act:payCard">Abonar $ 200 ahora</button>');
     }
   }
   function healthSheet() {
     var lv = level(D.score);
-    showSheet('<h3>Salud financiera ' + D.score + '/100</h3><p>' + lv.n + '. ' + C().name + ' no cambia; cambia el lugar donde vive según estos cinco hábitos.</p><div class="pf-health">' +
+    showSheet('<h3>Salud financiera ' + D.score + '/100</h3><p>' + lv.n + '. Se calcula con estos cinco hábitos; mientras mejor te va, más crece el bosque de ' + C().name + '.</p><div class="pf-health">' +
       Object.keys(D.f).map(function (k) {
         var f = D.f[k];
         return '<div class="pf-pillar"><div class="pf-pillar__top"><span class="as-row__icon material-symbols-rounded">' + f.icon + '</span><span class="pf-row__main"><b>' + f.label + '</b><small' + (f.ok ? '' : ' class="is-warn"') + '>' + f.val + '</small></span>' +
@@ -897,7 +927,7 @@
       }).join('') + '</div>');
   }
   function accountsSheet() {
-    showSheet('<h3>Cuentas conectadas</h3><p>Tienes ' + money(D.assets) + (D.debt ? ' y debes ' + money(D.debt) : '') + '.</p><div class="pf-card pf-card--flat">' +
+    showSheet('<h3>Cuentas conectadas</h3><p>En total tienes ' + money(D.assets) + (D.debt ? ' y debes ' + money(D.debt) : '') + '.</p><div class="pf-card pf-card--flat">' +
       D.accts.map(function (a) {
         return '<div class="pf-row">' + bankAv(a.bank) + '<span class="pf-row__main"><b>' + a.name + '</b><small>' + BANKS[a.bank].name + (a.mask ? ' ·••' + a.mask : '') + '</small></span>' +
           '<span class="pf-row__val">' + (a.type === 'credito' ? '<b>-' + money(a.owed) + '</b><small>Cupo ' + money(a.limit) + '</small>' : '<b>' + money(a.bal) + '</b>') + '</span></div>';
@@ -914,7 +944,7 @@
   }
   function connectSheet() {
     var avail = Object.keys(BANKS).filter(function (k) { return !BANKS[k].own; });
-    showSheet('<h3>Conectar una cuenta</h3><p>Suma tus otros bancos para ver todo tu dinero en un solo lugar. Solo leemos saldos y movimientos; no podemos mover tu dinero.</p><div class="as-rows">' +
+    showSheet('<h3>Conectar una cuenta</h3><p>Suma tus otros bancos y mira toda tu plata en un solo lugar. Solo vemos saldos y movimientos; no podemos mover tu dinero.</p><div class="as-rows">' +
       avail.map(function (k) {
         var on = ST.linked.indexOf(k) >= 0;
         return '<button class="as-row as-row--btn" data-sheet="' + (on ? 'unlink:' : 'link:') + k + '">' + bankAv(k) + '<span class="as-row__main"><b>' + BANKS[k].name + '</b><small>' + BANKS[k].what + '</small></span>' +
@@ -932,13 +962,13 @@
       '</div><button class="pf-cta" data-sheet="auth:' + k + '">Continuar en ' + BANKS[k].name + '</button>');
   }
   function finishLink(k) {
-    showSheet('<div class="pf-linking"><span class="pf-spinner"></span><h3>Conectando con ' + BANKS[k].name + '…</h3><p>Trayendo tus movimientos de los últimos 3 meses.</p></div>');
+    showSheet('<div class="pf-linking"><span class="pf-spinner"></span><h3>Conectando con ' + BANKS[k].name + '…</h3><p>Estamos trayendo tus movimientos de los últimos 3 meses.</p></div>');
     setTimeout(function () {
       ST.linked.push(k); persist(); build(); paintPF(); paintEntries();
       var n = D.tx.filter(function (t) { var a = acctOf(t.acct); return a.bank === k; }).length;
       fx('success');
       showSheet('<div class="pf-linking"><span class="pf-done material-symbols-rounded">check</span><h3>' + BANKS[k].name + ' conectado</h3><p>' +
-        (BANKS[k].manual ? 'Registra tus gastos en efectivo y los sumamos al resto.' : 'Sumamos ' + n + ' movimientos a tus finanzas. Tu salud financiera ahora es ' + D.score + '.') + '</p>' +
+        (BANKS[k].manual ? 'Anota tus gastos en efectivo y los sumamos al resto.' : 'Listo, sumamos ' + n + ' movimientos. Tu salud financiera ahora es ' + D.score + '.') + '</p>' +
         '<button class="pf-cta" data-sheet="close">Listo</button></div>');
     }, 1400);
   }

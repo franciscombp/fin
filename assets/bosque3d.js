@@ -143,23 +143,31 @@ function buildDust() {
 
 /* ---------- Oso: pose base y gestos ---------- */
 /* Ejes: el brazo derecho apunta a -X (z+ lo baja, y+ lo lleva al frente);
-   el izquierdo es su espejo. Cada gesto reparte el movimiento entre
-   hombro, codo y muñeca (ninguna articulación pasa de ~70°), como un
-   cuerpo real: así la piel del codo y la pata no se pliegan raro. */
+   el izquierdo es su espejo. x es el giro sobre el propio eje del hueso
+   (pronación/supinación): los huesos del brazo usan orden 'YZX', así el
+   giro se aplica primero y no cambia hacia dónde dobla el codo.
+   En la pose T la palma de la pata mira hacia abajo y un poco al frente
+   (las garras quedan en la punta, del lado de abajo). Por eso:
+   · reposo  → giro + (≈ +26°): la palma mira al muslo
+   · saludar → giro − (≈ −63°): la palma mira al frente
+   · sostener→ giro − grande: la palma mira arriba
+   El giro se reparte entre antebrazo y muñeca (como el radio y el cúbito),
+   así la piel de la muñeca no se retuerce. Ninguna articulación pasa de ~70°. */
 function mirror(v) { return [v[0], -v[1], -v[2]]; }
-const REST_R = { upperarm: [0, 6, 70], forearm: [0, 16, 6], hand: [0, 8, 4], shoulder: [0, 0, 4] };
+const REST_R = { upperarm: [0, 6, 70], forearm: [14, 16, 6], hand: [12, 8, 4], shoulder: [0, 0, 4] };
 const REST = {};
 Object.keys(REST_R).forEach(k => { REST[k + '_R'] = REST_R[k]; REST[k + '_L'] = mirror(REST_R[k]); });
 const POSES = {
   // brazo derecho (el izquierdo se refleja si el gesto lo pide)
-  wave:  t => ({ upperarm_R: [0, 22, -30], forearm_R: [0, 12, -52 + Math.sin(t * 7) * 6], hand_R: [0, 0, -8 + Math.sin(t * 9) * 20], head: [0, -6, 6] }),
+  wave:  t => ({ upperarm_R: [0, 22, -30], forearm_R: [-34, 12, -52 + Math.sin(t * 7) * 8], hand_R: [-29, 0, -6 + Math.sin(t * 9) * 14], head: [0, -6, 6] }),
   nod:   t => ({ head: [12 + Math.sin(t * 7) * 9, 0, 0] }),
-  talk:  t => ({ upperarm_R: [0, 38, 50], forearm_R: [0, 34, -18 + Math.sin(t * 4) * 10], hand_R: [0, 6, -12 + Math.sin(t * 5) * 8],
-                 upperarm_L: mirror([0, 20, 60]), forearm_L: mirror([0, 28, 8]), head: [Math.sin(t * 5) * 3, Math.sin(t * 1.7) * 6, Math.sin(t * 2.3) * 3] }),
-  think: t => ({ upperarm_R: [0, 52, 46], forearm_R: [0, 42, -64], hand_R: [0, 10, -22], head: [8, -7, -8] }),
-  hold:  t => ({ upperarm_R: [0, 46, 50], forearm_R: [0, 34, -36], hand_R: [0, 4, -18], head: [14, -12, 0] }),
-  happy: t => ({ upperarm_R: [0, 14, 18 - Math.sin(t * 8) * 6], forearm_R: [0, 10, -28], hand_R: [0, 0, -10],
-                 upperarm_L: mirror([0, 14, 18 - Math.sin(t * 8) * 6]), forearm_L: mirror([0, 10, -28]), hand_L: mirror([0, 0, -10]),
+  talk:  t => ({ upperarm_R: [0, 38, 50], forearm_R: [-48, 34, -18 + Math.sin(t * 4) * 10], hand_R: [-36, 6, -10 + Math.sin(t * 5) * 6],
+                 upperarm_L: mirror([0, 20, 60]), forearm_L: mirror([10, 28, 8]), hand_L: mirror([10, 6, 4]),
+                 head: [Math.sin(t * 5) * 3, Math.sin(t * 1.7) * 6, Math.sin(t * 2.3) * 3] }),
+  think: t => ({ upperarm_R: [0, 52, 46], forearm_R: [-30, 42, -64], hand_R: [-24, 10, -18], head: [8, -7, -8] }),
+  hold:  t => ({ upperarm_R: [0, 46, 50], forearm_R: [-62, 34, -36], hand_R: [-48, 4, -14], head: [14, -12, 0] }),
+  happy: t => ({ upperarm_R: [0, 14, 18 - Math.sin(t * 8) * 6], forearm_R: [-30, 10, -28], hand_R: [-24, 0, -10],
+                 upperarm_L: mirror([0, 14, 18 - Math.sin(t * 8) * 6]), forearm_L: mirror([-30, 10, -28]), hand_L: mirror([-24, 0, -10]),
                  head: [-6, 0, Math.sin(t * 6) * 7] })
 };
 function target(name, t) {
@@ -180,10 +188,11 @@ function holdObject(kind) {
   if (!kind || !bones.hand_R) return;
   if (kind === 'coin') {
     held = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, .014, 28), new THREE.MeshStandardMaterial({ color: '#ffd200', metalness: .35, roughness: .45 }));
-    held.rotation.x = Math.PI / 2; held.position.set(-.06, .03, .06); // delante de la pata (la mano derecha apunta a -X)
+    // sobre la palma: en reposo la palma mira a (0, -0.89, 0.45) en el espacio del hueso
+    held.rotation.x = -.46; held.position.set(-.03, -.052, .026);
   } else if (kind === 'leaf') {
     held = new THREE.Mesh(new THREE.ConeGeometry(.035, .1, 4), new THREE.MeshLambertMaterial({ color: palette().pine[0], flatShading: true }));
-    held.position.set(-.06, .05, .05); held.rotation.z = .6;
+    held.position.set(-.03, -.06, .03); held.rotation.set(-.46 + Math.PI, 0, -.4); // el tallo sale de la palma
   }
   held && bones.hand_R.add(held);
 }
@@ -260,7 +269,7 @@ function init() {
   clock = new THREE.Clock();
   new GLTFLoader().load(new URL('./oso/oso.glb', import.meta.url).href, g => {
     bear = g.scene;
-    bear.traverse(o => { if (o.isBone) bones[o.name] = o; if (o.isMesh) { o.frustumCulled = false; } });
+    bear.traverse(o => { if (o.isBone) { bones[o.name] = o; if (/^(upperarm|forearm|hand)_/.test(o.name)) o.rotation.order = 'YZX'; } if (o.isMesh) { o.frustumCulled = false; } });
     bear.position.y = .45; // pies sobre el suelo (el modelo va de -0.45 a 0.45)
     bear.scale.setScalar(1);
     scene.add(bear);
