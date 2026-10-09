@@ -75,7 +75,8 @@
     delivery:  { name: 'Restaurantes y delivery', budget: 160, m: ['PedidosYa', 'Rappi', 'Uber Eats', 'KFC'], n: 6, a: [8, 22] },
     transporte:{ name: 'Transporte', budget: 90, m: ['Uber', 'Cabify', 'Primax'], n: 9, a: [2.5, 9] },
     servicios: { name: 'Servicios básicos', budget: 100, fixed: [['Luz', 24.8], ['Agua', 18.35], ['Internet', 32.5], ['Celular', 20]] },
-    subs:      { name: 'Suscripciones', budget: 60, fixed: [['Netflix', 10.99], ['Spotify', 5.99], ['iCloud', 2.99], ['Gimnasio', 35]] },
+    // las mismas suscripciones que muestra el detalle de la Visa Débito
+    subs:      { name: 'Suscripciones', budget: 95, fixed: [['Uber Eats', 4.99], ['Spotify', 5.99], ['Disney+ Premium', 13.99], ['Netflix', 10.99], ['YouTube Premium', 11.99], ['iCloud+', 2.99], ['Gympass', 39.99]] },
     compras:   { name: 'Compras', budget: 260, m: ['Amazon', 'De Prati', 'Kywi'], n: 2, a: [18, 75] },
     cafe:      { name: 'Cafés y antojos', budget: 45, m: ['Sweet & Coffee', 'Juan Valdez', 'Tienda del barrio'], n: 13, a: [1.8, 4.6], hormiga: true },
     salud:     { name: 'Salud', budget: 40, m: ['Fybeca', 'Pharmacys'], n: 1, a: [12, 38] },
@@ -102,7 +103,8 @@
   var ACCTS = [
     { id: 'pb1', bank: 'pb', name: 'Cuenta PRINCIPAL', mask: '7890', type: 'ahorro', bal: 1906.04 },
     { id: 'pb2', bank: 'pb', name: 'Corriente', mask: '1234', type: 'corriente', bal: 1440.35 },
-    { id: 'and1', bank: 'pb', name: 'Visa Pichibank', mask: '4417', type: 'credito', limit: 2000, base: 420 },
+    { id: 'pb3', bank: 'pb', name: 'Ahorro transaccional', mask: '7980', type: 'ahorro', bal: 100 },
+    { id: 'and1', bank: 'pb', name: 'Mastercard Black', mask: '7643', type: 'credito', limit: 5000, base: 420 },
     { id: 'sie1', bank: 'sierra', name: 'Ahorro programado', mask: '2210', type: 'ahorro', bal: 1350 },
     { id: 'cos1', bank: 'costa', name: 'Cuenta de ahorros', mask: '0921', type: 'ahorro', bal: 640 },
     { id: 'efe1', bank: 'efectivo', name: 'Billetera', mask: '', type: 'efectivo', bal: 60 }
@@ -168,7 +170,7 @@
     var card = accts.filter(function (a) { return a.type === 'credito'; })[0];
     var debt = card ? card.owed : 0, util = card ? debt / card.limit : 0;
     var avgSpend = (by[0]._spend + by[1]._spend) / 2;
-    var cushion = goals[0].have + (connected('sierra') ? ACCTS[3].bal : 0);
+    var cushion = goals[0].have + (connected('sierra') ? acctOf('sie1').bal : 0);
     var months = cushion / avgSpend;
 
     var sep = by[1], overCats = Object.keys(CATS).filter(function (k) { return sep[k] > CATS[k].budget; });
@@ -186,7 +188,7 @@
         act: overCats.length ? { id: 'cat:' + overCats[0], label: T('Ver {cat}', { cat: catLow(overCats[0]) }) } : null },
       deuda: { v: card ? 1 - Math.min(1, util / .6) : 1, label: 'Uso de tarjetas', icon: 'credit_card', ok: util < .3, val: card ? T('{pct} del cupo', { pct: pct(util) }) : T('Sin tarjetas conectadas'),
         tip: !card ? 'Conecta tus tarjetas de otros bancos para verlas aquí.' : util < .3 ? 'Usas menos del 30% de tu cupo, que es lo ideal para tu historial.' : 'Estás usando más del 30% de tu cupo y eso pesa en tu historial. Bajarlo es lo que más te ayuda este mes.',
-        act: card && util >= .3 ? { id: 'payCard', label: 'Abonar $ 200 a Visa Pichibank' } : null },
+        act: card && util >= .3 ? { id: 'payCard', label: 'Abonar $ 200 a Mastercard Black' } : null },
       colchon: { v: Math.min(1, months / 6), label: 'Ahorro para emergencias', icon: 'shield', ok: months >= 3, val: T('Te alcanza para {n} meses', { n: months.toFixed(1).replace('.', ',') }),
         tip: months >= 3 ? 'Si un mes no te entra plata, puedes cubrir más de 3 meses de gastos. Ese es el mínimo recomendado.' : T('Lo recomendable es tener ahorrados por lo menos 3 meses de gastos. Ahora te alcanza para {n}.', { n: months.toFixed(1).replace('.', ',') }),
         act: months >= 6 ? null : { id: 'efund100', label: 'Pasar $ 100 al fondo' } }
@@ -281,6 +283,9 @@
     var s = (src || q).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
     Object.keys(KW).forEach(function (k) { if (s.indexOf(k) >= 0) s += ' ' + KW[k]; });
     var sep = D.by[1], oct = D.by[2], ago = D.by[0];
+    // Preguntas de cada sección (tarjetas, préstamos, inversiones, seguros…)
+    var cx = window.Contexto && Contexto.answer(s);
+    if (cx) return cx;
     if (/^(hola|buenas|buenos|hey|que tal)\b/.test(s)) return { t: T('Hola, ¿qué tal? Cuéntame qué quieres revisar. Te puedo decir en qué se te está yendo la plata, cómo vas con tus metas o en qué te pasaste del presupuesto.'),
       s: ['¿En qué se me va la plata?', '¿Cómo voy con mis metas?', '¿En qué me pasé?'] };
     if (OLD.test(s)) return reports(s);
@@ -291,7 +296,7 @@
     }
     if (/interes/.test(s)) {
       var i1 = cardInterest(0), i2 = cardInterest(1);
-      return { t: (i1 + i2) ? T('Entre agosto y septiembre pagaste {monto} de intereses en tu Visa Pichibank, porque solo pagaste el mínimo. Si pagas el total antes de la fecha de corte, no te cobran intereses.', { monto: money(i1 + i2) })
+      return { t: (i1 + i2) ? T('Entre agosto y septiembre pagaste {monto} de intereses en tu Mastercard Black, porque solo pagaste el mínimo. Si pagas el total antes de la fecha de corte, no te cobran intereses.', { monto: money(i1 + i2) })
         : T('Nada. Estos meses no pagaste intereses en tus tarjetas. ¡Bien ahí!'),
         s: ['¿Cuánto debo en mi tarjeta?', '¿Cuánto más puedo ahorrar?'] };
     }
@@ -303,7 +308,7 @@
         s: ['¿Cuánto debo en mi tarjeta?', '¿Para cuántos meses me alcanza?'] };
     }
     if (/deuda|debo|tarjeta|credito|cupo/.test(s)) {
-      return D.card ? { t: T('Debes <b>{deuda}</b> en tu Visa Pichibank, o sea el {pct} de tu cupo.', { deuda: money(D.debt), pct: pct(D.util) }) + ' ' +
+      return D.card ? { t: T('Debes <b>{deuda}</b> en tu Mastercard Black, o sea el {pct} de tu cupo.', { deuda: money(D.debt), pct: pct(D.util) }) + ' ' +
           (D.util >= .3 ? T('Lo ideal es usar menos del 30%. Con un abono de {monto} llegas.', { monto: money(Math.max(0, D.debt - D.card.limit * .3)) }) : T('Estás por debajo del 30%, que es lo ideal.')),
           s: ['¿Cuánto pago de intereses?', '¿Cuánto más puedo ahorrar?'] }
         : { t: T('No veo ninguna tarjeta de crédito. Si tienes una en otro banco, conéctala desde Mis finanzas y la reviso contigo.'), s: ['¿Cuánto tengo en total?'] };
@@ -320,7 +325,7 @@
         s: ['¿En qué se me va la plata?', 'Mis suscripciones'] };
     }
     if (/suscrip|netflix|spotify|recurrent|fijo/.test(s) && !/servicio/.test(s)) {
-      return { t: T('Pagas <b>{monto} al mes</b> en 4 suscripciones. La más cara es el gimnasio: si fuiste menos de 8 veces en septiembre, cada ida te salió en más de {ida}.', { monto: money(sep.subs), ida: money(35 / 8) }),
+      return { t: T('Pagas <b>{monto} al mes</b> en {n} suscripciones con tu Visa Débito. La más cara es Gympass: si fuiste menos de 8 veces en septiembre, cada ida te salió en más de {ida}.', { monto: money(sep.subs), n: CATS.subs.fixed.length, ida: money(39.99 / 8) }),
         h: bars(CATS.subs.fixed.map(function (p) { return { label: T(p[0]), v: p[1] }; }).sort(function (a, b) { return b.v - a.v; })),
         s: ['Mis gastos hormiga', '¿Cuánto más puedo ahorrar?'] };
     }
@@ -415,7 +420,7 @@
      Una sola fuente para el PFM, la tarjeta de Inicio y el asistente.
      Los meses cerrados se resumen una vez (al cierre) y se guardan; el mes
      en curso sólo se calcula cuando la persona lo pide. */
-  var HAB = { super: 300, delivery: 110, transporte: 55, servicios: 96, subs: 55, compras: 150, cafe: 32, salud: 25, ocio: 55 };
+  var HAB = { super: 300, delivery: 110, transporte: 55, servicios: 96, subs: 91, compras: 150, cafe: 32, salud: 25, ocio: 55 };
   var REPORTS = {
     jun: { name: 'junio', spend: 984.2, save: 84, rate: .07, score: 46, ins: [
       { kind: 'warn', icon: 'event_busy', title: 'Pagaste tarde el internet', sub: 'Lo pagaste 4 días después de la fecha y te cobraron $ 1,50 de recargo.' },
@@ -432,7 +437,7 @@
 
   function cardInterest(mi) {
     if (D.sc.debt < 1 || ST.mods.ccPaid >= 200) return 0;
-    return +(ACCTS[2].base * D.sc.debt * .0135 * (mi === 0 ? .9 : 1)).toFixed(2);
+    return +(acctOf('and1').base * D.sc.debt * .0135 * (mi === 0 ? .9 : 1)).toFixed(2);
   }
   function monthScore(mi) {
     var b = D.by[mi], rate = b._save / b._in;
@@ -448,7 +453,7 @@
     var late = D.tx.filter(function (t) { return t.late && t.mi === mi; })[0];
     if (late) warn.push({ kind: 'warn', icon: 'event_busy', title: T('Pagaste tarde el {servicio}', { servicio: T(late.who).toLowerCase() }), sub: T('Vencía el 7 de {mes} y lo pagaste el 12, así que te cobraron {monto} de recargo.', { mes: T(name), monto: money(1.5) }), det: 'late:' + mi, ask: '¿Qué pasa si pago tarde un servicio?' });
     var int = cardInterest(mi);
-    if (int) warn.push({ kind: 'warn', icon: 'credit_card', title: T('Pagaste solo el mínimo de tu Visa Pichibank'), sub: T('Por eso te cobraron {monto} de intereses en {mes}. Si pagas el total, no pagas intereses.', { monto: money(int), mes: T(name) }), det: 'card:' + mi, ask: '¿Cuánto pago de intereses en mi tarjeta?' });
+    if (int) warn.push({ kind: 'warn', icon: 'credit_card', title: T('Pagaste solo el mínimo de tu Mastercard Black'), sub: T('Por eso te cobraron {monto} de intereses en {mes}. Si pagas el total, no pagas intereses.', { monto: money(int), mes: T(name) }), det: 'card:' + mi, ask: '¿Cuánto pago de intereses en mi tarjeta?' });
     var spikes = Object.keys(HAB).filter(function (k) { return !CATS[k].fixed && b[k] > HAB[k] * 1.25 && b[k] - HAB[k] > 15; })
       .sort(function (x, y) { return (b[y] - HAB[y]) - (b[x] - HAB[x]); });
     if (spikes.length) {
@@ -489,7 +494,16 @@
       openPF();
     }, true);
   }
+  // Inicio muestra la misma deuda de la Mastercard Black que usa Uku
+  function syncHome() {
+    if (!D.card) return;
+    document.querySelectorAll('.product-row[data-action="Mastercard Black"]').forEach(function (r) {
+      var a = r.querySelector('.product-row__amount'); if (a) a.textContent = money(D.debt);
+      var f = r.closest('.card') && r.closest('.card').querySelector('.card__footer-value'); if (f) f.textContent = money(D.debt);
+    });
+  }
   function paintEntries() {
+    syncHome();
     if (window.Destacados) Destacados.repaint();
     document.querySelectorAll('[data-as-open]').forEach(function (b) {
       b.querySelector('.as-entry__pet').innerHTML = C().svg();
@@ -529,6 +543,8 @@
           '<button class="as-tile" data-hub="month"><span class="as-tile__ic material-symbols-rounded">insights</span><span class="as-tile__go material-symbols-rounded">north_east</span>' +
             '<span class="as-tile__t" data-tpl="Tu resumen de {mes}"></span></button>' +
         '</div>' +
+        // Lo que Uku ve en la sección desde donde lo abriste (tarjetas, préstamos…)
+        '<section class="as-hub__sec as-ctx" hidden><div class="as-hub__head"><h2></h2></div><div class="as-ctx__list"></div></section>' +
         '<section class="as-hub__sec"><div class="as-hub__head"><h2>Temas</h2></div><div class="as-topics"></div></section>' +
         '<section class="as-hub__sec"><div class="as-hub__head"><h2>Historial</h2><button class="as-hub__all" data-hub="clear">Borrar</button></div><div class="as-hist"></div></section>' +
       '</div>' +
@@ -660,6 +676,16 @@
     page.querySelector('.as-hub__name').textContent = n ? ', ' + n.textContent.trim().split(' ')[0] : '';
     // Frases completas (no partidas en spans): así cada idioma ordena las palabras a su modo
     page.querySelectorAll('[data-tpl]').forEach(function (e) { e.textContent = e.dataset.tpl.replace('{nombre}', C().name).replace('{mes}', MONTHS[lastClosedMi()].name); });
+    var cx = curCtx && window.Contexto ? Contexto.info(curCtx) : null, sec = page.querySelector('.as-ctx');
+    page.querySelector('.as-hub__sub').textContent = cx ? cx.saludo : '¿En qué te ayudo hoy?';
+    sec.hidden = !(cx && cx.insights.length);
+    if (cx) {
+      sec.querySelector('h2').textContent = cx.titulo;
+      sec.querySelector('.as-ctx__list').innerHTML = cx.insights.map(function (x) {
+        return '<button class="as-ctx__row" data-hist="' + esc(x.q) + '"><span class="as-row__icon material-symbols-rounded">' + x.icon + '</span>' +
+          '<span class="as-row__main"><b>' + esc(x.t) + '</b><small>' + esc(x.s) + '</small></span><span class="material-symbols-rounded">chevron_right</span></button>';
+      }).join('');
+    }
     page.querySelector('.as-topics').innerHTML = TOPICS.map(function (t) {
       return '<button class="as-topic" data-topic="' + t[2] + '"><span class="material-symbols-rounded">' + t[0] + '</span>' + t[1] + '</button>';
     }).join('');
@@ -747,9 +773,14 @@
   }
   function scrollEnd() { requestAnimationFrame(function () { chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' }); }); }
 
-  function open() {
+  var curCtx = null;
+  // open({ ctx: 'tarjetas', ask: '¿…?' }): abre ya en el contexto de la sección
+  function open(o) {
     if (!page) mount();
+    curCtx = o && o.ctx ? o.ctx : (window.Contexto ? Contexto.get() : null);
+    if (page.classList.contains('is-chat')) leaveChat();
     paintAll();
+    if (o && o.ask) setTimeout(function () { ask(o.ask); }, 320);
     page.classList.add('open');
     document.body.style.overflow = 'hidden';
     fx('open');
@@ -946,7 +977,7 @@
     var before = D.score, m = ST.mods, msg;
     if (id === 'save50') { m.extraSave += 50; msg = T('Listo. Desde el próximo mes se van a pasar {monto} más a tus metas cada día 2.', { monto: money(50) }); }
     if (id === 'payLate') { m.paidLate = true; m.paidLateAmt += 18.35; msg = T('Listo, pagaste el agua. Ya no tienes nada atrasado.'); }
-    if (id === 'payCard') { m.ccPaid += 200; msg = T('Listo, abonaste {monto} a tu Visa Pichibank desde tu cuenta PRINCIPAL.', { monto: money(200) }); }
+    if (id === 'payCard') { m.ccPaid += 200; msg = T('Listo, abonaste {monto} a tu Mastercard Black desde tu cuenta PRINCIPAL.', { monto: money(200) }); }
     if (id === 'efund100') { m.efund += 100; msg = T('Listo, pasaste {monto} a tu fondo de emergencia.', { monto: money(100) }); }
     if (id === 'autopay') { m.autopay = true; msg = T('Listo, activaste el pago automático. Tus servicios se pagan solos el día que vencen.'); }
     persist(); build();
@@ -988,8 +1019,8 @@
         (ST.mods.autopay ? '<p class="as-note" style="margin-top:16px">Ya tienes el pago automático activo.</p>' : '<button class="pf-cta" data-sheet="act:autopay">Activar pago automático</button>'));
     }
     if (p[0] === 'card') {
-      var mi = +p[1], int = cardInterest(mi), owed = ACCTS[2].base * D.sc.debt;
-      return showSheet('<h3>Visa Pichibank · ' + T(MONTHS[mi].name) + '</h3><p>Si pagas solo el mínimo, lo que queda te genera intereses el mes siguiente.</p>' +
+      var mi = +p[1], int = cardInterest(mi), owed = acctOf('and1').base * D.sc.debt;
+      return showSheet('<h3>Mastercard Black · ' + T(MONTHS[mi].name) + '</h3><p>Si pagas solo el mínimo, lo que queda te genera intereses el mes siguiente.</p>' +
         '<div class="as-stats">' + stat('Saldo al corte', money(owed)) + stat('Pago mínimo', money(Math.max(25, owed * .05))) + stat('Pagaste', money(Math.max(25, owed * .05))) + stat('Intereses', money(int)) + '</div>' +
         '<button class="pf-cta" data-sheet="act:payCard">Abonar $ 200 ahora</button>');
     }
@@ -1124,5 +1155,6 @@
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
-  window.Asistente = { petSVG: function () { return C().svg(); }, faceIMG: function () { return C().face(); }, name: function () { return C().name; }, open: open, openPF: function () { openPF(); }, ask: function (q) { open(); ask(q); }, data: function () { return D; } };
+  window.Asistente = { petSVG: function () { return C().svg(); }, faceIMG: function () { return C().face(); }, name: function () { return C().name; }, open: open, openPF: function () { openPF(); }, ask: function (q) { open(); ask(q); }, data: function () { return D; },
+    insights: function () { return monthInsights(lastClosedMi()); } };
 })();

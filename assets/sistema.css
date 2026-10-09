@@ -167,3 +167,127 @@
 .list-item__value + .material-symbols-rounded { margin-left: 4px; }
 /* Etiquetas de accesos: una sola frase (traducible) que se parte sola en dos líneas parejas */
 .quick-action__label { text-wrap: balance; max-width: 84px; margin-left: auto; margin-right: auto; }
+
+/* =====================================================================
+   SISTEMA ÚNICO DE COMPONENTES
+   Lo mismo se ve igual en toda la app. Pocos componentes:
+   · Selección (pestañas, meses, chips activos): relleno de tinta.
+   · Acción principal: amarillo de marca, píldora de 52 px.
+     Secundaria: relleno gris. Terciaria: texto en tinta (sin subrayado).
+   · Íconos: siempre en círculo (40 px en filas, 56 px en accesos).
+   · Tarjetas: superficie, radio 20, sin borde ni sombra.
+   · Filas: 64 px mínimo, título 16/22 semibold, detalle 14/20 gris.
+   · Hojas inferiores: una sola forma (radio 28, título 24/30).
+   · Avisos (toast): píldora de tinta abajo, igual en todas partes.
+   El tema Y2K (POC) queda fuera: html:not(.theme-y2k).
+   ===================================================================== */
+:root {
+  --ui-r-card: 20px; --ui-r-sheet: 28px;
+  --ui-row: 64px; --ui-ic: 40px; --ui-ic-lg: 56px;
+  --ui-primary-bg: var(--bp-theme-color-interaction-primary-bg, #ffdd00);
+  --ui-primary-fg: #1f1f1f;
+  --ui-sel-bg: var(--cx-ink); --ui-sel-fg: var(--cx-surface);
+}
+
+/* Selección */
+html:not(.theme-y2k) .tab { height: 40px; padding: 0 16px; border-radius: 99px; border: 0; background: var(--cx-surface); color: var(--cx-ink); font: 600 15px/1 var(--sol-font, Roboto, sans-serif); box-shadow: none; }
+html:not(.theme-y2k) .tab.active { background: var(--ui-sel-bg); color: var(--ui-sel-fg); }
+html:not(.theme-y2k) .tab:hover:not(.active) { background: var(--cx-surface); }
+.pf-months button[aria-selected="true"], .as-chip[aria-pressed="true"], .as-radio { --sel: 1; }
+.pf-months button[aria-selected="true"], .pf-chips .as-chip[aria-pressed="true"] { background: var(--ui-sel-bg) !important; color: var(--ui-sel-fg) !important; border-color: transparent !important; }
+
+/* Enlaces y acciones terciarias: tinta, semibold, sin subrayado */
+html:not(.theme-y2k) .section__link, .cta-dashed__link, .debit-card-disabled__link, .sx-cancel { color: var(--cx-ink) !important; text-decoration: none !important; font: 600 15px/20px var(--sol-font, Roboto, sans-serif) !important; }
+html:not(.theme-y2k) .section__title h2 { font: var(--cx-headline); letter-spacing: -.2px; color: var(--cx-ink); }
+
+/* Íconos en círculo */
+html:not(.theme-y2k) .avatar-lg, html:not(.theme-y2k) .avatar-cat, .pf-ins__ic, .sx-row__ic, .as-row__icon {
+  width: var(--ui-ic) !important; height: var(--ui-ic) !important; flex: 0 0 var(--ui-ic) !important; border-radius: 50% !important;
+  display: grid !important; place-items: center; background: var(--cx-fill) !important; color: var(--cx-ink) !important;
+}
+html:not(.theme-y2k) .avatar-lg .material-symbols-rounded, html:not(.theme-y2k) .avatar-cat .material-symbols-rounded, .pf-ins__ic, .sx-row__ic.material-symbols-rounded, .as-row__icon { font-size: 22px !important; }
+html:not(.theme-y2k) .quick-action__icon, .sx-app__ic, .dw-short .material-symbols-rounded, .pv-acts .material-symbols-rounded {
+  width: var(--ui-ic-lg) !important; height: var(--ui-ic-lg) !important; border-radius: 50% !important; background: var(--cx-fill) !important; color: var(--cx-ink) !important; box-shadow: none !important;
+}
+html:not(.theme-y2k) .quick-action:hover .quick-action__icon { box-shadow: none !important; }
+html:not(.theme-y2k) .quick-actions { background: var(--cx-surface); border-radius: var(--ui-r-card); }
+
+/* Tarjetas */
+html:not(.theme-y2k) .card, .dw, .sx-card, .pf-ins, .pf-card { border-radius: var(--ui-r-card) !important; border: 0 !important; box-shadow: none !important; }
+html:not(.theme-y2k) .card { background: var(--cx-surface); overflow: hidden; }
+/* Las invitaciones (antes recuadro punteado) son una tarjeta más, con su ícono */
+html:not(.theme-y2k) .cta-dashed, html:not(.theme-y2k) .debit-card-disabled { border: 0 !important; border-radius: var(--ui-r-card) !important; background: var(--cx-surface) !important; padding: 16px !important; gap: 14px; }
+html:not(.theme-y2k) .cta-dashed__text { font: var(--cx-sub) !important; color: var(--cx-muted) !important; display: flex; flex-direction: column; gap: 4px; }
+
+/* Filas */
+html:not(.theme-y2k) .product-row, html:not(.theme-y2k) .list-item, .sub-item { min-height: var(--ui-row); padding: 12px 16px !important; gap: 14px !important; border-bottom: 1px solid var(--cx-line) !important; align-items: center !important; }
+html:not(.theme-y2k) .card > .product-row:last-of-type, html:not(.theme-y2k) .card > .list-item:last-child { border-bottom: 0 !important; }
+html:not(.theme-y2k) .product-row__name, html:not(.theme-y2k) .list-item__title, .sub-item__name, .sx-row__main b, .as-row__main b, .pf-tx__main b { font: 600 16px/22px var(--sol-font, Roboto, sans-serif) !important; color: var(--cx-ink) !important; }
+html:not(.theme-y2k) .product-row__sub, html:not(.theme-y2k) .product-row__masked, html:not(.theme-y2k) .product-row__label, .sub-item__meta, .sx-row__main small, .as-row__main small, .pf-tx__main small { font: 400 14px/20px var(--sol-font, Roboto, sans-serif) !important; color: var(--cx-muted) !important; letter-spacing: 0 !important; }
+.sub-item__price, .pf-tx__amt, .sx-row__r { font: 600 16px/22px var(--sol-font, Roboto, sans-serif) !important; font-variant-numeric: tabular-nums; }
+
+/* Botones */
+html:not(.theme-y2k) .sheet__cta, .pf-cta, html:not(.theme-y2k) .login-button--primary {
+  height: 52px !important; border-radius: 99px !important; border: 0 !important; background: var(--ui-primary-bg) !important; color: var(--ui-primary-fg) !important;
+  font: 600 16px/1 var(--sol-font, Roboto, sans-serif) !important; box-shadow: none !important;
+}
+html:not(.theme-y2k) .login-button:not(.login-button--primary) { height: 52px !important; border-radius: 99px !important; }
+.pf-btn, .dw-cta, .pf-link, .pf-pill:not(.is-sel) { height: 40px !important; padding: 0 16px !important; border-radius: 99px !important; border: 0 !important; background: var(--cx-fill) !important; color: var(--cx-ink) !important; font: 600 14px/1 var(--sol-font, Roboto, sans-serif) !important; text-decoration: none !important; }
+.pf-ins .pf-link { background: var(--cx-surface) !important; }
+.pf-btn { margin-left: 54px; }
+
+/* Hojas inferiores: una sola forma */
+html:not(.theme-y2k) .sheet { border-radius: var(--ui-r-sheet) var(--ui-r-sheet) 0 0 !important; padding: 8px 24px calc(28px + env(safe-area-inset-bottom, 0px)) !important; background: var(--cx-surface); }
+.as-sheet { border-radius: var(--ui-r-sheet) var(--ui-r-sheet) 0 0 !important; background: var(--cx-surface) !important; }
+html:not(.theme-y2k) .sheet__title, .as-sheet h3 { font: 700 24px/30px var(--sol-font, Roboto, sans-serif) !important; letter-spacing: -.4px; margin: 0 0 6px !important; color: var(--cx-ink); }
+html:not(.theme-y2k) .sheet__subtitle, .as-sheet > p { font: var(--cx-sub) !important; color: var(--cx-muted) !important; margin: 0 0 16px !important; }
+html:not(.theme-y2k) .sheet__row { min-height: 52px; border-color: var(--cx-line) !important; font: var(--cx-sub); }
+html:not(.theme-y2k) .sheet-backdrop, .as-sheet-back { background: rgb(0 0 0 / .32) !important; }
+
+/* Avisos */
+html:not(.theme-y2k) .toast, .pf-toast {
+  left: 50% !important; bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important; width: auto !important; max-width: min(440px, calc(100vw - 32px)) !important;
+  min-height: 48px; padding: 12px 20px !important; border-radius: 99px !important; background: var(--cx-ink) !important; color: var(--cx-surface) !important;
+  font: 500 15px/20px var(--sol-font, Roboto, sans-serif) !important; white-space: normal !important; text-align: center; box-shadow: 0 8px 24px rgb(0 0 0 / .16);
+}
+
+/* Barra inferior: el activo en tinta, igual que la selección */
+html:not(.theme-y2k) .nav-item.active, html:not(.theme-y2k) .nav-item[aria-current="page"] { color: var(--cx-ink) !important; }
+
+/* =====================================================================
+   Uku acompaña: botón con su cara sobre la barra inferior y una burbuja
+   con lo más útil de la sección. Tocar abre el asistente en ese contexto.
+   ===================================================================== */
+.uku-dock {
+  position: fixed; z-index: 120; right: 16px; bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  width: 56px; height: 56px; padding: 0; border: 0; border-radius: 50%; background: var(--cx-surface); cursor: pointer;
+  box-shadow: 0 6px 20px rgb(0 0 0 / .14), 0 0 0 1px var(--cx-line);
+  opacity: 0; transform: scale(.6) translateY(12px); pointer-events: none;
+  transition: opacity var(--cx-dur) ease, transform var(--cx-dur) var(--cx-ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.uku-dock.is-on { opacity: 1; transform: none; pointer-events: auto; }
+.uku-dock:active { transform: scale(.94); }
+.uku-dock__av { display: block; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; }
+.uku-dock__av img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+.uku-tip {
+  position: fixed; z-index: 121; right: 16px; bottom: calc(156px + env(safe-area-inset-bottom, 0px)); max-width: min(300px, calc(100vw - 32px));
+  display: flex; flex-direction: column; gap: 2px; padding: 12px 16px; border: 0; border-radius: 20px 20px 6px 20px; text-align: left; cursor: pointer;
+  background: var(--cx-ink); color: var(--cx-surface); box-shadow: 0 10px 28px rgb(0 0 0 / .18);
+  opacity: 0; transform: translateY(8px) scale(.96); transform-origin: bottom right; pointer-events: none;
+  transition: opacity .25s ease, transform .3s var(--cx-ease);
+}
+.uku-tip.is-on { opacity: 1; transform: none; pointer-events: auto; }
+.uku-tip b { font: 600 15px/20px var(--sol-font, Roboto, sans-serif); }
+.uku-tip span { font: 400 14px/19px var(--sol-font, Roboto, sans-serif); opacity: .78; }
+@media (min-width: 960px) { .uku-dock { right: 32px; bottom: 32px; } .uku-tip { right: 32px; bottom: 100px; } }
+
+/* Contexto en el hub de Uku y en el buscador: filas iguales al resto */
+.as-ctx__list { display: flex; flex-direction: column; border-radius: var(--ui-r-card); background: var(--cx-surface); overflow: hidden; }
+.as-ctx__row { display: flex; align-items: center; gap: 14px; min-height: var(--ui-row); padding: 12px 16px; border: 0; border-bottom: 1px solid var(--cx-line); background: transparent; color: var(--cx-ink); text-align: left; cursor: pointer; }
+.as-ctx__row:last-child { border-bottom: 0; }
+.as-ctx__row .as-row__main { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.as-ctx__row > .material-symbols-rounded:last-child { color: var(--cx-muted); }
+.sx-card--uku h3 { display: flex; align-items: center; gap: 8px; }
+.sx-uku { width: 24px; height: 24px; border-radius: 50%; overflow: hidden; background: var(--cx-fill); flex: 0 0 24px; }
+.sx-uku img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }

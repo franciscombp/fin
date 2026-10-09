@@ -17,6 +17,7 @@
   function fx(n) { try { window.Haptics && Haptics.fx && Haptics.fx(n); } catch (e) {} }
   function money(v) { var s = Math.abs(v).toFixed(2).split('.'); return '$ ' + s[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + s[1]; }
   function T(x, v) { return window.I18n ? I18n.t(x, v) : x.replace(/\{(\w+)\}/g, function (m, k) { return v && k in v ? v[k] : m; }); }
+  function cupo() { var d = window.Asistente && Asistente.data && Asistente.data(); return d && d.card ? d.card.limit - d.debt : 0; }
   function sens(v) { return '<span class="dw-s"><span class="dw-s__v">' + v + '</span><span class="dw-s__m" aria-hidden="true">••••</span></span>'; }
 
   /* Catálogo (configuración). eligible = elegibilidad de captación;
@@ -51,7 +52,7 @@
       return { body: '<p class="dw-label">Intereses generados este mes</p><p class="dw-value">' + sens(money(3.12)) + '</p><p class="dw-sub">Cuenta PRINCIPAL ··7890</p>', go: function () { act('Cuenta Ahorro transaccional'); } };
     },
     tarjetas: function () {
-      return { body: '<p class="dw-label">Cupo disponible</p><p class="dw-value">' + sens(money(4985)) + '</p><p class="dw-sub">Mastercard Black · pagas el 5 nov</p>', go: function () { act('Mastercard Black'); } };
+      return { body: '<p class="dw-label">Cupo disponible</p><p class="dw-value">' + sens(money(cupo())) + '</p><p class="dw-sub">Mastercard Black · pagas el 5 nov</p>', go: function () { act('Mastercard Black'); } };
     },
     pagos: function () {
       return { body: '<p class="dw-label">Próximos pagos</p>' +
