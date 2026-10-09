@@ -88,7 +88,7 @@
     return { title: 'Suele hacerse por la noche', icon: 'insights', main: 'Revisar tus gastos de hoy', sub: 'En Mis finanzas', a: ACTIONS[4] };
   }
 
-  var el, input, results, hint, open_ = false;
+  var el, input, results, hint, open_ = false, ctxId = null, curIns = [];
   function mount() {
     el = document.createElement('div');
     el.className = 'sx';
@@ -120,8 +120,9 @@
       if (b.dataset.sx === 'close') return close();
       if (b.dataset.sx === 'mic') return dictate();
       var i = b.dataset.sxI;
-      if (i === 'ask') { var q = input.value.trim(); close(true); setTimeout(function () { window.Asistente && Asistente.ask(q); }, 280); return; }
+      if (i === 'ask') { var q = input.value.trim(); close(true); setTimeout(function () { window.Asistente && Asistente.open({ ctx: ctxId, ask: q }); }, 280); return; }
       if (i === 'pfm') return runAction(ACTIONS[4]);
+      if (i.indexOf('cq:') === 0) { var cq = curIns[+i.slice(3)].q; close(true); setTimeout(function () { window.Asistente && Asistente.open({ ctx: ctxId, ask: cq }); }, 280); return; }
       if (i.indexOf('q:') === 0) { var aq = ASKS[+i.slice(2)].q; close(true); setTimeout(function () { window.Asistente && Asistente.ask(aq); }, 280); return; }
       if (i.indexOf('a:') === 0) return runAction(ACTIONS[+i.slice(2)]);
     });
@@ -161,15 +162,25 @@
   function render() {
     var q = norm(input.value.trim()), html = '';
     if (!q) {
-      var m = moment();
-      var data = window.Asistente && Asistente.data && Asistente.data();
-      html += '<section class="sx-card"><h3>Sugerencias</h3><div class="sx-grid">' +
-        FEATURED.map(function (l) { return tile(ACTIONS.filter(function (a) { return a.label === l; })[0]); }).join('') + '</div></section>';
-      html += '<section class="sx-card"><h3>' + m.title + '</h3>' + row('a:' + ACTIONS.indexOf(m.a), m.icon, m.main, m.sub) +
-        (data ? row('pfm', 'uku', 'Mis finanzas', 'Tu resumen de septiembre ya está listo · Salud financiera ' + data.score) : '') + '</section>';
+      // Contextual: lo que ves depende de la sección desde donde abriste el buscador
+      var cx = window.Contexto ? Contexto.info(ctxId) : null;
+      if (cx && cx.insights.length) {
+        curIns = cx.insights;
+        html += '<section class="sx-card sx-card--uku"><h3><span class="sx-uku">' + (window.Asistente ? Asistente.faceIMG() : '') + '</span>' + esc(cx.titulo) + '</h3>' +
+          cx.insights.map(function (x, i) { return row('cq:' + i, x.icon, esc(x.t), esc(x.s)); }).join('') + '</section>';
+      }
+      var feat = cx ? cx.acciones.concat(FEATURED.filter(function (l) { return cx.acciones.indexOf(l) < 0; })).slice(0, 8) : FEATURED;
+      html += '<section class="sx-card"><h3>Acciones</h3><div class="sx-grid">' +
+        feat.map(function (l) { return ACTIONS.filter(function (a) { return a.label === l; })[0]; }).filter(Boolean).map(tile).join('') + '</div></section>';
+      if (!cx || cx.id === 'inicio') {
+        var m = moment();
+        html += '<section class="sx-card"><h3>' + m.title + '</h3>' + row('a:' + ACTIONS.indexOf(m.a), m.icon, m.main, m.sub) + '</section>';
+      }
     } else {
       var ws = words(input.value);
       var acts = rank(ACTIONS, ws, function (a) { return a.label + ' ' + a.k + ' ' + T(a.label); }); // también en el idioma elegido
+      var cxa = window.Contexto ? Contexto.info(ctxId).acciones : [];
+      acts.sort(function (a, b) { return (cxa.indexOf(b.label) >= 0) - (cxa.indexOf(a.label) >= 0); }); // primero lo de esta sección
       if (acts.length) html += '<section class="sx-card"><h3>Acciones</h3>' + acts.slice(0, 4).map(function (a) { return row('a:' + ACTIONS.indexOf(a), a.icon, a.label); }).join('') + '</section>';
       var asks = rank(ASKS, ws, function (a) { return a.q + ' ' + a.k + ' ' + T(a.q); }).slice(0, 3);
       if (asks.length) html += '<section class="sx-card"><h3>Pregúntale a ' + ukuName() + '</h3>' + asks.map(function (a) { return row('q:' + ASKS.indexOf(a), 'uku', a.q); }).join('') + '</section>';
@@ -225,6 +236,7 @@
     if (!el) mount();
     if (open_) return;
     open_ = true;
+    ctxId = window.Contexto ? Contexto.get() : null; // la sección desde donde se abre
     input.value = '';
     render();
     el.classList.add('open');

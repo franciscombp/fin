@@ -101,7 +101,7 @@
     var s = lang === SRC ? null : cat[(ctx ? ctx + '\u0004' : '') + id];
     return s ? cap(fill(s, vars), s) : fill(id, vars);
   }
-  var FREE = /^(nombre|banco|lugar|servicio|producto|lista|cats)$/;
+  var FREE = /^(nombre|banco|lugar\d?|servicio|producto|lista|cats)$/;
   function lookup(core) {
     if (lang === SRC || !core) return null;
     if (cat[core]) return cat[core];

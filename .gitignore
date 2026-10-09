@@ -1,3 +1,4 @@
 
 # Prelo: se usa en local, no se versiona ni se sirve desde terceros
 assets/fonts/*.woff2
+__pycache__/

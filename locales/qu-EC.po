@@ -33,10 +33,6 @@ msgid "<b>{meta}</b>: llevas {tienes} de {total}."
 msgstr "<b>{meta}</b>: {total}-manta {tienes}-ta charinki."
 
 #: anterior
-msgid "Abonar {monto} a Visa Pichibank"
-msgstr "Visa Pichibank-man {monto}-ta kullkichina"
-
-#: anterior
 msgid "Abono extra"
 msgstr "Yapa kullkichiy"
 
@@ -304,6 +300,10 @@ msgstr ""
 msgid "Cashback"
 msgstr "Kutin chaskiy"
 
+#: anterior
+msgid "Casi todo está en la corriente, que no gana intereses."
+msgstr "Tukuy shinami purik yupaypi kan, chayka mana mirak kullkita charinchu."
+
 #: anterior terminos.txt
 msgid "Celular"
 msgstr "Celular"
@@ -359,10 +359,6 @@ msgstr "rantiykuna"
 #: anterior assets/asistente.js
 msgid "Con lo que tienes ahorrado te alcanza para <b>{n} meses</b> de gastos. Lo recomendable es tener por lo menos 3."
 msgstr "Waakaychishka kullkiwanka <b>{n} killa</b> tukuchinapakmi aypan. Kimsa killapakpash charinami alli."
-
-#: anterior
-msgid "Con un abono de {monto} llegas."
-msgstr ""
 
 #: anterior assets/asistente.js
 msgid "Conectando con {banco}…"
@@ -436,7 +432,7 @@ msgstr "WAAKAYCHIY yupay"
 msgid "Cuenta Corriente"
 msgstr "Purik yupay"
 
-#: anterior terminos.txt
+#: anterior index.html terminos.txt
 msgid "Cuenta de ahorros"
 msgstr "Waakaychiy yupay"
 
@@ -489,8 +485,8 @@ msgid "De {monto} · vas en la cuota {n} de {n2}"
 msgstr "{monto}-manta · {n2}-manta {n} niki cuotapi kanki"
 
 #: anterior assets/asistente.js
-msgid "Debes <b>{deuda}</b> en tu Visa Pichibank, o sea el {pct} de tu cupo."
-msgstr "Visa Pichibank-pi <b>{deuda}</b>-ta manunki, mañay kamakmanta {pct}-mi."
+msgid "Debes <b>{deuda}</b> en tu Mastercard Black, o sea el {pct} de tu cupo."
+msgstr "Mastercard Black-pi <b>{deuda}</b>-ta manunki, mañay kamakmanta {pct}-mi."
 
 #: anterior index.html
 msgid "Depósito a plazo"
@@ -580,6 +576,10 @@ msgstr "Sapan kuyuriymanta willayka agostomantalla tiyan. Ñawpa killakunamantak
 msgid "El número es tu salud financiera de ese mes."
 msgstr "Yupayka chay killapak kullki alli kawsaymi."
 
+#: anterior assets/contexto.js
+msgid "El {pct} está en la corriente, que no gana intereses."
+msgstr "{pct} purik yupaypi kan, chayka mana mirak kullkita charinchu."
+
 #: anterior assets/destacados.js terminos.txt
 msgid "Elegidos por ti."
 msgstr "Kanmi akllarkanki."
@@ -621,10 +621,6 @@ msgid "En los primeros {n} días"
 msgstr "Ñawpa {n} punchakunapi"
 
 #: anterior
-msgid "En Mis finanzas"
-msgstr "Ñuka kullkikunapi"
-
-#: anterior
 msgid "En qué gastaste"
 msgstr "Imapi tukuchirkanki"
 
@@ -652,6 +648,10 @@ msgstr "Septiembrepi agostomanta <b>{monto} yallita</b> tukuchirkanki."
 msgid "En septiembre gastaste <b>{monto}</b>."
 msgstr "Septiembrepi <b>{monto}</b>-ta tukuchirkanki."
 
+#: anterior assets/contexto.js
+msgid "En septiembre gastaste {monto}"
+msgstr "Septiembrepi {monto}-ta tukuchirkanki"
+
 #: anterior assets/asistente.js
 msgid "En septiembre no te pasaste en nada."
 msgstr "Septiembrepi mana imapipash yallirkankichu."
@@ -677,16 +677,24 @@ msgid "En total tienes {total}."
 msgstr "Tukuypi {total}-ta charinki."
 
 #: anterior
-msgid "en tu Visa Pichibank, o sea el {pct} de tu cupo."
+msgid "en tu Mastercard Black, o sea el {pct} de tu cupo."
+msgstr ""
+
+#: anterior assets/contexto.js
+msgid "En un depósito al 7,25% ganarían unos {gana} al año."
+msgstr "7,25%-wan waakaychishpaka watapi {gana} shinata charinkiman."
+
+#: anterior
+msgid "en {n} suscripciones con tu Visa Débito."
 msgstr ""
 
 #: anterior
-msgid "Entre agosto y septiembre pagaste {monto} de intereses en tu Visa Pichibank, porque solo pagaste el mínimo."
+msgid "Entre agosto y septiembre pagaste {monto} de intereses en tu Mastercard Black, porque solo pagaste el mínimo."
 msgstr ""
 
 #: anterior assets/asistente.js
-msgid "Entre agosto y septiembre pagaste {monto} de intereses en tu Visa Pichibank, porque solo pagaste el mínimo. Si pagas el total antes de la fecha de corte, no te cobran intereses."
-msgstr "Agosto, septiembre killakunapi Visa Pichibank-pi {monto} mirak kullkita kullkichirkanki, uchilla kullkichiytalla rurashkamanta. Kuchuy puncha manara chayakpi tukuyta kullkichishpaka, mana mirak kullkita mañankachu."
+msgid "Entre agosto y septiembre pagaste {monto} de intereses en tu Mastercard Black, porque solo pagaste el mínimo. Si pagas el total antes de la fecha de corte, no te cobran intereses."
+msgstr "Agosto, septiembre killakunapi Mastercard Black-pi {monto} mirak kullkita kullkichirkanki, uchilla kullkichiytalla rurashkamanta. Kuchuy puncha manara chayakpi tukuyta kullkichishpaka, mana mirak kullkita mañankachu."
 
 #: anterior
 msgid "Enviar"
@@ -751,10 +759,6 @@ msgstr "Yaykuk kullkimanta 8%-manta yallitami waakaychikunki. ¡Kashna katiy!"
 #: anterior assets/asistente.js
 msgid "Estás por debajo del 30%, que es lo ideal."
 msgstr "30%-manta urapimi kanki, chayka allimi."
-
-#: anterior
-msgid "Estás usando más del {pct} de tu cupo y eso pesa en tu historial. Bajarlo es lo que más te ayuda este mes."
-msgstr "Mañay kamakmanta {pct}-manta yallitami ushakunki, chayka kanpak killkapi llashanmi. Uraykachinami kay killapi ashtawan yanapan."
 
 #: anterior terminos.txt
 msgid "Excelente"
@@ -841,6 +845,10 @@ msgid "Golpe + campanas FM + brillo"
 msgstr ""
 
 #: anterior
+msgid "Gympass y Disney+ Premium son las más caras."
+msgstr ""
+
+#: anterior
 msgid "Habla con Uku"
 msgstr "Uku-wan rimay"
 
@@ -867,6 +875,14 @@ msgstr "Imanalla, ¿imashinalla kanki? Ima rikunata munashkata willay. Kullki ma
 #: anterior index.html
 msgid "Hoy"
 msgstr "Kunan"
+
+#: anterior assets/contexto.js
+msgid "Hoy no te sobra plata al final del mes, así que esa cuota te dejaría corto. Úsalo solo para algo necesario o para pagar una deuda más cara."
+msgstr "Kunanka killa tukuripi mana kullki puchunchu, chay cuotawanka pishiyankimi. Mutsurishkapaklla ushay, ashtawan chaniyuk manuta kullkichinkapakpash."
+
+#: anterior assets/contexto.js
+msgid "Hoy te sobran unos {libre} al mes, así que esa cuota te dejaría corto. Úsalo solo para algo necesario o para pagar una deuda más cara."
+msgstr "Kunanka killapi {libre} shinallami puchun, chay cuotawanka pishiyankimi. Mutsurishkapaklla ushay, ashtawan chaniyuk manuta kullkichinkapakpash."
 
 #: anterior assets/i18n.js index.html
 msgid "Idioma"
@@ -909,7 +925,7 @@ msgid "internet"
 msgstr "internet"
 
 #: anterior
-msgid "Internet ({n} oct), Celular ({n2} oct), iCloud ({n3} oct), Gimnasio ({n4} oct)."
+msgid "Internet ({n} oct), Celular ({n2} oct), Disney+ Premium ({n3} oct), Netflix ({n4} oct)."
 msgstr ""
 
 #: anterior
@@ -964,8 +980,12 @@ msgstr ""
 msgid "junio de 2027"
 msgstr "2027 junio"
 
+#: anterior assets/contexto.js
+msgid "La cuota sería de unos {cuota} al mes. Mira si te alcanza antes de usarlo."
+msgstr "Cuotaka killapi {cuota} shinami kanka. Manara ushashpa aypashkata rikuy."
+
 #: anterior
-msgid "La más cara es el gimnasio: si fuiste menos de {n} veces en septiembre, cada ida te salió en más de {monto}."
+msgid "La más cara es Gympass: si fuiste menos de {n} veces en septiembre, cada ida te salió en más de {monto}."
 msgstr ""
 
 #: anterior index.html
@@ -973,8 +993,8 @@ msgid "La tarjeta de débito se adaptará al movimiento de tu dispositivo para u
 msgstr "Débito tarjetaka kanpak antawan kuyurishka shinami kuyurinka, 3D shina rikurinkapak."
 
 #: anterior assets/asistente.js
-msgid "Listo, abonaste {monto} a tu Visa Pichibank desde tu cuenta PRINCIPAL."
-msgstr "Ñami, HATUN yupaymanta Visa Pichibank-man {monto}-ta kullkichirkanki."
+msgid "Listo, abonaste {monto} a tu Mastercard Black desde tu cuenta PRINCIPAL."
+msgstr "Ñami, HATUN yupaymanta Mastercard Black-man {monto}-ta kullkichirkanki."
 
 #: anterior assets/asistente.js
 msgid "Listo, activaste el pago automático. Tus servicios se pagan solos el día que vencen."
@@ -1000,6 +1020,10 @@ msgstr "Ñami. Shamuk killamanta, 2 punchapi {monto} yallita paktaykunaman chura
 msgid "Llevas gastado en octubre"
 msgstr "Octubrepi tukuchishka"
 
+#: anterior
+msgid "Lo haces casi todos los viernes"
+msgstr "Tukuy viernes shina rurankimi"
+
 #: anterior assets/asistente.js
 msgid "Lo ideal es ahorrar por lo menos el 8% de lo que te entra."
 msgstr "Yaykuk kullkimanta 8%-tapash waakaychinami alli kan."
@@ -1023,6 +1047,10 @@ msgstr "Ashtawan shukyashka: {lista}."
 #: anterior assets/asistente.js
 msgid "Lo que más se lleva es {c1} ({pct}), y después {c2} y {c3}."
 msgstr "Ashtawan apak {c1} ({pct}), kipaka {c2} shinallatak {c3}."
+
+#: anterior assets/contexto.js
+msgid "Lo que más se lleva es {cat}."
+msgstr "Ashtawan apakka {cat}-mi."
 
 #: anterior
 msgid "Lo que quieras saber de tus últimos {n} meses"
@@ -1050,7 +1078,7 @@ msgstr "May"
 
 #: anterior
 msgid "Mayo {n}"
-msgstr ""
+msgstr "Mayo {n}"
 
 #: anterior index.html
 msgid "Mensual"
@@ -1164,6 +1192,10 @@ msgstr "Quito kitilli"
 msgid "Muy bien"
 msgstr "Alli"
 
+#: anterior
+msgid "Muy bien. Se calcula con estos cinco hábitos; mientras mejor te va, más crece el bosque de Uku."
+msgstr ""
+
 #: anterior index.html
 msgid "Más"
 msgstr "Ashtawan"
@@ -1238,7 +1270,7 @@ msgstr "pukllay"
 
 #: anterior assets/asistente.js terminos.txt
 msgid "oct"
-msgstr ""
+msgstr "oct"
 
 #: anterior terminos.txt
 msgid "octubre"
@@ -1333,20 +1365,32 @@ msgid "Pagar transporte"
 msgstr "Antawata kullkichina"
 
 #: anterior assets/asistente.js
-msgid "Pagas <b>{monto} al mes</b> en 4 suscripciones. La más cara es el gimnasio: si fuiste menos de 8 veces en septiembre, cada ida te salió en más de {ida}."
-msgstr "Chusku killa killa kullkichiykunapi <b>killapi {monto}</b>-ta kullkichinki. Ashtawan chaniyukka kallpa wasimi: septiembrepi pusak kutimanta ura rishpaka, sapan rinaka {ida}-manta yallimi karka."
+msgid "Pagas <b>{monto} al mes</b> en {n} suscripciones con tu Visa Débito. La más cara es Gympass: si fuiste menos de 8 veces en septiembre, cada ida te salió en más de {ida}."
+msgstr "Visa Débito-wan {n} killa killa kullkichiykunapi <b>killapi {monto}</b>-ta kullkichinki. Ashtawan chaniyukka Gympass-mi: septiembrepi pusak kutimanta ura rishpaka, sapan rinaka {ida}-manta yallimi karka."
+
+#: anterior assets/contexto.js
+msgid "Pagas <b>{total} al mes</b> en 2 seguros: vida ({vida}) y protección de tarjetas ({prot}). La protección cubre fraude y clonación de tus tarjetas. El de vida se renueva el 1 de enero."
+msgstr "Iskay kamaykunapi <b>killapi {total}</b>-ta kullkichinki: kawsaypak ({vida}), tarjeta kamaypash ({prot}). Tarjeta kamayka shuwaymanta, katichiymantapash kaman. Kawsaypak kamayka enero 1 punchapi mushukyarin."
 
 #: anterior
 msgid "Pagas {monto} al mes, débito automático"
 msgstr "Killapi {monto}-ta kullkichinki, kikinllatak surkurin"
+
+#: anterior assets/contexto.js
+msgid "Pagas {total} al mes en seguros"
+msgstr "Kamaykunapi killapi {total}-ta kullkichinki"
+
+#: anterior assets/contexto.js
+msgid "Pagas {total} al mes en suscripciones"
+msgstr "Killa killa kullkichiykunapi {total}-ta kullkichinki"
 
 #: anterior
 msgid "Pagaste"
 msgstr "Kullkichirkanki"
 
 #: anterior assets/asistente.js
-msgid "Pagaste solo el mínimo de tu Visa Pichibank"
-msgstr "Visa Pichibank-pi uchilla kullkichiytalla rurarkanki"
+msgid "Pagaste solo el mínimo de tu Mastercard Black"
+msgstr "Mastercard Black-pi uchilla kullkichiytalla rurarkanki"
 
 #: anterior assets/asistente.js
 msgid "Pagaste tarde el {servicio}"
@@ -1379,6 +1423,10 @@ msgstr "Kamay kullkichiykuna"
 #: anterior assets/asistente.js
 msgid "Para llegar en {fecha} necesitas poner {falta} al mes, y ahora estás poniendo {mes}."
 msgstr "{fecha}-pi chayankapakka killapi {falta}-ta churanami kan, kunanka {mes}-tami churakunki."
+
+#: anterior terminos.txt
+msgid "Para ti"
+msgstr "Kanpak"
 
 #: anterior index.html
 msgid "Para todas tus compras y pagos por internet."
@@ -1460,7 +1508,7 @@ msgstr "Allpakuna, kamachik kullkipash"
 msgid "Preferencias"
 msgstr "Munaykuna"
 
-#: anterior assets/asistente.js terminos.txt
+#: anterior assets/asistente.js assets/contexto.js terminos.txt
 msgid "Pregúntale a {nombre}"
 msgstr "{nombre}-ta tapuy"
 
@@ -1544,6 +1592,10 @@ msgstr ""
 msgid "Pulso corto + clic táctil"
 msgstr ""
 
+#: anterior assets/contexto.js
+msgid "Págala completa antes del 5 de noviembre y no pagas intereses."
+msgstr "Noviembre 5 manara chayakpi tukuyta kullkichiy, mana mirak kullkita kunkichu."
+
 #: anterior terminos.txt
 msgid "Quitar"
 msgstr "Anchuchina"
@@ -1597,10 +1649,6 @@ msgid "Regular"
 msgstr "Chawpi"
 
 #: anterior
-msgid "Regular. Se calcula con estos cinco hábitos; mientras mejor te va, más crece el bosque de Uku."
-msgstr ""
-
-#: anterior
 msgid "Renovación"
 msgstr "Mushukyachiy"
 
@@ -1635,10 +1683,6 @@ msgstr "Willaykunata rikuchina"
 #: anterior
 msgid "Revisando tus movimientos de octubre…"
 msgstr "Octubre kuyurikunata rikukunchik…"
-
-#: anterior
-msgid "Revisar tus gastos de hoy"
-msgstr "Kunan puncha kullki llukshikta rikuy"
 
 #: anterior index.html
 msgid "Salas VIP aeropuerto"
@@ -1740,6 +1784,10 @@ msgstr "Octubre 9 punchapi mushukyarin"
 msgid "Secciones"
 msgstr "Rakikuna"
 
+#: anterior
+msgid "Seguridad"
+msgstr "Kamay"
+
 #: anterior index.html
 msgid "Seguridad y acceso"
 msgstr "Kamay, yaykuypash"
@@ -1796,6 +1844,14 @@ msgstr "Shuk kullki wasikunata tantachishpaka, tukuyta rikuchishami."
 msgid "Si delivery, cafés y compras vuelven a lo que tenías presupuestado, son {monto} más cada mes."
 msgstr "Apamuy, kafe, rantiykunapash wakichishkaman tikrakpika, killa killa {monto} yallimi."
 
+#: anterior assets/contexto.js
+msgid "Si inviertes {base} al 7,25% anual, ganarías unos <b>{gana}</b> en un año. Hoy tienes {corriente} en tu cuenta corriente sin ganar intereses."
+msgstr "{base}-ta watapi 7,25%-wan mirachishpaka, shuk watapi <b>{gana}</b> shinata charinkiman. Kunanka purik yupaypi {corriente} mana mirak kullkita charishpa tiyan."
+
+#: anterior assets/contexto.js
+msgid "Si la perdiste o te la robaron, bloquéala ahora: en Tarjetas, toca la tarjeta y luego Bloquear. Puedes desbloquearla después si la encuentras."
+msgstr "Chinkachishpa, shuwashka kashpaka kunanlla wichkay: Tarjetakunapi tarjetata llapiy, kipaka Wichkana. Tarishpaka kutin paskay ushankimi."
+
 #: anterior assets/asistente.js
 msgid "Si los bajas a la mitad, te ahorras {monto} al año. Es como {n} meses de supermercado."
 msgstr "Chawpiman uraykachishpaka, watapi {monto}-ta waakaychinki. {n} killa hatun katuna wasi shinami."
@@ -1807,6 +1863,14 @@ msgstr "Kashna katishpaka, killata {monto}-wan tukuchinki"
 #: anterior assets/asistente.js
 msgid "Si sigues poniendo {mes} al mes, llegas en {fecha}."
 msgstr "Killapi {mes}-ta churashpa katishpaka, {fecha}-pi chayanki."
+
+#: anterior assets/contexto.js
+msgid "Si te sobra algo este mes, abónalo a capital."
+msgstr "Kay killapi ima puchukpika, hatun manuman kullkichiy."
+
+#: anterior assets/contexto.js
+msgid "Si ves un cobro raro, repórtalo desde la tarjeta."
+msgstr "Mana riksishka kullki mañayta rikushpaka, tarjetamanta willay."
 
 #: anterior index.html
 msgid "Siguiente story"
@@ -1869,12 +1933,8 @@ msgid "Subir"
 msgstr "Wichiyachina"
 
 #: anterior
-msgid "Suele hacerse por la noche"
-msgstr "Tutapi rurana kan"
-
-#: anterior
-msgid "Sugerencias"
-msgstr "Yuyaykuna"
+msgid "Suele hacerse a esta hora"
+msgstr "Kay pachapi rurana kan"
 
 #: anterior
 msgid "Sumando tus {n} cuentas tienes"
@@ -1952,6 +2012,14 @@ msgstr "{n} purinakunapakmi aypan"
 msgid "Te alcanza para {n} meses"
 msgstr "{n} killapakmi aypan"
 
+#: anterior assets/contexto.js
+msgid "Te alcanzaría, pero piensa si de verdad lo necesitas: son {total} en intereses."
+msgstr "Aypankamanmi, shinapash allí yuyay: {total} mirak kullkimi kan."
+
+#: anterior assets/contexto.js
+msgid "Te deja {interes}. Decide antes si lo renuevas."
+msgstr "{interes}-ta sakin. Ñawpaklla mushukyachinata yuyay."
+
 #: anterior assets/asistente.js
 msgid "Te entró"
 msgstr "Yaykurka"
@@ -1980,6 +2048,10 @@ msgstr "{cats}-pi yallirkanki. Wakichishkaman tikrashpaka, kullki alli kawsay wi
 msgid "Te pasaste en {n}"
 msgstr "{n}-pi yallirkanki"
 
+#: anterior assets/contexto.js
+msgid "Te quedan <b>{saldo}</b> de tu préstamo de consumo. Vas en la cuota {n} de {de}: la próxima es de {cuota} y vence el 15 de octubre. Si pagas a tiempo, terminas en {meses} meses."
+msgstr "Rantinapak mañachiymanta <b>{saldo}</b> puchun. {de}-manta {n} niki cuotapi kanki: shamukka {cuota}-mi, octubre 15 punchapi tukurin. Pachapi kullkichishpaka {meses} killapi tukuchinki."
+
 #: anterior assets/asistente.js
 msgid "Te sobró"
 msgstr "Puchurka"
@@ -1996,9 +2068,33 @@ msgstr "Yuyaykuna"
 msgid "Tienda"
 msgstr "Rantina wasi"
 
+#: anterior assets/contexto.js
+msgid "Tiene {saldo}. Recárgala antes de quedarte sin saldo."
+msgstr "{saldo} charin. Manara tukurikpi huntachiy."
+
+#: anterior assets/contexto.js
+msgid "Tienes <b>{monto}</b> preaprobados. A 36 meses, la cuota sería de unos {cuota}."
+msgstr "<b>{monto}</b> alli nishka mañay charinki. 36 killapi cuotaka {cuota} shinami kanka."
+
 #: anterior index.html
 msgid "Tienes un crédito preaprobado de $ 5.000."
 msgstr "$ 5.000 mañayta ñana alli nishkami charinki."
+
+#: anterior assets/contexto.js
+msgid "Tienes {corriente} en tu cuenta corriente, que no gana intereses. Si pasas {monto} a un Ahorro Flexible, ganarías unos {gana} al año y sigues teniendo la plata disponible."
+msgstr "Purik yupaypi {corriente} charinki, chayka mana mirak kullkita charinchu. {monto}-ta Kuyurik waakaychiyman churashpaka, watapi {gana} shinata charinkiman, kullkipash ushana kanka."
+
+#: anterior assets/contexto.js
+msgid "Tienes {monto} preaprobados"
+msgstr "{monto} alli nishka mañay charinki"
+
+#: anterior assets/contexto.js
+msgid "Tienes {monto} sin ganar intereses"
+msgstr "{monto} mana mirak kullkita charishpa tiyan"
+
+#: anterior assets/contexto.js
+msgid "Tienes {total} entre tus cuentas"
+msgstr "Yupaykunapi {total} charinki"
 
 #: anterior
 msgid "Tipo"
@@ -2028,6 +2124,10 @@ msgstr "Chaskishka kullki"
 msgid "Transferir"
 msgstr "Kachana"
 
+#: anterior
+msgid "Transferir a Ana Torres"
+msgstr "Ana Torres-man kachana"
+
 #: anterior index.html
 msgid "Transferir dinero"
 msgstr "Kullkita kachana"
@@ -2044,6 +2144,14 @@ msgstr "antawakuna"
 msgid "Transporte y peajes"
 msgstr "Antawakuna, peajekunapash"
 
+#: anterior assets/contexto.js
+msgid "Tu depósito a plazo de <b>{monto}</b> vence el 12 de noviembre y te deja {interes}. Si no necesitas la plata, renovarlo mantiene la tasa del 7,25%. Si la necesitas, pásala a tu fondo de emergencia."
+msgstr "<b>{monto}</b> pachakama waakaychiyka noviembre 12 punchapi tukurin, {interes}-ta sakin. Kullki mana mutsurikpika, mushukyachishpa 7,25% mirakta charinki. Mutsurikpika, llaki pachapak kullkiman churay."
+
+#: anterior assets/contexto.js
+msgid "Tu depósito vence el 12 de noviembre"
+msgstr "Waakaychiyka noviembre 12 punchapi tukurin"
+
 #: anterior assets/destacados.js
 msgid "Tu dinero puede crecer <b>{tasa}</b> mientras sigue disponible."
 msgstr "Kanpak kullki <b>{tasa}</b> wiñay ushanmi, ushana kashpapash."
@@ -2056,6 +2164,30 @@ msgstr "Kanpak kullki ushana kashpapash wiñay ushanmi"
 msgid "Tu dinero siempre disponible, creciendo cada día."
 msgstr "Kanpak kullki tukuy pacha ushana, punchanta wiñakun."
 
+#: anterior assets/contexto.js
+msgid "Tu Mastercard Black tiene <b>{deuda}</b> por pagar. La fecha límite es el 5 de noviembre: si pagas el total, no te cobran intereses."
+msgstr "Mastercard Black-pi <b>{deuda}</b> kullkichinara tiyan. Tukuri punchaka noviembre 5-mi: tukuyta kullkichishpaka mana mirak kullkita mañankachu."
+
+#: anterior assets/contexto.js
+msgid "Tu Mastercard Black tiene {deuda} por pagar"
+msgstr "Mastercard Black-pi {deuda} kullkichinara tiyan"
+
+#: anterior terminos.txt
+msgid "Tu mes"
+msgstr "Kanpak killa"
+
+#: anterior assets/contexto.js
+msgid "Tu Movilidad alcanza para unos {n} viajes"
+msgstr "Antawa tarjetaka {n} purinapakmi aypan"
+
+#: anterior terminos.txt
+msgid "Tu préstamo"
+msgstr "Kanpak mañachiy"
+
+#: anterior assets/contexto.js
+msgid "Tu próxima cuota es de {cuota}"
+msgstr "Shamuk cuotaka {cuota}-mi"
+
 #: anterior
 msgid "Tu resumen de octubre va a estar listo a inicios de noviembre."
 msgstr "Octubre killa willayka noviembre kallaripimi wakichishka kanka."
@@ -2063,10 +2195,6 @@ msgstr "Octubre killa willayka noviembre kallaripimi wakichishka kanka."
 #: anterior
 msgid "Tu resumen de septiembre"
 msgstr "Septiembre killa willay"
-
-#: anterior
-msgid "Tu resumen de septiembre ya está listo · Salud financiera {n}"
-msgstr "Septiembre killa willayka ñami wakichishka · kullki alli kawsay {n}"
 
 #: anterior assets/asistente.js
 msgid "Tu resumen de {mes} ya está listo"
@@ -2084,21 +2212,57 @@ msgstr "Kanpak kullki alli kawsayka <b>100-manta {n}</b>-mi."
 msgid "Tu salud financiera subió a {n}."
 msgstr "Kanpak kullki alli kawsayka {n}-kama wichiyarka."
 
+#: anterior assets/contexto.js
+msgid "Tu tarjeta Movilidad tiene <b>{saldo}</b>: te alcanza para unos {n} viajes en Metro ({pasaje} cada uno). Si la usas para ir y volver cada día, te dura unos {dias} días."
+msgstr "Antawa tarjetaka <b>{saldo}</b> charin: Metropi {n} purinapakmi aypan (sapanka {pasaje}). Punchanta rinkapak, tikrankapakpash ushashpaka, {dias} punchakunami aypan."
+
+#: anterior terminos.txt
+msgid "Tus cuentas"
+msgstr "Kanpak yupaykuna"
+
 #: anterior
 msgid "Tus gastos de septiembre"
 msgstr "Septiembrepi tukuchishka"
+
+#: anterior terminos.txt
+msgid "Tus inversiones"
+msgstr "Kanpak mirachiykuna"
+
+#: anterior terminos.txt
+msgid "Tus seguros"
+msgstr "Kanpak kamaykuna"
 
 #: anterior index.html
 msgid "Tus suscripciones y pagos recurrentes"
 msgstr "Killa killa kullkichiykuna"
 
+#: anterior terminos.txt
+msgid "Tus tarjetas"
+msgstr "Kanpak tarjetakuna"
+
+#: anterior assets/contexto.js
+msgid "Tus tarjetas están protegidas contra fraude"
+msgstr "Tarjetakunaka shuwaymanta kamashkami kan"
+
 #: anterior
 msgid "Umbral"
 msgstr "Punku"
 
+#: anterior assets/contexto.js
+msgid "Un abono de {monto} te ahorra {n} cuotas"
+msgstr "{monto}-ta kullkichishpaka {n} cuotata waakaychinki"
+
+#: anterior assets/contexto.js
+msgid "Un abono extra de <b>{monto}</b> a capital te ahorra unas {n} cuotas y los intereses de esos meses. Pide que se aplique a capital y no a la próxima cuota."
+msgstr "Hatun manuman <b>{monto}</b> yallita kullkichishpaka, {n} cuotata, chay killakunapak mirak kullkitapash waakaychinki. Hatun manuman churachun mañay, mana shamuk cuotamanchu."
+
 #: anterior terminos.txt
 msgid "un pago atrasado"
 msgstr "shuk washayashka kullkichiy"
+
+#: anterior
+msgid "Usas menos del {pct} de tu cupo, que es lo ideal para tu historial."
+msgstr "Mañay kamakmanta {pct}-manta urata ushanki, chayka kanpak killkapak allimi."
 
 #: anterior
 msgid "Uso"
@@ -2115,6 +2279,10 @@ msgstr "{lista}-pi allimi kanki."
 #: anterior index.html
 msgid "Vence"
 msgstr "Tukurin"
+
+#: anterior assets/contexto.js
+msgid "Vence el 15 de octubre. Llevas {n} de {de} cuotas."
+msgstr "Octubre 15 punchapi tukurin. {de}-manta {n} cuotata kullkichishkanki."
 
 #: anterior index.html
 msgid "Vence: 12 nov 2026 · 7,25%"
@@ -2212,6 +2380,10 @@ msgstr "Purinakuna"
 msgid "Vibración"
 msgstr "Kuyuchiy"
 
+#: anterior assets/contexto.js
+msgid "Vida y protección de tarjetas."
+msgstr "Kawsaypak, tarjeta kamaypash."
+
 #: anterior index.html
 msgid "Vigente · Cobertura por fraude"
 msgstr "Kawsakmi · shuwaymanta kamay"
@@ -2252,6 +2424,10 @@ msgstr "{cat} kullki wakichiymanta {pct}-ta ñami ushashkanki"
 msgid "Zumbido + shake"
 msgstr ""
 
+#: anterior
+msgid "{a} y {b} son las más caras."
+msgstr ""
+
 #: anterior assets/asistente.js
 msgid "{banco} conectado"
 msgstr "{banco} tantachishka"
@@ -2259,6 +2435,10 @@ msgstr "{banco} tantachishka"
 #: anterior assets/asistente.js
 msgid "{cat} · de {monto}"
 msgstr "{cat} · {monto}-manta"
+
+#: anterior assets/contexto.js
+msgid "{lugar} y {lugar2} son las más caras."
+msgstr "{lugar}, {lugar2}-pash ashtawan chaniyukmi."
 
 #: anterior
 msgid "{monto} al mes"
@@ -2336,9 +2516,17 @@ msgstr "¡Kawsachun Ecuador!"
 msgid "¡Vive la alegría del Mundial con La Tri!"
 msgstr "¡La Tri-wan Mundial kushikuyta kawsay!"
 
+#: anterior terminos.txt
+msgid "¿Cuándo pago mi Mastercard?"
+msgstr "¿Mastercard-ta ima punchatak kullkichina kani?"
+
 #: anterior
 msgid "¿Cuánto debo en mi tarjeta?"
 msgstr "¿Tarjetapi mashnata manuni?"
+
+#: anterior terminos.txt
+msgid "¿Cuánto ganaría si invierto $ 1.000?"
+msgstr "¿$ 1.000-ta mirachishpaka mashnatak charinkiman?"
 
 #: anterior
 msgid "¿Cuánto gasté en compras?"
@@ -2352,6 +2540,14 @@ msgstr "¿Mikuna wasikunapi mashnata tukuchirkani?"
 msgid "¿Cuánto gasté en supermercado?"
 msgstr "¿Hatun katuna wasipi mashnata tukuchirkani?"
 
+#: anterior terminos.txt
+msgid "¿Cuánto gasté en transporte?"
+msgstr "¿Antawakunapi mashnata tukuchirkani?"
+
+#: anterior terminos.txt
+msgid "¿Cuánto me falta del préstamo?"
+msgstr "¿Mañachiymanta mashnatak illan?"
+
 #: anterior
 msgid "¿Cuánto más puedo ahorrar?"
 msgstr "¿Mashnata yallita waakaychi ushani?"
@@ -2360,9 +2556,17 @@ msgstr "¿Mashnata yallita waakaychi ushani?"
 msgid "¿Cuánto pago de intereses?"
 msgstr "¿Mashna mirak kullkita kullkichini?"
 
+#: anterior terminos.txt
+msgid "¿Cuánto pago en seguros?"
+msgstr "¿Kamaykunapi mashnata kullkichini?"
+
 #: anterior
 msgid "¿Cuánto pago en servicios?"
 msgstr "¿Yanapaykunapi mashnata kullkichini?"
+
+#: anterior terminos.txt
+msgid "¿Cuánto pago en suscripciones?"
+msgstr "¿Killa killa kullkichiykunapi mashnata kullkichini?"
 
 #: anterior
 msgid "¿Cuánto tengo en total?"
@@ -2388,17 +2592,61 @@ msgstr "¿Imapitak yallirkani?"
 msgid "¿En qué se me va la plata?"
 msgstr "¿Imapi kullkika llukshin?"
 
-#: anterior
-msgid "¿En qué te ayudo hoy?"
-msgstr "¿Kunan imapitak yanapashayki?"
+#: anterior terminos.txt
+msgid "¿Me conviene el crédito preaprobado?"
+msgstr "¿Alli nishka mañayka allichu kan?"
+
+#: anterior terminos.txt
+msgid "¿Me conviene un Ahorro Flexible?"
+msgstr "¿Kuyurik waakaychiyka allichu kan?"
 
 #: anterior
 msgid "¿Para cuántos meses me alcanza?"
 msgstr "¿Mashna killapaktak aypan?"
 
+#: anterior terminos.txt
+msgid "¿Para cuántos viajes me alcanza la Movilidad?"
+msgstr "¿Antawa tarjetawan mashna purinapaktak aypan?"
+
+#: anterior terminos.txt
+msgid "¿Qué cubren mis seguros?"
+msgstr "¿Kamaykunaka imatatak kaman?"
+
+#: anterior terminos.txt
+msgid "¿Qué hago cuando venza mi depósito?"
+msgstr "¿Waakaychiy tukurikpika imatak rurana kani?"
+
 #: anterior
 msgid "¿Qué pasa si pago tarde un servicio?"
 msgstr "¿Yanapayta washayashpa kullkichikpika imatak tukun?"
+
+#: anterior terminos.txt
+msgid "¿Qué quieres revisar de tu mes?"
+msgstr "¿Kanpak killamanta imata rikunata munanki?"
+
+#: anterior terminos.txt
+msgid "¿Qué quieres saber de tu préstamo?"
+msgstr "¿Mañachiymanta imata yachanata munanki?"
+
+#: anterior terminos.txt
+msgid "¿Qué quieres saber de tus cuentas?"
+msgstr "¿Yupaykunamanta imata yachanata munanki?"
+
+#: anterior terminos.txt
+msgid "¿Qué quieres saber de tus inversiones?"
+msgstr "¿Mirachiykunamanta imata yachanata munanki?"
+
+#: anterior terminos.txt
+msgid "¿Qué quieres saber de tus seguros?"
+msgstr "¿Kamaykunamanta imata yachanata munanki?"
+
+#: anterior terminos.txt
+msgid "¿Qué quieres saber de tus tarjetas?"
+msgstr "¿Tarjetakunamanta imata yachanata munanki?"
+
+#: anterior terminos.txt
+msgid "¿Y si abono $ 500 extra?"
+msgstr "¿$ 500 yallita kullkichikpika?"
 
 #: anterior
 msgid "Éxito"

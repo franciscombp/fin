@@ -83,3 +83,28 @@ Disponibles
 Subir
 Quitar
 Conectar otra cuenta
+Para ti
+Tus cuentas
+Tus tarjetas
+Tu préstamo
+Tus inversiones
+Tus seguros
+Tu mes
+¿Qué quieres saber de tus cuentas?
+¿Qué quieres saber de tus tarjetas?
+¿Qué quieres saber de tu préstamo?
+¿Qué quieres saber de tus inversiones?
+¿Qué quieres saber de tus seguros?
+¿Qué quieres revisar de tu mes?
+¿Me conviene un Ahorro Flexible?
+¿Cuándo pago mi Mastercard?
+¿Para cuántos viajes me alcanza la Movilidad?
+¿Cuánto me falta del préstamo?
+¿Y si abono $ 500 extra?
+¿Me conviene el crédito preaprobado?
+¿Qué hago cuando venza mi depósito?
+¿Cuánto ganaría si invierto $ 1.000?
+¿Qué cubren mis seguros?
+¿Cuánto pago en seguros?
+¿Cuánto gasté en transporte?
+¿Cuánto pago en suscripciones?

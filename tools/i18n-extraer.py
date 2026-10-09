@@ -21,7 +21,7 @@ from html.parser import HTMLParser
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOC = os.path.join(ROOT, 'locales')
 HTML_FILES = ['index.html']
-JS_FILES = ['assets/asistente.js', 'assets/buscador.js', 'assets/destacados.js', 'assets/producto.js', 'assets/i18n.js', 'app.js']
+JS_FILES = ['assets/asistente.js', 'assets/contexto.js', 'assets/buscador.js', 'assets/destacados.js', 'assets/producto.js', 'assets/i18n.js', 'app.js']
 ATTRS = ('aria-label', 'placeholder', 'title', 'alt', 'data-toast')
 LETTERS = re.compile(r'[A-Za-zÁÉÍÓÚáéíóúÑñ]{2}')
 
@@ -111,7 +111,7 @@ def from_textos(path, templates, terms=()):
     d = json.load(open(path, encoding='utf-8'))
     # Igual que en assets/i18n.js: un marcador sólo cubre datos con números o
     # nombres propios; "Ver {cat}" no explica "Ver ofertas" (eso es otra frase).
-    FREE = re.compile(r'^(nombre|banco|lugar|servicio|producto|lista|cats)\d*$')
+    FREE = re.compile(r'^(nombre|banco|lugar\d?|servicio|producto|lista|cats)\d*$')
     TERMS = '|'.join(re.escape(x) for x in sorted(terms, key=len, reverse=True)) or 'x^'
     def body(t):
         return re.sub(r'\\\{(\w+)\\\}', lambda m: '.+?' if FREE.match(m.group(1)) else '(?:(?:-?\\$ )?[^ ]*\\d[^ ]*|' + TERMS + ')', re.escape(t))
