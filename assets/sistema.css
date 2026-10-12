@@ -48,7 +48,7 @@
 .pf-sec { padding-left: 24px; padding-right: 24px; }
 
 /* ---------- Tarjetas: un solo radio, un solo relleno ---------- */
-.dw, .as-tile, .pf-ins { border-radius: 20px; }
+.dw, .as-tile, .pf-ins { border-radius: var(--bp-semantic-radius-md); }
 .dw, .pf-ins { padding: 20px; }
 .as-tile { padding: 16px; }
 .as-tile__t { font: var(--cx-headline); }
@@ -174,7 +174,7 @@
    El tema Y2K (POC) queda fuera: html:not(.theme-y2k).
    ===================================================================== */
 :root {
-  --ui-r-card: 20px; --ui-r-sheet: 28px;
+  --ui-r-card: var(--bp-semantic-radius-md, 12px); --ui-r-sheet: var(--bp-semantic-radius-lg, 16px);
   --ui-row: 64px; --ui-ic: 40px; --ui-ic-lg: var(--bp-semantic-size-interactive-lg, 64px);
   --ui-primary-bg: var(--bp-theme-color-interaction-primary-bg, #ffdd00);
   --ui-primary-fg: var(--bp-theme-color-interaction-primary-fg, #0f265c);
@@ -317,43 +317,93 @@ html:not(.theme-y2k) .tab.active:active { background: var(--bp-interaction-selec
 .pf-round:hover, .as-icon-btn:hover { background: var(--bp-interaction-tertiary-bg--hover) !important; }
 .pf-round:active, .as-icon-btn:active { background: var(--bp-interaction-tertiary-bg--active) !important; }
 
-/* Íconos en círculo */
+/* ---- Escala tipográfica común → tipografía semántica de Figma ----
+   Las variables --cx-* (Destacados, Mis finanzas, Uku, buscador) apuntan a
+   los estilos brand: título de sección title/sm, cuerpo body/md, secundario
+   body/sm, etiqueta body/xs; cifras numeric/md y numeric/xs. */
+:root {
+  --cx-headline: var(--bp-semantic-typography-brand-title-sm-font-weight) var(--bp-semantic-typography-brand-title-sm-font-size)/var(--bp-semantic-typography-brand-title-sm-line-height) var(--sol-font, Roboto, sans-serif);
+  --cx-title: var(--bp-semantic-typography-brand-title-lg-font-weight) var(--bp-semantic-typography-brand-title-lg-font-size)/var(--bp-semantic-typography-brand-title-lg-line-height) var(--sol-font, Roboto, sans-serif);
+  --cx-body: var(--ui-body-md-medium);
+  --cx-sub: var(--ui-body-sm-medium);
+  --cx-caption: var(--bp-semantic-typography-brand-body-xs-semibold-font-weight) var(--bp-semantic-typography-brand-body-xs-semibold-font-size)/var(--bp-semantic-typography-brand-body-xs-semibold-line-height) var(--sol-font, Roboto, sans-serif);
+  --cx-page: var(--bp-semantic-typography-brand-headline-md-font-weight) var(--bp-semantic-typography-brand-headline-md-font-size)/var(--bp-semantic-typography-brand-headline-md-line-height) var(--sol-font, Roboto, sans-serif);
+  --cx-amount: var(--bp-semantic-typography-brand-numeric-md-font-weight) var(--bp-semantic-typography-brand-numeric-md-font-size)/var(--bp-semantic-typography-brand-numeric-md-line-height) var(--sol-font, Roboto, sans-serif);
+  --cx-amount-sm: var(--bp-semantic-typography-brand-numeric-xs-font-weight) var(--bp-semantic-typography-brand-numeric-xs-font-size)/var(--bp-semantic-typography-brand-numeric-xs-line-height) var(--sol-font, Roboto, sans-serif);
+  --cx-line: var(--bp-theme-color-border-divider);
+  --ui-title-md: var(--bp-semantic-typography-brand-title-md-font-weight) var(--bp-semantic-typography-brand-title-md-font-size)/var(--bp-semantic-typography-brand-title-md-line-height) var(--sol-font, Roboto, sans-serif);
+  --ui-body-md-semibold: var(--bp-semantic-typography-brand-body-md-semibold-font-weight) var(--bp-semantic-typography-brand-body-md-semibold-font-size)/var(--bp-semantic-typography-brand-body-md-semibold-line-height) var(--sol-font, Roboto, sans-serif);
+}
+
+/* ---- bp-section: margen lateral grid/margin, título title/sm ---- */
+html:not(.theme-y2k) .section { padding-left: var(--bp-layout-grid-margin) !important; padding-right: var(--bp-layout-grid-margin) !important; }
+html:not(.theme-y2k) .section__title { height: var(--bp-semantic-size-interactive-xs); gap: var(--bp-semantic-spacing-micro-lg); }
+html:not(.theme-y2k) .section__title h2, .pf-sec h2, .as-hub__head h2, .pv-sec h2, .dw-section .section__title h2 {
+  font: var(--cx-headline) !important; letter-spacing: 0 !important; color: var(--bp-theme-color-text-primary) !important;
+}
+.pf-head h1, .as-hub__hi { font: var(--cx-page) !important; letter-spacing: 0 !important; }
+.pf-total__value, .pv-value { font: var(--cx-amount) !important; letter-spacing: 0 !important; }
+.dw-value { font: var(--cx-amount-sm) !important; letter-spacing: 0 !important; }
+
+/* ---- bp-avatar (Display=icon): círculo avatar/bg + avatar/fg ----
+   40 en transacciones y resultados; 48 (md) en productos. */
 html:not(.theme-y2k) .avatar-lg, html:not(.theme-y2k) .avatar-cat, .pf-ins__ic, .sx-row__ic, .as-row__icon {
-  width: var(--ui-ic) !important; height: var(--ui-ic) !important; flex: 0 0 var(--ui-ic) !important; border-radius: 50% !important;
-  display: grid !important; place-items: center; background: var(--cx-fill) !important; color: var(--cx-ink) !important;
+  width: var(--ui-ic) !important; height: var(--ui-ic) !important; flex: 0 0 var(--ui-ic) !important; border-radius: var(--bp-semantic-radius-full) !important;
+  display: grid !important; place-items: center; background: var(--bp-theme-color-avatar-bg) !important; color: var(--bp-theme-color-avatar-fg) !important;
 }
-html:not(.theme-y2k) .avatar-lg .material-symbols-rounded, html:not(.theme-y2k) .avatar-cat .material-symbols-rounded, .pf-ins__ic, .sx-row__ic.material-symbols-rounded, .as-row__icon { font-size: 22px !important; }
-/* Tarjetas */
-html:not(.theme-y2k) .card, .dw, .sx-card, .pf-ins, .pf-card { border-radius: var(--ui-r-card) !important; border: 0 !important; box-shadow: none !important; }
-html:not(.theme-y2k) .card { background: var(--cx-surface); overflow: hidden; }
-/* Las invitaciones (antes recuadro punteado) son una tarjeta más, con su ícono */
-html:not(.theme-y2k) .cta-dashed, html:not(.theme-y2k) .debit-card-disabled { border: 0 !important; border-radius: var(--ui-r-card) !important; background: var(--cx-surface) !important; padding: 16px !important; gap: 14px; }
-html:not(.theme-y2k) .cta-dashed__text { font: var(--cx-sub) !important; color: var(--cx-muted) !important; display: flex; flex-direction: column; gap: 4px; }
+html:not(.theme-y2k) .product-row .avatar-lg, html:not(.theme-y2k) .product-row .avatar-cat {
+  width: var(--bp-semantic-size-avatar-md) !important; height: var(--bp-semantic-size-avatar-md) !important; flex-basis: var(--bp-semantic-size-avatar-md) !important;
+}
+html:not(.theme-y2k) .avatar-lg .material-symbols-rounded, html:not(.theme-y2k) .avatar-cat .material-symbols-rounded, .pf-ins__ic, .sx-row__ic.material-symbols-rounded, .as-row__icon { font-size: var(--bp-semantic-size-icon-md) !important; }
 
-/* Filas */
-html:not(.theme-y2k) .product-row, html:not(.theme-y2k) .list-item, .sub-item { min-height: var(--ui-row); padding: 12px 16px !important; gap: 14px !important; border-bottom: 1px solid var(--cx-line) !important; align-items: center !important; }
+/* ---- bp-widget / tarjetas: radius/md (12), container/default, sin borde ---- */
+html:not(.theme-y2k) .card, .dw, .sx-card, .pf-ins, .pf-card, .as-tile { border-radius: var(--bp-semantic-radius-md) !important; border: 0 !important; box-shadow: none !important; }
+html:not(.theme-y2k) .card { background: var(--bp-theme-color-surface-container-default); overflow: hidden; }
+.dw, .pf-ins { padding: var(--bp-semantic-spacing-micro-lg) 20px var(--bp-semantic-spacing-macro-sm) !important; }
+.dw-label, .pf-ins h3 { font: var(--ui-body-md-semibold) !important; color: var(--bp-theme-color-text-primary) !important; }
+.dw-sub, .dw-empty { font: var(--cx-sub) !important; color: var(--bp-theme-color-text-secondary) !important; }
+/* Invitaciones (antes recuadro punteado) → bp-widget Display=empty */
+html:not(.theme-y2k) .cta-dashed, html:not(.theme-y2k) .debit-card-disabled { border: 0 !important; border-radius: var(--bp-semantic-radius-md) !important; background: var(--bp-theme-color-surface-container-default) !important; padding: var(--bp-semantic-spacing-macro-sm) 20px !important; gap: var(--bp-semantic-spacing-micro-lg); }
+html:not(.theme-y2k) .cta-dashed__text { font: var(--cx-sub) !important; color: var(--bp-theme-color-text-secondary) !important; display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-sm); }
+
+/* ---- bp-product-item / bp-transaction-item / bp-list-item ----
+   p 24/16, divisor border/divider, título body-md/semibold, descripción
+   body-sm/medium secondary, monto body-md/medium (positivo data/positive). */
+html:not(.theme-y2k) .product-row, html:not(.theme-y2k) .list-item, .sub-item {
+  min-height: var(--ui-row); padding: var(--bp-semantic-spacing-macro-md) var(--bp-semantic-spacing-macro-sm) !important;
+  gap: var(--bp-semantic-spacing-micro-lg) !important; align-items: center !important;
+  background: var(--bp-interaction-row-bg); border-bottom: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider) !important;
+}
+html:not(.theme-y2k) .product-row:hover, html:not(.theme-y2k) .list-item:hover, .sub-item:hover { background: var(--bp-interaction-row-bg--hover); }
+html:not(.theme-y2k) .product-row:active, html:not(.theme-y2k) .list-item:active, .sub-item:active { background: var(--bp-interaction-row-bg--active); }
 html:not(.theme-y2k) .card > .product-row:last-of-type, html:not(.theme-y2k) .card > .list-item:last-child { border-bottom: 0 !important; }
-html:not(.theme-y2k) .product-row__name, html:not(.theme-y2k) .list-item__title, .sub-item__name, .sx-row__main b, .as-row__main b, .pf-tx__main b { font: 600 16px/22px var(--sol-font, Roboto, sans-serif) !important; color: var(--cx-ink) !important; }
-html:not(.theme-y2k) .product-row__sub, html:not(.theme-y2k) .product-row__masked, html:not(.theme-y2k) .product-row__label, .sub-item__meta, .sx-row__main small, .as-row__main small, .pf-tx__main small { font: 400 14px/20px var(--sol-font, Roboto, sans-serif) !important; color: var(--cx-muted) !important; letter-spacing: 0 !important; }
-.sub-item__price, .pf-tx__amt, .sx-row__r { font: 600 16px/22px var(--sol-font, Roboto, sans-serif) !important; font-variant-numeric: tabular-nums; }
+html:not(.theme-y2k) .product-row__name, html:not(.theme-y2k) .list-item__title, .sub-item__name, .sx-row__main b, .as-row__main b, .pf-tx__main b { font: var(--ui-body-md-semibold) !important; color: var(--bp-theme-color-text-primary) !important; }
+html:not(.theme-y2k) .product-row__sub, .sub-item__meta, .sx-row__main small, .as-row__main small, .pf-tx__main small { font: var(--ui-body-sm-medium) !important; color: var(--bp-theme-color-text-secondary) !important; letter-spacing: 0 !important; }
+html:not(.theme-y2k) .product-row__masked, html:not(.theme-y2k) .product-row__label { font: var(--ui-body-sm-medium) !important; color: var(--bp-theme-color-text-helper) !important; letter-spacing: 0 !important; }
+.sub-item__price, .pf-tx__amt, .sx-row__r, .product-row__amount, .goal-row__amount { font: var(--ui-body-md-medium) !important; font-variant-numeric: tabular-nums; letter-spacing: 0 !important; }
+html:not(.theme-y2k) .product-row > .material-symbols-rounded:last-child, html:not(.theme-y2k) .list-item > .material-symbols-rounded:last-child, .sub-item > .material-symbols-rounded:last-child { font-size: var(--bp-semantic-size-icon-sm); color: var(--bp-theme-color-icon-secondary); }
 
-/* Hojas inferiores: una sola forma */
-html:not(.theme-y2k) .sheet { border-radius: var(--ui-r-sheet) var(--ui-r-sheet) 0 0 !important; padding: 8px 24px calc(28px + env(safe-area-inset-bottom, 0px)) !important; background: var(--cx-surface); }
-.as-sheet { border-radius: var(--ui-r-sheet) var(--ui-r-sheet) 0 0 !important; background: var(--cx-surface) !important; }
-html:not(.theme-y2k) .sheet__title, .as-sheet h3 { font: 700 24px/30px var(--sol-font, Roboto, sans-serif) !important; letter-spacing: -.4px; margin: 0 0 6px !important; color: var(--cx-ink); }
-html:not(.theme-y2k) .sheet__subtitle, .as-sheet > p { font: var(--cx-sub) !important; color: var(--cx-muted) !important; margin: 0 0 16px !important; }
-html:not(.theme-y2k) .sheet__row { min-height: 52px; border-color: var(--cx-line) !important; font: var(--cx-sub); }
-html:not(.theme-y2k) .sheet-backdrop, .as-sheet-back { background: rgb(0 0 0 / .32) !important; }
+/* ---- bp-bottom-sheet: radius/lg arriba, container/default, uñero 56×4 ---- */
+html:not(.theme-y2k) .sheet { border-radius: var(--bp-semantic-radius-lg) var(--bp-semantic-radius-lg) 0 0 !important; padding: var(--bp-semantic-spacing-micro-md) var(--bp-layout-grid-margin) calc(var(--bp-semantic-spacing-macro-xl) + env(safe-area-inset-bottom, 0px)) !important; background: var(--bp-theme-color-surface-container-default); }
+.as-sheet { border-radius: var(--bp-semantic-radius-lg) var(--bp-semantic-radius-lg) 0 0 !important; background: var(--bp-theme-color-surface-container-default) !important; }
+html:not(.theme-y2k) .sheet__handle, .as-sheet__handle { width: var(--bp-semantic-size-interactive-md) !important; height: 4px !important; border-radius: var(--bp-semantic-radius-full) !important; background: var(--bp-theme-color-border-default) !important; }
+html:not(.theme-y2k) .sheet__title, .as-sheet h3 { font: var(--ui-title-md) !important; letter-spacing: 0; margin: 0 0 var(--bp-semantic-spacing-micro-md) !important; color: var(--bp-theme-color-text-primary); }
+html:not(.theme-y2k) .sheet__subtitle, .as-sheet > p { font: var(--cx-sub) !important; color: var(--bp-theme-color-text-secondary) !important; margin: 0 0 var(--bp-semantic-spacing-macro-sm) !important; }
+html:not(.theme-y2k) .sheet__row { min-height: var(--bp-semantic-size-interactive-md); border-color: var(--bp-theme-color-border-divider) !important; font: var(--cx-body); }
+html:not(.theme-y2k) .sheet-backdrop, .as-sheet-back { background: var(--bp-theme-color-surface-scrim-default) !important; }
 
-/* Avisos */
+/* ---- bp-toast: neutral/bg + blur overlay, radius/sm, body-md/semibold ---- */
 html:not(.theme-y2k) .toast, .pf-toast {
-  left: 50% !important; bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important; width: auto !important; max-width: min(440px, calc(100vw - 32px)) !important;
-  min-height: 48px; padding: 12px 20px !important; border-radius: 99px !important; background: var(--cx-ink) !important; color: var(--cx-surface) !important;
-  font: 500 15px/20px var(--sol-font, Roboto, sans-serif) !important; white-space: normal !important; text-align: center; box-shadow: 0 8px 24px rgb(0 0 0 / .16);
+  left: 50% !important; bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important; width: auto !important;
+  max-width: min(440px, calc(100vw - 2 * var(--bp-layout-grid-margin))) !important;
+  min-height: var(--bp-semantic-size-interactive-md); padding: var(--bp-semantic-spacing-micro-lg) !important;
+  border-radius: var(--bp-semantic-radius-sm) !important; background: var(--bp-theme-color-status-neutral-bg) !important; color: var(--bp-theme-color-text-on-solid) !important;
+  -webkit-backdrop-filter: blur(var(--bp-semantic-effects-blur-overlay)); backdrop-filter: blur(var(--bp-semantic-effects-blur-overlay));
+  font: var(--ui-body-md-semibold) !important; white-space: normal !important; text-align: left; box-shadow: none;
 }
 
-/* Barra inferior: el activo en tinta, igual que la selección */
-html:not(.theme-y2k) .nav-item.active, html:not(.theme-y2k) .nav-item[aria-current="page"] { color: var(--cx-ink) !important; }
+/* ---- bp-nav-bar: el destino activo usa selection/fg ---- */
+html:not(.theme-y2k) .nav-item.active, html:not(.theme-y2k) .nav-item[aria-current="page"] { color: var(--bp-interaction-selection-fg) !important; }
 
 /* =====================================================================
    Uku acompaña: botón con su cara sobre la barra inferior y una burbuja
@@ -374,13 +424,13 @@ html:not(.theme-y2k) .nav-item.active, html:not(.theme-y2k) .nav-item[aria-curre
 .uku-tip {
   position: fixed; z-index: 121; right: 16px; bottom: calc(156px + env(safe-area-inset-bottom, 0px)); max-width: min(300px, calc(100vw - 32px));
   display: flex; flex-direction: column; gap: 2px; padding: 12px 16px; border: 0; border-radius: 20px 20px 6px 20px; text-align: left; cursor: pointer;
-  background: var(--cx-ink); color: var(--cx-surface); box-shadow: 0 10px 28px rgb(0 0 0 / .18);
+  background: var(--bp-guided-tour-background); color: var(--bp-guided-tour-text-primary); box-shadow: 0 var(--bp-semantic-elevation-mid-offset-y) var(--bp-semantic-elevation-mid-blur) var(--bp-semantic-elevation-mid-color);
   opacity: 0; transform: translateY(8px) scale(.96); transform-origin: bottom right; pointer-events: none;
   transition: opacity .25s ease, transform .3s var(--cx-ease);
 }
 .uku-tip.is-on { opacity: 1; transform: none; pointer-events: auto; }
-.uku-tip b { font: 600 15px/20px var(--sol-font, Roboto, sans-serif); }
-.uku-tip span { font: 400 14px/19px var(--sol-font, Roboto, sans-serif); opacity: .78; }
+.uku-tip b { font: var(--ui-body-md-semibold); }
+.uku-tip span { font: var(--ui-body-sm-medium); color: var(--bp-guided-tour-text-secondary); }
 @media (min-width: 960px) { .uku-dock { right: 32px; bottom: 32px; } .uku-tip { right: 32px; bottom: 100px; } }
 
 /* Contexto en el hub de Uku y en el buscador: filas iguales al resto */
