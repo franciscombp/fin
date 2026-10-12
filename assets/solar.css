@@ -32,7 +32,7 @@
    =================================================================== */
 
 /* ---- bp-button (Botones) ----
-   size md 48 · lg 56 (--bp-button-size), padding-x 24, radius sm,
+   size md 56 · lg 64 (--bp-button-size, data-size="lg"), padding-x 24/32, radius sm,
    label-lg/semibold. Variantes: primary · secondary · tertiary · accent ·
    destructive. Máximo 2 por vista. */
 .bp-button {
@@ -69,7 +69,7 @@
 .bp-button--destructive:active { background: var(--bp-theme-color-interaction-destructive-bg-pressed); }
 
 /* ---- bp-action-button (acciones dentro de componentes) ----
-   md: 40 alto, padding 16 / 12 con ícono; sm: 32. label-md/semibold.
+   md: 40 alto, padding 16 / 12 con ícono; sm: 32; lg: 48. label-md/semibold.
    Área táctil real ≥ 48 (se extiende con ::after). */
 .bp-action-button {
   position: relative;
@@ -274,7 +274,7 @@
   background: var(--bp-theme-color-status-neutral-bg-subtle); color: var(--bp-theme-color-status-neutral-text);
 }
 .bp-tag--has-icon { padding-left: var(--bp-semantic-spacing-micro-sm); }
-.bp-tag .ms, .bp-tag .material-symbols-rounded { font-size: var(--bp-semantic-size-icon-xs); }
+.bp-tag .ms, .bp-tag .material-symbols-rounded { font-size: var(--bp-tag-icon-size); }
 .bp-tag--pending { background: var(--bp-theme-color-status-pending-bg-subtle); color: var(--bp-theme-color-status-pending-text); }
 .bp-tag--info    { background: var(--bp-theme-color-status-info-bg-subtle);    color: var(--bp-theme-color-status-info-text); }
 .bp-tag--new     { background: var(--bp-theme-color-status-new-bg-subtle);     color: var(--bp-theme-color-status-new-text); }
@@ -314,6 +314,73 @@
   padding: var(--bp-semantic-spacing-xl) var(--bp-semantic-spacing-micro-md);
   background: var(--bp-theme-color-surface-container-default); border-radius: var(--bp-semantic-radius-md);
 }
+
+/* ---- bp-text-field (Campos de entrada) ----
+   Label body-md/semibold + "(Opcional)" body-sm/medium helper. Campo 56 alto
+   (padding 4 + slot 48), borde thin field/border, radius sm, fondo field/bg.
+   Valor/placeholder body-md/medium; Type=currency/number usa numeric-sm en 64.
+   Estados por CSS: :hover/:focus-within (colección interaction), [aria-invalid]
+   = Feedback error, [readonly] = Display readonly, [disabled]. */
+.bp-text-field { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md); min-width: 0; }
+.bp-text-field, .bp-text-field * { box-sizing: border-box; }
+.bp-text-field__label {
+  display: flex; align-items: baseline; gap: var(--bp-semantic-spacing-micro-sm);
+  color: var(--bp-theme-color-text-primary);
+  font: var(--bp-semantic-typography-brand-body-md-semibold-font-weight) var(--bp-semantic-typography-brand-body-md-semibold-font-size)/var(--bp-semantic-typography-brand-body-md-semibold-line-height) var(--sol-font);
+}
+.bp-text-field__optional {
+  color: var(--bp-theme-color-text-helper);
+  font: var(--bp-semantic-typography-brand-body-sm-medium-font-weight) var(--bp-semantic-typography-brand-body-sm-medium-font-size)/var(--bp-semantic-typography-brand-body-sm-medium-line-height) var(--sol-font);
+}
+.bp-text-field__field {
+  position: relative; display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md);
+  min-height: var(--bp-semantic-size-interactive-md);
+  padding: var(--bp-semantic-spacing-micro-sm);
+  border: var(--bp-semantic-border-thin) solid var(--bp-interaction-field-border);
+  border-radius: var(--bp-semantic-radius-sm);
+  background: var(--bp-interaction-field-bg);
+  transition: border-color .15s var(--sol-ease), box-shadow .15s var(--sol-ease);
+}
+.bp-text-field__field:hover { border-color: var(--bp-interaction-field-border--hover); }
+.bp-text-field__field:focus-within {
+  border-color: var(--bp-interaction-field-border--active);
+  box-shadow: 0 0 0 2px var(--bp-interaction-focus-ring-gap--focus), 0 0 0 4px var(--bp-interaction-focus-ring-color--focus);
+}
+.bp-text-field__leading {
+  display: inline-grid; place-items: center; height: var(--bp-semantic-size-interactive-sm);
+  padding-left: var(--bp-semantic-spacing-micro-md); color: var(--bp-theme-color-icon-primary);
+}
+.bp-text-field__leading .ms, .bp-text-field__leading .material-symbols-rounded { font-size: var(--bp-semantic-size-icon-md); }
+.bp-text-field__trailing { display: inline-grid; place-items: center; height: var(--bp-semantic-size-interactive-sm); padding: 0 var(--bp-semantic-spacing-micro-md); }
+.bp-text-field__input {
+  flex: 1; min-width: 0; height: var(--bp-semantic-size-interactive-sm);
+  padding: 0 0 0 var(--bp-semantic-spacing-micro-md); border: 0; outline: 0; background: transparent;
+  color: var(--bp-theme-color-text-primary); caret-color: var(--bp-interaction-field-caret-color--focus);
+  font: var(--bp-semantic-typography-brand-body-md-medium-font-weight) var(--bp-semantic-typography-brand-body-md-medium-font-size)/var(--bp-semantic-typography-brand-body-md-medium-line-height) var(--sol-font);
+  -webkit-appearance: none; appearance: none;
+}
+.bp-text-field__leading + .bp-text-field__input { padding-left: 0; }
+.bp-text-field__input::placeholder { color: var(--bp-theme-color-text-placeholder); opacity: 1; }
+.bp-text-field--currency .bp-text-field__field { min-height: var(--bp-semantic-size-interactive-lg); }
+.bp-text-field--currency .bp-text-field__input {
+  height: var(--bp-semantic-size-interactive-md);
+  font: var(--bp-semantic-typography-brand-numeric-sm-font-weight) var(--bp-semantic-typography-brand-numeric-sm-font-size)/var(--bp-semantic-typography-brand-numeric-sm-line-height) var(--sol-font);
+  font-variant-numeric: tabular-nums;
+}
+.bp-text-field__support {
+  color: var(--bp-theme-color-text-helper);
+  font: var(--bp-semantic-typography-brand-body-sm-medium-font-weight) var(--bp-semantic-typography-brand-body-sm-medium-font-size)/var(--bp-semantic-typography-brand-body-sm-medium-line-height) var(--sol-font);
+}
+.bp-text-field--error .bp-text-field__field,
+.bp-text-field__field:has(> [aria-invalid="true"]) { border-color: var(--bp-theme-color-field-border-error); }
+.bp-text-field--error .bp-text-field__input, .bp-text-field__input[aria-invalid="true"],
+.bp-text-field--error .bp-text-field__support { color: var(--bp-theme-color-status-error-text); }
+.bp-text-field__field:has(> [readonly]) { background: var(--bp-theme-color-field-bg-readonly); }
+.bp-text-field--disabled .bp-text-field__field,
+.bp-text-field__field:has(> :disabled) { background: var(--bp-theme-color-field-bg-disabled); border-color: var(--bp-theme-color-field-border-disabled); }
+.bp-text-field--disabled, .bp-text-field--disabled .bp-text-field__label,
+.bp-text-field--disabled .bp-text-field__input, .bp-text-field__input:disabled,
+.bp-text-field--disabled .bp-text-field__leading { color: var(--bp-theme-color-text-disabled); }
 
 /* ===================================================================
    PARTE 2 · Mapeo de la app existente → spec Solar
@@ -629,3 +696,31 @@ html { background: var(--bp-theme-color-surface-page-alt); }
 .gyro-modal__btn--primary { background: var(--bp-theme-color-interaction-primary-bg); color: var(--bp-theme-color-interaction-primary-fg); }
 .push-loading__spinner { border-top-color: var(--bp-theme-color-loading-spinner-on-page); }
 :root[data-theme="dark"] .push-loading__spinner { border-top-color: var(--bp-theme-color-icon-primary); }
+
+/* Campos de los flujos de pago → bp-text-field */
+.push-field { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md); margin-bottom: var(--bp-semantic-spacing-macro-sm); }
+.push-field__label {
+  margin: 0; color: var(--bp-theme-color-text-primary);
+  font: var(--bp-semantic-typography-brand-body-md-semibold-font-weight) var(--bp-semantic-typography-brand-body-md-semibold-font-size)/var(--bp-semantic-typography-brand-body-md-semibold-line-height) var(--sol-font);
+}
+.push-field__hint { margin: 0; color: var(--bp-theme-color-text-helper); font: var(--bp-semantic-typography-brand-body-sm-medium-font-weight) var(--bp-semantic-typography-brand-body-sm-medium-font-size)/var(--bp-semantic-typography-brand-body-sm-medium-line-height) var(--sol-font); }
+.push-field__hint--error { color: var(--bp-theme-color-status-error-text); }
+.push-input, .push-select {
+  box-sizing: border-box; width: 100%;
+  height: var(--bp-semantic-size-interactive-md);
+  padding: 0 var(--bp-semantic-spacing-micro-lg);
+  border: var(--bp-semantic-border-thin) solid var(--bp-interaction-field-border);
+  border-radius: var(--bp-semantic-radius-sm);
+  background: var(--bp-interaction-field-bg);
+  color: var(--bp-theme-color-text-primary); caret-color: var(--bp-interaction-field-caret-color--focus);
+  font: var(--bp-semantic-typography-brand-body-md-medium-font-weight) var(--bp-semantic-typography-brand-body-md-medium-font-size)/var(--bp-semantic-typography-brand-body-md-medium-line-height) var(--sol-font);
+  transition: border-color .15s var(--sol-ease), box-shadow .15s var(--sol-ease);
+}
+.push-select { padding-right: var(--bp-semantic-spacing-macro-lg); }
+.push-input:hover, .push-select:hover { border-color: var(--bp-interaction-field-border--hover); }
+.push-input:focus, .push-select:focus {
+  outline: none; border-color: var(--bp-interaction-field-border--active);
+  box-shadow: 0 0 0 2px var(--bp-interaction-focus-ring-gap--focus), 0 0 0 4px var(--bp-interaction-focus-ring-color--focus);
+}
+.push-input::placeholder { color: var(--bp-theme-color-text-placeholder); opacity: 1; }
+.push-input[aria-invalid="true"] { border-color: var(--bp-theme-color-field-border-error); color: var(--bp-theme-color-status-error-text); }
