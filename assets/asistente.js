@@ -434,8 +434,11 @@
   };
   var VIEWS = [
     { key: 'jun', short: 'jun', report: true }, { key: 'jul', short: 'jul', report: true },
-    { key: 'ago', short: 'ago', mi: 0 }, { key: 'sep', short: 'sep', mi: 1 }, { key: 'oct', short: 'oct', mi: 2, current: true }
+    { key: 'ago', short: 'ago', mi: 0 }, { key: 'sep', short: 'sep', mi: 1 }, { key: 'oct', short: 'oct', mi: 2, current: true },
+    { key: 'hoy', short: 'Hoy', today: true }
   ];
+  // Mis finanzas abre en "Hoy" (tu dinero ahora); los meses quedan para mirar atrás
+  if (!ST.v2) { ST.view = 'hoy'; ST.v2 = true; persist(); }
   function viewOf(key) { return VIEWS.filter(function (v) { return v.key === key; })[0] || VIEWS[3]; }
 
   function cardInterest(mi) {
@@ -960,12 +963,9 @@
      en qué gastaste, metas y registros. El detalle vive en hojas. */
   function isInline() { return pf && pf.classList.contains('pf-page--inline'); }
   function sentence(t, sub) { return t + (/[.!?]$/.test(t) ? ' ' : '. ') + sub; }
-  function sumHTML(label, value, stats, score) {
-    var lv = level(score);
+  function sumHTML(label, value, stats) {
     return '<section class="pf-sum"><p class="pf-sum__label">' + label + '</p><p class="pf-sum__value">' + value + '</p>' +
-      '<div class="pf-sum__stats">' + stats.map(function (x) { return '<div><small>' + x[0] + '</small><b>' + x[1] + '</b></div>'; }).join('') + '</div>' +
-      '<button class="pf-sum__health" data-pf="health"><i style="background:' + lv.c + '"></i>' + T('Salud financiera {n} · {nivel}', { n: score, nivel: T(lv.n) }) +
-      '<span class="material-symbols-rounded">chevron_right</span></button></section>';
+      '<div class="pf-sum__stats">' + stats.map(function (x) { return '<div><small>' + x[0] + '</small><b' + (x[2] ? ' class="' + x[2] + '"' : '') + '>' + x[1] + '</b></div>'; }).join('') + '</div></section>';
   }
   function sayHTML(i, text, replies) {
     return '<div class="uku-say">' + (i === 0 ? '<span class="uku-say__face">' + C().face() + '</span>' : '<span class="uku-say__face" aria-hidden="true"></span>') +
@@ -1029,6 +1029,57 @@
       sub: next.map(function (n) { return T(n.who) + ' (' + n.d + ' ' + T('oct') + ')'; }).join(', ') + '.' });
     return out;
   }
+
+  /* Hoy: tu dinero ahora (lo que antes era el resumen financiero) */
+  var PB_ACTION = { pb1: 'Cuenta PRINCIPAL', pb2: 'Cuenta Corriente', pb3: 'Cuenta Ahorro transaccional' };
+  function prodRow(av, name, sub, val, valSub, pf, cls) {
+    return '<button class="pf-prod" data-pf="' + pf + '">' + av + '<span class="pf-prod__main"><b>' + name + '</b><small>' + sub + '</small></span>' +
+      '<span class="pf-prod__val"><b' + (cls ? ' class="' + cls + '"' : '') + '>' + val + '</b>' + (valSub ? '<small>' + valSub + '</small>' : '') + '</span></button>';
+  }
+  function icAv(ic) { return '<span class="pf-av pf-av--ic"><span class="material-symbols-rounded">' + ic + '</span></span>'; }
+  function homeRows(panel) {
+    return Array.prototype.map.call(document.querySelectorAll('#home-page [data-panel="' + panel + '"] .product-row[data-action]'), function (r) {
+      var n = r.querySelector('.product-row__name'), a = r.querySelector('.product-row__amount'), sb = r.querySelector('.product-row__sub');
+      return { action: r.dataset.action, name: n ? n.textContent.trim() : r.dataset.action, sub: sb ? sb.textContent.trim() : '', amt: a ? a.textContent.trim() : '' };
+    }).filter(function (x, i, arr) { return arr.findIndex(function (y) { return y.action === x.action; }) === i; });
+  }
+  function todayHTML() {
+    var cash = D.accts.filter(function (a) { return a.type === 'ahorro' && a.id !== 'sie1' || a.type === 'corriente' || a.type === 'efectivo'; });
+    var avail = cash.reduce(function (s, a) { return s + a.bal; }, 0);
+    var html = sumHTML(T('Tienes disponible hoy'), money(avail), [[T('Tienes en total'), money(D.assets)], [T('Debes'), money(D.debt), D.debt ? 'is-neg' : ''], [T('Neto'), money(D.assets - D.debt)]]);
+    html += ukuHTML([], sayHTML(0, T('Hoy tienes {monto} disponibles entre tus cuentas.', { monto: money(avail) }) +
+      (D.card ? ' ' + T('Tu Mastercard Black tiene {deuda} por pagar; la fecha máxima es el 10 de noviembre.', { deuda: money(D.debt) }) : ''),
+      (D.card && D.debt ? '<button class="uku-say__reply" data-pf="go:Pagar tarjeta">Pagar tarjeta</button>' : '') +
+      '<button class="uku-say__reply" data-pf="ask:¿Cuánto tengo en total?">¿Cuánto tengo en total?</button>'));
+    html += '<section class="pf-sec"><div class="pf-sec__head"><h2>Cuentas</h2><button class="pf-link" data-pf="connect">Conectar</button></div><div class="pf-prods">' +
+      cash.map(function (a) {
+        return prodRow(bankAv(a.bank), T(a.name), BANKS[a.bank].name + (a.mask ? ' · ••' + a.mask : ''), money(a.bal), '', PB_ACTION[a.id] ? 'go:' + PB_ACTION[a.id] : 'accounts');
+      }).join('') + '</div></section>';
+    var sie = D.accts.filter(function (a) { return a.id === 'sie1'; })[0];
+    html += '<section class="pf-sec"><h2>Ahorros y metas</h2><div class="pf-goals">' + D.goals.map(function (g) {
+      return '<div class="pf-goal"><div class="pf-goal__top"><b>' + T(g.name) + '</b><span>' + money(g.have) + '</span></div>' +
+        '<u><i style="width:' + Math.round(Math.min(1, g.have / g.target) * 100) + '%"></i></u>' +
+        '<small>' + pct(Math.min(1, g.have / g.target)) + ' ' + T('de {monto}', { monto: money(g.target) }) + ' · ' + T('para {fecha}', { fecha: T(g.due) }) + '</small></div>';
+    }).join('') + (sie ? '<div class="pf-goal"><div class="pf-goal__top"><b>' + T(sie.name) + '</b><span>' + money(sie.bal) + '</span></div><small>' + BANKS.sierra.name + ' · ••' + sie.mask + '</small></div>' : '') + '</div></section>';
+    var cards = D.accts.filter(function (a) { return a.type === 'credito'; });
+    if (cards.length) html += '<section class="pf-sec"><h2>Tarjetas de crédito</h2><div class="pf-prods">' + cards.map(function (c) {
+      return prodRow('<span class="pf-cardthumb"></span>', T(c.name), T('Cupo disponible {monto}', { monto: money(c.limit - c.owed) }) + ' · ' + T('pagas hasta el 10 nov'), money(c.owed), T('Por pagar'), 'card:' + c.name, c.owed ? 'is-neg' : '');
+    }).join('') + '</div></section>';
+    var inv = homeRows('Inversiones'), loans = homeRows('Prestamos');
+    if (inv.length) html += '<section class="pf-sec"><h2>Inversiones</h2><div class="pf-prods">' + inv.map(function (x) { return prodRow(icAv('trending_up'), esc(x.name), esc(x.sub || 'Pichibank'), esc(x.amt), '', 'go:' + x.action); }).join('') + '</div></section>';
+    if (loans.length) html += '<section class="pf-sec"><h2>Préstamos</h2><div class="pf-prods">' + loans.map(function (x) { return prodRow(icAv('request_quote'), esc(x.name), esc(x.sub || 'Pichibank'), esc(x.amt), '', 'go:' + x.action); }).join('') + '</div></section>';
+    return html;
+  }
+  /* El osito y su entorno: el bosque crece con tu salud financiera. Hay un
+     solo lienzo 3D: se reutiliza entre meses y vuelve aquí al cerrar Uku. */
+  function syncHero() {
+    if (!isInline()) return;
+    var hero = pf.querySelector('.pf-hero .b3d');
+    if (!hero || !pf.closest('.view.active')) return;
+    var sc = +hero.dataset.score, g = hero.dataset.g ? JSON.parse(hero.dataset.g) : 'wave';
+    if (!hero.querySelector('canvas')) mount3D(hero, sc, g);
+    else if (b3d) b3d.setScore(sc);
+  }
   function paintDash() {
     var v = viewOf(ST.view), html = '';
     html += '<header class="pf-head"><div class="pf-head__row"><h1>Mis finanzas</h1>' +
@@ -1036,7 +1087,11 @@
       '<div class="pf-months" role="tablist">' + VIEWS.map(function (x) {
         return '<button role="tab" data-pf="view:' + x.key + '" aria-selected="' + (x.key === v.key) + '">' + x.short + '</button>';
       }).join('') + '</div></header>';
-    if (v.report) {
+    var hs = v.today || v.current ? D.score : v.report ? REPORTS[v.key].score : monthScore(v.mi);
+    html += heroHTML(hs, T(v.today || v.current ? 'Salud financiera hoy {n} · {nivel}' : 'Salud financiera {n} · {nivel}', { n: hs, nivel: T(level(hs).n) }));
+    if (v.today) {
+      html += todayHTML();
+    } else if (v.report) {
       var r = REPORTS[v.key];
       html += sumHTML(T('Gastaste en {mes}', { mes: T(r.name) }), money(r.spend), [[T('Ahorraste'), money(r.save)], [T('Tasa de ahorro'), pct(r.rate)]], r.score);
       html += ukuHTML(r.ins);
@@ -1055,7 +1110,19 @@
       html += ukuHTML(monthInsights(mi)) + budgetsHTML(mi) + spendHTML(mi) + goalsHTML() + recordsHTML(mi);
     }
     html += footHTML();
-    pf.querySelector('.pf-scroll').innerHTML = html;
+    // Conserva el nodo del héroe con el lienzo vivo (sin parpadeo al cambiar de mes)
+    var scroll = pf.querySelector('.pf-scroll'), old = scroll.querySelector('.pf-hero'), live = old && old.querySelector('canvas');
+    scroll.innerHTML = html;
+    var fresh = scroll.querySelector('.pf-hero');
+    var saved = !v.report && !v.today && !v.current && D.by[v.mi]._save / D.by[v.mi]._in >= .08;
+    fresh.querySelector('.b3d').dataset.g = JSON.stringify(saved ? { name: 'hold', opts: { hold: 'coin' } } : 'wave');
+    if (live) {
+      var ob = old.querySelector('.b3d'), nb = fresh.querySelector('.b3d');
+      ob.dataset.score = nb.dataset.score; ob.dataset.g = nb.dataset.g;
+      old.querySelector('.pf-hero__badge').innerHTML = fresh.querySelector('.pf-hero__badge').innerHTML;
+      fresh.replaceWith(old);
+    }
+    syncHero();
     var row = pf.querySelector('.pf-months'), sel = row && row.querySelector('[aria-selected="true"]');
     if (sel) row.scrollLeft = sel.offsetLeft - (row.clientWidth - sel.offsetWidth) / 2;
   }
@@ -1105,6 +1172,18 @@
     if (k === 'health') return healthSheet();
     if (k === 'accounts') return accountsSheet();
     if (k === 'budgets') return budgetSheet();
+    if (k === 'connect') return connectSheet();
+    if (k.indexOf('ask:') === 0) { var aq = k.slice(4); open(); setTimeout(function () { ask(aq); }, 350); return; }
+    if (k.indexOf('go:') === 0) {
+      var ga = k.slice(3), gb = document.querySelector('#home-page [data-action="' + ga + '"]') || document.querySelector('[data-action="' + ga + '"]');
+      if (gb) gb.click();
+      return;
+    }
+    if (k.indexOf('card:') === 0) {
+      var cr = document.querySelector('#home-page [data-panel="Tarjetas"] .product-row[data-action="' + k.slice(5) + '"]');
+      if (cr) cr.click();
+      return;
+    }
     if (k === 'record') return recordSheet();
     if (k === 'alltx') return allTxSheet('all');
     if (k === 'ondemand') {
@@ -1317,7 +1396,11 @@
   }
   function init() {
     build(); mountEntries(); paintEntries(); sheetDrag();
-    if (document.querySelector('.view[data-view="1"] .pf-host')) { mountPF(); paintPF(); }
+    var fv = document.querySelector('.view[data-view="1"]');
+    if (fv && fv.querySelector('.pf-host')) {
+      mountPF(); paintPF();
+      new MutationObserver(function () { if (fv.classList.contains('active')) syncHero(); }).observe(fv, { attributes: true, attributeFilter: ['class'] });
+    }
     // Al cambiar de idioma: lo que se arma con T() se vuelve a pintar
     document.addEventListener('i18n:change', function () {
       insCache = {}; paintEntries();
