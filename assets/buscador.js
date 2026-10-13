@@ -164,14 +164,21 @@
     if (!q) {
       // Contextual: lo que ves depende de la sección desde donde abriste el buscador
       var cx = window.Contexto ? Contexto.info(ctxId) : null;
-      if (cx && cx.insights.length) {
-        curIns = cx.insights;
-        html += '<section class="sx-card sx-card--uku"><h3><span class="sx-uku">' + (window.Asistente ? Asistente.faceIMG() : '') + '</span>' + esc(cx.titulo) + '</h3>' +
-          cx.insights.map(function (x, i) { return row('cq:' + i, x.icon, esc(x.t), esc(x.s)); }).join('') + '</section>';
-      }
       var feat = cx ? cx.acciones.concat(FEATURED.filter(function (l) { return cx.acciones.indexOf(l) < 0; })).slice(0, 8) : FEATURED;
       html += '<section class="sx-card"><h3>Acciones</h3><div class="sx-grid">' +
         feat.map(function (l) { return ACTIONS.filter(function (a) { return a.label === l; })[0]; }).filter(Boolean).map(tile).join('') + '</div></section>';
+      if (cx && cx.insights.length) {
+        // Uku conversa: cada recomendación es un mensaje suyo, con una
+        // respuesta sugerida para seguir la charla en el asistente.
+        curIns = cx.insights;
+        var face = window.Asistente ? '<span class="uku-say__face">' + Asistente.faceIMG() + '</span>' : '';
+        html += '<section class="sx-card sx-card--uku"><h3>' + esc(ukuName()) + ' te cuenta</h3>' +
+          cx.insights.map(function (x, i) {
+            return '<div class="uku-say">' + (i === 0 ? face : '<span class="uku-say__face" aria-hidden="true"></span>') +
+              '<div class="uku-say__body"><p class="uku-say__bubble">' + esc(x.c || (x.t + '. ' + x.s)) + '</p>' +
+              '<button class="uku-say__reply" data-sx-i="cq:' + i + '">' + esc(x.q) + '</button></div></div>';
+          }).join('') + '</section>';
+      }
       if (!cx || cx.id === 'inicio') {
         var m = moment();
         html += '<section class="sx-card"><h3>' + m.title + '</h3>' + row('a:' + ACTIONS.indexOf(m.a), m.icon, m.main, m.sub) + '</section>';

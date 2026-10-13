@@ -681,9 +681,10 @@
     sec.hidden = !(cx && cx.insights.length);
     if (cx) {
       sec.querySelector('h2').textContent = cx.titulo;
-      sec.querySelector('.as-ctx__list').innerHTML = cx.insights.map(function (x) {
-        return '<button class="as-ctx__row" data-hist="' + esc(x.q) + '"><span class="as-row__icon material-symbols-rounded">' + x.icon + '</span>' +
-          '<span class="as-row__main"><b>' + esc(x.t) + '</b><small>' + esc(x.s) + '</small></span><span class="material-symbols-rounded">chevron_right</span></button>';
+      sec.querySelector('.as-ctx__list').innerHTML = cx.insights.map(function (x, i) {
+        return '<div class="uku-say">' + (i === 0 ? '<span class="uku-say__face">' + C().face() + '</span>' : '<span class="uku-say__face" aria-hidden="true"></span>') +
+          '<div class="uku-say__body"><p class="uku-say__bubble">' + esc(x.c || (x.t + '. ' + x.s)) + '</p>' +
+          '<button class="uku-say__reply" data-hist="' + esc(x.q) + '">' + esc(x.q) + '</button></div></div>';
       }).join('');
     }
     page.querySelector('.as-topics').innerHTML = TOPICS.map(function (t) {

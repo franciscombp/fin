@@ -4300,9 +4300,6 @@
 
         <!-- Tabs -->
         <nav class="tabs" aria-label="Secciones">
-            <button class="tab" data-action="Modo finanzas" aria-label="Modo finanzas">
-                <span class="material-symbols-rounded">monitoring</span>
-            </button>
             <div class="tabs__scroll">
                 <button class="tab active" data-panel="Destacado">Destacado</button>
                 <button class="tab" data-panel="Cuentas">Cuentas</button>
@@ -5248,23 +5245,20 @@
     <!-- Bottom nav -->
     <nav class="nav-bar" aria-label="Navegación principal">
         <div class="nav-bar__inner">
-            <button class="nav-item active" aria-current="page">
+            <button class="nav-item active" aria-current="page" data-view="0">
                 <span class="nav-item__wrap"><span class="material-symbols-rounded">home</span></span>
                 <span class="nav-item__label">Inicio</span>
             </button>
-            <button class="nav-item">
-                <span class="nav-item__wrap"><span class="material-symbols-rounded">list_alt</span></span>
-                <span class="nav-item__label">Solicitudes</span>
+            <!-- Mis finanzas abre el PFM (asistente.js intercepta data-action="Modo finanzas") -->
+            <button class="nav-item nav-item--finanzas" data-action="Modo finanzas">
+                <span class="nav-item__wrap"><span class="material-symbols-rounded">monitoring</span></span>
+                <span class="nav-item__label">Mis finanzas</span>
             </button>
-            <button class="nav-item">
+            <button class="nav-item" data-view="2">
                 <span class="nav-item__wrap"><span class="material-symbols-rounded">redeem</span></span>
                 <span class="nav-item__label">Beneficios</span>
             </button>
-            <button class="nav-item">
-                <span class="nav-item__wrap"><span class="material-symbols-rounded">storefront</span></span>
-                <span class="nav-item__label">Tienda</span>
-            </button>
-            <button class="nav-item">
+            <button class="nav-item" data-view="4">
                 <span class="nav-item__wrap"><span class="material-symbols-rounded">account_circle</span></span>
                 <span class="nav-item__label">Perfil</span>
             </button>
@@ -6926,7 +6920,9 @@
             viewSwitchTimer = setTimeout(() => next.classList.remove('entering'), 500);
         }
 
-        navItems.forEach((item, index) => {
+        navItems.forEach((item) => {
+            if (!item.dataset.view) return; // Mis finanzas abre su propia página
+            const index = +item.dataset.view;
             item.addEventListener('click', () => {
                 const alreadyOnThisView = index === currentView;
                 navItems.forEach(i => {
@@ -6945,9 +6941,34 @@
             });
         });
 
+        // Mientras Mis finanzas (PFM) está abierto, su ítem se marca en la barra
+        (function () {
+            const fin = document.querySelector('.nav-item--finanzas');
+            if (!fin) return;
+            const sync = () => {
+                const on = !!document.querySelector('.pf-page.open');
+                fin.classList.toggle('is-current', on);
+                if (on) fin.setAttribute('aria-current', 'page'); else fin.removeAttribute('aria-current');
+                document.querySelector('.nav-bar').classList.toggle('is-finanzas', on);
+            };
+            // La página del PFM se monta recién al abrirla por primera vez
+            const attach = () => {
+                const pf = document.querySelector('.pf-page');
+                if (!pf) return false;
+                new MutationObserver(sync).observe(pf, { attributes: true, attributeFilter: ['class'] });
+                sync();
+                return true;
+            };
+            if (!attach()) {
+                const mo = new MutationObserver(() => { if (attach()) mo.disconnect(); });
+                mo.observe(document.body, { childList: true });
+            }
+        })();
+
         // Reset de navegación a Inicio/Destacado (lo usa app.js al iniciar sesión)
         window.__resetHomeView = function () {
-            navItems.forEach((i, idx) => {
+            navItems.forEach((i) => {
+                const idx = i.dataset.view ? +i.dataset.view : -1;
                 i.classList.toggle('active', idx === 0);
                 if (idx === 0) i.setAttribute('aria-current', 'page');
                 else i.removeAttribute('aria-current');
@@ -6960,7 +6981,7 @@
             document.querySelector('.home-banner').classList.remove('is-hidden');
             document.querySelector('.profile-story').classList.remove('is-hidden');
             document.querySelectorAll('.tabs .tab').forEach((t, idx) => {
-                t.classList.toggle('active', idx === 1); // "Destacado"
+                t.classList.toggle('active', t.dataset.panel === 'Destacado');
             });
             showPanel('Destacado');
             window.scrollTo({ top: 0 });
