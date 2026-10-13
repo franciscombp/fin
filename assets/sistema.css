@@ -762,7 +762,15 @@ html:not(.theme-y2k) .placeholder-view h1 { margin: 0; font: var(--cx-page) !imp
 /* ---------- Hojas inferiores (gestos en assets/sheets.js) ---------- */
 .as-sheet { overscroll-behavior: contain; touch-action: pan-y; }
 .sheet-backdrop, .as-sheet-back { touch-action: none; }
-html.has-sheet, html.has-sheet body { overflow: hidden !important; }
+/* La página de atrás se bloquea en sheets.js (gestos y rueda), NO con
+   overflow:hidden en <html>: en iOS Safari eso mueve el viewport y la barra
+   inferior fija queda desplazada. */
 .sheet__handle, .as-sheet__handle { position: relative; cursor: grab; }
 /* área táctil del uñero más grande que la barrita */
 .sheet__handle::after, .as-sheet__handle::after { content: ""; position: absolute; left: -40px; right: -40px; top: -14px; bottom: -14px; }
+
+/* Barra inferior fija también en iOS Safari: capa propia (no "salta" con el
+   scroll ni con la barra del navegador) y pegada al borde inferior real. */
+@media (max-width: 767px) {
+  .nav-bar { position: fixed !important; bottom: 0 !important; transform: translate3d(0, 0, 0); -webkit-backface-visibility: hidden; backface-visibility: hidden; will-change: transform; }
+}

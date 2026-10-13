@@ -7,7 +7,9 @@
      se recorre el contenido (como en iOS).
    - Se cierra si se arrastra más de un 30% del alto o con un gesto rápido;
      si no, vuelve a su lugar. El fondo se aclara mientras se arrastra.
-   - Mientras hay una hoja abierta la página de atrás no se mueve.
+   - Mientras hay una hoja abierta la página de atrás no se mueve (se frenan
+     los gestos y la rueda fuera de la hoja; sin overflow:hidden en <html>,
+     que en iOS desplaza la barra inferior fija).
    - Escape y el gesto/botón "atrás" del teléfono cierran la hoja de arriba
      (en vez de salir de la app).
    Cada módulo sigue cerrando su hoja a su modo: aquí se "toca" su fondo.
@@ -129,6 +131,12 @@
       return;
     }
     if (move(e.touches[0].clientX, e.touches[0].clientY)) e.preventDefault();
+  }, { passive: false, capture: true });
+  // Rueda / trackpad: fuera de la hoja (o en una hoja sin scroll) no mueve la página
+  document.addEventListener('wheel', function (e) {
+    if (!document.documentElement.classList.contains('has-sheet')) return;
+    var sh = e.target.closest && e.target.closest(SEL);
+    if (!sh || sh.scrollHeight <= sh.clientHeight + 1) e.preventDefault();
   }, { passive: false, capture: true });
   document.addEventListener('touchend', end, { capture: true });
   document.addEventListener('touchcancel', end, { capture: true });
