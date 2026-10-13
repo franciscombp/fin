@@ -154,6 +154,34 @@ html:not(.theme-y2k) .home-banner__cta {
   -webkit-backdrop-filter: blur(var(--bp-semantic-effects-blur-overlay)) !important; backdrop-filter: blur(var(--bp-semantic-effects-blur-overlay)) !important;
 }
 
+/* bp-banner con foto (referencia "BM-Destacado"): la foto cubre el banner,
+   un velo oscuro a la izquierda asegura contraste; texto text/on-solid y
+   acción bp-overlay-button (blanco 12% + blur, 32 alto). */
+html:not(.theme-y2k) .home-banner__slide--photo { background: var(--bp-theme-color-surface-brand-alt) !important; isolation: isolate; }
+html:not(.theme-y2k) .home-banner__slide--photo.is-nophoto {
+  background: linear-gradient(120deg, var(--bp-base-color-blue-900) 0%, var(--bp-base-color-blue-500) 100%) !important;
+}
+.home-banner__photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: right center; z-index: -2; pointer-events: none; }
+.home-banner__slide--photo::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--bp-base-color-neutral-1050) 64%, transparent) 0%,
+    color-mix(in srgb, var(--bp-base-color-neutral-1050) 32%, transparent) 55%,
+    transparent 85%);
+}
+.home-banner__slide--photo.is-nophoto::before { display: none; }
+html:not(.theme-y2k) .home-banner__slide--photo .home-banner__title { color: var(--bp-theme-color-text-on-solid) !important; }
+html:not(.theme-y2k) .home-banner__slide--photo .home-banner__cta {
+  height: var(--bp-semantic-size-interactive-xxs) !important;
+  padding: 0 var(--bp-semantic-spacing-micro-md) 0 var(--bp-semantic-spacing-micro-lg) !important;
+  background: color-mix(in srgb, var(--bp-base-color-neutral-0) 12%, transparent) !important;
+  color: var(--bp-theme-color-text-on-solid) !important;
+  -webkit-backdrop-filter: blur(var(--bp-semantic-effects-blur-background)) !important; backdrop-filter: blur(var(--bp-semantic-effects-blur-background)) !important;
+}
+html:not(.theme-y2k) .home-banner__slide--photo .home-banner__cta:hover { background: color-mix(in srgb, var(--bp-base-color-neutral-0) 20%, transparent) !important; }
+html:not(.theme-y2k) .home-banner__slide--photo .home-banner__cta:active { background: color-mix(in srgb, var(--bp-base-color-neutral-0) 28%, transparent) !important; }
+html:not(.theme-y2k) .home-banner__slide--photo .home-banner__text { max-width: 60%; }
+
 /* ---------- bp-banner-carousel-vertical / bp-banner-vertical (Promociones) ----------
    Cards de 144×256, radius/md, superficie page/default; scroll horizontal
    con padding grid/margin y gap 8. */

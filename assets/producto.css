@@ -24,3 +24,122 @@
 .pv-row--mov > span b { font-weight: 500; }
 .pv-row--mov small { font: var(--cx-sub); color: var(--cx-muted); }
 .pv-row b.is-in { color: var(--cx-ink); }
+
+/* ---------------------------------------------------------------------
+   Cuenta (concepto "Principal") — composición con componentes Solar:
+   bp-page-header · bp-widget (saldo, mes, movimientos) · bp-amount ·
+   bp-action-button · bp-quick-actions-menu · bp-transaction-item.
+   Página sobre surface/page/alt; tarjetas container/default radius/md.
+   --------------------------------------------------------------------- */
+.push-eye { display: none !important; margin-left: auto; }
+.push-page.is-account .push-eye { display: inline-grid !important; }
+.push-page.is-account { background: var(--bp-theme-color-surface-page-alt); }
+.pv--account { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-macro-sm); padding: 0 0 var(--bp-semantic-spacing-macro-xl); color: var(--bp-theme-color-text-primary); }
+.pv--account p { margin: 0; }
+.pv-title {
+  margin: 0; padding: var(--bp-semantic-spacing-micro-sm) 0 var(--bp-semantic-spacing-micro-md);
+  font: var(--bp-semantic-typography-brand-title-lg-font-weight) var(--bp-semantic-typography-brand-title-lg-font-size)/var(--bp-semantic-typography-brand-title-lg-line-height) var(--sol-font);
+  color: var(--bp-interaction-tertiary-fg);
+}
+.pv-card { background: var(--bp-theme-color-surface-container-default); border-radius: var(--bp-semantic-radius-md); padding: var(--bp-semantic-spacing-macro-sm); }
+
+/* Saldo (bp-amount + cuenta + acción Compartir) */
+.pv-balance { text-align: center; padding-top: var(--bp-semantic-spacing-macro-md); }
+.pv-balance__value {
+  font: var(--bp-semantic-typography-brand-headline-sm-font-weight) var(--bp-semantic-typography-brand-headline-sm-font-size)/var(--bp-semantic-typography-brand-headline-sm-line-height) var(--sol-font);
+  font-variant-numeric: tabular-nums; color: var(--bp-theme-color-text-primary);
+}
+.pv-balance__book { margin-top: var(--bp-semantic-spacing-micro-sm) !important; font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-secondary); }
+.pv-balance__acc {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--bp-semantic-spacing-micro-lg);
+  margin-top: var(--bp-semantic-spacing-macro-sm); padding-top: var(--bp-semantic-spacing-macro-sm);
+  border-top: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); text-align: left;
+}
+.pv-balance__acc > span { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-xs); min-width: 0; }
+.pv-balance__acc b { font: var(--sol-body-md-semibold); }
+.pv-balance__acc small { font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-helper); }
+.pv-balance__acc .bp-action-button { flex-shrink: 0; }
+
+/* Mes: gastos / ingresos + anillo de ahorro + barras diarias */
+.pv-month__head { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md); }
+.pv-month__stat { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-sm); }
+.pv-month__stat + .pv-month__stat { padding-left: var(--bp-semantic-spacing-micro-md); border-left: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); }
+.pv-month__stat small { font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-secondary); white-space: nowrap; }
+.pv-month__stat b { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-sm); font: var(--sol-body-md-semibold); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pv-dot { width: var(--bp-semantic-size-icon-xs); height: var(--bp-semantic-size-icon-xs); flex: 0 0 auto; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-full); color: var(--bp-theme-color-text-on-solid); }
+.pv-dot .material-symbols-rounded { font-size: var(--bp-semantic-size-icon-xxs); }
+.pv-dot--out { background: var(--bp-theme-color-status-error-bg); }
+.pv-dot--in { background: var(--bp-theme-color-status-success-bg); }
+.pv-month__ring {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: var(--bp-semantic-spacing-micro-xs);
+  padding: 0; border: 0; background: transparent; color: var(--bp-theme-color-icon-secondary); cursor: pointer; border-radius: var(--bp-semantic-radius-sm);
+}
+.pv-month__ring > .pv-ring {
+  width: var(--bp-semantic-size-interactive-xs); height: var(--bp-semantic-size-interactive-xs); display: grid; place-items: center; border-radius: var(--bp-semantic-radius-full);
+  background:
+    radial-gradient(closest-side, var(--bp-theme-color-surface-container-default) 78%, transparent 80%),
+    conic-gradient(var(--bp-theme-color-data-positive) calc(var(--p) * 1%), var(--bp-theme-color-data-surface-default) 0);
+  color: var(--bp-theme-color-text-primary);
+  font: var(--bp-semantic-typography-brand-body-xs-medium-font-weight) var(--bp-semantic-typography-brand-body-xs-medium-font-size)/var(--bp-semantic-typography-brand-body-xs-medium-line-height) var(--sol-font);
+}
+.pv-month__ring .material-symbols-rounded { font-size: var(--bp-semantic-size-icon-sm); }
+.pv-bars {
+  list-style: none; margin: var(--bp-semantic-spacing-macro-sm) 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(10, 1fr); align-items: end; height: 120px;
+  border-bottom: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-default);
+  padding-bottom: 0; position: relative;
+}
+.pv-bars li { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; position: relative; }
+.pv-bars i { display: block; width: 8px; min-height: 0; border-radius: var(--bp-semantic-radius-full); background: var(--bp-theme-color-data-negative); }
+.pv-bars span {
+  position: absolute; top: calc(100% + var(--bp-semantic-spacing-micro-sm));
+  font: var(--bp-semantic-typography-brand-body-xs-medium-font-weight) var(--bp-semantic-typography-brand-body-xs-medium-font-size)/var(--bp-semantic-typography-brand-body-xs-medium-line-height) var(--sol-font);
+  color: var(--bp-theme-color-text-helper);
+}
+.pv-month { padding-bottom: calc(var(--bp-semantic-spacing-macro-sm) + 20px); }
+
+/* Acciones: bp-quick-actions-menu dentro de la tarjeta */
+.pv-acts-card { padding: 20px var(--bp-semantic-spacing-micro-md); }
+.pv--account .pv-acts { margin: 0; gap: var(--bp-semantic-spacing-micro-lg); }
+
+/* Últimos movimientos: bp-transaction-item */
+.pv-movs { padding: 0; overflow: hidden; }
+.pv-movs__head { display: flex; align-items: center; justify-content: space-between; padding: var(--bp-semantic-spacing-micro-md) var(--bp-semantic-spacing-micro-md) var(--bp-semantic-spacing-micro-md) var(--bp-semantic-spacing-macro-sm); border-bottom: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); }
+.pv-movs__head h2 { margin: 0; font: var(--sol-body-md-semibold); color: var(--bp-theme-color-text-primary); }
+.pv-tx-list { list-style: none; margin: 0; padding: 0; }
+.pv-tx { display: flex; gap: var(--bp-semantic-spacing-micro-lg); padding: var(--bp-semantic-spacing-macro-sm); }
+.pv-tx + .pv-tx { border-top: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); }
+.pv-tx__av {
+  position: relative; flex: 0 0 var(--bp-semantic-size-avatar-xs); width: var(--bp-semantic-size-avatar-xs); height: var(--bp-semantic-size-avatar-xs);
+  display: grid; place-items: center; border-radius: var(--bp-semantic-radius-full);
+  background: var(--bp-theme-color-avatar-bg); color: var(--bp-theme-color-avatar-fg);
+}
+.pv-tx__av > .material-symbols-rounded { font-size: var(--bp-semantic-size-icon-xs); }
+.pv-tx__em {
+  position: absolute; right: -4px; bottom: -4px; width: var(--bp-semantic-size-icon-xs); height: var(--bp-semantic-size-icon-xs);
+  display: grid; place-items: center; border-radius: var(--bp-semantic-radius-full);
+  box-shadow: 0 0 0 2px var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-on-solid);
+}
+.pv-tx__em .material-symbols-rounded { font-size: var(--bp-semantic-size-icon-xxs); }
+.pv-tx__em--in { background: var(--bp-theme-color-status-success-bg); }
+.pv-tx__em--swap { background: var(--bp-theme-color-status-info-bg); }
+.pv-tx__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-sm); }
+.pv-tx__row, .pv-tx__det > span, .pv-tx__foot { display: flex; justify-content: space-between; gap: var(--bp-semantic-spacing-micro-lg); }
+.pv-tx__name { font: var(--sol-body-md-semibold); }
+.pv-tx__amt { flex: 0 0 auto; font: var(--sol-body-md-medium); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pv-tx__amt.is-in { color: var(--bp-theme-color-data-positive); }
+.pv-tx__desc { font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-secondary); }
+.pv-tx__det { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-sm); padding-top: var(--bp-semantic-spacing-micro-sm); border-top: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); font: var(--sol-body-sm-medium); font-variant-numeric: tabular-nums; }
+.pv-tx__foot {
+  padding-top: var(--bp-semantic-spacing-micro-sm); border-top: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider);
+  font: var(--bp-semantic-typography-brand-body-xs-medium-font-weight) var(--bp-semantic-typography-brand-body-xs-medium-font-size)/var(--bp-semantic-typography-brand-body-xs-medium-line-height) var(--sol-font);
+  color: var(--bp-theme-color-text-helper); font-variant-numeric: tabular-nums;
+}
+.pv-more {
+  display: flex; align-items: center; justify-content: center; gap: var(--bp-semantic-spacing-micro-xs); width: 100%;
+  min-height: var(--bp-semantic-size-interactive-sm); margin: 0; padding: 0 var(--bp-semantic-spacing-macro-sm) var(--bp-semantic-spacing-micro-md);
+  border: 0; background: transparent; cursor: pointer; color: var(--bp-interaction-tertiary-fg);
+  font: var(--bp-semantic-typography-brand-link-md-font-weight) var(--bp-semantic-typography-brand-link-md-font-size)/var(--bp-semantic-typography-brand-link-md-line-height) var(--sol-font);
+}
+.pv-more .material-symbols-rounded { font-size: var(--bp-semantic-size-icon-sm); }
+.pv-more:hover { text-decoration: underline; text-underline-offset: 3px; }
