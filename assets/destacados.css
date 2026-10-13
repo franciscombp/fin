@@ -144,3 +144,46 @@ html.pb-masked .dw-s__m { display: inline; }
 .sheet, .as-sheet { padding-top: 8px; }
 /* Mantener presionado entra en edición: sin selección de texto ni menú del sistema */
 .dw-grid .dw { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+
+/* ---------- Mini gráficos ---------- */
+.dw-spark { position: relative; display: block; width: 100%; height: 100%; min-height: 44px; }
+.dw-spark svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.dw-spark__line { fill: none; stroke: var(--bp-interaction-tertiary-fg); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.dw-spark__area { fill: color-mix(in srgb, var(--bp-interaction-tertiary-fg) 10%, transparent); stroke: none; }
+.dw-spark i { position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: var(--bp-interaction-tertiary-fg); box-shadow: 0 0 0 2px var(--cx-surface); }
+.dw-split__r > .dw-spark { height: 72px; flex: 0 0 auto; }
+.dw-chart { flex: 1; min-height: 0; display: flex; margin: 8px 0 4px; }
+.dw-chart > .dw-spark { flex: 1; }
+.dw-chart--bars { flex: 0 0 96px; }
+.dw-wbars { display: flex; align-items: stretch; gap: 6px; width: 100%; }
+.dw-wbar { flex: 1; min-width: 0; display: grid; grid-template-rows: 1fr auto; position: relative; }
+.dw-wbar__track { position: relative; display: flex; align-items: flex-end; }
+.dw-wbar__track i { display: block; width: 100%; border-radius: 4px 4px 0 0; background: color-mix(in srgb, var(--bp-interaction-tertiary-fg) 35%, var(--cx-fill)); }
+.dw-wbar.is-hi .dw-wbar__track i { background: var(--bp-interaction-tertiary-fg); }
+.dw-wbar b { position: absolute; left: 50%; top: -2px; transform: translate(-50%, -100%); font: 600 11px/14px var(--sol-font, Roboto, sans-serif); white-space: nowrap; color: var(--cx-ink); }
+.dw-wbar small { margin-top: 4px; text-align: center; font: 500 11px/14px var(--sol-font, Roboto, sans-serif); color: var(--cx-muted); }
+.dw-grid .is-out { color: var(--bp-theme-color-status-error-text, #c20505); }
+.dw-grid .is-in, .dw-grid .is-out { font-weight: 600; }
+.dw-rows--l { margin-top: 4px; }
+.dw-split--top { flex: 0 0 auto; }
+.dw-grid .dw-label--sec { margin-top: 10px !important; }
+
+/* ---------- Pila (Lo importante hoy): se desliza entre páginas ---------- */
+.dw-stack { display: flex; flex: 1; min-height: 0; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; margin: 0 -16px; }
+.dw-stack::-webkit-scrollbar { display: none; }
+.dw-stack__page { flex: 0 0 100%; scroll-snap-align: start; display: flex; align-items: center; gap: 14px; padding: 0 16px; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; min-width: 0; }
+.dw-stack__ic { flex: 0 0 48px; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: var(--bp-interaction-tertiary-bg); color: var(--bp-interaction-tertiary-fg); font-size: 26px; }
+.dw-stack__t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.dw-dots { display: flex; justify-content: center; gap: 6px; padding-top: 6px; }
+.dw-dots i { width: 6px; height: 6px; border-radius: 50%; background: color-mix(in srgb, var(--cx-ink) 20%, transparent); transition: background .2s ease, width .2s ease; }
+.dw-dots i.on { width: 16px; border-radius: 3px; background: var(--bp-interaction-tertiary-fg); }
+
+/* ---------- Uku hoy ---------- */
+.dw-uku { display: flex; flex-direction: column; justify-content: space-between; flex: 1; min-height: 0; gap: 6px; }
+.dw-face--lg { width: 64px; height: 64px; flex: 0 0 64px; }
+.dw-temp { display: flex; align-items: baseline; gap: 6px; font: 700 26px/30px var(--sol-font, Roboto, sans-serif); }
+.dw-temp .material-symbols-rounded { font-size: 22px; align-self: center; color: var(--bp-interaction-tertiary-fg); }
+.dw-temp small { font: 500 13px/18px var(--sol-font, Roboto, sans-serif); color: var(--cx-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dw-spark { width: calc(100% - 5px); }
+.dw--l .dw-rows--l { gap: 2px; }
+.dw--l .dw-chart > .dw-spark { min-height: 0; }

@@ -16,7 +16,7 @@
 (function () {
   'use strict';
 
-  var KEY = 'pb_widgets_v2', MAX = 8;
+  var KEY = 'pb_widgets_v2', MAX = 10;
   function fx(n) { try { window.Haptics && Haptics.fx && Haptics.fx(n); } catch (e) {} }
   function money(v) { var s = Math.abs(v).toFixed(2).split('.'); return (v < 0 ? '-' : '') + '$ ' + s[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + s[1]; }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -36,8 +36,9 @@
      group: productos (lo que tiene), herramientas, ofertas (captación).
      sizes: tamaños permitidos; el primero es el sugerido. */
   var CATALOG = {
-    saldo:      { name: 'Saldo disponible', icon: 'account_balance_wallet', group: 'productos', sizes: ['m', 's'], desc: 'Lo que tienes hoy en tus cuentas' },
-    tarjeta:    { name: 'Tarjeta de crédito', icon: 'credit_card', group: 'productos', sizes: ['s', 'm'], desc: 'Por pagar, fecha de pago y cupo' },
+    pila:       { name: 'Lo importante hoy', icon: 'stacks', group: 'herramientas', sizes: ['m'], desc: 'Desliza entre lo que necesita tu atención: lo más urgente primero' },
+    saldo:      { name: 'Saldo disponible', icon: 'account_balance_wallet', group: 'productos', sizes: ['m', 's', 'l'], desc: 'Lo que tienes hoy y cómo cambió en 30 días' },
+    tarjeta:    { name: 'Tarjeta de crédito', icon: 'credit_card', group: 'productos', sizes: ['s', 'm', 'l'], desc: 'Por pagar, fecha de pago, cupo y últimos consumos' },
     pagos:      { name: 'Próximos pagos', icon: 'event', group: 'productos', sizes: ['m', 's', 'l'], desc: 'Servicios que vencen pronto' },
     movimientos:{ name: 'Últimos movimientos', icon: 'receipt_long', group: 'productos', sizes: ['m', 'l'], desc: 'Lo último que entró y salió' },
     inversion:  { name: 'Inversión', icon: 'trending_up', group: 'productos', sizes: ['s', 'm'], desc: 'Tu depósito a plazo y lo que ganas' },
@@ -47,6 +48,7 @@
     presupuesto:{ name: 'Presupuesto', icon: 'donut_large', group: 'herramientas', sizes: ['s', 'm'], desc: 'Cómo vas con tus límites' },
     metas:      { name: 'Metas de ahorro', icon: 'flag', group: 'herramientas', sizes: ['s', 'm'], desc: 'Cuánto te falta para cada meta' },
     salud:      { name: 'Salud financiera', icon: 'favorite', group: 'herramientas', sizes: ['s', 'm'], desc: 'Tu puntaje y un consejo de Uku' },
+    uku:        { name: 'Uku hoy', icon: 'partly_cloudy_day', group: 'herramientas', sizes: ['s', 'm'], desc: 'El clima de hoy y qué se puso Uku' },
     atajos:     { name: 'Tus atajos', icon: 'bolt', group: 'herramientas', sizes: ['m', 's'], desc: 'Las acciones que grabaste en el buscador' },
     preaprobado:{ name: 'Crédito preaprobado', icon: 'verified', group: 'ofertas', sizes: ['s', 'm'], desc: 'Un crédito listo para ti' },
     invertir:   { name: 'Haz crecer tu dinero', icon: 'savings', group: 'ofertas', sizes: ['m', 's'], desc: 'Inversiones desde $ 100' },
@@ -54,10 +56,10 @@
   };
   var GROUPS = [['productos', 'Tus productos'], ['herramientas', 'Herramientas'], ['ofertas', 'Para ti']];
   // Sugeridos: saldo y tarjeta arriba, luego pagos y gastos, y una oferta elegible
-  var DEFAULT = [['saldo', 'm'], ['tarjeta', 's'], ['salud', 's'], ['pagos', 'm'], ['gastos', 'm'], ['metas', 's'], ['preaprobado', 's']];
+  var DEFAULT = [['pila', 'm'], ['saldo', 'm'], ['tarjeta', 's'], ['uku', 's'], ['pagos', 'm'], ['gastos', 'm'], ['metas', 's'], ['preaprobado', 's']];
 
   function load() {
-    try { var p = JSON.parse(localStorage.getItem(KEY)); if (p && Array.isArray(p.items)) return p; } catch (e) {}
+    try { var p = JSON.parse(localStorage.getItem(KEY)); if (p && p.custom && Array.isArray(p.items)) return p; } catch (e) {}
     return { custom: false, items: DEFAULT.map(function (x) { return { id: x[0], size: x[1] }; }) };
   }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(pref)); } catch (e) {} }
@@ -79,24 +81,79 @@
     return window.Buscador && Buscador.shortcuts ? Buscador.shortcuts() : [];
   }
 
+
+  /* ---------- Mini gráficos (una serie, un solo tono de marca) ----------
+     Línea de 2 px con área tenue y punto final; barras con punta redondeada
+     apoyadas en la base y 2 px de separación. Solo se rotula lo clave. */
+  function spark(vals) {
+    if (vals.length < 2) return '';
+    var W = 100, H = 36, mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals), rg = mx - mn || 1;
+    var pts = vals.map(function (v, i) { return [i / (vals.length - 1) * W, H - 3 - (v - mn) / rg * (H - 6)]; });
+    var line = pts.map(function (q, i) { return (i ? 'L' : 'M') + q[0].toFixed(2) + ' ' + q[1].toFixed(2); }).join(' ');
+    var last = pts[pts.length - 1];
+    return '<span class="dw-spark" aria-hidden="true"><svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' +
+      '<path class="dw-spark__area" d="' + line + ' L' + W + ' ' + H + ' L0 ' + H + ' Z"/><path class="dw-spark__line" d="' + line + '"/></svg>' +
+      '<i style="left:100%;top:' + (last[1] / H * 100).toFixed(1) + '%"></i></span>';
+  }
+  function weekBars(vals, labels, hi) {
+    var mx = Math.max.apply(null, vals) || 1;
+    return '<span class="dw-wbars" aria-hidden="true">' + vals.map(function (v, i) {
+      return '<span class="dw-wbar' + (i === hi ? ' is-hi' : '') + '"><span class="dw-wbar__track"><i style="height:' + Math.max(4, Math.round(v / mx * 100)) + '%"></i></span>' +
+        (i === hi ? '<b>' + sens(money(v)) + '</b>' : '') + '<small>' + labels[i] + '</small></span>';
+    }).join('') + '</span>';
+  }
+  // Saldo de las cuentas día a día en los últimos 30 días (desde los movimientos)
+  function cashAccts(d) { return d ? d.accts.filter(function (a) { return (a.type === 'ahorro' && a.id !== 'sie1') || a.type === 'corriente' || a.type === 'efectivo'; }) : []; }
+  function balanceSeries(d) {
+    var cash = cashAccts(d), ids = cash.map(function (a) { return a.id; }), bal = cash.reduce(function (t, a) { return t + a.bal; }, 0);
+    var days = [], mi = 2, day = 8;
+    for (var k = 0; k < 31; k++) { days.unshift([mi, day]); day--; if (!day) { mi--; day = mi === 1 ? 30 : 31; } }
+    var net = {};
+    d.tx.forEach(function (t) { if (ids.indexOf(t.acct) < 0) return; var key = t.mi + ':' + t.day; net[key] = (net[key] || 0) + (t.cat === 'ingreso' ? t.amt : -t.amt); });
+    var out = new Array(days.length); out[days.length - 1] = bal;
+    for (var i = days.length - 1; i > 0; i--) out[i - 1] = out[i] - (net[days[i][0] + ':' + days[i][1]] || 0);
+    return out;
+  }
+  function stackPages() {
+    var d = data(), pages = [], o = d ? d.by[2] : null, day = 8 / 31;
+    pages.push({ icon: 'event', label: 'Vence hoy', value: sens(money(PAYS[0][1])), sub: PAYS[0][0], go: function () { pay(PAYS[0]); }, w: 3 });
+    var ks = Object.keys(BUDGET).map(function (k) { return { k: k, p: o ? o[k] / BUDGET[k] : 0 }; }).sort(function (a, b) { return b.p - a.p; });
+    if (ks[0] && ks[0].p > day + .15) pages.push({ icon: 'donut_large', label: 'Vas rápido en ' + CAT_NAMES[ks[0].k].toLowerCase(), value: pct(ks[0].p), sub: 'del presupuesto, y vamos por el ' + pct(day) + ' del mes', go: pfm, w: 2 });
+    if (d && d.card && d.card.owed) pages.push({ icon: 'credit_card', label: 'Tarjeta · hasta el 10 nov', value: sens(money(d.card.owed)), sub: 'Mastercard Black por pagar', go: function () { card('Mastercard Black'); }, w: 1 });
+    var tip = window.Asistente && Asistente.insights ? Asistente.insights()[0] : null;
+    if (tip) pages.push({ icon: 'lightbulb', label: 'Uku notó', value: '', sub: tip.title, go: pfm, w: 0 });
+    return pages.sort(function (a, b) { return b.w - a.w; }).slice(0, 4);
+  }
+  var stackGo = [];
+  function ukuLook() { return window.Clima && Clima.last ? Clima.last() : null; }
+
   /* ---------- Contenido por widget y tamaño ----------
      Cada render devuelve solo lo que cabe en ese tamaño. */
-  var SHORT = { saldo: 'Saldo', tarjeta: 'Tarjeta', pagos: 'Pagos', inversion: 'Inversión', prestamo: 'Préstamo', gastos: 'Gastos', presupuesto: 'Presupuesto', metas: 'Metas', salud: 'Salud', atajos: 'Atajo', preaprobado: 'Preaprobado', invertir: 'Invertir', seguro: 'Seguro' };
+  var SHORT = { uku: 'Uku hoy', saldo: 'Saldo', tarjeta: 'Tarjeta', pagos: 'Pagos', inversion: 'Inversión', prestamo: 'Préstamo', gastos: 'Gastos', presupuesto: 'Presupuesto', metas: 'Metas', salud: 'Salud', atajos: 'Atajo', preaprobado: 'Preaprobado', invertir: 'Invertir', seguro: 'Seguro' };
   function head(id, size) { var c = CATALOG[id]; return '<p class="dw-h"><span class="material-symbols-rounded" aria-hidden="true">' + c.icon + '</span>' + (size === 's' && SHORT[id] ? SHORT[id] : c.name) + '</p>'; }
   var R = {
     saldo: function (s) {
-      var d = data(), cash = d ? d.accts.filter(function (a) { return (a.type === 'ahorro' && a.id !== 'sie1') || a.type === 'corriente' || a.type === 'efectivo'; }) : [];
-      var tot = cash.reduce(function (t, a) { return t + a.bal; }, 0);
+      var d = data(), cash = cashAccts(d), tot = cash.reduce(function (t, a) { return t + a.bal; }, 0);
+      var go = function () { act('Cuenta PRINCIPAL'); };
       var b = '<p class="dw-value">' + sens(money(tot)) + '</p>';
-      if (s === 's') return { body: b + '<p class="dw-sub">En ' + cash.length + ' cuentas</p>', go: function () { act('Cuenta PRINCIPAL'); } };
-      return { body: '<div class="dw-split"><div>' + b + '<p class="dw-sub">En ' + cash.length + ' cuentas</p></div><div class="dw-split__r dw-rows">' + cash.slice(0, 3).map(function (a) { return '<span><span>' + esc(a.name) + '</span><b>' + sens(money(a.bal)) + '</b></span>'; }).join('') + '</div></div>', go: function () { act('Cuenta PRINCIPAL'); } };
+      if (s === 's') return { body: b + '<p class="dw-sub">En ' + cash.length + ' cuentas</p>', go: go };
+      var ser = d ? balanceSeries(d) : [], dl = ser.length ? tot - ser[0] : 0;
+      var trend = '<p class="dw-sub dw-1"><span class="' + (dl >= 0 ? 'is-in' : 'is-out') + '">' + sens((dl >= 0 ? '+' : '-') + money(Math.abs(dl))) + '</span> en 30 días</p>';
+      if (s === 'm') return { body: '<div class="dw-split"><div>' + b + trend + '</div><div class="dw-split__r">' + spark(ser) + '</div></div>', go: go };
+      return { body: b + trend + '<div class="dw-chart">' + spark(ser) + '</div><div class="dw-rows dw-rows--l">' + cash.slice(0, 3).map(function (a) { return '<span><span>' + esc(a.name) + '</span><b>' + sens(money(a.bal)) + '</b></span>'; }).join('') + '</div>', go: go };
     },
     tarjeta: function (s) {
       var d = data(), c = d && d.card, owed = c ? c.owed : 0, lim = c ? c.limit : 5000;
       var b = '<p class="dw-label">Por pagar</p><p class="dw-value">' + sens(money(owed)) + '</p>' + bar(owed / lim) + '<p class="dw-sub dw-1">Hasta el 10 nov</p>';
       if (s === 's') return { body: b, go: function () { card('Mastercard Black'); } };
-      return { body: '<div class="dw-split"><div>' + b + '</div><div class="dw-split__r"><p class="dw-label">Cupo disponible</p><p class="dw-value dw-value--sm">' + sens(money(lim - owed)) + '</p>' +
-        '<button class="dw-btn" data-dw-act="Pagar tarjeta">Pagar</button></div></div>', go: function () { card('Mastercard Black'); } };
+      var right = '<div class="dw-split__r"><p class="dw-label">Cupo disponible</p><p class="dw-value dw-value--sm">' + sens(money(lim - owed)) + '</p>' +
+        '<button class="dw-btn" data-dw-act="Pagar tarjeta">Pagar</button></div>';
+      if (s === 'm') return { body: '<div class="dw-split"><div>' + b + '</div>' + right + '</div>', go: function () { card('Mastercard Black'); } };
+      var MON = ['ago', 'sep', 'oct'];
+      var tx = d ? d.tx.filter(function (t) { return t.acct === 'and1'; }).sort(function (x, y) { return (y.mi * 40 + y.day) - (x.mi * 40 + x.day); }).slice(0, 3) : [];
+      return { body: '<div class="dw-split dw-split--top"><div>' + b + '</div>' + right + '</div><p class="dw-label dw-label--sec">Últimos consumos</p><div class="dw-list-in">' + tx.map(function (t) {
+        return '<span class="dw-tx"><span>' + esc(t.who) + '<small>' + t.day + ' ' + MON[t.mi] + '</small></span><b>' + sens('-' + money(t.amt)) + '</b></span>';
+      }).join('') + '</div>', go: function () { card('Mastercard Black'); } };
     },
     pagos: function (s) {
       var n = s === 's' ? 1 : s === 'm' ? 2 : 4;
@@ -137,7 +194,12 @@
       var n = s === 'l' ? 5 : 3, max = cats[0] ? cats[0].v : 1;
       var rows = cats.slice(0, n).map(function (c) { return '<span class="dw-cat"><span>' + CAT_NAMES[c.k] + '</span><b>' + sens(money(c.v)) + '</b>' + bar(c.v / max, 'dw-bar--ink') + '</span>'; }).join('');
       if (s === 'm') return { body: '<div class="dw-split"><div>' + b + '</div><div class="dw-split__r dw-cats">' + rows + '</div></div>', go: pfm };
-      return { body: b + '<div class="dw-cats dw-cats--l">' + rows + '</div><span class="dw-more">Ver Mis finanzas</span>', go: pfm };
+      // Grande: gasto por semana (una serie) + las 3 categorías principales
+      var wk = [0, 0, 0, 0]; // la última semana absorbe el 29 y 30 (no una barra de 2 días)
+      if (d) d.tx.forEach(function (t) { if (t.mi === 1 && t.cat !== 'ingreso' && t.cat !== 'ahorro') wk[Math.min(3, Math.floor((t.day - 1) / 7))] += t.amt; });
+      var hi = wk.indexOf(Math.max.apply(null, wk));
+      rows = cats.slice(0, 3).map(function (c) { return '<span class="dw-cat"><span>' + CAT_NAMES[c.k] + '</span><b>' + sens(money(c.v)) + '</b>' + bar(c.v / max, 'dw-bar--ink') + '</span>'; }).join('');
+      return { body: b + '<div class="dw-chart dw-chart--bars">' + weekBars(wk, ['1–7', '8–14', '15–21', '22–30'], hi) + '</div><div class="dw-cats">' + rows + '</div>', go: pfm };
     },
     presupuesto: function (s) {
       var d = data(), o = d ? d.by[2] : null, day = 8 / 31;
@@ -179,6 +241,21 @@
     invertir: function (s) {
       return { body: '<p class="dw-promo">Gana <b>7,25% al año</b>' + (s === 'm' ? ' mientras tu dinero sigue seguro' : '') + '</p><span class="dw-cta">' + (s === 'm' ? 'Invertir desde $ 100' : 'Invertir') + '</span>', go: function () { act('Crear inversión'); } };
     },
+    pila: function () {
+      var pages = stackPages(); stackGo = pages.map(function (x) { return x.go; });
+      return { body: '<div class="dw-stack" data-dw-stack>' + pages.map(function (x, i) {
+        return '<button class="dw-stack__page" data-dw-go="' + i + '"><span class="dw-stack__ic material-symbols-rounded">' + x.icon + '</span><span class="dw-stack__t">' +
+          '<span class="dw-label">' + x.label + '</span>' + (x.value ? '<span class="dw-value dw-value--sm">' + x.value + '</span>' : '') + '<span class="dw-sub">' + esc(x.sub) + '</span></span></button>';
+      }).join('') + '</div><span class="dw-dots" aria-hidden="true">' + pages.map(function (x, i) { return '<i' + (i ? '' : ' class="on"') + '></i>'; }).join('') + '</span>' };
+    },
+    uku: function (s) {
+      var c = ukuLook(), face = '<span class="dw-face dw-face--lg">' + (window.Asistente ? Asistente.faceIMG() : '') + '</span>';
+      if (!c) return { body: '<div class="dw-uku">' + face + '<p class="dw-sub dw-sub--ink">¿Qué me pongo hoy? Toca para verlo</p></div>', go: pfm };
+      var wear = c.look.hat === 'paraguas' ? 'umbrella' : c.look.hat === 'lana' ? 'ac_unit' : c.look.shirt === 'guayabera' || c.look.hat === 'paja' ? 'sunny' : 'cloud';
+      var head = '<p class="dw-temp"><span class="material-symbols-rounded" aria-hidden="true">' + wear + '</span>' + c.temp + '°' + (c.city ? '<small>' + esc(c.city) + '</small>' : '') + '</p>';
+      if (s === 's') return { body: '<div class="dw-uku">' + face + head + '</div>', go: pfm };
+      return { body: '<div class="dw-split"><div class="dw-uku">' + face + head + '</div><div class="dw-split__r dw-tip"><p>' + esc(c.text) + '</p></div></div>', go: pfm };
+    },
     seguro: function () {
       return { body: '<p class="dw-promo">Protege a los tuyos desde <b>$ 4 al mes</b></p><span class="dw-cta">Ver seguro</span>', go: function () { act('Seguro de vida'); } };
     }
@@ -216,6 +293,12 @@
     host.addEventListener('click', onClick);
     host.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.dw[role="button"]')) { e.preventDefault(); e.target.click(); } });
     dragInit();
+    // Pila: los puntos siguen a la página visible
+    list.addEventListener('scroll', function (e) {
+      var st = e.target; if (!st.classList || !st.classList.contains('dw-stack')) return;
+      var i = Math.round(st.scrollLeft / Math.max(1, st.clientWidth));
+      st.parentNode.querySelectorAll('.dw-dots i').forEach(function (d, k) { d.classList.toggle('on', k === i); });
+    }, true);
     list.addEventListener('contextmenu', function (e) { if (e.target.closest('.dw')) e.preventDefault(); }); // Android: mantener presionado
     var eye = document.getElementById('balance-toggle');
     var sync = function () { document.documentElement.classList.toggle('pb-masked', eye && eye.getAttribute('aria-pressed') === 'true'); };
@@ -253,6 +336,7 @@
     if (editing) return; // en edición, tocar un widget no lo abre
     if ((b = e.target.closest('[data-dw-pay]'))) { e.stopPropagation(); return pay(PAYS[+b.dataset.dwPay]); }
     if ((b = e.target.closest('[data-dw-act]'))) { e.stopPropagation(); return act(b.dataset.dwAct); }
+    if ((b = e.target.closest('[data-dw-go]'))) { e.stopPropagation(); fx('tap'); var gfn = stackGo[+b.dataset.dwGo]; return gfn && gfn(); }
     if ((b = e.target.closest('[data-dw-sc]'))) { e.stopPropagation(); var sc = shortcuts()[+b.dataset.dwSc]; return window.__runShortcut && __runShortcut(sc); }
     if ((b = e.target.closest('[data-dw-id]')) && gos[b.dataset.dwId]) { fx('tap'); gos[b.dataset.dwId](); }
   }
@@ -296,7 +380,9 @@
         var tr = t.getBoundingClientRect(), small = tr.width < list.clientWidth * .6;
         var after = small ? e.clientX > tr.left + tr.width / 2 : e.clientY > tr.top + tr.height / 2;
         var ref = after ? t.nextSibling : t;
-        if (ref !== drag.el && ref !== drag.el.nextSibling) { list.insertBefore(drag.el, ref); fx('detent'); }
+        // Tras mover, la grilla se reacomoda bajo el dedo: se espera un instante
+        // antes de volver a mover (si no, el widget "rebota" entre dos lugares)
+        if (ref !== drag.el && ref !== drag.el.nextSibling && performance.now() > (drag.lock || 0)) { list.insertBefore(drag.el, ref); drag.lock = performance.now() + 160; fx('detent'); }
       }
       drag.el.style.transform = '';
       var r = drag.el.getBoundingClientRect();
@@ -331,13 +417,16 @@
   function closeGallery() { back.classList.remove('open'); sheet.classList.remove('open'); }
   function paintGallery() {
     var have = items().map(function (w) { return w.id; }), full = have.length >= MAX;
+    var sug = suggestions(have);
     sheet.innerHTML = '<div class="as-sheet__handle"></div><h3>Agregar widget</h3><p>' + (full ? 'Ya tienes ' + MAX + ' widgets. Quita uno para agregar otro.' : 'Elige un widget y su tamaño. Puedes tener hasta ' + MAX + '.') + '</p>' +
-      GROUPS.map(function (g) {
-        var ids = Object.keys(CATALOG).filter(function (id) { return CATALOG[id].group === g[0]; });
+      [['sugeridos', 'Sugeridos para ti']].concat(GROUPS).map(function (g) {
+        var ids = g[0] === 'sugeridos' ? sug.map(function (x) { return x.id; }) : Object.keys(CATALOG).filter(function (id) { return CATALOG[id].group === g[0] && !sug.some(function (x) { return x.id === id; }); });
+        if (!ids.length) return '';
         return '<p class="as-sheet__label">' + g[1] + '</p>' + ids.map(function (id) {
+          var why = g[0] === 'sugeridos' ? sug.filter(function (x) { return x.id === id; })[0].why : '';
           var c = CATALOG[id], sz = pick[id] || c.sizes[0], on = have.indexOf(id) >= 0;
           return '<div class="dw-gal">' +
-            '<div class="dw-gal__head"><span class="dw-gal__ic material-symbols-rounded">' + c.icon + '</span><span class="dw-gal__t"><b>' + c.name + '</b><small>' + c.desc + '</small></span>' +
+            '<div class="dw-gal__head"><span class="dw-gal__ic material-symbols-rounded">' + c.icon + '</span><span class="dw-gal__t"><b>' + c.name + '</b><small>' + (why || c.desc) + '</small></span>' +
               '<button class="dw-gal__add" data-gal-add="' + id + '"' + (on || full ? ' disabled' : '') + '>' + (on ? 'Agregado' : 'Agregar') + '</button></div>' +
             (c.sizes.length > 1 ? '<div class="dw-gal__sizes" role="tablist">' + ['s', 'm', 'l'].filter(function (x) { return c.sizes.indexOf(x) >= 0; }).map(function (x) {
               return '<button class="sx-chip" role="tab" data-gal-size="' + id + ':' + x + '" aria-pressed="' + (x === sz) + '">' + SIZE[x] + '</button>';
@@ -345,6 +434,17 @@
             '<div class="dw-gal__prev"><div class="dw-grid dw-grid--prev">' + widgetHTML({ id: id, size: sz }, true) + '</div></div></div>';
         }).join('');
       }).join('');
+  }
+  // Sugeridos según la situación del cliente (solo los que no tiene)
+  function suggestions(have) {
+    var d = data(), out = [], o = d ? d.by[2] : null, day = 8 / 31;
+    var worst = Object.keys(BUDGET).map(function (k) { return o ? o[k] / BUDGET[k] : 0; }).sort(function (a, b) { return b - a; })[0] || 0;
+    if (d && d.card && d.card.owed) out.push({ id: 'tarjeta', why: 'Tienes ' + money(d.card.owed) + ' por pagar hasta el 10 nov' });
+    if (worst > day + .15) out.push({ id: 'presupuesto', why: 'Vas rápido en uno de tus presupuestos este mes' });
+    out.push({ id: 'pila', why: 'Lo urgente primero, en un solo widget' });
+    if (shortcuts().length) out.push({ id: 'atajos', why: 'Tienes ' + shortcuts().length + ' atajos grabados en el buscador' });
+    out.push({ id: 'uku', why: 'Mira qué se puso Uku según el clima de hoy' });
+    return out.filter(function (x) { return have.indexOf(x.id) < 0; }).slice(0, 3);
   }
   function onGallery(e) {
     var b;
@@ -357,7 +457,16 @@
     }
   }
 
-  function init() { mount(); paint(); }
+  /* Uku hoy: usa el clima si ya hay permiso de ubicación (o un escenario de
+     demo); si no, no lo pide desde Inicio: se pide al abrir Mis finanzas. */
+  function weather() {
+    if (!window.Clima) return;
+    Clima.onChange(paint);
+    var go = function () { Clima.get().then(function (c) { if (c) paint(); }); };
+    if (Clima.mode && Clima.mode() !== 'auto') return go();
+    if (navigator.permissions && navigator.permissions.query) navigator.permissions.query({ name: 'geolocation' }).then(function (r) { if (r.state === 'granted') go(); }).catch(function () {});
+  }
+  function init() { mount(); paint(); weather(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   document.addEventListener('i18n:change', function () { paint(); });
   // Salir de edición al tocar fuera de Destacados
