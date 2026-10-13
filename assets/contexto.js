@@ -95,7 +95,7 @@
 
   /* ---------- ¿Dónde está la persona? ---------- */
   function get() {
-    if (document.querySelector('.pf-page.open')) return 'finanzas';
+    if (document.querySelector('.view[data-view="1"].active, .pf-page.open:not(.pf-page--inline)')) return 'finanzas';
     if (document.querySelector('.card-detail.open')) return 'tarjetas';
     var t = document.querySelector('.tabs .tab.active');
     var id = t ? t.dataset.panel.toLowerCase() : 'destacado';
