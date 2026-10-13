@@ -37,7 +37,11 @@
   var ASSET = (document.currentScript && document.currentScript.src || location.href).replace(/[^/]*$/, '');
   var b3d = null, b3dP = null;
   function load3D() {
-    if (!b3dP) b3dP = import(ASSET + 'bosque3d.js').then(function (m) { b3d = m.supported() ? m : null; return b3d; }).catch(function () { return null; });
+    if (!b3dP) b3dP = import(ASSET + 'bosque3d.js').then(function (m) {
+      b3d = m.supported() ? m : null;
+      var c = window.Clima && Clima.last(); if (b3d && c) b3d.setLook(c.look); // Uku vestido según el clima
+      return b3d;
+    }).catch(function () { return null; });
     return b3dP;
   }
   function mount3D(el, score, gesture) {
@@ -646,7 +650,10 @@
         '<p class="as-sheet__label">Probar otro escenario (solo demo)</p><div class="as-rows">' +
         Object.keys(SCEN).map(function (k) {
           return '<button class="as-row as-row--btn" data-sc="' + k + '" aria-pressed="' + (ST.scenario === k) + '"><span class="as-row__main"><b>' + SCEN[k].label + '</b></span><span class="as-radio"></span></button>';
-        }).join('') + '</div>';
+        }).join('') + '</div>' +
+        (window.Clima ? '<p class="as-sheet__label">' + T('Clima de {nombre} (demo)', { nombre: C().name }) + '</p><div class="as-rows">' + Object.keys(Clima.labels).map(function (k) {
+          return '<button class="as-row as-row--btn" data-clima="' + k + '" aria-pressed="' + (Clima.mode() === k) + '"><span class="as-row__main"><b>' + Clima.labels[k] + '</b></span><span class="as-radio"></span></button>';
+        }).join('') + '</div>' : '');
     }
     sheet.innerHTML = html;
     back.classList.add('open'); sheet.classList.add('open'); fx('open');
@@ -655,6 +662,13 @@
   function onSheetClick(e) {
     var sb = e.target.closest('[data-sheet]');
     if (sb) return onSheetPF(sb);
+    var cb = e.target.closest('[data-clima]');
+    if (cb) {
+      fx('toggle');
+      sheet.querySelectorAll('[data-clima]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === cb)); });
+      Clima.set(cb.dataset.clima);
+      return;
+    }
     var b = e.target.closest('[data-who],[data-sc]');
     if (!b) return;
     if (b.dataset.who && ST.who !== b.dataset.who) { ST.who = b.dataset.who; fx('toggle'); }
@@ -1047,7 +1061,8 @@
     var cash = D.accts.filter(function (a) { return a.type === 'ahorro' && a.id !== 'sie1' || a.type === 'corriente' || a.type === 'efectivo'; });
     var avail = cash.reduce(function (s, a) { return s + a.bal; }, 0);
     var html = sumHTML(T('Tienes disponible hoy'), money(avail), [[T('Tienes en total'), money(D.assets)], [T('Debes'), money(D.debt), D.debt ? 'is-neg' : ''], [T('Neto'), money(D.assets - D.debt)]]);
-    html += ukuHTML([], sayHTML(0, T('Hoy tienes {monto} disponibles entre tus cuentas.', { monto: money(avail) }) +
+    var cl = window.Clima && Clima.last();
+    html += ukuHTML([], (cl ? sayHTML(0, esc(cl.text)) : '') + sayHTML(cl ? 1 : 0, T('Hoy tienes {monto} disponibles entre tus cuentas.', { monto: money(avail) }) +
       (D.card ? ' ' + T('Tu Mastercard Black tiene {deuda} por pagar; la fecha máxima es el 10 de noviembre.', { deuda: money(D.debt) }) : ''),
       (D.card && D.debt ? '<button class="uku-say__reply" data-pf="go:Pagar tarjeta">Pagar tarjeta</button>' : '') +
       '<button class="uku-say__reply" data-pf="ask:¿Cuánto tengo en total?">¿Cuánto tengo en total?</button>'));
@@ -1072,10 +1087,18 @@
   }
   /* El osito y su entorno: el bosque crece con tu salud financiera. Hay un
      solo lienzo 3D: se reutiliza entre meses y vuelve aquí al cerrar Uku. */
+  var climaPainted = null;
   function syncHero() {
     if (!isInline()) return;
     var hero = pf.querySelector('.pf-hero .b3d');
     if (!hero || !pf.closest('.view.active')) return;
+    // El clima se pide recién aquí (al abrir Mis finanzas), no al cargar la app
+    if (window.Clima) Clima.get().then(function (c) {
+      if (!c || c === climaPainted) return;
+      climaPainted = c;
+      if (b3d) b3d.setLook(c.look);
+      if (viewOf(ST.view).today) paintPF();
+    });
     var sc = +hero.dataset.score, g = hero.dataset.g ? JSON.parse(hero.dataset.g) : 'wave';
     if (!hero.querySelector('canvas')) mount3D(hero, sc, g);
     else if (b3d) b3d.setScore(sc);
@@ -1396,6 +1419,10 @@
   }
   function init() {
     build(); mountEntries(); paintEntries(); sheetDrag();
+    if (window.Clima) Clima.onChange(function (c) {
+      if (c && b3d) b3d.setLook(c.look);
+      climaPainted = c; if (isInline() && viewOf(ST.view).today) paintPF();
+    });
     var fv = document.querySelector('.view[data-view="1"]');
     if (fv && fv.querySelector('.pf-host')) {
       mountPF(); paintPF();

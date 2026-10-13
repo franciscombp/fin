@@ -738,8 +738,9 @@ html:not(.theme-y2k) .placeholder-view h1 { margin: 0; font: var(--cx-page) !imp
 .sx-btn--ghost { background: var(--bp-interaction-tertiary-bg); color: var(--bp-interaction-tertiary-fg); }
 
 /* Mis finanzas · el osito y su entorno arriba, sobre el mismo fondo de la página */
-.pf-page--inline .pf-hero { height: 240px; margin: var(--bp-semantic-spacing-micro-md) 0 0; background: transparent; }
-.pf-page--inline .pf-hero__badge { left: 50%; right: auto; top: 4px; bottom: auto; transform: translateX(-50%); white-space: nowrap; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); }
+.pf-page--inline .pf-hero { height: auto; margin: 0; background: transparent; display: flex; flex-direction: column; align-items: center; overflow: visible; }
+.pf-page--inline .pf-hero .b3d { position: relative; inset: auto; width: 100%; height: 260px; }
+.pf-page--inline .pf-hero__badge { position: relative; left: auto; right: auto; top: auto; bottom: auto; margin-top: -4px; white-space: nowrap; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); }
 .pf-page--inline .pf-hero__badge i { display: block; }
 .pf-page--inline .pf-sum { margin-top: var(--bp-semantic-spacing-micro-lg); }
 .pf-sum__stats b.is-neg, .pf-prod__val b.is-neg { color: var(--bp-theme-color-status-error-text); }
