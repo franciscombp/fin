@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="format-detection" content="telephone=no">
+    <!-- En el teléfono el documento no hace scroll: lo hace #home-page (ver
+         "Contenedor de la app" en sistema.css), así la barra inferior queda
+         fija de verdad en iOS. AppScroll es el scroll de la app en ambos casos. -->
+    <script>
+        window.AppScroll = {
+            el: function () {
+                var h = document.getElementById('home-page');
+                return h && matchMedia('(max-width: 767px)').matches ? h : (document.scrollingElement || document.documentElement);
+            },
+            top: function () { return this.el().scrollTop; },
+            to: function (o) { this.el().scrollTo(o); }
+        };
+    </script>
     <meta name="description" content="Pichibank app - POC Rediseño">
     <!-- En Android el theme-color pinta la barra superior; usamos el gris del
          fondo (no el amarillo de marca) para que la cabecera no se vea amarilla. -->
@@ -6644,7 +6657,7 @@
             clearTimeout(revealTimer);
             homeView.classList.remove('reveal');
             homeView.classList.add('is-loading');
-            window.scrollTo({ top: 0 });
+            AppScroll.to({ top: 0 });
             loadTimer = setTimeout(() => {
                 homeView.classList.remove('is-loading');
                 homeView.classList.add('reveal');
@@ -6806,7 +6819,7 @@
                 // header) para que quede realmente fuera de vista antes de
                 // ocultarlo — con menos, tabs todavía no llega a su punto
                 // sticky y se ve el banner a medio salir.
-                window.scrollTo({ top: banner.offsetHeight, behavior: 'smooth' });
+                AppScroll.to({ top: banner.offsetHeight, behavior: 'smooth' });
                 setTimeout(() => {
                     banner.classList.add('is-hidden');
                     // Ese alto que acaba de desaparecer arriba había que
@@ -6815,11 +6828,11 @@
                     // de la sección salta hacia arriba ese mismo alto de
                     // nuevo (se resta dos veces). header/tabs, al ser
                     // sticky, no se mueven ni con esto ni sin esto.
-                    window.scrollTo({ top: 0 });
+                    AppScroll.to({ top: 0 });
                 }, 400);
             } else {
                 banner.classList.remove('is-hidden');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                AppScroll.to({ top: 0, behavior: 'smooth' });
             }
         }
 
@@ -6956,7 +6969,7 @@
 
             prev.classList.remove('active', 'entering');
             next.classList.add('active', 'entering');
-            window.scrollTo({ top: 0 });
+            AppScroll.to({ top: 0 });
             if (index === 0) simulateLoad(700); // Destacado sí carga datos reales
 
             viewSwitchTimer = setTimeout(() => next.classList.remove('entering'), 500);
@@ -6986,7 +6999,7 @@
         window.__goView = function (index) {
             const item = document.querySelector(`.nav-item[data-view="${index}"]`);
             if (item && index !== currentView) item.click();
-            else window.scrollTo({ top: 0 });
+            else AppScroll.to({ top: 0 });
         };
 
         // Reset de navegación a Inicio/Destacado (lo usa app.js al iniciar sesión)
@@ -7008,7 +7021,7 @@
                 t.classList.toggle('active', t.dataset.panel === 'Destacado');
             });
             showPanel('Destacado');
-            window.scrollTo({ top: 0 });
+            AppScroll.to({ top: 0 });
         };
 
         // ---------- Ocultar / mostrar saldo ----------
