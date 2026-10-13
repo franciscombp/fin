@@ -425,5 +425,5 @@
     open();
   }, true);
 
-  window.Buscador = { open: open, close: close };
+  window.Buscador = { open: open, close: close, shortcuts: function () { return shortcuts.slice(); } };
 })();
