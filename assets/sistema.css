@@ -126,28 +126,56 @@
 .card__footer-value { font: 600 17px/24px var(--sol-font, Roboto, sans-serif) !important; }
 .card__footer-label { font: var(--cx-sub) !important; color: var(--cx-muted) !important; }
 
-/* ---------- Banners de Inicio: ilustración + texto tranquilo ---------- */
+/* ---------- bp-banner-carousel / bp-banner (Inicio) ----------
+   Track con padding grid/margin y gap 8; cada bp-banner ocupa el ancho del
+   contenido: 136 alto, radius/md, padding 16, texto body-md/medium en
+   text/brand y acción bp-action-button secondary (con blur overlay). */
+html:not(.theme-y2k) .home-banner { padding: var(--bp-semantic-spacing-micro-md) 0 !important; }
+html:not(.theme-y2k) .home-banner__track {
+  gap: var(--bp-semantic-spacing-micro-md) !important;
+  padding: 0 var(--bp-layout-grid-margin) !important; scroll-padding: 0 var(--bp-layout-grid-margin) !important;
+}
+html:not(.theme-y2k) .home-banner__slide {
+  height: 136px !important; padding: var(--bp-semantic-spacing-macro-sm) !important; align-items: stretch !important;
+  border-radius: var(--bp-semantic-radius-md) !important;
+}
 .home-banner__figure { display: none; }
-.home-banner__slide { padding: 16px 18px; }
-.home-banner__slide--1 { background: #fbf6e3; }
-.home-banner__slide--2 { background: #eef1f6; }
-.home-banner__slide--3 { background: #edf2ee; }
+html:not(.theme-y2k) .home-banner__slide--1 { background: var(--bp-theme-color-surface-brand-subtle) !important; }
+html:not(.theme-y2k) .home-banner__slide--2 { background: var(--bp-theme-color-status-info-bg-subtle) !important; }
+html:not(.theme-y2k) .home-banner__slide--3 { background: var(--bp-theme-color-status-success-bg-subtle) !important; }
 :root[data-theme="dark"] .home-banner__slide--1,
 :root[data-theme="dark"] .home-banner__slide--2,
-:root[data-theme="dark"] .home-banner__slide--3 { background: var(--cx-surface); }
+:root[data-theme="dark"] .home-banner__slide--3 { background: var(--bp-theme-color-surface-container-default) !important; }
 .home-banner__img { position: absolute; right: 4px; bottom: 6px; height: calc(100% - 12px); width: auto; max-width: 46%; object-fit: contain; object-position: right bottom; pointer-events: none; }
-.home-banner__text { max-width: 56%; }
-.home-banner__title { font: 500 15px/21px var(--sol-font, Roboto, sans-serif) !important; color: var(--cx-ink) !important; letter-spacing: 0 !important; }
+html:not(.theme-y2k) .home-banner__text { max-width: 56%; justify-content: space-between !important; gap: var(--bp-semantic-spacing-micro-md) !important; }
+html:not(.theme-y2k) .home-banner__title { font: var(--ui-body-md-medium) !important; color: var(--bp-theme-color-text-brand) !important; letter-spacing: 0 !important; }
+html:not(.theme-y2k) .home-banner__cta {
+  align-self: flex-start;
+  -webkit-backdrop-filter: blur(var(--bp-semantic-effects-blur-overlay)) !important; backdrop-filter: blur(var(--bp-semantic-effects-blur-overlay)) !important;
+}
 
-/* ---------- Promociones: tarjeta neutra con imagen, título discreto ---------- */
-.promo { background: var(--cx-surface) !important; color: var(--cx-ink) !important; justify-content: flex-end; flex-direction: column; align-items: stretch !important; padding: 14px !important; height: 236px !important; box-shadow: none; }
+/* ---------- bp-banner-carousel-vertical / bp-banner-vertical (Promociones) ----------
+   Cards de 144×256, radius/md, superficie page/default; scroll horizontal
+   con padding grid/margin y gap 8. */
+html:not(.theme-y2k) .promos { gap: var(--bp-semantic-spacing-micro-md) !important; padding: 0 var(--bp-layout-grid-margin) !important; scroll-padding: 0 var(--bp-layout-grid-margin) !important; }
+html:not(.theme-y2k) .section--bleed .section__title { padding: 0 var(--bp-layout-grid-margin) !important; }
+.promo {
+  background: var(--bp-theme-color-surface-page-default) !important; color: var(--bp-theme-color-text-primary) !important;
+  flex: 0 0 144px !important; width: 144px !important; height: 256px !important;
+  border-radius: var(--bp-semantic-radius-md) !important;
+  justify-content: flex-end; flex-direction: column; align-items: stretch !important; padding: var(--bp-semantic-spacing-micro-lg) !important; box-shadow: none;
+}
 .promo::after { display: none !important; }
-.promo .promo__img { position: absolute; left: 10px; right: 10px; top: 12px; height: 130px; width: calc(100% - 20px); object-fit: contain; pointer-events: none; }
-.promo .promo__title { position: relative; font: 500 14px/19px var(--sol-font, Roboto, sans-serif) !important; color: var(--cx-ink) !important; padding-right: 30px; }
-.promo .promo__go { background: var(--cx-fill) !important; color: var(--cx-ink); -webkit-backdrop-filter: none; backdrop-filter: none; width: 28px !important; height: 28px !important; border-radius: 50% !important; }
+.promo .promo__img { position: absolute; left: 10px; right: 10px; top: 12px; height: 150px; width: calc(100% - 20px); object-fit: contain; pointer-events: none; }
+.promo .promo__title { position: relative; font: var(--ui-body-sm-medium) !important; color: var(--bp-theme-color-text-primary) !important; padding-right: 0; }
 .promo span { text-shadow: none !important; }
-.promo .promo__go { top: 10px !important; right: 10px !important; bottom: auto !important; }
-.promo .promo__title { padding-right: 0; }
+.promo .promo__go {
+  top: var(--bp-semantic-spacing-micro-md) !important; right: var(--bp-semantic-spacing-micro-md) !important; bottom: auto !important;
+  width: var(--bp-semantic-size-interactive-xxs) !important; height: var(--bp-semantic-size-interactive-xxs) !important;
+  border-radius: var(--bp-semantic-radius-sm) !important;
+  background: var(--bp-interaction-secondary-bg) !important; color: var(--bp-interaction-secondary-fg) !important;
+  -webkit-backdrop-filter: blur(var(--bp-semantic-effects-blur-overlay)); backdrop-filter: blur(var(--bp-semantic-effects-blur-overlay));
+}
 
 /* En escritorio la tarjeta de débito conserva su proporción de celular
    (el arte se recortaba gigante al estirarse a todo el ancho). */
@@ -327,7 +355,7 @@ html:not(.theme-y2k) .tab.active:active { background: var(--bp-interaction-selec
   --cx-body: var(--ui-body-md-medium);
   --cx-sub: var(--ui-body-sm-medium);
   --cx-caption: var(--bp-semantic-typography-brand-body-xs-semibold-font-weight) var(--bp-semantic-typography-brand-body-xs-semibold-font-size)/var(--bp-semantic-typography-brand-body-xs-semibold-line-height) var(--sol-font, Roboto, sans-serif);
-  --cx-page: var(--bp-semantic-typography-brand-headline-md-font-weight) var(--bp-semantic-typography-brand-headline-md-font-size)/var(--bp-semantic-typography-brand-headline-md-line-height) var(--sol-font, Roboto, sans-serif);
+  --cx-page: var(--bp-semantic-typography-brand-headline-sm-font-weight) var(--bp-semantic-typography-brand-headline-sm-font-size)/var(--bp-semantic-typography-brand-headline-sm-line-height) var(--sol-font, Roboto, sans-serif);
   --cx-amount: var(--bp-semantic-typography-brand-numeric-md-font-weight) var(--bp-semantic-typography-brand-numeric-md-font-size)/var(--bp-semantic-typography-brand-numeric-md-line-height) var(--sol-font, Roboto, sans-serif);
   --cx-amount-sm: var(--bp-semantic-typography-brand-numeric-xs-font-weight) var(--bp-semantic-typography-brand-numeric-xs-font-size)/var(--bp-semantic-typography-brand-numeric-xs-line-height) var(--sol-font, Roboto, sans-serif);
   --cx-line: var(--bp-theme-color-border-divider);
@@ -335,10 +363,33 @@ html:not(.theme-y2k) .tab.active:active { background: var(--bp-interaction-selec
   --ui-body-md-semibold: var(--bp-semantic-typography-brand-body-md-semibold-font-weight) var(--bp-semantic-typography-brand-body-md-semibold-font-size)/var(--bp-semantic-typography-brand-body-md-semibold-line-height) var(--sol-font, Roboto, sans-serif);
 }
 
+/* ---- bp-top-bar + bp-page-header ----
+   Barra 56 alto con inset grid/inset (8); botones bp-navigation-button 48.
+   Título colapsado title/md; encabezado expandido 28/600 en tertiary/fg
+   y descripción body-md/medium secondary. */
+html:not(.theme-y2k) .detail-topbar__row { height: var(--bp-semantic-size-interactive-md) !important; padding: 0 var(--bp-layout-grid-inset) !important; gap: 0 !important; }
+html:not(.theme-y2k) .detail-topbar__title { font: var(--ui-title-md) !important; color: var(--bp-interaction-tertiary-fg) !important; padding: 0 var(--bp-semantic-spacing-micro-md); }
+html:not(.theme-y2k) .detail-title, html:not(.theme-y2k) .cd-title, .pf-head h1 {
+  font: var(--cx-page) !important; font-family: var(--sol-font, Roboto, sans-serif) !important; letter-spacing: 0 !important;
+  color: var(--bp-interaction-tertiary-fg) !important;
+}
+.push-transfer-back {
+  height: var(--bp-semantic-size-interactive-sm) !important; min-width: var(--bp-semantic-size-interactive-sm);
+  padding: 0 var(--bp-semantic-spacing-micro-lg) 0 var(--bp-semantic-spacing-micro-md) !important; gap: var(--bp-semantic-spacing-micro-sm) !important;
+  border-radius: var(--bp-semantic-radius-sm) !important; justify-content: center;
+  background: var(--bp-interaction-tertiary-bg) !important; color: var(--bp-interaction-tertiary-fg) !important;
+  font: var(--ui-label-md) !important;
+}
+.push-transfer-back:hover { background: var(--bp-interaction-tertiary-bg--hover) !important; }
+.push-transfer-back:active { background: var(--bp-interaction-tertiary-bg--active) !important; }
+.push-transfer-back .material-symbols-rounded { font-size: var(--bp-semantic-size-icon-md); }
+
 /* ---- bp-section: margen lateral grid/margin, título title/sm ---- */
 html:not(.theme-y2k) .section { padding-left: var(--bp-layout-grid-margin) !important; padding-right: var(--bp-layout-grid-margin) !important; }
+/* Dentro de páginas que ya aplican grid/margin, la sección no lo suma otra vez */
+html:not(.theme-y2k) .push-page__inner .section, html:not(.theme-y2k) .cd-inner .section { padding-left: 0 !important; padding-right: 0 !important; }
 html:not(.theme-y2k) .section__title { height: var(--bp-semantic-size-interactive-xs); gap: var(--bp-semantic-spacing-micro-lg); }
-html:not(.theme-y2k) .section__title h2, .pf-sec h2, .as-hub__head h2, .pv-sec h2, .dw-section .section__title h2 {
+html:not(.theme-y2k) .section__title h2, .pf-sec h2, .as-hub__head h2, .pv-sec h2, .dw-section .section__title h2, html:not(.theme-y2k) .cd-subtitle {
   font: var(--cx-headline) !important; letter-spacing: 0 !important; color: var(--bp-theme-color-text-primary) !important;
 }
 .pf-head h1, .as-hub__hi { font: var(--cx-page) !important; letter-spacing: 0 !important; }

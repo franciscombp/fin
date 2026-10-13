@@ -6370,7 +6370,8 @@
                 // se calcula su lugar dentro del scroll del track.
                 const el = slides[pos];
                 const elLeftInTrack = el.getBoundingClientRect().left - bannerTrack.getBoundingClientRect().left + bannerTrack.scrollLeft;
-                const target = elLeftInTrack - 16; // mismo padding que .section (grid-margin del DS)
+                // El padding del track es el grid/margin del DS (lo fija el CSS).
+                const target = elLeftInTrack - (parseFloat(getComputedStyle(bannerTrack).paddingLeft) || 0);
                 bannerTrack.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
             }
 
