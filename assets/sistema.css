@@ -49,7 +49,7 @@
 
 /* ---------- Tarjetas: un solo radio, un solo relleno ---------- */
 .dw, .as-tile, .pf-ins { border-radius: var(--bp-semantic-radius-md); }
-.dw, .pf-ins { padding: 20px; }
+.pf-ins { padding: 20px; }
 .as-tile { padding: 16px; }
 .as-tile__t { font: var(--cx-headline); }
 .as-tile--portal .as-tile__t { font: var(--cx-headline); font-size: 22px; line-height: 28px; }
