@@ -176,6 +176,8 @@
       if (first) first.click();
     });
     el.addEventListener('click', function (e) {
+      // Tocar el espacio vacío (debajo de los resultados) también cierra
+      if (e.target === results || e.target.classList.contains('sx-back')) return close();
       var b = e.target.closest('[data-sx],[data-sx-i]');
       if (!b) return;
       if (b.dataset.sx === 'close') return close();
@@ -214,6 +216,43 @@
       if (sy !== null && Math.abs(e.touches[0].clientY - sy) > 8 && document.activeElement === input) input.blur();
     }, { passive: true });
     results.addEventListener('scroll', function () { if (document.activeElement === input) input.blur(); }, { passive: true });
+    // Deslizar hacia arriba para cerrar (como Spotlight): desde el campo de
+    // búsqueda, o desde los resultados cuando ya no hay más para ver.
+    var panel = el.querySelector('.sx-panel'), back = el.querySelector('.sx-back'), sw = null;
+    panel.addEventListener('touchstart', function (e) {
+      if (e.touches.length !== 1) { sw = null; return; }
+      var t = e.touches[0];
+      sw = { x0: t.clientX, y0: t.clientY, dy: 0, on: false, head: !!e.target.closest('.sx-head'),
+        end: results.scrollTop + results.clientHeight >= results.scrollHeight - 2, s: [[t.clientY, performance.now()]] };
+    }, { passive: true });
+    panel.addEventListener('touchmove', function (e) {
+      if (!sw) return;
+      var t = e.touches[0], dy = t.clientY - sw.y0, dx = t.clientX - sw.x0;
+      if (!sw.on) {
+        if (dy < -10 && Math.abs(dy) > Math.abs(dx) && (sw.head || sw.end)) {
+          sw.on = true; sw.y0 = t.clientY; dy = 0; input.blur();
+          panel.style.transition = 'none'; back.style.transition = 'none';
+        } else if (Math.abs(dy) > 10 || Math.abs(dx) > 10) { sw = null; return; }
+        else return;
+      }
+      e.preventDefault();
+      sw.dy = Math.min(0, dy);
+      panel.style.transform = 'translateY(' + (sw.dy * .8) + 'px)';
+      panel.style.opacity = String(Math.max(.2, 1 + sw.dy / 360));
+      back.style.opacity = String(Math.max(0, 1 + sw.dy / 300));
+      sw.s.push([t.clientY, performance.now()]); if (sw.s.length > 5) sw.s.shift();
+    }, { passive: false });
+    var swEnd = function () {
+      if (!sw) return;
+      var g = sw; sw = null;
+      if (!g.on) return;
+      var a = g.s[0], b = g.s[g.s.length - 1], v = (b[0] - a[0]) / Math.max(1, b[1] - a[1]);
+      panel.style.transition = ''; back.style.transition = '';
+      if (g.dy < -90 || (v < -.5 && g.dy < -24)) close();
+      panel.style.transform = ''; panel.style.opacity = ''; back.style.opacity = '';
+    };
+    panel.addEventListener('touchend', swEnd);
+    panel.addEventListener('touchcancel', swEnd);
     // El panel ocupa sólo el alto visible: con teclado abierto termina
     // justo encima de él y los resultados hacen scroll.
     if (window.visualViewport) {
@@ -351,6 +390,7 @@
     if (el._fit) el._fit();
     document.documentElement.classList.add('sx-open');
     input.focus({ preventScroll: true }); // dentro del gesto: iOS sí muestra el teclado
+    if (window.Overlay) Overlay.push('sx', function () { close(); }); // el "atrás" del teléfono lo cierra
     fx('open');
   }
   function close(silent) {
@@ -360,13 +400,14 @@
     input.blur();
     el.classList.remove('open');
     document.documentElement.classList.remove('sx-open');
+    if (window.Overlay) Overlay.done('sx');
     if (!silent) fx('close');
   }
 
   /* ---------- Gesto: deslizar hacia abajo desde el tope de Inicio ---------- */
   function homeVisible() {
     var h = document.getElementById('home-page');
-    return h && !h.classList.contains('hidden') && document.body.style.overflow !== 'hidden' &&
+    return h && !h.classList.contains('hidden') && document.body.style.overflow !== 'hidden' && !document.documentElement.classList.contains('has-sheet') &&
       !document.querySelector('.push-page.open, .as-page.open, .pf-page.open:not(.pf-page--inline), .sheet.open, .card-detail.open, #login-screen.active');
   }
   var pull = null, PULL = 72;

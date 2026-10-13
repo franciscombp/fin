@@ -216,6 +216,7 @@
     host.addEventListener('click', onClick);
     host.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.dw[role="button"]')) { e.preventDefault(); e.target.click(); } });
     dragInit();
+    list.addEventListener('contextmenu', function (e) { if (e.target.closest('.dw')) e.preventDefault(); }); // Android: mantener presionado
     var eye = document.getElementById('balance-toggle');
     var sync = function () { document.documentElement.classList.toggle('pb-masked', eye && eye.getAttribute('aria-pressed') === 'true'); };
     if (eye) new MutationObserver(sync).observe(eye, { attributes: true, attributeFilter: ['aria-pressed'] });
@@ -268,9 +269,9 @@
         clearTimeout(pressT);
         var x0 = e.clientX, y0 = e.clientY;
         var cancel = function (ev) { if (!ev || Math.hypot(ev.clientX - x0, ev.clientY - y0) > 8) { clearTimeout(pressT); off(); } };
-        var off = function () { list.removeEventListener('pointermove', cancel); list.removeEventListener('pointerup', up1); };
-        var up1 = function () { clearTimeout(pressT); off(); };
-        list.addEventListener('pointermove', cancel); list.addEventListener('pointerup', up1);
+        var off = function () { list.removeEventListener('pointermove', cancel); list.removeEventListener('pointerup', up1); list.removeEventListener('pointercancel', up1); };
+        var up1 = function () { clearTimeout(pressT); off(); }; // soltar o empezar a hacer scroll cancela
+        list.addEventListener('pointermove', cancel); list.addEventListener('pointerup', up1); list.addEventListener('pointercancel', up1);
         pressT = setTimeout(function () { off(); drag = { moved: true }; setEditing(true); setTimeout(function () { drag = null; }, 400); }, 450);
         return;
       }

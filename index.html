@@ -1693,7 +1693,10 @@
             transform: translate(-50%, 100%);
             transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
             padding: 8px 16px calc(24px + env(safe-area-inset-bottom, 0px));
-            touch-action: none;
+            max-height: 86vh;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            touch-action: pan-y;
             will-change: transform;
         }
 
@@ -7253,41 +7256,7 @@
             closeSheet();
         });
 
-        // Arrastrar para cerrar (drag-to-dismiss)
-        let dragStartY = null, dragDelta = 0;
-
-        sheet.addEventListener('pointerdown', e => {
-            // solo desde el handle o zonas no interactivas
-            if (e.target.closest('button')) return;
-            dragStartY = e.clientY;
-            dragDelta = 0;
-            sheet.classList.add('dragging');
-            sheet.setPointerCapture(e.pointerId);
-        });
-
-        sheet.addEventListener('pointermove', e => {
-            if (dragStartY === null) return;
-            const was = dragDelta > 90;
-            dragDelta = Math.max(0, e.clientY - dragStartY);
-            if (was !== dragDelta > 90) fx('detent'); // cruza el umbral de cierre
-            sheet.style.transform = `translate(-50%, ${dragDelta}px)`;
-        });
-
-        sheet.addEventListener('pointerup', () => {
-            if (dragStartY === null) return;
-            sheet.classList.remove('dragging');
-            dragStartY = null;
-            if (dragDelta > 90) {
-                closeSheet();
-            } else {
-                sheet.style.transform = '';
-            }
-        });
-
-        // Escape cierra el sheet
-        window.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && sheet.classList.contains('open')) closeSheet();
-        });
+        // Arrastrar para cerrar, Escape y "atrás": assets/sheets.js (igual para todas las hojas)
 
         // ---------- Detalle de tarjeta (estilo Apple Wallet) ----------
         const cardDetail = document.getElementById('card-detail');
@@ -7831,6 +7800,7 @@
 
     <script src="./app.js"></script>
     <script src="./haptics.js"></script>
+    <script src="./assets/sheets.js"></script>
     <script src="./assets/clima.js"></script>
     <script src="./assets/asistente.js"></script>
     <script src="./assets/contexto.js"></script>
