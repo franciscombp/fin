@@ -1048,7 +1048,7 @@
         }
 
         .amount-trend .material-symbols-rounded {
-            color: #1e9e5a;
+            color: var(--bp-theme-color-data-positive, #218c3b);
             font-size: 24px;
         }
 
@@ -3046,7 +3046,7 @@
         }
 
         .push-transfer-success__icon {
-            color: #1e9e5a;
+            color: var(--bp-theme-color-status-success-icon, #299846);
             font-size: 64px;
             margin-bottom: 12px;
             animation: transferSuccessPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -3102,7 +3102,7 @@
             margin-top: 6px;
             min-height: 15px;
         }
-        .push-field__hint--error { color: #c0392b; font-weight: 600; }
+        .push-field__hint--error { color: var(--bp-theme-color-status-error-text, #d50707); font-weight: 600; }
 
         .push-input, .push-select {
             width: 100%;
@@ -3173,7 +3173,7 @@
             font-variant-numeric: tabular-nums;
         }
 
-        .finance-hero__value--positive { color: #1e9e5a; }
+        .finance-hero__value--positive { color: var(--bp-theme-color-data-positive, #218c3b); }
         .finance-hero__value--negative { color: var(--bp-status-warning-bg); }
 
         .finance-hero__divider {
@@ -3196,7 +3196,7 @@
 
         .finance-networth strong { color: var(--bp-status-warning-bg); font-weight: 700; }
         .finance-networth.is-positive { background: rgba(30, 158, 90, 0.12); }
-        .finance-networth.is-positive strong { color: #1e9e5a; }
+        .finance-networth.is-positive strong { color: var(--bp-theme-color-data-positive, #218c3b); }
         .finance-networth .material-symbols-rounded { font-size: 18px; }
 
         #push-cta { margin-top: 8px; }
@@ -5187,6 +5187,9 @@
                     <span class="material-symbols-rounded">arrow_back</span>
                 </button>
                 <span class="detail-topbar__title" id="push-topbar-title"></span>
+                <button class="icon-button push-eye" id="push-eye" aria-label="Ocultar saldos" aria-pressed="false">
+                    <span class="material-symbols-rounded">visibility</span>
+                </button>
             </div>
         </div>
         <div class="push-page__inner">
@@ -5504,7 +5507,7 @@
                 <button class="sub-item" data-action="${m[1]}">
                     <span class="sub-item__logo" style="background:${m[4]};"><span class="material-symbols-rounded">${m[0]}</span></span>
                     <span class="sub-item__info"><span class="sub-item__name">${m[1]}</span><span class="sub-item__meta">${m[2]}</span></span>
-                    <span class="sub-item__price" style="color:${m[3][0] === '+' ? '#1e9e5a' : 'var(--bp-text-primary)'};">${m[3]}</span>
+                    <span class="sub-item__price" style="color:${m[3][0] === '+' ? 'var(--bp-theme-color-data-positive)' : 'var(--bp-text-primary)'};">${m[3]}</span>
                 </button>`).join('');
         }
         renderMovs();
@@ -6075,6 +6078,8 @@
             // genérico de Resumen/Movimientos que se repetía en todos.
             if (window.ProductView && ProductView.has(title)) {
                 pushPage.classList.add('is-product');
+                pushPage.classList.toggle('is-account', !!(ProductView.isAccount && ProductView.isAccount(title)));
+                if (ProductView.isAccount && ProductView.isAccount(title)) pushTopbarTitle.textContent = ProductView.title(title);
                 document.getElementById('push-extra').innerHTML = ProductView.html(title);
                 return;
             }
@@ -6096,7 +6101,7 @@
 
         function openPushPage(title, originEl) {
             fx('open');
-            pushPage.classList.remove('is-product');
+            pushPage.classList.remove('is-product', 'is-account');
             pushTitle.textContent = title;
             pushTopbarTitle.textContent = title;
             transferFlow = null; // reinicia el flujo si había quedado a medias
@@ -6188,6 +6193,24 @@
         }
 
         document.getElementById('push-back').addEventListener('click', closePushPage);
+        // Ojo de la cuenta: alterna el mismo ocultar-saldos global del Inicio
+        (function () {
+            const eye = document.getElementById('push-eye');
+            const global = document.getElementById('balance-toggle');
+            const sync = () => {
+                const on = document.documentElement.classList.contains('pb-masked');
+                eye.setAttribute('aria-pressed', on ? 'true' : 'false');
+                eye.setAttribute('aria-label', on ? 'Mostrar saldos' : 'Ocultar saldos');
+                eye.querySelector('.material-symbols-rounded').textContent = on ? 'visibility_off' : 'visibility';
+            };
+            eye.addEventListener('click', () => {
+                if (global) global.click();
+                else document.documentElement.classList.toggle('pb-masked');
+                setTimeout(sync, 0);
+            });
+            new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+            sync();
+        })();
         window.addEventListener('keydown', e => {
             if (e.key === 'Escape' && pushPage.classList.contains('open')) closePushPage();
         });
@@ -6315,18 +6338,22 @@
 
         // ---------- Banner de ofertas: carrusel infinito ----------
         const BANNER_SLIDES = [
-            { theme: 1, title: 'Ofertas todo el año con tus tarjetas Pichibank', cta: 'Ver ofertas', img: 'ofertas' },
-            { theme: 2, title: 'Acumula millas en cada compra con tu tarjeta de crédito', cta: 'Conocer más', img: 'millas' },
-            { theme: 3, title: 'Mira en qué se va tu plata con Mis finanzas', cta: 'Ver Mis finanzas', act: 'Modo finanzas', img: 'finanzas' },
+            { theme: 1, title: 'Ofertas todo el año con tus tarjetas Pichibank', cta: 'Ver ofertas', photo: 'foto-ofertas' },
+            { theme: 2, title: 'Obtén protección adicional pensada para tu día a día', cta: 'Ver más información', photo: 'foto-proteccion' },
+            { theme: 3, title: 'Genera ganancias con tus ahorros abriendo un Depósito a Plazo', cta: 'Simular ganancias', photo: 'foto-deposito' },
         ];
 
+        // bp-banner con foto de fondo (assets/banners/foto-*.jpg). Si la
+        // foto no está, el slide queda con la superficie de marca y el
+        // texto sigue legible (ver .is-nophoto en sistema.css).
         function bannerSlideHTML(s) {
             return `
-                <div class="home-banner__slide home-banner__slide--${s.theme}" data-action="${s.act || s.cta}">
-                    <img class="home-banner__img" src="./assets/banners/${s.img}.webp" alt="" loading="lazy" draggable="false">
+                <div class="home-banner__slide home-banner__slide--photo home-banner__slide--${s.theme}" data-action="${s.act || s.cta}">
+                    <img class="home-banner__photo" src="./assets/banners/${s.photo}.jpg" alt="" draggable="false"
+                         onerror="this.closest('.home-banner__slide').classList.add('is-nophoto'); this.remove();">
                     <div class="home-banner__text">
                         <p class="home-banner__title">${s.title}</p>
-                        <button class="home-banner__cta" data-action="${s.act || s.cta}">${s.cta}<span class="material-symbols-rounded">arrow_forward</span></button>
+                        <button class="home-banner__cta" data-action="${s.act || s.cta}">${s.cta}<span class="material-symbols-rounded">chevron_right</span></button>
                     </div>
                 </div>`;
         }
@@ -6370,7 +6397,8 @@
                 // se calcula su lugar dentro del scroll del track.
                 const el = slides[pos];
                 const elLeftInTrack = el.getBoundingClientRect().left - bannerTrack.getBoundingClientRect().left + bannerTrack.scrollLeft;
-                const target = elLeftInTrack - 16; // mismo padding que .section (grid-margin del DS)
+                // El padding del track es el grid/margin del DS (lo fija el CSS).
+                const target = elLeftInTrack - (parseFloat(getComputedStyle(bannerTrack).paddingLeft) || 0);
                 bannerTrack.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
             }
 
