@@ -3279,6 +3279,7 @@
         }
 
         .push-page.scrolled .detail-title,
+        .push-page.scrolled .pv-title,
         .card-detail.scrolled .cd-title {
             opacity: 0;
         }
@@ -5745,7 +5746,11 @@
         function setupCollapsingHeader(container, bigTitle, topbar) {
             const onScroll = () => {
                 const barH = topbar.offsetHeight;
-                const t = bigTitle.getBoundingClientRect();
+                // bigTitle puede ser una función: la página de cuenta usa su
+                // propio título (.pv-title) y el genérico queda oculto.
+                const el = typeof bigTitle === 'function' ? bigTitle() : bigTitle;
+                if (!el || !el.offsetParent) { container.classList.remove('scrolled'); return; }
+                const t = el.getBoundingClientRect();
                 const c = container.getBoundingClientRect();
                 container.classList.toggle('scrolled', (t.bottom - c.top) < barH - 6);
             };
@@ -5762,7 +5767,7 @@
         const pushLoading = document.getElementById('push-loading');
         const pushLoadingText = document.getElementById('push-loading-text');
         const pushMovs = document.getElementById('push-movs');
-        setupCollapsingHeader(pushPage, pushTitle, document.getElementById('push-topbar'));
+        setupCollapsingHeader(pushPage, () => pushPage.querySelector('.pv-title') || pushTitle, document.getElementById('push-topbar'));
 
         // Movimientos de ejemplo para dar contenido (y poder hacer scroll)
         const movData = [
