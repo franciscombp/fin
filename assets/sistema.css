@@ -736,3 +736,24 @@ html:not(.theme-y2k) .placeholder-view h1 { margin: 0; font: var(--cx-page) !imp
 .sx-rec__acts { display: flex; gap: var(--bp-semantic-spacing-micro-md); margin-top: 20px; }
 .sx-btn { flex: 1; height: var(--bp-semantic-size-interactive-md, 48px); border: 0; border-radius: var(--bp-semantic-radius-sm); background: var(--bp-interaction-primary-bg); color: var(--bp-interaction-primary-fg); font: var(--ui-label-md); cursor: pointer; }
 .sx-btn--ghost { background: var(--bp-interaction-tertiary-bg); color: var(--bp-interaction-tertiary-fg); }
+
+/* Mis finanzas · el osito y su entorno arriba, sobre el mismo fondo de la página */
+.pf-page--inline .pf-hero { height: 240px; margin: var(--bp-semantic-spacing-micro-md) 0 0; background: transparent; }
+.pf-page--inline .pf-hero__badge { left: 50%; right: auto; top: 4px; bottom: auto; transform: translateX(-50%); white-space: nowrap; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); }
+.pf-page--inline .pf-hero__badge i { display: block; }
+.pf-page--inline .pf-sum { margin-top: var(--bp-semantic-spacing-micro-lg); }
+.pf-sum__stats b.is-neg, .pf-prod__val b.is-neg { color: var(--bp-theme-color-status-error-text); }
+
+/* Hoy: cuentas, tarjetas, inversiones y préstamos */
+.pf-prods { margin-top: var(--bp-semantic-spacing-micro-lg); padding: 0 var(--bp-semantic-spacing-micro-lg); border-radius: var(--ui-r-card); background: var(--bp-theme-color-surface-container-default); }
+.pf-prod { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 72px; padding: 12px 0; border: 0; border-bottom: 1px solid var(--cx-line); background: none; color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; }
+.pf-prod:last-child { border-bottom: 0; }
+.pf-prod .pf-av { width: 40px; height: 40px; flex-basis: 40px; font-size: 12px; }
+.pf-av--ic { background: var(--bp-interaction-tertiary-bg); color: var(--bp-interaction-tertiary-fg); }
+.pf-av--ic .material-symbols-rounded { font-size: 22px; }
+.pf-cardthumb { flex: 0 0 40px; width: 40px; height: 26px; border-radius: 4px; background: linear-gradient(135deg, #2b2b2b, #0d0d0d); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .08); }
+.pf-prod__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.pf-prod__main b { font: var(--ui-body-md-medium); }
+.pf-prod__main small, .pf-prod__val small { font: var(--cx-sub); color: var(--cx-muted); }
+.pf-prod__val { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; white-space: nowrap; }
+.pf-prod__val b { font: var(--ui-body-md-semibold); font-variant-numeric: tabular-nums; }

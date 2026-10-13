@@ -66,3 +66,31 @@
 .sp-composer input { flex: 1; min-width: 0; height: 52px; padding: 0 20px; border: 1px solid var(--bp-theme-color-field-border); border-radius: 999px; background: var(--bp-theme-color-field-bg); color: var(--bp-theme-color-text-primary); font: var(--ui-body-md-medium); font-size: 16px; }
 .sp-composer input:focus { outline: 2px solid var(--bp-interaction-selection-bg); outline-offset: -1px; }
 .sp-send { display: grid; place-items: center; flex: 0 0 52px; width: 52px; height: 52px; border: 0; border-radius: 50%; background: var(--bp-interaction-primary-bg); color: var(--bp-interaction-primary-fg); cursor: pointer; }
+
+.sp-sec__sub { margin: -8px 0 var(--bp-semantic-spacing-micro-lg); font: var(--ui-body-sm-medium); color: var(--bp-theme-color-text-helper); }
+
+/* Solicitud de revisión de un consumo */
+.sp-rv-list { display: flex; flex-direction: column; margin-top: 8px; }
+.sp-rv-tx { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px; padding: 12px 0; border: 0; border-bottom: 1px solid var(--bp-theme-color-border-divider); background: none; color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; }
+.sp-rv-tx:last-child { border-bottom: 0; }
+.sp-rv-tx span { display: flex; flex-direction: column; gap: 2px; }
+.sp-rv-tx b { font: var(--ui-body-md-medium); font-variant-numeric: tabular-nums; }
+.sp-rv-tx small { font: var(--ui-body-sm-medium); color: var(--bp-theme-color-text-helper); }
+.sp-rv-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.sp-rv-sum { margin-top: 16px; gap: 10px; }
+.sp-rv-sum span { display: flex; justify-content: space-between; gap: 12px; }
+.sp-rv-sum small { color: var(--bp-theme-color-text-helper); font: var(--ui-body-sm-medium); }
+.sp-rv-info { margin: 16px 0 0; padding-left: 20px; font: var(--ui-body-sm-medium); color: var(--bp-theme-color-text-secondary, var(--bp-theme-color-text-helper)); }
+.sp-rv-info li + li { margin-top: 6px; }
+.sp-review .pf-cta:disabled { opacity: .45; }
+
+/* Entrada en el detalle de la tarjeta */
+.cd-review { display: flex; align-items: center; gap: 14px; width: 100%; margin-top: 16px; padding: 14px 16px; border: 0; border-radius: var(--ui-r-card, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; }
+.cd-review > .material-symbols-rounded:first-child { color: var(--bp-interaction-tertiary-fg); }
+.cd-review > .material-symbols-rounded:last-child { color: var(--bp-theme-color-text-helper); }
+.cd-review__main { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.cd-review__main b { font: var(--ui-body-md-medium); }
+.cd-review__main small { font: var(--ui-body-sm-medium); color: var(--bp-theme-color-text-helper); }
+.card-detail.theme-dark .cd-review { background: rgb(255 255 255 / .08); color: #fff; }
+.card-detail.theme-dark .cd-review > .material-symbols-rounded:first-child { color: #fff; }
+.card-detail.theme-dark .cd-review__main small, .card-detail.theme-dark .cd-review > .material-symbols-rounded:last-child { color: rgb(255 255 255 / .7); }
