@@ -1384,41 +1384,9 @@
     fx('close');
   }
 
-  /* Arrastrar el uñero hacia abajo cierra cualquier hoja .as-sheet (las del
-     asistente, Mis finanzas y Destacados). Cierra "tocando" su fondo, así
-     cada módulo usa su propio cierre. */
-  function sheetDrag() {
-    var sh = null, y0 = 0, dy = 0, t0 = 0;
-    document.addEventListener('pointerdown', function (e) {
-      if (!e.target.closest('.as-sheet__handle')) return;
-      sh = e.target.closest('.as-sheet.open'); if (!sh) return;
-      y0 = e.clientY; dy = 0; t0 = Date.now(); sh.style.transition = 'none';
-      try { e.target.setPointerCapture(e.pointerId); } catch (x) {}
-      e.preventDefault();
-    });
-    document.addEventListener('pointermove', function (e) {
-      if (!sh) return;
-      var was = dy > 90;
-      dy = Math.max(0, e.clientY - y0);
-      if (was !== dy > 90) fx('detent');
-      sh.style.transform = 'translate(-50%, ' + dy + 'px)';
-    });
-    function end() {
-      if (!sh) return;
-      var el = sh, fast = dy > 30 && dy / Math.max(1, Date.now() - t0) > .6;
-      sh = null; el.style.transition = '';
-      if (dy > 90 || fast) {
-        var bk = el.previousElementSibling;
-        if (bk && bk.classList.contains('as-sheet-back')) bk.click(); else el.classList.remove('open');
-        fx('close');
-      }
-      requestAnimationFrame(function () { el.style.transform = ''; });
-    }
-    document.addEventListener('pointerup', end);
-    document.addEventListener('pointercancel', end);
-  }
+  /* El arrastre para cerrar las hojas vive en assets/sheets.js (común a toda la app). */
   function init() {
-    build(); mountEntries(); paintEntries(); sheetDrag();
+    build(); mountEntries(); paintEntries();
     if (window.Clima) Clima.onChange(function (c) {
       if (c && b3d) b3d.setLook(c.look);
       climaPainted = c; if (isInline() && viewOf(ST.view).today) paintPF();

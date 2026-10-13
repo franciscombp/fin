@@ -142,3 +142,5 @@ html.pb-masked .dw-s__m { display: inline; }
   background: color-mix(in srgb, var(--cx-ink) 20%, transparent) !important;
 }
 .sheet, .as-sheet { padding-top: 8px; }
+/* Mantener presionado entra en edición: sin selección de texto ni menú del sistema */
+.dw-grid .dw { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
