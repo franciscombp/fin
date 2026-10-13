@@ -64,6 +64,20 @@
          ancho. Es la señal directa de lo que el usuario vería. -->
     <link rel="stylesheet" href="./assets/tokens.css">
     <script>
+        /* Modo de la colección "layout" de Figma según el ancho real del
+           dispositivo (token breakpoint): <390 mobile-xs (margen 16),
+           390 mobile-sm, 402 mobile-md, 440 mobile-lg, ≥768 tablet-md. */
+        (function () {
+            var M = [[390, 'mobile-sm'], [402, 'mobile-md'], [440, 'mobile-lg'], [768, 'tablet-md']];
+            function set() {
+                var w = window.innerWidth || document.documentElement.clientWidth || 390, m = 'mobile-xs';
+                for (var i = 0; i < M.length; i++) if (w >= M[i][0]) m = M[i][1];
+                if (document.documentElement.getAttribute('data-layout') !== m) document.documentElement.setAttribute('data-layout', m);
+            }
+            set(); window.addEventListener('resize', set);
+        })();
+    </script>
+    <script>
         (function () {
             function reveal() { document.documentElement.classList.add('icons-ready'); }
             function iconFontLoaded() {
@@ -329,7 +343,7 @@
             min-width: 0; /* permite que este flex-item se achique y sí scrollee */
             overflow-x: auto;
             scrollbar-width: none;
-            padding-right: 24px;
+            padding-right: var(--bp-layout-grid-margin, 24px);
         }
 
         .tabs__scroll::-webkit-scrollbar {
@@ -490,7 +504,7 @@
 
         /* ---------- Secciones ---------- */
         .section {
-            padding: 8px 24px 16px;
+            padding: 8px var(--bp-layout-grid-margin, 24px) 16px;
         }
 
         .section__title {
@@ -1771,7 +1785,7 @@
 
         .content-loader {
             display: none;
-            padding: 8px 24px;
+            padding: 8px var(--bp-layout-grid-margin, 24px);
         }
 
         /* Vista previa que asoma durante el swipe entre secciones */
@@ -2075,7 +2089,7 @@
         .cd-inner {
             max-width: 480px;
             margin: 0 auto;
-            padding: 0 24px 40px;
+            padding: 0 var(--bp-layout-grid-margin, 24px) 40px;
         }
 
         /* Título grande de pantalla (se colapsa a la barra al hacer scroll) */
@@ -2583,7 +2597,7 @@
         .login-screen__top {
             flex: 1 1 auto;
             min-height: 0;
-            padding: 4px 24px 20px;
+            padding: 4px var(--bp-layout-grid-margin, 24px) 20px;
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -2840,7 +2854,7 @@
         .push-page__inner {
             max-width: 480px;
             margin: 0 auto;
-            padding: 0 24px 40px;
+            padding: 0 var(--bp-layout-grid-margin, 24px) 40px;
         }
 
         .push-page__hero {
@@ -3594,11 +3608,11 @@
            Va antes del tema Y2K para que éste siga pudiendo sobreescribir.
            ====================================================== */
         .top-bar { padding: 0 16px; }
-        .tabs { padding: 12px 0 12px 16px; }
-        .tabs__scroll { padding-right: 16px; }
+        .tabs { padding: 12px 0 12px var(--bp-layout-grid-margin, 16px); }
+        .tabs__scroll { padding-right: var(--bp-layout-grid-margin, 16px); }
         .tab { height: 48px; padding: 0 16px; }
-        .content-loader { padding: 8px 16px; }
-        .section { padding: 8px 16px 16px; }
+        .content-loader { padding: 8px var(--bp-layout-grid-margin, 16px); }
+        .section { padding: 8px var(--bp-layout-grid-margin, 16px) 16px; }
         .section__title { height: 40px; margin-bottom: 8px; }
         .section__title h2 {
             font-size: 18px;
@@ -3625,7 +3639,7 @@
         .section__link--chevron .material-symbols-rounded { font-size: 20px; }
 
         /* Banner claro, texto en color de marca (bp-banner) */
-        .home-banner__track { padding: 0 16px; scroll-padding: 0 16px; }
+        .home-banner__track { padding: 0 var(--bp-layout-grid-margin, 16px); scroll-padding: 0 var(--bp-layout-grid-margin, 16px); }
         .home-banner__slide {
             height: 136px;
             padding: 16px;
@@ -3716,13 +3730,13 @@
 
         /* Promociones: carrusel horizontal de tarjetas 144×256 (bp-banner-vertical) */
         .section--bleed { padding-left: 0; padding-right: 0; }
-        .section--bleed .section__title { padding: 0 16px; }
+        .section--bleed .section__title { padding: 0 var(--bp-layout-grid-margin, 16px); }
         .promos {
             display: flex;
             gap: 12px;
             overflow-x: auto;
-            padding: 0 16px;
-            scroll-padding: 0 16px;
+            padding: 0 var(--bp-layout-grid-margin, 16px);
+            scroll-padding: 0 var(--bp-layout-grid-margin, 16px);
             scroll-snap-type: x mandatory;
             scrollbar-width: none;
             -webkit-overflow-scrolling: touch;
@@ -4567,6 +4581,56 @@
                     </span>
                 </button>
             </section>
+            <section class="section hub-section">
+                <div class="quick-actions quick-actions--hub">
+                    <button class="quick-action" data-action="Abrir cuenta">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">account_balance_wallet</span></span>
+                        <span class="quick-action__label">Abrir cuenta</span>
+                    </button>
+                    <button class="quick-action" data-action="Crear meta de ahorro">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">radar</span></span>
+                        <span class="quick-action__label">Crear meta</span>
+                    </button>
+                    <button class="quick-action" data-action="Certificado bancario">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">description</span></span>
+                        <span class="quick-action__label">Certificado bancario</span>
+                    </button>
+                    <button class="quick-action" data-action="Más acciones">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
+                        <span class="quick-action__label">Más acciones</span>
+                    </button>
+                </div>
+            </section>
+            <section class="section hub-section">
+                <div class="section__title"><h2>Disponible para ti</h2></div>
+                <div class="hub-offer" data-action="Solicitar préstamo">
+                    <img class="hub-offer__img" src="./assets/banners/finanzas.webp" alt="" loading="lazy" draggable="false">
+                    <div class="hub-offer__text">
+                        <p class="hub-offer__title">El apoyo que necesitas para hacer realidad tus sueños</p>
+                        <button class="hub-offer__cta" data-action="Solicitar préstamo">Solicitar préstamo<span class="material-symbols-rounded">chevron_right</span></button>
+                    </div>
+                </div>
+            </section>
+            <section class="section section--bleed hub-section">
+                <div class="section__title"><h2>Tips financieros</h2></div>
+                <div class="hub-tips">
+                    <button class="hub-tip hub-tip--1" data-action="Tip: Programa tus pagos desde tu Banca Móvil en minutos">
+                        <span class="hub-tip__title">Programa tus pagos desde tu <b>Banca Móvil</b> en minutos</span>
+                        <img class="hub-tip__img" src="./assets/oso/oso.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                    <button class="hub-tip hub-tip--2" data-action="Tip: Crea metas y ahorra de manera organizada">
+                        <span class="hub-tip__title"><b>Crea metas</b> y ahorra de manera organizada</span>
+                        <img class="hub-tip__img" src="./assets/banners/finanzas.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                    <button class="hub-tip hub-tip--3" data-action="Tip: Revisa en qué gastas con Mis finanzas">
+                        <span class="hub-tip__title">Revisa en qué gastas con <b>Mis finanzas</b></span>
+                        <img class="hub-tip__img" src="./assets/banners/cashback.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                </div>
+            </section>
         </div><!-- /panel Cuentas -->
 
         <!-- ============ Panel: Tarjetas ============ -->
@@ -4672,6 +4736,85 @@
                     </span>
                 </button>
             </section>
+            <section class="section hub-section">
+                <div class="quick-actions quick-actions--hub">
+                    <button class="quick-action" data-action="Nueva tarjeta">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">add_card</span></span>
+                        <span class="quick-action__label">Nueva tarjeta</span>
+                    </button>
+                    <button class="quick-action" data-action="Avance de efectivo">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">local_atm</span></span>
+                        <span class="quick-action__label">Avance de efectivo</span>
+                    </button>
+                    <button class="quick-action" data-action="Pagar tarjeta">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">credit_score</span></span>
+                        <span class="quick-action__label">Pagar tarjeta</span>
+                    </button>
+                    <button class="quick-action" data-action="Más acciones">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
+                        <span class="quick-action__label">Más acciones</span>
+                    </button>
+                </div>
+            </section>
+            <section class="section section--bleed hub-section">
+                <div class="section__title"><h2>Canjea tus millas</h2><button class="section__link" data-action="Ver catálogo de millas">Ver más</button></div>
+                <div class="hub-promos">
+                    <div class="hub-promo">
+                        <span class="hub-promo__media"><img src="./assets/banners/regalo.webp" alt="" loading="lazy" draggable="false"><span class="hub-promo__badge">-10%</span></span>
+                        <span class="hub-promo__content">
+                            <span class="hub-promo__title">Giftcard Sweet &amp; Coffee</span>
+                            <span class="hub-promo__price"><b>2.400 millas</b><s>2.700</s></span>
+                            <button class="hub-promo__cta" data-action="Canjear Giftcard Sweet y Coffee">Canjear<span class="material-symbols-rounded">chevron_right</span></button>
+                        </span>
+                    </div>
+                    <div class="hub-promo">
+                        <span class="hub-promo__media"><img src="./assets/banners/vinos.webp" alt="" loading="lazy" draggable="false"><span class="hub-promo__badge">-10%</span></span>
+                        <span class="hub-promo__content">
+                            <span class="hub-promo__title">Kit de vinos Viña Concha</span>
+                            <span class="hub-promo__price"><b>8.900 millas</b><s>9.900</s></span>
+                            <button class="hub-promo__cta" data-action="Canjear Kit de vinos Viña Concha">Canjear<span class="material-symbols-rounded">chevron_right</span></button>
+                        </span>
+                    </div>
+                    <div class="hub-promo">
+                        <span class="hub-promo__media"><img src="./assets/banners/cashback.webp" alt="" loading="lazy" draggable="false"><span class="hub-promo__badge">-10%</span></span>
+                        <span class="hub-promo__content">
+                            <span class="hub-promo__title">Cashback de $ 10,00</span>
+                            <span class="hub-promo__price"><b>1.800 millas</b><s>2.000</s></span>
+                            <button class="hub-promo__cta" data-action="Canjear Cashback de $ 10,00">Canjear<span class="material-symbols-rounded">chevron_right</span></button>
+                        </span>
+                    </div>
+                </div>
+            </section>
+            <section class="section hub-section">
+                <div class="section__title"><h2>Disponible para ti</h2></div>
+                <div class="hub-offer" data-action="Solicitar préstamo">
+                    <img class="hub-offer__img" src="./assets/banners/finanzas.webp" alt="" loading="lazy" draggable="false">
+                    <div class="hub-offer__text">
+                        <p class="hub-offer__title">El apoyo que necesitas para hacer realidad tus sueños</p>
+                        <button class="hub-offer__cta" data-action="Solicitar préstamo">Solicitar préstamo<span class="material-symbols-rounded">chevron_right</span></button>
+                    </div>
+                </div>
+            </section>
+            <section class="section section--bleed hub-section">
+                <div class="section__title"><h2>Tips financieros</h2></div>
+                <div class="hub-tips">
+                    <button class="hub-tip hub-tip--1" data-action="Tip: Retira efectivo sin tener tu Tarjeta de Débito a la mano">
+                        <span class="hub-tip__title">Retira efectivo <b>sin tener tu Tarjeta de Débito</b> a la mano</span>
+                        <img class="hub-tip__img" src="./assets/banners/ofertas.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                    <button class="hub-tip hub-tip--2" data-action="Tip: ¿Cómo uso mi Tarjeta Digital para compras en línea?">
+                        <span class="hub-tip__title">¿Cómo uso mi <b>Tarjeta Digital</b> para compras en línea?</span>
+                        <img class="hub-tip__img" src="./assets/banners/cashback.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                    <button class="hub-tip hub-tip--3" data-action="Tip: Acumula millas en cada compra">
+                        <span class="hub-tip__title">Acumula <b>millas</b> en cada compra</span>
+                        <img class="hub-tip__img" src="./assets/banners/millas.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                </div>
+            </section>
         </div><!-- /panel Tarjetas -->
 
         <!-- ============ Panel: Préstamos ============ -->
@@ -4710,6 +4853,56 @@
                     </span>
                 </button>
             </section>
+            <section class="section hub-section">
+                <div class="quick-actions quick-actions--hub">
+                    <button class="quick-action" data-action="Nuevo préstamo">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">real_estate_agent</span></span>
+                        <span class="quick-action__label">Nuevo préstamo</span>
+                    </button>
+                    <button class="quick-action" data-action="Alivio financiero">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">volunteer_activism</span></span>
+                        <span class="quick-action__label">Alivio financiero</span>
+                    </button>
+                    <button class="quick-action" data-action="Certificado bancario">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">description</span></span>
+                        <span class="quick-action__label">Certificado bancario</span>
+                    </button>
+                    <button class="quick-action" data-action="Más acciones">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
+                        <span class="quick-action__label">Más acciones</span>
+                    </button>
+                </div>
+            </section>
+            <section class="section hub-section">
+                <div class="section__title"><h2>Disponible para ti</h2></div>
+                <div class="hub-offer" data-action="Solicitar préstamo">
+                    <img class="hub-offer__img" src="./assets/banners/finanzas.webp" alt="" loading="lazy" draggable="false">
+                    <div class="hub-offer__text">
+                        <p class="hub-offer__title">El apoyo que necesitas para hacer realidad tus sueños</p>
+                        <button class="hub-offer__cta" data-action="Solicitar préstamo">Solicitar préstamo<span class="material-symbols-rounded">chevron_right</span></button>
+                    </div>
+                </div>
+            </section>
+            <section class="section section--bleed hub-section">
+                <div class="section__title"><h2>Tips financieros</h2></div>
+                <div class="hub-tips">
+                    <button class="hub-tip hub-tip--1" data-action="Tip: Programa tus pagos desde tu Banca Móvil en minutos">
+                        <span class="hub-tip__title">Programa tus pagos desde tu <b>Banca Móvil</b> en minutos</span>
+                        <img class="hub-tip__img" src="./assets/oso/oso.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                    <button class="hub-tip hub-tip--2" data-action="Tip: Crea metas y ahorra de manera organizada">
+                        <span class="hub-tip__title"><b>Crea metas</b> y ahorra de manera organizada</span>
+                        <img class="hub-tip__img" src="./assets/banners/finanzas.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                    <button class="hub-tip hub-tip--3" data-action="Tip: Revisa en qué gastas con Mis finanzas">
+                        <span class="hub-tip__title">Revisa en qué gastas con <b>Mis finanzas</b></span>
+                        <img class="hub-tip__img" src="./assets/banners/cashback.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                </div>
+            </section>
         </div><!-- /panel Prestamos -->
 
         <!-- ============ Panel: Inversiones ============ -->
@@ -4745,6 +4938,51 @@
                         <span class="cta-dashed__link">Invertir ahora</span>
                     </span>
                 </button>
+            </section>
+            <section class="section hub-section">
+                <div class="quick-actions quick-actions--hub">
+                    <button class="quick-action" data-action="Crear inversión">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">add_chart</span></span>
+                        <span class="quick-action__label">Nueva inversión</span>
+                    </button>
+                    <button class="quick-action" data-action="Renovar inversión">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">autorenew</span></span>
+                        <span class="quick-action__label">Renovar inversión</span>
+                    </button>
+                    <button class="quick-action" data-action="Certificado bancario">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">description</span></span>
+                        <span class="quick-action__label">Certificado bancario</span>
+                    </button>
+                    <button class="quick-action" data-action="Más acciones">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
+                        <span class="quick-action__label">Más acciones</span>
+                    </button>
+                </div>
+            </section>
+            <section class="section hub-section">
+                <div class="section__title"><h2>Disponible para ti</h2></div>
+                <div class="hub-offer" data-action="Simular ganancias">
+                    <img class="hub-offer__img" src="./assets/banners/finanzas.webp" alt="" loading="lazy" draggable="false">
+                    <div class="hub-offer__text">
+                        <p class="hub-offer__title">Haz crecer tus ahorros con un Depósito a Plazo</p>
+                        <button class="hub-offer__cta" data-action="Simular ganancias">Simular ganancias<span class="material-symbols-rounded">chevron_right</span></button>
+                    </div>
+                </div>
+            </section>
+            <section class="section section--bleed hub-section">
+                <div class="section__title"><h2>Tips financieros</h2></div>
+                <div class="hub-tips">
+                    <button class="hub-tip hub-tip--1" data-action="Tip: Haz crecer tus ahorros con un Depósito a Plazo">
+                        <span class="hub-tip__title">Haz crecer tus ahorros con un <b>Depósito a Plazo</b></span>
+                        <img class="hub-tip__img" src="./assets/banners/finanzas.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                    <button class="hub-tip hub-tip--2" data-action="Tip: Crea metas y ahorra de manera organizada">
+                        <span class="hub-tip__title"><b>Crea metas</b> y ahorra de manera organizada</span>
+                        <img class="hub-tip__img" src="./assets/oso/oso.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                </div>
             </section>
         </div><!-- /panel Inversiones -->
 
@@ -4786,6 +5024,51 @@
                         <span class="cta-dashed__link">Ver seguros disponibles</span>
                     </span>
                 </button>
+            </section>
+            <section class="section hub-section">
+                <div class="quick-actions quick-actions--hub">
+                    <button class="quick-action" data-action="Nuevo seguro">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">add_moderator</span></span>
+                        <span class="quick-action__label">Nuevo seguro</span>
+                    </button>
+                    <button class="quick-action" data-action="Renovar seguro">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">autorenew</span></span>
+                        <span class="quick-action__label">Renovar seguro</span>
+                    </button>
+                    <button class="quick-action" data-action="Certificado bancario">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">description</span></span>
+                        <span class="quick-action__label">Certificado bancario</span>
+                    </button>
+                    <button class="quick-action" data-action="Más acciones">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
+                        <span class="quick-action__label">Más acciones</span>
+                    </button>
+                </div>
+            </section>
+            <section class="section hub-section">
+                <div class="section__title"><h2>Disponible para ti</h2></div>
+                <div class="hub-offer" data-action="Solicitar préstamo">
+                    <img class="hub-offer__img" src="./assets/banners/finanzas.webp" alt="" loading="lazy" draggable="false">
+                    <div class="hub-offer__text">
+                        <p class="hub-offer__title">El apoyo que necesitas para hacer realidad tus sueños</p>
+                        <button class="hub-offer__cta" data-action="Solicitar préstamo">Solicitar préstamo<span class="material-symbols-rounded">chevron_right</span></button>
+                    </div>
+                </div>
+            </section>
+            <section class="section section--bleed hub-section">
+                <div class="section__title"><h2>Tips financieros</h2></div>
+                <div class="hub-tips">
+                    <button class="hub-tip hub-tip--1" data-action="Tip: ¿Qué cubre tu seguro de vida?">
+                        <span class="hub-tip__title">¿Qué cubre tu <b>seguro de vida</b>?</span>
+                        <img class="hub-tip__img" src="./assets/oso/oso.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                    <button class="hub-tip hub-tip--2" data-action="Tip: Protege tus tarjetas ante fraudes">
+                        <span class="hub-tip__title">Protege tus <b>tarjetas</b> ante fraudes</span>
+                        <img class="hub-tip__img" src="./assets/banners/ofertas.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                </div>
             </section>
         </div><!-- /panel Seguros -->
         </div><!-- /view data-view=0 -->
