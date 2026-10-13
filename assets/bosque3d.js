@@ -223,6 +223,7 @@ const POSES = {
                  upperarm_L: mirror([0, 14, 6 - Math.sin(t * 8) * 6]), forearm_L: mirror([-30, 10, -28]), hand_L: mirror([-24, 0, -10]),
                  head: [-6, 0, Math.sin(t * 6) * 7] })
 };
+const UMB_POSE = { upperarm_R: [0, 36, 12], forearm_R: [-100, 26, -30], hand_R: [-40, 4, -10] };
 function target(name, t) {
   let r = REST[name] ? REST[name].slice() : [0, 0, 0];
   // vida en reposo: respiración, mirada y un balanceo leve de brazos
@@ -230,6 +231,8 @@ function target(name, t) {
   if (name === 'head') { r[1] += Math.sin(t * .35) * 9; r[0] += Math.sin(t * .5) * 2; }
   if (name === 'spine') r[2] += Math.sin(t * .8) * 1.2;
   if (name === 'upperarm_R' || name === 'upperarm_L') r[1] += Math.sin(t * .9 + (name === 'upperarm_L' ? 1.5 : 0)) * 3;
+  // Con paraguas, el brazo derecho lo sostiene siempre (los gestos usan la cabeza y el otro brazo)
+  if (look.hat === 'paraguas' && UMB_POSE[name]) { const u = UMB_POSE[name].slice(); u[2] += Math.sin(t * .9) * 2; return u; }
   if (!gesture || !POSES[gesture]) return r;
   const g = POSES[gesture](gestureT)[name];
   return g || r;
@@ -238,7 +241,7 @@ const BONES = ['hips', 'spine', 'chest', 'neck', 'head', 'shoulder_L', 'shoulder
 
 function holdObject(kind) {
   if (held) { held.parent && held.parent.remove(held); held = null; }
-  if (!kind || !bones.hand_R) return;
+  if (!kind || !bones.hand_R || umb) return; // con el paraguas en la mano no sostiene otra cosa
   if (kind === 'coin') {
     held = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, .014, 28), new THREE.MeshStandardMaterial({ color: '#ffd200', metalness: .35, roughness: .45 }));
     // sobre la palma: en reposo la palma mira a (0, -0.89, 0.45) en el espacio del hueso
@@ -276,16 +279,29 @@ function hatLana() {
   g.position.set(0, .185, -.01); g.rotation.x = -.1;
   return g;
 }
+/* Paraguas en la mano derecha: vive en la escena y cada cuadro se apoya en
+   la palma y apunta a un punto sobre la cabeza (así cubre a Uku aunque el
+   brazo se mueva). El mango se estira lo que haga falta. */
+let umb = null;
 function umbrella() {
-  const g = new THREE.Group(), cloth = mat('#1b2a4e', { side: THREE.DoubleSide }), stripe = mat('#ffd200', { side: THREE.DoubleSide });
-  for (let i = 0; i < 8; i++) {
-    const panel = new THREE.Mesh(new THREE.ConeGeometry(.34, .13, 2, 1, true, i / 8 * Math.PI * 2, Math.PI / 4), i % 2 ? stripe : cloth);
-    g.add(panel);
-  }
-  const tip = new THREE.Mesh(new THREE.CylinderGeometry(.006, .006, .06, 5), mat('#2f2f2f')); tip.position.y = .09; g.add(tip);
-  const pole = new THREE.Mesh(new THREE.CylinderGeometry(.007, .007, .2, 5), mat('#2f2f2f')); pole.position.y = -.1; g.add(pole);
-  g.position.set(0, .33, 0); g.rotation.z = .08; g.scale.setScalar(.88);
+  const g = new THREE.Group(), canopy = new THREE.Group(), cloth = mat('#1b2a4e', { side: THREE.DoubleSide }), stripe = mat('#ffd200', { side: THREE.DoubleSide });
+  for (let i = 0; i < 8; i++) canopy.add(new THREE.Mesh(new THREE.ConeGeometry(.29, .11, 2, 1, true, i / 8 * Math.PI * 2, Math.PI / 4), i % 2 ? stripe : cloth));
+  const tip = new THREE.Mesh(new THREE.CylinderGeometry(.006, .006, .06, 5), mat('#2f2f2f')); tip.position.y = .08; canopy.add(tip);
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(.007, .007, 1, 5), mat('#2f2f2f'));
+  const handle = new THREE.Mesh(new THREE.TorusGeometry(.03, .008, 6, 12, Math.PI), mat('#2f2f2f')); handle.rotation.z = Math.PI; handle.position.set(.03, -.02, 0);
+  g.add(canopy, pole, handle);
+  g.userData = { canopy, pole };
   return g;
+}
+const _h = new THREE.Vector3(), _t = new THREE.Vector3(), _d = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
+function placeUmbrella() {
+  if (!umb || !bones.hand_R || !bones.head) return;
+  bones.hand_R.localToWorld(_h.set(-.03, -.05, .03)); // centro de la palma
+  bones.head.getWorldPosition(_t); _t.x = _h.x * .45; _t.y += .37; _t.z += .03; // sobre la cabeza, un poco hacia la mano
+  _d.subVectors(_t, _h); const L = _d.length(); _d.normalize();
+  umb.position.copy(_h); umb.quaternion.setFromUnitVectors(_up, _d);
+  const u = umb.userData; u.pole.scale.y = L; u.pole.position.y = L / 2; u.canopy.position.y = L;
+  u.canopy.quaternion.setFromUnitVectors(_d, _up); // la tela queda horizontal aunque el mango vaya inclinado
 }
 function shades() {
   const g = new THREE.Group(), lens = mat('#1e2126', { flatShading: false }), frame = mat('#111111');
@@ -340,9 +356,10 @@ function dressBear() {
   acc = new THREE.Group();
   if (look.hat === 'paja') acc.add(hatPaja());
   if (look.hat === 'lana') acc.add(hatLana());
-  if (look.hat === 'paraguas') acc.add(umbrella());
   if (look.shades) acc.add(shades());
   bones.head.add(acc);
+  if (umb && look.hat !== 'paraguas') { scene.remove(umb); umb.traverse(c => { c.geometry && c.geometry.dispose(); c.material && c.material.dispose(); }); umb = null; }
+  if (!umb && look.hat === 'paraguas') { umb = umbrella(); scene.add(umb); }
   if (bearMat) {
     const m = look.shirt === 'guayabera' ? guayabera() : baseMap;
     if (m && bearMat.map !== m) { bearMat.map = m; bearMat.needsUpdate = true; }
@@ -385,6 +402,7 @@ function frame(now) {
       b.rotation.y = lerp(b.rotation.y, D(g[1]), a);
       b.rotation.z = lerp(b.rotation.z, D(g[2]), a);
     });
+    if (umb) { bear.updateMatrixWorld(true); placeUmbrella(); }
     const hop = gesture === 'happy' ? Math.abs(Math.sin(gestureT * 6)) * .05 : 0;
     bear.position.y = lerp(bear.position.y, .45 + hop, Math.min(1, dt * 10));
   }
