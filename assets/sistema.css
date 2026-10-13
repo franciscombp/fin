@@ -769,8 +769,20 @@ html:not(.theme-y2k) .placeholder-view h1 { margin: 0; font: var(--cx-page) !imp
 /* área táctil del uñero más grande que la barrita */
 .sheet__handle::after, .as-sheet__handle::after { content: ""; position: absolute; left: -40px; right: -40px; top: -14px; bottom: -14px; }
 
-/* Barra inferior fija también en iOS Safari: capa propia (no "salta" con el
-   scroll ni con la barra del navegador) y pegada al borde inferior real. */
+/* =====================================================================
+   Contenedor de la app (teléfono): el documento no hace scroll; lo hace
+   #home-page. La barra inferior queda fuera del contenedor, así iOS Safari
+   no la mueve con el scroll (con backdrop-filter la "arrastraba" y luego la
+   volvía a pegar abajo). El encabezado y las pestañas siguen sticky dentro.
+   ===================================================================== */
 @media (max-width: 767px) {
-  .nav-bar { position: fixed !important; bottom: 0 !important; transform: translate3d(0, 0, 0); -webkit-backface-visibility: hidden; backface-visibility: hidden; will-change: transform; }
+  html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+  body { padding-bottom: 0 !important; min-height: 0 !important; }
+  #home-page {
+    position: fixed; inset: 0; z-index: 1; max-width: none; margin: 0;
+    overflow-y: auto; overflow-x: hidden; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;
+    padding: 0 max(0px, calc((100vw - 480px) / 2)) calc(104px + env(safe-area-inset-bottom, 0px));
+  }
+  #home-page.hidden { display: none; }
+  .nav-bar { position: fixed !important; bottom: 0 !important; }
 }

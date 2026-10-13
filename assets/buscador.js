@@ -73,7 +73,7 @@
       if (a.run) return a.run();
       if (a.tab) {
         var t = document.querySelector('.tabs .tab[data-panel="' + a.tab + '"]');
-        if (t) { t.click(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+        if (t) { t.click(); AppScroll.to({ top: 0, behavior: 'smooth' }); }
         return;
       }
       var el = document.querySelector('#home-page [data-action="' + a.action + '"]') || document.querySelector('[data-action="' + a.action + '"]');
@@ -418,7 +418,7 @@
     document.body.appendChild(hint);
   }
   document.addEventListener('touchstart', function (e) {
-    if (open_ || window.scrollY > 0 || !homeVisible() || e.touches.length > 1) { pull = null; return; }
+    if (open_ || AppScroll.top() > 0 || !homeVisible() || e.touches.length > 1) { pull = null; return; }
     if (e.target.closest('.debit-card, .tabs, .home-banner__track, .promos, input, textarea')) { pull = null; return; }
     pull = { y: e.touches[0].clientY, x: e.touches[0].clientX, dy: 0, axis: null, armed: false };
   }, { passive: true });
@@ -426,7 +426,7 @@
     if (!pull) return;
     var dy = e.touches[0].clientY - pull.y, dx = e.touches[0].clientX - pull.x;
     if (!pull.axis && Math.hypot(dx, dy) > 10) pull.axis = Math.abs(dy) > Math.abs(dx) && dy > 0 ? 'down' : 'other';
-    if (pull.axis !== 'down' || window.scrollY > 0) return;
+    if (pull.axis !== 'down' || AppScroll.top() > 0) return;
     e.preventDefault();
     if (!hint) mountHint();
     var d = Math.min(140, dy * .55);
@@ -452,7 +452,7 @@
   // En escritorio: rueda hacia arriba estando en el tope
   var wheelAcc = 0, wheelT;
   window.addEventListener('wheel', function (e) {
-    if (open_ || window.scrollY > 0 || e.deltaY >= 0 || !homeVisible()) { wheelAcc = 0; return; }
+    if (open_ || AppScroll.top() > 0 || e.deltaY >= 0 || !homeVisible()) { wheelAcc = 0; return; }
     wheelAcc += -e.deltaY;
     clearTimeout(wheelT); wheelT = setTimeout(function () { wheelAcc = 0; }, 250);
     if (wheelAcc > 220) { wheelAcc = 0; open(); }
