@@ -4179,6 +4179,7 @@
     <link rel="stylesheet" href="./assets/destacados.css">
     <link rel="stylesheet" href="./assets/producto.css">
     <link rel="stylesheet" href="./assets/sistema.css">
+    <link rel="stylesheet" href="./assets/soporte.css">
 </head>
 <body>
     <!-- Login Screen -->
@@ -5071,19 +5072,18 @@
         </div><!-- /panel Seguros -->
         </div><!-- /view data-view=0 -->
 
-        <div class="view placeholder-view" data-view="1">
-            <h1>Solicitudes</h1>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
+        <!-- Mis finanzas: sección de la barra inferior (asistente.js monta el dashboard) -->
+        <div class="view view--finanzas" data-view="1">
+            <div class="pf-host"></div>
         </div>
 
         <div class="view placeholder-view" data-view="2">
             <h1>Beneficios</h1>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
+            <div class="soon">
+                <span class="soon__ic material-symbols-rounded" aria-hidden="true">redeem</span>
+                <h2 class="soon__title">Próximamente</h2>
+                <p class="soon__text">Estamos preparando descuentos y beneficios para ti por usar tus productos Pichibank.</p>
+            </div>
         </div>
 
         <div class="view placeholder-view" data-view="3">
@@ -5250,8 +5250,7 @@
                 <span class="nav-item__wrap"><span class="material-symbols-rounded">home</span></span>
                 <span class="nav-item__label">Inicio</span>
             </button>
-            <!-- Mis finanzas abre el PFM (asistente.js intercepta data-action="Modo finanzas") -->
-            <button class="nav-item nav-item--finanzas" data-action="Modo finanzas">
+            <button class="nav-item" data-view="1">
                 <span class="nav-item__wrap"><span class="material-symbols-rounded">monitoring</span></span>
                 <span class="nav-item__label">Mis finanzas</span>
             </button>
@@ -6355,6 +6354,34 @@
             });
         }
 
+        // Atajos del buscador: abren el flujo real con los datos ya puestos
+        // (beneficiario + monto → directo a confirmar; servicio → su formulario).
+        window.__runShortcut = function (sc) {
+            const btn = document.querySelector(`#home-page [data-action="${sc.action}"]`) || document.querySelector(`[data-action="${sc.action}"]`);
+            if (!btn) return;
+            btn.click();
+            const extra = document.getElementById('push-extra');
+            const fold = (t) => String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            let tries = 0;
+            (function step() {
+                if (sc.action === 'Transferir dinero' && sc.who) {
+                    const ben = [...extra.querySelectorAll('[data-beneficiary]')].find(b => fold(b.dataset.beneficiary).startsWith(fold(sc.who)));
+                    if (ben) {
+                        ben.click();
+                        if (sc.amount > 0 && transferFlow) {
+                            transferFlow.amount = sc.amount;
+                            extra.innerHTML = transferConfirmHTML(transferFlow.beneficiary, sc.amount);
+                        }
+                        return;
+                    }
+                } else if (sc.action === 'Pagar servicios' && sc.biller) {
+                    const bb = [...extra.querySelectorAll('[data-biller]')].find(b => b.dataset.biller === sc.biller);
+                    if (bb) { bb.click(); return; }
+                } else return;
+                if (++tries < 30) setTimeout(step, 100);
+            })();
+        };
+
         function renderPushSummary(title) {
             // Productos: página propia (assets/producto.js), sin el bloque
             // genérico de Resumen/Movimientos que se repetía en todos.
@@ -6926,7 +6953,6 @@
         }
 
         navItems.forEach((item) => {
-            if (!item.dataset.view) return; // Mis finanzas abre su propia página
             const index = +item.dataset.view;
             item.addEventListener('click', () => {
                 const alreadyOnThisView = index === currentView;
@@ -6946,29 +6972,12 @@
             });
         });
 
-        // Mientras Mis finanzas (PFM) está abierto, su ítem se marca en la barra
-        (function () {
-            const fin = document.querySelector('.nav-item--finanzas');
-            if (!fin) return;
-            const sync = () => {
-                const on = !!document.querySelector('.pf-page.open');
-                fin.classList.toggle('is-current', on);
-                if (on) fin.setAttribute('aria-current', 'page'); else fin.removeAttribute('aria-current');
-                document.querySelector('.nav-bar').classList.toggle('is-finanzas', on);
-            };
-            // La página del PFM se monta recién al abrirla por primera vez
-            const attach = () => {
-                const pf = document.querySelector('.pf-page');
-                if (!pf) return false;
-                new MutationObserver(sync).observe(pf, { attributes: true, attributeFilter: ['class'] });
-                sync();
-                return true;
-            };
-            if (!attach()) {
-                const mo = new MutationObserver(() => { if (attach()) mo.disconnect(); });
-                mo.observe(document.body, { childList: true });
-            }
-        })();
+        // Ir a una sección desde otros módulos (p. ej. "Mis finanzas" desde Uku o el buscador)
+        window.__goView = function (index) {
+            const item = document.querySelector(`.nav-item[data-view="${index}"]`);
+            if (item && index !== currentView) item.click();
+            else window.scrollTo({ top: 0 });
+        };
 
         // Reset de navegación a Inicio/Destacado (lo usa app.js al iniciar sesión)
         window.__resetHomeView = function () {
@@ -7820,6 +7829,7 @@
     <script src="./assets/buscador.js"></script>
     <script src="./assets/producto.js"></script>
     <script src="./assets/destacados.js"></script>
+    <script src="./assets/soporte.js"></script>
     <script src="./fiesta.js"></script>
 </body>
 </html>
