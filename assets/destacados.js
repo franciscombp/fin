@@ -108,11 +108,10 @@
   }
 
   /* ---------- Configuración ---------- */
-  function defaults() {
-    var ids = SUGGESTED.filter(shown);
-    var order = ids.filter(capt).slice(0, 1).concat(ids.filter(function (id) { return !capt(id); })); // una captación, primero (D10, D25)
-    return fit(order.map(function (id) { return { id: id, size: defSize(id) }; }));
-  }
+  // Modo sugerido (al inicio y con "Restablecer sugeridos"): el banco no
+  // coloca widgets activos; todos los slots son fantasmas (una sugerencia de
+  // producto y sugerencias de widget, ver fillers)
+  function defaults() { return []; }
   function load() {
     try { var p = JSON.parse(localStorage.getItem(KEY)); if (p && p.custom && Array.isArray(p.items)) return p; } catch (e) {}
     return { custom: false, items: [] };
@@ -330,7 +329,7 @@
     if (drag && drag.moved) return;
     if ((b = e.target.closest('[data-dw="edit"]'))) { e.stopPropagation(); return setEditing(!editing); }
     if ((b = e.target.closest('[data-dw="add"]'))) { e.stopPropagation(); return openGallery(); }
-    if ((b = e.target.closest('[data-dw="reset"]'))) { try { localStorage.removeItem(KEY); } catch (x) {} pref = load(); if (editing) materialize(); fx('select'); return paint(); }
+    if ((b = e.target.closest('[data-dw="reset"]'))) { try { localStorage.removeItem(KEY); localStorage.removeItem(DKEY); } catch (x) {} pref = load(); if (editing) materialize(); fx('select'); return paint(); }
     if ((b = e.target.closest('[data-dw-place]'))) {
       e.stopPropagation(); materialize();
       var pl = b.dataset.dwPlace.split(':');
