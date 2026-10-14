@@ -180,3 +180,29 @@ button.pf-meter { cursor: pointer; }
 .pf-uku2__chat { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 44px; margin-top: 12px; border: 1px solid var(--cx-line); border-radius: 99px; background: none; color: var(--bp-interaction-tertiary-fg); font: var(--ui-label-md); cursor: pointer; }
 .pf-uku2__chat .material-symbols-rounded { font-size: 20px; }
 .pf-uku2__ic { background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); }
+
+/* ---------- Íconos en listas: siempre sobre fondo neutral ----------
+   El color queda para gráficas, medidores, fotos y promos; en la interfaz
+   los íconos de lista usan el avatar del DS (fondo neutro, ícono de marca). */
+.pf-uku2__ic, .pf-av--ic, .dw-gal__ic, .sp-row__ic, .soon__ic, .dw-ic, .dw-stack__ic,
+.pf-ins__ic, .pf-ins--warn .pf-ins__ic, .pf-ins--good .pf-ins__ic, .as-row__icon {
+  background: var(--bp-theme-color-avatar-bg) !important; color: var(--bp-theme-color-avatar-fg) !important;
+}
+
+/* ---------- Ánimo de Uku en su bloque ---------- */
+.pf-uku2__head b em { font-style: normal; font-weight: 400; color: var(--cx-muted); }
+.pf-mood--feliz .pf-uku2__face { animation: ukuHop 1.6s ease-in-out 2; }
+.pf-mood--atento .pf-uku2__face img { transform: rotate(-8deg); }
+.pf-mood--preocupado .pf-uku2__face img { transform: rotate(10deg) translateY(2px); }
+.pf-uku2__face img { transition: transform .3s ease; }
+@keyframes ukuHop { 30% { transform: translateY(-4px); } 60% { transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .pf-mood--feliz .pf-uku2__face { animation: none; } }
+
+/* ---------- Frente al mes anterior (simple, sin color) ---------- */
+.pf-cmp { margin-top: 20px; padding: 16px 20px; border-radius: 20px; background: var(--bp-theme-color-surface-container-default); }
+.pf-cmp p { margin: 0; }
+.pf-cmp__t { font: var(--cx-sub); color: var(--cx-muted); }
+.pf-cmp__lead { margin: 2px 0 8px !important; font: var(--ui-body-lg-semibold, 600 17px/24px sans-serif); color: var(--bp-theme-color-text-primary); }
+.pf-cmp__row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--cx-line); font: var(--ui-body-md-regular); color: var(--bp-theme-color-text-primary); }
+.pf-cmp__row b { margin-left: auto; font: var(--ui-body-md-semibold); font-variant-numeric: tabular-nums; }
+.pf-cmp__ic { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--bp-theme-color-avatar-bg); color: var(--bp-theme-color-avatar-fg); font-size: 18px !important; }
