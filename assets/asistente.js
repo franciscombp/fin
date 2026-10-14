@@ -921,8 +921,9 @@
             (x.ask ? '<button data-pf="why:' + i + '">' + esc(x.ask) + '</button>' : '') + '</div>' : '') + '</div></div>';
       }).join('') + '</div>';
     }
-    return '<section class="pf-sec pf-uku2"><div class="pf-uku2__card">' +
-      '<div class="pf-uku2__head"><span class="pf-uku2__face">' + C().face() + '</span><span><b>' + C().name + '</b><small>' +
+    var md = moodFor(v);
+    return '<section class="pf-sec pf-uku2"><div class="pf-uku2__card pf-mood--' + md + '">' +
+      '<div class="pf-uku2__head"><span class="pf-uku2__face">' + C().face() + '</span><span><b>' + C().name + ' <em>· ' + T('está {animo}', { animo: T(MOOD[md].label) }) + '</em></b><small>' +
         T(v.current ? 'Cómo vas en {mes}' : 'Lo que pasó en {mes}', { mes: mesL }) + '</small></span></div>' +
       '<p class="pf-uku2__lead">' + hintFor(v) + '</p>' + body +
       '<button class="pf-uku2__chat" data-pf="ask"><span class="material-symbols-rounded">chat_bubble</span>' + T('Escríbele a {nombre}', { nombre: C().name }) + '</button>' +
@@ -988,6 +989,7 @@
     var vv = viewOf(ST.view), saved = !vv.report && !vv.current && D.by[vv.mi]._save / D.by[vv.mi]._in >= .08;
     var g = saved ? { name: 'hold', opts: { hold: 'coin' } } : 'wave';
     var fresh = scroll.querySelector('.pf-hero');
+    if (fresh && v.today) fresh.querySelector('.b3d').dataset.g = JSON.stringify(MOOD[moodFor(v)].gesture);
     if (live && fresh) {
       var sc = +fresh.querySelector('.b3d').dataset.score;
       oldHero.querySelector('.pf-hero__badge').innerHTML = fresh.querySelector('.pf-hero__badge').innerHTML;
@@ -1162,7 +1164,22 @@
             '<span class="pf-hist__m">' + T(MONTH_NAME[x.key]).slice(0, 3) + '</span></button>';
         }).join('') +
       '</div><div class="pf-hist__legend"><span><i></i>' + T('Promedio {monto}', { monto: money(avg) }) + '</span><span><i class="is-cur"></i>' + T('Mes en curso') + '</span></div>' +
-      '<p class="pf-note">' + T('Toca un mes para verlo.') + '</p></section>';
+      '<p class="pf-note">' + T('Toca un mes para verlo.') + '</p>' + compareHTML(v) + '</section>';
+  }
+  // Comparación simple con el mes anterior: el total y las 3 categorías que
+  // más cambiaron, en palabras (sin colores: subió / bajó)
+  function compareHTML(v) {
+    if (v.report || v.current || !v.mi) return '';
+    var a = D.by[v.mi], b = D.by[v.mi - 1], prev = T(MONTHS[v.mi - 1].name);
+    var d = a._spend - b._spend;
+    var rows = Object.keys(CATS).map(function (k) { return { k: k, d: a[k] - b[k] }; })
+      .filter(function (r) { return Math.abs(r.d) >= 5; }).sort(function (x, y) { return Math.abs(y.d) - Math.abs(x.d); }).slice(0, 3);
+    return '<div class="pf-cmp"><p class="pf-cmp__t">' + T('Frente a {mes}', { mes: prev }) + '</p>' +
+      '<p class="pf-cmp__lead">' + T(d >= 0 ? 'Gastaste {monto} más' : 'Gastaste {monto} menos', { monto: money(Math.abs(d)) }) + '</p>' +
+      rows.map(function (r) {
+        return '<div class="pf-cmp__row"><span class="pf-cmp__ic material-symbols-rounded" aria-hidden="true">' + (r.d > 0 ? 'arrow_upward' : 'arrow_downward') + '</span>' +
+          '<span>' + T(CATS[r.k].name) + '</span><b>' + (r.d > 0 ? T('+{monto}', { monto: money(r.d) }) : T('−{monto}', { monto: money(-r.d) })) + '</b></div>';
+      }).join('') + '</div>';
   }
   // "De cada $10 que te entraron…": la forma más simple de leer un mes
   function flowHTML(v) {
@@ -1253,6 +1270,23 @@
     }
     return out;
   }
+  /* Estados de ánimo de Uku (como Duo): cambian su gesto y el tono.
+     feliz: ahorró y no se pasó · atento: algo para mirar · preocupado: se
+     pasó en varias cosas o pagó tarde · tranquilo: nada especial. */
+  var MOOD = {
+    feliz: { label: 'contento', gesture: 'happy' }, atento: { label: 'atento', gesture: 'think' },
+    preocupado: { label: 'preocupado', gesture: 'worried' }, tranquilo: { label: 'tranquilo', gesture: 'wave' }
+  };
+  function moodFor(v) {
+    if (v.today) return D.score >= 70 ? 'feliz' : D.score >= 45 ? 'tranquilo' : 'preocupado';
+    if (v.current) return onDemand === 'ready' && currentIns().some(function (x) { return x.kind === 'warn'; }) ? 'atento' : 'tranquilo';
+    var n = monthNums(v), rate = n.inc ? n.save / n.inc : 0;
+    var over = v.report ? [] : Object.keys(CATS).filter(function (k) { return !CATS[k].fixed && D.by[v.mi][k] > CATS[k].budget; });
+    var late = v.report ? REPORTS[v.key].ins.some(function (x) { return x.kind === 'warn' && /tarde/i.test(x.title); }) : D.tx.some(function (t) { return t.late && t.mi === v.mi; });
+    if (late || (over.length >= 2 && rate < .08)) return 'preocupado';
+    if (over.length || rate < .05) return rate >= .08 || over.length ? 'atento' : 'tranquilo';
+    return rate >= .08 ? 'feliz' : 'tranquilo';
+  }
   // Lo que Uku dice al lado del oso: un insight corto, no un misterio
   function hintFor(v) {
     var mes = v.today ? '' : T(MONTH_NAME[v.key]).toLowerCase();
@@ -1267,6 +1301,11 @@
       return proj < D.by[1]._spend ? T('Vas gastando menos que en septiembre') : T('Vas gastando más que en septiembre');
     }
     var over = v.report ? [] : Object.keys(CATS).filter(function (k) { return !CATS[k].fixed && D.by[v.mi][k] > CATS[k].budget; });
+    if (moodFor(v) === 'preocupado') {
+      var w = (v.report ? REPORTS[v.key].ins : monthInsights(v.mi)).filter(function (x) { return x.kind === 'warn'; })[0];
+      if (w) { say.first = 'warn'; return T('Ojo: {texto}', { texto: w.title.charAt(0).toLowerCase() + w.title.slice(1) }); }
+    }
+    if (rate >= .08 && over.length) { say.first = 'savings'; return T('Ahorraste {monto}, pero ojo con {cat}', { monto: money(n.save).replace(/,00$/, ''), cat: catLow(over[0]) }); }
     if (rate >= .08) { say.first = 'savings'; return T('¡Muy bien! Ahorraste {monto}', { monto: money(n.save).replace(/,00$/, '') }); }
     if (over.length) { say.first = 'warn'; return T('Ojo: te pasaste en {cat}', { cat: catLow(over[0]) }); }
     return T('¿Revisamos cómo te fue en {mes}?', { mes: mes });
@@ -1292,7 +1331,7 @@
     hero.insertAdjacentHTML('afterbegin', sayHTML2());
   }
   function onSay(k) {
-    if (k === 'say:open') { say.open = true; fx('open'); gest('talk'); }
+    if (k === 'say:open') { say.open = true; fx('open'); gest(MOOD[moodFor(viewOf(ST.view))].gesture); }
     if (k === 'say:close') { say.open = false; fx('close'); }
     if (k === 'say:next') { say.i = Math.min(say.list.length - 1, say.i + 1); fx('select'); gest('talk'); }
     paintSay();

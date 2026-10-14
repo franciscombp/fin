@@ -251,6 +251,10 @@ const POSES = {
                  head: [Math.sin(t * 5) * 3, Math.sin(t * 1.7) * 6, Math.sin(t * 2.3) * 3] }),
   think: t => ({ upperarm_R: [0, 52, 34], forearm_R: [-30, 42, -64], hand_R: [-24, 10, -18], head: [8, -7, -8] }),
   hold:  t => ({ upperarm_R: [0, 46, 38], forearm_R: [-62, 34, -36], hand_R: [-48, 4, -14], head: [14, -12, 0] }),
+  // preocupado: manos juntas delante de la panza, cabeza gacha y ladeada
+  worried: t => ({ upperarm_R: [0, 34, 36], forearm_R: [-46, 44, -26], hand_R: [-22, 8, -6],
+                   upperarm_L: mirror([0, 34, 36]), forearm_L: mirror([-46, 44, -26]), hand_L: mirror([-22, 8, -6]),
+                   head: [16, 0, 9 + Math.sin(t * 1.6) * 3] }),
   happy: t => ({ upperarm_R: [0, 14, 6 - Math.sin(t * 8) * 6], forearm_R: [-30, 10, -28], hand_R: [-24, 0, -10],
                  upperarm_L: mirror([0, 14, 6 - Math.sin(t * 8) * 6]), forearm_L: mirror([-30, 10, -28]), hand_L: mirror([-24, 0, -10]),
                  head: [-6, 0, Math.sin(t * 6) * 7] })
