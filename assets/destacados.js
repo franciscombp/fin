@@ -16,8 +16,14 @@
 (function () {
   'use strict';
 
-  var KEY = 'pb_widgets_v3';
-  var MAX = 2;      // widgets al lanzar (D1); configurable
+  var KEY = 'pb_widgets_v4';
+  // Espacio de Destacados: 2 horizontales = 4 cuadrados. Por defecto van
+  // horizontales; los cuadrados se eligen y el hueco que dejan se llena con
+  // otro cuadrado.
+  var U = { s: 1, m: 2, l: 4 };
+  var CAP = 4;
+  function units(ws) { return ws.reduce(function (n, w) { return n + U[w.size]; }, 0); }
+  function defSize(id) { var z = CATALOG[id].sizes; return z.indexOf('m') >= 0 ? 'm' : z[0]; }
   var RELEASE = 2;  // salida del RDA v1 que muestra el prototipo (la edición llega en la 2)
 
   function fx(n) { try { window.Haptics && Haptics.fx && Haptics.fx(n); } catch (e) {} }
@@ -49,7 +55,7 @@
   };
   // Orden en que el banco sugiere (D4: ahorro e inversión no van por defecto)
   var SUGGESTED = ['tarjeta', 'creditos', 'pagos', 'cuentas'];
-  var SIZE = { s: 'Pequeño', m: 'Mediano', l: 'Grande' };
+  var SIZE = { s: 'Cuadrado', m: 'Horizontal', l: 'Grande' };
 
   /* ---------- Acciones ---------- */
   function click(sel) { var e = document.querySelector(sel); if (e) e.click(); }
@@ -93,7 +99,7 @@
   function defaults() {
     var ids = SUGGESTED.filter(shown);
     var order = ids.filter(capt).slice(0, 1).concat(ids.filter(function (id) { return !capt(id); })); // una captación, primero (D10, D25)
-    return order.slice(0, MAX).map(function (id) { return { id: id, size: CATALOG[id].sizes[0] }; });
+    return fit(order.map(function (id) { return { id: id, size: defSize(id) }; }));
   }
   function load() {
     try { var p = JSON.parse(localStorage.getItem(KEY)); if (p && p.custom && Array.isArray(p.items)) return p; } catch (e) {}
@@ -103,10 +109,12 @@
   var pref = load();
   function items() {
     if (!pref.custom) return defaults();
-    return pref.items.filter(function (w) { return shown(w.id) && CATALOG[w.id].sizes.indexOf(w.size) >= 0; }).slice(0, MAX);
+    return fit(pref.items.filter(function (w) { return shown(w.id) && CATALOG[w.id].sizes.indexOf(w.size) >= 0; }));
   }
+  // Toma widgets en orden mientras quepan en el espacio
+  function fit(ws) { var n = 0; return ws.filter(function (w) { if (n + U[w.size] > CAP) return false; n += U[w.size]; return true; }); }
   // El espacio de Destacados nunca desaparece: si el cliente quita widgets,
-  // los huecos (hasta MAX) se llenan con widgets fantasma, solo de productos
+  // los huecos se llenan con widgets fantasma, solo de productos
   // que NO tiene (next product to buy). Si ya tiene todo, queda el hueco
   // para agregar un widget.
   function fillers(ws) {
@@ -114,10 +122,17 @@
     var pool = SUGGESTED.concat(Object.keys(CATALOG)).filter(function (id, i, a) { return a.indexOf(id) === i && shown(id) && capt(id) && used.indexOf(id) < 0; });
     var quit = pref.removed || []; // lo que el cliente quitó se sugiere al final
     pool = pool.filter(function (id) { return quit.indexOf(id) < 0; }).concat(pool.filter(function (id) { return quit.indexOf(id) >= 0; }));
-    // Los huecos son pequeños para no mover el resto del inicio
-    var small = function (id) { return CATALOG[id].sizes.indexOf('s') >= 0; };
-    pool = pool.filter(small).concat(pool.filter(function (id) { return !small(id); }));
-    for (var i = 0; i < MAX - ws.length; i++) out.push(pool[i] ? { id: pool[i], size: CATALOG[pool[i]].sizes[0], sug: true } : { slot: true });
+    // Si el cliente eligió cuadrados, los huecos son cuadrados (hasta 4);
+    // si no, horizontales (por defecto, 2)
+    var free = CAP - units(ws), need = [];
+    var sq = ws.some(function (w) { return w.size === 's'; });
+    if (sq || free % 2) for (var k = 0; k < free; k++) need.push('s');
+    else for (var j = 0; j < free / 2; j++) need.push('m');
+    need.forEach(function (z) {
+      var id = pool.filter(function (x) { return CATALOG[x].sizes.indexOf(z) >= 0; })[0];
+      if (id) { pool.splice(pool.indexOf(id), 1); out.push({ id: id, size: z, sug: true }); }
+      else out.push({ slot: true, size: z });
+    });
     return out;
   }
   // Antes de editar, la configuración sugerida se vuelve la del cliente
@@ -181,7 +196,7 @@
     return '<article class="dw dw--' + w.size + (c ? ' dw--offer' : '') + (w.sug ? ' dw--sug' : '') + '" data-dw-id="' + w.id + '"' + (r.go && !preview ? ' role="button" tabindex="0"' : '') + ' aria-label="' + esc(cat.name) + '">' +
       '<p class="dw-h"><span class="material-symbols-rounded" aria-hidden="true">' + cat.icon + '</span><span class="dw-1">' + (w.size === 's' ? cat.short : cat.name) + '</span></p>' +
       '<div class="dw-body">' + r.body + '</div>' +
-      (preview ? '' : w.sug ? '<button class="dw-plus" data-dw-adopt="' + w.id + '" aria-label="Agregar ' + esc(cat.name) + '"><span class="material-symbols-rounded">add</span></button>' : '<button class="dw-x" data-dw-del="' + w.id + '" aria-label="Quitar ' + esc(cat.name) + '"><span class="material-symbols-rounded">remove</span></button>' +
+      (preview ? '' : w.sug ? '<button class="dw-plus" data-dw-adopt="' + w.id + ':' + w.size + '" aria-label="Agregar ' + esc(cat.name) + '"><span class="material-symbols-rounded">add</span></button>' : '<button class="dw-x" data-dw-del="' + w.id + '" aria-label="Quitar ' + esc(cat.name) + '"><span class="material-symbols-rounded">remove</span></button>' +
         (cat.sizes.length > 1 ? '<button class="dw-size" data-dw-size="' + w.id + '" aria-label="Cambiar tamaño">' + SIZE[w.size] + '<span class="material-symbols-rounded">unfold_more</span></button>' : '')) +
       '</article>';
   }
@@ -218,12 +233,12 @@
     gos = {};
     var ws = items();
     list.innerHTML = ws.concat(fillers(ws)).map(function (w) {
-      return w.slot ? '<button class="dw dw--s dw-slot" data-dw="add"><span class="material-symbols-rounded">add</span>Agregar widget</button>' : widgetHTML(w);
+      return w.slot ? '<button class="dw dw--' + w.size + ' dw-slot" data-dw="add"><span class="material-symbols-rounded">add</span>Agregar widget</button>' : widgetHTML(w);
     }).join('');
-    var lim = host.querySelector('.dw-limit'); if (lim) lim.hidden = ws.length < MAX;
+    var lim = host.querySelector('.dw-limit'); if (lim) lim.hidden = units(ws) < CAP;
     host.classList.toggle('is-editing', editing);
     host.querySelector('[data-dw="edit"]').textContent = editing ? 'Listo' : 'Editar';
-    host.querySelector('.dw-add').disabled = ws.length >= MAX;
+    host.querySelector('.dw-add').disabled = units(ws) >= CAP;
   }
   function setEditing(on) { if (on) materialize(); editing = on; fx(on ? 'select' : 'success'); paint(); }
   function commit() { pref.custom = true; save(); paint(); }
@@ -236,8 +251,8 @@
     if ((b = e.target.closest('[data-dw="reset"]'))) { try { localStorage.removeItem(KEY); } catch (x) {} pref = load(); if (editing) materialize(); fx('select'); return paint(); }
     if ((b = e.target.closest('[data-dw-adopt]'))) {
       e.stopPropagation(); materialize();
-      var id = b.dataset.dwAdopt;
-      if (pref.items.length < MAX) pref.items.push({ id: id, size: CATALOG[id].sizes[0] });
+      var ad = b.dataset.dwAdopt.split(':');
+      if (units(pref.items) + U[ad[1]] <= CAP) pref.items.push({ id: ad[0], size: ad[1] });
       fx('success'); return commit();
     }
     if ((b = e.target.closest('[data-dw-del]'))) {
@@ -249,7 +264,9 @@
     if ((b = e.target.closest('[data-dw-size]'))) {
       e.stopPropagation();
       var w = pref.items.filter(function (x) { return x.id === b.dataset.dwSize; })[0], sz = CATALOG[w.id].sizes;
-      w.size = sz[(sz.indexOf(w.size) + 1) % sz.length]; fx('select'); return commit();
+      var rest = units(pref.items) - U[w.size];
+      for (var i = 1; i <= sz.length; i++) { var nx = sz[(sz.indexOf(w.size) + i) % sz.length]; if (rest + U[nx] <= CAP) { w.size = nx; break; } } // solo tamaños que caben
+      fx('select'); return commit();
     }
     if (editing) return; // en edición, tocar un widget no lo abre
     if ((b = e.target.closest('[data-dw-pay]'))) { e.stopPropagation(); return pay(PAYS[+b.dataset.dwPay]); }
@@ -333,24 +350,24 @@
   function openGallery() { ensureSheet(); paintGallery(); sheet.scrollTop = 0; back.classList.add('open'); sheet.classList.add('open'); fx('open'); }
   function closeGallery() { back.classList.remove('open'); sheet.classList.remove('open'); }
   var WHY = { cuentas: 'Recibe pagos con tu cuenta deuna', inversion: 'Tu dinero puede rendir 7,25% al año', metas: 'Ahorra para algo que quieras', tarjeta: 'Pide tu tarjeta de crédito', creditos: 'Tienes un crédito preaprobado', pagos: 'Programa tus pagos de servicios' };
-  function galItem(id, have, full, why) {
-    var c = CATALOG[id], sz = pick[id] || c.sizes[0], on = have.indexOf(id) >= 0;
+  function galItem(id, have, free, why) {
+    var c = CATALOG[id], sz = pick[id] || defSize(id), on = have.indexOf(id) >= 0, fits = U[sz] <= free;
     return '<div class="dw-gal">' +
       '<div class="dw-gal__head"><span class="dw-gal__ic material-symbols-rounded">' + c.icon + '</span><span class="dw-gal__t"><b>' + c.name + '</b><small>' + (why || c.desc) + '</small></span>' +
-        '<button class="dw-gal__add bp-action-button" data-size="sm" data-gal-add="' + id + '"' + (on || full ? ' disabled' : '') + '>' + (on ? 'Agregado' : 'Agregar') + '</button></div>' +
+        '<button class="dw-gal__add bp-action-button" data-size="sm" data-gal-add="' + id + '"' + (on || !fits ? ' disabled' : '') + '>' + (on ? 'Agregado' : fits ? 'Agregar' : 'No cabe') + '</button></div>' +
       (c.sizes.length > 1 ? '<div class="dw-gal__sizes" role="tablist">' + ['s', 'm', 'l'].filter(function (x) { return c.sizes.indexOf(x) >= 0; }).map(function (x) {
         return '<button class="sx-chip" role="tab" data-gal-size="' + id + ':' + x + '" aria-pressed="' + (x === sz) + '">' + SIZE[x] + '</button>';
       }).join('') + '</div>' : '') +
       '<div class="dw-gal__prev"><div class="dw-grid dw-grid--prev">' + widgetHTML({ id: id, size: sz }, true) + '</div></div></div>';
   }
   function paintGallery() {
-    var have = items().map(function (w) { return w.id; }), full = have.length >= MAX;
+    var ws = items(), have = ws.map(function (w) { return w.id; }), free = CAP - units(ws);
     var ids = Object.keys(CATALOG).filter(shown);
     var sug = ids.filter(capt), mine = ids.filter(function (id) { return !capt(id); });
     sheet.innerHTML = '<div class="as-sheet__handle"></div><h3>Agregar widget</h3><p>' +
-      (full ? 'Ya tienes ' + MAX + ' widgets. Quita uno para agregar otro.' : 'Elige un widget y su tamaño. Puedes tener hasta ' + MAX + '.') + '</p>' +
-      (sug.length ? '<p class="as-sheet__label">Sugeridos para ti</p>' + sug.map(function (id) { return galItem(id, have, full, WHY[id]); }).join('') : '') +
-      (mine.length ? '<p class="as-sheet__label">Tus productos</p>' + mine.map(function (id) { return galItem(id, have, full); }).join('') : '');
+      (!free ? 'No queda espacio. Quita uno para agregar otro.' : 'Elige un widget y su tamaño. Caben 2 horizontales o 4 cuadrados.') + '</p>' +
+      (sug.length ? '<p class="as-sheet__label">Sugeridos para ti</p>' + sug.map(function (id) { return galItem(id, have, free, WHY[id]); }).join('') : '') +
+      (mine.length ? '<p class="as-sheet__label">Tus productos</p>' + mine.map(function (id) { return galItem(id, have, free); }).join('') : '');
   }
   function onGallery(e) {
     var b;
@@ -358,8 +375,9 @@
     if ((b = e.target.closest('[data-gal-add]')) && !b.disabled) {
       var id = b.dataset.galAdd;
       materialize();
-      if (pref.items.length >= MAX) return;
-      pref.items.push({ id: id, size: pick[id] || CATALOG[id].sizes[0] });
+      var nz = pick[id] || defSize(id);
+      if (units(pref.items) + U[nz] > CAP) return;
+      pref.items.push({ id: id, size: nz });
       fx('success'); commit(); closeGallery();
       setTimeout(function () { var w = list.querySelector('[data-dw-id="' + id + '"]'); if (w) { w.scrollIntoView({ block: 'center', behavior: 'smooth' }); w.classList.add('is-new'); setTimeout(function () { w.classList.remove('is-new'); }, 1200); } }, 350);
     }
