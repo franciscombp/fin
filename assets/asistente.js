@@ -995,27 +995,6 @@
           (x.ask ? '<button class="uku-say__reply" data-pf="why:' + i + '">' + esc(x.ask) + '</button>' : ''));
       }).join('')) + '</div></section>';
   }
-  function budgetsHTML(mi) {
-    var b = D.by[mi], mo = MONTHS[mi], frac = mo.partial ? mo.days / 30 : 1;
-    var ks = Object.keys(CATS).filter(function (k) { return !CATS[k].fixed; })
-      .sort(function (x, y) { return b[y] / CATS[y].budget - b[x] / CATS[x].budget; });
-    var over = ks.filter(function (k) { return b[k] > CATS[k].budget; }).length;
-    return '<section class="pf-sec"><div class="pf-sec__head"><h2>Presupuestos</h2><button class="pf-link" data-pf="budgets">Ajustar</button></div>' +
-      '<p class="pf-sec__sub">' + (over ? T('Te pasaste en {n} de {t} categorías', { n: over, t: ks.length }) : mo.partial ? T('Vas por el {pct} del mes', { pct: pct(frac) }) : T('No te pasaste en ninguna categoría')) + '</p>' +
-      '<div class="pf-bud">' + ks.map(function (k) {
-        var v = b[k], B = CATS[k].budget, o = v > B;
-        return '<button class="pf-bud__row' + (o ? ' is-over' : '') + '" data-pf="cat:' + k + ':' + mi + '"><span class="pf-bud__name">' + T(CATS[k].name) + '</span>' +
-          '<span class="pf-bud__val"><b>' + money(v) + '</b> ' + T('de {monto}', { monto: money(B) }) + '</span>' +
-          '<u><i style="width:' + Math.round(Math.min(1, v / B) * 100) + '%"></i>' + (mo.partial ? '<em style="left:' + Math.round(frac * 100) + '%"></em>' : '') + '</u></button>';
-      }).join('') + '</div></section>';
-  }
-  function spendHTML(mi) {
-    var tc = catTotals(mi).slice(0, 3);
-    if (!tc.length) return '';
-    return '<section class="pf-sec"><h2>En qué gastaste</h2><div class="pf-top3">' + tc.map(function (c) {
-      return '<button class="pf-top3__row" data-pf="cat:' + c.k + ':' + mi + '"><span>' + T(CATS[c.k].name) + '</span><b>' + money(c.v) + '</b><u><i style="width:' + Math.round(c.v / tc[0].v * 100) + '%"></i></u></button>';
-    }).join('') + '</div><button class="pf-link pf-link--block" data-pf="breakdown:' + mi + '">Ver todas las categorías</button></section>';
-  }
   function goalsHTML() {
     return '<section class="pf-sec"><h2>Metas</h2><div class="pf-goals">' + D.goals.map(function (g) {
       return '<div class="pf-goal"><div class="pf-goal__top"><b>' + T(g.name) + '</b><span>' + pct(Math.min(1, g.have / g.target)) + '</span></div>' +
@@ -1061,11 +1040,7 @@
     var cash = D.accts.filter(function (a) { return a.type === 'ahorro' && a.id !== 'sie1' || a.type === 'corriente' || a.type === 'efectivo'; });
     var avail = cash.reduce(function (s, a) { return s + a.bal; }, 0);
     var html = sumHTML(T('Tienes disponible hoy'), money(avail), [[T('Tienes en total'), money(D.assets)], [T('Debes'), money(D.debt), D.debt ? 'is-neg' : ''], [T('Neto'), money(D.assets - D.debt)]]);
-    var cl = window.Clima && Clima.last();
-    html += ukuHTML([], (cl ? sayHTML(0, esc(cl.text)) : '') + sayHTML(cl ? 1 : 0, T('Hoy tienes {monto} disponibles entre tus cuentas.', { monto: money(avail) }) +
-      (D.card ? ' ' + T('Tu Mastercard Black tiene {deuda} por pagar; la fecha máxima es el 10 de noviembre.', { deuda: money(D.debt) }) : ''),
-      (D.card && D.debt ? '<button class="uku-say__reply" data-pf="go:Pagar tarjeta">Pagar tarjeta</button>' : '') +
-      '<button class="uku-say__reply" data-pf="ask:¿Cuánto tengo en total?">¿Cuánto tengo en total?</button>'));
+    // Lo que Uku tiene para contar vive en su globo (a demanda)
     html += '<section class="pf-sec"><div class="pf-sec__head"><h2>Cuentas</h2><button class="pf-link" data-pf="connect">Conectar</button></div><div class="pf-prods">' +
       cash.map(function (a) {
         return prodRow(bankAv(a.bank), T(a.name), BANKS[a.bank].name + (a.mask ? ' · ••' + a.mask : ''), money(a.bal), '', PB_ACTION[a.id] ? 'go:' + PB_ACTION[a.id] : 'accounts');
@@ -1103,34 +1078,170 @@
     if (!hero.querySelector('canvas')) mount3D(hero, sc, g);
     else if (b3d) b3d.setScore(sc);
   }
+  /* ---------- Historial, globo de Uku y gráficas claras ---------- */
+  var MONTH_NAME = { jun: 'Junio', jul: 'Julio', ago: 'Agosto', sep: 'Septiembre', oct: 'Octubre', hoy: 'Hoy' };
+  var CAT_IC = { super: 'shopping_cart', delivery: 'restaurant', transporte: 'directions_bus', servicios: 'bolt', subs: 'autorenew', compras: 'shopping_bag', cafe: 'local_cafe', salud: 'medical_services', ocio: 'theater_comedy' };
+  // Cada mes, en cifras simples: lo que entró, lo que gastaste y lo que ahorraste
+  function monthNums(v) {
+    if (v.report) { var r = REPORTS[v.key]; return { spend: r.spend, save: r.save, inc: Math.round(r.save / r.rate) }; }
+    var b = D.by[v.mi]; return { spend: b._spend, save: b._save, inc: b._in, partial: !!v.current };
+  }
+  function histHTML(v) {
+    var ms = VIEWS.filter(function (x) { return !x.today; });
+    var vals = ms.map(function (x) { return monthNums(x).spend; });
+    var closed = ms.filter(function (x) { return !x.current; }).map(function (x) { return monthNums(x).spend; });
+    var avg = closed.reduce(function (a, b) { return a + b; }, 0) / closed.length;
+    var max = Math.max.apply(null, vals.concat([avg])) * 1.12;
+    var cur = monthNums(v), diff = (cur.spend - avg) / avg;
+    var note = v.current ? T('Octubre va en curso: llevas {monto} en {n} días.', { monto: money(cur.spend), n: MONTHS[2].days })
+      : Math.abs(diff) < .03 ? T('En {mes} gastaste parecido a tu promedio.', { mes: T(MONTH_NAME[v.key]).toLowerCase() })
+      : T(diff > 0 ? 'En {mes} gastaste {pct} más que tu promedio.' : 'En {mes} gastaste {pct} menos que tu promedio.', { mes: T(MONTH_NAME[v.key]).toLowerCase(), pct: pct(Math.abs(diff)) });
+    return '<section class="pf-sec pf-hist"><div class="pf-sec__head"><h2>' + T('Mes a mes') + '</h2></div>' +
+      '<p class="pf-sec__sub">' + note + '</p>' +
+      '<div class="pf-hist__chart" style="--avg:' + (avg / max).toFixed(3) + '">' +
+        '<span class="pf-hist__avg"><em>' + T('Promedio {monto}', { monto: money(avg) }) + '</em></span>' +
+        ms.map(function (x, i) {
+          var h = vals[i] / max * 100, on = x.key === v.key;
+          return '<button class="pf-hist__col' + (on ? ' is-on' : '') + (x.current ? ' is-cur' : '') + '" data-pf="view:' + x.key + '" aria-label="' + T(MONTH_NAME[x.key]) + ': ' + money(vals[i]) + '"' + (on ? ' aria-current="true"' : '') + '>' +
+            '<span class="pf-hist__val">' + money(vals[i]).replace(/,\d\d$/, '') + '</span>' +
+            '<span class="pf-hist__bar" style="--h:' + (h / 100).toFixed(3) + '"></span>' +
+            '<span class="pf-hist__m">' + T(MONTH_NAME[x.key]).slice(0, 3) + '</span></button>';
+        }).join('') +
+      '</div><div class="pf-hist__legend"><span><i></i>' + T('Promedio {monto}', { monto: money(avg) }) + '</span><span><i class="is-cur"></i>' + T('Mes en curso') + '</span></div>' +
+      '<p class="pf-note">' + T('Toca un mes para verlo.') + '</p></section>';
+  }
+  // "De cada $10 que te entraron…": la forma más simple de leer un mes
+  function flowHTML(v) {
+    var n = monthNums(v), sp = Math.min(1, n.spend / n.inc), sv = Math.max(0, Math.min(1 - sp, n.save / n.inc));
+    var g10 = Math.round(sp * 10), s10 = Math.round(sv * 10);
+    var mes = T(MONTH_NAME[v.key]).toLowerCase();
+    return '<section class="pf-flow">' +
+      '<p class="pf-flow__label">' + T(v.current ? 'Llevas gastado en {mes}' : 'Gastaste en {mes}', { mes: mes }) + '</p>' +
+      '<p class="pf-flow__value">' + money(n.spend) + '</p>' +
+      (n.partial ? '<p class="pf-flow__sub">' + T('En los primeros {n} días del mes', { n: MONTHS[2].days }) + '</p>' :
+      '<div class="pf-flow__bar" role="img" aria-label="' + T('Te entraron {a}; gastaste {b} y ahorraste {c}', { a: money(n.inc), b: money(n.spend), c: money(n.save) }) + '">' +
+        '<i class="is-spend" style="width:' + (sp * 100).toFixed(1) + '%"></i><i class="is-save" style="width:' + (sv * 100).toFixed(1) + '%"></i></div>' +
+      '<div class="pf-flow__keys"><span><i class="is-in"></i>' + T('Te entró') + '<b>' + money(n.inc) + '</b></span>' +
+        '<span><i class="is-spend"></i>' + T('Gastaste') + '<b>' + money(n.spend) + '</b></span>' +
+        '<span><i class="is-save"></i>' + T('Ahorraste') + '<b>' + money(n.save) + '</b></span></div>' +
+      '<p class="pf-flow__plain">' + T('De cada $ 10 que te entraron, gastaste $ {g} y ahorraste $ {s}.', { g: g10, s: s10 }) + '</p>') +
+      '</section>';
+  }
+  // Presupuestos en palabras: "Te quedan" / "Te pasaste"
+  function budgetsHTML(mi) {
+    var b = D.by[mi], mo = MONTHS[mi], frac = mo.partial ? mo.days / 30 : 1;
+    var ks = Object.keys(CATS).filter(function (k) { return !CATS[k].fixed; })
+      .sort(function (x, y) { return b[y] / CATS[y].budget - b[x] / CATS[x].budget; });
+    var over = ks.filter(function (k) { return b[k] > CATS[k].budget; }).length;
+    return '<section class="pf-sec"><div class="pf-sec__head"><h2>Presupuestos</h2><button class="pf-link" data-pf="budgets">Ajustar</button></div>' +
+      '<p class="pf-sec__sub">' + (over ? T('Te pasaste en {n} de {t} categorías', { n: over, t: ks.length }) : mo.partial ? T('La raya marca hasta dónde deberías ir hoy ({pct} del mes)', { pct: pct(frac) }) : T('No te pasaste en ninguna categoría')) + '</p>' +
+      '<div class="pf-bud2">' + ks.map(function (k) {
+        var v = b[k], B = CATS[k].budget, o = v > B;
+        return '<button class="pf-bud2__row' + (o ? ' is-over' : '') + '" data-pf="cat:' + k + ':' + mi + '">' +
+          '<span class="pf-bud2__ic material-symbols-rounded" aria-hidden="true">' + (CAT_IC[k] || 'category') + '</span>' +
+          '<span class="pf-bud2__name">' + T(CATS[k].name) + '<small>' + T('{a} de {b}', { a: money(v), b: money(B) }) + '</small></span>' +
+          '<span class="pf-bud2__state"><small>' + T(o ? 'Te pasaste' : 'Te quedan') + '</small>' + money(o ? v - B : B - v) + '</span>' +
+          '<u><i style="width:' + Math.round(Math.min(1, v / B) * 100) + '%"></i>' + (mo.partial ? '<em style="left:' + Math.round(frac * 100) + '%"></em>' : '') + '</u></button>';
+      }).join('') + '</div></section>';
+  }
+  // En qué gastaste: parte de tu gasto (en %), con ícono y monto
+  function spendHTML(mi) {
+    var all = catTotals(mi), total = D.by[mi]._spend, tc = all.slice(0, 4);
+    if (!tc.length) return '';
+    return '<section class="pf-sec"><h2>En qué gastaste</h2><p class="pf-sec__sub">' + T('{cat} se llevó {pct} de tu gasto', { cat: T(CATS[tc[0].k].name), pct: pct(tc[0].v / total) }) + '</p>' +
+      '<div class="pf-cats">' + tc.map(function (c) {
+        return '<button class="pf-cats__row" data-pf="cat:' + c.k + ':' + mi + '"><span class="pf-bud2__ic material-symbols-rounded" aria-hidden="true">' + (CAT_IC[c.k] || 'category') + '</span>' +
+          '<span class="pf-cats__name">' + T(CATS[c.k].name) + '<small>' + pct(c.v / total) + ' ' + T('de tu gasto') + '</small></span><b>' + money(c.v) + '</b>' +
+          '<u><i style="width:' + (c.v / total * 100).toFixed(1) + '%"></i></u></button>';
+      }).join('') + '</div>' +
+      (all.length > tc.length ? '<button class="pf-link pf-link--block" data-pf="breakdown:' + mi + '">' + T('Ver las {n} categorías', { n: all.length }) + '</button>' : '') + '</section>';
+  }
+  function insCards(title, list) {
+    curIns = list || [];
+    if (!curIns.length) return '';
+    return '<section class="pf-sec"><h2>' + title + '</h2><div class="pf-ins-list">' + curIns.map(function (x, i) {
+      return '<article class="pf-ins pf-ins--' + x.kind + '"><span class="pf-ins__ic material-symbols-rounded">' + x.icon + '</span>' +
+        '<div class="pf-ins__body"><h3>' + x.title + '</h3><p>' + x.sub + '</p>' +
+        (x.det || x.ask ? '<div class="pf-ins__acts">' + (x.det ? '<button class="pf-link" data-pf="det:' + i + '">Ver detalle</button>' : '') +
+          (x.ask ? '<button class="pf-link" data-pf="why:' + i + '">' + T('Pregúntale a {nombre}', { nombre: C().name }) + '</button>' : '') + '</div>' : '') +
+        '</div></article>';
+    }).join('') + '</div></section>';
+  }
+
+  /* Globo de Uku: a demanda. Un aviso pequeño junto al oso; al tocarlo (o al
+     oso) se abre un globo de texto sobre él, de a un mensaje. */
+  var say = { list: [], i: 0, open: false };
+  function sayFor(v) {
+    var out = [];
+    if (v.today) {
+      var cl = window.Clima && Clima.last();
+      var cash = D.accts.filter(function (a) { return a.type === 'ahorro' && a.id !== 'sie1' || a.type === 'corriente' || a.type === 'efectivo'; }).reduce(function (s, a) { return s + a.bal; }, 0);
+      if (cl) out.push({ t: esc(cl.text) });
+      out.push({ t: T('Hoy tienes {monto} disponibles entre tus cuentas.', { monto: money(cash) }) + (D.card ? ' ' + T('Tu Mastercard Black tiene {deuda} por pagar; la fecha máxima es el 10 de noviembre.', { deuda: money(D.debt) }) : ''),
+        r: (D.card && D.debt ? '<button class="uku-say__reply" data-pf="go:Pagar tarjeta">Pagar tarjeta</button>' : '') + '<button class="uku-say__reply" data-pf="ask:¿Cuánto tengo en total?">¿Cuánto tengo en total?</button>' });
+    } else if (v.current && onDemand !== 'ready') {
+      out.push(onDemand === 'loading' ? { t: '<span class="pf-spinner"></span> ' + T('Revisando tus movimientos de octubre…') }
+        : { t: T('Tu resumen de octubre va a estar listo a inicios de noviembre. ¿Quieres que te cuente cómo vas hasta ahora?'), r: '<button class="uku-say__reply" data-pf="ondemand">Sí, cuéntame</button>' });
+    } else {
+      var list = v.current ? currentIns() : v.report ? REPORTS[v.key].ins : monthInsights(v.mi);
+      list.slice(0, 3).forEach(function (x) {
+        out.push({ t: sentence(x.title, x.sub), r: x.ask ? '<button class="uku-say__reply" data-pf="ask:' + esc(x.ask) + '">' + esc(x.ask) + '</button>' : '' });
+      });
+    }
+    return out;
+  }
+  function sayHTML2() {
+    var n = say.list.length, m = say.list[say.i] || { t: '' };
+    return '<div class="pf-say' + (say.open ? ' is-open' : '') + '">' +
+      '<button class="pf-say__hint" data-pf="say:open" aria-label="' + T('Ver lo que te cuenta {nombre}', { nombre: C().name }) + '">' +
+        (n > 1 ? T('Tengo {n} cosas que contarte', { n: n }) : T('Tengo algo que contarte')) + '</button>' +
+      '<div class="pf-say__bubble" role="dialog" aria-label="' + T('{nombre} te cuenta', { nombre: C().name }) + '" aria-live="polite">' +
+        '<button class="pf-say__x" data-pf="say:close" aria-label="Cerrar"><span class="material-symbols-rounded">close</span></button>' +
+        '<p class="pf-say__name">' + C().name + (n > 1 ? ' · ' + (say.i + 1) + ' de ' + n : '') + '</p>' +
+        '<p class="pf-say__t">' + m.t + '</p>' +
+        '<div class="uku-say__replies">' + (m.r || '') +
+          (n > 1 && say.i < n - 1 ? '<button class="uku-say__reply uku-say__reply--next" data-pf="say:next">Siguiente</button>' : '') +
+          '<button class="uku-say__reply uku-say__reply--chat" data-pf="ask">' + T('Escríbele a {nombre}', { nombre: C().name }) + '</button></div>' +
+      '</div></div>';
+  }
+  function paintSay() {
+    var hero = pf && pf.querySelector('.pf-hero');
+    if (!hero) return;
+    var old = hero.querySelector('.pf-say'); if (old) old.remove();
+    hero.insertAdjacentHTML('afterbegin', sayHTML2());
+  }
+  function onSay(k) {
+    if (k === 'say:open') { say.open = true; fx('open'); gest('talk'); }
+    if (k === 'say:close') { say.open = false; fx('close'); }
+    if (k === 'say:next') { say.i = Math.min(say.list.length - 1, say.i + 1); fx('select'); gest('talk'); }
+    paintSay();
+  }
+
   function paintDash() {
     var v = viewOf(ST.view), html = '';
     html += '<header class="pf-head"><div class="pf-head__row"><h1>Mis finanzas</h1>' +
       '<button class="pf-round" data-pf="settings" aria-label="Ajustes"><span class="material-symbols-rounded">tune</span></button></div>' +
       '<div class="pf-months" role="tablist">' + VIEWS.map(function (x) {
-        return '<button role="tab" data-pf="view:' + x.key + '" aria-selected="' + (x.key === v.key) + '">' + x.short + '</button>';
+        return '<button role="tab" data-pf="view:' + x.key + '" aria-selected="' + (x.key === v.key) + '"' + (x.today ? ' class="is-today"' : '') + '>' + T(MONTH_NAME[x.key] || x.short) + '</button>';
       }).join('') + '</div></header>';
     var hs = v.today || v.current ? D.score : v.report ? REPORTS[v.key].score : monthScore(v.mi);
     html += heroHTML(hs, T(v.today || v.current ? 'Salud financiera hoy {n} · {nivel}' : 'Salud financiera {n} · {nivel}', { n: hs, nivel: T(level(hs).n) }));
     if (v.today) {
       html += todayHTML();
-    } else if (v.report) {
-      var r = REPORTS[v.key];
-      html += sumHTML(T('Gastaste en {mes}', { mes: T(r.name) }), money(r.spend), [[T('Ahorraste'), money(r.save)], [T('Tasa de ahorro'), pct(r.rate)]], r.score);
-      html += ukuHTML(r.ins);
-      html += '<section class="pf-sec"><p class="pf-note pf-note--box">' + T('De {mes} solo tenemos este resumen. El detalle de cada movimiento lo tienes desde agosto.', { mes: T(r.name) }) + '</p></section>';
-    } else if (v.current) {
-      var o = D.by[2];
-      html += sumHTML(T('Llevas gastado en octubre'), money(o._spend), [[T('Ingresos'), money(o._in)], [T('Ahorro'), money(o._save)]], D.score);
-      if (!onDemand) html += ukuHTML([], sayHTML(0, T('Tu resumen de octubre va a estar listo a inicios de noviembre. ¿Quieres que te cuente cómo vas hasta ahora?'),
-        '<button class="uku-say__reply" data-pf="ondemand">Sí, cuéntame</button>'));
-      else if (onDemand === 'loading') html += ukuHTML([], sayHTML(0, '<span class="pf-spinner"></span> ' + T('Revisando tus movimientos de octubre…')));
-      else html += ukuHTML(currentIns());
-      html += budgetsHTML(2) + recordsHTML(2);
     } else {
-      var mi = v.mi, b = D.by[mi], sc = monthScore(mi);
-      html += sumHTML(T('Gastaste en {mes}', { mes: T(MONTHS[mi].name) }), money(b._spend), [[T('Ingresos'), money(b._in)], [T('Ahorraste'), money(b._save)]], sc);
-      html += ukuHTML(monthInsights(mi)) + budgetsHTML(mi) + spendHTML(mi) + goalsHTML() + recordsHTML(mi);
+      html += flowHTML(v) + histHTML(v);
+      var mesL = T(MONTH_NAME[v.key]).toLowerCase();
+      if (v.report) {
+        html += insCards(T('Lo que pasó en {mes}', { mes: mesL }), REPORTS[v.key].ins);
+        html += '<section class="pf-sec"><p class="pf-note pf-note--box">' + T('De {mes} solo tenemos este resumen. El detalle de cada movimiento lo tienes desde agosto.', { mes: mesL }) + '</p></section>';
+      } else if (v.current) {
+        html += onDemand === 'ready' ? insCards(T('Cómo vas en octubre'), currentIns())
+          : '<section class="pf-sec"><div class="pf-empty"><p>' + T('Tu resumen de octubre va a estar listo a inicios de noviembre.') + '</p>' +
+            (onDemand === 'loading' ? '<span class="pf-spinner"></span>' : '<button class="pf-pill" data-pf="ondemand">Ver cómo va octubre</button>') + '</div></section>';
+        html += budgetsHTML(2) + recordsHTML(2);
+      } else {
+        html += insCards(T('Lo que pasó en {mes}', { mes: mesL }), monthInsights(v.mi)) + budgetsHTML(v.mi) + spendHTML(v.mi) + goalsHTML() + recordsHTML(v.mi);
+      }
     }
     html += footHTML();
     // Conserva el nodo del héroe con el lienzo vivo (sin parpadeo al cambiar de mes)
@@ -1145,6 +1256,10 @@
       old.querySelector('.pf-hero__badge').innerHTML = fresh.querySelector('.pf-hero__badge').innerHTML;
       fresh.replaceWith(old);
     }
+    // El globo se rehace con lo de este mes; si cambió de mes, se cierra
+    if (say.view !== v.key) { say.open = false; say.i = 0; say.view = v.key; }
+    say.list = sayFor(v); say.i = Math.min(say.i, Math.max(0, say.list.length - 1));
+    paintSay();
     syncHero();
     var row = pf.querySelector('.pf-months'), sel = row && row.querySelector('[aria-selected="true"]');
     if (sel) row.scrollLeft = sel.offsetLeft - (row.clientWidth - sel.offsetWidth) / 2;
@@ -1187,8 +1302,11 @@
 
   function onPF(e) {
     var b = e.target.closest('[data-pf]');
+    // Tocar al oso abre (o cierra) su globo de texto
+    if (!b && e.target.closest('.pf-hero .b3d') && isInline()) return onSay(say.open ? 'say:close' : 'say:open');
     if (!b) return;
     var k = b.dataset.pf;
+    if (k.indexOf('say:') === 0) return onSay(k);
     if (k === 'close') return closePF();
     if (k === 'settings') return openSheet('settings');
     if (k === 'ask') return open();
