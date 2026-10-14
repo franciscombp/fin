@@ -849,3 +849,60 @@ html .pf-page--inline .pf-prods, html .pf-page--inline .pf-recs { border-radius:
 .as-composer .uku-disc { padding: 0 24px; }
 .pf-row--incl .pf-switch { display: inline-block !important; width: 44px !important; height: 26px !important; min-width: 44px; border-radius: 99px !important; padding: 0 !important; margin: 0 0 0 0 !important; }
 .pf-row--incl .pf-switch::after { width: 20px !important; height: 20px !important; top: 3px !important; border-radius: 50% !important; }
+
+/* =====================================================================
+   MIS FINANZAS: meses fijos al bajar (como las pestañas de Inicio),
+   sin espacio extra después de "Hoy" y cambio de mes con dirección.
+   ===================================================================== */
+.pf-page--inline .pf-months {
+  position: sticky; top: calc(56px + env(safe-area-inset-top, 0px)); z-index: 49;
+  margin: 0; width: 100%; box-sizing: border-box;
+  padding: var(--bp-semantic-spacing-micro-md, 8px) var(--bp-layout-grid-margin) var(--bp-semantic-spacing-micro-md, 8px);
+  background: var(--bp-surface-page, var(--bp-theme-color-surface-page-alt));
+}
+.pf-page--inline .pf-months .is-today { margin-right: 0; }
+.pf-page--inline .pf-months .is-today::before { display: none; }
+.pf-page--inline .pf-months button { transition: background-color .3s var(--ux-curve), color .3s var(--ux-curve), transform .15s ease; }
+.pf-page--inline .pf-months button:active { transform: scale(.96); }
+@keyframes pfNext { from { opacity: 0; transform: translate3d(28px, 0, 0); } to { opacity: 1; transform: none; } }
+@keyframes pfPrev { from { opacity: 0; transform: translate3d(-28px, 0, 0); } to { opacity: 1; transform: none; } }
+.pf-page--inline .pf-scroll.is-slide-next > :not(.pf-hero):not(.pf-months) { animation: pfNext .36s var(--ux-curve) both; }
+.pf-page--inline .pf-scroll.is-slide-prev > :not(.pf-hero):not(.pf-months) { animation: pfPrev .36s var(--ux-curve) both; }
+
+/* Clima de Uku: detalle en el fondo del héroe, sin peso visual */
+.pf-wx { position: absolute; left: 16px; bottom: 12px; margin: 0; z-index: 1; display: inline-flex; align-items: center; gap: 4px; font: 500 13px/18px var(--sol-font, Roboto, sans-serif); color: var(--cx-muted); opacity: .8; pointer-events: none; }
+.pf-wx .material-symbols-rounded { font-size: 18px; }
+
+/* =====================================================================
+   SIN SOMBRAS: la app no usa sombras (ni el globo de Uku). Se conserva
+   el anillo de foco para teclado.
+   ===================================================================== */
+html:not(.theme-y2k) *:not(:focus-visible) { box-shadow: none !important; }
+html:not(.theme-y2k) .pf-say__bubble, html:not(.theme-y2k) .pf-say__hint { box-shadow: none !important; }
+
+/* =====================================================================
+   TRANSICIONES UNIFICADAS (iOS)
+   · Pantallas que se empujan desde la derecha: --ux-push (0,4 s).
+   · Pantallas modales (Uku, análisis): suben desde abajo: --ux-modal.
+   · Hojas inferiores: suben con el mismo gesto: --ux-sheet.
+   · Velo: se desvanece en 0,3 s. Una sola curva para todo:
+     cubic-bezier(.32,.72,0,1), la misma de iOS.
+   ===================================================================== */
+:root { --ux-curve: cubic-bezier(.32, .72, 0, 1); --ux-push: .4s; --ux-modal: .42s; --ux-sheet: .4s; --ux-fade: .3s; }
+.push-page, .push-page.grow, .push-page.grow.closing-grow, .pf-page {
+  transition: transform var(--ux-push) var(--ux-curve), visibility 0s linear var(--ux-push) !important;
+}
+.push-page.open, .push-page.grow.open, .pf-page.open {
+  transition: transform var(--ux-push) var(--ux-curve), visibility 0s !important;
+}
+.as-page, .ai-page {
+  transition: transform var(--ux-modal) var(--ux-curve), visibility 0s linear var(--ux-modal) !important;
+}
+.as-page.open, .ai-page.open { transition: transform var(--ux-modal) var(--ux-curve), visibility 0s !important; }
+.sheet, .as-sheet { transition: transform var(--ux-sheet) var(--ux-curve) !important; }
+.sheet-backdrop, .as-sheet-back { transition: opacity var(--ux-fade) ease !important; }
+.sx-panel { transition: transform var(--ux-sheet) var(--ux-curve), opacity var(--ux-fade) ease !important; }
+/* Cambio de pestaña en la barra inferior: el contenido se desvanece y sube poco */
+html:not(.theme-y2k) .tab-panel.is-active > .section,
+html:not(.theme-y2k) .tab-panel.is-active > .grow-cta { animation: uxFade .3s var(--ux-curve) both !important; }
+@keyframes uxFade { from { opacity: 0; transform: translate3d(0, 8px, 0); } to { opacity: 1; transform: none; } }

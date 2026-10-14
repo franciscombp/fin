@@ -50,7 +50,9 @@
     var list = wear.length > 1 ? wear.slice(0, -1).join(', ') + ' y ' + wear[wear.length - 1] : wear[0];
     var text = 'Hoy ' + where + 'hace ' + Math.round(w.temp) + '° y ' + sky + (list ? ', así que me puse ' + list + '.' : '. Con mi suéter de siempre estoy perfecto.');
     if (low && !w.coast_said) text += look.region === 'costa' && w.lon > -78.3 ? ' Aquí en la selva hay palmeras.' : ' Y aquí hay palmeras en vez de pinos.';
-    return { look: look, text: text, temp: Math.round(w.temp), city: w.city, rain: rain };
+    // Icono del cielo (Material Symbols): solo se muestra como detalle de fondo
+    var icon = rain ? 'rainy' : snow ? 'ac_unit' : sunny ? 'wb_sunny' : w.code === 2 ? 'partly_cloudy_day' : w.code === 3 ? 'cloud' : (w.code === 45 || w.code === 48) ? 'foggy' : w.code >= 95 ? 'thunderstorm' : 'wb_cloudy';
+    return { look: look, text: text, temp: Math.round(w.temp), city: w.city, rain: rain, icon: icon };
   }
 
   function getPos() {
