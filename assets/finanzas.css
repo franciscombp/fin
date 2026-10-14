@@ -18,7 +18,7 @@
 .pf-page--inline .pf-hero { position: relative; }
 .pf-say { position: relative; width: 100%; z-index: 3; }
 .pf-say__hint {
-  position: absolute; top: 20px; left: var(--bp-layout-grid-margin, 16px); max-width: 140px;
+  position: absolute; top: 20px; left: var(--bp-layout-grid-margin, 16px); max-width: 160px;
   padding: 10px 14px; border: 0; border-radius: 16px 16px 4px 16px;
   background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-brand);
   font: var(--ui-body-sm-medium, 500 13px/18px sans-serif); text-align: left; cursor: pointer;

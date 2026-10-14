@@ -1206,16 +1206,34 @@
     } else {
       var list = v.current ? currentIns() : v.report ? REPORTS[v.key].ins : monthInsights(v.mi);
       list.slice(0, 3).forEach(function (x) {
-        out.push({ t: sentence(x.title, x.sub), r: x.ask ? '<button class="uku-say__reply" data-pf="ask:' + esc(x.ask) + '">' + esc(x.ask) + '</button>' : '' });
+        out.push({ kind: x.kind, icon: x.icon, t: sentence(x.title, x.sub), r: x.ask ? '<button class="uku-say__reply" data-pf="ask:' + esc(x.ask) + '">' + esc(x.ask) + '</button>' : '' });
       });
     }
     return out;
+  }
+  // Lo que Uku dice al lado del oso: un insight corto, no un misterio
+  function hintFor(v) {
+    var mes = v.today ? '' : T(MONTH_NAME[v.key]).toLowerCase();
+    if (v.today) {
+      if (D.card && D.debt) return T('Pagas tu tarjeta hasta el 10 nov');
+      return T('Hoy todo en orden');
+    }
+    if (v.current && onDemand !== 'ready') return T('¿Vemos cómo vas en {mes}?', { mes: mes });
+    var n = monthNums(v), rate = n.inc ? n.save / n.inc : 0;
+    if (v.current) {
+      var proj = n.spend / MONTHS[2].days * 31;
+      return proj < D.by[1]._spend ? T('Vas gastando menos que en septiembre') : T('Vas gastando más que en septiembre');
+    }
+    var over = v.report ? [] : Object.keys(CATS).filter(function (k) { return !CATS[k].fixed && D.by[v.mi][k] > CATS[k].budget; });
+    if (rate >= .08) { say.first = 'savings'; return T('¡Muy bien! Ahorraste {monto}', { monto: money(n.save).replace(/,00$/, '') }); }
+    if (over.length) { say.first = 'warn'; return T('Ojo: te pasaste en {cat}', { cat: catLow(over[0]) }); }
+    return T('¿Revisamos cómo te fue en {mes}?', { mes: mes });
   }
   function sayHTML2() {
     var n = say.list.length, m = say.list[say.i] || { t: '' };
     return '<div class="pf-say' + (say.open ? ' is-open' : '') + '">' +
       '<button class="pf-say__hint" data-pf="say:open" aria-label="' + T('Ver lo que te cuenta {nombre}', { nombre: C().name }) + '">' +
-        (n > 1 ? T('Tengo {n} cosas que contarte', { n: n }) : T('Tengo algo que contarte')) + '</button>' +
+        say.hint + '</button>' +
       '<div class="pf-say__bubble" role="dialog" aria-label="' + T('{nombre} te cuenta', { nombre: C().name }) + '" aria-live="polite">' +
         '<button class="pf-say__x" data-pf="say:close" aria-label="Cerrar"><span class="material-symbols-rounded">close</span></button>' +
         '<p class="pf-say__name">' + C().name + (n > 1 ? ' · ' + (say.i + 1) + ' de ' + n : '') + '</p>' +
@@ -1279,7 +1297,9 @@
     }
     // El globo se rehace con lo de este mes; si cambió de mes, se cierra
     if (say.view !== v.key) { say.open = false; say.i = 0; say.view = v.key; }
-    say.list = sayFor(v); say.i = Math.min(say.i, Math.max(0, say.list.length - 1));
+    say.first = null; say.list = sayFor(v); say.hint = hintFor(v);
+    // El globo abre con el mismo tema del aviso
+    if (say.first) say.list.sort(function (a, b) { var m = function (x) { return say.first === 'savings' ? x.icon === 'savings' : x.kind === 'warn'; }; return m(b) - m(a); }); say.i = Math.min(say.i, Math.max(0, say.list.length - 1));
     paintSay();
     syncHero();
     var row = pf.querySelector('.pf-months'), sel = row && row.querySelector('[aria-selected="true"]');
