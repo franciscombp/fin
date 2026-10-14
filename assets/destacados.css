@@ -198,7 +198,7 @@ html.pb-masked .dw-s__m { display: inline; }
 /* Sugerencia (slot fantasma): la × la descarta por un tiempo */
 .dw-grid .dw-dismiss { display: grid; place-items: center; position: absolute; top: 8px; right: 8px; z-index: 2; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--cx-muted); cursor: pointer; }
 .dw-grid .dw-dismiss .material-symbols-rounded { font-size: 18px; }
-.is-editing .dw--sug .dw-dismiss { background: var(--cx-ink); color: var(--cx-surface); }
+.is-editing .dw--sug .dw-dismiss, .is-editing .dw--wsug .dw-dismiss { background: var(--cx-ink); color: var(--cx-surface); }
 /* Cargando */
 .dw-skel { display: block; height: 12px; width: 55%; margin: 6px 0; border-radius: 6px; background: var(--cx-fill); animation: dwSkel 1.2s ease-in-out infinite; }
 .dw-skel--lg { height: 24px; width: 70%; }
@@ -207,14 +207,23 @@ html.pb-masked .dw-s__m { display: inline; }
 @media (prefers-reduced-motion: reduce) { .dw-skel { animation: none; } }
 
 /* Slot fantasma y "Agregar widget": patrón bp-sale_of_products de los hubs */
-.dw-grid .dw.dw--sug, .dw-grid .dw.dw-slot {
+.dw-grid .dw.dw--hub, .dw-grid .dw.dw-slot {
   background: transparent !important; box-shadow: none !important;
   border: var(--bp-semantic-border-thin, 1px) dashed var(--bp-theme-color-border-default, #c7cedd) !important;
   border-radius: var(--bp-semantic-radius-md) !important;
 }
-.dw-grid .dw.dw--sug { display: flex; flex-direction: row; align-items: center; gap: var(--bp-semantic-spacing-micro-lg, 12px); padding: 16px 40px 16px 16px; cursor: pointer; }
-.dw-grid .dw--s.dw--sug { flex-direction: column; align-items: flex-start; justify-content: center; padding: 14px; }
+.dw-grid .dw.dw--hub { display: flex; flex-direction: row; align-items: center; gap: var(--bp-semantic-spacing-micro-lg, 12px); padding: 16px 40px 16px 16px; cursor: pointer; }
+.dw-grid .dw--s.dw--hub { flex-direction: column; align-items: flex-start; justify-content: center; padding: 14px; }
 .dw-ghost__ic { display: grid; place-items: center; flex: 0 0 auto; width: var(--bp-semantic-size-avatar-xs, 40px); height: var(--bp-semantic-size-avatar-xs, 40px); border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-secondary-fg); font-size: var(--bp-semantic-size-icon-md, 24px) !important; }
 .dw-ghost__t { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md, 8px); min-width: 0; font: var(--ui-body-sm-medium); color: var(--bp-theme-color-text-brand); }
 .dw-ghost__link { font: var(--ui-label-md); color: var(--bp-theme-color-text-interactive); }
-.is-editing .dw--sug { animation: none; cursor: default; }
+.is-editing .dw--sug, .is-editing .dw--wsug { animation: none; cursor: default; }
+.is-editing .dw--hub:not(.dw--sug):not(.dw--wsug) { padding-right: 40px; }
+
+/* Sugerencia de widget: nombre, ejemplo sin datos y acciones */
+.dw-ghost__name { font: var(--ui-label-md); color: var(--bp-theme-color-text-brand); }
+.dw-ghost__acts { display: flex; gap: 16px; align-items: center; }
+button.dw-ghost__link { padding: 0; border: 0; background: none; cursor: pointer; }
+.dw-ghost__link--2 { color: var(--bp-theme-color-text-secondary) !important; }
+.dw--wsug .dw-ghost__t { gap: 4px; }
+.dw--wsug .dw-ghost__acts { margin-top: 4px; }
