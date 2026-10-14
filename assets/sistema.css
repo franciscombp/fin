@@ -148,7 +148,7 @@ html:not(.theme-y2k) .home-banner__slide--3 { background: var(--bp-theme-color-s
 :root[data-theme="dark"] .home-banner__slide--3 { background: var(--bp-theme-color-surface-container-default) !important; }
 .home-banner__img { position: absolute; right: 4px; bottom: 6px; height: calc(100% - 12px); width: auto; max-width: 46%; object-fit: contain; object-position: right bottom; pointer-events: none; }
 html:not(.theme-y2k) .home-banner__text { max-width: 56%; justify-content: space-between !important; gap: var(--bp-semantic-spacing-micro-md) !important; }
-html:not(.theme-y2k) .home-banner__title { font: var(--ui-body-md-medium) !important; color: var(--bp-theme-color-text-brand) !important; letter-spacing: 0 !important; }
+html:not(.theme-y2k) .home-banner__title { font: var(--bp-semantic-typography-brand-body-md-regular-font-weight) var(--bp-semantic-typography-brand-body-md-regular-font-size)/var(--bp-semantic-typography-brand-body-md-regular-line-height) var(--sol-font, Roboto, sans-serif) !important; color: var(--bp-theme-color-text-brand) !important; letter-spacing: 0 !important; }
 html:not(.theme-y2k) .home-banner__cta {
   align-self: flex-start;
   -webkit-backdrop-filter: blur(var(--bp-semantic-effects-blur-overlay)) !important; backdrop-filter: blur(var(--bp-semantic-effects-blur-overlay)) !important;
@@ -772,3 +772,8 @@ html:not(.theme-y2k) .home-banner__slide--photo .home-banner__photo { object-pos
 /* El banner 3 tiene fondo claro a la izquierda: texto oscuro para que se lea */
 html:not(.theme-y2k) .home-banner__slide--3.home-banner__slide--photo .home-banner__title { color: var(--bp-theme-color-text-primary) !important; }
 html:not(.theme-y2k) .home-banner__slide--3.home-banner__slide--photo .home-banner__cta { background: var(--bp-theme-color-surface-container-default) !important; color: var(--bp-theme-color-text-primary) !important; }
+
+/* Banner con foto (DS): título body-md regular en text/on-solid; acción
+   bp-action-button sm (32) con fondo blanco 12% + blur, como bp-overlay-button. */
+html:not(.theme-y2k) .home-banner__slide--photo .home-banner__title { font: var(--bp-semantic-typography-brand-body-md-regular-font-weight) var(--bp-semantic-typography-brand-body-md-regular-font-size)/var(--bp-semantic-typography-brand-body-md-regular-line-height) var(--sol-font, Roboto, sans-serif) !important; }
+html:not(.theme-y2k) .home-banner__slide--photo .home-banner__cta.bp-action-button { font: var(--bp-semantic-typography-brand-label-sm-semibold-font-weight) var(--bp-semantic-typography-brand-label-sm-semibold-font-size)/var(--bp-semantic-typography-brand-label-sm-semibold-line-height) var(--sol-font, Roboto, sans-serif) !important; }
