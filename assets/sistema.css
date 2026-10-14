@@ -187,23 +187,16 @@ html:not(.theme-y2k) .home-banner__slide--photo .home-banner__text { max-width: 
    con padding grid/margin y gap 8. */
 html:not(.theme-y2k) .promos { gap: var(--bp-semantic-spacing-micro-md) !important; padding: 0 var(--bp-layout-grid-margin) !important; scroll-padding: 0 var(--bp-layout-grid-margin) !important; }
 html:not(.theme-y2k) .section--bleed .section__title { padding: 0 var(--bp-layout-grid-margin) !important; }
+/* Promos: la imagen trae su propio texto y chevron; la tarjeta toma su
+   proporción real (330 × 587) y la imagen llena la tarjeta sin recortar. */
 .promo {
-  background: var(--bp-theme-color-surface-page-default) !important; color: var(--bp-theme-color-text-primary) !important;
-  flex: 0 0 144px !important; width: 144px !important; height: 256px !important;
-  border-radius: var(--bp-semantic-radius-md) !important;
-  justify-content: flex-end; flex-direction: column; align-items: stretch !important; padding: var(--bp-semantic-spacing-micro-lg) !important; box-shadow: none;
+  flex: 0 0 144px !important; width: 144px !important; height: auto !important;
+  aspect-ratio: 330 / 587; padding: 0 !important; margin: 0;
+  border: 0 !important; border-radius: var(--bp-semantic-radius-md) !important;
+  background: none !important; box-shadow: none; overflow: hidden; display: block;
 }
 .promo::after { display: none !important; }
-.promo .promo__img { position: absolute; left: 10px; right: 10px; top: 12px; height: 150px; width: calc(100% - 20px); object-fit: contain; pointer-events: none; }
-.promo .promo__title { position: relative; font: var(--ui-body-sm-medium) !important; color: var(--bp-theme-color-text-primary) !important; padding-right: 0; }
-.promo span { text-shadow: none !important; }
-.promo .promo__go {
-  top: var(--bp-semantic-spacing-micro-md) !important; right: var(--bp-semantic-spacing-micro-md) !important; bottom: auto !important;
-  width: var(--bp-semantic-size-interactive-xxs) !important; height: var(--bp-semantic-size-interactive-xxs) !important;
-  border-radius: var(--bp-semantic-radius-sm) !important;
-  background: var(--bp-interaction-secondary-bg) !important; color: var(--bp-interaction-secondary-fg) !important;
-  -webkit-backdrop-filter: blur(var(--bp-semantic-effects-blur-overlay)); backdrop-filter: blur(var(--bp-semantic-effects-blur-overlay));
-}
+.promo .promo__img { display: block; width: 100% !important; height: 100% !important; object-fit: cover; pointer-events: none; }
 
 /* En escritorio la tarjeta de débito conserva su proporción de celular
    (el arte se recortaba gigante al estirarse a todo el ancho). */
@@ -771,3 +764,11 @@ html:not(.theme-y2k) .placeholder-view h1 { margin: 0; font: var(--cx-page) !imp
 
 /* Barra inferior: fija al fondo de la pantalla (la página hace scroll normal) */
 .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; }
+
+/* Banners de foto: cada slide ocupa el ancho disponible (pantalla menos el
+   margen a cada lado) y su alto sale de la proporción de la imagen. */
+html:not(.theme-y2k) .home-banner__slide--photo { height: auto !important; aspect-ratio: 740 / 272; padding: 14px 16px !important; }
+html:not(.theme-y2k) .home-banner__slide--photo .home-banner__photo { object-position: 70% 35%; }
+/* El banner 3 tiene fondo claro a la izquierda: texto oscuro para que se lea */
+html:not(.theme-y2k) .home-banner__slide--3.home-banner__slide--photo .home-banner__title { color: var(--bp-theme-color-text-primary) !important; }
+html:not(.theme-y2k) .home-banner__slide--3.home-banner__slide--photo .home-banner__cta { background: var(--bp-theme-color-surface-container-default) !important; color: var(--bp-theme-color-text-primary) !important; }

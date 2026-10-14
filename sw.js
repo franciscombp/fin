@@ -9,7 +9,7 @@ const BUILD = '__BUILD__';
 const CACHE_NAME = 'pichibank-' + (BUILD.indexOf('__') === 0 ? 'dev' : BUILD);
 const CORE = [
   './', './index.html', './manifest.json', './app.js', './webauthn.js', './fiesta.js', './haptics.js',
-  './assets/tokens.css', './assets/solar.css', './assets/asistente.css', './assets/asistente.js', './assets/buscador.css', './assets/buscador.js', './assets/destacados.css', './assets/destacados.js', './assets/producto.css', './assets/producto.js', './assets/sistema.css', './assets/bosque3d.js', './assets/i18n.js', './assets/contexto.js', './assets/sheets.js', './assets/clima.js', './assets/soporte.js', './assets/soporte.css', './locales/languages.json', './locales/qu-EC.po', './assets/oso/oso.webp', './assets/oso/oso-cara.webp', './assets/banners/ofertas.webp', './assets/banners/millas.webp', './assets/banners/finanzas.webp', './assets/banners/cashback.webp', './assets/banners/regalo.webp', './assets/banners/vinos.webp'
+  './assets/tokens.css', './assets/solar.css', './assets/asistente.css', './assets/asistente.js', './assets/buscador.css', './assets/buscador.js', './assets/destacados.css', './assets/destacados.js', './assets/producto.css', './assets/producto.js', './assets/sistema.css', './assets/bosque3d.js', './assets/i18n.js', './assets/contexto.js', './assets/sheets.js', './assets/clima.js', './assets/soporte.js', './assets/soporte.css', './locales/languages.json', './locales/qu-EC.po', './assets/oso/oso.webp', './assets/oso/oso-cara.webp', './assets/banners/bp-banner-1.png', './assets/banners/bp-banner-2.png', './assets/banners/bp-banner-3.png', './assets/banners/promo-1.png', './assets/banners/promo-2.png', './assets/banners/promo-3.png', './assets/banners/promo-4.png'
 ];
 
 self.addEventListener('install', (event) => {

@@ -4478,20 +4478,17 @@
                 <button class="section__link section__link--chevron" data-action="Ver todas las promociones">Ver todo<span class="material-symbols-rounded">chevron_right</span></button>
             </div>
             <div class="promos">
-                <button class="promo promo--1" data-action="Promoción cashback">
-                    <img class="promo__img" src="./assets/banners/cashback.webp" alt="" loading="lazy" draggable="false">
-                    <span class="promo__title">30% cashback comprando con tu tarjeta</span>
-                    <span class="promo__go"><span class="material-symbols-rounded">chevron_right</span></span>
+                <button class="promo promo--1" data-action="Promoción cafetería" aria-label="Sweet &amp; Coffee: giftcard y descuentos del 15%">
+                    <img class="promo__img" src="./assets/banners/promo-1.png" alt="" loading="lazy" draggable="false">
                 </button>
-                <button class="promo promo--2" data-action="Promoción cafetería">
-                    <img class="promo__img" src="./assets/banners/regalo.webp" alt="" loading="lazy" draggable="false">
-                    <span class="promo__title">Giftcard y descuentos del 15%</span>
-                    <span class="promo__go"><span class="material-symbols-rounded">chevron_right</span></span>
+                <button class="promo promo--2" data-action="Promoción cine" aria-label="Multicines: tu combo perfecto a tan solo $6,99">
+                    <img class="promo__img" src="./assets/banners/promo-2.png" alt="" loading="lazy" draggable="false">
                 </button>
-                <button class="promo promo--3" data-action="Promoción vinos">
-                    <img class="promo__img" src="./assets/banners/vinos.webp" alt="" loading="lazy" draggable="false">
-                    <span class="promo__title">Hasta 30% dcto. en vinos seleccionados</span>
-                    <span class="promo__go"><span class="material-symbols-rounded">chevron_right</span></span>
+                <button class="promo promo--3" data-action="Promoción combo" aria-label="McCombo Royal Deluxe por $4,99">
+                    <img class="promo__img" src="./assets/banners/promo-3.png" alt="" loading="lazy" draggable="false">
+                </button>
+                <button class="promo promo--4" data-action="Promoción cashback" aria-label="Rappi: 30% de cashback comprando con tu Mastercard">
+                    <img class="promo__img" src="./assets/banners/promo-4.png" alt="" loading="lazy" draggable="false">
                 </button>
             </div>
         </section>
@@ -6665,9 +6662,9 @@
 
         // ---------- Banner de ofertas: carrusel infinito ----------
         const BANNER_SLIDES = [
-            { theme: 1, title: 'Ofertas todo el año con tus tarjetas Pichibank', cta: 'Ver ofertas', photo: 'foto-ofertas' },
-            { theme: 2, title: 'Obtén protección adicional pensada para tu día a día', cta: 'Ver más información', photo: 'foto-proteccion' },
-            { theme: 3, title: 'Genera ganancias con tus ahorros abriendo un Depósito a Plazo', cta: 'Simular ganancias', photo: 'foto-deposito' },
+            { theme: 1, title: 'Ofertas todo el año con tus tarjetas Pichibank', cta: 'Ver ofertas', photo: 'bp-banner-1' },
+            { theme: 2, title: 'Obtén protección adicional pensada para tu día a día', cta: 'Ver más información', photo: 'bp-banner-2' },
+            { theme: 3, title: 'Genera ganancias con tus ahorros abriendo un Depósito a Plazo', cta: 'Simular ganancias', photo: 'bp-banner-3' },
         ];
 
         // bp-banner con foto de fondo (assets/banners/foto-*.jpg). Si la
@@ -6676,7 +6673,7 @@
         function bannerSlideHTML(s) {
             return `
                 <div class="home-banner__slide home-banner__slide--photo home-banner__slide--${s.theme}" data-action="${s.act || s.cta}">
-                    <img class="home-banner__photo" src="./assets/banners/${s.photo}.jpg" alt="" draggable="false"
+                    <img class="home-banner__photo" src="./assets/banners/${s.photo}.png" alt="" draggable="false"
                          onerror="this.closest('.home-banner__slide').classList.add('is-nophoto'); this.remove();">
                     <div class="home-banner__text">
                         <p class="home-banner__title">${s.title}</p>
