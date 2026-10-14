@@ -106,8 +106,7 @@
       '<section class="ai-sec"><h2>' + T('Sigue preguntando') + '</h2><div class="ai-chips">' + r.qs.map(function (q) {
         return '<button class="ai-chip" data-ai-q="' + esc(q) + '">' + esc(q) + '</button>';
       }).join('') + '</div></section>' +
-      '<div class="ai-thread" aria-live="polite"></div>' +
-      '<p class="ai-legal">' + T('Análisis hecho con IA a partir de tus movimientos. Uku te orienta, no es asesoría financiera, y puede equivocarse.') + '</p>';
+      '<div class="ai-thread" aria-live="polite"></div>';
     page.classList.remove('is-locked');
     if (ask) askQ(ask);
   }
