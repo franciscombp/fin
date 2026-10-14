@@ -206,3 +206,37 @@ button.pf-meter { cursor: pointer; }
 .pf-cmp__row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--cx-line); font: var(--ui-body-md-regular); color: var(--bp-theme-color-text-primary); }
 .pf-cmp__row b { margin-left: auto; font: var(--ui-body-md-semibold); font-variant-numeric: tabular-nums; }
 .pf-cmp__ic { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--bp-theme-color-avatar-bg); color: var(--bp-theme-color-avatar-fg); font-size: 18px !important; }
+
+/* ---------- Tablas y valores: más aire, jerarquía limpia ---------- */
+/* Títulos de sección iguales en toda la vista */
+.pf-page--inline .pf-sec > h2, .pf-page--inline .pf-sec__head h2 { font: var(--ui-body-md-medium, 500 16px/22px sans-serif) !important; color: var(--cx-muted) !important; letter-spacing: 0 !important; margin: 0 0 12px 4px !important; }
+.pf-page--inline .pf-sec__head { margin-bottom: 0; }
+.pf-page--inline .pf-sec__head h2 { margin-bottom: 0 !important; }
+.pf-page--inline .pf-sec__head .pf-link { margin-bottom: 0; }
+.pf-page--inline .pf-sec__head + * { margin-top: 12px; }
+.pf-page--inline .pf-sec__sub { margin: 0 0 12px 4px !important; }
+
+/* Resumen de Hoy: cifra grande y una lista de valores alineados */
+.pf-sum2 { margin: 16px var(--bp-layout-grid-margin, 16px) 0; padding: 24px; border-radius: 28px; background: var(--bp-theme-color-surface-container-default); }
+.pf-sum2 p { margin: 0; }
+.pf-sum2__label { font: var(--cx-sub); color: var(--cx-muted); }
+.pf-sum2__value { margin-top: 4px !important; font: var(--cx-amount); font-size: 38px; line-height: 46px; letter-spacing: -1px; font-variant-numeric: tabular-nums; color: var(--bp-theme-color-text-primary); }
+.pf-sum2__list { margin: 20px 0 0; padding: 0; }
+.pf-sum2__list div { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 14px 0; border-top: 1px solid var(--cx-line); }
+.pf-sum2__list dt { font: var(--ui-body-md-regular); color: var(--bp-theme-color-text-secondary); }
+.pf-sum2__list dd { margin: 0; font: var(--ui-body-md-semibold); font-variant-numeric: tabular-nums; color: var(--bp-theme-color-text-primary); }
+.pf-sum2__list .is-total dt { color: var(--bp-theme-color-text-primary); font-weight: 600; }
+
+/* Listas de productos y movimientos: filas más altas, valores alineados */
+.pf-page--inline .pf-prods, .pf-page--inline .pf-recs { padding: 4px 20px !important; border-radius: 24px !important; background: var(--bp-theme-color-surface-container-default); }
+.pf-page--inline .pf-prod, .pf-page--inline .pf-tx { min-height: 76px; padding: 16px 0 !important; gap: 14px !important; }
+.pf-page--inline .pf-prod .pf-av, .pf-page--inline .pf-cardthumb { flex: 0 0 44px; }
+.pf-page--inline .pf-prod .pf-av { width: 44px !important; height: 44px !important; }
+.pf-page--inline .pf-prod__main small, .pf-page--inline .pf-tx__main small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-page--inline .pf-prod__val b { font: var(--ui-body-md-semibold) !important; }
+.pf-page--inline .pf-prod__val small { white-space: nowrap; }
+.pf-sum__stats b.is-neg, .pf-prod__val b.is-neg { color: inherit !important; } /* deber no es una alerta: va en neutro */
+.pf-tx__ic { flex: 0 0 44px; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--bp-theme-color-avatar-bg); color: var(--bp-theme-color-avatar-fg); font-size: 22px !important; }
+.pf-page--inline .pf-tx__amt, .pf-sheet-list .pf-tx__amt { font: var(--ui-body-md-semibold) !important; color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
+.pf-tx__amt.is-in { color: var(--bp-theme-color-status-success-text, #107524) !important; }
+.pf-page--inline .pf-add { margin-top: 12px; }
