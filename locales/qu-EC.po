@@ -200,7 +200,7 @@ msgstr "{pct}-ta waakaychirkanki, shuk washayashka kullkichiy"
 msgid "Ahorraste {monto}"
 msgstr "{monto}-ta waakaychirkanki"
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "Ahorraste {monto} · Salud financiera {n}"
 msgstr "{monto} waakaychishka · kullki alli kawsay {n}"
 
@@ -752,7 +752,7 @@ msgstr "Ashtawan tukuchishka: rantiykuna"
 msgid "En lo que más gastaste: supermercado"
 msgstr "Ashtawan tukuchishka: hatun katuna wasi"
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "En los primeros {n} días"
 msgstr "Ñawpa {n} punchakunapi"
 
@@ -988,7 +988,7 @@ msgstr "Kay killapi {monto} mirak kullkita charirkanki"
 msgid "Gastaste"
 msgstr "Tukuchirkanki"
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "Gastaste en {mes}"
 msgstr "{mes} killapi tukuchirkanki"
 
@@ -1248,7 +1248,7 @@ msgstr "Ñami, {n} kuyurikunata yaparkanchik. Kunanka kullki alli kawsay {score}
 msgid "Listo. Desde el próximo mes se van a pasar {monto} más a tus metas cada día 2."
 msgstr "Ñami. Shamuk killamanta, 2 punchapi {monto} yallita paktaykunaman churarinka."
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "Llevas gastado en octubre"
 msgstr "Octubrepi tukuchishka"
 
@@ -1340,7 +1340,7 @@ msgstr "Sinchi killa"
 msgid "Mes en curso"
 msgstr ""
 
-#: assets/asistente.js
+#: anterior assets/asistente.js
 msgid "Meses"
 msgstr "Killakuna"
 
@@ -2084,7 +2084,7 @@ msgstr "hampi"
 msgid "Salud financiera"
 msgstr "Kullki alli kawsay"
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "Salud financiera hoy {n} · {nivel}"
 msgstr "Kunan kullki alli kawsay {n} · {nivel}"
 
@@ -2228,7 +2228,7 @@ msgstr "Chinkachishpa, shuwashka kashpaka kunanlla wichkay: Tarjetakunapi tarjet
 msgid "Si los bajas a la mitad, te ahorras {monto} al año. Es como {n} meses de supermercado."
 msgstr "Chawpiman uraykachishpaka, watapi {monto}-ta waakaychinki. {n} killa hatun katuna wasi shinami."
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "Si sigues así, cerrarías el mes en {monto}"
 msgstr "Kashna katishpaka, killata {monto}-wan tukuchinki"
 
@@ -2496,7 +2496,7 @@ msgstr "Y2K rikuy"
 msgid "Temas"
 msgstr "Yuyaykuna"
 
-#: anterior index.html
+#: anterior
 msgid "Tienda"
 msgstr "Rantina wasi"
 
@@ -3012,7 +3012,7 @@ msgstr "{nombre} killkakun"
 msgid "{nombre} no está en tu análisis. Si quieres que lo revise, inclúyelo en Cuentas conectadas."
 msgstr "{nombre} kanpak analisipi mana kanchu. Revisanata munankipashka, Tantachishka yupaykunapi yapay."
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "{nombre} te acompaña"
 msgstr ""
 

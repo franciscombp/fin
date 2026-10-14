@@ -453,7 +453,7 @@
     window.addEventListener('pointercancel', end);
   }
 
-  /* ---------- Galería: "Sugeridos para ti" (captaciones) y "Tus productos" ---------- */
+  /* ---------- Galería: "Tus productos" primero y luego "Sugeridos para ti" (captaciones) ---------- */
   var sheet, back, pick = {};
   function ensureSheet() {
     if (sheet) return;
@@ -482,8 +482,9 @@
     var sug = ids.filter(capt), mine = ids.filter(function (id) { return !capt(id); });
     sheet.innerHTML = '<div class="as-sheet__handle"></div><h3>Agregar widget</h3><p>' +
       (!free ? 'No queda espacio. Quita uno para agregar otro.' : 'Elige un widget y su tamaño. Caben 2 horizontales o 4 cuadrados.') + '</p>' +
-      (sug.length ? '<p class="as-sheet__label">Sugeridos para ti</p>' + sug.map(function (id) { return galItem(id, have, free, WHY[id]); }).join('') : '') +
-      (mine.length ? '<p class="as-sheet__label">Tus productos</p>' + mine.map(function (id) { return galItem(id, have, free); }).join('') : '');
+      // Primero lo que ya tienes; después lo que te sugerimos
+      (mine.length ? '<p class="as-sheet__label">Tus productos</p>' + mine.map(function (id) { return galItem(id, have, free); }).join('') : '') +
+      (sug.length ? '<p class="as-sheet__label">Sugeridos para ti</p>' + sug.map(function (id) { return galItem(id, have, free, WHY[id]); }).join('') : '');
   }
   function onGallery(e) {
     var b;
