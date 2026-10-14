@@ -93,7 +93,10 @@
 .dw-grid .dw-short .material-symbols-rounded { width: 44px !important; height: 44px !important; min-height: 0 !important; border-radius: 50% !important; display: grid; place-items: center; background: var(--bp-interaction-tertiary-bg); color: var(--bp-interaction-tertiary-fg); font-size: 22px; }
 .dw-grid .dw-promo { font: 600 17px/23px var(--sol-font, Roboto, sans-serif); letter-spacing: -.2px; }
 .dw--s .dw-promo { font-size: 15px; line-height: 20px; }
-.dw-grid .dw-cta { margin-top: auto !important; align-self: flex-start; height: 34px; padding: 0 14px; }
+.dw-grid .dw-cta { margin-top: auto !important; align-self: flex-start; pointer-events: none; }
+.dw-grid .dw-2l { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.dw-limit { margin: 4px 0 0; font: var(--ui-body-sm-medium, 500 13px/18px sans-serif); color: var(--cx-muted); text-align: center; }
+.dw-limit[hidden] { display: none; }
 .dw--offer { background: linear-gradient(160deg, var(--cx-surface) 55%, color-mix(in srgb, var(--bp-interaction-primary-bg, #ffdd00) 22%, var(--cx-surface))); }
 .dw-empty { grid-column: 1 / 3; font: var(--cx-sub); color: var(--cx-muted); }
 
