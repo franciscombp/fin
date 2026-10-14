@@ -291,3 +291,11 @@ html:not(.theme-y2k) .nav-item.active, html:not(.theme-y2k) .nav-item[aria-curre
 .sx-card--uku h3 { display: flex; align-items: center; gap: 8px; }
 .sx-uku { width: 24px; height: 24px; border-radius: 50%; overflow: hidden; background: var(--cx-fill); flex: 0 0 24px; }
 .sx-uku img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+
+/* Acción terciaria (login: "Otro método de ingreso"): sin relleno, texto en tinta.
+   Sigue la misma regla que los enlaces de acción de la app. */
+html:not(.theme-y2k) .login-button--tertiary, html:not(.theme-y2k) .login-button--tertiary:hover, html:not(.theme-y2k) .login-button--tertiary:active {
+  height: 44px !important; background: transparent !important; color: var(--cx-ink) !important; box-shadow: none !important;
+  font: 600 15px/20px var(--sol-font, Roboto, sans-serif) !important; text-decoration: none !important; opacity: 1 !important;
+}
+html:not(.theme-y2k) .login-button--tertiary:active { color: var(--cx-muted) !important; }
