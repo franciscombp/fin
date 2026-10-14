@@ -33,22 +33,54 @@ let look = { region: 'sierra', shirt: 'sueter', hat: null, shades: false, rain: 
 function palette() {
   const dark = document.documentElement.getAttribute('data-theme') === 'dark';
   if (look.region === 'costa') return dark ? {
-    bg: '#1f1f1f', ground: '#33302a', dry: '#33302a', trunk: '#5a5248', pine: ['#3f4a42', '#46514a'], palm: ['#43504a', '#4b5852'],
-    round: ['#474f4c', '#4f5754'], rock: '#3d3a35', grass: '#434b47', flower: '#d98a5a', dust: '#ffffff'
+    bg: '#1f1f1f', ground: '#353329', dry: '#353329', trunk: '#4c5262', pine: ['#3c4659', '#434d61'], palm: ['#41506a', '#4a5872'],
+    round: ['#465066', '#4e586e'], rock: '#3b3e46', grass: '#434b5c', flower: '#f2d64b', dust: '#ffffff'
   } : {
-    bg: '#f6f6f5', ground: '#f1ead9', dry: '#efe6d2', trunk: '#b99e74', pine: ['#d3dbd6', '#c8d2cc'], palm: ['#8fb59a', '#7fab8c', '#9cc0a5'],
-    round: ['#d9dfda', '#cfd7d1'], rock: '#e8e1d3', grass: '#d4dcd6', flower: '#f2a65b', dust: '#ffffff'
+    bg: '#f6f6f5', ground: '#f6efd6', dry: '#f3ead0', trunk: '#b9c0cf', pine: ['#d2dae8', '#c5cfe2'], palm: ['#a9bad6', '#9aaed0', '#b6c5de'],
+    round: ['#d8dfeb', '#cdd5e4'], rock: '#e3e5ea', grass: '#d0d8e6', flower: '#f2c94c', dust: '#ffffff'
   };
   // Paleta onírica: tonos lavados, casi blancos, para que el oso (que
   // conserva sus colores) sea lo único nítido de la escena.
+  // Ilustración: solo azules, grises y amarillo (los colores de Uku)
   return dark ? {
-    bg: '#1f1f1f', ground: '#2b2c2c', dry: '#2f2e2c', trunk: '#4a4a4a', pine: ['#3f4744', '#454d4a', '#4c5451'],
-    round: ['#474f4c', '#4f5754'], rock: '#3a3b3c', grass: '#434b47', flower: '#d9c25a', dust: '#ffffff'
+    bg: '#1f1f1f', ground: '#2b2d33', dry: '#2f3036', trunk: '#4a4f5c', pine: ['#3c4659', '#434d61', '#4a5468'],
+    round: ['#465066', '#4e586e'], rock: '#3a3c43', grass: '#434b5c', flower: '#f2d64b', dust: '#ffffff'
   } : {
-    bg: '#f6f6f5', ground: '#eceeeb', dry: '#efece6', trunk: '#cfcac4', pine: ['#d3dbd6', '#c8d2cc', '#dde3df'],
-    round: ['#d9dfda', '#cfd7d1'], rock: '#e1e2e2', grass: '#d4dcd6', flower: '#f2d64b', dust: '#ffffff'
+    bg: '#f6f6f5', ground: '#eceef3', dry: '#efeef0', trunk: '#c3c8d3', pine: ['#d2dae8', '#c5cfe2', '#dce3ef'],
+    round: ['#d8dfeb', '#cdd5e4'], rock: '#e1e3e8', grass: '#d0d8e6', flower: '#f2c94c', dust: '#ffffff'
   };
 }
+/* ---------- Estilo ilustración 2D ----------
+   Sin sombreado (solo luz ambiente: colores planos) y contorno como de
+   ilustración vectorial: una copia del mesh, un poco inflada y vista por
+   dentro, en un azul muy oscuro. El ancho es fijo en el mundo, sin importar
+   la escala del objeto. */
+const INK_W = .0075;
+function inkColor() { return document.documentElement.getAttribute('data-theme') === 'dark' ? '#0d1220' : '#1b2a4e'; }
+const inkMats = [];
+function inkMat(w) {
+  const m = new THREE.MeshBasicMaterial({ color: inkColor(), side: THREE.BackSide }); // con niebla: lo lejano se aclara
+  m.onBeforeCompile = sh => {
+    sh.uniforms.inkW = { value: w || INK_W };
+    sh.vertexShader = 'uniform float inkW;\n' + sh.vertexShader.replace('#include <begin_vertex>',
+      '#include <begin_vertex>\n  transformed += normalize(normal) * (inkW / max(1e-4, length(vec3(modelMatrix[0][0], modelMatrix[0][1], modelMatrix[0][2]))));');
+  };
+  inkMats.push(m);
+  return m;
+}
+function ink(root, w) {
+  const list = [];
+  root.traverse(o => { if (o.isMesh && !o.userData.ink && !o.userData.noInk && o.geometry && o.geometry.attributes.normal) list.push(o); });
+  list.forEach(o => {
+    const m = inkMat(w);
+    const line = o.isSkinnedMesh ? new THREE.SkinnedMesh(o.geometry, m) : new THREE.Mesh(o.geometry, m);
+    if (o.isSkinnedMesh) line.bind(o.skeleton, o.bindMatrix);
+    line.userData.ink = true; line.frustumCulled = false; line.renderOrder = -1;
+    o.add(line);
+  });
+  return root;
+}
+function inkTheme() { const c = inkColor(); inkMats.forEach(m => m.color.set(c)); }
 
 /* ---------- Bosque procedural ---------- */
 // Posiciones fijas (semilla) para que el bosque no "salte" entre visitas.
@@ -163,7 +195,7 @@ function buildForest(full) {
   Object.keys(have).forEach(k => { have[k].userData.dir = want[k] ? 1 : -1; });
   Object.keys(want).forEach(k => {
     if (have[k]) return;
-    const o = want[k](); o.userData.key = k; o.userData.dir = 1;
+    const o = ink(want[k](), .0045); o.userData.key = k; o.userData.dir = 1;
     o.userData.grow = full ? 1 : 0; o.scale.setScalar(o.userData.base * (full ? 1 : .001));
     forest.add(o);
   });
@@ -243,14 +275,14 @@ function holdObject(kind) {
   if (held) { held.parent && held.parent.remove(held); held = null; }
   if (!kind || !bones.hand_R || umb) return; // con el paraguas en la mano no sostiene otra cosa
   if (kind === 'coin') {
-    held = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, .014, 28), new THREE.MeshStandardMaterial({ color: '#ffd200', metalness: .35, roughness: .45 }));
+    held = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, .014, 28), new THREE.MeshLambertMaterial({ color: '#ffd200' }));
     // sobre la palma: en reposo la palma mira a (0, -0.89, 0.45) en el espacio del hueso
     held.rotation.x = -.46; held.position.set(-.03, -.052, .026);
   } else if (kind === 'leaf') {
     held = new THREE.Mesh(new THREE.ConeGeometry(.035, .1, 4), new THREE.MeshLambertMaterial({ color: palette().pine[0], flatShading: true }));
     held.position.set(-.03, -.06, .03); held.rotation.set(-.46 + Math.PI, 0, -.4); // el tallo sale de la palma
   }
-  held && bones.hand_R.add(held);
+  held && bones.hand_R.add(ink(held, .004));
 }
 
 
@@ -357,9 +389,9 @@ function dressBear() {
   if (look.hat === 'paja') acc.add(hatPaja());
   if (look.hat === 'lana') acc.add(hatLana());
   if (look.shades) acc.add(shades());
-  bones.head.add(acc);
+  ink(acc, .005); bones.head.add(acc);
   if (umb && look.hat !== 'paraguas') { scene.remove(umb); umb.traverse(c => { c.geometry && c.geometry.dispose(); c.material && c.material.dispose(); }); umb = null; }
-  if (!umb && look.hat === 'paraguas') { umb = umbrella(); scene.add(umb); }
+  if (!umb && look.hat === 'paraguas') { umb = ink(umbrella(), .005); scene.add(umb); }
   if (bearMat) {
     const m = look.shirt === 'guayabera' ? guayabera() : baseMap;
     if (m && bearMat.map !== m) { bearMat.map = m; bearMat.needsUpdate = true; }
@@ -465,17 +497,27 @@ function init() {
   scene = new THREE.Scene();
   const pal = palette();
   scene.background = null; // transparente: la máscara del contenedor funde la escena con la página
-  scene.fog = new THREE.Fog(pal.bg, 2.0, 5.2);
+  scene.fog = new THREE.Fog(pal.bg, 2.4, 7.5); // el bosque se aclara con la distancia, como en una ilustración
   camera = new THREE.PerspectiveCamera(30, 1, .05, 20);
   camera.position.set(0, .75, 2.6);
-  scene.add(new THREE.HemisphereLight('#ffffff', '#9aa29c', 1.6));
-  const sun = new THREE.DirectionalLight('#ffffff', 1.4); sun.position.set(1.5, 3, 2); scene.add(sun);
+  // Ilustración: solo luz ambiente, colores planos sin sombreado
+  scene.add(new THREE.AmbientLight('#ffffff', Math.PI));
   ground = new THREE.Mesh(new THREE.CircleGeometry(7, 48), new THREE.MeshLambertMaterial({ color: pal.ground }));
   ground.rotation.x = -Math.PI / 2; scene.add(ground);
   clock = new THREE.Clock();
   new GLTFLoader().load(new URL('./oso/oso.glb', import.meta.url).href, g => {
     bear = g.scene;
-    bear.traverse(o => { if (o.isBone) { bones[o.name] = o; if (/^(upperarm|forearm|hand)_/.test(o.name)) o.rotation.order = 'YZX'; } if (o.isMesh) { o.frustumCulled = false; if (o.material && o.material.map) { bearMat = o.material; baseMap = o.material.map; } } });
+    bear.traverse(o => {
+      if (o.isBone) { bones[o.name] = o; if (/^(upperarm|forearm|hand)_/.test(o.name)) o.rotation.order = 'YZX'; }
+      if (o.isMesh) {
+        o.frustumCulled = false;
+        // Color plano: la textura tal cual, sin luz ni sombras
+        const src = o.material, flat = new THREE.MeshBasicMaterial({ map: src.map || null, color: src.map ? 0xffffff : (src.color || 0xffffff), transparent: !!src.transparent, opacity: src.opacity, fog: false });
+        o.material = flat; src.dispose && src.dispose();
+        if (flat.map) { bearMat = flat; baseMap = flat.map; }
+      }
+    });
+    ink(bear, .006);
     bear.position.y = .45; // pies sobre el suelo (el modelo va de -0.45 a 0.45)
     bear.scale.setScalar(1);
     scene.add(bear);
@@ -508,7 +550,7 @@ function init() {
   cv.addEventListener('pointercancel', end);
   new ResizeObserver(resize).observe(document.documentElement);
   document.addEventListener('visibilitychange', () => { visible = document.visibilityState === 'visible'; });
-  new MutationObserver(() => { const p = palette(); scene.fog.color.set(p.bg); buildForest(true); })
+  new MutationObserver(() => { const p = palette(); scene.fog.color.set(p.bg); inkTheme(); buildForest(true); })
     .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   buildForest();
   buildDust();
