@@ -1282,7 +1282,6 @@
     if (v.today) {
       var cl = window.Clima && Clima.last();
       var cash = D.accts.filter(function (a) { return a.type === 'ahorro' && a.id !== 'sie1' || a.type === 'corriente' || a.type === 'efectivo'; }).reduce(function (s, a) { return s + a.bal; }, 0);
-      if (cl) out.push({ t: esc(cl.text) });
       out.push({ t: T('Hoy tienes {monto} disponibles entre tus cuentas.', { monto: money(cash) }) + (D.card ? ' ' + T('Tu Mastercard Black tiene {deuda} por pagar; la fecha máxima es el 10 de noviembre.', { deuda: money(D.debt) }) : ''),
         r: (D.card && D.debt ? '<button class="uku-say__reply" data-pf="go:Pagar tarjeta">Pagar tarjeta</button>' : '') + '<button class="uku-say__reply" data-pf="ask:¿Cuánto tengo en total?">¿Cuánto tengo en total?</button>' });
     } else if (v.current && onDemand !== 'ready') {
@@ -1350,6 +1349,15 @@
           '<button class="uku-say__reply uku-say__reply--ai" data-pf="analyze"><span class="material-symbols-rounded">auto_awesome</span>' + T('Analizar con {nombre}', { nombre: C().name }) + '</button></div>' +
       '</div></div>';
   }
+  // Clima en el fondo del héroe: "Quito · 8º" con su icono, sin texto en el globo
+  function paintWx() {
+    var hero = pf && pf.querySelector('.pf-hero'), cl = window.Clima && Clima.last();
+    if (!hero) return;
+    var old = hero.querySelector('.pf-wx'); if (old) old.remove();
+    if (!cl) return;
+    hero.insertAdjacentHTML('beforeend', '<p class="pf-wx" aria-label="' + esc((cl.city || '') + ' ' + cl.temp + ' grados') + '"><span class="material-symbols-rounded" aria-hidden="true">' + cl.icon + '</span>' +
+      (cl.city ? esc(cl.city) + ' · ' : '') + cl.temp + '°</p>');
+  }
   function paintSay() {
     var hero = pf && pf.querySelector('.pf-hero');
     if (!hero) return;
@@ -1366,10 +1374,11 @@
   function paintDash() {
     var v = viewOf(ST.view), html = '';
     html += '<header class="pf-head"><div class="pf-head__row"><h1>Mis finanzas</h1>' +
-      '<button class="pf-round" data-pf="settings" aria-label="Ajustes"><span class="material-symbols-rounded">tune</span></button></div>' +
-      '<div class="pf-months" role="tablist">' + VIEWS.map(function (x) {
+      '<button class="pf-round" data-pf="settings" aria-label="Ajustes"><span class="material-symbols-rounded">tune</span></button></div></header>';
+    // Los meses van fuera del encabezado para poder quedarse fijos al bajar (como las pestañas de Inicio)
+    html += '<div class="pf-months" role="tablist">' + VIEWS.map(function (x) {
         return '<button role="tab" data-pf="view:' + x.key + '" aria-selected="' + (x.key === v.key) + '"' + (x.today ? ' class="is-today"' : '') + '>' + T(MONTH_NAME[x.key] || x.short) + '</button>';
-      }).join('') + '</div></header>';
+      }).join('') + '</div>';
     var hs = v.today || v.current ? D.score : v.report ? REPORTS[v.key].score : monthScore(v.mi);
     var mesL = v.today ? '' : T(MONTH_NAME[v.key]).toLowerCase();
     say.first = null; hintFor(v); // decide qué tema va primero
@@ -1390,7 +1399,15 @@
     html += footHTML();
     // Conserva el nodo del héroe con el lienzo vivo (sin parpadeo al cambiar de mes)
     var scroll = pf.querySelector('.pf-scroll'), old = scroll.querySelector('.pf-hero'), live = old && old.querySelector('canvas');
+    // Dirección del cambio de mes: el contenido entra desde el lado hacia donde avanza el tiempo
+    var idx = function (k) { return VIEWS.findIndex(function (x) { return x.key === k; }); };
+    var dir = paintDash.lastKey && paintDash.lastKey !== v.key ? (idx(v.key) > idx(paintDash.lastKey) ? 'next' : 'prev') : null;
+    paintDash.lastKey = v.key;
     scroll.innerHTML = html;
+    if (dir) {
+      scroll.classList.remove('is-slide-next', 'is-slide-prev'); void scroll.offsetWidth;
+      scroll.classList.add(dir === 'next' ? 'is-slide-next' : 'is-slide-prev');
+    }
     var fresh = scroll.querySelector('.pf-hero');
     if (fresh) fresh.querySelector('.b3d').dataset.g = JSON.stringify('wave');
     if (live && fresh) {
@@ -1404,7 +1421,7 @@
     say.first = null; say.list = v.today ? sayFor(v) : []; say.hint = hintFor(v);
     // El globo abre con el mismo tema del aviso
     if (say.first) say.list.sort(function (a, b) { var m = function (x) { return say.first === 'savings' ? x.icon === 'savings' : x.kind === 'warn'; }; return m(b) - m(a); }); say.i = Math.min(say.i, Math.max(0, say.list.length - 1));
-    if (v.today) { paintSay(); syncHero(); }
+    if (v.today) { paintSay(); paintWx(); syncHero(); }
     var row = pf.querySelector('.pf-months'), sel = row && row.querySelector('[aria-selected="true"]');
     if (sel) row.scrollLeft = sel.offsetLeft - (row.clientWidth - sel.offsetWidth) / 2;
   }
@@ -1447,7 +1464,12 @@
   function onPF(e) {
     var b = e.target.closest('[data-pf]');
     // Tocar al oso abre (o cierra) su globo de texto
-    if (!b && e.target.closest('.pf-hero .b3d') && isInline()) return onSay(say.open ? 'say:close' : 'say:open');
+    // Tocar a Uku: si el globo está cerrado lo abre; si está abierto, hace un gesto (no lo cierra)
+    if (!b && e.target.closest('.pf-hero .b3d') && isInline()) {
+      if (!say.open) return onSay('say:open');
+      var pose = ['happy', 'wave', 'nod'][Math.floor(Math.random() * 3)];
+      fx('select'); gest(pose); return;
+    }
     if (!b) return;
     return pfKey(b.dataset.pf);
   }
