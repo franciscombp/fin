@@ -41,20 +41,21 @@
   var PAYS = [['Luz de la casa', 24.8, '16 oct', 'Pagar Luz de la casa'], ['Casa de la abue', 18.35, '20 oct', 'Pagar Casa de la abue'], ['Internet', 32.5, '22 oct', ''], ['Celular', 20, '25 oct', '']];
 
   /* ---------- Catálogo: una familia, un widget ----------
-     sizes: tamaños permitidos (el primero es el sugerido).
+     sizes: tamaños permitidos (M horizontal por defecto; S cuadrado se
+     elige; L queda fuera por ahora, D27).
      salida: etapa del RDA v1 en la que entra (null = después). */
   var CATALOG = {
-    cuentas:   { name: 'Cuentas', short: 'Cuentas', icon: 'account_balance', sizes: ['s', 'm'], salida: 1, desc: '¿Cuánto ganan tus cuentas?' },
-    inversion: { name: 'Inversión', short: 'Inversión', icon: 'trending_up', sizes: ['s', 'm'], salida: 1, desc: '¿Cuánto rinde y cuándo vence?' },
-    metas:     { name: 'Metas de ahorro', short: 'Metas', icon: 'flag', sizes: ['s', 'm'], salida: 1, desc: '¿Cuánto te falta para tu meta?' },
-    tarjeta:   { name: 'Tarjeta de crédito', short: 'Tarjeta', icon: 'credit_card', sizes: ['s', 'm'], salida: 1, desc: '¿Cuánto pagas y hasta cuándo?' },
-    creditos:  { name: 'Créditos', short: 'Créditos', icon: 'request_quote', sizes: ['s', 'm'], salida: 1, desc: '¿Cuándo es tu próxima cuota?' },
-    pagos:     { name: 'Pagos', short: 'Pagos', icon: 'event', sizes: ['m', 'l'], salida: 2, desc: '¿Qué pago viene?' },
-    pfm:       { name: 'Mis finanzas', short: 'Gastos', icon: 'insights', sizes: ['s', 'm'], salida: 4, desc: '¿En qué estás gastando?' },
-    seguros:   { name: 'Seguros', short: 'Seguros', icon: 'health_and_safety', sizes: ['s'], salida: null, desc: '¿Qué cubre tu póliza?' }
+    cuentas:   { name: 'Cuentas', short: 'Cuentas', icon: 'account_balance', sizes: ['m', 's'], salida: 1, desc: '¿Cuánto ganan tus cuentas?' },
+    inversion: { name: 'Inversión', short: 'Inversión', icon: 'trending_up', sizes: ['m', 's'], salida: 1, desc: '¿Cuánto rinde y cuándo vence?' },
+    metas:     { name: 'Metas de ahorro', short: 'Metas', icon: 'flag', sizes: ['m', 's'], salida: 1, desc: '¿Cuánto te falta para tu meta?' },
+    tarjeta:   { name: 'Tarjeta de crédito', short: 'Tarjeta', icon: 'credit_card', sizes: ['m', 's'], salida: 1, desc: '¿Cuánto pagas y hasta cuándo?' },
+    creditos:  { name: 'Créditos', short: 'Créditos', icon: 'request_quote', sizes: ['m', 's'], salida: 1, desc: '¿Cuándo es tu próxima cuota?' },
+    pagos:     { name: 'Pagos', short: 'Pagos', icon: 'event', sizes: ['m'], salida: 2, desc: '¿Qué pago viene?' },
+    pfm:       { name: 'Mis finanzas', short: 'Gastos', icon: 'insights', sizes: ['m', 's'], salida: 4, desc: '¿En qué estás gastando?' },
+    seguros:   { name: 'Seguros', short: 'Seguros', icon: 'health_and_safety', sizes: ['m', 's'], salida: null, desc: '¿Qué cubre tu póliza?' }
   };
   // Orden en que el banco sugiere (D4: ahorro e inversión no van por defecto)
-  var SUGGESTED = ['tarjeta', 'creditos', 'pagos', 'cuentas'];
+  var SUGGESTED = ['tarjeta', 'creditos', 'pagos'];
   var SIZE = { s: 'Cuadrado', m: 'Horizontal', l: 'Grande' };
 
   /* ---------- Acciones ---------- */
@@ -120,6 +121,7 @@
   function fillers(ws) {
     var used = ws.map(function (w) { return w.id; }), out = [];
     var pool = SUGGESTED.concat(Object.keys(CATALOG)).filter(function (id, i, a) { return a.indexOf(id) === i && shown(id) && capt(id) && used.indexOf(id) < 0; });
+    var off = dismissed(); pool = pool.filter(function (id) { return off.indexOf(id) < 0; }); // descartadas con la ×
     var quit = pref.removed || []; // lo que el cliente quitó se sugiere al final
     pool = pool.filter(function (id) { return quit.indexOf(id) < 0; }).concat(pool.filter(function (id) { return quit.indexOf(id) >= 0; }));
     // Si el cliente eligió cuadrados, los huecos son cuadrados (hasta 4);
@@ -128,12 +130,23 @@
     var sq = ws.some(function (w) { return w.size === 's'; });
     if (sq || free % 2) for (var k = 0; k < free; k++) need.push('s');
     else for (var j = 0; j < free / 2; j++) need.push('m');
+    // Una sola sugerencia visible a la vez (D10): si ya hay una captación en
+    // Destacados, los demás huecos invitan a "Agregar widget"
+    var one = !ws.some(function (w) { return capt(w.id); });
     need.forEach(function (z) {
-      var id = pool.filter(function (x) { return CATALOG[x].sizes.indexOf(z) >= 0; })[0];
-      if (id) { pool.splice(pool.indexOf(id), 1); out.push({ id: id, size: z, sug: true }); }
+      var id = one && pool.filter(function (x) { return CATALOG[x].sizes.indexOf(z) >= 0; })[0];
+      if (id) { one = false; out.push({ id: id, size: z, sug: true }); }
       else out.push({ slot: true, size: z });
     });
     return out;
+  }
+  // Sugerencias descartadas con la ×: no vuelven durante el enfriamiento
+  var DKEY = 'pb_widgets_off', COOL = 30 * 864e5;
+  function dismissed() {
+    try { var o = JSON.parse(localStorage.getItem(DKEY)) || {}; return Object.keys(o).filter(function (k) { return Date.now() - o[k] < COOL; }); } catch (e) { return []; }
+  }
+  function dismiss(id) {
+    try { var o = JSON.parse(localStorage.getItem(DKEY)) || {}; o[id] = Date.now(); localStorage.setItem(DKEY, JSON.stringify(o)); } catch (e) {}
   }
   // Antes de editar, la configuración sugerida se vuelve la del cliente
   function materialize() { if (!pref.custom) pref.items = defaults(); }
@@ -190,19 +203,21 @@
   function widgetHTML(w, preview) {
     var cat = CATALOG[w.id], c = capt(w.id), r;
     try { r = R[w.id](w.size, c); } catch (e) { r = null; }
+    // Cargando: esqueleto del mismo tamaño para que la pantalla no salte
+    if (loading && !preview) r = { body: '<span class="dw-skel"></span><span class="dw-skel dw-skel--lg"></span><span class="dw-skel dw-skel--sm"></span>' };
     // Sin dato: mensaje corto, nunca ceros (el widget mantiene su tamaño)
-    if (!r) r = { body: '<p class="dw-sub">No pudimos actualizar este dato</p>' };
+    if (!r) r = { body: '<p class="dw-sub">No pudimos actualizar</p>' };
     if (!preview) gos[w.id] = r.go;
     return '<article class="dw dw--' + w.size + (c ? ' dw--offer' : '') + (w.sug ? ' dw--sug' : '') + '" data-dw-id="' + w.id + '"' + (r.go && !preview ? ' role="button" tabindex="0"' : '') + ' aria-label="' + esc(cat.name) + '">' +
       '<p class="dw-h"><span class="material-symbols-rounded" aria-hidden="true">' + cat.icon + '</span><span class="dw-1">' + (w.size === 's' ? cat.short : cat.name) + '</span></p>' +
       '<div class="dw-body">' + r.body + '</div>' +
-      (preview ? '' : w.sug ? '<button class="dw-plus" data-dw-adopt="' + w.id + ':' + w.size + '" aria-label="Agregar ' + esc(cat.name) + '"><span class="material-symbols-rounded">add</span></button>' : '<button class="dw-x" data-dw-del="' + w.id + '" aria-label="Quitar ' + esc(cat.name) + '"><span class="material-symbols-rounded">remove</span></button>' +
+      (preview ? '' : w.sug ? '<button class="dw-dismiss" data-dw-dismiss="' + w.id + '" aria-label="Descartar sugerencia"><span class="material-symbols-rounded">close</span></button>' : '<button class="dw-x" data-dw-del="' + w.id + '" aria-label="Quitar ' + esc(cat.name) + '"><span class="material-symbols-rounded">remove</span></button>' +
         (cat.sizes.length > 1 ? '<button class="dw-size" data-dw-size="' + w.id + '" aria-label="Cambiar tamaño">' + SIZE[w.size] + '<span class="material-symbols-rounded">unfold_more</span></button>' : '')) +
       '</article>';
   }
 
   /* ---------- Montaje y pintado ---------- */
-  var host, list, gos = {}, editing = false;
+  var host, list, gos = {}, editing = false, loading = true;
   function mount() {
     var panel = document.querySelector('.tab-panel[data-panel="Destacado"]');
     if (!panel || document.getElementById('dw-host')) return;
@@ -249,14 +264,10 @@
     if ((b = e.target.closest('[data-dw="edit"]'))) { e.stopPropagation(); return setEditing(!editing); }
     if ((b = e.target.closest('[data-dw="add"]'))) { e.stopPropagation(); return openGallery(); }
     if ((b = e.target.closest('[data-dw="reset"]'))) { try { localStorage.removeItem(KEY); } catch (x) {} pref = load(); if (editing) materialize(); fx('select'); return paint(); }
-    if ((b = e.target.closest('[data-dw-adopt]'))) {
-      e.stopPropagation(); materialize();
-      var ad = b.dataset.dwAdopt.split(':');
-      if (units(pref.items) + U[ad[1]] <= CAP) pref.items.push({ id: ad[0], size: ad[1] });
-      fx('success'); return commit();
-    }
+    if ((b = e.target.closest('[data-dw-dismiss]'))) { e.stopPropagation(); dismiss(b.dataset.dwDismiss); fx('toggle'); return paint(); }
     if ((b = e.target.closest('[data-dw-del]'))) {
       e.stopPropagation();
+      if (capt(b.dataset.dwDel)) dismiss(b.dataset.dwDel); // quitar una sugerencia es descartarla
       pref.items = pref.items.filter(function (w) { return w.id !== b.dataset.dwDel; });
       pref.removed = (pref.removed || []).filter(function (id) { return id !== b.dataset.dwDel; }).concat(b.dataset.dwDel);
       fx('toggle'); return commit();
@@ -281,7 +292,7 @@
   function dragInit() {
     list.addEventListener('pointerdown', function (e) {
       var el = e.target.closest('.dw');
-      if (!el || e.target.closest('.dw-x, .dw-size') || e.button > 0) return;
+      if (!el || e.target.closest('.dw-x, .dw-size, .dw-dismiss') || e.button > 0) return;
       if (!editing) {
         clearTimeout(pressT);
         var x0 = e.clientX, y0 = e.clientY;
@@ -383,7 +394,16 @@
     }
   }
 
-  function init() { mount(); paint(); }
+  // Cada vez que se entra al inicio, los widgets cargan (esqueleto) y luego
+  // muestran su dato
+  function warm() { loading = true; paint(); clearTimeout(warm.t); warm.t = setTimeout(function () { loading = false; paint(); }, 700); }
+  function init() {
+    mount(); paint();
+    var home = document.getElementById('home-page'), was = false;
+    var check = function () { var on = !!(home && home.offsetParent !== null && home.getBoundingClientRect().height); if (on && !was) warm(); was = on; };
+    if (home) new MutationObserver(check).observe(home, { attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
+    check(); if (!was) { loading = false; paint(); }
+  }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   document.addEventListener('i18n:change', function () { paint(); });
   // Salir de edición al tocar fuera de Destacados
