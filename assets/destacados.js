@@ -106,11 +106,12 @@
     return pref.items.filter(function (w) { return shown(w.id) && CATALOG[w.id].sizes.indexOf(w.size) >= 0; }).slice(0, MAX);
   }
   // El espacio de Destacados nunca desaparece: si el cliente quita widgets,
-  // los huecos (hasta MAX) se llenan con sugerencias del banco.
+  // los huecos (hasta MAX) se llenan con widgets fantasma, solo de productos
+  // que NO tiene (next product to buy). Si ya tiene todo, queda el hueco
+  // para agregar un widget.
   function fillers(ws) {
     var used = ws.map(function (w) { return w.id; }), out = [];
-    var pool = SUGGESTED.concat(Object.keys(CATALOG)).filter(function (id, i, a) { return a.indexOf(id) === i && shown(id) && used.indexOf(id) < 0; });
-    pool = pool.filter(capt).concat(pool.filter(function (id) { return !capt(id); })); // captaciones primero
+    var pool = SUGGESTED.concat(Object.keys(CATALOG)).filter(function (id, i, a) { return a.indexOf(id) === i && shown(id) && capt(id) && used.indexOf(id) < 0; });
     var quit = pref.removed || []; // lo que el cliente quitó se sugiere al final
     pool = pool.filter(function (id) { return quit.indexOf(id) < 0; }).concat(pool.filter(function (id) { return quit.indexOf(id) >= 0; }));
     // Los huecos son pequeños para no mover el resto del inicio
@@ -222,7 +223,7 @@
     var lim = host.querySelector('.dw-limit'); if (lim) lim.hidden = ws.length < MAX;
     host.classList.toggle('is-editing', editing);
     host.querySelector('[data-dw="edit"]').textContent = editing ? 'Listo' : 'Editar';
-    host.querySelector('[data-dw="add"]').disabled = ws.length >= MAX;
+    host.querySelector('.dw-add').disabled = ws.length >= MAX;
   }
   function setEditing(on) { if (on) materialize(); editing = on; fx(on ? 'select' : 'success'); paint(); }
   function commit() { pref.custom = true; save(); paint(); }
