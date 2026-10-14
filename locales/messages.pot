@@ -6,8 +6,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Language: es-EC\n"
 
+#: anterior assets/asistente.js
+msgid "+{monto}"
+msgstr ""
+
 #: anterior index.html
 msgid "1 milla por cada $1"
+msgstr ""
+
+#: anterior index.html
+msgid "1.800 millas"
 msgstr ""
 
 #: anterior index.html
@@ -15,6 +23,10 @@ msgid "2 accesos al año"
 msgstr ""
 
 #: anterior index.html
+msgid "2.400 millas"
+msgstr ""
+
+#: anterior
 msgid "30% cashback comprando con tu tarjeta"
 msgstr ""
 
@@ -26,8 +38,24 @@ msgstr ""
 msgid "7,25% anual"
 msgstr ""
 
+#: anterior index.html
+msgid "8.900 millas"
+msgstr ""
+
 #: anterior assets/asistente.js
 msgid "<b>{meta}</b>: llevas {tienes} de {total}."
+msgstr ""
+
+#: anterior index.html
+msgid "a la mano"
+msgstr ""
+
+#: anterior assets/contexto.js
+msgid "A tu Movilidad le quedan unos {n} viajes. Te aviso para que la recargues antes de quedarte sin saldo."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "A {meta} le falta un empujón: {monto} más al mes y llegas a tiempo."
 msgstr ""
 
 #: anterior
@@ -36,6 +64,10 @@ msgstr ""
 
 #: anterior terminos.txt
 msgid "Abr"
+msgstr ""
+
+#: anterior index.html
+msgid "Abrir cuenta"
 msgstr ""
 
 #: anterior
@@ -79,6 +111,10 @@ msgid "Actualizado hoy"
 msgstr ""
 
 #: anterior index.html
+msgid "Acumula"
+msgstr ""
+
+#: anterior index.html
 msgid "Acumula millas"
 msgstr ""
 
@@ -114,7 +150,7 @@ msgstr ""
 msgid "Ahora no"
 msgstr ""
 
-#: anterior assets/destacados.js terminos.txt
+#: anterior terminos.txt
 msgid "Ahora ves los sugeridos."
 msgstr ""
 
@@ -170,7 +206,11 @@ msgstr ""
 msgid "Ahorraste {monto}, el {pct}"
 msgstr ""
 
-#: anterior terminos.txt
+#: anterior assets/asistente.js
+msgid "Ahorraste {monto}, pero ojo con {cat}"
+msgstr ""
+
+#: anterior assets/asistente.js terminos.txt
 msgid "Ahorro"
 msgstr ""
 
@@ -186,6 +226,10 @@ msgstr ""
 msgid "Ahorro transaccional"
 msgstr ""
 
+#: anterior assets/asistente.js
+msgid "Ahorros y metas"
+msgstr ""
+
 #: anterior
 msgid "Ahorros · Sueldo"
 msgstr ""
@@ -198,8 +242,20 @@ msgstr ""
 msgid "Ajustes del asistente"
 msgstr ""
 
+#: anterior index.html
+msgid "Alivio financiero"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Analizar con {nombre}"
+msgstr ""
+
 #: anterior assets/asistente.js
 msgid "Anota tus gastos en efectivo y los sumamos al resto."
+msgstr ""
+
+#: anterior index.html
+msgid "ante fraudes"
 msgstr ""
 
 #: anterior
@@ -214,12 +270,20 @@ msgstr ""
 msgid "Atrasado"
 msgstr ""
 
+#: anterior index.html
+msgid "Avance de efectivo"
+msgstr ""
+
 #: anterior
 msgid "Aviso"
 msgstr ""
 
 #: anterior index.html
 msgid "Ayuda y soporte"
+msgstr ""
+
+#: anterior index.html
+msgid "Banca Móvil"
 msgstr ""
 
 #: anterior
@@ -240,6 +304,10 @@ msgstr ""
 
 #: anterior index.html
 msgid "Beneficios de tu tarjeta"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Bien hecho: cerraste el mes dentro de todos tus presupuestos."
 msgstr ""
 
 #: anterior
@@ -286,6 +354,14 @@ msgstr ""
 msgid "Cancelar"
 msgstr ""
 
+#: anterior index.html
+msgid "Canjea tus millas"
+msgstr ""
+
+#: anterior index.html
+msgid "Canjear"
+msgstr ""
+
 #: anterior
 msgid "Capital invertido"
 msgstr ""
@@ -296,6 +372,10 @@ msgstr ""
 
 #: anterior
 msgid "Cashback"
+msgstr ""
+
+#: anterior index.html
+msgid "Cashback de $ 10,00"
 msgstr ""
 
 #: anterior
@@ -318,6 +398,10 @@ msgstr ""
 msgid "Cerrar stories"
 msgstr ""
 
+#: anterior index.html
+msgid "Certificado bancario"
+msgstr ""
+
 #: anterior
 msgid "Chequera"
 msgstr ""
@@ -328,6 +412,10 @@ msgstr ""
 
 #: anterior
 msgid "Clic seco al cruzar un límite"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Clima de {nombre} (demo)"
 msgstr ""
 
 #: anterior
@@ -370,7 +458,7 @@ msgstr ""
 msgid "Conectar"
 msgstr ""
 
-#: anterior terminos.txt
+#: anterior assets/asistente.js terminos.txt
 msgid "Conectar otra cuenta"
 msgstr ""
 
@@ -399,11 +487,19 @@ msgid "Corriente"
 msgstr ""
 
 #: anterior index.html
+msgid "Crea metas"
+msgstr ""
+
+#: anterior index.html
 msgid "Crear Ahorro Flexible"
 msgstr ""
 
 #: anterior
 msgid "Crear inversión"
+msgstr ""
+
+#: anterior index.html
+msgid "Crear meta"
 msgstr ""
 
 #: anterior
@@ -458,12 +554,20 @@ msgstr ""
 msgid "Cuotas pagadas"
 msgstr ""
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "Cupo {monto}"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Cuánto quieres gastar al mes en cada categoría. {nombre} te avisa cuando te estés acercando al límite."
 msgstr ""
 
 #: anterior index.html
 msgid "CVV"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Cómo se calcula"
 msgstr ""
 
 #: anterior
@@ -475,7 +579,19 @@ msgid "Datos personales"
 msgstr ""
 
 #: anterior assets/asistente.js
+msgid "de 100"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "De cada $ 10 de tus ingresos, gastaste $ {g} y ahorraste $ {s}."
+msgstr ""
+
+#: anterior assets/asistente.js
 msgid "De {mes} solo tenemos este resumen. El detalle de cada movimiento lo tienes desde agosto."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "de {monto}"
 msgstr ""
 
 #: anterior
@@ -488,6 +604,10 @@ msgstr ""
 
 #: anterior index.html
 msgid "Depósito a plazo"
+msgstr ""
+
+#: anterior index.html
+msgid "Depósito a Plazo"
 msgstr ""
 
 #: anterior index.html
@@ -524,6 +644,10 @@ msgstr ""
 
 #: anterior
 msgid "Disponible"
+msgstr ""
+
+#: anterior index.html
+msgid "Disponible para ti"
 msgstr ""
 
 #: anterior terminos.txt
@@ -566,6 +690,10 @@ msgstr ""
 msgid "Efectivo"
 msgstr ""
 
+#: anterior index.html
+msgid "El apoyo que necesitas para hacer realidad tus sueños"
+msgstr ""
+
 #: anterior assets/asistente.js
 msgid "El detalle de cada movimiento lo tengo solo desde agosto. De los meses anteriores te puedo mostrar un resumen:"
 msgstr ""
@@ -578,7 +706,7 @@ msgstr ""
 msgid "El {pct} está en la corriente, que no gana intereses."
 msgstr ""
 
-#: anterior assets/destacados.js terminos.txt
+#: anterior terminos.txt
 msgid "Elegidos por ti."
 msgstr ""
 
@@ -586,8 +714,12 @@ msgstr ""
 msgid "Elige en qué idioma quieres ver la app."
 msgstr ""
 
-#: anterior assets/destacados.js terminos.txt
+#: anterior terminos.txt
 msgid "Elige hasta {n} para ver en Inicio."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Elige qué cuentas y productos quieres que Uku analice. Lo que apagues no cuenta en tus saldos, en tus gastos ni en tus recomendaciones."
 msgstr ""
 
 #: anterior
@@ -596,6 +728,10 @@ msgstr ""
 
 #: anterior
 msgid "Empresa Eléctrica Quito"
+msgstr ""
+
+#: anterior index.html
+msgid "en cada compra"
 msgstr ""
 
 #: anterior
@@ -618,6 +754,14 @@ msgstr ""
 msgid "En los primeros {n} días"
 msgstr ""
 
+#: anterior assets/asistente.js
+msgid "En los primeros {n} días del mes"
+msgstr ""
+
+#: anterior index.html
+msgid "en minutos"
+msgstr ""
+
 #: anterior
 msgid "En qué gastaste"
 msgstr ""
@@ -626,8 +770,12 @@ msgstr ""
 msgid "En qué gastaste en {mes}"
 msgstr ""
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "En septiembre ahorraste <b>{ahorro}</b>, el {pct} de lo que te entró, y te sobraron {libre} sin un destino fijo."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "En septiembre ahorraste <b>{ahorro}</b>, el {pct} de tus ingresos, y te sobraron {libre} sin un destino fijo."
 msgstr ""
 
 #: anterior assets/asistente.js
@@ -666,11 +814,11 @@ msgstr ""
 msgid "en servicios básicos, en {n} pagos."
 msgstr ""
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "En total tienes {total} y debes {deuda}."
 msgstr ""
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "En total tienes {total}."
 msgstr ""
 
@@ -680,6 +828,14 @@ msgstr ""
 
 #: anterior assets/contexto.js
 msgid "En un depósito al 7,25% ganarían unos {gana} al año."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "en {mes}"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "En {mes} gastaste parecido a tu promedio."
 msgstr ""
 
 #: anterior
@@ -694,6 +850,10 @@ msgstr ""
 msgid "Entre agosto y septiembre pagaste {monto} de intereses en tu Mastercard Black, porque solo pagaste el mínimo. Si pagas el total antes de la fecha de corte, no te cobran intereses."
 msgstr ""
 
+#: anterior assets/contexto.js
+msgid "Entre vida y protección de tarjetas pagas {total} al mes. ¿Quieres saber qué te cubre cada uno?"
+msgstr ""
+
 #: anterior
 msgid "Enviar"
 msgstr ""
@@ -706,8 +866,12 @@ msgstr ""
 msgid "Es el {pct} de lo que te entró."
 msgstr ""
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "Es el {pct} de lo que te entró. ¡Bien!"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Es el {pct} de tus ingresos. ¡Bien!"
 msgstr ""
 
 #: anterior
@@ -735,7 +899,15 @@ msgid "Estado de cuenta"
 msgstr ""
 
 #: anterior index.html
+msgid "Estamos preparando descuentos y beneficios para ti por usar tus productos Pichibank."
+msgstr ""
+
+#: anterior index.html
 msgid "Estamos preparando tu Pichibank…"
+msgstr ""
+
+#: anterior assets/contexto.js
+msgid "Este mes gastaste {monto} y lo que más se lleva es {cat}. ¿Quieres que lo revisemos juntos?"
 msgstr ""
 
 #: anterior assets/asistente.js
@@ -751,7 +923,15 @@ msgid "Esto puede tardar unos segundos"
 msgstr ""
 
 #: anterior assets/asistente.js
+msgid "está {animo}"
+msgstr ""
+
+#: anterior
 msgid "Estás ahorrando más del 8% de lo que te entra. ¡Sigue así!"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Estás ahorrando más del 8% de tus ingresos. ¡Sigue así!"
 msgstr ""
 
 #: anterior assets/asistente.js
@@ -780,6 +960,10 @@ msgstr ""
 
 #: anterior
 msgid "Fraude y clonación · {monto} al mes"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Frente a {mes}"
 msgstr ""
 
 #: anterior
@@ -818,6 +1002,10 @@ msgstr ""
 msgid "Gastaste {pct} más de lo normal en {cat}"
 msgstr ""
 
+#: anterior assets/asistente.js
+msgid "Gasto en efectivo"
+msgstr ""
+
 #: anterior
 msgid "Gastos"
 msgstr ""
@@ -827,6 +1015,10 @@ msgid "Gastos del mes"
 msgstr ""
 
 #: anterior index.html
+msgid "Giftcard Sweet & Coffee"
+msgstr ""
+
+#: anterior
 msgid "Giftcard y descuentos del 15%"
 msgstr ""
 
@@ -850,12 +1042,20 @@ msgstr ""
 msgid "Habla con Uku"
 msgstr ""
 
-#: anterior index.html
+#: anterior
 msgid "Hasta 30% dcto. en vinos seleccionados"
 msgstr ""
 
 #: anterior index.html
 msgid "Haz crecer tu dinero desde $ 100 con tasas preferenciales."
+msgstr ""
+
+#: anterior index.html
+msgid "Haz crecer tus ahorros con un"
+msgstr ""
+
+#: anterior index.html
+msgid "Haz crecer tus ahorros con un Depósito a Plazo"
 msgstr ""
 
 #: anterior
@@ -882,6 +1082,14 @@ msgstr ""
 msgid "Hoy te sobran unos {libre} al mes, así que esa cuota te dejaría corto. Úsalo solo para algo necesario o para pagar una deuda más cara."
 msgstr ""
 
+#: anterior assets/asistente.js
+msgid "Hoy tienes {monto} disponibles entre tus cuentas."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Hoy todo en orden"
+msgstr ""
+
 #: anterior assets/i18n.js index.html
 msgid "Idioma"
 msgstr ""
@@ -898,6 +1106,14 @@ msgstr ""
 msgid "Ingresar"
 msgstr ""
 
+#: anterior assets/asistente.js
+msgid "Ingreso"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Ingresos"
+msgstr ""
+
 #: anterior
 msgid "Ingresos del mes"
 msgstr ""
@@ -906,8 +1122,12 @@ msgstr ""
 msgid "Inicio"
 msgstr ""
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "Intenta ahorrar por lo menos el 8% de lo que te entra cada mes."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Intenta ahorrar por lo menos el 8% de tus ingresos cada mes."
 msgstr ""
 
 #: anterior
@@ -978,12 +1198,20 @@ msgstr ""
 msgid "junio de 2027"
 msgstr ""
 
+#: anterior index.html
+msgid "Kit de vinos Viña Concha"
+msgstr ""
+
 #: anterior assets/contexto.js
 msgid "La cuota sería de unos {cuota} al mes. Mira si te alcanza antes de usarlo."
 msgstr ""
 
 #: anterior
 msgid "La más cara es Gympass: si fuiste menos de {n} veces en septiembre, cada ida te salió en más de {monto}."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "La raya marca hasta dónde deberías ir hoy."
 msgstr ""
 
 #: anterior index.html
@@ -1007,6 +1235,10 @@ msgid "Listo, pasaste {monto} a tu fondo de emergencia."
 msgstr ""
 
 #: anterior assets/asistente.js
+msgid "Listo, registraste {monto} en {cat}."
+msgstr ""
+
+#: anterior assets/asistente.js
 msgid "Listo, sumamos {n} movimientos. Tu salud financiera ahora es {score}."
 msgstr ""
 
@@ -1022,8 +1254,12 @@ msgstr ""
 msgid "Lo haces casi todos los viernes"
 msgstr ""
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "Lo ideal es ahorrar por lo menos el 8% de lo que te entra."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Lo ideal es ahorrar por lo menos el 8% de tus ingresos."
 msgstr ""
 
 #: anterior assets/asistente.js
@@ -1036,6 +1272,10 @@ msgstr ""
 
 #: anterior
 msgid "Lo pagaste {n} días después de la fecha y te cobraron {monto} de recargo."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Lo que debes"
 msgstr ""
 
 #: anterior assets/asistente.js
@@ -1079,11 +1319,23 @@ msgid "Mayo {n}"
 msgstr ""
 
 #: anterior index.html
+msgid "McCombo Royal Deluxe por $4,99"
+msgstr ""
+
+#: anterior index.html
 msgid "Mensual"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Mes a mes"
 msgstr ""
 
 #: anterior terminos.txt
 msgid "Mes difícil"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Mes en curso"
 msgstr ""
 
 #: anterior
@@ -1122,6 +1374,10 @@ msgstr ""
 msgid "Mi cuenta"
 msgstr ""
 
+#: anterior index.html
+msgid "millas"
+msgstr ""
+
 #: anterior
 msgid "Mira en qué se va tu plata con Mis finanzas"
 msgstr ""
@@ -1130,7 +1386,7 @@ msgstr ""
 msgid "Mis cuentas"
 msgstr ""
 
-#: anterior
+#: anterior index.html
 msgid "Mis finanzas"
 msgstr ""
 
@@ -1180,6 +1436,10 @@ msgstr ""
 
 #: anterior index.html
 msgid "Movimientos"
+msgstr ""
+
+#: anterior index.html
+msgid "Multicines: tu combo perfecto a tan solo $6,99"
 msgstr ""
 
 #: anterior
@@ -1238,7 +1498,7 @@ msgstr ""
 msgid "Novedades"
 msgstr ""
 
-#: anterior terminos.txt
+#: anterior assets/asistente.js terminos.txt
 msgid "noviembre"
 msgstr ""
 
@@ -1246,12 +1506,24 @@ msgstr ""
 msgid "Nro. ******7890"
 msgstr ""
 
-#: anterior
+#: anterior index.html
 msgid "Nueva inversión"
 msgstr ""
 
 #: anterior index.html
+msgid "Nueva tarjeta"
+msgstr ""
+
+#: anterior index.html
 msgid "Nuevo"
+msgstr ""
+
+#: anterior index.html
+msgid "Nuevo préstamo"
+msgstr ""
+
+#: anterior index.html
+msgid "Nuevo seguro"
 msgstr ""
 
 #: anterior index.html
@@ -1279,7 +1551,15 @@ msgid "Octubre"
 msgstr ""
 
 #: anterior assets/asistente.js
+msgid "Octubre va en curso: llevas {monto} en {n} días."
+msgstr ""
+
+#: anterior assets/asistente.js
 msgid "Octubre, hasta hoy"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "octubre, hasta hoy"
 msgstr ""
 
 #: anterior index.html
@@ -1320,6 +1600,18 @@ msgstr ""
 
 #: anterior
 msgid "Ofertas todo el año con tus tarjetas Pichibank"
+msgstr ""
+
+#: anterior assets/contexto.js
+msgid "Ojo con tu Mastercard Black: tiene {deuda} por pagar. Si la pagas completa antes del 5 de noviembre, te ahorras los intereses."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Ojo: te pasaste en {cat}"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Ojo: {texto}"
 msgstr ""
 
 #: anterior index.html
@@ -1370,6 +1662,14 @@ msgstr ""
 msgid "Pagas <b>{total} al mes</b> en 2 seguros: vida ({vida}) y protección de tarjetas ({prot}). La protección cubre fraude y clonación de tus tarjetas. El de vida se renueva el 1 de enero."
 msgstr ""
 
+#: anterior assets/asistente.js
+msgid "Pagas hasta el 10 nov"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Pagas tu tarjeta hasta el 10 nov"
+msgstr ""
+
 #: anterior
 msgid "Pagas {monto} al mes, débito automático"
 msgstr ""
@@ -1418,6 +1718,10 @@ msgstr ""
 msgid "Pagos de prima"
 msgstr ""
 
+#: anterior index.html
+msgid "para compras en línea?"
+msgstr ""
+
 #: anterior assets/asistente.js
 msgid "Para llegar en {fecha} necesitas poner {falta} al mes, y ahora estás poniendo {mes}."
 msgstr ""
@@ -1432,6 +1736,10 @@ msgstr ""
 
 #: anterior index.html
 msgid "Para tus compras y pagos por internet"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "para {fecha}"
 msgstr ""
 
 #: anterior
@@ -1498,6 +1806,10 @@ msgstr ""
 msgid "Por mejorar"
 msgstr ""
 
+#: anterior assets/asistente.js
+msgid "Por pagar"
+msgstr ""
+
 #: anterior
 msgid "Predios e impuestos"
 msgstr ""
@@ -1506,7 +1818,7 @@ msgstr ""
 msgid "Preferencias"
 msgstr ""
 
-#: anterior assets/asistente.js assets/contexto.js terminos.txt
+#: anterior assets/asistente.js terminos.txt
 msgid "Pregúntale a {nombre}"
 msgstr ""
 
@@ -1534,8 +1846,16 @@ msgstr ""
 msgid "Probar efectos"
 msgstr ""
 
+#: anterior index.html
+msgid "Programa tus pagos desde tu"
+msgstr ""
+
 #: anterior assets/asistente.js
 msgid "Programar un ahorro automático el día de pago ayuda mucho."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Promedio {monto}"
 msgstr ""
 
 #: anterior index.html
@@ -1567,6 +1887,10 @@ msgid "Protege lo que más te importa con nuestros seguros."
 msgstr ""
 
 #: anterior index.html
+msgid "Protege tus"
+msgstr ""
+
+#: anterior index.html
 msgid "Préstamo de consumo"
 msgstr ""
 
@@ -1580,6 +1904,10 @@ msgstr ""
 
 #: anterior
 msgid "Próxima cuota"
+msgstr ""
+
+#: anterior index.html
+msgid "Próximamente"
 msgstr ""
 
 #: anterior
@@ -1596,6 +1924,10 @@ msgstr ""
 
 #: anterior terminos.txt
 msgid "Quitar"
+msgstr ""
+
+#: anterior index.html
+msgid "Rappi: 30% de cashback comprando con tu Mastercard"
 msgstr ""
 
 #: anterior
@@ -1654,6 +1986,14 @@ msgstr ""
 msgid "Renovar"
 msgstr ""
 
+#: anterior index.html
+msgid "Renovar inversión"
+msgstr ""
+
+#: anterior index.html
+msgid "Renovar seguro"
+msgstr ""
+
 #: anterior
 msgid "Reportar"
 msgstr ""
@@ -1671,6 +2011,10 @@ msgid "Resumen"
 msgstr ""
 
 #: anterior index.html
+msgid "Retira efectivo"
+msgstr ""
+
+#: anterior index.html
 msgid "Retirar sin tarjeta"
 msgstr ""
 
@@ -1678,8 +2022,16 @@ msgstr ""
 msgid "Revelar datos"
 msgstr ""
 
-#: anterior
+#: anterior index.html
+msgid "Revisa en qué gastas con"
+msgstr ""
+
+#: anterior assets/asistente.js
 msgid "Revisando tus movimientos de octubre…"
+msgstr ""
+
+#: anterior assets/contexto.js
+msgid "Revisé tus suscripciones y se te van {total} al mes. {lugar} y {lugar2} son las que más pesan, ¿las sigues usando?"
 msgstr ""
 
 #: anterior index.html
@@ -1778,6 +2130,10 @@ msgstr ""
 msgid "Se renueva el 9 de octubre"
 msgstr ""
 
+#: anterior assets/asistente.js
+msgid "Se renuevan el 1 de {mes}"
+msgstr ""
+
 #: anterior index.html
 msgid "Secciones"
 msgstr ""
@@ -1800,6 +2156,10 @@ msgstr ""
 
 #: anterior index.html
 msgid "Seguro de vida"
+msgstr ""
+
+#: anterior index.html
+msgid "seguro de vida"
 msgstr ""
 
 #: anterior index.html
@@ -1843,6 +2203,10 @@ msgid "Si delivery, cafés y compras vuelven a lo que tenías presupuestado, son
 msgstr ""
 
 #: anterior assets/contexto.js
+msgid "Si este mes te sobra algo, un abono de {monto} te ahorra {n} cuotas. ¿Te muestro cómo hacerlo?"
+msgstr ""
+
+#: anterior assets/contexto.js
 msgid "Si inviertes {base} al 7,25% anual, ganarías unos <b>{gana}</b> en un año. Hoy tienes {corriente} en tu cuenta corriente sin ganar intereses."
 msgstr ""
 
@@ -1856,6 +2220,10 @@ msgstr ""
 
 #: anterior assets/asistente.js
 msgid "Si sigues así, cerrarías el mes en {monto}"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Si sigues así, cerrarías octubre en {monto}"
 msgstr ""
 
 #: anterior assets/asistente.js
@@ -1879,6 +2247,10 @@ msgid "Simular crédito preaprobado"
 msgstr ""
 
 #: anterior index.html
+msgid "Simular ganancias"
+msgstr ""
+
+#: anterior index.html
 msgid "Simular mi crédito"
 msgstr ""
 
@@ -1890,8 +2262,16 @@ msgstr ""
 msgid "Sin tarjetas conectadas"
 msgstr ""
 
+#: anterior index.html
+msgid "sin tener tu Tarjeta de Débito"
+msgstr ""
+
 #: anterior
 msgid "Sobregiro disponible"
+msgstr ""
+
+#: anterior index.html
+msgid "Solicita una revisión · toma de 2 a 6 semanas"
 msgstr ""
 
 #: anterior index.html
@@ -1903,6 +2283,10 @@ msgid "Solicitar Débito Digital"
 msgstr ""
 
 #: anterior index.html
+msgid "Solicitar préstamo"
+msgstr ""
+
+#: anterior
 msgid "Solicitudes"
 msgstr ""
 
@@ -1962,6 +2346,14 @@ msgstr ""
 msgid "suscripciones"
 msgstr ""
 
+#: anterior index.html
+msgid "Sweet & Coffee: giftcard y descuentos del 15%"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Sí, cuéntame cómo voy"
+msgstr ""
+
 #: anterior
 msgid "Tap"
 msgstr ""
@@ -1975,6 +2367,10 @@ msgid "Tarjeta de débito internacional"
 msgstr ""
 
 #: anterior index.html
+msgid "Tarjeta Digital"
+msgstr ""
+
+#: anterior index.html
 msgid "Tarjeta Débito Digital 1234"
 msgstr ""
 
@@ -1984,6 +2380,10 @@ msgstr ""
 
 #: anterior index.html
 msgid "Tarjetas"
+msgstr ""
+
+#: anterior index.html
+msgid "tarjetas"
 msgstr ""
 
 #: anterior index.html
@@ -2018,7 +2418,7 @@ msgstr ""
 msgid "Te deja {interes}. Decide antes si lo renuevas."
 msgstr ""
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "Te entró"
 msgstr ""
 
@@ -2028,6 +2428,10 @@ msgstr ""
 
 #: anterior
 msgid "Te falta pagar"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Te faltan {monto} al mes"
 msgstr ""
 
 #: anterior terminos.txt
@@ -2046,8 +2450,28 @@ msgstr ""
 msgid "Te pasaste en {n}"
 msgstr ""
 
+#: anterior assets/asistente.js
+msgid "Te pasaste en {n} de {t} presupuestos."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Te pasaste {monto}"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Te queda neto"
+msgstr ""
+
 #: anterior assets/contexto.js
 msgid "Te quedan <b>{saldo}</b> de tu préstamo de consumo. Vas en la cuota {n} de {de}: la próxima es de {cuota} y vence el 15 de octubre. Si pagas a tiempo, terminas en {meses} meses."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Te quedan {monto} de {total}"
+msgstr ""
+
+#: anterior assets/contexto.js
+msgid "Te recuerdo que tu próxima cuota es de {cuota} y vence el 15 de octubre. Ya llevas {n} de {de}, ¡vas muy bien!"
 msgstr ""
 
 #: anterior assets/asistente.js
@@ -2074,6 +2498,10 @@ msgstr ""
 msgid "Tienes <b>{monto}</b> preaprobados. A 36 meses, la cuota sería de unos {cuota}."
 msgstr ""
 
+#: anterior assets/asistente.js
+msgid "Tienes disponible hoy"
+msgstr ""
+
 #: anterior index.html
 msgid "Tienes un crédito preaprobado de $ 5.000."
 msgstr ""
@@ -2087,6 +2515,14 @@ msgid "Tienes {monto} preaprobados"
 msgstr ""
 
 #: anterior assets/contexto.js
+msgid "Tienes {monto} preaprobados. Antes de usarlos, te cuento que la cuota sería de unos {cuota} al mes."
+msgstr ""
+
+#: anterior assets/contexto.js
+msgid "Tienes {monto} quietos en la corriente. En un depósito al 7,25% ganarían unos {gana} al año."
+msgstr ""
+
+#: anterior assets/contexto.js
 msgid "Tienes {monto} sin ganar intereses"
 msgstr ""
 
@@ -2094,8 +2530,24 @@ msgstr ""
 msgid "Tienes {total} entre tus cuentas"
 msgstr ""
 
+#: anterior assets/contexto.js
+msgid "Tienes {total} entre tus cuentas, pero el {pct} está en la corriente y no te genera nada. ¿Vemos cómo ponerlo a ganar?"
+msgstr ""
+
 #: anterior
 msgid "Tipo"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Tipo de cliente para Analizar con Uku (demo)"
+msgstr ""
+
+#: anterior index.html
+msgid "Tips financieros"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Toca un mes para verlo."
 msgstr ""
 
 #: anterior assets/asistente.js
@@ -2104,6 +2556,10 @@ msgstr ""
 
 #: anterior assets/asistente.js
 msgid "Todo en orden"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Todo lo que tienes"
 msgstr ""
 
 #: anterior index.html
@@ -2150,7 +2606,11 @@ msgstr ""
 msgid "Tu depósito vence el 12 de noviembre"
 msgstr ""
 
-#: anterior assets/destacados.js
+#: anterior assets/contexto.js
+msgid "Tu depósito vence el 12 de noviembre y te deja {interes}. Conviene que decidas antes si lo renuevas."
+msgstr ""
+
+#: anterior
 msgid "Tu dinero puede crecer <b>{tasa}</b> mientras sigue disponible."
 msgstr ""
 
@@ -2170,6 +2630,10 @@ msgstr ""
 msgid "Tu Mastercard Black tiene {deuda} por pagar"
 msgstr ""
 
+#: anterior assets/asistente.js
+msgid "Tu Mastercard Black tiene {deuda} por pagar; la fecha máxima es el 10 de noviembre."
+msgstr ""
+
 #: anterior terminos.txt
 msgid "Tu mes"
 msgstr ""
@@ -2186,8 +2650,16 @@ msgstr ""
 msgid "Tu próxima cuota es de {cuota}"
 msgstr ""
 
-#: anterior
+#: anterior assets/asistente.js
+msgid "Tu resumen de cada mes estará listo al final del mes."
+msgstr ""
+
+#: anterior assets/asistente.js
 msgid "Tu resumen de octubre va a estar listo a inicios de noviembre."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Tu resumen de octubre va a estar listo a inicios de noviembre. ¿Quieres que te cuente cómo vas hasta ahora?"
 msgstr ""
 
 #: anterior
@@ -2222,6 +2694,10 @@ msgstr ""
 msgid "Tus gastos de septiembre"
 msgstr ""
 
+#: anterior assets/asistente.js
+msgid "Tus ingresos fueron {a}; gastaste {b} y ahorraste {c}"
+msgstr ""
+
 #: anterior terminos.txt
 msgid "Tus inversiones"
 msgstr ""
@@ -2242,6 +2718,14 @@ msgstr ""
 msgid "Tus tarjetas están protegidas contra fraude"
 msgstr ""
 
+#: anterior assets/contexto.js
+msgid "Tus tarjetas están protegidas contra fraude. Si ves un cobro raro, me avisas y te ayudo a reportarlo."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Uku es una IA y puede cometer errores. Sus sugerencias no son recomendaciones financieras."
+msgstr ""
+
 #: anterior
 msgid "Umbral"
 msgstr ""
@@ -2252,6 +2736,10 @@ msgstr ""
 
 #: anterior assets/contexto.js
 msgid "Un abono extra de <b>{monto}</b> a capital te ahorra unas {n} cuotas y los intereses de esos meses. Pide que se aplique a capital y no a la próxima cuota."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Un análisis de tus finanzas hecho con IA"
 msgstr ""
 
 #: anterior terminos.txt
@@ -2271,7 +2759,31 @@ msgid "Uso de tarjetas"
 msgstr ""
 
 #: anterior assets/asistente.js
+msgid "Vas a tiempo"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Vas a tiempo con todas tus metas."
+msgstr ""
+
+#: anterior assets/asistente.js
 msgid "Vas bien en {lista}."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Vas bien, pero a este ritmo te pasarías en {cat}."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Vas bien. Deberías terminar el mes dentro de tus presupuestos."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Vas gastando menos que en septiembre"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Vas gastando más que en septiembre"
 msgstr ""
 
 #: anterior index.html
@@ -2298,7 +2810,7 @@ msgstr ""
 msgid "Ver datos"
 msgstr ""
 
-#: anterior
+#: anterior assets/asistente.js
 msgid "Ver detalle"
 msgstr ""
 
@@ -2310,8 +2822,24 @@ msgstr ""
 msgid "Ver detalle de cuenta PRINCIPAL"
 msgstr ""
 
+#: anterior assets/asistente.js
+msgid "Ver las {n} categorías"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Ver lo que te cuenta {nombre}"
+msgstr ""
+
 #: anterior
 msgid "Ver Mis finanzas"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Ver movimientos de todas las cuentas"
+msgstr ""
+
+#: anterior index.html
+msgid "Ver más"
 msgstr ""
 
 #: anterior
@@ -2410,8 +2938,16 @@ msgstr ""
 msgid "y"
 msgstr ""
 
+#: anterior index.html
+msgid "y ahorra de manera organizada"
+msgstr ""
+
 #: anterior assets/asistente.js
 msgid "Y apenas vamos por el {pct} del mes."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "Ya te pasaste en {cat}. En lo demás, todavía tienes margen."
 msgstr ""
 
 #: anterior assets/asistente.js
@@ -2428,6 +2964,10 @@ msgstr ""
 
 #: anterior assets/asistente.js
 msgid "{banco} conectado"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "{cat} se llevó {pct} de lo que gastaste."
 msgstr ""
 
 #: anterior assets/asistente.js
@@ -2458,6 +2998,18 @@ msgstr ""
 msgid "{nombre} está escribiendo"
 msgstr ""
 
+#: anterior assets/contexto.js
+msgid "{nombre} no está en tu análisis. Si quieres que lo revise, inclúyelo en Cuentas conectadas."
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "{nombre} te acompaña"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "{nombre} te cuenta"
+msgstr ""
+
 #: anterior
 msgid "{n} cafés y antojitos"
 msgstr ""
@@ -2486,7 +3038,11 @@ msgstr ""
 msgid "{n} pago atrasado"
 msgstr ""
 
-#: anterior assets/destacados.js
+#: anterior assets/asistente.js
+msgid "{pct} ahorrado"
+msgstr ""
+
+#: anterior
 msgid "{pct} al año"
 msgstr ""
 
@@ -2495,15 +3051,31 @@ msgid "{pct} anual"
 msgstr ""
 
 #: anterior assets/asistente.js
+msgid "{pct} de tu gasto"
+msgstr ""
+
+#: anterior assets/asistente.js
 msgid "{pct} de tus ingresos"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "{pct} de {monto}"
 msgstr ""
 
 #: anterior assets/asistente.js
 msgid "{pct} del cupo"
 msgstr ""
 
+#: anterior assets/asistente.js
+msgid "{pct} usado"
+msgstr ""
+
 #: anterior index.html
 msgid "¡Bienvenido de nuevo!"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "¡Muy bien! Ahorraste {monto}"
 msgstr ""
 
 #: anterior index.html
@@ -2574,6 +3146,10 @@ msgstr ""
 msgid "¿Cómo me fue en mayo?"
 msgstr ""
 
+#: anterior index.html
+msgid "¿Cómo uso mi"
+msgstr ""
+
 #: anterior
 msgid "¿Cómo voy con mis metas?"
 msgstr ""
@@ -2598,12 +3174,20 @@ msgstr ""
 msgid "¿Me conviene un Ahorro Flexible?"
 msgstr ""
 
+#: anterior index.html
+msgid "¿No reconoces un consumo?"
+msgstr ""
+
 #: anterior
 msgid "¿Para cuántos meses me alcanza?"
 msgstr ""
 
 #: anterior terminos.txt
 msgid "¿Para cuántos viajes me alcanza la Movilidad?"
+msgstr ""
+
+#: anterior index.html
+msgid "¿Qué cubre tu"
 msgstr ""
 
 #: anterior terminos.txt
@@ -2642,11 +3226,23 @@ msgstr ""
 msgid "¿Qué quieres saber de tus tarjetas?"
 msgstr ""
 
+#: anterior assets/asistente.js
+msgid "¿Revisamos cómo te fue en {mes}?"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "¿Vemos cómo vas en {mes}?"
+msgstr ""
+
 #: anterior terminos.txt
 msgid "¿Y si abono $ 500 extra?"
 msgstr ""
 
 #: anterior
 msgid "Éxito"
+msgstr ""
+
+#: anterior assets/asistente.js
+msgid "−{monto}"
 msgstr ""
 
