@@ -46,41 +46,13 @@ function palette() {
     bg: '#1f1f1f', ground: '#2b2d33', dry: '#2f3036', trunk: '#4a4f5c', pine: ['#3c4659', '#434d61', '#4a5468'],
     round: ['#465066', '#4e586e'], rock: '#3a3c43', grass: '#434b5c', flower: '#f2d64b', dust: '#ffffff'
   } : {
-    bg: '#f6f6f5', ground: '#eceef3', dry: '#efeef0', trunk: '#c3c8d3', pine: ['#d2dae8', '#c5cfe2', '#dce3ef'],
-    round: ['#d8dfeb', '#cdd5e4'], rock: '#e1e3e8', grass: '#d0d8e6', flower: '#f2c94c', dust: '#ffffff'
+    bg: '#f6f6f5', ground: '#eef0f4', dry: '#f0eff1', trunk: '#aeb6c7', pine: ['#c9d3e6', '#b9c6de', '#d6deec'],
+    round: ['#c3cee3', '#d2dbea'], rock: '#d9dce4', grass: '#c4cee1', flower: '#f2c94c', dust: '#ffffff'
   };
 }
 /* ---------- Estilo ilustración 2D ----------
-   Sin sombreado (solo luz ambiente: colores planos) y contorno como de
-   ilustración vectorial: una copia del mesh, un poco inflada y vista por
-   dentro, en un azul muy oscuro. El ancho es fijo en el mundo, sin importar
-   la escala del objeto. */
-const INK_W = .0075;
-function inkColor() { return document.documentElement.getAttribute('data-theme') === 'dark' ? '#0d1220' : '#1b2a4e'; }
-const inkMats = [];
-function inkMat(w) {
-  const m = new THREE.MeshBasicMaterial({ color: inkColor(), side: THREE.BackSide }); // con niebla: lo lejano se aclara
-  m.onBeforeCompile = sh => {
-    sh.uniforms.inkW = { value: w || INK_W };
-    sh.vertexShader = 'uniform float inkW;\n' + sh.vertexShader.replace('#include <begin_vertex>',
-      '#include <begin_vertex>\n  transformed += normalize(normal) * (inkW / max(1e-4, length(vec3(modelMatrix[0][0], modelMatrix[0][1], modelMatrix[0][2]))));');
-  };
-  inkMats.push(m);
-  return m;
-}
-function ink(root, w) {
-  const list = [];
-  root.traverse(o => { if (o.isMesh && !o.userData.ink && !o.userData.noInk && o.geometry && o.geometry.attributes.normal) list.push(o); });
-  list.forEach(o => {
-    const m = inkMat(w);
-    const line = o.isSkinnedMesh ? new THREE.SkinnedMesh(o.geometry, m) : new THREE.Mesh(o.geometry, m);
-    if (o.isSkinnedMesh) line.bind(o.skeleton, o.bindMatrix);
-    line.userData.ink = true; line.frustumCulled = false; line.renderOrder = -1;
-    o.add(line);
-  });
-  return root;
-}
-function inkTheme() { const c = inkColor(); inkMats.forEach(m => m.color.set(c)); }
+   Colores planos, sin sombreado (solo luz ambiente) y sin contornos: los
+   elementos se separan por el tono, como en una ilustración vectorial. */
 
 /* ---------- Bosque procedural ---------- */
 // Posiciones fijas (semilla) para que el bosque no "salte" entre visitas.
@@ -195,7 +167,7 @@ function buildForest(full) {
   Object.keys(have).forEach(k => { have[k].userData.dir = want[k] ? 1 : -1; });
   Object.keys(want).forEach(k => {
     if (have[k]) return;
-    const o = ink(want[k](), .0045); o.userData.key = k; o.userData.dir = 1;
+    const o = want[k](); o.userData.key = k; o.userData.dir = 1;
     o.userData.grow = full ? 1 : 0; o.scale.setScalar(o.userData.base * (full ? 1 : .001));
     forest.add(o);
   });
@@ -286,7 +258,7 @@ function holdObject(kind) {
     held = new THREE.Mesh(new THREE.ConeGeometry(.035, .1, 4), new THREE.MeshLambertMaterial({ color: palette().pine[0], flatShading: true }));
     held.position.set(-.03, -.06, .03); held.rotation.set(-.46 + Math.PI, 0, -.4); // el tallo sale de la palma
   }
-  held && bones.hand_R.add(ink(held, .004));
+  held && bones.hand_R.add(held);
 }
 
 
@@ -393,9 +365,9 @@ function dressBear() {
   if (look.hat === 'paja') acc.add(hatPaja());
   if (look.hat === 'lana') acc.add(hatLana());
   if (look.shades) acc.add(shades());
-  ink(acc, .005); bones.head.add(acc);
+  bones.head.add(acc);
   if (umb && look.hat !== 'paraguas') { scene.remove(umb); umb.traverse(c => { c.geometry && c.geometry.dispose(); c.material && c.material.dispose(); }); umb = null; }
-  if (!umb && look.hat === 'paraguas') { umb = ink(umbrella(), .005); scene.add(umb); }
+  if (!umb && look.hat === 'paraguas') { umb = umbrella(); scene.add(umb); }
   if (bearMat) {
     const m = look.shirt === 'guayabera' ? guayabera() : baseMap;
     if (m && bearMat.map !== m) { bearMat.map = m; bearMat.needsUpdate = true; }
@@ -521,7 +493,6 @@ function init() {
         if (flat.map) { bearMat = flat; baseMap = flat.map; }
       }
     });
-    ink(bear, .006);
     bear.position.y = .45; // pies sobre el suelo (el modelo va de -0.45 a 0.45)
     bear.scale.setScalar(1);
     scene.add(bear);
@@ -554,7 +525,7 @@ function init() {
   cv.addEventListener('pointercancel', end);
   new ResizeObserver(resize).observe(document.documentElement);
   document.addEventListener('visibilitychange', () => { visible = document.visibilityState === 'visible'; });
-  new MutationObserver(() => { const p = palette(); scene.fog.color.set(p.bg); inkTheme(); buildForest(true); })
+  new MutationObserver(() => { const p = palette(); scene.fog.color.set(p.bg); buildForest(true); })
     .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   buildForest();
   buildDust();
