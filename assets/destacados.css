@@ -192,9 +192,18 @@ html.pb-masked .dw-s__m { display: inline; }
 .dw--l .dw-chart > .dw-spark { min-height: 0; }
 
 /* Huecos con sugerencias: el espacio de Destacados nunca desaparece */
-.dw-plus { display: none; }
 .is-editing .dw--sug { animation: none; cursor: default; box-shadow: 0 0 0 1px var(--cx-line); }
 .is-editing .dw--sug > .dw-h, .is-editing .dw--sug > .dw-body { opacity: .5; }
-.is-editing .dw--sug .dw-plus { display: grid; place-items: center; position: absolute; top: 8px; right: 8px; z-index: 2; width: 28px; height: 28px; border: 0; border-radius: 50%; background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #000); cursor: pointer; }
-.is-editing .dw--sug .dw-plus .material-symbols-rounded { font-size: 18px; }
 .dw-grid .dw.dw-slot { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 1.5px dashed color-mix(in srgb, currentColor 40%, transparent) !important; background: transparent !important; box-shadow: none !important; color: var(--bp-interaction-tertiary-fg); font: var(--ui-label-md, 600 14px/1 sans-serif); cursor: pointer; animation: none !important; }
+
+/* Sugerencia (slot fantasma): la × la descarta por un tiempo */
+.dw-grid .dw-dismiss { display: grid; place-items: center; position: absolute; top: 8px; right: 8px; z-index: 2; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--cx-muted); cursor: pointer; }
+.dw-grid .dw-dismiss .material-symbols-rounded { font-size: 18px; }
+.is-editing .dw--sug .dw-dismiss { background: var(--cx-ink); color: var(--cx-surface); }
+/* Cargando */
+.dw-skel { display: block; height: 12px; width: 55%; margin: 6px 0; border-radius: 6px; background: var(--cx-fill); animation: dwSkel 1.2s ease-in-out infinite; }
+.dw-skel--lg { height: 24px; width: 70%; }
+.dw-skel--sm { width: 40%; }
+@keyframes dwSkel { 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { .dw-skel { animation: none; } }
+.dw--sug .dw-h { padding-right: 28px; }
