@@ -198,7 +198,7 @@ msgstr ""
 msgid "Ahorraste {monto}"
 msgstr ""
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "Ahorraste {monto} · Salud financiera {n}"
 msgstr ""
 
@@ -750,7 +750,7 @@ msgstr ""
 msgid "En lo que más gastaste: supermercado"
 msgstr ""
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "En los primeros {n} días"
 msgstr ""
 
@@ -986,7 +986,7 @@ msgstr ""
 msgid "Gastaste"
 msgstr ""
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "Gastaste en {mes}"
 msgstr ""
 
@@ -1246,7 +1246,7 @@ msgstr ""
 msgid "Listo. Desde el próximo mes se van a pasar {monto} más a tus metas cada día 2."
 msgstr ""
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "Llevas gastado en octubre"
 msgstr ""
 
@@ -1338,7 +1338,7 @@ msgstr ""
 msgid "Mes en curso"
 msgstr ""
 
-#: assets/asistente.js
+#: anterior assets/asistente.js
 msgid "Meses"
 msgstr ""
 
@@ -2082,7 +2082,7 @@ msgstr ""
 msgid "Salud financiera"
 msgstr ""
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "Salud financiera hoy {n} · {nivel}"
 msgstr ""
 
@@ -2226,7 +2226,7 @@ msgstr ""
 msgid "Si los bajas a la mitad, te ahorras {monto} al año. Es como {n} meses de supermercado."
 msgstr ""
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "Si sigues así, cerrarías el mes en {monto}"
 msgstr ""
 
@@ -2494,7 +2494,7 @@ msgstr ""
 msgid "Temas"
 msgstr ""
 
-#: anterior index.html
+#: anterior
 msgid "Tienda"
 msgstr ""
 
@@ -3010,7 +3010,7 @@ msgstr ""
 msgid "{nombre} no está en tu análisis. Si quieres que lo revise, inclúyelo en Cuentas conectadas."
 msgstr ""
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "{nombre} te acompaña"
 msgstr ""
 

@@ -1,0 +1,82 @@
+/* Reglas sin uso quitadas de assets/finanzas.css */
+
+.pf-page--inline .pf-months .is-today { position: relative; margin-right: 12px; }
+
+.pf-page--inline .pf-months .is-today::before { content: ''; position: absolute; right: -11px; top: 8px; bottom: 8px; width: 1px; background: var(--cx-line); }
+
+.pf-say .uku-say__reply--chat { border-style: dashed; }
+
+.pf-bud2,
+.pf-cats { display: flex; flex-direction: column; margin-top: 12px; padding: 4px 20px; border-radius: var(--ui-r-card, 20px); background: var(--bp-theme-color-surface-container-default); }
+
+.pf-bud2__row,
+.pf-cats__row {
+  display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; column-gap: 12px; row-gap: 10px; align-items: center;
+  width: 100%; padding: 18px 0; border: 0; border-bottom: 1px solid var(--cx-line); background: none; color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer;
+}
+
+.pf-bud2__row:last-child,
+.pf-cats__row:last-child { border-bottom: 0; }
+
+.pf-bud2__ic { grid-row: 1 / 3; align-self: start; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--cx-fill); color: var(--bp-interaction-tertiary-fg); font-size: 22px !important; }
+
+.pf-bud2__name,
+.pf-cats__name { display: flex; flex-direction: column; gap: 2px; min-width: 0; font: var(--ui-body-md-medium); }
+
+.pf-bud2__name small,
+.pf-cats__name small { font: var(--cx-sub); color: var(--cx-muted); font-variant-numeric: tabular-nums; }
+
+.pf-bud2__state { font: var(--ui-label-md); color: var(--bp-theme-color-status-success-text, #13703b); text-align: right; font-variant-numeric: tabular-nums; }
+
+.pf-bud2__row.is-over .pf-bud2__state { color: var(--bp-theme-color-status-error-text, #c20505); }
+
+.pf-cats__row b { font: var(--ui-body-md-semibold); font-variant-numeric: tabular-nums; }
+
+.pf-bud2__row u,
+.pf-cats__row u { grid-column: 2 / 4; position: relative; display: block; height: 10px; border-radius: 99px; background: var(--cx-fill); text-decoration: none; }
+
+.pf-bud2__row u i,
+.pf-cats__row u i { display: block; height: 100%; border-radius: inherit; }
+
+.pf-bud2__row u i { background: var(--bp-theme-color-status-success-icon, #1a8a4a); }
+
+.pf-bud2__row.is-over u i { background: var(--bp-theme-color-status-error-icon, #c20505); }
+
+.pf-cats__row u i { background: var(--bp-interaction-tertiary-fg); }
+
+.pf-bud2__row u em { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--bp-theme-color-text-primary); opacity: .45; }
+
+.pf-bud2__state { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; white-space: nowrap; }
+
+.pf-bud2__state small { font: var(--cx-sub); color: inherit; opacity: .85; }
+
+.pf-bud2__name small { white-space: nowrap; }
+
+.pf-uku2__chat { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 44px; margin-top: 12px; border: 1px solid var(--cx-line); border-radius: 99px; background: none; color: var(--bp-interaction-tertiary-fg); font: var(--ui-label-md); cursor: pointer; }
+
+.pf-uku2__chat .material-symbols-rounded { font-size: 20px; }
+
+.dw-ic,
+.dw-stack__ic {
+  background: var(--bp-theme-color-avatar-bg) !important; color: var(--bp-theme-color-avatar-fg) !important;
+}
+
+.pf-sum__stats b.is-neg,
+.pf-prod__val b.is-neg { color: inherit !important; }
+.pf-page--inline .pf-months { gap: var(--bp-semantic-spacing-micro-md, 8px); }
+
+.pf-page--inline .pf-months button {
+  flex: 0 0 auto; min-width: 0; height: 40px; padding: 0 16px; border-radius: 99px;
+  background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-secondary);
+  font: var(--ui-label-md, 600 15px/20px sans-serif);
+}
+
+.pf-page--inline .pf-months button[aria-selected="true"] { background: var(--bp-interaction-tertiary-fg); color: var(--bp-theme-color-text-on-solid, #fff); }
+
+.pf-page--inline .pf-months button[aria-selected="true"] { color: var(--bp-theme-color-surface-container-default) !important; }
+
+.pf-ins__ic,
+.pf-ins--warn .pf-ins__ic,
+.pf-ins--good .pf-ins__ic {
+  background: var(--bp-theme-color-avatar-bg) !important; color: var(--bp-theme-color-avatar-fg) !important;
+}

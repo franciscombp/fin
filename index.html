@@ -239,20 +239,6 @@
             margin: 0 auto;
         }
 
-        /* El home "recede" (encoge y se oscurece un poco) mientras el detalle
-           de tarjeta está abierto/animando, como si esa pantalla se hubiera
-           levantado del stack — se asoma un instante detrás de la wallet
-           durante el fade de apertura/cierre y refuerza la sensación de
-           profundidad, en vez de que el home simplemente desaparezca tapado. */
-        #home-page {
-            transition: scale 0.42s cubic-bezier(0.32, 0.72, 0, 1), filter 0.42s ease;
-        }
-
-        body.card-detail-active #home-page {
-            scale: 0.97;
-            filter: brightness(0.94) saturate(0.96);
-        }
-
         /* ---------- Header sticky ---------- */
         /* El padding-top con el safe-area vive en .header (sin alto fijo) para
            que rellene la zona del status bar/notch con el color de fondo. Si se
@@ -434,42 +420,19 @@
             cursor: pointer;
         }
 
-        .home-banner__figure {
-            position: absolute;
-            right: -20px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            filter: blur(2px);
-        }
-
         .home-banner__slide--1 {
             background: radial-gradient(120% 140% at 88% -12%, rgba(255, 255, 255, 0.16), transparent 55%),
                         linear-gradient(135deg, #23232b 0%, #313139 55%, #101014 100%);
-        }
-        .home-banner__slide--1 .home-banner__figure {
-            background: radial-gradient(circle at 35% 35%, #fcd000, #f76800 70%, transparent 100%);
-            opacity: 0.85;
         }
 
         .home-banner__slide--2 {
             background: radial-gradient(120% 140% at 88% -12%, rgba(255, 255, 255, 0.14), transparent 55%),
                         linear-gradient(135deg, #0f265c 0%, #1c3f8f 60%, #0a1a40 100%);
         }
-        .home-banner__slide--2 .home-banner__figure {
-            background: radial-gradient(circle at 35% 35%, #7fb3ff, #2f7abf 70%, transparent 100%);
-            opacity: 0.8;
-        }
 
         .home-banner__slide--3 {
             background: radial-gradient(120% 140% at 88% -12%, rgba(255, 255, 255, 0.14), transparent 55%),
                         linear-gradient(135deg, #1e9e5a 0%, #0f7a4d 60%, #06331f 100%);
-        }
-        .home-banner__slide--3 .home-banner__figure {
-            background: radial-gradient(circle at 35% 35%, #baf7d3, #1e9e5a 70%, transparent 100%);
-            opacity: 0.8;
         }
 
         .home-banner__text {
@@ -832,18 +795,8 @@
            dejaba de tener sentido y sólo se veía como una mancha borrosa
            sin motivo en la parte baja de la tarjeta. */
 
-
         /* ---------- Microinteracciones táctiles (ver haptics.js) ---------- */
-        .fx-clip { overflow: hidden; }
-        .fx-ripple {
-            position: absolute;
-            border-radius: 50%;
-            background: currentColor;
-            opacity: 0.14;
-            transform: scale(0);
-            pointer-events: none;
-            animation: fxRipple 0.5s ease-out forwards;
-        }
+
         @keyframes fxRipple {
             to { transform: scale(1); opacity: 0; }
         }
@@ -886,7 +839,7 @@
         }
         @keyframes fxRing { 0% { transform: scale(0.8); opacity: 0.6; } 100% { transform: scale(1.8); opacity: 0; } }
         @media (prefers-reduced-motion: reduce) {
-            .fx-ripple, .fx-shake, .push-chip.is-selected, .push-transfer-success__icon::after { animation: none; }
+            .fx-shake, .push-chip.is-selected, .push-transfer-success__icon::after { animation: none; }
         }
 
         /* ---------- Quick actions ---------- */
@@ -1037,48 +990,7 @@
             color: var(--bp-status-info-bg);
         }
 
-        .tag--warning {
-            background: var(--bp-status-warning-bg-subtle);
-            color: var(--bp-status-warning-bg);
-        }
-
         /* ---------- Widget cuenta flexible ---------- */
-        .widget-body {
-            display: grid;
-            grid-template-columns: 3.75fr 2.25fr;
-            gap: 12px 16px;
-            padding: 0 16px 16px;
-        }
-
-        .widget-body__text {
-            font-size: 14px;
-            color: var(--bp-text-secondary);
-            line-height: 1.4;
-        }
-
-        .amount-trend {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            margin-top: 12px;
-        }
-
-        .amount-trend__value {
-            font-size: 24px;
-            font-weight: 600;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .amount-trend .material-symbols-rounded {
-            color: var(--bp-theme-color-data-positive, #218c3b);
-            font-size: 24px;
-        }
-
-        .chart {
-            align-self: end;
-            width: 100%;
-            height: 72px;
-        }
 
         /* ---------- Paneles de sección (Destacado, Cuentas, Tarjetas…) ---------- */
         .tab-panel { display: none; }
@@ -2041,61 +1953,7 @@
             display: block;
         }
 
-        /*
-         * La pantalla completa "nace" desde la tarjeta destacada, como una
-         * wallet que se abre: crece y sube desde el origen --cd-origin-x/y
-         * (fijado por JS a la posición real de la tarjeta) en vez de un fade
-         * plano sin relación con el elemento que la abrió. Duración y curva
-         * calzan exactamente con el morph "reveal" de la tarjeta compartida
-         * (ver morphMetrics en el script) para que todo —panel, tarjeta y
-         * contenido— llegue a su lugar al mismo tiempo.
-         *
-         * Anima `scale`/`translate` (propiedades individuales, no el
-         * shorthand `transform`) a propósito: deja `transform` libre para
-         * quien lo necesite sin pisar esta animación de entrada.
-         * Cuando SÍ hay tarjeta para hacer morph (el caso normal), el panel
-         * sólo se desvanece (opacity) — el propio #cd-card ya hace su
-         * translate/clip-path hacia el origen (ver openCardDetail). Antes el
-         * panel completo TAMBIÉN escalaba/trasladaba (cdGrowIn/cdShrinkOut)
-         * al mismo tiempo que la tarjeta hacía su propio movimiento: dos
-         * animaciones de transform compitiendo con curvas de easing
-         * distintas, sobre todo notorio al cerrar (se sentía doble/tosco).
-         * cdGrowIn/cdShrinkOut (con scale+translate) quedan sólo para
-         * .no-morph: el respaldo cuando no hay tarjeta visible que animar.
-         */
-        .card-detail.entering {
-            transform-origin: var(--cd-origin-x, 50%) var(--cd-origin-y, 15%);
-            animation: cdFadeIn 0.5s cubic-bezier(0.32, 0.72, 0, 1);
-        }
-        .card-detail.entering.no-morph {
-            animation: cdGrowIn 0.5s cubic-bezier(0.32, 0.72, 0, 1);
-        }
-
-        @keyframes cdFadeIn {
-            from { opacity: 0; }
-            to   { opacity: 1; }
-        }
-        @keyframes cdGrowIn {
-            from { opacity: 0; scale: 0.94; translate: 0 10px; }
-            to   { opacity: 1; scale: 1; translate: 0 0; }
-        }
-
-        .card-detail.closing {
-            transform-origin: var(--cd-origin-x, 50%) var(--cd-origin-y, 15%);
-            animation: cdFadeOut 0.42s cubic-bezier(0.4, 0, 1, 1) forwards;
-        }
-        .card-detail.closing.no-morph {
-            animation: cdShrinkOut 0.42s cubic-bezier(0.4, 0, 1, 1) forwards;
-        }
-
-        @keyframes cdFadeOut {
-            from { opacity: 1; }
-            to   { opacity: 0; }
-        }
-        @keyframes cdShrinkOut {
-            from { opacity: 1; scale: 1; translate: 0 0; }
-            to   { opacity: 0; scale: 0.94; translate: 0 10px; }
-        }
+        /* Entrada y salida: las mismas de todas las pantallas (sistema.css) */
 
         .cd-inner {
             max-width: 480px;
@@ -2392,72 +2250,6 @@
             cursor: text;
         }
 
-        /* Apertura/cierre por "extrapolación": la tarjeta se anima con JS
-           (reveal) desde/hacia la tarjeta de Destacados (ver cdCard más
-           abajo). El título (arriba de la tarjeta) y la barra colapsable no
-           sólo se desvanecen: suben un poco al aparecer, para sentirse parte
-           del mismo movimiento que trae la tarjeta y no un fade suelto. */
-        .cd-title,
-        .card-detail .detail-topbar {
-            transition: opacity 0.32s ease, transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-
-        .card-detail.morphing .cd-title,
-        .card-detail.morphing .detail-topbar {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-
-        /* .cd-content va DEBAJO de la tarjeta en el flujo normal: mientras
-           cdCard anima su alto real (ver JS), el layout ya lo empuja hacia
-           abajo de forma natural — sumarle además un translateY propio aquí
-           duplicaría el movimiento. Sólo se desvanece. */
-        .cd-content {
-            transition: opacity 0.32s ease;
-        }
-
-        .card-detail.morphing .cd-content {
-            opacity: 0;
-        }
-
-        .cd-card__row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-
-        .cd-visa {
-            font-style: italic;
-            font-weight: 800;
-            font-size: 26px;
-            letter-spacing: 0.5px;
-        }
-
-        .cd-card__number {
-            font-size: 16px;
-            font-weight: 600;
-            letter-spacing: 2px;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .cd-card__footer {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 10px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .cd-visa--sm { font-size: 16px; }
-
-        .cd-divider {
-            width: 1px;
-            height: 18px;
-            background: var(--bp-text-brand);
-            opacity: 0.5;
-        }
-
         .cd-actions {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -2512,7 +2304,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
+            background: var(--bp-theme-color-avatar-bg);
+            color: var(--bp-theme-color-avatar-fg);
             font-weight: 800;
             font-size: 13px;
         }
@@ -2697,12 +2490,6 @@
             color: var(--bp-text-brand);
         }
 
-        .login-feature__icon--deuna {
-            font-weight: 800;
-            font-style: italic;
-            color: var(--bp-text-interactive);
-        }
-
         /* Acciones: 4 columnas, mismo estilo que Destacado */
         .login-qa {
             display: grid;
@@ -2753,17 +2540,6 @@
 
         .login-button--primary:active {
             transform: scale(0.97);
-        }
-
-        .login-button--secondary {
-            background: transparent;
-            color: var(--bp-text-secondary);
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .login-button--secondary:active {
-            opacity: 0.7;
         }
 
         /* ---------- Splash de bienvenida (amarillo) ---------- */
@@ -2847,19 +2623,6 @@
             visibility: visible;
             transition: transform 0.36s cubic-bezier(0.32, 0.72, 0, 1),
                         visibility 0s;
-        }
-
-        /* Apertura "creciendo" desde el botón (quick actions) */
-        .push-page.grow {
-            transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-                        opacity 0.28s ease,
-                        visibility 0s;
-        }
-
-        .push-page.grow.closing-grow {
-            transition: transform 0.32s cubic-bezier(0.4, 0, 1, 1),
-                        opacity 0.26s ease,
-                        visibility 0s linear 0.32s;
         }
 
         .push-page__inner {
@@ -2975,7 +2738,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
+            background: var(--bp-theme-color-avatar-bg);
+            color: var(--bp-theme-color-avatar-fg);
             font-weight: 700;
             font-size: 17px;
         }
@@ -3220,8 +2984,7 @@
         }
 
         .finance-networth strong { color: var(--bp-status-warning-bg); font-weight: 700; }
-        .finance-networth.is-positive { background: rgba(30, 158, 90, 0.12); }
-        .finance-networth.is-positive strong { color: var(--bp-theme-color-data-positive, #218c3b); }
+
         .finance-networth .material-symbols-rounded { font-size: 18px; }
 
         #push-cta { margin-top: 8px; }
@@ -3561,7 +3324,6 @@
             }
         }
 
-
         /* ---------- Microinteracciones fluidas ---------- */
         /* Presión suave en superficies tocables: baja rápido, vuelve con resorte */
         .card, .account-card, .list-item, .product-row, .promo, .grow-cta__btn, .home-banner__cta, .section__link {
@@ -3660,7 +3422,7 @@
         .home-banner__slide--1 { background: linear-gradient(135deg, var(--bp-theme-color-surface-brand-subtle, #fff8cc) 0%, var(--bp-base-color-amber-100, #fff3cd) 100%); }
         .home-banner__slide--2 { background: linear-gradient(135deg, var(--bp-base-color-sky-100, #d5e4f2) 0%, var(--bp-base-color-sky-50, #eaf1f8) 100%); }
         .home-banner__slide--3 { background: linear-gradient(135deg, var(--bp-base-color-green-100, #daeedf) 0%, var(--bp-base-color-green-50, #ecf6ee) 100%); }
-        .home-banner__figure { opacity: 0.55; width: 120px; height: 120px; right: -24px; }
+        
         .home-banner__text {
             max-width: 60%;
             justify-content: space-between;
@@ -3763,28 +3525,7 @@
             align-items: flex-start;
             padding: 16px;
         }
-        .promo .promo__title {
-            font-size: 14px;
-            line-height: 20px;
-            font-weight: 500;
-            text-shadow: none;
-        }
-        .promo .promo__go {
-            position: absolute;
-            right: 12px;
-            bottom: 12px;
-            width: 32px;
-            height: 32px;
-            border-radius: var(--bp-semantic-radius-sm, 8px);
-            background: rgb(255 255 255 / 0.24);
-            -webkit-backdrop-filter: blur(8px);
-            backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1;
-        }
-        .promo .promo__go .material-symbols-rounded { font-size: 20px; }
+
         .promo--1 { background: radial-gradient(90% 60% at 70% 85%, rgb(255 190 80 / 0.55), transparent 70%), linear-gradient(160deg, #ff5a1f 0%, #ff3d00 100%); }
         .promo--2 { background: radial-gradient(90% 60% at 70% 85%, rgb(190 130 80 / 0.55), transparent 70%), linear-gradient(160deg, #1d5a40 0%, #0f3d2a 100%); }
         .promo--3 { background: radial-gradient(90% 60% at 70% 85%, rgb(255 200 220 / 0.55), transparent 70%), linear-gradient(160deg, #ff7eb6 0%, #e0409a 100%); }
@@ -3865,7 +3606,6 @@
         html.theme-y2k .quick-action__label,
         html.theme-y2k .login-button,
         html.theme-y2k .logout-btn,
-        html.theme-y2k .placeholder-view h1,
         html.theme-y2k .list-item__title {
             font-family: 'Anton', 'Roboto', sans-serif;
             text-transform: uppercase;
@@ -3879,7 +3619,6 @@
         html.theme-y2k .quick-action__label { font-size: 11px; }
         html.theme-y2k .login-button,
         html.theme-y2k .logout-btn { font-size: 15px; letter-spacing: 0.5px; }
-        html.theme-y2k .placeholder-view h1 { font-size: 21px; }
         html.theme-y2k .list-item__title { font-size: 14px; }
 
         /* El monto grande y los títulos hero de pantalla completa sí usan
@@ -4290,14 +4029,22 @@
                 <button class="profile-story" aria-label="Perfil de Francisco">
                     <span class="profile-story__inner"><img width="24" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAMKADAAQAAAABAAAAMAAAAADbN2wMAAABdElEQVRoBe1ZsWoCQRCdveQDjvyAir0EbFPY2pk+kO+wM6WfYBnIB6QQUliIfyBYq9em8wfMObt4x4GyBz50nDAHi97tvpl57+3sgbp8TTkpvhLFtYfSjYC0g+aAOQAqoH4LPYIC1MLT/lvtmtiC3c9XbJrUO2AEov7eYNIcuIHI0RTqHbj6MTodz6IKrjZPNJx0o2tik1cn8NL5jeWH59RvISMA7wEwgDkACgjDzQFYQjCAs9+FQAVRuPUAqiCKNwdQBVG8OYAqiOL/hQM7VAVJvHcgkywAze0JLNAgkviE/yFbShaA5k7ogb45iNo+SFwrFP+JKiGFdz5xvqUm/dFWqggkb3gPsAsZE/hAAklhgwM+ObuQckPPeTxLFXNJ3vJNHHrB0SsHyS4JJIUpHSgKOPbDnO+bxbN7/jwh4IvVRKLcQlWVfVO7NrU0NPZZB6pkght7GpGj9+rze/leS6AoNJxSe+rx/YBHgwn50yrlIXodAAqmNsvMgaiDAAAAAElFTkSuQmCC" alt=""></span>
                 </button>
+                <!-- Título pequeño de la sección: aparece cuando el título grande
+                     sube detrás de la barra (patrón de títulos grandes de iOS) -->
+                <p class="top-bar__title" aria-hidden="true"></p>
+                <!-- Acciones según la sección (data-in = vistas donde se muestran):
+                     una sola fila de acciones, nunca otra dentro del contenido -->
                 <div class="top-bar__actions">
-                    <button class="icon-button" aria-label="Buscar" data-action="Buscar">
+                    <button class="icon-button" aria-label="Buscar" data-action="Buscar" data-in="0 1 2">
                         <span class="material-symbols-rounded">search</span>
                     </button>
-                    <button class="icon-button" aria-label="Notificaciones" data-action="Notificaciones">
+                    <button class="icon-button" aria-label="Ajustes" data-top="pf-settings" data-in="1" hidden>
+                        <span class="material-symbols-rounded">tune</span>
+                    </button>
+                    <button class="icon-button" aria-label="Notificaciones" data-action="Notificaciones" data-in="0 4">
                         <span class="material-symbols-rounded">notifications</span>
                     </button>
-                    <button class="icon-button" aria-label="Soporte" data-action="Soporte">
+                    <button class="icon-button" aria-label="Soporte" data-action="Soporte" data-in="0 4">
                         <span class="material-symbols-rounded">headset_mic</span>
                     </button>
                 </div>
@@ -5096,15 +4843,8 @@
             </div>
         </div>
 
-        <div class="view placeholder-view" data-view="3">
-            <h1>Tienda</h1>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-        </div>
-
         <div class="view" data-view="4">
+            <h1 class="view-title">Perfil</h1>
             <section class="section">
                 <div class="profile-head">
                     <span class="profile-head__avatar">FM</span>
@@ -5393,7 +5133,7 @@
 
                 <div class="cd-subs">
                     <button class="sub-item" data-action="Uber Eats">
-                        <span class="sub-item__logo" style="background:#06C167; font-size:9px; line-height:1.1;">Uber<br>Eats</span>
+                        <span class="sub-item__logo" style="font-size:9px; line-height:1.1;">Uber<br>Eats</span>
                         <span class="sub-item__info">
                             <span class="sub-item__name">Uber Eats</span>
                             <div class="sub-item__meta">Se renueva el 11 de abril</div>
@@ -5401,7 +5141,7 @@
                         <span class="sub-item__price">$ 4,99</span>
                     </button>
                     <button class="sub-item" data-action="Spotify">
-                        <span class="sub-item__logo" style="background:#1DB954;"><span class="material-symbols-rounded">graphic_eq</span></span>
+                        <span class="sub-item__logo"><span class="material-symbols-rounded">graphic_eq</span></span>
                         <span class="sub-item__info">
                             <span class="sub-item__name">Spotify</span>
                             <div class="sub-item__meta">Se renueva el 16 de mayo</div>
@@ -5409,7 +5149,7 @@
                         <span class="sub-item__price">$ 5,99</span>
                     </button>
                     <button class="sub-item" data-action="Disney+ Premium">
-                        <span class="sub-item__logo" style="background:#0e2a5c;">D+</span>
+                        <span class="sub-item__logo">D+</span>
                         <span class="sub-item__info">
                             <span class="sub-item__name">Disney+ Premium</span>
                             <div class="sub-item__meta">Se renueva el 1 de octubre</div>
@@ -5417,7 +5157,7 @@
                         <span class="sub-item__price">$ 13,99</span>
                     </button>
                     <button class="sub-item" data-action="Netflix">
-                        <span class="sub-item__logo" style="background:#E50914;">N</span>
+                        <span class="sub-item__logo">N</span>
                         <span class="sub-item__info">
                             <span class="sub-item__name">Netflix</span>
                             <div class="sub-item__meta">Se renueva el 5 de octubre</div>
@@ -5425,7 +5165,7 @@
                         <span class="sub-item__price">$ 10,99</span>
                     </button>
                     <button class="sub-item" data-action="YouTube Premium">
-                        <span class="sub-item__logo" style="background:#FF0000;"><span class="material-symbols-rounded">play_arrow</span></span>
+                        <span class="sub-item__logo"><span class="material-symbols-rounded">play_arrow</span></span>
                         <span class="sub-item__info">
                             <span class="sub-item__name">YouTube Premium</span>
                             <div class="sub-item__meta">Se renueva el 9 de octubre</div>
@@ -5433,7 +5173,7 @@
                         <span class="sub-item__price">$ 11,99</span>
                     </button>
                     <button class="sub-item" data-action="iCloud+">
-                        <span class="sub-item__logo" style="background:#3693f3;"><span class="material-symbols-rounded">cloud</span></span>
+                        <span class="sub-item__logo"><span class="material-symbols-rounded">cloud</span></span>
                         <span class="sub-item__info">
                             <span class="sub-item__name">iCloud+</span>
                             <div class="sub-item__meta">Se renueva el 14 de octubre</div>
@@ -5441,7 +5181,7 @@
                         <span class="sub-item__price">$ 2,99</span>
                     </button>
                     <button class="sub-item" data-action="Gympass">
-                        <span class="sub-item__logo" style="background:#f76800;"><span class="material-symbols-rounded">exercise</span></span>
+                        <span class="sub-item__logo"><span class="material-symbols-rounded">exercise</span></span>
                         <span class="sub-item__info">
                             <span class="sub-item__name">Gympass</span>
                             <div class="sub-item__meta">Se renueva el 20 de octubre</div>
@@ -5453,17 +5193,17 @@
                 <h2 class="cd-subtitle">Beneficios de tu tarjeta</h2>
                 <div class="cd-subs">
                     <button class="sub-item" data-action="Millas">
-                        <span class="sub-item__logo" style="background:var(--bp-icon-solid-bg);"><span class="material-symbols-rounded">flight</span></span>
+                        <span class="sub-item__logo"><span class="material-symbols-rounded">flight</span></span>
                         <span class="sub-item__info"><span class="sub-item__name">Acumula millas</span><span class="sub-item__meta">1 milla por cada $1</span></span>
                         <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
                     </button>
                     <button class="sub-item" data-action="Seguro de compras">
-                        <span class="sub-item__logo" style="background:#0f7a4d;"><span class="material-symbols-rounded">verified_user</span></span>
+                        <span class="sub-item__logo"><span class="material-symbols-rounded">verified_user</span></span>
                         <span class="sub-item__info"><span class="sub-item__name">Seguro de compras</span><span class="sub-item__meta">Protección 90 días</span></span>
                         <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
                     </button>
                     <button class="sub-item" data-action="Salas VIP">
-                        <span class="sub-item__logo" style="background:#8e44ad;"><span class="material-symbols-rounded">weekend</span></span>
+                        <span class="sub-item__logo"><span class="material-symbols-rounded">weekend</span></span>
                         <span class="sub-item__info"><span class="sub-item__name">Salas VIP aeropuerto</span><span class="sub-item__meta">2 accesos al año</span></span>
                         <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
                     </button>
@@ -5787,23 +5527,23 @@
 
         // Movimientos de ejemplo para dar contenido (y poder hacer scroll)
         const movData = [
-            ['shopping_cart', 'Supermaxi', 'Hoy · 10:24', '-$ 48,30', '#276db6'],
-            ['local_cafe', 'Sweet & Coffee', 'Hoy · 08:12', '-$ 4,75', '#7a4a2b'],
-            ['directions_bus', 'Recarga transporte', 'Ayer · 19:40', '-$ 5,00', '#0f7a4d'],
-            ['account_balance', 'Transferencia recibida', 'Ayer · 15:03', '+$ 320,00', '#1e9e5a'],
-            ['bolt', 'Empresa Eléctrica', '12 may · 09:00', '-$ 24,80', '#f76800'],
-            ['smartphone', 'Recarga Claro', '11 may · 21:15', '-$ 10,00', '#c0392b'],
-            ['restaurant', 'La Petite', '10 may · 21:48', '-$ 62,10', '#8e44ad'],
-            ['fitness_center', 'Smart Fit', '10 may · 07:30', '-$ 29,90', '#276db6'],
-            ['local_gas_station', 'Primax', '9 may · 18:22', '-$ 40,00', '#e67e22'],
-            ['redeem', 'Cashback', '8 may · 12:00', '+$ 6,04', '#1e9e5a'],
-            ['shopping_bag', 'De Prati', '7 may · 16:41', '-$ 89,90', '#2c3e50'],
-            ['movie', 'Cinemark', '6 may · 20:10', '-$ 14,50', '#c0392b']
+            ['shopping_cart', 'Supermaxi', 'Hoy · 10:24', '-$ 48,30'],
+            ['local_cafe', 'Sweet & Coffee', 'Hoy · 08:12', '-$ 4,75'],
+            ['directions_bus', 'Recarga transporte', 'Ayer · 19:40', '-$ 5,00'],
+            ['account_balance', 'Transferencia recibida', 'Ayer · 15:03', '+$ 320,00'],
+            ['bolt', 'Empresa Eléctrica', '12 may · 09:00', '-$ 24,80'],
+            ['smartphone', 'Recarga Claro', '11 may · 21:15', '-$ 10,00'],
+            ['restaurant', 'La Petite', '10 may · 21:48', '-$ 62,10'],
+            ['fitness_center', 'Smart Fit', '10 may · 07:30', '-$ 29,90'],
+            ['local_gas_station', 'Primax', '9 may · 18:22', '-$ 40,00'],
+            ['redeem', 'Cashback', '8 may · 12:00', '+$ 6,04'],
+            ['shopping_bag', 'De Prati', '7 may · 16:41', '-$ 89,90'],
+            ['movie', 'Cinemark', '6 may · 20:10', '-$ 14,50']
         ];
         function renderMovs() {
             pushMovs.innerHTML = movData.map(m => `
                 <button class="sub-item" data-action="${m[1]}">
-                    <span class="sub-item__logo" style="background:${m[4]};"><span class="material-symbols-rounded">${m[0]}</span></span>
+                    <span class="sub-item__logo"><span class="material-symbols-rounded">${m[0]}</span></span>
                     <span class="sub-item__info"><span class="sub-item__name">${m[1]}</span><span class="sub-item__meta">${m[2]}</span></span>
                     <span class="sub-item__price" style="color:${m[3][0] === '+' ? 'var(--bp-theme-color-data-positive)' : 'var(--bp-text-primary)'};">${m[3]}</span>
                 </button>`).join('');
@@ -5825,8 +5565,8 @@
             title: 'Resumen',
             stats: [
                 ['schedule', 'Disponible', 'Actualizado hoy', '$ 1.906,04', 'var(--bp-icon-solid-bg)'],
-                ['trending_up', 'Ingresos del mes', 'Mayo 2026', '$ 2.430,00', '#1e9e5a'],
-                ['trending_down', 'Gastos del mes', 'Mayo 2026', '$ 1.284,45', '#f76800'],
+                ['trending_up', 'Ingresos del mes', 'Mayo 2026', '$ 2.430,00'],
+                ['trending_down', 'Gastos del mes', 'Mayo 2026', '$ 1.284,45'],
             ],
         };
 
@@ -5838,45 +5578,45 @@
         const PRODUCT_DETAILS = {
             'Cuenta Ahorro transaccional': { icon: 'account_balance_wallet', stats: [
                 ['account_balance_wallet', 'Saldo disponible', '******7980', '$ 100,00', 'var(--bp-icon-solid-bg)'],
-                ['trending_up', 'Interés generado', 'Este mes', '$ 0,42', '#1e9e5a'],
+                ['trending_up', 'Interés generado', 'Este mes', '$ 0,42'],
             ]},
             'Cuenta Corriente': { icon: 'payments', stats: [
                 ['account_balance_wallet', 'Saldo disponible', '******1234', '$ 1.440,35', 'var(--bp-icon-solid-bg)'],
-                ['trending_down', 'Gastos del mes', 'Mayo 2026', '$ 812,40', '#f76800'],
+                ['trending_down', 'Gastos del mes', 'Mayo 2026', '$ 812,40'],
             ]},
             'Visa Débito': { icon: 'credit_card', stats: [
                 ['account_balance_wallet', 'Cuenta asociada', 'Sueldo ******1234', '', 'var(--bp-icon-solid-bg)'],
-                ['point_of_sale', 'Consumo del mes', 'Mayo 2026', '$ 312,45', '#f76800'],
+                ['point_of_sale', 'Consumo del mes', 'Mayo 2026', '$ 312,45'],
             ]},
             'Mastercard Black': { icon: 'credit_card', stats: [
-                ['account_balance_wallet', 'Cupo disponible', 'De $ 5.000,00', '$ 4.985,00', '#1e9e5a'],
-                ['event', 'Saldo a pagar', 'Corte: 28 de cada mes', '$ 15,00', '#f76800'],
+                ['account_balance_wallet', 'Cupo disponible', 'De $ 5.000,00', '$ 4.985,00'],
+                ['event', 'Saldo a pagar', 'Corte: 28 de cada mes', '$ 15,00'],
                 ['calendar_today', 'Fecha límite de pago', '', '05 jun', 'var(--bp-icon-solid-bg)'],
             ]},
             'Diners Club': { icon: 'credit_card', stats: [
-                ['account_balance_wallet', 'Cupo disponible', 'De $ 2.000,00', '$ 2.000,00', '#1e9e5a'],
+                ['account_balance_wallet', 'Cupo disponible', 'De $ 2.000,00', '$ 2.000,00'],
                 ['event', 'Saldo a pagar', 'Corte: 28 de cada mes', '$ 0,00', 'var(--bp-icon-solid-bg)'],
             ]},
             'Tarjeta Movilidad': { icon: 'directions_bus', stats: [
                 ['account_balance_wallet', 'Saldo', 'Transporte y peajes', '$ 8,50', 'var(--bp-icon-solid-bg)'],
             ]},
             'Préstamo de consumo': { icon: 'real_estate_agent', stats: [
-                ['account_balance', 'Saldo pendiente', 'De $ 9.000,00 originales', '$ 7.380,50', '#f76800'],
+                ['account_balance', 'Saldo pendiente', 'De $ 9.000,00 originales', '$ 7.380,50'],
                 ['event', 'Próxima cuota', 'Cuota 6 de 36', '$ 245,90', 'var(--bp-icon-solid-bg)'],
                 ['calendar_today', 'Fecha de pago', '', '05 jun', 'var(--bp-icon-solid-bg)'],
             ]},
             'Depósito a plazo': { icon: 'trending_up', stats: [
                 ['savings', 'Capital invertido', 'Tasa 7,25% anual', '$ 3.000,00', 'var(--bp-icon-solid-bg)'],
-                ['trending_up', 'Interés proyectado', 'Al vencimiento', '$ 217,50', '#1e9e5a'],
+                ['trending_up', 'Interés proyectado', 'Al vencimiento', '$ 217,50'],
                 ['event', 'Vencimiento', '', '12 nov 2026', 'var(--bp-icon-solid-bg)'],
             ]},
             'Seguro de vida': { icon: 'health_and_safety', stats: [
                 ['payments', 'Prima mensual', 'Débito automático', '$ 12,90', 'var(--bp-icon-solid-bg)'],
-                ['event', 'Próxima renovación', '', '01 ene 2027', '#1e9e5a'],
+                ['event', 'Próxima renovación', '', '01 ene 2027'],
             ]},
             'Seguro de tarjetas': { icon: 'shield', stats: [
                 ['payments', 'Prima mensual', 'Débito automático', '$ 3,50', 'var(--bp-icon-solid-bg)'],
-                ['verified_user', 'Cobertura', 'Fraude y clonación', 'Activa', '#1e9e5a'],
+                ['verified_user', 'Cobertura', 'Fraude y clonación', 'Activa'],
             ]},
         };
 
@@ -5910,8 +5650,8 @@
         const FAKE_QR_SVG = buildFakeQR();
 
         const BENEFICIARIES = [
-            ['MJ', 'María José', '#276db6', '4521'], ['CA', 'Carlos A.', '#1e9e5a', '7734'],
-            ['LP', 'Luis P.', '#8e44ad', '2290'], ['SG', 'Sofía G.', '#e67e22', '6015'], ['DR', 'Diego R.', '#c0392b', '3348'],
+            ['MJ', 'María José', '4521'], ['CA', 'Carlos A.', '7734'],
+            ['LP', 'Luis P.', '2290'], ['SG', 'Sofía G.', '6015'], ['DR', 'Diego R.', '3348'],
         ];
         const TRANSFER_AMOUNT_CHIPS = [20, 50, 100, 200];
         // Cada servicio se puede pagar identificándose de más de una forma
@@ -5920,23 +5660,23 @@
         // sólo mostraba un toast); ahora cada uno abre su propio formulario
         // con un selector de tipo de identificación + el campo que corresponda.
         const SERVICE_BILLERS = [
-            { icon: 'bolt', name: 'Empresa Eléctrica Quito', category: 'Luz', color: '#f76800', idTypes: [
+            { icon: 'bolt', name: 'Empresa Eléctrica Quito', category: 'Luz', idTypes: [
                 { label: 'Número de cuenta', placeholder: 'Ej. 123456789', hint: 'Está en la parte superior de tu factura' },
                 { label: 'Número de medidor', placeholder: 'Ej. 8814452', hint: 'Código impreso en el medidor' },
             ] },
-            { icon: 'water_drop', name: 'EPMAPS', category: 'Agua potable', color: '#2f7abf', idTypes: [
+            { icon: 'water_drop', name: 'EPMAPS', category: 'Agua potable', idTypes: [
                 { label: 'Código de cuenta', placeholder: 'Ej. 445120', hint: '' },
                 { label: 'Cédula del titular', placeholder: 'Ej. 1712345678', hint: '' },
             ] },
-            { icon: 'wifi', name: 'CNT Internet', category: 'Internet y TV', color: '#8e44ad', idTypes: [
+            { icon: 'wifi', name: 'CNT Internet', category: 'Internet y TV', idTypes: [
                 { label: 'Número de contrato', placeholder: 'Ej. CNT-00234511', hint: '' },
                 { label: 'Teléfono asociado', placeholder: 'Ej. 022345678', hint: '' },
             ] },
-            { icon: 'smartphone', name: 'Claro', category: 'Plan celular', color: '#c0392b', idTypes: [
+            { icon: 'smartphone', name: 'Claro', category: 'Plan celular', idTypes: [
                 { label: 'Número de línea', placeholder: 'Ej. 0991234567', hint: '' },
                 { label: 'Cédula del titular', placeholder: 'Ej. 1712345678', hint: '' },
             ] },
-            { icon: 'home_work', name: 'Municipio de Quito', category: 'Predios e impuestos', color: '#1e9e5a', idTypes: [
+            { icon: 'home_work', name: 'Municipio de Quito', category: 'Predios e impuestos', idTypes: [
                 { label: 'Número de predio', placeholder: 'Ej. 250134987', hint: '' },
                 { label: 'Clave catastral', placeholder: 'Ej. 12-345-067', hint: '' },
                 { label: 'Cédula / RUC del propietario', placeholder: 'Ej. 1712345678001', hint: '' },
@@ -5992,7 +5732,7 @@
 
         // ---------- Transferir dinero: flujo de pago simulado de inicio a
         // fin (beneficiario -> monto -> confirmar -> procesando -> éxito) ----------
-        let transferFlow = null; // { beneficiary: {initials,name,color,acct}, amount }
+        let transferFlow = null; // { beneficiary: {initials,name,acct}, amount }
         const fmtMoney = n => n.toFixed(2).replace('.', ',');
 
         function transferPickHTML() {
@@ -6004,7 +5744,7 @@
                     </button>
                     ${BENEFICIARIES.map(b => `
                         <button class="push-beneficiary" data-beneficiary="${b[1]}">
-                            <span class="push-beneficiary__avatar" style="background:${b[2]};">${b[0]}</span>
+                            <span class="push-beneficiary__avatar">${b[0]}</span>
                             <span class="push-beneficiary__name">${b[1].split(' ')[0]}</span>
                         </button>`).join('')}
                 </div>`;
@@ -6016,7 +5756,7 @@
                     <span class="material-symbols-rounded">arrow_back</span>Cambiar beneficiario
                 </button>
                 <div class="push-transfer-target">
-                    <span class="push-beneficiary__avatar" style="background:${b.color};">${b.initials}</span>
+                    <span class="push-beneficiary__avatar">${b.initials}</span>
                     <div>
                         <div class="push-transfer-target__name">${b.name}</div>
                         <div class="push-transfer-target__meta">Cuenta de ahorros ******${b.acct}</div>
@@ -6081,7 +5821,7 @@
                 <div class="card">
                     ${SERVICE_BILLERS.map(s => `
                         <button class="sub-item" data-biller="${s.name}">
-                            <span class="sub-item__logo" style="background:${s.color};"><span class="material-symbols-rounded">${s.icon}</span></span>
+                            <span class="sub-item__logo"><span class="material-symbols-rounded">${s.icon}</span></span>
                             <span class="sub-item__info"><span class="sub-item__name">${s.name}</span><span class="sub-item__meta">${s.category}</span></span>
                             <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
                         </button>`).join('')}
@@ -6095,7 +5835,7 @@
                     <span class="material-symbols-rounded">arrow_back</span>Cambiar servicio
                 </button>
                 <div class="push-transfer-target">
-                    <span class="push-beneficiary__avatar" style="background:${biller.color};"><span class="material-symbols-rounded">${biller.icon}</span></span>
+                    <span class="push-beneficiary__avatar"><span class="material-symbols-rounded">${biller.icon}</span></span>
                     <div>
                         <div class="push-transfer-target__name">${biller.name}</div>
                         <div class="push-transfer-target__meta">${biller.category}</div>
@@ -6270,8 +6010,8 @@
                 const key = benBtn.dataset.beneficiary;
                 const found = BENEFICIARIES.find(x => x[1] === key);
                 const b = found
-                    ? { initials: found[0], name: found[1], color: found[2], acct: found[3] }
-                    : { initials: 'NB', name: 'Nuevo beneficiario', color: 'var(--bp-theme-color-status-info-bg)', acct: '0000' };
+                    ? { initials: found[0], name: found[1], acct: found[2] }
+                    : { initials: 'NB', name: 'Nuevo beneficiario', acct: '0000' };
                 transferFlow = { beneficiary: b, amount: 0 };
                 extra.innerHTML = transferAmountHTML(b);
                 return;
@@ -6414,7 +6154,7 @@
             document.getElementById('push-summary-title').textContent = summary.title;
             document.getElementById('push-summary').innerHTML = summary.stats.map(s => `
                 <div class="sub-item">
-                    <span class="sub-item__logo" style="background:${s[4]};"><span class="material-symbols-rounded">${s[0]}</span></span>
+                    <span class="sub-item__logo"><span class="material-symbols-rounded">${s[0]}</span></span>
                     <span class="sub-item__info"><span class="sub-item__name">${s[1]}</span><span class="sub-item__meta">${s[2]}</span></span>
                     ${s[3] ? `<span class="sub-item__price">${s[3]}</span>` : ''}
                 </div>`).join('');
@@ -6461,7 +6201,7 @@
             });
             if (!hasExtra) renderPushSummary(title);
             pushHeroIcon.textContent = (PRODUCT_DETAILS[title] && PRODUCT_DETAILS[title].icon) || pushIcons[title] || 'bolt';
-            pushPage.classList.remove('scrolled', 'grow', 'closing-grow');
+            pushPage.classList.remove('scrolled');
             pushPage.scrollTop = 0;
             document.body.style.overflow = 'hidden';
 
@@ -6474,31 +6214,7 @@
             fx('close');
             clearTimeout(pushLoadingTimer);
             pushLoading.classList.remove('is-active');
-            if (pushPage.classList.contains('grow')) {
-                // Encoge de vuelta hacia el botón
-                pushPage.classList.add('closing-grow');
-                pushPage.style.transform = 'scale(0.5)';
-                pushPage.style.opacity = '0';
-                const done = e => {
-                    if (e && e.propertyName !== 'transform') return;
-                    pushPage.removeEventListener('transitionend', done);
-                    // Desactiva la transición ANTES de quitar clases: así la
-                    // reversión al estado base (translateX(100%)) es instantánea
-                    // y no se mezcla una segunda animación de slide con la escala.
-                    pushPage.style.transition = 'none';
-                    pushPage.classList.remove('open', 'grow', 'closing-grow');
-                    pushPage.style.transform = '';
-                    pushPage.style.opacity = '';
-                    pushPage.style.transformOrigin = '';
-                    pushPage.style.visibility = '';
-                    void pushPage.offsetWidth; // reflow con transición desactivada
-                    pushPage.style.transition = ''; // restaura para la próxima
-                };
-                pushPage.addEventListener('transitionend', done);
-                setTimeout(done, 400); // fallback
-            } else {
-                pushPage.classList.remove('open'); // desliza de salida (visibility con delay)
-            }
+            pushPage.classList.remove('open'); // sale por la derecha (visibility con delay)
             document.body.style.overflow = '';
         }
 
@@ -6565,7 +6281,7 @@
                     // tarjeta destacada de Destacado, creciendo desde su
                     // propio card-thumb (no toda la fila) y con el detalle
                     // temático (arte + modo oscuro para la Black).
-                    openCardDetail(el.dataset.action, el.querySelector('.card-thumb') || el);
+                    openCardDetail(el.dataset.action);
                 } else if (el.matches('.quick-action, .login-feature, .product-row')) {
                     openPushPage(el.dataset.action, el); // crece desde el botón/fila
                 } else {
@@ -6930,10 +6646,33 @@
             prev.classList.remove('active', 'entering');
             next.classList.add('active', 'entering');
             AppScroll.to({ top: 0 });
+            syncTopBar();
             if (index === 0) simulateLoad(700); // Destacado sí carga datos reales
 
             viewSwitchTimer = setTimeout(() => next.classList.remove('entering'), 500);
         }
+
+        /* Barra superior por sección: acciones propias de cada una y título
+           grande que se vuelve pequeño en la barra al bajar (como iOS). */
+        const topTitle = document.querySelector('.top-bar__title');
+        const topActions = [...document.querySelectorAll('.top-bar__actions [data-in]')];
+        const TOP_TITLES = { 1: 'Mis finanzas', 2: 'Beneficios', 4: 'Perfil' };
+        function syncTopBar() {
+            const t = TOP_TITLES[currentView] || '';
+            topTitle.textContent = t && window.I18n ? I18n.t(t) : t;
+            topActions.forEach(b => { b.hidden = b.dataset.in.split(' ').indexOf(String(currentView)) < 0; });
+            collapseTitle();
+        }
+        function collapseTitle() {
+            const big = TOP_TITLES[currentView] && document.querySelector(`.view[data-view="${currentView}"] h1`);
+            const bar = document.querySelector('.header').getBoundingClientRect().bottom;
+            document.documentElement.classList.toggle('is-title-small', !!big && big.getBoundingClientRect().bottom <= bar + 2);
+        }
+        let titleRaf = 0;
+        window.addEventListener('scroll', () => { if (!titleRaf) titleRaf = requestAnimationFrame(() => { titleRaf = 0; collapseTitle(); }); }, { passive: true });
+        document.addEventListener('i18n:change', syncTopBar);
+        document.querySelector('[data-top="pf-settings"]').addEventListener('click', () => window.Asistente && Asistente.settings());
+        syncTopBar();
 
         navItems.forEach((item) => {
             const index = +item.dataset.view;
@@ -6988,6 +6727,7 @@
             });
             showPanel('Destacado');
             AppScroll.to({ top: 0 });
+            syncTopBar();
         };
 
         // ---------- Ocultar / mostrar saldo ----------
@@ -7237,19 +6977,13 @@
 
         // Arrastrar para cerrar, Escape y "atrás": assets/sheets.js (igual para todas las hojas)
 
-        // ---------- Detalle de tarjeta (estilo Apple Wallet) ----------
+        // ---------- Detalle de tarjeta ----------
         const cardDetail = document.getElementById('card-detail');
 
         const cdInner = cardDetail.querySelector('.cd-inner');
         const cdCard = document.getElementById('cd-card');
         const cdFlip = document.getElementById('cd-flip');
         setupCollapsingHeader(cardDetail, cardDetail.querySelector('.cd-title'), document.getElementById('cd-topbar'));
-
-        const featCard = document.getElementById('debit-card');
-        // Elemento desde el que se hace el morph la próxima vez que se abra
-        // el detalle: la tarjeta destacada de Destacado por defecto, o el
-        // card-thumb de la fila que se haya tocado en Tarjetas.
-        let currentOriginEl = featCard;
 
         // Contenido/tema por tarjeta: qué arte mostrar (foto real vs CSS),
         // los datos falsos del reverso y si el detalle completo pasa a modo
@@ -7298,181 +7032,32 @@
             }
         }
 
-        /*
-         * Morph "reveal" entre la tarjeta de Destacado y la de detalle: NO
-         * es un scale() (eso estiraba la imagen no-uniformemente, como
-         * antes) NI tampoco anima width/height directamente. width/height
-         * son propiedades de LAYOUT: animarlas fuerza un recálculo de
-         * layout en cada frame (reflow), lo cual en un teléfono real —a
-         * diferencia de este navegador de escritorio— se nota como un
-         * recorrido con saltos/tirones en vez de fluido.
-         *
-         * En su lugar se usa clip-path (+ transform:translate para la
-         * posición): cdCard se queda SIEMPRE en su tamaño natural completo
-         * en el layout — nunca cambia de tamaño de verdad — y sólo se
-         * recorta visualmente con clip-path desde/hacia la ventana del
-         * tamaño de Destacado. clip-path y transform son ambas propiedades
-         * que el compositor anima sin tocar layout, así el recorrido es
-         * tan fluido como cualquier transform puro. De paso, clip-path
-         * inset() acepta su propio radio ("round"), así que la esquina de
-         * 8px (Destacado) a 12px (detalle) se interpola como parte de la
-         * misma animación, sin quedar a medio camino en un valor raro.
-         */
-        function morphMetrics() {
-            // Transición unificada: el detalle entra desde la derecha como
-            // todas las pantallas (ver navegacion.js), sin morph de tarjeta.
-            return null;
-            const feat = currentOriginEl.getBoundingClientRect();
-            const rect = cdCard.getBoundingClientRect(); // ya en su layout final/natural
-            if (!rect.width || !feat.width) return null;
-            // El radio del origen puede variar (8px la tarjeta destacada de
-            // Destacado, 6px un card-thumb de Tarjetas): se lee del propio
-            // elemento en vez de asumir siempre el mismo valor.
-            const originRadius = parseFloat(getComputedStyle(currentOriginEl).borderRadius) || FEAT_RADIUS;
-            return {
-                dx: feat.left - rect.left,
-                dy: feat.top - rect.top,
-                clipRight: Math.max(0, rect.width - feat.width),
-                clipBottom: Math.max(0, rect.height - feat.height),
-                originRadius,
-            };
-        }
-
-        // Deben calzar con --bp-radius-sm / --bp-radius-md en :root.
-        const FEAT_RADIUS = 8;
-        const DETAIL_RADIUS = 12;
-        function clipToFeatured(m) {
-            return `inset(0px ${m.clipRight}px ${m.clipBottom}px 0px round ${m.originRadius}px)`;
-        }
-        const CLIP_FULL = `inset(0px round ${DETAIL_RADIUS}px)`;
-
-        // Ancla el origen de la animación del panel (.card-detail.entering /
-        // .closing) al centro real del elemento que abrió el detalle
-        // (currentOriginEl) en pantalla, para que "crezca" desde ahí como
-        // una wallet en vez de desde el centro genérico de la pantalla. Si
-        // no es medible (raro), se quita la propiedad y CSS cae a su
-        // default (50% 15%).
-        function setMorphOrigin() {
-            const feat = currentOriginEl.getBoundingClientRect();
-            if (!feat.width) {
-                cardDetail.style.removeProperty('--cd-origin-x');
-                cardDetail.style.removeProperty('--cd-origin-y');
-                return;
-            }
-            const ox = ((feat.left + feat.width / 2) / window.innerWidth * 100).toFixed(2) + '%';
-            const oy = ((feat.top + feat.height / 2) / window.innerHeight * 100).toFixed(2) + '%';
-            cardDetail.style.setProperty('--cd-origin-x', ox);
-            cardDetail.style.setProperty('--cd-origin-y', oy);
-        }
-
-        // Curva tipo iOS para el morph. Una sola duración (0.5s abrir / 0.42s
-        // cerrar) para el panel completo, la tarjeta compartida (FLIP) y el
-        // home de fondo: antes cada pieza corría con su propio tiempo
-        // (fade del panel 0.25s, tarjeta 0.52s, contenido 0.28s) y llegaban
-        // a destino en momentos distintos, lo que se sentía torpe/descosido.
-        const MORPH_EASE = 'cubic-bezier(0.32, 0.72, 0, 1)';
-        const OPEN_MS = 500;
-        const CLOSE_MS = 420;
-
-        function openCardDetail(key = 'Visa Débito', originEl = featCard) {
-            currentOriginEl = originEl || featCard;
+        // Misma transición que todas las pantallas (assets/navegacion.js y
+        // sistema.css): entra desde la derecha y sale por la derecha. El
+        // morph de la tarjeta quedó en respaldo/transiciones-anteriores.
+        const CD_MS = 400;
+        function openCardDetail(key = 'Visa Débito') {
             fx('open');
             applyCardTheme(key);
             hideCardData();
-            cardDetail.classList.remove('scrolled', 'no-morph');
-            setMorphOrigin(); // con la tarjeta/thumb aún en su lugar de origen
+            cardDetail.classList.remove('scrolled');
             cardDetail.classList.add('open', 'entering');
-            document.body.classList.add('card-detail-active'); // el home recede detrás
             cardDetail.scrollTop = 0;
             document.body.style.overflow = 'hidden';
-
-            // La tarjeta arranca recortada al tamaño/posición/radio de
-            // Destacado y se revela hacia su forma completa (ver comentario
-            // de morphMetrics: clip-path + translate, nunca width/height).
-            const m = morphMetrics();
-            if (m) {
-                cardDetail.classList.add('morphing');
-                cdCard.style.transition = 'none';
-                cdCard.style.transform = `translate(${m.dx}px, ${m.dy}px)`;
-                cdCard.style.clipPath = clipToFeatured(m);
-                requestAnimationFrame(() => requestAnimationFrame(() => {
-                    cdCard.style.transition = `transform ${OPEN_MS}ms ${MORPH_EASE}, clip-path ${OPEN_MS}ms ${MORPH_EASE}`;
-                    cdCard.style.transform = 'translate(0, 0)';
-                    cdCard.style.clipPath = CLIP_FULL;
-                }));
-                // El contenido (título/acciones) arranca un poco después que
-                // el panel y la tarjeta, para que estas "lideren" el
-                // movimiento — pero termina junto con ellas.
-                setTimeout(() => cardDetail.classList.remove('morphing'), 90);
-                setTimeout(() => {
-                    cardDetail.classList.remove('entering');
-                    cdCard.style.transition = '';
-                    cdCard.style.transform = '';
-                    cdCard.style.clipPath = '';
-                }, OPEN_MS + 40);
-            } else {
-                // Sin tarjeta medible que morphear: el panel entero hace un
-                // crecimiento simple (scale+translate) en vez de sólo fade.
-                cardDetail.classList.add('no-morph');
-                cardDetail.classList.remove('morphing');
-                setTimeout(() => cardDetail.classList.remove('entering', 'no-morph'), OPEN_MS + 40);
-            }
+            setTimeout(() => cardDetail.classList.remove('entering'), CD_MS + 40);
         }
 
         function closeCardDetail() {
             if (!cardDetail.classList.contains('open') || cardDetail.classList.contains('closing')) return;
-            hideCardData(); // vuelve al frente antes de encoger
-            cardDetail.classList.remove('scrolled', 'entering', 'no-morph');
-            // el contenido se desvanece primero; la tarjeta encoge de vuelta
-            // a la posición de Destacado; el panel sólo se desvanece detrás
-            // (ver comentario en .card-detail.closing: si el panel TAMBIÉN
-            // escalara/trasladara aquí, competiría con el propio movimiento
-            // de la tarjeta y se vería doble/tosco). NO reseteamos el scroll
-            // aquí (eso causaba el salto): se hace al final.
-            cardDetail.classList.add('closing', 'morphing');
-            document.body.classList.remove('card-detail-active'); // el home vuelve a su tamaño
-
-            // Sólo hacemos el morph si la tarjeta está a la vista; si se hizo
-            // scroll y quedó fuera, se cierra con un simple desvanecimiento
-            // (y el panel encoge hacia el centro, no hacia un punto fuera de
-            // pantalla, que se vería como si "saliera volando").
-            const rect = cdCard.getBoundingClientRect();
-            const inView = rect.bottom > 48 && rect.top < window.innerHeight - 48;
-            const m = inView ? morphMetrics() : null;
-            if (m) {
-                setMorphOrigin();
-                // clip-path parte de "sin recortar" (su valor por CSS es
-                // "none", no animable de forma fiable) — igual que con
-                // width/height antes, primero se fija el estado actual
-                // (sin recorte, transition:none, un no-op visual ya que es
-                // lo que ya se ve) y recién en el siguiente frame se anima
-                // hacia el recorte de Destacado, así ambos extremos son
-                // formas concretas.
-                cdCard.style.transition = 'none';
-                cdCard.style.clipPath = CLIP_FULL;
-                requestAnimationFrame(() => requestAnimationFrame(() => {
-                    cdCard.style.transition = `transform ${CLOSE_MS}ms ${MORPH_EASE}, clip-path ${CLOSE_MS}ms ${MORPH_EASE}`;
-                    cdCard.style.transform = `translate(${m.dx}px, ${m.dy}px)`;
-                    cdCard.style.clipPath = clipToFeatured(m);
-                }));
-            } else {
-                cardDetail.classList.add('no-morph');
-                cardDetail.style.removeProperty('--cd-origin-x');
-                cardDetail.style.removeProperty('--cd-origin-y');
-            }
-
+            hideCardData();
+            cardDetail.classList.remove('scrolled', 'entering');
+            cardDetail.classList.add('closing');
             setTimeout(() => {
-                cardDetail.classList.remove('open', 'closing', 'morphing', 'no-morph');
-                cdCard.style.transition = '';
-                cdCard.style.transform = '';
-                cdCard.style.clipPath = '';
-                cdInner.style.transform = '';
-                cdInner.style.opacity = '';
-                cdInner.style.transition = '';
-                cardDetail.scrollTop = 0; // reset ya oculto (sin salto)
+                cardDetail.classList.remove('open', 'closing');
+                cardDetail.scrollTop = 0; // ya oculto, sin salto
                 document.body.style.overflow = '';
                 hideCardData();
-            }, CLOSE_MS + 30);
+            }, CD_MS + 30);
         }
 
         // ----- Revelar datos sensibles con biometría (WebAuthn) -----

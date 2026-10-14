@@ -1,0 +1,11 @@
+/* Primer bloque de transiciones de assets/sistema.css, reemplazado por
+   "TRANSICIONES UNIFICADAS (iOS)". */
+/* ---------- Transiciones ---------- */
+.pf-page, .as-page {
+  transform: translateX(100%);
+  transition: transform var(--cx-dur) var(--cx-ease), visibility 0s linear var(--cx-dur);
+}
+.pf-page.open, .as-page.open { transform: none; transition: transform var(--cx-dur) var(--cx-ease); }
+.as-sheet, .sheet { transition-duration: var(--cx-dur) !important; transition-timing-function: var(--cx-ease) !important; }
+.as-sheet-back { transition: opacity var(--cx-dur) ease; }
+.sx-panel { transition: transform var(--cx-dur) var(--cx-ease), opacity .25s ease; }
