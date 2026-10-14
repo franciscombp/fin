@@ -6986,6 +6986,12 @@
                 if (index === 0 && alreadyOnThisView) {
                     activateSectionTab(document.querySelector('.tabs .tab[data-panel="Destacado"]'));
                 }
+                // Al cambiar de sección, cada una vuelve a su pestaña inicial
+                // (Inicio → Destacado, Mis finanzas → Hoy)
+                if (!alreadyOnThisView) {
+                    if (index === 0) activateSectionTab(document.querySelector('.tabs .tab[data-panel="Destacado"]'));
+                    document.dispatchEvent(new CustomEvent('pb:view', { detail: index }));
+                }
             });
         });
 
