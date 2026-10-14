@@ -1316,7 +1316,7 @@
   function hintFor(v) {
     var mes = v.today ? '' : T(MONTH_NAME[v.key]).toLowerCase();
     if (v.today) {
-      if (D.card && D.debt) return T('Pagas tu tarjeta hasta el 10 nov');
+      if (D.card && D.debt) return T('No olvides pagar tu tarjeta hasta el 10 de noviembre.');
       return T('Hoy todo en orden');
     }
     if (v.current && onDemand !== 'ready') return T('¿Vemos cómo vas en {mes}?', { mes: mes });

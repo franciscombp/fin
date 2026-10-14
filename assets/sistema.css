@@ -870,7 +870,7 @@ html .pf-page--inline .pf-prods, html .pf-page--inline .pf-recs { border-radius:
 .pf-page--inline .pf-scroll.is-slide-prev > :not(.pf-hero):not(.pf-months):not(.pf-head) { animation: pfPrev .36s var(--ux-curve) both; }
 
 /* Clima de Uku: detalle en el fondo del héroe, sin peso visual */
-.pf-wx { position: absolute; left: 16px; bottom: 12px; margin: 0; z-index: 1; display: inline-flex; align-items: center; gap: 4px; font: 500 13px/18px var(--sol-font, Roboto, sans-serif); color: var(--cx-muted); opacity: .8; pointer-events: none; }
+.pf-wx { position: absolute; left: var(--bp-layout-grid-margin, 24px); bottom: 12px; margin: 0; z-index: 1; display: inline-flex; align-items: center; gap: 4px; font: 500 13px/18px var(--sol-font, Roboto, sans-serif); color: var(--cx-muted); opacity: .8; pointer-events: none; }
 .pf-wx .material-symbols-rounded { font-size: 18px; }
 
 /* =====================================================================
@@ -878,6 +878,7 @@ html .pf-page--inline .pf-prods, html .pf-page--inline .pf-recs { border-radius:
    el anillo de foco para teclado.
    ===================================================================== */
 html:not(.theme-y2k) *:not(:focus-visible) { box-shadow: none !important; }
+/* Excepción de marca: los elementos de IA llevan un brillo de color (especular, sin profundidad) */
 html:not(.theme-y2k) .pf-say__bubble, html:not(.theme-y2k) .pf-say__hint { box-shadow: none !important; }
 
 /* =====================================================================
@@ -911,3 +912,21 @@ html:not(.theme-y2k) .tab-panel.is-active > .grow-cta { animation: uxFade .3s va
 .ai-page .uku-disc { margin: 12px 24px calc(env(safe-area-inset-bottom, 0px) + 20px); font: 400 12px/16px var(--sol-font, Roboto, sans-serif); color: var(--cx-muted); text-align: center; }
 .ai-page .ai-composer { margin-bottom: 0 !important; }
 .ai-page .ai-chip, .ai-page .uku-say__reply--ai { border-color: var(--cx-line) !important; }
+
+/* =====================================================================
+   IA: trazo degradado azul → amarillo con brillo de color (sin sombra de
+   profundidad). El borde es de 1 px; el halo es un resplandor suave.
+   ===================================================================== */
+html:not(.theme-y2k) .ai-page .ai-composer,
+html:not(.theme-y2k) .ai-page .ai-sum,
+html:not(.theme-y2k) .ai-page .ai-wall,
+html:not(.theme-y2k) .ai-page .uku-say__reply--ai,
+html:not(.theme-y2k) .ai-page .ai-chip--ai {
+  border: 1px solid transparent !important;
+  background: linear-gradient(var(--bp-theme-color-surface-container-default), var(--bp-theme-color-surface-container-default)) padding-box, var(--ai-grad) border-box !important;
+  box-shadow: 0 0 18px -4px color-mix(in srgb, var(--ai-b) 38%, transparent), 0 0 6px -2px color-mix(in srgb, var(--ai-c) 30%, transparent) !important;
+}
+html:not(.theme-y2k) .ai-page .ai-badge {
+  background: var(--ai-grad) !important; color: #fff !important;
+  box-shadow: 0 0 10px -2px color-mix(in srgb, var(--ai-b) 55%, transparent) !important;
+}

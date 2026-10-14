@@ -1470,6 +1470,10 @@ msgstr ""
 msgid "Navegación principal"
 msgstr ""
 
+#: assets/asistente.js
+msgid "No olvides pagar tu tarjeta hasta el 10 de noviembre."
+msgstr ""
+
 #: anterior assets/asistente.js
 msgid "No te cobraron ningún recargo este mes."
 msgstr ""
@@ -1666,7 +1670,7 @@ msgstr ""
 msgid "Pagas hasta el 10 nov"
 msgstr ""
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "Pagas tu tarjeta hasta el 10 nov"
 msgstr ""
 

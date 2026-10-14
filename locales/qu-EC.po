@@ -1472,6 +1472,10 @@ msgstr "Mana imapash. Kay killakunapi tarjetakunapi mana mirak kullkita kullkich
 msgid "Navegación principal"
 msgstr "Hatun ñankuna"
 
+#: assets/asistente.js
+msgid "No olvides pagar tu tarjeta hasta el 10 de noviembre."
+msgstr "Mana qunqaychu Mastercard-ta 10 noviembre kama kullkichiyta."
+
 #: anterior assets/asistente.js
 msgid "No te cobraron ningún recargo este mes."
 msgstr "Kay killapi mana yapa kullkita mañarkachu."
@@ -1668,7 +1672,7 @@ msgstr "Iskay kamaykunapi <b>killapi {total}</b>-ta kullkichinki: kawsaypak ({vi
 msgid "Pagas hasta el 10 nov"
 msgstr ""
 
-#: anterior assets/asistente.js
+#: anterior
 msgid "Pagas tu tarjeta hasta el 10 nov"
 msgstr ""
 
