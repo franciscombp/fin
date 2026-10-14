@@ -1,22 +1,25 @@
 /* =====================================================================
-   Destacados — widgets del Home
-   - Tamaños fijos, como los widgets de iOS: pequeño (½ ancho, cuadrado),
-     mediano (ancho completo, 1 fila) y grande (ancho completo, 2 filas).
-     La grilla es de 2 columnas y filas de alto fijo, así nada rompe el
-     layout: cada widget dibuja solo lo que cabe en su tamaño.
-   - Catálogo según los productos del cliente (cuentas, tarjeta, pagos,
-     inversión, préstamo, millas), herramientas (Mis finanzas, metas,
-     atajos) y ofertas para las que es elegible (captación).
-   - Editar (o mantener presionado un widget): quitar, cambiar tamaño y
-     arrastrar para ordenar. "Agregar widget" abre una galería con vista
-     previa de cada tamaño. Restablecer vuelve a los sugeridos.
-   - Montos sensibles se enmascaran con el ojo de saldo.
-   - Sin alertas: los avisos importantes van a Notificaciones.
+   Destacados — widgets del Home (propuesta de experiencia, rediseño BM)
+   - Un widget responde UNA pregunta sobre un producto, se lee de un
+     vistazo y un toque abre el detalle. Una cifra, máx. 2 datos de apoyo,
+     máx. 1 acción. No repite el saldo de Mi cuenta ni la grilla de acciones.
+   - Una familia = un widget, con dos estados: informativo (tiene el
+     producto) o captación (no lo tiene pero es elegible: pre-oferta).
+   - Tamaños fijos S (½ fila), M (fila) y L (2 filas); cada familia define
+     los suyos. El contenido nunca cambia el alto.
+   - Al lanzar: 2 widgets (D1). Modo sugerido: el banco elige (captación
+     primero, luego informativo; D25). Al editar pasa a personalizado y el
+     banco ya no cambia nada; "Restablecer sugeridos" vuelve al modo sugerido.
+   - Sin alertas (van a Notificaciones), sin "vence hoy" (D2), sin clima ni
+     "Lo importante hoy" (D22). Montos ocultos con el ojo de saldo.
    ===================================================================== */
 (function () {
   'use strict';
 
-  var KEY = 'pb_widgets_v2', MAX = 10;
+  var KEY = 'pb_widgets_v3';
+  var MAX = 2;      // widgets al lanzar (D1); configurable
+  var RELEASE = 2;  // salida del RDA v1 que muestra el prototipo (la edición llega en la 2)
+
   function fx(n) { try { window.Haptics && Haptics.fx && Haptics.fx(n); } catch (e) {} }
   function money(v) { var s = Math.abs(v).toFixed(2).split('.'); return (v < 0 ? '-' : '') + '$ ' + s[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + s[1]; }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -28,250 +31,145 @@
     var C = 2 * Math.PI * 22, v = Math.max(0, Math.min(1, p));
     return '<span class="dw-ring"><svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="22"/><circle cx="26" cy="26" r="22" class="dw-ring__v" stroke-dasharray="' + (C * v).toFixed(1) + ' ' + C.toFixed(1) + '"/></svg><b>' + label + '</b></span>';
   }
-  var CAT_NAMES = { super: 'Supermercado', delivery: 'Restaurantes y delivery', compras: 'Compras', servicios: 'Servicios básicos', transporte: 'Transporte', ocio: 'Ocio', subs: 'Suscripciones', cafe: 'Cafés y antojos', salud: 'Salud' };
-  var BUDGET = { super: 360, delivery: 160, transporte: 90, compras: 260, cafe: 45, salud: 40, ocio: 90 };
-  var PAYS = [['Luz de la casa', 24.8, 'Hoy', 'Pagar Luz de la casa'], ['Casa de la abue', 18.35, '12 oct', 'Pagar Casa de la abue'], ['Internet', 32.5, '11 oct', ''], ['Celular', 20, '15 oct', '']];
 
-  /* ---------- Catálogo ----------
-     group: productos (lo que tiene), herramientas, ofertas (captación).
-     sizes: tamaños permitidos; el primero es el sugerido. */
+  var PAYS = [['Luz de la casa', 24.8, '16 oct', 'Pagar Luz de la casa'], ['Casa de la abue', 18.35, '20 oct', 'Pagar Casa de la abue'], ['Internet', 32.5, '22 oct', ''], ['Celular', 20, '25 oct', '']];
+
+  /* ---------- Catálogo: una familia, un widget ----------
+     sizes: tamaños permitidos (el primero es el sugerido).
+     salida: etapa del RDA v1 en la que entra (null = después). */
   var CATALOG = {
-    pila:       { name: 'Lo importante hoy', icon: 'stacks', group: 'herramientas', sizes: ['m'], desc: 'Desliza entre lo que necesita tu atención: lo más urgente primero' },
-    saldo:      { name: 'Saldo disponible', icon: 'account_balance_wallet', group: 'productos', sizes: ['m', 's', 'l'], desc: 'Lo que tienes hoy y cómo cambió en 30 días' },
-    tarjeta:    { name: 'Tarjeta de crédito', icon: 'credit_card', group: 'productos', sizes: ['s', 'm', 'l'], desc: 'Por pagar, fecha de pago, cupo y últimos consumos' },
-    pagos:      { name: 'Próximos pagos', icon: 'event', group: 'productos', sizes: ['m', 's', 'l'], desc: 'Servicios que vencen pronto' },
-    movimientos:{ name: 'Últimos movimientos', icon: 'receipt_long', group: 'productos', sizes: ['m', 'l'], desc: 'Lo último que entró y salió' },
-    inversion:  { name: 'Inversión', icon: 'trending_up', group: 'productos', sizes: ['s', 'm'], desc: 'Tu depósito a plazo y lo que ganas' },
-    prestamo:   { name: 'Préstamo', icon: 'request_quote', group: 'productos', sizes: ['s', 'm'], desc: 'Tu próxima cuota' },
-    millas:     { name: 'Millas', icon: 'flight', group: 'productos', sizes: ['s'], desc: 'Tus millas para canjear' },
-    gastos:     { name: 'Gastos del mes', icon: 'pie_chart', group: 'herramientas', sizes: ['m', 's', 'l'], desc: 'Cuánto gastaste y en qué' },
-    presupuesto:{ name: 'Presupuesto', icon: 'donut_large', group: 'herramientas', sizes: ['s', 'm'], desc: 'Cómo vas con tus límites' },
-    metas:      { name: 'Metas de ahorro', icon: 'flag', group: 'herramientas', sizes: ['s', 'm'], desc: 'Cuánto te falta para cada meta' },
-    salud:      { name: 'Salud financiera', icon: 'favorite', group: 'herramientas', sizes: ['s', 'm'], desc: 'Tu puntaje y un consejo de Uku' },
-    uku:        { name: 'Uku hoy', icon: 'partly_cloudy_day', group: 'herramientas', sizes: ['s', 'm'], desc: 'El clima de hoy y qué se puso Uku' },
-    atajos:     { name: 'Tus atajos', icon: 'bolt', group: 'herramientas', sizes: ['m', 's'], desc: 'Las acciones que grabaste en el buscador' },
-    preaprobado:{ name: 'Crédito preaprobado', icon: 'verified', group: 'ofertas', sizes: ['s', 'm'], desc: 'Un crédito listo para ti' },
-    invertir:   { name: 'Haz crecer tu dinero', icon: 'savings', group: 'ofertas', sizes: ['m', 's'], desc: 'Inversiones desde $ 100' },
-    seguro:     { name: 'Seguro de vida', icon: 'health_and_safety', group: 'ofertas', sizes: ['s'], desc: 'Protección desde $ 4 al mes' }
+    cuentas:   { name: 'Cuentas', short: 'Cuentas', icon: 'account_balance', sizes: ['s', 'm'], salida: 1, desc: '¿Cuánto ganan tus cuentas?' },
+    inversion: { name: 'Inversión', short: 'Inversión', icon: 'trending_up', sizes: ['s', 'm'], salida: 1, desc: '¿Cuánto rinde y cuándo vence?' },
+    metas:     { name: 'Metas de ahorro', short: 'Metas', icon: 'flag', sizes: ['s', 'm'], salida: 1, desc: '¿Cuánto te falta para tu meta?' },
+    tarjeta:   { name: 'Tarjeta de crédito', short: 'Tarjeta', icon: 'credit_card', sizes: ['s', 'm'], salida: 1, desc: '¿Cuánto pagas y hasta cuándo?' },
+    creditos:  { name: 'Créditos', short: 'Créditos', icon: 'request_quote', sizes: ['s', 'm'], salida: 1, desc: '¿Cuándo es tu próxima cuota?' },
+    pagos:     { name: 'Pagos', short: 'Pagos', icon: 'event', sizes: ['m', 'l'], salida: 2, desc: '¿Qué pago viene?' },
+    pfm:       { name: 'Mis finanzas', short: 'Gastos', icon: 'insights', sizes: ['s', 'm'], salida: 4, desc: '¿En qué estás gastando?' },
+    seguros:   { name: 'Seguros', short: 'Seguros', icon: 'health_and_safety', sizes: ['s'], salida: null, desc: '¿Qué cubre tu póliza?' }
   };
-  var GROUPS = [['productos', 'Tus productos'], ['herramientas', 'Herramientas'], ['ofertas', 'Para ti']];
-  // Sugeridos: saldo y tarjeta arriba, luego pagos y gastos, y una oferta elegible
-  var DEFAULT = [['pila', 'm'], ['saldo', 'm'], ['tarjeta', 's'], ['uku', 's'], ['pagos', 'm'], ['gastos', 'm'], ['metas', 's'], ['preaprobado', 's']];
-
-  function load() {
-    try { var p = JSON.parse(localStorage.getItem(KEY)); if (p && p.custom && Array.isArray(p.items)) return p; } catch (e) {}
-    return { custom: false, items: DEFAULT.map(function (x) { return { id: x[0], size: x[1] }; }) };
-  }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(pref)); } catch (e) {} }
-  var pref = load();
-  function items() { return pref.items.filter(function (w) { return CATALOG[w.id] && CATALOG[w.id].sizes.indexOf(w.size) >= 0; }).slice(0, MAX); }
+  // Orden en que el banco sugiere (D4: ahorro e inversión no van por defecto)
+  var SUGGESTED = ['tarjeta', 'creditos', 'pagos', 'cuentas'];
+  var SIZE = { s: 'Pequeño', m: 'Mediano', l: 'Grande' };
 
   /* ---------- Acciones ---------- */
   function click(sel) { var e = document.querySelector(sel); if (e) e.click(); }
   function act(a) { click('#home-page [data-action="' + a + '"]'); }
   function card(n) { click('#home-page [data-panel="Tarjetas"] .product-row[data-action="' + n + '"]'); }
-  function pfm() { window.Asistente && Asistente.openPF(); }
+  function tab(t) { click('.tabs .tab[data-panel="' + t + '"]'); }
   function homeRow(panel) {
     var r = document.querySelector('#home-page [data-panel="' + panel + '"] .product-row[data-action]');
     if (!r) return null;
     var g = function (c) { var e = r.querySelector(c); return e ? e.textContent.trim() : ''; };
     return { action: r.dataset.action, name: g('.product-row__name'), sub: g('.product-row__sub'), amt: g('.product-row__amount') };
   }
-  function shortcuts() {
-    return window.Buscador && Buscador.shortcuts ? Buscador.shortcuts() : [];
-  }
-
-
-  /* ---------- Mini gráficos (una serie, un solo tono de marca) ----------
-     Línea de 2 px con área tenue y punto final; barras con punta redondeada
-     apoyadas en la base y 2 px de separación. Solo se rotula lo clave. */
-  function spark(vals) {
-    if (vals.length < 2) return '';
-    var W = 100, H = 36, mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals), rg = mx - mn || 1;
-    var pts = vals.map(function (v, i) { return [i / (vals.length - 1) * W, H - 3 - (v - mn) / rg * (H - 6)]; });
-    var line = pts.map(function (q, i) { return (i ? 'L' : 'M') + q[0].toFixed(2) + ' ' + q[1].toFixed(2); }).join(' ');
-    var last = pts[pts.length - 1];
-    return '<span class="dw-spark" aria-hidden="true"><svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' +
-      '<path class="dw-spark__area" d="' + line + ' L' + W + ' ' + H + ' L0 ' + H + ' Z"/><path class="dw-spark__line" d="' + line + '"/></svg>' +
-      '<i style="left:100%;top:' + (last[1] / H * 100).toFixed(1) + '%"></i></span>';
-  }
-  function weekBars(vals, labels, hi) {
-    var mx = Math.max.apply(null, vals) || 1;
-    return '<span class="dw-wbars" aria-hidden="true">' + vals.map(function (v, i) {
-      return '<span class="dw-wbar' + (i === hi ? ' is-hi' : '') + '"><span class="dw-wbar__track"><i style="height:' + Math.max(4, Math.round(v / mx * 100)) + '%"></i></span>' +
-        (i === hi ? '<b>' + sens(money(v)) + '</b>' : '') + '<small>' + labels[i] + '</small></span>';
-    }).join('') + '</span>';
-  }
-  // Saldo de las cuentas día a día en los últimos 30 días (desde los movimientos)
-  function cashAccts(d) { return d ? d.accts.filter(function (a) { return (a.type === 'ahorro' && a.id !== 'sie1') || a.type === 'corriente' || a.type === 'efectivo'; }) : []; }
-  function balanceSeries(d) {
-    var cash = cashAccts(d), ids = cash.map(function (a) { return a.id; }), bal = cash.reduce(function (t, a) { return t + a.bal; }, 0);
-    var days = [], mi = 2, day = 8;
-    for (var k = 0; k < 31; k++) { days.unshift([mi, day]); day--; if (!day) { mi--; day = mi === 1 ? 30 : 31; } }
-    var net = {};
-    d.tx.forEach(function (t) { if (ids.indexOf(t.acct) < 0) return; var key = t.mi + ':' + t.day; net[key] = (net[key] || 0) + (t.cat === 'ingreso' ? t.amt : -t.amt); });
-    var out = new Array(days.length); out[days.length - 1] = bal;
-    for (var i = days.length - 1; i > 0; i--) out[i - 1] = out[i] - (net[days[i][0] + ':' + days[i][1]] || 0);
-    return out;
-  }
-  function stackPages() {
-    var d = data(), pages = [], o = d ? d.by[2] : null, day = 8 / 31;
-    pages.push({ icon: 'event', label: 'Vence hoy', value: sens(money(PAYS[0][1])), sub: PAYS[0][0], go: function () { pay(PAYS[0]); }, w: 3 });
-    var ks = Object.keys(BUDGET).map(function (k) { return { k: k, p: o ? o[k] / BUDGET[k] : 0 }; }).sort(function (a, b) { return b.p - a.p; });
-    if (ks[0] && ks[0].p > day + .15) pages.push({ icon: 'donut_large', label: 'Vas rápido en ' + CAT_NAMES[ks[0].k].toLowerCase(), value: pct(ks[0].p), sub: 'del presupuesto, y vamos por el ' + pct(day) + ' del mes', go: pfm, w: 2 });
-    if (d && d.card && d.card.owed) pages.push({ icon: 'credit_card', label: 'Tarjeta · hasta el 10 nov', value: sens(money(d.card.owed)), sub: 'Mastercard Black por pagar', go: function () { card('Mastercard Black'); }, w: 1 });
-    var tip = window.Asistente && Asistente.insights ? Asistente.insights()[0] : null;
-    if (tip) pages.push({ icon: 'lightbulb', label: 'Uku notó', value: '', sub: tip.title, go: pfm, w: 0 });
-    return pages.sort(function (a, b) { return b.w - a.w; }).slice(0, 4);
-  }
-  var stackGo = [];
-  function ukuLook() { return window.Clima && Clima.last ? Clima.last() : null; }
-
-  /* ---------- Contenido por widget y tamaño ----------
-     Cada render devuelve solo lo que cabe en ese tamaño. */
-  var SHORT = { uku: 'Uku hoy', saldo: 'Saldo', tarjeta: 'Tarjeta', pagos: 'Pagos', inversion: 'Inversión', prestamo: 'Préstamo', gastos: 'Gastos', presupuesto: 'Presupuesto', metas: 'Metas', salud: 'Salud', atajos: 'Atajo', preaprobado: 'Preaprobado', invertir: 'Invertir', seguro: 'Seguro' };
-  function head(id, size) { var c = CATALOG[id]; return '<p class="dw-h"><span class="material-symbols-rounded" aria-hidden="true">' + c.icon + '</span>' + (size === 's' && SHORT[id] ? SHORT[id] : c.name) + '</p>'; }
-  var R = {
-    saldo: function (s) {
-      var d = data(), cash = cashAccts(d), tot = cash.reduce(function (t, a) { return t + a.bal; }, 0);
-      var go = function () { act('Cuenta PRINCIPAL'); };
-      var b = '<p class="dw-value">' + sens(money(tot)) + '</p>';
-      if (s === 's') return { body: b + '<p class="dw-sub">En ' + cash.length + ' cuentas</p>', go: go };
-      var ser = d ? balanceSeries(d) : [], dl = ser.length ? tot - ser[0] : 0;
-      var trend = '<p class="dw-sub dw-1"><span class="' + (dl >= 0 ? 'is-in' : 'is-out') + '">' + sens((dl >= 0 ? '+' : '-') + money(Math.abs(dl))) + '</span> en 30 días</p>';
-      if (s === 'm') return { body: '<div class="dw-split"><div>' + b + trend + '</div><div class="dw-split__r">' + spark(ser) + '</div></div>', go: go };
-      return { body: b + trend + '<div class="dw-chart">' + spark(ser) + '</div><div class="dw-rows dw-rows--l">' + cash.slice(0, 3).map(function (a) { return '<span><span>' + esc(a.name) + '</span><b>' + sens(money(a.bal)) + '</b></span>'; }).join('') + '</div>', go: go };
-    },
-    tarjeta: function (s) {
-      var d = data(), c = d && d.card, owed = c ? c.owed : 0, lim = c ? c.limit : 5000;
-      var b = '<p class="dw-label">Por pagar</p><p class="dw-value">' + sens(money(owed)) + '</p>' + bar(owed / lim) + '<p class="dw-sub dw-1">Hasta el 10 nov</p>';
-      if (s === 's') return { body: b, go: function () { card('Mastercard Black'); } };
-      var right = '<div class="dw-split__r"><p class="dw-label">Cupo disponible</p><p class="dw-value dw-value--sm">' + sens(money(lim - owed)) + '</p>' +
-        '<button class="dw-btn" data-dw-act="Pagar tarjeta">Pagar</button></div>';
-      if (s === 'm') return { body: '<div class="dw-split"><div>' + b + '</div>' + right + '</div>', go: function () { card('Mastercard Black'); } };
-      var MON = ['ago', 'sep', 'oct'];
-      var tx = d ? d.tx.filter(function (t) { return t.acct === 'and1'; }).sort(function (x, y) { return (y.mi * 40 + y.day) - (x.mi * 40 + x.day); }).slice(0, 3) : [];
-      return { body: '<div class="dw-split dw-split--top"><div>' + b + '</div>' + right + '</div><p class="dw-label dw-label--sec">Últimos consumos</p><div class="dw-list-in">' + tx.map(function (t) {
-        return '<span class="dw-tx"><span>' + esc(t.who) + '<small>' + t.day + ' ' + MON[t.mi] + '</small></span><b>' + sens('-' + money(t.amt)) + '</b></span>';
-      }).join('') + '</div>', go: function () { card('Mastercard Black'); } };
-    },
-    pagos: function (s) {
-      var n = s === 's' ? 1 : s === 'm' ? 2 : 4;
-      if (s === 's') { var p = PAYS[0]; return { body: '<p class="dw-label">' + p[2] + '</p><p class="dw-value dw-value--sm">' + sens(money(p[1])) + '</p><p class="dw-sub">' + p[0] + '</p>', go: function () { pay(p); } }; }
-      return { body: '<div class="dw-list-in">' + PAYS.slice(0, n).map(function (p, i) {
-        return '<button class="dw-item" data-dw-pay="' + i + '"><span>' + p[0] + '<small>' + p[2] + '</small></span><b>' + sens(money(p[1])) + '</b></button>';
-      }).join('') + '</div>', go: function () { act('Pagar servicios'); } };
-    },
-    movimientos: function (s) {
-      var d = data(), MON = ['ago', 'sep', 'oct'];
-      var tx = d ? d.tx.filter(function (t) { return t.cat !== 'ahorro'; }).sort(function (a, b) { return (b.mi * 40 + b.day) - (a.mi * 40 + a.day); }).slice(0, s === 'l' ? 5 : 2) : [];
-      return { body: '<div class="dw-list-in">' + tx.map(function (t) {
-        var inc = t.cat === 'ingreso';
-        return '<span class="dw-tx"><span>' + esc(t.who) + '<small>' + t.day + ' ' + MON[t.mi] + '</small></span><b' + (inc ? ' class="is-in"' : '') + '>' + sens((inc ? '+' : '-') + money(t.amt)) + '</b></span>';
-      }).join('') + '</div>', go: function () { act('Cuenta PRINCIPAL'); } };
-    },
-    inversion: function (s) {
-      var r = homeRow('Inversiones') || { name: 'Depósito a plazo', sub: 'Vence: 12 nov 2026 · 7,25%', amt: '$ 3.000,00', action: 'Depósito a plazo' };
-      var b = '<p class="dw-value dw-value--sm">' + sens(esc(r.amt)) + '</p><p class="dw-sub">' + esc(r.name) + '</p>';
-      if (s === 's') return { body: b + '<p class="dw-sub">Vence el 12 nov</p>', go: function () { act(r.action); } };
-      return { body: '<div class="dw-split"><div>' + b + '<p class="dw-sub">' + esc(r.sub) + '</p></div><div class="dw-split__r"><p class="dw-label">Has ganado</p><p class="dw-value dw-value--sm is-in">' + sens('+' + money(54.38)) + '</p><button class="dw-btn" data-dw-act="Renovar inversión">Renovar</button></div></div>', go: function () { act(r.action); } };
-    },
-    prestamo: function (s) {
-      var r = homeRow('Prestamos') || { name: 'Préstamo de consumo', sub: 'Cuota 6 de 36', amt: '$ 245,90', action: 'Préstamo de consumo' };
-      var b = '<p class="dw-label">Próxima cuota · 20 oct</p><p class="dw-value dw-value--sm">' + sens(esc(r.amt)) + '</p>';
-      if (s === 's') return { body: b + bar(6 / 36) + '<p class="dw-sub">' + esc(r.sub) + '</p>', go: function () { act(r.action); } };
-      return { body: '<div class="dw-split"><div>' + b + bar(6 / 36) + '<p class="dw-sub">' + esc(r.name) + ' · ' + esc(r.sub) + '</p></div><div class="dw-split__r"><button class="dw-btn" data-dw-act="Pagar servicios">Pagar cuota</button></div></div>', go: function () { act(r.action); } };
-    },
-    millas: function () {
-      return { body: '<p class="dw-value dw-value--sm">' + sens('12.480') + '</p><p class="dw-sub">millas para canjear</p><p class="dw-sub">Un vuelo a Galápagos desde 8.900</p>', go: function () { act('Ver catálogo de millas'); } };
-    },
-    gastos: function (s) {
-      var d = data(), sep = d ? d.by[1] : null, ago = d ? d.by[0] : null;
-      var tot = sep ? sep._spend : 0, delta = ago && ago._spend ? tot / ago._spend - 1 : 0;
-      var cats = sep ? Object.keys(CAT_NAMES).map(function (k) { return { k: k, v: sep[k] }; }).sort(function (a, b) { return b.v - a.v; }) : [];
-      var b = '<p class="dw-label">Septiembre</p><p class="dw-value">' + sens(money(tot)) + '</p><p class="dw-sub">' + (delta >= 0 ? '+' : '') + pct(delta) + ' que agosto</p>';
-      if (s === 's') return { body: b, go: pfm };
-      var n = s === 'l' ? 5 : 3, max = cats[0] ? cats[0].v : 1;
-      var rows = cats.slice(0, n).map(function (c) { return '<span class="dw-cat"><span>' + CAT_NAMES[c.k] + '</span><b>' + sens(money(c.v)) + '</b>' + bar(c.v / max, 'dw-bar--ink') + '</span>'; }).join('');
-      if (s === 'm') return { body: '<div class="dw-split"><div>' + b + '</div><div class="dw-split__r dw-cats">' + rows + '</div></div>', go: pfm };
-      // Grande: gasto por semana (una serie) + las 3 categorías principales
-      var wk = [0, 0, 0, 0]; // la última semana absorbe el 29 y 30 (no una barra de 2 días)
-      if (d) d.tx.forEach(function (t) { if (t.mi === 1 && t.cat !== 'ingreso' && t.cat !== 'ahorro') wk[Math.min(3, Math.floor((t.day - 1) / 7))] += t.amt; });
-      var hi = wk.indexOf(Math.max.apply(null, wk));
-      rows = cats.slice(0, 3).map(function (c) { return '<span class="dw-cat"><span>' + CAT_NAMES[c.k] + '</span><b>' + sens(money(c.v)) + '</b>' + bar(c.v / max, 'dw-bar--ink') + '</span>'; }).join('');
-      return { body: b + '<div class="dw-chart dw-chart--bars">' + weekBars(wk, ['1–7', '8–14', '15–21', '22–30'], hi) + '</div><div class="dw-cats">' + rows + '</div>', go: pfm };
-    },
-    presupuesto: function (s) {
-      var d = data(), o = d ? d.by[2] : null, day = 8 / 31;
-      var ks = Object.keys(BUDGET).map(function (k) { return { k: k, p: o ? o[k] / BUDGET[k] : 0 }; }).sort(function (a, b) { return b.p - a.p; });
-      var w = ks[0];
-      if (s === 's') return { body: ring(w.p, pct(w.p)) + '<p class="dw-sub">' + CAT_NAMES[w.k] + '</p><p class="dw-sub">' + (w.p > day + .15 ? 'Vas rápido este mes' : 'Vas bien') + '</p>', go: pfm };
-      return { body: '<p class="dw-label">Octubre · vas por el ' + pct(day) + ' del mes</p><div class="dw-cats dw-cats--fill">' + ks.slice(0, 3).map(function (c) {
-        return '<span class="dw-cat"><span>' + CAT_NAMES[c.k] + '</span><b>' + pct(c.p) + '</b>' + bar(c.p, c.p > day + .15 ? 'dw-bar--warn' : '') + '</span>';
-      }).join('') + '</div>', go: pfm };
-    },
-    metas: function (s) {
-      var d = data(), g = d ? d.goals : [];
-      if (!g.length) return { body: '<p class="dw-sub">Crea tu primera meta</p>', go: function () { act('Crear meta de ahorro'); } };
-      if (s === 's') return { body: ring(g[0].have / g[0].target, pct(g[0].have / g[0].target)) + '<p class="dw-sub dw-1 dw-sub--ink">' + esc(g[0].name) + '</p><p class="dw-sub dw-1">' + sens(money(g[0].have)) + '</p>', go: pfm };
-      return { body: '<div class="dw-cats">' + g.slice(0, 2).map(function (x) {
-        return '<span class="dw-cat"><span>' + esc(x.name) + '</span><b>' + sens(money(x.have)) + '</b>' + bar(x.have / x.target) + '<small>' + pct(x.have / x.target) + ' de ' + money(x.target) + '</small></span>';
-      }).join('') + '</div>', go: pfm };
-    },
-    salud: function (s) {
-      var d = data(), sc = d ? d.score : 0, lv = sc >= 80 ? 'Excelente' : sc >= 55 ? 'Muy bien' : sc >= 30 ? 'Regular' : 'Por mejorar';
-      var face = '<span class="dw-face">' + (window.Asistente ? Asistente.faceIMG() : '') + '</span>';
-      var b = '<div class="dw-score"><p class="dw-value">' + sc + '<small>/100</small></p>' + face + '</div><p class="dw-sub">' + lv + '</p>';
-      if (s === 's') return { body: b, go: pfm };
-      var tip = window.Asistente && Asistente.insights ? Asistente.insights()[0] : null;
-      return { body: '<div class="dw-split"><div>' + b + '</div><div class="dw-split__r dw-tip"><p>' + (tip ? tip.title : 'Sigue así: vas muy bien.') + '</p></div></div>', go: pfm };
-    },
-    atajos: function (s) {
-      var list = shortcuts();
-      if (!list.length) return { body: '<p class="dw-sub">Graba un atajo desde el buscador</p>', go: function () { window.Buscador && Buscador.open(); } };
-      if (s === 's') { var a = list[0]; return { body: '<span class="dw-ic material-symbols-rounded">' + (a.icon || 'bolt') + '</span><p class="dw-sub dw-sub--ink">' + esc(a.name) + '</p>', go: function () { window.__runShortcut && __runShortcut(a); } }; }
-      return { body: '<div class="dw-short">' + list.slice(0, 4).map(function (a, i) {
-        return '<button data-dw-sc="' + i + '"><span class="material-symbols-rounded">' + (a.icon || 'bolt') + '</span><span>' + esc(a.name) + '</span></button>';
-      }).join('') + '</div>' };
-    },
-    preaprobado: function (s) {
-      var b = '<p class="dw-promo">Tienes hasta <b>' + sens(money(8000)) + '</b> preaprobados</p>';
-      return { body: b + (s === 'm' ? '<p class="dw-sub">Lo recibes al instante en tu cuenta.</p>' : '') + '<span class="dw-cta">Simular</span>', go: function () { act('Simular crédito preaprobado'); } };
-    },
-    invertir: function (s) {
-      return { body: '<p class="dw-promo">Gana <b>7,25% al año</b>' + (s === 'm' ? ' mientras tu dinero sigue seguro' : '') + '</p><span class="dw-cta">' + (s === 'm' ? 'Invertir desde $ 100' : 'Invertir') + '</span>', go: function () { act('Crear inversión'); } };
-    },
-    pila: function () {
-      var pages = stackPages(); stackGo = pages.map(function (x) { return x.go; });
-      return { body: '<div class="dw-stack" data-dw-stack>' + pages.map(function (x, i) {
-        return '<button class="dw-stack__page" data-dw-go="' + i + '"><span class="dw-stack__ic material-symbols-rounded">' + x.icon + '</span><span class="dw-stack__t">' +
-          '<span class="dw-label">' + x.label + '</span>' + (x.value ? '<span class="dw-value dw-value--sm">' + x.value + '</span>' : '') + '<span class="dw-sub">' + esc(x.sub) + '</span></span></button>';
-      }).join('') + '</div><span class="dw-dots" aria-hidden="true">' + pages.map(function (x, i) { return '<i' + (i ? '' : ' class="on"') + '></i>'; }).join('') + '</span>' };
-    },
-    uku: function (s) {
-      var c = ukuLook(), face = '<span class="dw-face dw-face--lg">' + (window.Asistente ? Asistente.faceIMG() : '') + '</span>';
-      if (!c) return { body: '<div class="dw-uku">' + face + '<p class="dw-sub dw-sub--ink">¿Qué me pongo hoy? Toca para verlo</p></div>', go: pfm };
-      var wear = c.look.hat === 'paraguas' ? 'umbrella' : c.look.hat === 'lana' ? 'ac_unit' : c.look.shirt === 'guayabera' || c.look.hat === 'paja' ? 'sunny' : 'cloud';
-      var head = '<p class="dw-temp"><span class="material-symbols-rounded" aria-hidden="true">' + wear + '</span>' + c.temp + '°' + (c.city ? '<small>' + esc(c.city) + '</small>' : '') + '</p>';
-      if (s === 's') return { body: '<div class="dw-uku">' + face + head + '</div>', go: pfm };
-      return { body: '<div class="dw-split"><div class="dw-uku">' + face + head + '</div><div class="dw-split__r dw-tip"><p>' + esc(c.text) + '</p></div></div>', go: pfm };
-    },
-    seguro: function () {
-      return { body: '<p class="dw-promo">Protege a los tuyos desde <b>$ 4 al mes</b></p><span class="dw-cta">Ver seguro</span>', go: function () { act('Seguro de vida'); } };
-    }
-  };
   function pay(p) { if (p[3]) click('.list-item[data-sheet="payment"][data-title="' + p[3] + '"]'); else act('Pagar servicios'); }
 
+  /* ---------- Tenencia y elegibilidad (en producción: BFF y motor de ofertas) ---------- */
+  // Demo: ?sin=tarjeta,creditos simula un cliente sin esos productos (se guarda; ?sin= lo limpia)
+  var SIN = (function () {
+    try {
+      var q = new URLSearchParams(location.search);
+      if (q.has('sin')) localStorage.setItem('pb_widgets_sin', q.get('sin'));
+      return (localStorage.getItem('pb_widgets_sin') || '').split(',').filter(Boolean);
+    } catch (e) { return []; }
+  })();
+  function owned(id) {
+    if (SIN.indexOf(id) >= 0) return false;
+    var d = data();
+    if (id === 'cuentas') return !!(d && d.accts && d.accts.length);
+    if (id === 'tarjeta') return !!(d && d.card);
+    if (id === 'metas') return !!(d && d.goals && d.goals.length);
+    if (id === 'inversion') return !!homeRow('Inversiones');
+    if (id === 'creditos') return !!homeRow('Prestamos');
+    if (id === 'pagos') return PAYS.length > 0;
+    return false;
+  }
+  var ELIGIBLE = { cuentas: true, inversion: true, metas: true, tarjeta: true, creditos: true, pagos: true };
+  function available(id) { var c = CATALOG[id]; return !!(c && c.salida && c.salida <= RELEASE); }
+  function capt(id) { return !owned(id) && !!ELIGIBLE[id]; } // captación (widget fantasma)
+  function shown(id) { return available(id) && (owned(id) || capt(id)); }
+
+  /* ---------- Configuración ---------- */
+  function defaults() {
+    var ids = SUGGESTED.filter(shown);
+    var order = ids.filter(capt).slice(0, 1).concat(ids.filter(function (id) { return !capt(id); })); // una captación, primero (D10, D25)
+    return order.slice(0, MAX).map(function (id) { return { id: id, size: CATALOG[id].sizes[0] }; });
+  }
+  function load() {
+    try { var p = JSON.parse(localStorage.getItem(KEY)); if (p && p.custom && Array.isArray(p.items)) return p; } catch (e) {}
+    return { custom: false, items: [] };
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(pref)); } catch (e) {} }
+  var pref = load();
+  function items() {
+    if (!pref.custom) return defaults();
+    return pref.items.filter(function (w) { return shown(w.id) && CATALOG[w.id].sizes.indexOf(w.size) >= 0; }).slice(0, MAX);
+  }
+  // Antes de editar, la configuración sugerida se vuelve la del cliente
+  function materialize() { if (!pref.custom) pref.items = defaults(); }
+
+  /* ---------- Contenido por familia, estado y tamaño ----------
+     Informativo: una cifra + máx. 2 datos de apoyo + máx. 1 acción.
+     Captación: la pre-oferta con un dato propio (genérica hasta D12). */
+  function promo(text, cta, sub) { return '<p class="dw-promo dw-2l">' + text + '</p>' + (sub ? '<p class="dw-sub dw-1">' + sub + '</p>' : '') + (cta ? '<span class="dw-cta bp-action-button" data-size="sm">' + cta + '</span>' : ''); }
+  var R = {
+    cuentas: function (s, c) {
+      if (c) return { body: promo('Abre tu cuenta deuna para recibir pagos', s === 'm' ? 'Abrir cuenta' : ''), go: function () { act('Solicitar cuenta'); } };
+      var b = '<p class="dw-label dw-1">Intereses ganados este mes</p><p class="dw-value">' + sens(money(3.12)) + '</p>';
+      return { body: b + '<p class="dw-sub dw-1">En tus cuentas de ahorro</p>' + (s === 'm' ? '<p class="dw-sub dw-1">Rendimiento anual 1,50%</p>' : ''), go: function () { act('Cuenta PRINCIPAL'); } };
+    },
+    inversion: function (s, c) {
+      if (c) return { body: promo('Haz crecer tu dinero', s === 'm' ? 'Invertir' : '', 'Gana 7,25% al año'), go: function () { act('Crear inversión'); } };
+      var r = homeRow('Inversiones') || { name: 'Depósito a plazo', amt: '$ 3.000,00', action: 'Depósito a plazo' };
+      var b = '<p class="dw-label dw-1">' + esc(r.name) + '</p><p class="dw-value">' + sens(esc(r.amt)) + '</p><p class="dw-sub dw-1">Vence el 12 nov</p>';
+      return { body: b + (s === 'm' ? '<p class="dw-sub dw-1">Rinde 7,25% · ganaste <span class="is-in">' + sens('+' + money(54.38)) + '</span></p>' : ''), go: function () { act(r.action); } };
+    },
+    metas: function (s, c) {
+      if (c) return { body: promo('Crea tu primera meta de ahorro', s === 'm' ? 'Crear meta' : ''), go: function () { act('Crear meta de ahorro'); } };
+      var g = data().goals[0], p = Math.min(1, g.have / g.target);
+      var go = function () { act('Meta ' + g.name); };
+      if (s === 's') return { body: ring(p, pct(p)) + '<p class="dw-sub dw-1 dw-sub--ink">' + esc(g.name) + '</p><p class="dw-sub dw-1">' + sens(money(g.have)) + '</p>', go: go };
+      return { body: '<p class="dw-label dw-1">' + esc(g.name) + '</p><p class="dw-value">' + sens(money(g.have)) + '</p>' + bar(p) + '<p class="dw-sub dw-1">' + pct(p) + ' de ' + sens(money(g.target)) + '</p>', go: go };
+    },
+    tarjeta: function (s, c) {
+      if (c) return { body: promo('Solicita tu tarjeta de crédito', s === 'm' ? 'Solicitar' : ''), go: function () { tab('Tarjetas'); } };
+      var d = data(), owed = d.card.owed, lim = d.card.limit;
+      var b = '<p class="dw-label dw-1">Por pagar</p><p class="dw-value">' + sens(money(owed)) + '</p><p class="dw-sub dw-1">Hasta el 10 nov</p>';
+      if (s === 's') return { body: b, go: function () { card('Mastercard Black'); } };
+      return { body: '<div class="dw-split"><div>' + b + '</div><div class="dw-split__r"><p class="dw-label dw-1">Cupo disponible</p><p class="dw-value dw-value--sm">' + sens(money(lim - owed)) + '</p>' +
+        '<button class="dw-btn bp-action-button" data-size="sm" data-dw-act="Pagar tarjeta">Pagar</button></div></div>', go: function () { card('Mastercard Black'); } };
+    },
+    creditos: function (s, c) {
+      // Monto personalizado ("Tienes hasta $ X") solo con consentimiento (D12): genérica mientras tanto
+      if (c) return { body: promo('Tienes un crédito preaprobado', 'Simular', s === 'm' ? 'Sujeto a aprobación' : ''), go: function () { act('Simular crédito preaprobado'); } };
+      var r = homeRow('Prestamos') || { name: 'Préstamo de consumo', sub: 'Cuota 6 de 36', amt: '$ 245,90', action: 'Préstamo de consumo' };
+      var b = '<p class="dw-label dw-1">Próxima cuota</p><p class="dw-value">' + sens(esc(r.amt)) + '</p><p class="dw-sub dw-1">20 oct · ' + esc(r.sub) + '</p>';
+      if (s === 's') return { body: b, go: function () { act(r.action); } };
+      return { body: '<div class="dw-split"><div>' + b + '</div><div class="dw-split__r"><p class="dw-sub dw-1">' + esc(r.name) + '</p>' +
+        '<button class="dw-btn bp-action-button" data-size="sm" data-dw-act="' + esc(r.action) + '">Pagar cuota</button></div></div>', go: function () { act(r.action); } };
+    },
+    pagos: function (s, c) {
+      if (c) return { body: promo('Programa tus pagos de servicios', 'Programar'), go: function () { act('Pagar servicios'); } };
+      // Solo informativo: fecha y monto, sin "vence hoy" (D2)
+      return { body: '<div class="dw-list-in">' + PAYS.slice(0, s === 'l' ? 4 : 2).map(function (p, i) {
+        return '<button class="dw-item" data-dw-pay="' + i + '"><span>' + p[0] + '<small>' + p[2] + '</small></span><b>' + sens(money(p[1])) + '</b></button>';
+      }).join('') + '</div>', go: function () { act('Pagar servicios'); } };
+    }
+  };
+
   function widgetHTML(w, preview) {
-    var c = CATALOG[w.id], r = R[w.id](w.size), offer = c.group === 'ofertas';
+    var cat = CATALOG[w.id], c = capt(w.id), r;
+    try { r = R[w.id](w.size, c); } catch (e) { r = null; }
+    // Sin dato: mensaje corto, nunca ceros (el widget mantiene su tamaño)
+    if (!r) r = { body: '<p class="dw-sub">No pudimos actualizar este dato</p>' };
     if (!preview) gos[w.id] = r.go;
-    return '<article class="dw dw--' + w.size + (offer ? ' dw--offer' : '') + '" data-dw-id="' + w.id + '"' + (r.go && !preview ? ' role="button" tabindex="0"' : '') + ' aria-label="' + esc(c.name) + '">' +
-      head(w.id, w.size) + '<div class="dw-body">' + r.body + '</div>' +
-      (preview ? '' : '<button class="dw-x" data-dw-del="' + w.id + '" aria-label="Quitar ' + esc(c.name) + '"><span class="material-symbols-rounded">remove</span></button>' +
-        (c.sizes.length > 1 ? '<button class="dw-size" data-dw-size="' + w.id + '" aria-label="Cambiar tamaño">' + SIZE[w.size] + '<span class="material-symbols-rounded">unfold_more</span></button>' : '')) +
+    return '<article class="dw dw--' + w.size + (c ? ' dw--offer' : '') + '" data-dw-id="' + w.id + '"' + (r.go && !preview ? ' role="button" tabindex="0"' : '') + ' aria-label="' + esc(cat.name) + '">' +
+      '<p class="dw-h"><span class="material-symbols-rounded" aria-hidden="true">' + cat.icon + '</span><span class="dw-1">' + (w.size === 's' ? cat.short : cat.name) + '</span></p>' +
+      '<div class="dw-body">' + r.body + '</div>' +
+      (preview ? '' : '<button class="dw-x" data-dw-del="' + w.id + '" aria-label="Quitar ' + esc(cat.name) + '"><span class="material-symbols-rounded">remove</span></button>' +
+        (cat.sizes.length > 1 ? '<button class="dw-size" data-dw-size="' + w.id + '" aria-label="Cambiar tamaño">' + SIZE[w.size] + '<span class="material-symbols-rounded">unfold_more</span></button>' : '')) +
       '</article>';
   }
-  var SIZE = { s: 'Pequeño', m: 'Mediano', l: 'Grande' };
 
   /* ---------- Montaje y pintado ---------- */
   var host, list, gos = {}, editing = false;
@@ -287,18 +185,13 @@
     host.innerHTML = '<div class="section__title"><h2>Destacados</h2><button class="section__link" data-dw="edit">Editar</button></div>' +
       '<div class="dw-grid"></div>' +
       '<div class="dw-edit-bar"><button class="dw-add" data-dw="add"><span class="material-symbols-rounded">add</span>Agregar widget</button>' +
+      '<p class="dw-limit" hidden>Quita uno para agregar otro</p>' +
       '<button class="pf-link" data-dw="reset">Restablecer sugeridos</button></div>';
     if (old) { old.parentNode.insertBefore(host, old); old.hidden = true; } else panel.appendChild(host);
     list = host.querySelector('.dw-grid');
     host.addEventListener('click', onClick);
     host.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.dw[role="button"]')) { e.preventDefault(); e.target.click(); } });
     dragInit();
-    // Pila: los puntos siguen a la página visible
-    list.addEventListener('scroll', function (e) {
-      var st = e.target; if (!st.classList || !st.classList.contains('dw-stack')) return;
-      var i = Math.round(st.scrollLeft / Math.max(1, st.clientWidth));
-      st.parentNode.querySelectorAll('.dw-dots i').forEach(function (d, k) { d.classList.toggle('on', k === i); });
-    }, true);
     list.addEventListener('contextmenu', function (e) { if (e.target.closest('.dw')) e.preventDefault(); }); // Android: mantener presionado
     var eye = document.getElementById('balance-toggle');
     var sync = function () { document.documentElement.classList.toggle('pb-masked', eye && eye.getAttribute('aria-pressed') === 'true'); };
@@ -311,11 +204,12 @@
     var ws = items();
     list.innerHTML = ws.map(function (w) { return widgetHTML(w); }).join('') ||
       '<p class="dw-empty">Sin widgets. <button class="pf-link" data-dw="add">Agregar widget</button></p>';
+    var lim = host.querySelector('.dw-limit'); if (lim) lim.hidden = ws.length < MAX;
     host.classList.toggle('is-editing', editing);
     host.querySelector('[data-dw="edit"]').textContent = editing ? 'Listo' : 'Editar';
     host.querySelector('[data-dw="add"]').disabled = ws.length >= MAX;
   }
-  function setEditing(on) { editing = on; fx(on ? 'select' : 'success'); paint(); }
+  function setEditing(on) { if (on) materialize(); editing = on; fx(on ? 'select' : 'success'); paint(); }
   function commit() { pref.custom = true; save(); paint(); }
 
   function onClick(e) {
@@ -323,7 +217,7 @@
     if (drag && drag.moved) return;
     if ((b = e.target.closest('[data-dw="edit"]'))) { e.stopPropagation(); return setEditing(!editing); }
     if ((b = e.target.closest('[data-dw="add"]'))) { e.stopPropagation(); return openGallery(); }
-    if ((b = e.target.closest('[data-dw="reset"]'))) { try { localStorage.removeItem(KEY); } catch (x) {} pref = load(); fx('select'); return paint(); }
+    if ((b = e.target.closest('[data-dw="reset"]'))) { try { localStorage.removeItem(KEY); } catch (x) {} pref = load(); if (editing) materialize(); fx('select'); return paint(); }
     if ((b = e.target.closest('[data-dw-del]'))) {
       e.stopPropagation();
       pref.items = pref.items.filter(function (w) { return w.id !== b.dataset.dwDel; }); fx('toggle'); return commit();
@@ -336,8 +230,6 @@
     if (editing) return; // en edición, tocar un widget no lo abre
     if ((b = e.target.closest('[data-dw-pay]'))) { e.stopPropagation(); return pay(PAYS[+b.dataset.dwPay]); }
     if ((b = e.target.closest('[data-dw-act]'))) { e.stopPropagation(); return act(b.dataset.dwAct); }
-    if ((b = e.target.closest('[data-dw-go]'))) { e.stopPropagation(); fx('tap'); var gfn = stackGo[+b.dataset.dwGo]; return gfn && gfn(); }
-    if ((b = e.target.closest('[data-dw-sc]'))) { e.stopPropagation(); var sc = shortcuts()[+b.dataset.dwSc]; return window.__runShortcut && __runShortcut(sc); }
     if ((b = e.target.closest('[data-dw-id]')) && gos[b.dataset.dwId]) { fx('tap'); gos[b.dataset.dwId](); }
   }
 
@@ -403,7 +295,7 @@
     window.addEventListener('pointercancel', end);
   }
 
-  /* ---------- Galería: agregar widgets con vista previa ---------- */
+  /* ---------- Galería: "Sugeridos para ti" (captaciones) y "Tus productos" ---------- */
   var sheet, back, pick = {};
   function ensureSheet() {
     if (sheet) return;
@@ -415,61 +307,44 @@
   }
   function openGallery() { ensureSheet(); paintGallery(); sheet.scrollTop = 0; back.classList.add('open'); sheet.classList.add('open'); fx('open'); }
   function closeGallery() { back.classList.remove('open'); sheet.classList.remove('open'); }
+  var WHY = { cuentas: 'Recibe pagos con tu cuenta deuna', inversion: 'Tu dinero puede rendir 7,25% al año', metas: 'Ahorra para algo que quieras', tarjeta: 'Pide tu tarjeta de crédito', creditos: 'Tienes un crédito preaprobado', pagos: 'Programa tus pagos de servicios' };
+  function galItem(id, have, full, why) {
+    var c = CATALOG[id], sz = pick[id] || c.sizes[0], on = have.indexOf(id) >= 0;
+    return '<div class="dw-gal">' +
+      '<div class="dw-gal__head"><span class="dw-gal__ic material-symbols-rounded">' + c.icon + '</span><span class="dw-gal__t"><b>' + c.name + '</b><small>' + (why || c.desc) + '</small></span>' +
+        '<button class="dw-gal__add bp-action-button" data-size="sm" data-gal-add="' + id + '"' + (on || full ? ' disabled' : '') + '>' + (on ? 'Agregado' : 'Agregar') + '</button></div>' +
+      (c.sizes.length > 1 ? '<div class="dw-gal__sizes" role="tablist">' + ['s', 'm', 'l'].filter(function (x) { return c.sizes.indexOf(x) >= 0; }).map(function (x) {
+        return '<button class="sx-chip" role="tab" data-gal-size="' + id + ':' + x + '" aria-pressed="' + (x === sz) + '">' + SIZE[x] + '</button>';
+      }).join('') + '</div>' : '') +
+      '<div class="dw-gal__prev"><div class="dw-grid dw-grid--prev">' + widgetHTML({ id: id, size: sz }, true) + '</div></div></div>';
+  }
   function paintGallery() {
     var have = items().map(function (w) { return w.id; }), full = have.length >= MAX;
-    var sug = suggestions(have);
-    sheet.innerHTML = '<div class="as-sheet__handle"></div><h3>Agregar widget</h3><p>' + (full ? 'Ya tienes ' + MAX + ' widgets. Quita uno para agregar otro.' : 'Elige un widget y su tamaño. Puedes tener hasta ' + MAX + '.') + '</p>' +
-      [['sugeridos', 'Sugeridos para ti']].concat(GROUPS).map(function (g) {
-        var ids = g[0] === 'sugeridos' ? sug.map(function (x) { return x.id; }) : Object.keys(CATALOG).filter(function (id) { return CATALOG[id].group === g[0] && !sug.some(function (x) { return x.id === id; }); });
-        if (!ids.length) return '';
-        return '<p class="as-sheet__label">' + g[1] + '</p>' + ids.map(function (id) {
-          var why = g[0] === 'sugeridos' ? sug.filter(function (x) { return x.id === id; })[0].why : '';
-          var c = CATALOG[id], sz = pick[id] || c.sizes[0], on = have.indexOf(id) >= 0;
-          return '<div class="dw-gal">' +
-            '<div class="dw-gal__head"><span class="dw-gal__ic material-symbols-rounded">' + c.icon + '</span><span class="dw-gal__t"><b>' + c.name + '</b><small>' + (why || c.desc) + '</small></span>' +
-              '<button class="dw-gal__add" data-gal-add="' + id + '"' + (on || full ? ' disabled' : '') + '>' + (on ? 'Agregado' : 'Agregar') + '</button></div>' +
-            (c.sizes.length > 1 ? '<div class="dw-gal__sizes" role="tablist">' + ['s', 'm', 'l'].filter(function (x) { return c.sizes.indexOf(x) >= 0; }).map(function (x) {
-              return '<button class="sx-chip" role="tab" data-gal-size="' + id + ':' + x + '" aria-pressed="' + (x === sz) + '">' + SIZE[x] + '</button>';
-            }).join('') + '</div>' : '') +
-            '<div class="dw-gal__prev"><div class="dw-grid dw-grid--prev">' + widgetHTML({ id: id, size: sz }, true) + '</div></div></div>';
-        }).join('');
-      }).join('');
-  }
-  // Sugeridos según la situación del cliente (solo los que no tiene)
-  function suggestions(have) {
-    var d = data(), out = [], o = d ? d.by[2] : null, day = 8 / 31;
-    var worst = Object.keys(BUDGET).map(function (k) { return o ? o[k] / BUDGET[k] : 0; }).sort(function (a, b) { return b - a; })[0] || 0;
-    if (d && d.card && d.card.owed) out.push({ id: 'tarjeta', why: 'Tienes ' + money(d.card.owed) + ' por pagar hasta el 10 nov' });
-    if (worst > day + .15) out.push({ id: 'presupuesto', why: 'Vas rápido en uno de tus presupuestos este mes' });
-    out.push({ id: 'pila', why: 'Lo urgente primero, en un solo widget' });
-    if (shortcuts().length) out.push({ id: 'atajos', why: 'Tienes ' + shortcuts().length + ' atajos grabados en el buscador' });
-    out.push({ id: 'uku', why: 'Mira qué se puso Uku según el clima de hoy' });
-    return out.filter(function (x) { return have.indexOf(x.id) < 0; }).slice(0, 3);
+    var ids = Object.keys(CATALOG).filter(shown);
+    var sug = ids.filter(capt), mine = ids.filter(function (id) { return !capt(id); });
+    sheet.innerHTML = '<div class="as-sheet__handle"></div><h3>Agregar widget</h3><p>' +
+      (full ? 'Ya tienes ' + MAX + ' widgets. Quita uno para agregar otro.' : 'Elige un widget y su tamaño. Puedes tener hasta ' + MAX + '.') + '</p>' +
+      (sug.length ? '<p class="as-sheet__label">Sugeridos para ti</p>' + sug.map(function (id) { return galItem(id, have, full, WHY[id]); }).join('') : '') +
+      (mine.length ? '<p class="as-sheet__label">Tus productos</p>' + mine.map(function (id) { return galItem(id, have, full); }).join('') : '');
   }
   function onGallery(e) {
     var b;
     if ((b = e.target.closest('[data-gal-size]'))) { var p = b.dataset.galSize.split(':'); pick[p[0]] = p[1]; fx('select'); var st = sheet.scrollTop; paintGallery(); sheet.scrollTop = st; return; }
     if ((b = e.target.closest('[data-gal-add]')) && !b.disabled) {
       var id = b.dataset.galAdd;
+      materialize();
+      if (pref.items.length >= MAX) return;
       pref.items.push({ id: id, size: pick[id] || CATALOG[id].sizes[0] });
       fx('success'); commit(); closeGallery();
       setTimeout(function () { var w = list.querySelector('[data-dw-id="' + id + '"]'); if (w) { w.scrollIntoView({ block: 'center', behavior: 'smooth' }); w.classList.add('is-new'); setTimeout(function () { w.classList.remove('is-new'); }, 1200); } }, 350);
     }
   }
 
-  /* Uku hoy: usa el clima si ya hay permiso de ubicación (o un escenario de
-     demo); si no, no lo pide desde Inicio: se pide al abrir Mis finanzas. */
-  function weather() {
-    if (!window.Clima) return;
-    Clima.onChange(paint);
-    var go = function () { Clima.get().then(function (c) { if (c) paint(); }); };
-    if (Clima.mode && Clima.mode() !== 'auto') return go();
-    if (navigator.permissions && navigator.permissions.query) navigator.permissions.query({ name: 'geolocation' }).then(function (r) { if (r.state === 'granted') go(); }).catch(function () {});
-  }
-  function init() { mount(); paint(); weather(); }
+  function init() { mount(); paint(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   document.addEventListener('i18n:change', function () { paint(); });
   // Salir de edición al tocar fuera de Destacados
   document.addEventListener('click', function (e) { if (editing && host && !host.contains(e.target) && !(sheet && sheet.contains(e.target))) setEditing(false); });
   window.Destacados = { repaint: paint };
 })();
+
