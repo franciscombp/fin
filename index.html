@@ -4,17 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="format-detection" content="telephone=no">
-    <!-- En el teléfono el documento no hace scroll: lo hace #home-page (ver
-         "Contenedor de la app" en sistema.css), así la barra inferior queda
-         fija de verdad en iOS. AppScroll es el scroll de la app en ambos casos. -->
+    <!-- Scroll de la app: la página completa (la barra inferior queda fija encima) -->
     <script>
         window.AppScroll = {
-            el: function () {
-                var h = document.getElementById('home-page');
-                return h && matchMedia('(max-width: 767px)').matches ? h : (document.scrollingElement || document.documentElement);
-            },
+            el: function () { return document.scrollingElement || document.documentElement; },
             top: function () { return this.el().scrollTop; },
-            to: function (o) { this.el().scrollTo(o); }
+            to: function (o) { window.scrollTo(o); }
         };
     </script>
     <meta name="description" content="Pichibank app - POC Rediseño">
