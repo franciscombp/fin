@@ -11,8 +11,8 @@
   font: var(--ui-label-md, 600 15px/20px sans-serif);
 }
 .pf-page--inline .pf-months button[aria-selected="true"] { background: var(--bp-interaction-tertiary-fg); color: var(--bp-theme-color-text-on-solid, #fff); }
-.pf-page--inline .pf-months .is-today { position: relative; margin-left: 12px; }
-.pf-page--inline .pf-months .is-today::before { content: ''; position: absolute; left: -11px; top: 8px; bottom: 8px; width: 1px; background: var(--cx-line); }
+.pf-page--inline .pf-months .is-today { position: relative; margin-right: 12px; }
+.pf-page--inline .pf-months .is-today::before { content: ''; position: absolute; right: -11px; top: 8px; bottom: 8px; width: 1px; background: var(--cx-line); }
 
 /* ---------- Globo de Uku (a demanda) ---------- */
 .pf-page--inline .pf-hero { position: relative; }
@@ -142,3 +142,41 @@ button.pf-meter { cursor: pointer; }
 .pf-mcard .pf-meter__top, .pf-mcard .pf-meter__sub { display: flex; }
 .pf-mcard .pf-meter__sub { display: block; }
 .pf-mcard__lead small { display: block; margin-top: 6px; font: var(--ui-body-sm-regular, 400 14px/20px sans-serif); letter-spacing: 0; color: var(--cx-muted); }
+
+/* ---------- Salud financiera (medidor, en vez del badge) ---------- */
+.pf-health { margin: 16px var(--bp-layout-grid-margin, 16px) 0; }
+.pf-health__card { display: flex; flex-direction: column; gap: 10px; width: 100%; padding: 18px 20px; border: 0; border-radius: 24px; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); text-align: left; font: inherit; cursor: pointer; height: auto !important; overflow: visible !important; }
+.pf-health__card .pf-meter__right b { font: 600 20px/24px var(--sol-font, Roboto, sans-serif); color: var(--bp-theme-color-text-primary); }
+.pf-health__card .pf-meter__bar { --tone: var(--bp-interaction-tertiary-fg); height: 8px !important; }
+.pf-health__card .pf-meter__sub { display: flex; align-items: center; gap: 2px; }
+.pf-health__card .pf-meter__sub .material-symbols-rounded { margin-left: auto; font-size: 20px; color: var(--cx-muted); }
+.pf-page--inline .pf-hero .pf-hero__badge { display: none !important; }
+
+/* ---------- Uku en los meses: bloque de información ----------
+   Colores de Uku: solo azul, grises y amarillo. */
+.pf-uku2 { margin-top: var(--bp-semantic-spacing-macro-sm, 20px) !important; padding: 0 var(--bp-layout-grid-margin, 16px); }
+.pf-uku2__card { padding: 20px; border-radius: 28px; background: var(--bp-theme-color-surface-container-default); }
+.pf-uku2__head { display: flex; align-items: center; gap: 12px; }
+.pf-uku2__head > span:last-child { display: flex; flex-direction: column; }
+.pf-uku2__head b { font: var(--ui-body-md-semibold, 600 15px/20px sans-serif); color: var(--bp-theme-color-text-primary); }
+.pf-uku2__head small { font: var(--cx-sub); color: var(--cx-muted); }
+.pf-uku2__face { flex: 0 0 44px; width: 44px; height: 44px; border-radius: 50%; overflow: hidden; background: var(--bp-interaction-primary-bg, #ffdd00); box-shadow: 0 0 0 2px var(--bp-interaction-primary-bg, #ffdd00); }
+.pf-uku2__face img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+.pf-uku2 p { margin: 0; }
+.pf-uku2__lead { margin-top: 16px !important; font: 600 22px/28px var(--sol-font, Roboto, sans-serif); letter-spacing: -.3px; color: var(--bp-interaction-tertiary-fg); }
+.pf-uku2__sub { margin-top: 8px !important; font: var(--ui-body-md-regular); color: var(--cx-muted); }
+.pf-uku2__wait { display: flex; align-items: center; gap: 8px; margin-top: 12px !important; font: var(--ui-body-md-regular); color: var(--cx-muted); }
+.pf-uku2__acts { margin-top: 16px; }
+.pf-uku2__btn { height: 40px; padding: 0 18px; border: 0; border-radius: 99px; background: var(--bp-interaction-tertiary-fg); color: var(--bp-theme-color-surface-container-default); font: var(--ui-label-md); cursor: pointer; }
+.pf-uku2__list { margin-top: 8px; }
+.pf-uku2__row { display: flex; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--cx-line); }
+.pf-uku2__row:last-child { border-bottom: 0; }
+.pf-uku2__ic { flex: 0 0 36px; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--bp-interaction-primary-bg, #ffdd00) 35%, transparent); color: var(--bp-interaction-tertiary-fg); font-size: 20px !important; }
+.pf-uku2__txt { min-width: 0; }
+.pf-uku2__txt b { display: block; font: var(--ui-body-md-semibold); color: var(--bp-theme-color-text-primary); }
+.pf-uku2__txt p { margin-top: 4px !important; font: var(--ui-body-sm-regular, 400 14px/20px sans-serif); color: var(--cx-muted); }
+.pf-uku2__links { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 8px; }
+.pf-uku2__links button { padding: 0; border: 0; background: none; color: var(--bp-theme-color-text-interactive); font: var(--ui-label-md); text-align: left; cursor: pointer; }
+.pf-uku2__chat { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 44px; margin-top: 12px; border: 1px solid var(--cx-line); border-radius: 99px; background: none; color: var(--bp-interaction-tertiary-fg); font: var(--ui-label-md); cursor: pointer; }
+.pf-uku2__chat .material-symbols-rounded { font-size: 20px; }
+.pf-uku2__ic { background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); }

@@ -437,12 +437,17 @@
       { kind: 'good', icon: 'event_available', title: 'Pagaste todo a tiempo', sub: 'Sin recargos en servicios ni tarjetas.' }] }
   };
   var VIEWS = [
+    { key: 'hoy', short: 'Hoy', today: true },
     { key: 'jun', short: 'jun', report: true }, { key: 'jul', short: 'jul', report: true },
-    { key: 'ago', short: 'ago', mi: 0 }, { key: 'sep', short: 'sep', mi: 1 }, { key: 'oct', short: 'oct', mi: 2, current: true },
-    { key: 'hoy', short: 'Hoy', today: true }
+    { key: 'ago', short: 'ago', mi: 0 }, { key: 'sep', short: 'sep', mi: 1 }, { key: 'oct', short: 'oct', mi: 2, current: true }
   ];
-  // Mis finanzas abre en "Hoy" (tu dinero ahora); los meses quedan para mirar atrás
-  if (!ST.v2) { ST.view = 'hoy'; ST.v2 = true; persist(); }
+  // Mis finanzas siempre abre en "Hoy" (tu dinero ahora); los meses quedan
+  // para mirar atrás. Al volver a la sección desde otra, regresa a Hoy.
+  ST.view = 'hoy';
+  document.addEventListener('pb:view', function (e) {
+    if (e.detail !== 1 || !pf || ST.view === 'hoy') return;
+    ST.view = 'hoy'; persist(); paintPF();
+  });
   function viewOf(key) { return VIEWS.filter(function (v) { return v.key === key; })[0] || VIEWS[3]; }
 
   function cardInterest(mi) {
@@ -884,7 +889,44 @@
   }
   function heroHTML(score, label) {
     return '<section class="pf-hero"><div class="b3d" data-score="' + score + '"><div class="b3d__fallback">' + C().svg() + '</div></div>' +
-      '<button class="pf-hero__badge" data-pf="health"><i></i>' + label + '<span class="material-symbols-rounded">chevron_right</span></button></section>';
+      '<button class="pf-hero__badge" data-pf="health" hidden><i></i>' + label + '<span class="material-symbols-rounded">chevron_right</span></button></section>';
+  }
+  // Salud financiera como medidor (en vez del badge): cifra, barra y qué significa
+  function healthHTML(score, when) {
+    var lv = level(score);
+    return '<section class="pf-health"><button class="pf-health__card" data-pf="health">' +
+      '<span class="pf-meter__top"><span class="pf-meter__name">' + T(when ? 'Salud financiera' : 'Tu salud financiera') + '</span>' +
+        '<span class="pf-meter__right"><b>' + score + '</b> ' + T('de 100') + '</span></span>' +
+      '<span class="pf-meter__bar"><i style="width:' + score + '%"></i></span>' +
+      '<span class="pf-meter__sub">' + T(lv.n) + (when ? ' ' + T('en {mes}', { mes: when }) : '') + ' · ' + T('Cómo se calcula') + '<span class="material-symbols-rounded">chevron_right</span></span>' +
+      '</button></section>';
+  }
+  // Uku en los meses: un bloque de información (sin el oso grande)
+  function ukuBlock(v) {
+    var mesL = T(MONTH_NAME[v.key]).toLowerCase(), list = [], body = '';
+    if (v.current && onDemand !== 'ready') {
+      body = onDemand === 'loading' ? '<p class="pf-uku2__wait"><span class="pf-spinner"></span>' + T('Revisando tus movimientos de octubre…') + '</p>'
+        : '<p class="pf-uku2__sub">' + T('Tu resumen de octubre va a estar listo a inicios de noviembre.') + '</p>' +
+          '<div class="pf-uku2__acts"><button class="pf-uku2__btn" data-pf="ondemand">' + T('Sí, cuéntame cómo voy') + '</button></div>';
+    } else {
+      list = v.current ? currentIns() : v.report ? REPORTS[v.key].ins : monthInsights(v.mi);
+      var first = say.first;
+      if (first) list = list.slice().sort(function (a, b) { var m = function (x) { return first === 'savings' ? x.icon === 'savings' : x.kind === 'warn'; }; return m(b) - m(a); });
+      curIns = list;
+      body = '<div class="pf-uku2__list">' + list.slice(0, 3).map(function (x) {
+        var i = list.indexOf(x);
+        return '<div class="pf-uku2__row"><span class="pf-uku2__ic material-symbols-rounded" aria-hidden="true">' + x.icon + '</span>' +
+          '<div class="pf-uku2__txt"><b>' + x.title + '</b><p>' + x.sub + '</p>' +
+          (x.det || x.ask ? '<div class="pf-uku2__links">' + (x.det ? '<button data-pf="det:' + i + '">' + T('Ver detalle') + '</button>' : '') +
+            (x.ask ? '<button data-pf="why:' + i + '">' + esc(x.ask) + '</button>' : '') + '</div>' : '') + '</div></div>';
+      }).join('') + '</div>';
+    }
+    return '<section class="pf-sec pf-uku2"><div class="pf-uku2__card">' +
+      '<div class="pf-uku2__head"><span class="pf-uku2__face">' + C().face() + '</span><span><b>' + C().name + '</b><small>' +
+        T(v.current ? 'Cómo vas en {mes}' : 'Lo que pasó en {mes}', { mes: mesL }) + '</small></span></div>' +
+      '<p class="pf-uku2__lead">' + hintFor(v) + '</p>' + body +
+      '<button class="pf-uku2__chat" data-pf="ask"><span class="material-symbols-rounded">chat_bubble</span>' + T('Escríbele a {nombre}', { nombre: C().name }) + '</button>' +
+      '</div></section>';
   }
   function insHTML(list, withDetail) {
     curIns = list;
@@ -1264,22 +1306,20 @@
         return '<button role="tab" data-pf="view:' + x.key + '" aria-selected="' + (x.key === v.key) + '"' + (x.today ? ' class="is-today"' : '') + '>' + T(MONTH_NAME[x.key] || x.short) + '</button>';
       }).join('') + '</div></header>';
     var hs = v.today || v.current ? D.score : v.report ? REPORTS[v.key].score : monthScore(v.mi);
-    html += heroHTML(hs, T(v.today || v.current ? 'Salud financiera hoy {n} · {nivel}' : 'Salud financiera {n} · {nivel}', { n: hs, nivel: T(level(hs).n) }));
+    var mesL = v.today ? '' : T(MONTH_NAME[v.key]).toLowerCase();
+    say.first = null; hintFor(v); // decide qué tema va primero
     if (v.today) {
-      html += todayHTML();
+      // Hoy: el oso y su entorno, con su globo a demanda
+      html += heroHTML(hs, '') + healthHTML(hs) + todayHTML();
     } else {
-      html += flowHTML(v) + histHTML(v);
-      var mesL = T(MONTH_NAME[v.key]).toLowerCase();
+      // Los meses: Uku como bloque de información, sin el oso grande
+      html += ukuBlock(v) + flowHTML(v) + healthHTML(hs, v.current ? T('octubre, hasta hoy') : mesL) + histHTML(v);
       if (v.report) {
-        html += insCards(T('Lo que pasó en {mes}', { mes: mesL }), REPORTS[v.key].ins);
         html += '<section class="pf-sec"><p class="pf-note pf-note--box">' + T('De {mes} solo tenemos este resumen. El detalle de cada movimiento lo tienes desde agosto.', { mes: mesL }) + '</p></section>';
       } else if (v.current) {
-        html += onDemand === 'ready' ? insCards(T('Cómo vas en octubre'), currentIns())
-          : '<section class="pf-sec"><div class="pf-empty"><p>' + T('Tu resumen de octubre va a estar listo a inicios de noviembre.') + '</p>' +
-            (onDemand === 'loading' ? '<span class="pf-spinner"></span>' : '<button class="pf-pill" data-pf="ondemand">Ver cómo va octubre</button>') + '</div></section>';
         html += budgetsHTML(2) + recordsHTML(2);
       } else {
-        html += insCards(T('Lo que pasó en {mes}', { mes: mesL }), monthInsights(v.mi)) + budgetsHTML(v.mi) + spendHTML(v.mi) + goalsHTML() + recordsHTML(v.mi);
+        html += budgetsHTML(v.mi) + spendHTML(v.mi) + goalsHTML() + recordsHTML(v.mi);
       }
     }
     html += footHTML();
@@ -1287,9 +1327,8 @@
     var scroll = pf.querySelector('.pf-scroll'), old = scroll.querySelector('.pf-hero'), live = old && old.querySelector('canvas');
     scroll.innerHTML = html;
     var fresh = scroll.querySelector('.pf-hero');
-    var saved = !v.report && !v.today && !v.current && D.by[v.mi]._save / D.by[v.mi]._in >= .08;
-    fresh.querySelector('.b3d').dataset.g = JSON.stringify(saved ? { name: 'hold', opts: { hold: 'coin' } } : 'wave');
-    if (live) {
+    if (fresh) fresh.querySelector('.b3d').dataset.g = JSON.stringify('wave');
+    if (live && fresh) {
       var ob = old.querySelector('.b3d'), nb = fresh.querySelector('.b3d');
       ob.dataset.score = nb.dataset.score; ob.dataset.g = nb.dataset.g;
       old.querySelector('.pf-hero__badge').innerHTML = fresh.querySelector('.pf-hero__badge').innerHTML;
@@ -1297,11 +1336,10 @@
     }
     // El globo se rehace con lo de este mes; si cambió de mes, se cierra
     if (say.view !== v.key) { say.open = false; say.i = 0; say.view = v.key; }
-    say.first = null; say.list = sayFor(v); say.hint = hintFor(v);
+    say.first = null; say.list = v.today ? sayFor(v) : []; say.hint = hintFor(v);
     // El globo abre con el mismo tema del aviso
     if (say.first) say.list.sort(function (a, b) { var m = function (x) { return say.first === 'savings' ? x.icon === 'savings' : x.kind === 'warn'; }; return m(b) - m(a); }); say.i = Math.min(say.i, Math.max(0, say.list.length - 1));
-    paintSay();
-    syncHero();
+    if (v.today) { paintSay(); syncHero(); }
     var row = pf.querySelector('.pf-months'), sel = row && row.querySelector('[aria-selected="true"]');
     if (sel) row.scrollLeft = sel.offsetLeft - (row.clientWidth - sel.offsetWidth) / 2;
   }
