@@ -6662,9 +6662,10 @@
 
         // ---------- Banner de ofertas: carrusel infinito ----------
         const BANNER_SLIDES = [
-            { theme: 1, title: 'Ofertas todo el año', cta: 'Ver ofertas', photo: 'bp-banner-1' },
-            { theme: 2, title: 'Protección para tu día a día', cta: 'Ver más', photo: 'bp-banner-2' },
-            { theme: 3, title: 'Haz crecer tus ahorros', cta: 'Simular', photo: 'bp-banner-3' },
+            // tone: 'dark' = imagen oscura (texto blanco) · 'light' = imagen clara (texto negro)
+            { theme: 1, tone: 'dark', title: 'Ofertas todo el año con tus tarjetas Pichibank', cta: 'Ver ofertas', photo: 'bp-banner-1' },
+            { theme: 2, tone: 'dark', title: 'Protección adicional para tu día a día', cta: 'Ver más', photo: 'bp-banner-2' },
+            { theme: 3, tone: 'light', title: 'Genera ganancias con un Depósito a Plazo', cta: 'Simular', photo: 'bp-banner-3' },
         ];
 
         // bp-banner con foto de fondo (assets/banners/foto-*.jpg). Si la
@@ -6672,7 +6673,7 @@
         // texto sigue legible (ver .is-nophoto en sistema.css).
         function bannerSlideHTML(s) {
             return `
-                <div class="home-banner__slide home-banner__slide--photo home-banner__slide--${s.theme}" data-action="${s.act || s.cta}">
+                <div class="home-banner__slide home-banner__slide--photo home-banner__slide--${s.theme} home-banner__slide--on-${s.tone || 'dark'}" data-action="${s.act || s.cta}">
                     <img class="home-banner__photo" src="./assets/banners/${s.photo}.png" alt="" draggable="false"
                          onerror="this.closest('.home-banner__slide').classList.add('is-nophoto'); this.remove();">
                     <div class="home-banner__text">

@@ -105,6 +105,20 @@
     if (!pref.custom) return defaults();
     return pref.items.filter(function (w) { return shown(w.id) && CATALOG[w.id].sizes.indexOf(w.size) >= 0; }).slice(0, MAX);
   }
+  // El espacio de Destacados nunca desaparece: si el cliente quita widgets,
+  // los huecos (hasta MAX) se llenan con sugerencias del banco.
+  function fillers(ws) {
+    var used = ws.map(function (w) { return w.id; }), out = [];
+    var pool = SUGGESTED.concat(Object.keys(CATALOG)).filter(function (id, i, a) { return a.indexOf(id) === i && shown(id) && used.indexOf(id) < 0; });
+    pool = pool.filter(capt).concat(pool.filter(function (id) { return !capt(id); })); // captaciones primero
+    var quit = pref.removed || []; // lo que el cliente quitó se sugiere al final
+    pool = pool.filter(function (id) { return quit.indexOf(id) < 0; }).concat(pool.filter(function (id) { return quit.indexOf(id) >= 0; }));
+    // Los huecos son pequeños para no mover el resto del inicio
+    var small = function (id) { return CATALOG[id].sizes.indexOf('s') >= 0; };
+    pool = pool.filter(small).concat(pool.filter(function (id) { return !small(id); }));
+    for (var i = 0; i < MAX - ws.length; i++) out.push(pool[i] ? { id: pool[i], size: CATALOG[pool[i]].sizes[0], sug: true } : { slot: true });
+    return out;
+  }
   // Antes de editar, la configuración sugerida se vuelve la del cliente
   function materialize() { if (!pref.custom) pref.items = defaults(); }
 
@@ -115,8 +129,8 @@
   var R = {
     cuentas: function (s, c) {
       if (c) return { body: promo('Abre tu cuenta deuna para recibir pagos', s === 'm' ? 'Abrir cuenta' : ''), go: function () { act('Solicitar cuenta'); } };
-      var b = '<p class="dw-label dw-1">Intereses ganados este mes</p><p class="dw-value">' + sens(money(3.12)) + '</p>';
-      return { body: b + '<p class="dw-sub dw-1">En tus cuentas de ahorro</p>' + (s === 'm' ? '<p class="dw-sub dw-1">Rendimiento anual 1,50%</p>' : ''), go: function () { act('Cuenta PRINCIPAL'); } };
+      var b = '<p class="dw-label dw-1">Intereses del mes</p><p class="dw-value">' + sens(money(3.12)) + '</p>';
+      return { body: b + '<p class="dw-sub dw-1">En tus ahorros</p>' + (s === 'm' ? '<p class="dw-sub dw-1">Rendimiento anual 1,50%</p>' : ''), go: function () { act('Cuenta PRINCIPAL'); } };
     },
     inversion: function (s, c) {
       if (c) return { body: promo('Haz crecer tu dinero', s === 'm' ? 'Invertir' : '', 'Gana 7,25% al año'), go: function () { act('Crear inversión'); } };
@@ -143,7 +157,7 @@
       // Monto personalizado ("Tienes hasta $ X") solo con consentimiento (D12): genérica mientras tanto
       if (c) return { body: promo('Tienes un crédito preaprobado', 'Simular', s === 'm' ? 'Sujeto a aprobación' : ''), go: function () { act('Simular crédito preaprobado'); } };
       var r = homeRow('Prestamos') || { name: 'Préstamo de consumo', sub: 'Cuota 6 de 36', amt: '$ 245,90', action: 'Préstamo de consumo' };
-      var b = '<p class="dw-label dw-1">Próxima cuota</p><p class="dw-value">' + sens(esc(r.amt)) + '</p><p class="dw-sub dw-1">20 oct · ' + esc(r.sub) + '</p>';
+      var b = '<p class="dw-label dw-1">Próxima cuota</p><p class="dw-value">' + sens(esc(r.amt)) + '</p><p class="dw-sub dw-1">' + (s === 's' ? 'Vence el 20 oct' : '20 oct · ' + esc(r.sub)) + '</p>';
       if (s === 's') return { body: b, go: function () { act(r.action); } };
       return { body: '<div class="dw-split"><div>' + b + '</div><div class="dw-split__r"><p class="dw-sub dw-1">' + esc(r.name) + '</p>' +
         '<button class="dw-btn bp-action-button" data-size="sm" data-dw-act="' + esc(r.action) + '">Pagar cuota</button></div></div>', go: function () { act(r.action); } };
@@ -163,10 +177,10 @@
     // Sin dato: mensaje corto, nunca ceros (el widget mantiene su tamaño)
     if (!r) r = { body: '<p class="dw-sub">No pudimos actualizar este dato</p>' };
     if (!preview) gos[w.id] = r.go;
-    return '<article class="dw dw--' + w.size + (c ? ' dw--offer' : '') + '" data-dw-id="' + w.id + '"' + (r.go && !preview ? ' role="button" tabindex="0"' : '') + ' aria-label="' + esc(cat.name) + '">' +
+    return '<article class="dw dw--' + w.size + (c ? ' dw--offer' : '') + (w.sug ? ' dw--sug' : '') + '" data-dw-id="' + w.id + '"' + (r.go && !preview ? ' role="button" tabindex="0"' : '') + ' aria-label="' + esc(cat.name) + '">' +
       '<p class="dw-h"><span class="material-symbols-rounded" aria-hidden="true">' + cat.icon + '</span><span class="dw-1">' + (w.size === 's' ? cat.short : cat.name) + '</span></p>' +
       '<div class="dw-body">' + r.body + '</div>' +
-      (preview ? '' : '<button class="dw-x" data-dw-del="' + w.id + '" aria-label="Quitar ' + esc(cat.name) + '"><span class="material-symbols-rounded">remove</span></button>' +
+      (preview ? '' : w.sug ? '<button class="dw-plus" data-dw-adopt="' + w.id + '" aria-label="Agregar ' + esc(cat.name) + '"><span class="material-symbols-rounded">add</span></button>' : '<button class="dw-x" data-dw-del="' + w.id + '" aria-label="Quitar ' + esc(cat.name) + '"><span class="material-symbols-rounded">remove</span></button>' +
         (cat.sizes.length > 1 ? '<button class="dw-size" data-dw-size="' + w.id + '" aria-label="Cambiar tamaño">' + SIZE[w.size] + '<span class="material-symbols-rounded">unfold_more</span></button>' : '')) +
       '</article>';
   }
@@ -202,8 +216,9 @@
     if (!host) return;
     gos = {};
     var ws = items();
-    list.innerHTML = ws.map(function (w) { return widgetHTML(w); }).join('') ||
-      '<p class="dw-empty">Sin widgets. <button class="pf-link" data-dw="add">Agregar widget</button></p>';
+    list.innerHTML = ws.concat(fillers(ws)).map(function (w) {
+      return w.slot ? '<button class="dw dw--s dw-slot" data-dw="add"><span class="material-symbols-rounded">add</span>Agregar widget</button>' : widgetHTML(w);
+    }).join('');
     var lim = host.querySelector('.dw-limit'); if (lim) lim.hidden = ws.length < MAX;
     host.classList.toggle('is-editing', editing);
     host.querySelector('[data-dw="edit"]').textContent = editing ? 'Listo' : 'Editar';
@@ -218,9 +233,17 @@
     if ((b = e.target.closest('[data-dw="edit"]'))) { e.stopPropagation(); return setEditing(!editing); }
     if ((b = e.target.closest('[data-dw="add"]'))) { e.stopPropagation(); return openGallery(); }
     if ((b = e.target.closest('[data-dw="reset"]'))) { try { localStorage.removeItem(KEY); } catch (x) {} pref = load(); if (editing) materialize(); fx('select'); return paint(); }
+    if ((b = e.target.closest('[data-dw-adopt]'))) {
+      e.stopPropagation(); materialize();
+      var id = b.dataset.dwAdopt;
+      if (pref.items.length < MAX) pref.items.push({ id: id, size: CATALOG[id].sizes[0] });
+      fx('success'); return commit();
+    }
     if ((b = e.target.closest('[data-dw-del]'))) {
       e.stopPropagation();
-      pref.items = pref.items.filter(function (w) { return w.id !== b.dataset.dwDel; }); fx('toggle'); return commit();
+      pref.items = pref.items.filter(function (w) { return w.id !== b.dataset.dwDel; });
+      pref.removed = (pref.removed || []).filter(function (id) { return id !== b.dataset.dwDel; }).concat(b.dataset.dwDel);
+      fx('toggle'); return commit();
     }
     if ((b = e.target.closest('[data-dw-size]'))) {
       e.stopPropagation();
@@ -251,6 +274,7 @@
         pressT = setTimeout(function () { off(); drag = { moved: true }; setEditing(true); setTimeout(function () { drag = null; }, 400); }, 450);
         return;
       }
+      if (el.classList.contains('dw--sug') || el.classList.contains('dw-slot')) return; // los huecos no se mueven
       var r = el.getBoundingClientRect();
       drag = { el: el, id: el.dataset.dwId, ox: e.clientX - r.left, oy: e.clientY - r.top, x0: e.clientX, y0: e.clientY, moved: false, pid: e.pointerId };
       try { el.setPointerCapture(e.pointerId); } catch (x) {}
