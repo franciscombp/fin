@@ -52,7 +52,13 @@
     creditos:  { name: 'Créditos', short: 'Créditos', icon: 'request_quote', sizes: ['m', 's'], salida: 1, desc: '¿Cuándo es tu próxima cuota?' },
     pagos:     { name: 'Pagos', short: 'Pagos', icon: 'event', sizes: ['m'], salida: 2, desc: '¿Qué pago viene?' },
     pfm:       { name: 'Mis finanzas', short: 'Gastos', icon: 'insights', sizes: ['m', 's'], salida: 4, desc: '¿En qué estás gastando?' },
-    seguros:   { name: 'Seguros', short: 'Seguros', icon: 'health_and_safety', sizes: ['m', 's'], salida: null, desc: '¿Qué cubre tu póliza?' }
+    seguros:   { name: 'Seguros', short: 'Seguros', icon: 'health_and_safety', sizes: ['m', 's'], salida: null, desc: '¿Qué cubre tu póliza?' },
+    // Pre-ofertas de productos que el cliente no tiene aunque tenga la familia
+    // (next product to buy). Solo viven como sugerencia (slot fantasma) y en
+    // "Sugeridos para ti"; si el cliente no tiene la familia, la sugerencia es
+    // la captación de la familia.
+    preaprobado: { name: 'Crédito preaprobado', short: 'Crédito', icon: 'request_quote', sizes: ['m', 's'], salida: 1, fam: 'creditos', desc: 'Tienes un crédito preaprobado' },
+    deuna:     { name: 'Cuenta deuna', short: 'deuna', icon: 'account_balance_wallet', sizes: ['m', 's'], salida: 1, fam: 'cuentas', desc: 'Recibe pagos con tu cuenta deuna' }
   };
   // Orden en que el banco sugiere (D4: ahorro e inversión no van por defecto)
   var SUGGESTED = ['tarjeta', 'creditos', 'pagos'];
@@ -89,12 +95,17 @@
     if (id === 'inversion') return !!homeRow('Inversiones');
     if (id === 'creditos') return !!homeRow('Prestamos');
     if (id === 'pagos') return PAYS.length > 0;
-    return false;
+    if (id === 'deuna') return !!document.querySelector('#home-page .product-row[data-action*="deuna" i]');
+    return false; // preaprobado: la oferta sigue vigente mientras no la tome
   }
-  var ELIGIBLE = { cuentas: true, inversion: true, metas: true, tarjeta: true, creditos: true, pagos: true };
+  var ELIGIBLE = { cuentas: true, inversion: true, metas: true, tarjeta: true, creditos: true, pagos: true, preaprobado: true, deuna: true };
   function available(id) { var c = CATALOG[id]; return !!(c && c.salida && c.salida <= RELEASE); }
   function capt(id) { return !owned(id) && !!ELIGIBLE[id]; } // captación (widget fantasma)
-  function shown(id) { return available(id) && (owned(id) || capt(id)); }
+  function shown(id) {
+    var f = CATALOG[id] && CATALOG[id].fam;
+    if (f) return available(id) && capt(id) && owned(f); // sin la familia, ya la sugiere su captación
+    return available(id) && (owned(id) || capt(id));
+  }
 
   /* ---------- Configuración ---------- */
   function defaults() {
@@ -191,6 +202,8 @@
       return { body: '<div class="dw-split"><div>' + b + '</div><div class="dw-split__r"><p class="dw-sub dw-1">' + esc(r.name) + '</p>' +
         '<button class="dw-btn bp-action-button" data-size="sm" data-dw-act="' + esc(r.action) + '">Pagar cuota</button></div></div>', go: function () { act(r.action); } };
     },
+    preaprobado: function (s) { return { body: promo('Tienes un crédito preaprobado', 'Simular', s === 'm' ? 'Sujeto a aprobación' : ''), go: function () { act('Simular crédito preaprobado'); } }; },
+    deuna: function (s) { return { body: promo('Abre tu cuenta deuna para recibir pagos', s === 'm' ? 'Abrir cuenta' : ''), go: function () { act('Solicitar cuenta'); } }; },
     pagos: function (s, c) {
       if (c) return { body: promo('Programa tus pagos de servicios', 'Programar'), go: function () { act('Pagar servicios'); } };
       // Solo informativo: fecha y monto, sin "vence hoy" (D2)
@@ -360,7 +373,7 @@
   }
   function openGallery() { ensureSheet(); paintGallery(); sheet.scrollTop = 0; back.classList.add('open'); sheet.classList.add('open'); fx('open'); }
   function closeGallery() { back.classList.remove('open'); sheet.classList.remove('open'); }
-  var WHY = { cuentas: 'Recibe pagos con tu cuenta deuna', inversion: 'Tu dinero puede rendir 7,25% al año', metas: 'Ahorra para algo que quieras', tarjeta: 'Pide tu tarjeta de crédito', creditos: 'Tienes un crédito preaprobado', pagos: 'Programa tus pagos de servicios' };
+  var WHY = { cuentas: 'Recibe pagos con tu cuenta deuna', inversion: 'Tu dinero puede rendir 7,25% al año', metas: 'Ahorra para algo que quieras', tarjeta: 'Pide tu tarjeta de crédito', creditos: 'Tienes un crédito preaprobado', preaprobado: 'Simula tu cuota, sujeto a aprobación', deuna: 'Recibe pagos de cualquier banco', pagos: 'Programa tus pagos de servicios' };
   function galItem(id, have, free, why) {
     var c = CATALOG[id], sz = pick[id] || defSize(id), on = have.indexOf(id) >= 0, fits = U[sz] <= free;
     return '<div class="dw-gal">' +
