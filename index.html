@@ -6662,9 +6662,9 @@
 
         // ---------- Banner de ofertas: carrusel infinito ----------
         const BANNER_SLIDES = [
-            { theme: 1, title: 'Ofertas todo el año con tus tarjetas Pichibank', cta: 'Ver ofertas', photo: 'bp-banner-1' },
-            { theme: 2, title: 'Obtén protección adicional pensada para tu día a día', cta: 'Ver más información', photo: 'bp-banner-2' },
-            { theme: 3, title: 'Genera ganancias con tus ahorros abriendo un Depósito a Plazo', cta: 'Simular ganancias', photo: 'bp-banner-3' },
+            { theme: 1, title: 'Ofertas todo el año', cta: 'Ver ofertas', photo: 'bp-banner-1' },
+            { theme: 2, title: 'Protección para tu día a día', cta: 'Ver más', photo: 'bp-banner-2' },
+            { theme: 3, title: 'Haz crecer tus ahorros', cta: 'Simular', photo: 'bp-banner-3' },
         ];
 
         // bp-banner con foto de fondo (assets/banners/foto-*.jpg). Si la
@@ -6677,7 +6677,7 @@
                          onerror="this.closest('.home-banner__slide').classList.add('is-nophoto'); this.remove();">
                     <div class="home-banner__text">
                         <p class="home-banner__title">${s.title}</p>
-                        <button class="home-banner__cta" data-action="${s.act || s.cta}">${s.cta}<span class="material-symbols-rounded">chevron_right</span></button>
+                        <button class="home-banner__cta bp-action-button bp-action-button--icon-right" data-size="sm" data-action="${s.act || s.cta}">${s.cta}<span class="material-symbols-rounded">chevron_right</span></button>
                     </div>
                 </div>`;
         }
