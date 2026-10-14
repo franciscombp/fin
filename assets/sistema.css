@@ -866,8 +866,8 @@ html .pf-page--inline .pf-prods, html .pf-page--inline .pf-recs { border-radius:
 .pf-page--inline .pf-months button:active { transform: scale(.96); }
 @keyframes pfNext { from { opacity: 0; transform: translate3d(28px, 0, 0); } to { opacity: 1; transform: none; } }
 @keyframes pfPrev { from { opacity: 0; transform: translate3d(-28px, 0, 0); } to { opacity: 1; transform: none; } }
-.pf-page--inline .pf-scroll.is-slide-next > :not(.pf-hero):not(.pf-months) { animation: pfNext .36s var(--ux-curve) both; }
-.pf-page--inline .pf-scroll.is-slide-prev > :not(.pf-hero):not(.pf-months) { animation: pfPrev .36s var(--ux-curve) both; }
+.pf-page--inline .pf-scroll.is-slide-next > :not(.pf-hero):not(.pf-months):not(.pf-head) { animation: pfNext .36s var(--ux-curve) both; }
+.pf-page--inline .pf-scroll.is-slide-prev > :not(.pf-hero):not(.pf-months):not(.pf-head) { animation: pfPrev .36s var(--ux-curve) both; }
 
 /* Clima de Uku: detalle en el fondo del héroe, sin peso visual */
 .pf-wx { position: absolute; left: 16px; bottom: 12px; margin: 0; z-index: 1; display: inline-flex; align-items: center; gap: 4px; font: 500 13px/18px var(--sol-font, Roboto, sans-serif); color: var(--cx-muted); opacity: .8; pointer-events: none; }
@@ -906,3 +906,8 @@ html:not(.theme-y2k) .pf-say__bubble, html:not(.theme-y2k) .pf-say__hint { box-s
 html:not(.theme-y2k) .tab-panel.is-active > .section,
 html:not(.theme-y2k) .tab-panel.is-active > .grow-cta { animation: uxFade .3s var(--ux-curve) both !important; }
 @keyframes uxFade { from { opacity: 0; transform: translate3d(0, 8px, 0); } to { opacity: 1; transform: none; } }
+
+/* Análisis de Uku: trazos neutros (sin degradados ni sombras), como el resto de la app */
+.ai-page .uku-disc { margin: 12px 24px calc(env(safe-area-inset-bottom, 0px) + 20px); font: 400 12px/16px var(--sol-font, Roboto, sans-serif); color: var(--cx-muted); text-align: center; }
+.ai-page .ai-composer { margin-bottom: 0 !important; }
+.ai-page .ai-chip, .ai-page .uku-say__reply--ai { border-color: var(--cx-line) !important; }

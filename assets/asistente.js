@@ -1375,10 +1375,7 @@
     var v = viewOf(ST.view), html = '';
     html += '<header class="pf-head"><div class="pf-head__row"><h1>Mis finanzas</h1>' +
       '<button class="pf-round" data-pf="settings" aria-label="Ajustes"><span class="material-symbols-rounded">tune</span></button></div></header>';
-    // Los meses van fuera del encabezado para poder quedarse fijos al bajar (como las pestañas de Inicio)
-    html += '<div class="pf-months" role="tablist">' + VIEWS.map(function (x) {
-        return '<button role="tab" data-pf="view:' + x.key + '" aria-selected="' + (x.key === v.key) + '"' + (x.today ? ' class="is-today"' : '') + '>' + T(MONTH_NAME[x.key] || x.short) + '</button>';
-      }).join('') + '</div>';
+
     var hs = v.today || v.current ? D.score : v.report ? REPORTS[v.key].score : monthScore(v.mi);
     var mesL = v.today ? '' : T(MONTH_NAME[v.key]).toLowerCase();
     say.first = null; hintFor(v); // decide qué tema va primero
@@ -1399,11 +1396,17 @@
     html += footHTML();
     // Conserva el nodo del héroe con el lienzo vivo (sin parpadeo al cambiar de mes)
     var scroll = pf.querySelector('.pf-scroll'), old = scroll.querySelector('.pf-hero'), live = old && old.querySelector('canvas');
+    // La fila de meses es el mismo nodo de siempre (como las pestañas de Inicio): solo cambia la selección
+    var row = pf.querySelector('.pf-months');
+    if (!row) { row = document.createElement('div'); row.className = 'pf-months'; row.setAttribute('role', 'tablist'); row.innerHTML = VIEWS.map(function (x) {
+        return '<button role="tab" data-pf="view:' + x.key + '"' + (x.today ? ' class="is-today"' : '') + '>' + T(MONTH_NAME[x.key] || x.short) + '</button>'; }).join(''); }
+    row.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.pf === 'view:' + v.key)); });
     // Dirección del cambio de mes: el contenido entra desde el lado hacia donde avanza el tiempo
     var idx = function (k) { return VIEWS.findIndex(function (x) { return x.key === k; }); };
     var dir = paintDash.lastKey && paintDash.lastKey !== v.key ? (idx(v.key) > idx(paintDash.lastKey) ? 'next' : 'prev') : null;
     paintDash.lastKey = v.key;
     scroll.innerHTML = html;
+    var head = scroll.querySelector('.pf-head'); if (head) head.after(row); else scroll.prepend(row);
     if (dir) {
       scroll.classList.remove('is-slide-next', 'is-slide-prev'); void scroll.offsetWidth;
       scroll.classList.add(dir === 'next' ? 'is-slide-next' : 'is-slide-prev');
@@ -1422,8 +1425,9 @@
     // El globo abre con el mismo tema del aviso
     if (say.first) say.list.sort(function (a, b) { var m = function (x) { return say.first === 'savings' ? x.icon === 'savings' : x.kind === 'warn'; }; return m(b) - m(a); }); say.i = Math.min(say.i, Math.max(0, say.list.length - 1));
     if (v.today) { paintSay(); paintWx(); syncHero(); }
-    var row = pf.querySelector('.pf-months'), sel = row && row.querySelector('[aria-selected="true"]');
-    if (sel) row.scrollLeft = sel.offsetLeft - (row.clientWidth - sel.offsetWidth) / 2;
+    // Igual que Inicio: la pestaña elegida se centra con un desplazamiento suave
+    var sel = row.querySelector('[aria-selected="true"]');
+    if (sel) sel.scrollIntoView({ behavior: dir ? 'smooth' : 'auto', inline: 'center', block: 'nearest' });
   }
   var regCat = 'super';
   function budgetSheet() {
