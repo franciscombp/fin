@@ -996,11 +996,23 @@
       }).join('')) + '</div></section>';
   }
   function goalsHTML() {
-    return '<section class="pf-sec"><h2>Metas</h2><div class="pf-goals">' + D.goals.map(function (g) {
-      return '<div class="pf-goal"><div class="pf-goal__top"><b>' + T(g.name) + '</b><span>' + pct(Math.min(1, g.have / g.target)) + '</span></div>' +
-        '<u><i style="width:' + Math.round(Math.min(1, g.have / g.target) * 100) + '%"></i></u>' +
-        '<small>' + money(g.have) + ' ' + T('de {monto}', { monto: money(g.target) }) + ' · ' + (g.onTrack ? T('Vas a tiempo') : T('Te faltan {monto} al mes', { monto: money(g.need - g.monthly) })) + '</small></div>';
-    }).join('') + '</div></section>';
+    var late = D.goals.filter(function (g) { return !g.onTrack; });
+    return '<section class="pf-sec pf-msec"><p class="pf-msec__label">Metas</p><div class="pf-mcard">' +
+      '<p class="pf-mcard__lead">' + (late.length ? T('A {meta} le falta un empujón: {monto} más al mes y llegas a tiempo.', { meta: T(late[0].name), monto: money(late[0].need - late[0].monthly) }) : T('Vas a tiempo con todas tus metas.')) + '</p>' +
+      D.goals.map(function (g) {
+        var p = Math.min(1, g.have / g.target);
+        return meterRow({ name: T(g.name), right: T('{pct} ahorrado', { pct: pct(p) }), p: p, tone: 'ok',
+          sub: money(g.have) + ' ' + T('de {monto}', { monto: money(g.target) }) + ' · ' + (g.onTrack ? T('Vas a tiempo') : T('Te faltan {monto} al mes', { monto: money(g.need - g.monthly) })) });
+      }).join('') + '</div></section>';
+  }
+  // Fila de medidor (como el uso de una app): nombre, cifra a la derecha,
+  // barra fina sobre su mismo color claro y una línea que explica
+  function meterRow(o) {
+    var w = Math.max(o.p > 0 ? 2 : 0, Math.min(100, o.p * 100));
+    return '<' + (o.pf ? 'button data-pf="' + o.pf + '"' : 'div') + ' class="pf-meter pf-meter--' + o.tone + '">' +
+      '<span class="pf-meter__top"><span class="pf-meter__name">' + o.name + '</span><span class="pf-meter__right">' + o.right + '</span></span>' +
+      '<span class="pf-meter__bar"><i style="width:' + w.toFixed(1) + '%"></i>' + (o.mark != null ? '<em style="left:' + (o.mark * 100).toFixed(1) + '%"></em>' : '') + '</span>' +
+      '<span class="pf-meter__sub">' + o.sub + '</span></' + (o.pf ? 'button' : 'div') + '>';
   }
   function recordsHTML(mi) {
     var list = sortedTx(function (t) { return t.mi === mi && t.cat !== 'ahorro'; }).slice(0, 5);
@@ -1127,34 +1139,43 @@
       '<p class="pf-flow__plain">' + T('De cada $ 10 que te entraron, gastaste $ {g} y ahorraste $ {s}.', { g: g10, s: s10 }) + '</p>') +
       '</section>';
   }
-  // Presupuestos en palabras: "Te quedan" / "Te pasaste"
+  // Presupuestos: una frase que resume y un medidor por categoría
   function budgetsHTML(mi) {
-    var b = D.by[mi], mo = MONTHS[mi], frac = mo.partial ? mo.days / 30 : 1;
+    var b = D.by[mi], mo = MONTHS[mi], frac = mo.partial ? mo.days / 31 : 1;
     var ks = Object.keys(CATS).filter(function (k) { return !CATS[k].fixed; })
       .sort(function (x, y) { return b[y] / CATS[y].budget - b[x] / CATS[x].budget; });
-    var over = ks.filter(function (k) { return b[k] > CATS[k].budget; }).length;
-    return '<section class="pf-sec"><div class="pf-sec__head"><h2>Presupuestos</h2><button class="pf-link" data-pf="budgets">Ajustar</button></div>' +
-      '<p class="pf-sec__sub">' + (over ? T('Te pasaste en {n} de {t} categorías', { n: over, t: ks.length }) : mo.partial ? T('La raya marca hasta dónde deberías ir hoy ({pct} del mes)', { pct: pct(frac) }) : T('No te pasaste en ninguna categoría')) + '</p>' +
-      '<div class="pf-bud2">' + ks.map(function (k) {
-        var v = b[k], B = CATS[k].budget, o = v > B;
-        return '<button class="pf-bud2__row' + (o ? ' is-over' : '') + '" data-pf="cat:' + k + ':' + mi + '">' +
-          '<span class="pf-bud2__ic material-symbols-rounded" aria-hidden="true">' + (CAT_IC[k] || 'category') + '</span>' +
-          '<span class="pf-bud2__name">' + T(CATS[k].name) + '<small>' + T('{a} de {b}', { a: money(v), b: money(B) }) + '</small></span>' +
-          '<span class="pf-bud2__state"><small>' + T(o ? 'Te pasaste' : 'Te quedan') + '</small>' + money(o ? v - B : B - v) + '</span>' +
-          '<u><i style="width:' + Math.round(Math.min(1, v / B) * 100) + '%"></i>' + (mo.partial ? '<em style="left:' + Math.round(frac * 100) + '%"></em>' : '') + '</u></button>';
-      }).join('') + '</div></section>';
+    var over = ks.filter(function (k) { return b[k] > CATS[k].budget; });
+    var risk = mo.partial ? ks.filter(function (k) { return b[k] / frac > CATS[k].budget; }) : [];
+    var next = MONTHS[mi + 1] ? T(MONTHS[mi + 1].name) : T('noviembre');
+    var lead = mo.partial
+      ? (over.length ? T('Ya te pasaste en {cat}. En lo demás, todavía tienes margen.', { cat: catLow(over[0]) })
+        : risk.length ? T('Vas bien, pero a este ritmo te pasarías en {cat}.', { cat: catLow(risk[0]) })
+        : T('Vas bien. Deberías terminar el mes dentro de tus presupuestos.'))
+      : (over.length ? T('Te pasaste en {n} de {t} presupuestos.', { n: over.length, t: ks.length }) : T('Bien hecho: cerraste el mes dentro de todos tus presupuestos.'));
+    return '<section class="pf-sec pf-msec"><div class="pf-msec__head"><p class="pf-msec__label">Presupuestos</p><button class="pf-link" data-pf="budgets">Ajustar</button></div>' +
+      '<div class="pf-mcard"><p class="pf-mcard__lead">' + lead +
+        (mo.partial ? '<small>' + T('Se renuevan el 1 de {mes}', { mes: next }) + '</small>' : '') + '</p>' +
+      ks.map(function (k) {
+        var v = b[k], B = CATS[k].budget, p = v / B, o = v > B;
+        var tone = o ? 'over' : (mo.partial ? p / frac > 1 : p >= .85) ? 'warn' : 'ok'; // ámbar: a este ritmo te pasarías
+        return meterRow({ name: T(CATS[k].name), right: T('{pct} usado', { pct: pct(p) }), p: p, tone: tone, pf: 'cat:' + k + ':' + mi,
+          mark: mo.partial ? frac : null,
+          sub: (o ? T('Te pasaste {monto}', { monto: money(v - B) }) : T('Te quedan {monto} de {total}', { monto: money(B - v), total: money(B) })) });
+      }).join('') + '</div>' +
+      (mo.partial ? '<p class="pf-note">' + T('La raya marca hasta dónde deberías ir hoy.') + '</p>' : '') + '</section>';
   }
-  // En qué gastaste: parte de tu gasto (en %), con ícono y monto
+  // En qué gastaste: parte de tu gasto, en el mismo medidor
   function spendHTML(mi) {
     var all = catTotals(mi), total = D.by[mi]._spend, tc = all.slice(0, 4);
     if (!tc.length) return '';
-    return '<section class="pf-sec"><h2>En qué gastaste</h2><p class="pf-sec__sub">' + T('{cat} se llevó {pct} de tu gasto', { cat: T(CATS[tc[0].k].name), pct: pct(tc[0].v / total) }) + '</p>' +
-      '<div class="pf-cats">' + tc.map(function (c) {
-        return '<button class="pf-cats__row" data-pf="cat:' + c.k + ':' + mi + '"><span class="pf-bud2__ic material-symbols-rounded" aria-hidden="true">' + (CAT_IC[c.k] || 'category') + '</span>' +
-          '<span class="pf-cats__name">' + T(CATS[c.k].name) + '<small>' + pct(c.v / total) + ' ' + T('de tu gasto') + '</small></span><b>' + money(c.v) + '</b>' +
-          '<u><i style="width:' + (c.v / total * 100).toFixed(1) + '%"></i></u></button>';
-      }).join('') + '</div>' +
-      (all.length > tc.length ? '<button class="pf-link pf-link--block" data-pf="breakdown:' + mi + '">' + T('Ver las {n} categorías', { n: all.length }) + '</button>' : '') + '</section>';
+    return '<section class="pf-sec pf-msec"><p class="pf-msec__label">En qué gastaste</p><div class="pf-mcard">' +
+      '<p class="pf-mcard__lead">' + T('{cat} se llevó {pct} de lo que gastaste.', { cat: T(CATS[tc[0].k].name), pct: pct(tc[0].v / total) }) + '</p>' +
+      tc.map(function (c) {
+        return meterRow({ name: T(CATS[c.k].name), right: money(c.v), p: c.v / total, tone: 'cat', pf: 'cat:' + c.k + ':' + mi,
+          sub: T('{pct} de tu gasto', { pct: pct(c.v / total) }) });
+      }).join('') +
+      (all.length > tc.length ? '<button class="pf-mcard__more" data-pf="breakdown:' + mi + '">' + T('Ver las {n} categorías', { n: all.length }) + '<span class="material-symbols-rounded">chevron_right</span></button>' : '') +
+      '</div></section>';
   }
   function insCards(title, list) {
     curIns = list || [];
