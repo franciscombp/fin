@@ -17,10 +17,11 @@
   'use strict';
 
   var KEY = 'pb_asistente_v3';
-  var ST = { who: 'candado', scenario: 'normal', linked: [], view: 'sep', mods: { extraSave: 0, paidLate: false, paidLateAmt: 0, ccPaid: 0, efund: 0, autopay: false } };
+  var ST = { who: 'candado', scenario: 'normal', linked: [], off: [], view: 'sep', mods: { extraSave: 0, paidLate: false, paidLateAmt: 0, ccPaid: 0, efund: 0, autopay: false } };
   try { var saved = JSON.parse(localStorage.getItem(KEY)); if (saved) ST = Object.assign(ST, saved); } catch (e) {}
   // La tarjeta de crédito ahora es de Pichibank (antes "Banco Andino", externo)
   ST.linked = (ST.linked || []).filter(function (b) { return b !== 'andino'; });
+  ST.off = ST.off || []; // cuentas e inversiones que NO se analizan (se pueden volver a incluir)
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(ST)); } catch (e) {} }
   function fx(n) { try { window.Haptics && Haptics.fx && Haptics.fx(n); } catch (e) {} }
 
@@ -153,6 +154,7 @@
     });
     // Registros manuales (gastos en efectivo que anota el usuario)
     (ST.manual || []).forEach(function (t) { tx.push(Object.assign({ manual: true }, t)); });
+    tx = tx.filter(function (t) { return ST.off.indexOf(t.acct) < 0; });
     var by = MONTHS.map(function () { var o = {}; Object.keys(CATS).forEach(function (k) { o[k] = 0; }); o._spend = 0; o._save = 0; o._in = 0; o._hormigaN = 0; return o; });
     tx.forEach(function (t) {
       var b = by[t.mi];
@@ -173,8 +175,9 @@
       if (a.id === 'pb1') o.bal = a.bal - mods.efund - mods.ccPaid - mods.paidLateAmt;
       return o;
     });
-    var assets = accts.filter(function (a) { return a.type !== 'credito'; }).reduce(function (s, a) { return s + a.bal; }, 0);
-    var card = accts.filter(function (a) { return a.type === 'credito'; })[0];
+    var inc = function (a) { return ST.off.indexOf(a.id) < 0; };
+    var assets = accts.filter(function (a) { return a.type !== 'credito' && inc(a); }).reduce(function (s, a) { return s + a.bal; }, 0);
+    var card = accts.filter(function (a) { return a.type === 'credito' && inc(a); })[0];
     var debt = card ? card.owed : 0, util = card ? debt / card.limit : 0;
     var avgSpend = (by[0]._spend + by[1]._spend) / 2;
     var cushion = goals[0].have + (connected('sierra') ? acctOf('sie1').bal : 0);
@@ -185,7 +188,7 @@
     var rate = sep._save / sep._in;
     var f = {
       ahorro: { v: Math.min(1, rate / .15), label: 'Ahorro', icon: 'savings', ok: rate >= .08, val: T('{pct} de tus ingresos', { pct: pct(rate) }),
-        tip: rate >= .08 ? T('Estás ahorrando más del 8% de lo que te entra. ¡Sigue así!') : T('Intenta ahorrar por lo menos el 8% de lo que te entra cada mes.'),
+        tip: rate >= .08 ? T('Estás ahorrando más del 8% de tus ingresos. ¡Sigue así!') : T('Intenta ahorrar por lo menos el 8% de tus ingresos cada mes.'),
         act: rate >= .15 ? null : { id: 'save50', label: 'Ahorrar $ 50 más al mes' } },
       pagos: { v: lateN ? 0 : 1, label: 'Pagos a tiempo', icon: 'event_available', ok: !lateN, val: lateN ? T('{n} pago atrasado', { n: lateN }) : T('Todo al día'),
         tip: lateN ? 'Todavía tienes pendiente el agua de septiembre. Si la pagas hoy, evitas otro recargo.' : 'No tienes nada atrasado en los últimos 3 meses.',
@@ -197,7 +200,7 @@
         tip: !card ? 'Conecta tus tarjetas de otros bancos para verlas aquí.' : util < .3 ? 'Usas menos del 30% de tu cupo, que es lo ideal para tu historial.' : 'Estás usando más del 30% de tu cupo y eso pesa en tu historial. Bajarlo es lo que más te ayuda este mes.',
         act: card && util >= .3 ? { id: 'payCard', label: 'Abonar $ 200 a Mastercard Black' } : null },
       colchon: { v: Math.min(1, months / 6), label: 'Ahorro para emergencias', icon: 'shield', ok: months >= 3, val: T('Te alcanza para {n} meses', { n: months.toFixed(1).replace('.', ',') }),
-        tip: months >= 3 ? 'Si un mes no te entra plata, puedes cubrir más de 3 meses de gastos. Ese es el mínimo recomendado.' : T('Lo recomendable es tener ahorrados por lo menos 3 meses de gastos. Ahora te alcanza para {n}.', { n: months.toFixed(1).replace('.', ',') }),
+        tip: months >= 3 ? 'Si un mes no tienes ingresos, puedes cubrir más de 3 meses de gastos. Ese es el mínimo recomendado.' : T('Lo recomendable es tener ahorrados por lo menos 3 meses de gastos. Ahora te alcanza para {n}.', { n: months.toFixed(1).replace('.', ',') }),
         act: months >= 6 ? null : { id: 'efund100', label: 'Pasar $ 100 al fondo' } }
     };
     var score = Math.round(25 * f.ahorro.v + 20 * f.pagos.v + 20 * f.presupuesto.v + 15 * f.deuda.v + 20 * f.colchon.v);
@@ -348,9 +351,9 @@
     if (/ahorr|puedo|alcanza|sobra/.test(s)) {
       var free = sep._in - sep._spend - sep._save;
       var cut = Math.max(0, sep.delivery - CATS.delivery.budget) + Math.max(0, sep.cafe - CATS.cafe.budget) + Math.max(0, sep.compras - CATS.compras.budget);
-      return { t: T('En septiembre ahorraste <b>{ahorro}</b>, el {pct} de lo que te entró, y te sobraron {libre} sin un destino fijo.', { ahorro: money(sep._save), pct: pct(sep._save / sep._in), libre: money(free) }) + ' ' +
+      return { t: T('En septiembre ahorraste <b>{ahorro}</b>, el {pct} de tus ingresos, y te sobraron {libre} sin un destino fijo.', { ahorro: money(sep._save), pct: pct(sep._save / sep._in), libre: money(free) }) + ' ' +
         (cut > 5 ? T('Si delivery, cafés y compras vuelven a lo que tenías presupuestado, son {monto} más cada mes.', { monto: money(cut) }) : T('Podrías mandar {monto} más a tus metas cada mes sin quedarte corto.', { monto: money(Math.max(20, Math.round(free * .3))) })),
-        h: '<div class="as-stats">' + stat(T('Te entró'), money(sep._in)) + stat(T('Gastaste'), money(sep._spend)) + stat(T('Ahorraste'), money(sep._save)) + stat(T('Te sobró'), money(free)) + '</div>',
+        h: '<div class="as-stats">' + stat(T('Ingresos'), money(sep._in)) + stat(T('Gastaste'), money(sep._spend)) + stat(T('Ahorraste'), money(sep._save)) + stat(T('Te sobró'), money(free)) + '</div>',
         s: ['¿Cómo voy con mis metas?', '¿En qué me pasé?'] };
     }
     if (/compar|mes pasado|vs|anterior|subi|baje|aument/.test(s)) {
@@ -431,7 +434,7 @@
   var REPORTS = {
     jun: { name: 'junio', spend: 984.2, save: 84, rate: .07, score: 46, ins: [
       { kind: 'warn', icon: 'event_busy', title: 'Pagaste tarde el internet', sub: 'Lo pagaste 4 días después de la fecha y te cobraron $ 1,50 de recargo.' },
-      { kind: 'good', icon: 'savings', title: 'Ahorraste $ 84', sub: 'Es el 7% de lo que te entró.' }] },
+      { kind: 'good', icon: 'savings', title: 'Ahorraste $ 84', sub: 'Es el 7% de tus ingresos.' }] },
     jul: { name: 'julio', spend: 1012.6, save: 108, rate: .09, score: 61, ins: [
       { kind: 'warn', icon: 'trending_up', title: 'Gastaste 41% más de lo normal en compras', sub: 'Fueron las compras de vacaciones: $ 212, cuando normalmente gastas $ 150.' },
       { kind: 'good', icon: 'event_available', title: 'Pagaste todo a tiempo', sub: 'Sin recargos en servicios ni tarjetas.' }] }
@@ -463,7 +466,7 @@
   }
   var insCache = {};
   function monthInsights(mi) {
-    var ck = mi + '|' + ST.scenario + '|' + ST.linked.join() + '|' + JSON.stringify(ST.mods);
+    var ck = mi + '|' + ST.scenario + '|' + ST.linked.join() + '|' + ST.off.join() + '|' + JSON.stringify(ST.mods);
     if (insCache[ck]) return insCache[ck];
     var b = D.by[mi], name = MONTHS[mi].name, warn = [], good = [];
     var late = D.tx.filter(function (t) { return t.late && t.mi === mi; })[0];
@@ -479,8 +482,8 @@
       warn.push({ kind: 'warn', icon: 'trending_up', title: T('Gastaste {pct} más de lo normal en {cat}', { pct: pct(b[k] / HAB[k] - 1), cat: catLow(k) }), sub: T('Fueron {monto}, cuando normalmente gastas {habitual}.', { monto: money(b[k]), habitual: money(HAB[k]) }) + (top ? ' ' + T('Donde más gastaste: {lugar}.', { lugar: top }) : ''), det: 'cat:' + k + ':' + mi, ask: '¿Cuánto gasté en ' + CATS[k].name.toLowerCase() + '?' });
     }
     var rate = b._save / b._in;
-    if (rate >= .08) good.push({ kind: 'good', icon: 'savings', title: T('Ahorraste {monto}', { monto: money(b._save) }), sub: T('Es el {pct} de lo que te entró. ¡Bien!', { pct: pct(rate) }), ask: '¿Cuánto más puedo ahorrar?' });
-    else good.push({ kind: 'info', icon: 'savings', title: rate ? T('Ahorraste {monto}, el {pct}', { monto: money(b._save), pct: pct(rate) }) : T('Este mes no ahorraste nada'), sub: T('Lo ideal es ahorrar por lo menos el 8% de lo que te entra.') + (rate ? '' : ' ' + T('Programar un ahorro automático el día de pago ayuda mucho.')), ask: '¿Cuánto más puedo ahorrar?' });
+    if (rate >= .08) good.push({ kind: 'good', icon: 'savings', title: T('Ahorraste {monto}', { monto: money(b._save) }), sub: T('Es el {pct} de tus ingresos. ¡Bien!', { pct: pct(rate) }), ask: '¿Cuánto más puedo ahorrar?' });
+    else good.push({ kind: 'info', icon: 'savings', title: rate ? T('Ahorraste {monto}, el {pct}', { monto: money(b._save), pct: pct(rate) }) : T('Este mes no ahorraste nada'), sub: T('Lo ideal es ahorrar por lo menos el 8% de tus ingresos.') + (rate ? '' : ' ' + T('Programar un ahorro automático el día de pago ayuda mucho.')), ask: '¿Cuánto más puedo ahorrar?' });
     if (!late) good.push({ kind: 'good', icon: 'event_available', title: T('Pagaste todo a tiempo'), sub: T('No te cobraron ningún recargo este mes.') });
     var out = warn.slice(0, 3).concat(good).slice(0, 4);
     insCache[ck] = out;
@@ -568,7 +571,7 @@
       '<div class="as-pet" role="button" tabindex="0" aria-label="Saludar"></div>' +
       '<div class="as-composer"><div class="as-chips"></div>' +
         '<form class="as-input"><input type="text" enterkeyhint="send" autocomplete="off" aria-label="Escribe tu pregunta">' +
-        '<button class="as-send" type="submit" aria-label="Enviar"><span class="material-symbols-rounded">arrow_upward</span></button></form></div>';
+        '<button class="as-send" type="submit" aria-label="Enviar"><span class="material-symbols-rounded">arrow_upward</span></button></form><p class="uku-disc">' + T('Uku es una IA y puede cometer errores. Sus sugerencias no son recomendaciones financieras.') + '</p></div>';
     document.body.appendChild(page);
     ensureSheet();
 
@@ -966,7 +969,7 @@
       '<button class="pf-navrow" data-pf="accounts"><span class="material-symbols-rounded">account_balance</span><span><b>Cuentas conectadas</b><small>' + T('{n} cuentas', { n: D.accts.length }) + ' · ' + Object.keys(BANKS).filter(connected).map(function (k) { return BANKS[k].name; }).join(', ') + '</small></span><span class="material-symbols-rounded">chevron_right</span></button>' +
       '<button class="pf-navrow" data-pf="health"><span class="material-symbols-rounded">favorite</span><span><b>Salud financiera</b><small>Cómo se calcula y cómo subirla</small></span><span class="material-symbols-rounded">chevron_right</span></button>' +
       '<button class="pf-navrow" data-pf="analyze"><span class="pf-navrow__av">' + C().face() + '</span><span><b>' + T('Analizar con {nombre}', { nombre: C().name }) + ' <span class="ai-badge">IA</span></b><small>' + T('Un análisis de tus finanzas hecho con IA') + '</small></span><span class="material-symbols-rounded">chevron_right</span></button>' +
-      '<p class="pf-note">Tu resumen se arma al cierre de cada mes. El del mes en curso lo calculamos solo cuando lo pides, así la app carga más rápido.</p></section>';
+      '<p class="pf-note">' + T('Tu resumen de cada mes estará listo al final del mes.') + '</p></section>';
   }
   function paintPF() {
     if (!pf) return;
@@ -1204,7 +1207,7 @@
           '<span>' + T(CATS[r.k].name) + '</span><b>' + (r.d > 0 ? T('+{monto}', { monto: money(r.d) }) : T('−{monto}', { monto: money(-r.d) })) + '</b></div>';
       }).join('') + '</div>';
   }
-  // "De cada $10 que te entraron…": la forma más simple de leer un mes
+  // "De cada $10 de tus ingresos…": la forma más simple de leer un mes
   function flowHTML(v) {
     var n = monthNums(v), sp = Math.min(1, n.spend / n.inc), sv = Math.max(0, Math.min(1 - sp, n.save / n.inc));
     var g10 = Math.round(sp * 10), s10 = Math.round(sv * 10);
@@ -1213,12 +1216,12 @@
       '<p class="pf-flow__label">' + T(v.current ? 'Llevas gastado en {mes}' : 'Gastaste en {mes}', { mes: mes }) + '</p>' +
       '<p class="pf-flow__value">' + money(n.spend) + '</p>' +
       (n.partial ? '<p class="pf-flow__sub">' + T('En los primeros {n} días del mes', { n: MONTHS[2].days }) + '</p>' :
-      '<div class="pf-flow__bar" role="img" aria-label="' + T('Te entraron {a}; gastaste {b} y ahorraste {c}', { a: money(n.inc), b: money(n.spend), c: money(n.save) }) + '">' +
+      '<div class="pf-flow__bar" role="img" aria-label="' + T('Tus ingresos fueron {a}; gastaste {b} y ahorraste {c}', { a: money(n.inc), b: money(n.spend), c: money(n.save) }) + '">' +
         '<i class="is-spend" style="width:' + (sp * 100).toFixed(1) + '%"></i><i class="is-save" style="width:' + (sv * 100).toFixed(1) + '%"></i></div>' +
-      '<div class="pf-flow__keys"><span><i class="is-in"></i>' + T('Te entró') + '<b>' + money(n.inc) + '</b></span>' +
+      '<div class="pf-flow__keys"><span><i class="is-in"></i>' + T('Ingresos') + '<b>' + money(n.inc) + '</b></span>' +
         '<span><i class="is-spend"></i>' + T('Gastaste') + '<b>' + money(n.spend) + '</b></span>' +
         '<span><i class="is-save"></i>' + T('Ahorraste') + '<b>' + money(n.save) + '</b></span></div>' +
-      '<p class="pf-flow__plain">' + T('De cada $ 10 que te entraron, gastaste $ {g} y ahorraste $ {s}.', { g: g10, s: s10 }) + '</p>') +
+      '<p class="pf-flow__plain">' + T('De cada $ 10 de tus ingresos, gastaste $ {g} y ahorraste $ {s}.', { g: g10, s: s10 }) + '</p>') +
       '</section>';
   }
   // Presupuestos: una frase que resume y un medidor por categoría
@@ -1545,13 +1548,40 @@
           (f.act && f.act.id.indexOf('cat:') !== 0 ? '<button class="pf-btn" data-sheet="act:' + f.act.id + '">' + f.act.label + '</button>' : '') + '</div>';
       }).join('') + '</div>');
   }
+  // Lo que cuenta en el análisis: cuentas y, aparte, depósitos, préstamos y seguros.
+  // Por ahora las cuentas son de Pichibank; las de otros bancos vendrán después.
+  var EXTRAS = [
+    { id: 'dep1', name: 'Depósito a plazo', sub: 'Vence el 12 de nov', amt: 3000, icon: 'trending_up' },
+    { id: 'prest1', name: 'Préstamo de consumo', sub: 'Cuota 6 de 36', amt: -7380.5, icon: 'real_estate_agent' },
+    { id: 'seg1', name: 'Seguros', sub: 'Vida y protección de tarjetas', amt: -16.4, icon: 'shield' }
+  ];
+  function isIncl(id) { return ST.off.indexOf(id) < 0; }
+  function toggleIncl(id) {
+    var i = ST.off.indexOf(id);
+    if (i >= 0) ST.off.splice(i, 1); else ST.off.push(id);
+    persist(); build(); paintPF(); paintEntries(); fx('toggle');
+  }
+  function inclRow(id, icon, name, sub, val) {
+    var on = isIncl(id);
+    return '<button class="pf-row pf-row--incl' + (on ? '' : ' is-off') + '" data-sheet="incl:' + id + '" aria-pressed="' + on + '">' +
+      '<span class="pf-av" aria-hidden="true"><span class="material-symbols-rounded">' + icon + '</span></span>' +
+      '<span class="pf-row__main"><b>' + name + '</b><small>' + sub + '</small></span>' +
+      '<span class="pf-row__val">' + val + '<span class="pf-switch" aria-hidden="true"></span></span></button>';
+  }
   function accountsSheet() {
-    showSheet('<h3>' + T('Cuentas conectadas') + '</h3><p>' + (D.debt ? T('En total tienes {total} y debes {deuda}.', { total: money(D.assets), deuda: money(D.debt) }) : T('En total tienes {total}.', { total: money(D.assets) })) + '</p><div class="pf-card pf-card--flat">' +
-      D.accts.map(function (a) {
-        return '<div class="pf-row">' + bankAv(a.bank) + '<span class="pf-row__main"><b>' + a.name + '</b><small>' + BANKS[a.bank].name + (a.mask ? ' ·••' + a.mask : '') + '</small></span>' +
-          '<span class="pf-row__val">' + (a.type === 'credito' ? '<b>-' + money(a.owed) + '</b><small>' + T('Cupo {monto}', { monto: money(a.limit) }) + '</small>' : '<b>' + money(a.bal) + '</b>') + '</span></div>';
-      }).join('') + '</div><button class="pf-cta" data-sheet="connect">Conectar otra cuenta</button>' +
-      '<button class="pf-link pf-link--block" data-sheet="tx:all">Ver movimientos de todas las cuentas</button>');
+    var all = ACCTS.filter(function (a) { return connected(a.bank); });
+    var rows = all.map(function (a) {
+      var live = D.accts.filter(function (x) { return x.id === a.id; })[0] || a; // saldos ya calculados
+      var v = a.type === 'credito' ? '<b>-' + money(Math.abs(live.owed || 0)) + '</b>' : '<b>' + money(live.bal) + '</b>';
+      return inclRow(a.id, a.type === 'credito' ? 'credit_card' : 'account_balance_wallet', a.name, BANKS[a.bank].name + (a.mask ? ' ··' + a.mask : ''), v);
+    }).join('') + EXTRAS.map(function (x) {
+      return inclRow(x.id, x.icon, x.name, x.sub, '<b>' + money(x.amt) + '</b>');
+    }).join('');
+    showSheet('<h3>' + T('Cuentas conectadas') + '</h3>' +
+      '<p>' + T('Elige qué cuentas y productos quieres que Uku analice. Lo que apagues no cuenta en tus saldos, en tus gastos ni en tus recomendaciones.') + '</p>' +
+      '<div class="pf-card pf-card--flat">' + rows + '</div>' +
+      '<button class="pf-cta" data-sheet="connect">' + T('Conectar otra cuenta') + '</button>' +
+      '<button class="pf-link pf-link--block" data-sheet="tx:all">' + T('Ver movimientos de todas las cuentas') + '</button>');
   }
   function allTxSheet(acct) {
     var ids = D.accts.map(function (a) { return a.id; });
@@ -1620,6 +1650,7 @@
     }
     if (k === 'connect') return connectSheet();
     if (k.indexOf('act:') === 0) { closeSheet(); return doAction(k.slice(4)); }
+    if (k.indexOf('incl:') === 0) { toggleIncl(k.slice(5)); return accountsSheet(); }
     if (k.indexOf('cat:') === 0) { var p = k.split(':'); return catSheet(p[1], +p[2]); }
     if (k.indexOf('link:') === 0) return consentSheet(k.slice(5));
     if (k.indexOf('auth:') === 0) return finishLink(k.slice(5));
@@ -1689,5 +1720,5 @@
   }
   window.Asistente = {
     answer: function (q) { return answer(q); }, pack: monthPack, pf: function (k) { return pfKey(k); }, money: money, analyze: analyze, petSVG: function () { return C().svg(); }, faceIMG: function () { return C().face(); }, name: function () { return C().name; }, open: function (o) { analyze(o && o.ask); }, openPF: function () { openPF(); }, ask: function (q) { analyze(q); }, data: function () { return D; },
-    insights: function () { return monthInsights(lastClosedMi()); } };
+    insights: function () { return monthInsights(lastClosedMi()); }, included: isIncl };
 })();

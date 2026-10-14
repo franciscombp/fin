@@ -42,7 +42,7 @@
       ? T('En lo que va de {mes} llevas {gasto}. Si sigues a este ritmo, el mes se parece a tus meses normales.', { mes: p.mes, gasto: money(n.spend) })
       : T('En {mes} gastaste {gasto}, {comp} tu promedio de {prom}.', { mes: p.mes, gasto: money(n.spend), prom: money(p.avg),
           comp: Math.abs(diff) < .03 ? T('casi igual que') : T(diff > 0 ? '{pct} más que' : '{pct} menos que', { pct: pct(Math.abs(diff)) }) }) +
-        ' ' + (n.save ? T('Ahorraste {monto}, el {pct} de lo que te entró.', { monto: money(n.save), pct: pct(rate) }) : T('Este mes no ahorraste.')) +
+        ' ' + (n.save ? T('Ahorraste {monto}, el {pct} de tus ingresos.', { monto: money(n.save), pct: pct(rate) }) : T('Este mes no ahorraste.')) +
         (p.over.length ? ' ' + T('Lo que más pesó fue {cat}, donde te pasaste {monto}.', { cat: p.over[0].name.toLowerCase(), monto: money(p.over[0].over) }) : '');
     var finds = p.ins.slice(0, 3).map(function (x) { return { icon: x.icon, t: x.title, s: x.sub }; });
     var plan = [];
@@ -68,7 +68,8 @@
       '<div class="ai-body"></div>' +
       '<form class="ai-composer"><span class="ai-composer__spark material-symbols-rounded" aria-hidden="true">auto_awesome</span>' +
         '<input type="text" enterkeyhint="send" autocomplete="off" aria-label="' + T('Pregúntale a Uku sobre tus finanzas') + '" placeholder="' + T('Pregúntale a Uku sobre tus finanzas') + '">' +
-        '<button class="ai-send" type="submit" aria-label="Enviar"><span class="material-symbols-rounded">arrow_upward</span></button></form>';
+        '<button class="ai-send" type="submit" aria-label="Enviar"><span class="material-symbols-rounded">arrow_upward</span></button></form>' +
+        '<p class="uku-disc">' + T('Uku es una IA y puede cometer errores. Sus sugerencias no son recomendaciones financieras.') + '</p>';
     document.body.appendChild(page);
     body = page.querySelector('.ai-body'); input = page.querySelector('input');
     page.addEventListener('click', onClick);
@@ -117,7 +118,7 @@
       '<div class="ai-blur" aria-hidden="true"><div class="ai-card"><i></i><i></i><i></i></div><div class="ai-card"><i></i><i></i><i></i><i></i></div><div class="ai-card"><i></i><i></i></div></div>' +
       '<section class="ai-wall"><span class="ai-wall__spark material-symbols-rounded" aria-hidden="true">auto_awesome</span>' +
         '<h2>' + T('Tu prueba gratis terminó') + '</h2>' +
-        '<p>' + T('Con Uku Plus, Uku analiza tus finanzas con IA cada mes, te arma un plan y le preguntas lo que quieras.') + '</p>' +
+        '<p>' + T('Con Uku Plus, Uku analiza tus finanzas con IA cada mes, te arma un plan y puedes preguntarle lo que quieras.') + '</p>' +
         '<ul><li>' + T('Un análisis completo de cada mes') + '</li><li>' + T('Preguntas sin límite') + '</li><li>' + T('Incluido si tienes cuenta Black') + '</li></ul>' +
         '<button class="ai-wall__cta bp-button" data-ai="plans">' + T('Conocer Uku Plus') + '</button>' +
         '<button class="ai-wall__later" data-ai="close">' + T('Ahora no') + '</button></section>';
