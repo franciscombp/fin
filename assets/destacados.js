@@ -213,7 +213,31 @@
     }
   };
 
+  /* Slot fantasma: mismo patrón que la venta de productos de los hubs
+     (fondo transparente, borde punteado, ícono, texto y enlace) */
+  var GHOST = {
+    cuentas: ['Abre tu cuenta deuna para recibir pagos', 'Abrir cuenta'],
+    deuna: ['Abre tu cuenta deuna para recibir pagos', 'Abrir cuenta'],
+    inversion: ['Haz crecer tu dinero: gana 7,25% al año', 'Invertir'],
+    metas: ['Crea tu primera meta de ahorro', 'Crear meta'],
+    tarjeta: ['Solicita tu tarjeta de crédito', 'Solicitar tarjeta'],
+    creditos: ['Tienes un crédito preaprobado', 'Simular mi crédito'],
+    preaprobado: ['Tienes un crédito preaprobado', 'Simular mi crédito'],
+    pagos: ['Programa tus pagos de servicios', 'Programar pagos']
+  };
+  function ghostHTML(w) {
+    var cat = CATALOG[w.id], g = GHOST[w.id] || [cat.desc, 'Ver más'], r = null;
+    try { r = R[w.id](w.size, true); } catch (e) {}
+    gos[w.id] = r && r.go;
+    return '<article class="dw dw--' + w.size + ' dw--sug" data-dw-id="' + w.id + '" role="button" tabindex="0" aria-label="' + esc(g[0]) + '">' +
+      '<span class="dw-ghost__ic material-symbols-rounded" aria-hidden="true">' + cat.icon + '</span>' +
+      '<span class="dw-ghost__t"><span class="dw-2l">' + g[0] + '</span><span class="dw-ghost__link">' + g[1] + '</span></span>' +
+      '<button class="dw-dismiss" data-dw-dismiss="' + w.id + '" aria-label="Descartar sugerencia"><span class="material-symbols-rounded">close</span></button>' +
+      '</article>';
+  }
+
   function widgetHTML(w, preview) {
+    if (w.sug && !preview) return ghostHTML(w);
     var cat = CATALOG[w.id], c = capt(w.id), r;
     try { r = R[w.id](w.size, c); } catch (e) { r = null; }
     // Cargando: esqueleto del mismo tamaño para que la pantalla no salte
