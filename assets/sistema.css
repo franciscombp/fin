@@ -851,23 +851,17 @@ html .pf-page--inline .pf-prods, html .pf-page--inline .pf-recs { border-radius:
 .pf-row--incl .pf-switch::after { width: 20px !important; height: 20px !important; top: 3px !important; border-radius: 50% !important; }
 
 /* =====================================================================
-   MIS FINANZAS: meses fijos al bajar (como las pestañas de Inicio),
-   sin espacio extra después de "Hoy" y cambio de mes con dirección.
+   MIS FINANZAS: las pestañas de meses son el componente de Inicio
+   (.tabs > .tabs__scroll > .tab), con su misma posición fija y su mismo
+   cambio de contenido. Título, pestañas y oso no se mueven.
    ===================================================================== */
-.pf-page--inline .pf-months {
-  position: sticky; top: calc(56px + env(safe-area-inset-top, 0px)); z-index: 49;
-  margin: 0; width: 100%; box-sizing: border-box;
-  padding: var(--bp-semantic-spacing-micro-md, 8px) var(--bp-layout-grid-margin) var(--bp-semantic-spacing-micro-md, 8px);
-  background: var(--bp-surface-page, var(--bp-theme-color-surface-page-alt));
-}
-.pf-page--inline .pf-months .is-today { margin-right: 0; }
-.pf-page--inline .pf-months .is-today::before { display: none; }
-.pf-page--inline .pf-months button { transition: background-color .3s var(--ux-curve), color .3s var(--ux-curve), transform .15s ease; }
-.pf-page--inline .pf-months button:active { transform: scale(.96); }
-@keyframes pfNext { from { opacity: 0; transform: translate3d(28px, 0, 0); } to { opacity: 1; transform: none; } }
-@keyframes pfPrev { from { opacity: 0; transform: translate3d(-28px, 0, 0); } to { opacity: 1; transform: none; } }
-.pf-page--inline .pf-scroll.is-slide-next > :not(.pf-hero):not(.pf-months):not(.pf-head) { animation: pfNext .36s var(--ux-curve) both; }
-.pf-page--inline .pf-scroll.is-slide-prev > :not(.pf-hero):not(.pf-months):not(.pf-head) { animation: pfPrev .36s var(--ux-curve) both; }
+.pf-page--inline .pf-tabs { margin: 0; width: 100%; box-sizing: border-box; }
+.pf-page--inline .pf-scroll.is-switch > :not(.pf-head):not(.pf-tabs):not(.pf-hero) { animation: fxRise .5s cubic-bezier(.22, 1, .36, 1) both; }
+.pf-page--inline .pf-scroll.is-switch > :nth-child(4) { animation-delay: .05s; }
+.pf-page--inline .pf-scroll.is-switch > :nth-child(5) { animation-delay: .1s; }
+.pf-page--inline .pf-scroll.is-switch > :nth-child(6) { animation-delay: .15s; }
+.pf-page--inline .pf-scroll.is-switch > :nth-child(n+7) { animation-delay: .2s; }
+@media (prefers-reduced-motion: reduce) { .pf-page--inline .pf-scroll.is-switch > * { animation: none !important; } }
 
 /* Clima de Uku: detalle en el fondo del héroe, sin peso visual */
 .pf-wx { position: absolute; left: var(--bp-layout-grid-margin, 24px); bottom: 12px; margin: 0; z-index: 1; display: inline-flex; align-items: center; gap: 4px; font: 500 13px/18px var(--sol-font, Roboto, sans-serif); color: var(--cx-muted); opacity: .8; pointer-events: none; }
@@ -890,16 +884,31 @@ html:not(.theme-y2k) .pf-say__bubble, html:not(.theme-y2k) .pf-say__hint { box-s
      cubic-bezier(.32,.72,0,1), la misma de iOS.
    ===================================================================== */
 :root { --ux-curve: cubic-bezier(.32, .72, 0, 1); --ux-push: .4s; --ux-modal: .42s; --ux-sheet: .4s; --ux-fade: .3s; }
-.push-page, .push-page.grow, .push-page.grow.closing-grow, .pf-page {
+/* Todas las pantallas completas se empujan desde la derecha (también Uku,
+   el análisis, la ayuda y el detalle de tarjeta). La de abajo se corre y se
+   oscurece desde assets/navegacion.js, que además maneja el gesto de regreso. */
+html .push-page, html .pf-page:not(.pf-page--inline), html .as-page, html .ai-page, html .sp {
+  transform: translate3d(100vw, 0, 0); visibility: hidden;
   transition: transform var(--ux-push) var(--ux-curve), visibility 0s linear var(--ux-push) !important;
 }
-.push-page.open, .push-page.grow.open, .pf-page.open {
+html .push-page.open, html .pf-page.open:not(.pf-page--inline), html .as-page.open, html .ai-page.open, html .sp.open {
+  transform: none; visibility: visible; opacity: 1;
   transition: transform var(--ux-push) var(--ux-curve), visibility 0s !important;
 }
-.as-page, .ai-page {
-  transition: transform var(--ux-modal) var(--ux-curve), visibility 0s linear var(--ux-modal) !important;
+html .card-detail.entering, html .card-detail.entering.no-morph { animation: uxPushIn var(--ux-push) var(--ux-curve) both !important; }
+html .card-detail.closing, html .card-detail.closing.no-morph { animation: uxPushOut var(--ux-push) var(--ux-curve) forwards !important; }
+@keyframes uxPushIn { from { transform: translate3d(100vw, 0, 0); } to { transform: none; } }
+@keyframes uxPushOut { from { transform: none; } to { transform: translate3d(100vw, 0, 0); } }
+/* El inicio ya no se encoge detrás del detalle de tarjeta: se corre como todo */
+body.card-detail-active #home-page { scale: none; filter: none; }
+.ux-scrim { position: fixed; inset: 0; background: rgb(0 0 0 / .14); pointer-events: none; opacity: 0; }
+@media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .ux-scrim { background: rgb(0 0 0 / .4); } }
+html[data-theme="dark"] .ux-scrim { background: rgb(0 0 0 / .4); }
+html.ux-dragging, html.ux-dragging * { user-select: none; -webkit-user-select: none; }
+@media (prefers-reduced-motion: reduce) {
+  html .push-page, html .pf-page, html .as-page, html .ai-page, html .sp { transition-duration: 1ms !important; }
+  html .card-detail.entering, html .card-detail.closing { animation-duration: 1ms !important; }
 }
-.as-page.open, .ai-page.open { transition: transform var(--ux-modal) var(--ux-curve), visibility 0s !important; }
 .sheet, .as-sheet { transition: transform var(--ux-sheet) var(--ux-curve) !important; }
 .sheet-backdrop, .as-sheet-back { transition: opacity var(--ux-fade) ease !important; }
 .sx-panel { transition: transform var(--ux-sheet) var(--ux-curve), opacity var(--ux-fade) ease !important; }
@@ -930,3 +939,9 @@ html:not(.theme-y2k) .ai-page .ai-badge {
   background: var(--ai-grad) !important; color: #fff !important;
   box-shadow: 0 0 10px -2px color-mix(in srgb, var(--ai-b) 55%, transparent) !important;
 }
+
+/* Escenario de Uku: el oso se corre a la derecha (data-shift en el lienzo 3D)
+   para que el globo de texto, a la izquierda, no lo tape. */
+.pf-page--inline .pf-hero .b3d[data-shift] .b3d__fallback { transform: translateX(17%); }
+.pf-page--inline .pf-say__hint { max-width: min(160px, 42%); }
+.pf-page--inline .pf-say.is-open .pf-say__bubble::after { left: 67%; }

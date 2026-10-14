@@ -6465,24 +6465,8 @@
             pushPage.scrollTop = 0;
             document.body.style.overflow = 'hidden';
 
-            if (originEl) {
-                // Crece desde el botón (transform-origin en su centro)
-                const r = originEl.getBoundingClientRect();
-                pushPage.style.transformOrigin = `${(r.left + r.width / 2).toFixed(0)}px ${(r.top + r.height / 2).toFixed(0)}px`;
-                pushPage.classList.add('grow');
-                pushPage.style.transition = 'none';
-                pushPage.style.transform = 'scale(0.5)';
-                pushPage.style.opacity = '0';
-                pushPage.style.visibility = 'visible';
-                void pushPage.offsetWidth; // reflow
-                pushPage.style.transition = '';
-                pushPage.classList.add('open');
-                pushPage.style.transform = 'scale(1)';
-                pushPage.style.opacity = '1';
-            } else {
-                // Deslizamiento nativo desde la derecha
-                pushPage.classList.add('open');
-            }
+            // Misma entrada que todas las pantallas: desde la derecha (ver navegacion.js)
+            pushPage.classList.add('open');
         }
 
         function closePushPage() {
@@ -6544,27 +6528,8 @@
             showToast('Función de demostración');
             closePushPage();
         });
-        // Deslizar desde el borde izquierdo para volver (gesto nativo)
-        pushPage.addEventListener('touchstart', e => {
-            if (!pushPage.classList.contains('open')) return;
-            if (e.touches[0].clientX > 40) { pushPage._edge = false; return; }
-            pushPage._edge = true;
-            pushPage._sx = e.touches[0].clientX;
-        }, { passive: true });
-        pushPage.addEventListener('touchmove', e => {
-            if (!pushPage._edge || pushPage.classList.contains('grow')) return;
-            const dx = Math.max(0, e.touches[0].clientX - pushPage._sx);
-            pushPage.style.transition = 'none';
-            pushPage.style.transform = `translateX(${dx}px)`;
-        }, { passive: true });
-        pushPage.addEventListener('touchend', e => {
-            if (!pushPage._edge) return;
-            pushPage._edge = false;
-            pushPage.style.transition = '';
-            pushPage.style.transform = '';
-            const dx = e.changedTouches[0].clientX - pushPage._sx;
-            if (dx > 90) closePushPage();
-        });
+        // El gesto de volver (arrastrar desde el borde izquierdo) es el mismo
+        // para todas las pantallas: assets/navegacion.js.
 
         // ---------- Modo finanzas: resumen consolidado de productos ----------
         const financePage = document.getElementById('finance-page');
@@ -6834,7 +6799,7 @@
         function activateSectionTab(tab) {
             if (!tab || tab.dataset.action) return;
             const wasActive = tab.classList.contains('active');
-            document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+            tab.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
             tab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
             showPanel(tab.dataset.panel); // cambia el contenido visible según la pestaña
@@ -7354,6 +7319,9 @@
          * misma animación, sin quedar a medio camino en un valor raro.
          */
         function morphMetrics() {
+            // Transición unificada: el detalle entra desde la derecha como
+            // todas las pantallas (ver navegacion.js), sin morph de tarjeta.
+            return null;
             const feat = currentOriginEl.getBoundingClientRect();
             const rect = cdCard.getBoundingClientRect(); // ya en su layout final/natural
             if (!rect.width || !feat.width) return null;
@@ -7823,6 +7791,7 @@
     <script src="./assets/producto.js"></script>
     <script src="./assets/destacados.js"></script>
     <script src="./assets/soporte.js"></script>
+    <script src="./assets/navegacion.js"></script>
     <script src="./fiesta.js"></script>
 </body>
 </html>

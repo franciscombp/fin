@@ -279,7 +279,7 @@ function hatPaja() {
   return g;
 }
 function hatLana() {
-  const g = new THREE.Group(), wool = mat('#b8443f'), cuff = mat('#efe9df');
+  const g = new THREE.Group(), wool = mat('#2c4f9e'), cuff = mat('#efe9df'); // colores de marca: azul con blanco (nunca rojo)
   const cap = new THREE.Mesh(new THREE.SphereGeometry(.125, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2), wool); cap.scale.y = .95;
   const rim = new THREE.Mesh(new THREE.CylinderGeometry(.128, .13, .04, 24), cuff); rim.position.y = .01;
   const pom = new THREE.Mesh(new THREE.IcosahedronGeometry(.038, 1), cuff); pom.position.y = .125;
@@ -461,6 +461,10 @@ function resize() {
   // Encuadre: el oso siempre entra completo, más cerca en pantallas altas.
   camera.fov = camera.aspect < .8 ? 38 : 30;
   camDist = camera.aspect < .8 ? 3.1 : 2.6;
+  // Escenario: data-shift corre el encuadre (fracción del ancho) para que Uku
+  // no quede detrás del globo de texto.
+  const sh = parseFloat(host.dataset.shift || 0);
+  if (sh) camera.setViewOffset(w, h, -w * sh, 0, w, h); else camera.clearViewOffset();
   camera.updateProjectionMatrix();
 }
 

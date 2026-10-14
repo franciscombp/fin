@@ -905,7 +905,7 @@
     return '<div class="pf-total"><p class="pf-total__label">' + label + '</p><p class="pf-total__value">' + value + '</p><p class="pf-total__sub">' + sub + '</p></div>';
   }
   function heroHTML(score, label) {
-    return '<section class="pf-hero"><div class="b3d" data-score="' + score + '"><div class="b3d__fallback">' + C().svg() + '</div></div>' +
+    return '<section class="pf-hero"><div class="b3d" data-score="' + score + '"' + (isInline() ? ' data-shift=".17"' : '') + '><div class="b3d__fallback">' + C().svg() + '</div></div>' +
       '<button class="pf-hero__badge" data-pf="health" hidden><i></i>' + label + '<span class="material-symbols-rounded">chevron_right</span></button></section>';
   }
   // Salud financiera como medidor (en vez del badge): cifra, barra y qué significa
@@ -1396,20 +1396,24 @@
     html += footHTML();
     // Conserva el nodo del héroe con el lienzo vivo (sin parpadeo al cambiar de mes)
     var scroll = pf.querySelector('.pf-scroll'), old = scroll.querySelector('.pf-hero'), live = old && old.querySelector('canvas');
-    // La fila de meses es el mismo nodo de siempre (como las pestañas de Inicio): solo cambia la selección
-    var row = pf.querySelector('.pf-months');
-    if (!row) { row = document.createElement('div'); row.className = 'pf-months'; row.setAttribute('role', 'tablist'); row.innerHTML = VIEWS.map(function (x) {
-        return '<button role="tab" data-pf="view:' + x.key + '"' + (x.today ? ' class="is-today"' : '') + '>' + T(MONTH_NAME[x.key] || x.short) + '</button>'; }).join(''); }
-    row.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.pf === 'view:' + v.key)); });
-    // Dirección del cambio de mes: el contenido entra desde el lado hacia donde avanza el tiempo
-    var idx = function (k) { return VIEWS.findIndex(function (x) { return x.key === k; }); };
-    var dir = paintDash.lastKey && paintDash.lastKey !== v.key ? (idx(v.key) > idx(paintDash.lastKey) ? 'next' : 'prev') : null;
+    // Las pestañas de meses son el mismo componente de Inicio (.tabs > .tabs__scroll > .tab):
+    // un nodo persistente que solo cambia la pestaña activa
+    var row = pf.querySelector('.pf-tabs');
+    if (!row) { row = document.createElement('nav'); row.className = 'tabs pf-tabs'; row.setAttribute('aria-label', T('Meses'));
+      row.innerHTML = '<div class="tabs__scroll">' + VIEWS.map(function (x) {
+        return '<button class="tab" data-pf="view:' + x.key + '">' + T(MONTH_NAME[x.key] || x.short) + '</button>'; }).join('') + '</div>'; }
+    row.querySelectorAll('.tab').forEach(function (b) { b.classList.toggle('active', b.dataset.pf === 'view:' + v.key); });
+    var changed = paintDash.lastKey && paintDash.lastKey !== v.key;
     paintDash.lastKey = v.key;
     scroll.innerHTML = html;
     var head = scroll.querySelector('.pf-head'); if (head) head.after(row); else scroll.prepend(row);
-    if (dir) {
-      scroll.classList.remove('is-slide-next', 'is-slide-prev'); void scroll.offsetWidth;
-      scroll.classList.add(dir === 'next' ? 'is-slide-next' : 'is-slide-prev');
+    if (changed) {
+      // Igual que Inicio: el contenido sube suavemente; título y pestañas no se mueven
+      scroll.classList.remove('is-switch'); void scroll.offsetWidth; scroll.classList.add('is-switch');
+      // Si ya estaba abajo, se queda con las pestañas fijas arriba (como en Inicio)
+      // (el punto natural de las pestañas es justo debajo del título)
+      var stick = (head ? head.getBoundingClientRect().bottom : row.getBoundingClientRect().top) + window.scrollY - (parseFloat(getComputedStyle(row).top) || 0);
+      if (window.scrollY > stick) window.scrollTo({ top: stick });
     }
     var fresh = scroll.querySelector('.pf-hero');
     if (fresh) fresh.querySelector('.b3d').dataset.g = JSON.stringify('wave');
@@ -1426,8 +1430,8 @@
     if (say.first) say.list.sort(function (a, b) { var m = function (x) { return say.first === 'savings' ? x.icon === 'savings' : x.kind === 'warn'; }; return m(b) - m(a); }); say.i = Math.min(say.i, Math.max(0, say.list.length - 1));
     if (v.today) { paintSay(); paintWx(); syncHero(); }
     // Igual que Inicio: la pestaña elegida se centra con un desplazamiento suave
-    var sel = row.querySelector('[aria-selected="true"]');
-    if (sel) sel.scrollIntoView({ behavior: dir ? 'smooth' : 'auto', inline: 'center', block: 'nearest' });
+    var sel = row.querySelector('.tab.active');
+    if (sel) sel.scrollIntoView({ behavior: changed ? 'smooth' : 'auto', inline: 'center', block: 'nearest' });
   }
   var regCat = 'super';
   function budgetSheet() {
