@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loginScreen.classList.add('active');
     homePage.classList.add('hidden');
     if (welcomeSplash) welcomeSplash.classList.remove('show');
-    window.scrollTo({ top: 0 });
+    AppScroll.to({ top: 0 });
   }
 
   // Home oculto hasta autenticarse

@@ -11,6 +11,9 @@
      (0–100): de troncos y tierra seca a un bosque tupido.
    - Paleta sobria: grises, verdes apagados; el amarillo solo en flores.
    - Pausa el render cuando no se ve y respeta prefers-reduced-motion.
+   - setLook() viste a Uku según el clima (assets/clima.js): en la costa
+     palmeras y guayabera; sombrero de paja toquilla, gafas de sol, gorro
+     de lana o paraguas (con lluvia).
    ===================================================================== */
 import * as THREE from './vendor/three/three.module.min.js';
 import { GLTFLoader } from './vendor/three/jsm/loaders/GLTFLoader.js';
@@ -26,18 +29,30 @@ let gesture = null, gestureT = 0, onTap = null;
 let yaw = 0, yawTo = 0, camDist = 2.6, drag = null, idleAt = 0; // giro con el dedo
 
 /* ---------- Colores (claro / oscuro) ---------- */
+let look = { region: 'sierra', shirt: 'sueter', hat: null, shades: false, rain: false };
 function palette() {
   const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (look.region === 'costa') return dark ? {
+    bg: '#1f1f1f', ground: '#353329', dry: '#353329', trunk: '#4c5262', pine: ['#3c4659', '#434d61'], palm: ['#41506a', '#4a5872'],
+    round: ['#465066', '#4e586e'], rock: '#3b3e46', grass: '#434b5c', flower: '#f2d64b', dust: '#ffffff'
+  } : {
+    bg: '#f6f6f5', ground: '#f6efd6', dry: '#f3ead0', trunk: '#b9c0cf', pine: ['#d2dae8', '#c5cfe2'], palm: ['#a9bad6', '#9aaed0', '#b6c5de'],
+    round: ['#d8dfeb', '#cdd5e4'], rock: '#e3e5ea', grass: '#d0d8e6', flower: '#f2c94c', dust: '#ffffff'
+  };
   // Paleta onírica: tonos lavados, casi blancos, para que el oso (que
   // conserva sus colores) sea lo único nítido de la escena.
+  // Ilustración: solo azules, grises y amarillo (los colores de Uku)
   return dark ? {
-    bg: '#1f1f1f', ground: '#2b2c2c', dry: '#2f2e2c', trunk: '#4a4a4a', pine: ['#3f4744', '#454d4a', '#4c5451'],
-    round: ['#474f4c', '#4f5754'], rock: '#3a3b3c', grass: '#434b47', flower: '#d9c25a', dust: '#ffffff'
+    bg: '#1f1f1f', ground: '#2b2d33', dry: '#2f3036', trunk: '#4a4f5c', pine: ['#3c4659', '#434d61', '#4a5468'],
+    round: ['#465066', '#4e586e'], rock: '#3a3c43', grass: '#434b5c', flower: '#f2d64b', dust: '#ffffff'
   } : {
-    bg: '#f6f6f5', ground: '#eceeeb', dry: '#efece6', trunk: '#cfcac4', pine: ['#d3dbd6', '#c8d2cc', '#dde3df'],
-    round: ['#d9dfda', '#cfd7d1'], rock: '#e1e2e2', grass: '#d4dcd6', flower: '#f2d64b', dust: '#ffffff'
+    bg: '#f6f6f5', ground: '#eef0f4', dry: '#f0eff1', trunk: '#aeb6c7', pine: ['#c9d3e6', '#b9c6de', '#d6deec'],
+    round: ['#c3cee3', '#d2dbea'], rock: '#d9dce4', grass: '#c4cee1', flower: '#f2c94c', dust: '#ffffff'
   };
 }
+/* ---------- Estilo ilustración 2D ----------
+   Colores planos, sin sombreado (solo luz ambiente) y sin contornos: los
+   elementos se separan por el tono, como en una ilustración vectorial. */
 
 /* ---------- Bosque procedural ---------- */
 // Posiciones fijas (semilla) para que el bosque no "salte" entre visitas.
@@ -60,7 +75,30 @@ const DECOR = (() => {
   return out;
 })();
 
+// Palmera: tronco curvo en segmentos y hojas largas que caen
+function makePalm(p, pal) {
+  const g = new THREE.Group(), trunkM = new THREE.MeshLambertMaterial({ color: pal.trunk, flatShading: true });
+  const lean = .05 + (p.t % 7) / 70;
+  let x = 0, y = 0;
+  for (let i = 0; i < 6; i++) {
+    const seg = new THREE.Mesh(new THREE.CylinderGeometry(.03 - i * .002, .036 - i * .002, .16, 6), trunkM);
+    x += lean * i * .12; y += .15;
+    seg.position.set(x, y - .07, 0); seg.rotation.z = -lean * i * .7; g.add(seg);
+  }
+  const c = pal.palm[Math.floor(p.t) % pal.palm.length], leafM = new THREE.MeshLambertMaterial({ color: c, flatShading: true, side: THREE.DoubleSide });
+  for (let i = 0; i < 7; i++) {
+    const leaf = new THREE.Mesh(new THREE.ConeGeometry(.06, .5, 3), leafM);
+    const holder = new THREE.Group(); holder.position.set(x, y + .02, 0); holder.rotation.y = i / 7 * Math.PI * 2;
+    leaf.rotation.z = Math.PI / 2 + .55; leaf.position.x = .2; leaf.position.y = -.08; leaf.scale.z = .25;
+    holder.add(leaf); g.add(holder);
+  }
+  const coco = new THREE.MeshLambertMaterial({ color: pal.trunk });
+  [[.03, 0], [-.025, .02], [0, -.03]].forEach(([dx, dz]) => { const m = new THREE.Mesh(new THREE.SphereGeometry(.025, 6, 5), coco); m.position.set(x + dx, y - .03, dz); g.add(m); });
+  g.position.set(p.x, 0, p.z); g.rotation.y = p.rot; g.userData.base = p.s;
+  return g;
+}
 function makeTree(p, pal) {
+  if (look.region === 'costa' && p.kind === 'pine') return makePalm(p, pal);
   const g = new THREE.Group();
   const trunkM = new THREE.MeshLambertMaterial({ color: pal.trunk });
   if (p.kind === 'pine') {
@@ -117,6 +155,9 @@ function buildForest(full) {
     if (i < nTrees) want['T' + i] = () => makeTree(p, pal);
     else if (i < nTrees + 6 && score < 60) want['S' + i] = () => makeStump(p, pal);
   });
+  // En la costa, dos palmeras cerca de Uku para que se lean a primera vista
+  if (look.region === 'costa') [{ x: -.58, z: -.5, s: 1.05, t: 3, rot: .4 }, { x: .64, z: -.62, s: .95, t: 8, rot: 2.6 }]
+    .forEach((p, i) => { want['P' + i] = () => makePalm(p, pal); });
   DECOR.forEach((p, i) => {
     const need = p.kind === 'flower' ? 70 : p.kind === 'grass' ? 30 : 0;
     if (score >= need && p.t <= score + 10) want['D' + i] = () => makeDecor(p, pal);
@@ -182,10 +223,15 @@ const POSES = {
                  head: [Math.sin(t * 5) * 3, Math.sin(t * 1.7) * 6, Math.sin(t * 2.3) * 3] }),
   think: t => ({ upperarm_R: [0, 52, 34], forearm_R: [-30, 42, -64], hand_R: [-24, 10, -18], head: [8, -7, -8] }),
   hold:  t => ({ upperarm_R: [0, 46, 38], forearm_R: [-62, 34, -36], hand_R: [-48, 4, -14], head: [14, -12, 0] }),
+  // preocupado: manos juntas delante de la panza, cabeza gacha y ladeada
+  worried: t => ({ upperarm_R: [0, 34, 36], forearm_R: [-46, 44, -26], hand_R: [-22, 8, -6],
+                   upperarm_L: mirror([0, 34, 36]), forearm_L: mirror([-46, 44, -26]), hand_L: mirror([-22, 8, -6]),
+                   head: [16, 0, 9 + Math.sin(t * 1.6) * 3] }),
   happy: t => ({ upperarm_R: [0, 14, 6 - Math.sin(t * 8) * 6], forearm_R: [-30, 10, -28], hand_R: [-24, 0, -10],
                  upperarm_L: mirror([0, 14, 6 - Math.sin(t * 8) * 6]), forearm_L: mirror([-30, 10, -28]), hand_L: mirror([-24, 0, -10]),
                  head: [-6, 0, Math.sin(t * 6) * 7] })
 };
+const UMB_POSE = { upperarm_R: [0, 36, 12], forearm_R: [-100, 26, -30], hand_R: [-40, 4, -10] };
 function target(name, t) {
   let r = REST[name] ? REST[name].slice() : [0, 0, 0];
   // vida en reposo: respiración, mirada y un balanceo leve de brazos
@@ -193,6 +239,8 @@ function target(name, t) {
   if (name === 'head') { r[1] += Math.sin(t * .35) * 9; r[0] += Math.sin(t * .5) * 2; }
   if (name === 'spine') r[2] += Math.sin(t * .8) * 1.2;
   if (name === 'upperarm_R' || name === 'upperarm_L') r[1] += Math.sin(t * .9 + (name === 'upperarm_L' ? 1.5 : 0)) * 3;
+  // Con paraguas, el brazo derecho lo sostiene siempre (los gestos usan la cabeza y el otro brazo)
+  if (look.hat === 'paraguas' && UMB_POSE[name]) { const u = UMB_POSE[name].slice(); u[2] += Math.sin(t * .9) * 2; return u; }
   if (!gesture || !POSES[gesture]) return r;
   const g = POSES[gesture](gestureT)[name];
   return g || r;
@@ -201,9 +249,9 @@ const BONES = ['hips', 'spine', 'chest', 'neck', 'head', 'shoulder_L', 'shoulder
 
 function holdObject(kind) {
   if (held) { held.parent && held.parent.remove(held); held = null; }
-  if (!kind || !bones.hand_R) return;
+  if (!kind || !bones.hand_R || umb) return; // con el paraguas en la mano no sostiene otra cosa
   if (kind === 'coin') {
-    held = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, .014, 28), new THREE.MeshStandardMaterial({ color: '#ffd200', metalness: .35, roughness: .45 }));
+    held = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, .014, 28), new THREE.MeshLambertMaterial({ color: '#ffd200' }));
     // sobre la palma: en reposo la palma mira a (0, -0.89, 0.45) en el espacio del hueso
     held.rotation.x = -.46; held.position.set(-.03, -.052, .026);
   } else if (kind === 'leaf') {
@@ -211,6 +259,137 @@ function holdObject(kind) {
     held.position.set(-.03, -.06, .03); held.rotation.set(-.46 + Math.PI, 0, -.4); // el tallo sale de la palma
   }
   held && bones.hand_R.add(held);
+}
+
+
+/* ---------- Ropa según el clima ----------
+   Los accesorios cuelgan del hueso de la cabeza (en reposo está en
+   (0, 0.67, 0) sin rotación; la cabeza llega de y .71 a .90 y el hocico a
+   z .17), así siguen cada gesto. */
+let acc = null, baseMap = null, guayaMap = null, bearMat = null, rain = null;
+function mat(color, extra) { return new THREE.MeshLambertMaterial(Object.assign({ color, flatShading: true }, extra || {})); }
+function hatPaja() {
+  const g = new THREE.Group(), straw = mat('#e9dcb2'), band = mat('#2f2f2f');
+  const brim = new THREE.Mesh(new THREE.CylinderGeometry(.2, .21, .01, 32), straw);
+  const crown = new THREE.Mesh(new THREE.CylinderGeometry(.092, .108, .095, 24), straw); crown.position.y = .05;
+  const top = new THREE.Mesh(new THREE.SphereGeometry(.092, 20, 8, 0, Math.PI * 2, 0, Math.PI / 2), straw); top.position.y = .097; top.scale.y = .25;
+  const ribbon = new THREE.Mesh(new THREE.CylinderGeometry(.109, .111, .024, 24), band); ribbon.position.y = .017;
+  g.add(brim, crown, top, ribbon);
+  g.position.set(0, .225, -.01); g.rotation.set(-.12, 0, .06);
+  return g;
+}
+function hatLana() {
+  const g = new THREE.Group(), wool = mat('#b8443f'), cuff = mat('#efe9df');
+  const cap = new THREE.Mesh(new THREE.SphereGeometry(.125, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2), wool); cap.scale.y = .95;
+  const rim = new THREE.Mesh(new THREE.CylinderGeometry(.128, .13, .04, 24), cuff); rim.position.y = .01;
+  const pom = new THREE.Mesh(new THREE.IcosahedronGeometry(.038, 1), cuff); pom.position.y = .125;
+  g.add(cap, rim, pom);
+  g.position.set(0, .185, -.01); g.rotation.x = -.1;
+  return g;
+}
+/* Paraguas en la mano derecha: vive en la escena y cada cuadro se apoya en
+   la palma y apunta a un punto sobre la cabeza (así cubre a Uku aunque el
+   brazo se mueva). El mango se estira lo que haga falta. */
+let umb = null;
+function umbrella() {
+  const g = new THREE.Group(), canopy = new THREE.Group(), cloth = mat('#1b2a4e', { side: THREE.DoubleSide }), stripe = mat('#ffd200', { side: THREE.DoubleSide });
+  for (let i = 0; i < 8; i++) canopy.add(new THREE.Mesh(new THREE.ConeGeometry(.29, .11, 2, 1, true, i / 8 * Math.PI * 2, Math.PI / 4), i % 2 ? stripe : cloth));
+  const tip = new THREE.Mesh(new THREE.CylinderGeometry(.006, .006, .06, 5), mat('#2f2f2f')); tip.position.y = .08; canopy.add(tip);
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(.007, .007, 1, 5), mat('#2f2f2f'));
+  const handle = new THREE.Mesh(new THREE.TorusGeometry(.03, .008, 6, 12, Math.PI), mat('#2f2f2f')); handle.rotation.z = Math.PI; handle.position.set(.03, -.02, 0);
+  g.add(canopy, pole, handle);
+  g.userData = { canopy, pole };
+  return g;
+}
+const _h = new THREE.Vector3(), _t = new THREE.Vector3(), _d = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
+function placeUmbrella() {
+  if (!umb || !bones.hand_R || !bones.head) return;
+  bones.hand_R.localToWorld(_h.set(-.03, -.05, .03)); // centro de la palma
+  bones.head.getWorldPosition(_t); _t.x = _h.x * .45; _t.y += .37; _t.z += .03; // sobre la cabeza, un poco hacia la mano
+  _d.subVectors(_t, _h); const L = _d.length(); _d.normalize();
+  umb.position.copy(_h); umb.quaternion.setFromUnitVectors(_up, _d);
+  const u = umb.userData; u.pole.scale.y = L; u.pole.position.y = L / 2; u.canopy.position.y = L;
+  u.canopy.quaternion.setFromUnitVectors(_d, _up); // la tela queda horizontal aunque el mango vaya inclinado
+}
+function shades() {
+  const g = new THREE.Group(), lens = mat('#1e2126', { flatShading: false }), frame = mat('#111111');
+  [-1, 1].forEach(s => {
+    const l = new THREE.Mesh(new THREE.CircleGeometry(.034, 20), lens); l.position.set(s * .047, 0, 0); l.rotation.y = s * .18; g.add(l);
+  });
+  const bridge = new THREE.Mesh(new THREE.BoxGeometry(.028, .006, .004), frame); g.add(bridge);
+  g.position.set(0, .132, .142);
+  return g;
+}
+// Guayabera: el suéter amarillo (y la bufanda azul) se repintan en lino claro
+function guayabera() {
+  if (guayaMap || !baseMap || !baseMap.image) return guayaMap;
+  const img = baseMap.image, c = document.createElement('canvas');
+  c.width = img.width; c.height = img.height;
+  const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+  const d = x.getImageData(0, 0, c.width, c.height), a = d.data, W = c.width, H = c.height;
+  // Máscara del suéter cerrada (dilatar y erosionar 6 px): así entran también
+  // las líneas grises del zigzag, que quedan rodeadas de amarillo.
+  const yel = new Uint8Array(W * H);
+  for (let i = 0, j = 0; i < a.length; i += 4, j++) { const r = a[i], g = a[i + 1], b = a[i + 2]; yel[j] = r > 140 && g > 120 && r - b > 70 ? 1 : 0; }
+  const pass = (src, R, op) => {
+    const h = new Uint8Array(W * H), v = new Uint8Array(W * H);
+    for (let y = 0; y < H; y++) for (let x0 = 0; x0 < W; x0++) {
+      let m = op; for (let k = -R; k <= R; k++) { const xx = x0 + k; const val = xx < 0 || xx >= W ? 0 : src[y * W + xx]; m = op ? Math.min(m, val) : Math.max(m, val); }
+      h[y * W + x0] = m;
+    }
+    for (let y = 0; y < H; y++) for (let x0 = 0; x0 < W; x0++) {
+      let m = op; for (let k = -R; k <= R; k++) { const yy = y + k; const val = yy < 0 || yy >= H ? 0 : h[yy * W + x0]; m = op ? Math.min(m, val) : Math.max(m, val); }
+      v[y * W + x0] = m;
+    }
+    return v;
+  };
+  const shirt = pass(pass(yel, 6, 0), 6, 1);
+  for (let i = 0, j = 0; i < a.length; i += 4, j++) {
+    if (shirt[j] && !yel[j]) { a[i] = 255; a[i + 1] = 210; a[i + 2] = 40; } // se pinta como suéter y abajo pasa a lino
+    const r = a[i], g = a[i + 1], b = a[i + 2], l = (r + g + b) / 765;
+    // lino parejo (sin el zigzag del suéter): apenas se conserva el sombreado
+    if (r > 140 && g > 120 && r - b > 70) { const k = .95 + (l - .62) * .12; a[i] = 247 * k; a[i + 1] = 244 * k; a[i + 2] = 234 * k; }
+    // la bufanda pasa a ser el cuello de la guayabera, del mismo lino
+    else if (b > r + 35 && b > g + 5) { const k = .9 + (l - .3) * .1; a[i] = 240 * k; a[i + 1] = 236 * k; a[i + 2] = 224 * k; }
+  }
+  x.putImageData(d, 0, 0);
+  guayaMap = new THREE.CanvasTexture(c);
+  guayaMap.flipY = baseMap.flipY; guayaMap.colorSpace = baseMap.colorSpace;
+  guayaMap.wrapS = baseMap.wrapS; guayaMap.wrapT = baseMap.wrapT; guayaMap.anisotropy = baseMap.anisotropy;
+  return guayaMap;
+}
+function dressBear() {
+  if (!bear || !bones.head) return;
+  if (acc) { bones.head.remove(acc); acc.traverse(c => { c.geometry && c.geometry.dispose(); c.material && c.material.dispose(); }); }
+  acc = new THREE.Group();
+  if (look.hat === 'paja') acc.add(hatPaja());
+  if (look.hat === 'lana') acc.add(hatLana());
+  if (look.shades) acc.add(shades());
+  bones.head.add(acc);
+  if (umb && look.hat !== 'paraguas') { scene.remove(umb); umb.traverse(c => { c.geometry && c.geometry.dispose(); c.material && c.material.dispose(); }); umb = null; }
+  if (!umb && look.hat === 'paraguas') { umb = umbrella(); scene.add(umb); }
+  if (bearMat) {
+    const m = look.shirt === 'guayabera' ? guayabera() : baseMap;
+    if (m && bearMat.map !== m) { bearMat.map = m; bearMat.needsUpdate = true; }
+  }
+}
+function buildRain() {
+  const n = 220, pos = new Float32Array(n * 6), r = rng(71);
+  for (let i = 0; i < n; i++) {
+    const x = (r() - .5) * 5, y = r() * 2.6, z = -r() * 3 + .8;
+    pos.set([x, y, z, x - .01, y - .07, z], i * 6);
+  }
+  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  rain = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: '#9fb3c8', transparent: true, opacity: .55 }));
+  rain.visible = false; scene.add(rain);
+}
+export function setLook(l) {
+  const region = look.region;
+  look = Object.assign({}, look, l || {});
+  if (!scene) return;
+  dressBear();
+  if (rain) rain.visible = !!look.rain;
+  if (region !== look.region) { const p = palette(); scene.fog.color.set(p.bg); buildForest(true); }
 }
 
 /* ---------- Bucle ---------- */
@@ -231,6 +410,7 @@ function frame(now) {
       b.rotation.y = lerp(b.rotation.y, D(g[1]), a);
       b.rotation.z = lerp(b.rotation.z, D(g[2]), a);
     });
+    if (umb) { bear.updateMatrixWorld(true); placeUmbrella(); }
     const hop = gesture === 'happy' ? Math.abs(Math.sin(gestureT * 6)) * .05 : 0;
     bear.position.y = lerp(bear.position.y, .45 + hop, Math.min(1, dt * 10));
   }
@@ -240,7 +420,8 @@ function frame(now) {
       u.grow = Math.max(0, Math.min(1, u.grow + u.dir * dt * (RM ? 10 : 1.4)));
       const e = 1 - Math.pow(1 - u.grow, 3);
       o.scale.setScalar(Math.max(.001, u.base * e));
-      if (u.grow <= 0) { forest.remove(o); o.traverse(c => { c.geometry && c.geometry.dispose(); c.material && c.material.dispose(); }); }
+      // solo se quita lo que se está yendo (lo nuevo también parte en 0)
+      if (u.dir < 0 && u.grow <= 0) { forest.remove(o); o.traverse(c => { c.geometry && c.geometry.dispose(); c.material && c.material.dispose(); }); }
     }
   });
   if (ground) ground.material.color.lerp(groundTo, Math.min(1, dt * 2));
@@ -250,6 +431,15 @@ function frame(now) {
       let y = a.getY(i) + sp[i] * dt;
       if (y > 2.2) y = -.05;
       a.setY(i, y); a.setX(i, a.getX(i) + Math.sin(t * .6 + i) * .0009);
+    }
+    a.needsUpdate = true;
+  }
+  if (rain && rain.visible && !RM) {
+    const a = rain.geometry.attributes.position;
+    for (let i = 0; i < a.count; i += 2) {
+      let y = a.getY(i) - dt * 2.4;
+      if (y < 0) y += 2.6;
+      a.setY(i, y); a.setY(i + 1, y - .07);
     }
     a.needsUpdate = true;
   }
@@ -283,20 +473,30 @@ function init() {
   scene = new THREE.Scene();
   const pal = palette();
   scene.background = null; // transparente: la máscara del contenedor funde la escena con la página
-  scene.fog = new THREE.Fog(pal.bg, 2.0, 5.2);
+  scene.fog = new THREE.Fog(pal.bg, 2.4, 7.5); // el bosque se aclara con la distancia, como en una ilustración
   camera = new THREE.PerspectiveCamera(30, 1, .05, 20);
   camera.position.set(0, .75, 2.6);
-  scene.add(new THREE.HemisphereLight('#ffffff', '#9aa29c', 1.6));
-  const sun = new THREE.DirectionalLight('#ffffff', 1.4); sun.position.set(1.5, 3, 2); scene.add(sun);
+  // Ilustración: solo luz ambiente, colores planos sin sombreado
+  scene.add(new THREE.AmbientLight('#ffffff', Math.PI));
   ground = new THREE.Mesh(new THREE.CircleGeometry(7, 48), new THREE.MeshLambertMaterial({ color: pal.ground }));
   ground.rotation.x = -Math.PI / 2; scene.add(ground);
   clock = new THREE.Clock();
   new GLTFLoader().load(new URL('./oso/oso.glb', import.meta.url).href, g => {
     bear = g.scene;
-    bear.traverse(o => { if (o.isBone) { bones[o.name] = o; if (/^(upperarm|forearm|hand)_/.test(o.name)) o.rotation.order = 'YZX'; } if (o.isMesh) { o.frustumCulled = false; } });
+    bear.traverse(o => {
+      if (o.isBone) { bones[o.name] = o; if (/^(upperarm|forearm|hand)_/.test(o.name)) o.rotation.order = 'YZX'; }
+      if (o.isMesh) {
+        o.frustumCulled = false;
+        // Color plano: la textura tal cual, sin luz ni sombras
+        const src = o.material, flat = new THREE.MeshBasicMaterial({ map: src.map || null, color: src.map ? 0xffffff : (src.color || 0xffffff), transparent: !!src.transparent, opacity: src.opacity, fog: false });
+        o.material = flat; src.dispose && src.dispose();
+        if (flat.map) { bearMat = flat; baseMap = flat.map; }
+      }
+    });
     bear.position.y = .45; // pies sobre el suelo (el modelo va de -0.45 a 0.45)
     bear.scale.setScalar(1);
     scene.add(bear);
+    dressBear();
     play('wave');
   });
   const cv = renderer.domElement;
@@ -329,6 +529,8 @@ function init() {
     .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   buildForest();
   buildDust();
+  buildRain();
+  rain.visible = !!look.rain;
   raf = requestAnimationFrame(frame);
 }
 

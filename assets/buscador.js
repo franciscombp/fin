@@ -1,9 +1,10 @@
 /* =====================================================================
-   Buscador tipo Siri
+   Buscador de la app
    Se abre deslizando hacia abajo desde el tope de Inicio (o con la lupa
-   de la barra superior). Muestra acciones sugeridas, una recomendación
-   según la hora y, al escribir, acciones, movimientos y la opción de
-   preguntarle al asistente.
+   de la barra superior). Es para hacer cosas en la app: acciones, tus
+   atajos grabados, lo que sueles hacer a esta hora y, al escribir,
+   frases como "transferir 20 a María" que abren el flujo ya lleno,
+   productos, ajustes y movimientos. Uku queda como último recurso.
    ===================================================================== */
 (function () {
   'use strict';
@@ -72,7 +73,7 @@
       if (a.run) return a.run();
       if (a.tab) {
         var t = document.querySelector('.tabs .tab[data-panel="' + a.tab + '"]');
-        if (t) { t.click(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+        if (t) { t.click(); AppScroll.to({ top: 0, behavior: 'smooth' }); }
         return;
       }
       var el = document.querySelector('#home-page [data-action="' + a.action + '"]') || document.querySelector('[data-action="' + a.action + '"]');
@@ -80,15 +81,75 @@
     }, 280);
   }
 
+  /* ---------- Atajos: acciones grabadas con sus datos ---------- */
+  var SC_KEY = 'pb_atajos_v1';
+  var BENS = ['María José', 'Carlos A.', 'Luis P.', 'Sofía G.', 'Diego R.'];
+  var BILLERS = [['luz|electric', 'Empresa Eléctrica Quito', 'Pagar la luz'], ['agua', 'EPMAPS', 'Pagar el agua'], ['internet|cnt', 'CNT Internet', 'Pagar el internet'], ['claro|plan', 'Claro', 'Pagar el plan Claro']];
+  var SC_ACTS = [['Transferir dinero', 'send_money', 'Transferir'], ['Pagar servicios', 'bolt', 'Pagar servicio'], ['Recargar celular', 'smartphone', 'Recargar'], ['Pagar tarjeta', 'credit_card', 'Pagar tarjeta']];
+  var shortcuts = [
+    { name: 'Mensualidad de María José', action: 'Transferir dinero', icon: 'send_money', who: 'María José', amount: 50 },
+    { name: 'Luz de la casa', action: 'Pagar servicios', icon: 'bolt', biller: 'Empresa Eléctrica Quito' },
+    { name: 'Recarga a mamá', action: 'Recargar celular', icon: 'smartphone', amount: 5 }
+  ];
+  try { var sv = JSON.parse(localStorage.getItem(SC_KEY)); if (Array.isArray(sv)) shortcuts = sv; } catch (e) {}
+  function saveShortcuts() { try { localStorage.setItem(SC_KEY, JSON.stringify(shortcuts)); } catch (e) {} }
+  function scSub(sc) {
+    var a = SC_ACTS.filter(function (x) { return x[0] === sc.action; })[0];
+    return [a ? a[2] : sc.action, sc.who || sc.biller || '', sc.amount ? money(sc.amount) : ''].filter(Boolean).join(' · ');
+  }
+  function runShortcut(sc) {
+    close(true);
+    setTimeout(function () { if (window.__runShortcut) window.__runShortcut(sc); }, 280);
+  }
+
+  /* Frases: "transferir 20 a maría", "pagar la luz", "recargar 5" */
+  function intent(raw) {
+    var q = norm(raw), m = q.match(/(\d+(?:[.,]\d{1,2})?)/), amt = m ? parseFloat(m[1].replace(',', '.')) : 0;
+    if (/(transfer|envi|mand|pasa|deposit)/.test(q)) {
+      var who = BENS.filter(function (b) { return q.indexOf(norm(b).split(' ')[0]) >= 0; })[0];
+      if (who || amt) return { action: 'Transferir dinero', icon: 'send_money', who: who, amount: amt,
+        name: 'Transferir' + (amt ? ' ' + money(amt) : '') + (who ? ' a ' + who : '') };
+    }
+    if (/pag/.test(q)) {
+      var bl = BILLERS.filter(function (b) { return new RegExp(b[0]).test(q); })[0];
+      if (bl) return { action: 'Pagar servicios', icon: 'bolt', biller: bl[1], name: bl[2] };
+    }
+    if (/recarg/.test(q) && amt) return { action: 'Recargar celular', icon: 'smartphone', amount: amt, name: 'Recargar ' + money(amt) };
+    return null;
+  }
+
+  /* Lo demás de la app: productos (Inicio) y ajustes (Perfil) */
+  function appItems() {
+    var out = [], seen = {};
+    document.querySelectorAll('#home-page .product-row[data-action]').forEach(function (b) {
+      var l = b.dataset.action; if (seen[l]) return; seen[l] = 1;
+      out.push({ label: l, icon: 'account_balance_wallet', sub: 'Producto', el: b, k: 'producto cuenta tarjeta saldo ' + l });
+    });
+    document.querySelectorAll('.view[data-view="4"] [data-action]').forEach(function (b) {
+      var l = b.dataset.action; if (seen[l]) return; seen[l] = 1;
+      var ic = b.querySelector('.material-symbols-rounded');
+      out.push({ label: l, icon: ic ? ic.textContent.trim() : 'settings', sub: 'Perfil', view: 4, el: b, k: 'perfil ajustes configuracion ' + l });
+    });
+    return out;
+  }
+  var APP = [], HELP = [];
+  function runApp(a) {
+    close(true);
+    setTimeout(function () {
+      if (a.view != null && window.__goView) window.__goView(a.view);
+      setTimeout(function () { a.el.click(); }, a.view != null ? 120 : 0);
+    }, 280);
+  }
+
   /* Sugerencia según la hora: lo que la persona suele hacer a esta hora. */
   function moment() {
     var h = new Date().getHours();
-    if (h < 12) return { title: 'Suele hacerse por la mañana', icon: 'bolt', main: 'Pagar Luz de la casa', sub: 'Vence hoy · ' + money(24.8), a: ACTIONS[2] };
-    if (h < 19) return { title: 'Suele hacerse a esta hora', icon: 'send_money', main: 'Transferir a Ana Torres', sub: 'Lo haces casi todos los viernes', a: ACTIONS[0] };
+    if (h < 12) return { title: 'Suele hacerse por la mañana', icon: 'bolt', main: 'Pagar Luz de la casa', sub: 'La pagas cada mes · ' + money(24.8), sc: { action: 'Pagar servicios', biller: 'Empresa Eléctrica Quito' } };
+    if (h < 19) return { title: 'Suele hacerse a esta hora', icon: 'send_money', main: 'Transferir a María José', sub: 'Lo haces casi todos los viernes', sc: { action: 'Transferir dinero', who: 'María José' } };
     return { title: 'Suele hacerse por la noche', icon: 'insights', main: 'Revisar tus gastos de hoy', sub: 'En Mis finanzas', a: ACTIONS[4] };
   }
 
-  var el, input, results, hint, open_ = false, ctxId = null, curIns = [];
+  var el, input, results, hint, open_ = false, ctxId = null, curIt = null, rec_ = null;
   function mount() {
     el = document.createElement('div');
     el.className = 'sx';
@@ -115,6 +176,8 @@
       if (first) first.click();
     });
     el.addEventListener('click', function (e) {
+      // Tocar el espacio vacío (debajo de los resultados) también cierra
+      if (e.target === results || e.target.classList.contains('sx-back')) return close();
       var b = e.target.closest('[data-sx],[data-sx-i]');
       if (!b) return;
       if (b.dataset.sx === 'close') return close();
@@ -122,7 +185,28 @@
       var i = b.dataset.sxI;
       if (i === 'ask') { var q = input.value.trim(); close(true); setTimeout(function () { window.Asistente && Asistente.open({ ctx: ctxId, ask: q }); }, 280); return; }
       if (i === 'pfm') return runAction(ACTIONS[4]);
-      if (i.indexOf('cq:') === 0) { var cq = curIns[+i.slice(3)].q; close(true); setTimeout(function () { window.Asistente && Asistente.open({ ctx: ctxId, ask: cq }); }, 280); return; }
+      if (i === 'help') { close(true); setTimeout(function () { window.Soporte && Soporte.open(); }, 280); return; }
+      if (i.indexOf('hp:') === 0) { var hp = HELP[+i.slice(3)]; close(true); setTimeout(function () { if (!window.Soporte) return; if (hp.kind === 'tut') Soporte.openTut(hp.i); else Soporte.openFaq(hp.i); }, 280); return; }
+      if (i === 'mo') { var mo = moment(); return mo.sc ? runShortcut(mo.sc) : runAction(mo.a); }
+      if (i === 'it') return runShortcut(curIt);
+      if (i === 'it-save') { shortcuts.push(Object.assign({}, curIt)); saveShortcuts(); fx('success'); input.value = ''; render(); return; }
+      if (i.indexOf('sc:') === 0) return runShortcut(shortcuts[+i.slice(3)]);
+      if (i.indexOf('del:') === 0) { shortcuts.splice(+i.slice(4), 1); saveShortcuts(); fx('toggle'); render(); return; }
+      if (i.indexOf('app:') === 0) return runApp(APP[+i.slice(4)]);
+      if (i === 'rec') { rec_ = { action: SC_ACTS[0][0], who: BENS[0] }; fx('select'); render(); return; }
+      if (i === 'rec-cancel') { rec_ = null; render(); return; }
+      if (i.indexOf('rec-act:') === 0) { readRec(); rec_.action = i.slice(8); render(); return; }
+      if (i.indexOf('rec-who:') === 0) { readRec(); rec_[rec_.action === 'Pagar servicios' ? 'biller' : 'who'] = i.slice(8); render(); return; }
+      if (i === 'rec-save') {
+        readRec();
+        var a = SC_ACTS.filter(function (x) { return x[0] === rec_.action; })[0];
+        var sc = { action: rec_.action, icon: a[1], amount: rec_.amount || 0 };
+        if (rec_.action === 'Transferir dinero') sc.who = rec_.who;
+        if (rec_.action === 'Pagar servicios') sc.biller = rec_.biller || BILLERS[0][1];
+        sc.name = rec_.name || scSub(sc);
+        shortcuts.push(sc); saveShortcuts(); rec_ = null; fx('success'); render();
+        return;
+      }
       if (i.indexOf('q:') === 0) { var aq = ASKS[+i.slice(2)].q; close(true); setTimeout(function () { window.Asistente && Asistente.ask(aq); }, 280); return; }
       if (i.indexOf('a:') === 0) return runAction(ACTIONS[+i.slice(2)]);
     });
@@ -134,6 +218,43 @@
       if (sy !== null && Math.abs(e.touches[0].clientY - sy) > 8 && document.activeElement === input) input.blur();
     }, { passive: true });
     results.addEventListener('scroll', function () { if (document.activeElement === input) input.blur(); }, { passive: true });
+    // Deslizar hacia arriba para cerrar (como Spotlight): desde el campo de
+    // búsqueda, o desde los resultados cuando ya no hay más para ver.
+    var panel = el.querySelector('.sx-panel'), back = el.querySelector('.sx-back'), sw = null;
+    panel.addEventListener('touchstart', function (e) {
+      if (e.touches.length !== 1) { sw = null; return; }
+      var t = e.touches[0];
+      sw = { x0: t.clientX, y0: t.clientY, dy: 0, on: false, head: !!e.target.closest('.sx-head'),
+        end: results.scrollTop + results.clientHeight >= results.scrollHeight - 2, s: [[t.clientY, performance.now()]] };
+    }, { passive: true });
+    panel.addEventListener('touchmove', function (e) {
+      if (!sw) return;
+      var t = e.touches[0], dy = t.clientY - sw.y0, dx = t.clientX - sw.x0;
+      if (!sw.on) {
+        if (dy < -10 && Math.abs(dy) > Math.abs(dx) && (sw.head || sw.end)) {
+          sw.on = true; sw.y0 = t.clientY; dy = 0; input.blur();
+          panel.style.transition = 'none'; back.style.transition = 'none';
+        } else if (Math.abs(dy) > 10 || Math.abs(dx) > 10) { sw = null; return; }
+        else return;
+      }
+      e.preventDefault();
+      sw.dy = Math.min(0, dy);
+      panel.style.transform = 'translateY(' + (sw.dy * .8) + 'px)';
+      panel.style.opacity = String(Math.max(.2, 1 + sw.dy / 360));
+      back.style.opacity = String(Math.max(0, 1 + sw.dy / 300));
+      sw.s.push([t.clientY, performance.now()]); if (sw.s.length > 5) sw.s.shift();
+    }, { passive: false });
+    var swEnd = function () {
+      if (!sw) return;
+      var g = sw; sw = null;
+      if (!g.on) return;
+      var a = g.s[0], b = g.s[g.s.length - 1], v = (b[0] - a[0]) / Math.max(1, b[1] - a[1]);
+      panel.style.transition = ''; back.style.transition = '';
+      if (g.dy < -90 || (v < -.5 && g.dy < -24)) close();
+      panel.style.transform = ''; panel.style.opacity = ''; back.style.opacity = '';
+    };
+    panel.addEventListener('touchend', swEnd);
+    panel.addEventListener('touchcancel', swEnd);
     // El panel ocupa sólo el alto visible: con teclado abierto termina
     // justo encima de él y los resultados hacen scroll.
     if (window.visualViewport) {
@@ -154,36 +275,63 @@
     return '<button class="sx-app" data-sx-i="a:' + ACTIONS.indexOf(a) + '"><span class="sx-app__ic material-symbols-rounded">' + a.icon + '</span><span>' + a.label + '</span></button>';
   }
   function row(id, icon, main, sub, right) {
-    var ic = icon === 'uku' && window.Asistente ? '<span class="sx-row__ic sx-row__ic--uku">' + Asistente.faceIMG() + '</span>' : '<span class="sx-row__ic material-symbols-rounded">' + icon + '</span>';
+    var ic = icon === 'uku' && window.Asistente ? '<span class="sx-row__ic sx-row__ic--uku">' + Asistente.faceIMG() + '</span>'
+      : icon === 'ai' ? '<span class="sx-row__ic sx-row__ic--ai material-symbols-rounded">auto_awesome</span>'
+      : '<span class="sx-row__ic material-symbols-rounded">' + icon + '</span>';
     return '<button class="sx-row" data-sx-i="' + id + '">' + ic + '<span class="sx-row__main"><b>' + main + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (right ? '<span class="sx-row__r">' + right + '</span>' : '') + '</button>';
   }
   function T(x, v) { return window.I18n ? I18n.t(x, v) : x; }
   function ukuName() { return (window.Asistente && Asistente.name && Asistente.name()) || 'Uku'; }
+  function readRec() {
+    var n = results.querySelector('[data-rec="name"]'), m = results.querySelector('[data-rec="amt"]');
+    if (n) rec_.name = n.value.trim();
+    if (m) rec_.amount = parseFloat(String(m.value).replace(',', '.')) || 0;
+  }
+  function chip(id, label, on) { return '<button class="sx-chip" data-sx-i="' + id + '" aria-pressed="' + !!on + '">' + esc(label) + '</button>'; }
+  function recHTML() {
+    var r = rec_, isT = r.action === 'Transferir dinero', isS = r.action === 'Pagar servicios';
+    return '<section class="sx-card sx-rec"><h3>Grabar un atajo</h3>' +
+      '<p class="sx-rec__hint">Guarda una acción con sus datos y repítela con un toque.</p>' +
+      '<p class="sx-rec__label">Qué quieres hacer</p><div class="sx-chips">' + SC_ACTS.map(function (x) { return chip('rec-act:' + x[0], x[2], x[0] === r.action); }).join('') + '</div>' +
+      (isT ? '<p class="sx-rec__label">Para</p><div class="sx-chips">' + BENS.map(function (b) { return chip('rec-who:' + b, b, b === r.who); }).join('') + '</div>' : '') +
+      (isS ? '<p class="sx-rec__label">Servicio</p><div class="sx-chips">' + BILLERS.map(function (b) { return chip('rec-who:' + b[1], b[1], b[1] === (r.biller || BILLERS[0][1])); }).join('') + '</div>' : '') +
+      (!isS ? '<label class="sx-rec__field"><span>Monto (opcional)</span><input type="number" inputmode="decimal" min="0" step="0.01" placeholder="0,00" data-rec="amt" value="' + (r.amount || '') + '"></label>' : '') +
+      '<label class="sx-rec__field"><span>Nombre del atajo</span><input type="text" maxlength="40" placeholder="Ej. Mensualidad" data-rec="name" value="' + esc(r.name || '') + '"></label>' +
+      '<div class="sx-rec__acts"><button class="sx-btn sx-btn--ghost" data-sx-i="rec-cancel">Cancelar</button><button class="sx-btn" data-sx-i="rec-save">Guardar atajo</button></div></section>';
+  }
   function render() {
     var q = norm(input.value.trim()), html = '';
+    if (rec_) { results.innerHTML = recHTML(); return; }
+    APP = appItems();
     if (!q) {
-      // Contextual: lo que ves depende de la sección desde donde abriste el buscador
+      // Primero las acciones (contextuales a la sección desde donde se abrió)
       var cx = window.Contexto ? Contexto.info(ctxId) : null;
-      if (cx && cx.insights.length) {
-        curIns = cx.insights;
-        html += '<section class="sx-card sx-card--uku"><h3><span class="sx-uku">' + (window.Asistente ? Asistente.faceIMG() : '') + '</span>' + esc(cx.titulo) + '</h3>' +
-          cx.insights.map(function (x, i) { return row('cq:' + i, x.icon, esc(x.t), esc(x.s)); }).join('') + '</section>';
-      }
       var feat = cx ? cx.acciones.concat(FEATURED.filter(function (l) { return cx.acciones.indexOf(l) < 0; })).slice(0, 8) : FEATURED;
       html += '<section class="sx-card"><h3>Acciones</h3><div class="sx-grid">' +
         feat.map(function (l) { return ACTIONS.filter(function (a) { return a.label === l; })[0]; }).filter(Boolean).map(tile).join('') + '</div></section>';
+      // Tus atajos grabados
+      html += '<section class="sx-card"><h3>Tus atajos</h3>' +
+        shortcuts.map(function (sc, i) { return row('sc:' + i, sc.icon || 'bolt', esc(sc.name), esc(scSub(sc)), '<span class="sx-del" data-sx-i="del:' + i + '" role="button" aria-label="Borrar atajo"><span class="material-symbols-rounded">close</span></span>'); }).join('') +
+        row('rec', 'add', 'Grabar un atajo', 'Guarda una acción con sus datos') + '</section>';
       if (!cx || cx.id === 'inicio') {
         var m = moment();
-        html += '<section class="sx-card"><h3>' + m.title + '</h3>' + row('a:' + ACTIONS.indexOf(m.a), m.icon, m.main, m.sub) + '</section>';
+        html += '<section class="sx-card"><h3>' + m.title + '</h3>' + row('mo', m.icon, m.main, m.sub) + '</section>';
       }
+      html += '<section class="sx-card"><h3>Ayuda</h3>' + row('help', 'help', 'Centro de ayuda', 'Preguntas frecuentes, categorías y tutoriales') + '</section>';
     } else {
       var ws = words(input.value);
+      // Frase completa → el flujo ya lleno, listo para confirmar
+      curIt = intent(input.value);
+      if (curIt) html += '<section class="sx-card"><h3>Hacer ahora</h3>' + row('it', curIt.icon, esc(curIt.name), 'Abre el flujo con los datos puestos') +
+        '<button class="sx-link" data-sx-i="it-save"><span class="material-symbols-rounded">bookmark_add</span>Grabar como atajo</button></section>';
+      var scs = rank(shortcuts, ws, function (sc) { return sc.name + ' ' + scSub(sc); });
+      if (scs.length) html += '<section class="sx-card"><h3>Tus atajos</h3>' + scs.slice(0, 3).map(function (sc) { return row('sc:' + shortcuts.indexOf(sc), sc.icon || 'bolt', esc(sc.name), esc(scSub(sc))); }).join('') + '</section>';
       var acts = rank(ACTIONS, ws, function (a) { return a.label + ' ' + a.k + ' ' + T(a.label); }); // también en el idioma elegido
       var cxa = window.Contexto ? Contexto.info(ctxId).acciones : [];
       acts.sort(function (a, b) { return (cxa.indexOf(b.label) >= 0) - (cxa.indexOf(a.label) >= 0); }); // primero lo de esta sección
       if (acts.length) html += '<section class="sx-card"><h3>Acciones</h3>' + acts.slice(0, 4).map(function (a) { return row('a:' + ACTIONS.indexOf(a), a.icon, a.label); }).join('') + '</section>';
-      var asks = rank(ASKS, ws, function (a) { return a.q + ' ' + a.k + ' ' + T(a.q); }).slice(0, 3);
-      if (asks.length) html += '<section class="sx-card"><h3>Pregúntale a ' + ukuName() + '</h3>' + asks.map(function (a) { return row('q:' + ASKS.indexOf(a), 'uku', a.q); }).join('') + '</section>';
+      var apps = rank(APP, ws, function (a) { return a.label + ' ' + a.k; });
+      if (apps.length) html += '<section class="sx-card"><h3>En la app</h3>' + apps.slice(0, 4).map(function (a) { return row('app:' + APP.indexOf(a), a.icon, esc(a.label), a.sub); }).join('') + '</section>';
       var d = window.Asistente && Asistente.data && Asistente.data();
       if (d && q.length > 1) {
         var MON = ['ago', 'sep', 'oct'];
@@ -194,7 +342,15 @@
           return row('pfm', inc ? 'south_west' : 'north_east', esc(t.who), t.day + ' ' + MON[t.mi], (inc ? '+' : '-') + money(t.amt));
         }).join('') + '</section>';
       }
-      if (!asks.length) html += '<section class="sx-card">' + row('ask', 'uku', 'Pregúntale a ' + ukuName(), '«' + esc(input.value.trim()) + '»') + '</section>';
+      // Ayuda: preguntas frecuentes y tutoriales del centro de ayuda
+      HELP = window.Soporte && Soporte.find ? Soporte.find(input.value, 3) : [];
+      if (HELP.length) html += '<section class="sx-card"><h3>Ayuda</h3>' + HELP.map(function (h, i) { return row('hp:' + i, h.icon, esc(h.t), h.kind === 'tut' ? 'Tutorial' : 'Pregunta frecuente'); }).join('') + '</section>';
+      // Al final, el análisis con IA de Uku (se marca como IA)
+      var asks = rank(ASKS, ws, function (a) { return a.q + ' ' + a.k + ' ' + T(a.q); }).slice(0, 2);
+      if (asks.length) html += '<section class="sx-card"><h3>Analizar con ' + ukuName() + ' <span class="ai-badge">IA</span></h3>' + asks.map(function (a) { return row('q:' + ASKS.indexOf(a), 'ai', a.q); }).join('') + '</section>';
+      if (!html) html += '<section class="sx-card sx-empty"><p>No encontramos «' + esc(input.value.trim()) + '» en la app.</p>' +
+        row('help', 'help', 'Buscar en la ayuda', 'Preguntas frecuentes y tutoriales') +
+        row('ask', 'ai', 'Analizar con ' + ukuName(), 'Pregúntale sobre tus finanzas · IA') + '</section>';
     }
     results.innerHTML = html;
   }
@@ -236,6 +392,7 @@
     if (!el) mount();
     if (open_) return;
     open_ = true;
+    rec_ = null;
     ctxId = window.Contexto ? Contexto.get() : null; // la sección desde donde se abre
     input.value = '';
     render();
@@ -243,6 +400,7 @@
     if (el._fit) el._fit();
     document.documentElement.classList.add('sx-open');
     input.focus({ preventScroll: true }); // dentro del gesto: iOS sí muestra el teclado
+    if (window.Overlay) Overlay.push('sx', function () { close(); }); // el "atrás" del teléfono lo cierra
     fx('open');
   }
   function close(silent) {
@@ -252,14 +410,15 @@
     input.blur();
     el.classList.remove('open');
     document.documentElement.classList.remove('sx-open');
+    if (window.Overlay) Overlay.done('sx');
     if (!silent) fx('close');
   }
 
   /* ---------- Gesto: deslizar hacia abajo desde el tope de Inicio ---------- */
   function homeVisible() {
     var h = document.getElementById('home-page');
-    return h && !h.classList.contains('hidden') && document.body.style.overflow !== 'hidden' &&
-      !document.querySelector('.push-page.open, .as-page.open, .pf-page.open, .sheet.open, .card-detail.open, #login-screen.active');
+    return h && !h.classList.contains('hidden') && document.body.style.overflow !== 'hidden' && !document.documentElement.classList.contains('has-sheet') &&
+      !document.querySelector('.push-page.open, .as-page.open, .pf-page.open:not(.pf-page--inline), .sheet.open, .card-detail.open, #login-screen.active');
   }
   var pull = null, PULL = 72;
   function mountHint() {
@@ -269,7 +428,7 @@
     document.body.appendChild(hint);
   }
   document.addEventListener('touchstart', function (e) {
-    if (open_ || window.scrollY > 0 || !homeVisible() || e.touches.length > 1) { pull = null; return; }
+    if (open_ || AppScroll.top() > 0 || !homeVisible() || e.touches.length > 1) { pull = null; return; }
     if (e.target.closest('.debit-card, .tabs, .home-banner__track, .promos, input, textarea')) { pull = null; return; }
     pull = { y: e.touches[0].clientY, x: e.touches[0].clientX, dy: 0, axis: null, armed: false };
   }, { passive: true });
@@ -277,7 +436,7 @@
     if (!pull) return;
     var dy = e.touches[0].clientY - pull.y, dx = e.touches[0].clientX - pull.x;
     if (!pull.axis && Math.hypot(dx, dy) > 10) pull.axis = Math.abs(dy) > Math.abs(dx) && dy > 0 ? 'down' : 'other';
-    if (pull.axis !== 'down' || window.scrollY > 0) return;
+    if (pull.axis !== 'down' || AppScroll.top() > 0) return;
     e.preventDefault();
     if (!hint) mountHint();
     var d = Math.min(140, dy * .55);
@@ -303,7 +462,7 @@
   // En escritorio: rueda hacia arriba estando en el tope
   var wheelAcc = 0, wheelT;
   window.addEventListener('wheel', function (e) {
-    if (open_ || window.scrollY > 0 || e.deltaY >= 0 || !homeVisible()) { wheelAcc = 0; return; }
+    if (open_ || AppScroll.top() > 0 || e.deltaY >= 0 || !homeVisible()) { wheelAcc = 0; return; }
     wheelAcc += -e.deltaY;
     clearTimeout(wheelT); wheelT = setTimeout(function () { wheelAcc = 0; }, 250);
     if (wheelAcc > 220) { wheelAcc = 0; open(); }
@@ -317,5 +476,5 @@
     open();
   }, true);
 
-  window.Buscador = { open: open, close: close };
+  window.Buscador = { open: open, close: close, shortcuts: function () { return shortcuts.slice(); } };
 })();

@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="format-detection" content="telephone=no">
+    <!-- Scroll de la app: la página completa (la barra inferior queda fija encima) -->
+    <script>
+        window.AppScroll = {
+            el: function () { return document.scrollingElement || document.documentElement; },
+            top: function () { return this.el().scrollTop; },
+            to: function (o) { window.scrollTo(o); }
+        };
+    </script>
     <meta name="description" content="Pichibank app - POC Rediseño">
     <!-- En Android el theme-color pinta la barra superior; usamos el gris del
          fondo (no el amarillo de marca) para que la cabecera no se vea amarilla. -->
@@ -63,6 +71,20 @@
          tamaño dado; el texto plano de respaldo ("settings") es mucho más
          ancho. Es la señal directa de lo que el usuario vería. -->
     <link rel="stylesheet" href="./assets/tokens.css">
+    <script>
+        /* Modo de la colección "layout" de Figma según el ancho real del
+           dispositivo (token breakpoint): <390 mobile-xs (margen 16),
+           390 mobile-sm, 402 mobile-md, 440 mobile-lg, ≥768 tablet-md. */
+        (function () {
+            var M = [[390, 'mobile-sm'], [402, 'mobile-md'], [440, 'mobile-lg'], [768, 'tablet-md']];
+            function set() {
+                var w = window.innerWidth || document.documentElement.clientWidth || 390, m = 'mobile-xs';
+                for (var i = 0; i < M.length; i++) if (w >= M[i][0]) m = M[i][1];
+                if (document.documentElement.getAttribute('data-layout') !== m) document.documentElement.setAttribute('data-layout', m);
+            }
+            set(); window.addEventListener('resize', set);
+        })();
+    </script>
     <script>
         (function () {
             function reveal() { document.documentElement.classList.add('icons-ready'); }
@@ -329,7 +351,7 @@
             min-width: 0; /* permite que este flex-item se achique y sí scrollee */
             overflow-x: auto;
             scrollbar-width: none;
-            padding-right: 24px;
+            padding-right: var(--bp-layout-grid-margin, 24px);
         }
 
         .tabs__scroll::-webkit-scrollbar {
@@ -490,7 +512,7 @@
 
         /* ---------- Secciones ---------- */
         .section {
-            padding: 8px 24px 16px;
+            padding: 8px var(--bp-layout-grid-margin, 24px) 16px;
         }
 
         .section__title {
@@ -1048,7 +1070,7 @@
         }
 
         .amount-trend .material-symbols-rounded {
-            color: #1e9e5a;
+            color: var(--bp-theme-color-data-positive, #218c3b);
             font-size: 24px;
         }
 
@@ -1679,7 +1701,10 @@
             transform: translate(-50%, 100%);
             transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
             padding: 8px 16px calc(24px + env(safe-area-inset-bottom, 0px));
-            touch-action: none;
+            max-height: 86vh;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            touch-action: pan-y;
             will-change: transform;
         }
 
@@ -1771,7 +1796,7 @@
 
         .content-loader {
             display: none;
-            padding: 8px 24px;
+            padding: 8px var(--bp-layout-grid-margin, 24px);
         }
 
         /* Vista previa que asoma durante el swipe entre secciones */
@@ -2075,7 +2100,7 @@
         .cd-inner {
             max-width: 480px;
             margin: 0 auto;
-            padding: 0 24px 40px;
+            padding: 0 var(--bp-layout-grid-margin, 24px) 40px;
         }
 
         /* Título grande de pantalla (se colapsa a la barra al hacer scroll) */
@@ -2583,7 +2608,7 @@
         .login-screen__top {
             flex: 1 1 auto;
             min-height: 0;
-            padding: 4px 24px 20px;
+            padding: 4px var(--bp-layout-grid-margin, 24px) 20px;
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -2840,7 +2865,7 @@
         .push-page__inner {
             max-width: 480px;
             margin: 0 auto;
-            padding: 0 24px 40px;
+            padding: 0 var(--bp-layout-grid-margin, 24px) 40px;
         }
 
         .push-page__hero {
@@ -3046,7 +3071,7 @@
         }
 
         .push-transfer-success__icon {
-            color: #1e9e5a;
+            color: var(--bp-theme-color-status-success-icon, #299846);
             font-size: 64px;
             margin-bottom: 12px;
             animation: transferSuccessPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -3102,7 +3127,7 @@
             margin-top: 6px;
             min-height: 15px;
         }
-        .push-field__hint--error { color: #c0392b; font-weight: 600; }
+        .push-field__hint--error { color: var(--bp-theme-color-status-error-text, #d50707); font-weight: 600; }
 
         .push-input, .push-select {
             width: 100%;
@@ -3173,7 +3198,7 @@
             font-variant-numeric: tabular-nums;
         }
 
-        .finance-hero__value--positive { color: #1e9e5a; }
+        .finance-hero__value--positive { color: var(--bp-theme-color-data-positive, #218c3b); }
         .finance-hero__value--negative { color: var(--bp-status-warning-bg); }
 
         .finance-hero__divider {
@@ -3196,7 +3221,7 @@
 
         .finance-networth strong { color: var(--bp-status-warning-bg); font-weight: 700; }
         .finance-networth.is-positive { background: rgba(30, 158, 90, 0.12); }
-        .finance-networth.is-positive strong { color: #1e9e5a; }
+        .finance-networth.is-positive strong { color: var(--bp-theme-color-data-positive, #218c3b); }
         .finance-networth .material-symbols-rounded { font-size: 18px; }
 
         #push-cta { margin-top: 8px; }
@@ -3265,6 +3290,7 @@
         }
 
         .push-page.scrolled .detail-title,
+        .push-page.scrolled .pv-title,
         .card-detail.scrolled .cd-title {
             opacity: 0;
         }
@@ -3594,11 +3620,11 @@
            Va antes del tema Y2K para que éste siga pudiendo sobreescribir.
            ====================================================== */
         .top-bar { padding: 0 16px; }
-        .tabs { padding: 12px 0 12px 16px; }
-        .tabs__scroll { padding-right: 16px; }
+        .tabs { padding: 12px 0 12px var(--bp-layout-grid-margin, 16px); }
+        .tabs__scroll { padding-right: var(--bp-layout-grid-margin, 16px); }
         .tab { height: 48px; padding: 0 16px; }
-        .content-loader { padding: 8px 16px; }
-        .section { padding: 8px 16px 16px; }
+        .content-loader { padding: 8px var(--bp-layout-grid-margin, 16px); }
+        .section { padding: 8px var(--bp-layout-grid-margin, 16px) 16px; }
         .section__title { height: 40px; margin-bottom: 8px; }
         .section__title h2 {
             font-size: 18px;
@@ -3625,7 +3651,7 @@
         .section__link--chevron .material-symbols-rounded { font-size: 20px; }
 
         /* Banner claro, texto en color de marca (bp-banner) */
-        .home-banner__track { padding: 0 16px; scroll-padding: 0 16px; }
+        .home-banner__track { padding: 0 var(--bp-layout-grid-margin, 16px); scroll-padding: 0 var(--bp-layout-grid-margin, 16px); }
         .home-banner__slide {
             height: 136px;
             padding: 16px;
@@ -3716,13 +3742,13 @@
 
         /* Promociones: carrusel horizontal de tarjetas 144×256 (bp-banner-vertical) */
         .section--bleed { padding-left: 0; padding-right: 0; }
-        .section--bleed .section__title { padding: 0 16px; }
+        .section--bleed .section__title { padding: 0 var(--bp-layout-grid-margin, 16px); }
         .promos {
             display: flex;
             gap: 12px;
             overflow-x: auto;
-            padding: 0 16px;
-            scroll-padding: 0 16px;
+            padding: 0 var(--bp-layout-grid-margin, 16px);
+            scroll-padding: 0 var(--bp-layout-grid-margin, 16px);
             scroll-snap-type: x mandatory;
             scrollbar-width: none;
             -webkit-overflow-scrolling: touch;
@@ -4164,6 +4190,9 @@
     <link rel="stylesheet" href="./assets/destacados.css">
     <link rel="stylesheet" href="./assets/producto.css">
     <link rel="stylesheet" href="./assets/sistema.css">
+    <link rel="stylesheet" href="./assets/finanzas.css">
+    <link rel="stylesheet" href="./assets/analisis.css">
+    <link rel="stylesheet" href="./assets/soporte.css">
 </head>
 <body>
     <!-- Login Screen -->
@@ -4286,9 +4315,6 @@
 
         <!-- Tabs -->
         <nav class="tabs" aria-label="Secciones">
-            <button class="tab" data-action="Modo finanzas" aria-label="Modo finanzas">
-                <span class="material-symbols-rounded">monitoring</span>
-            </button>
             <div class="tabs__scroll">
                 <button class="tab active" data-panel="Destacado">Destacado</button>
                 <button class="tab" data-panel="Cuentas">Cuentas</button>
@@ -4454,20 +4480,17 @@
                 <button class="section__link section__link--chevron" data-action="Ver todas las promociones">Ver todo<span class="material-symbols-rounded">chevron_right</span></button>
             </div>
             <div class="promos">
-                <button class="promo promo--1" data-action="Promoción cashback">
-                    <img class="promo__img" src="./assets/banners/cashback.webp" alt="" loading="lazy" draggable="false">
-                    <span class="promo__title">30% cashback comprando con tu tarjeta</span>
-                    <span class="promo__go"><span class="material-symbols-rounded">chevron_right</span></span>
+                <button class="promo promo--1" data-action="Promoción cafetería" aria-label="Sweet &amp; Coffee: giftcard y descuentos del 15%">
+                    <img class="promo__img" src="./assets/banners/promo-1.png" alt="" loading="lazy" draggable="false">
                 </button>
-                <button class="promo promo--2" data-action="Promoción cafetería">
-                    <img class="promo__img" src="./assets/banners/regalo.webp" alt="" loading="lazy" draggable="false">
-                    <span class="promo__title">Giftcard y descuentos del 15%</span>
-                    <span class="promo__go"><span class="material-symbols-rounded">chevron_right</span></span>
+                <button class="promo promo--2" data-action="Promoción cine" aria-label="Multicines: tu combo perfecto a tan solo $6,99">
+                    <img class="promo__img" src="./assets/banners/promo-2.png" alt="" loading="lazy" draggable="false">
                 </button>
-                <button class="promo promo--3" data-action="Promoción vinos">
-                    <img class="promo__img" src="./assets/banners/vinos.webp" alt="" loading="lazy" draggable="false">
-                    <span class="promo__title">Hasta 30% dcto. en vinos seleccionados</span>
-                    <span class="promo__go"><span class="material-symbols-rounded">chevron_right</span></span>
+                <button class="promo promo--3" data-action="Promoción combo" aria-label="McCombo Royal Deluxe por $4,99">
+                    <img class="promo__img" src="./assets/banners/promo-3.png" alt="" loading="lazy" draggable="false">
+                </button>
+                <button class="promo promo--4" data-action="Promoción cashback" aria-label="Rappi: 30% de cashback comprando con tu Mastercard">
+                    <img class="promo__img" src="./assets/banners/promo-4.png" alt="" loading="lazy" draggable="false">
                 </button>
             </div>
         </section>
@@ -4566,6 +4589,56 @@
                         <span class="cta-dashed__link">Crear nueva meta</span>
                     </span>
                 </button>
+            </section>
+            <section class="section hub-section">
+                <div class="quick-actions quick-actions--hub">
+                    <button class="quick-action" data-action="Abrir cuenta">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">account_balance_wallet</span></span>
+                        <span class="quick-action__label">Abrir cuenta</span>
+                    </button>
+                    <button class="quick-action" data-action="Crear meta de ahorro">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">radar</span></span>
+                        <span class="quick-action__label">Crear meta</span>
+                    </button>
+                    <button class="quick-action" data-action="Certificado bancario">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">description</span></span>
+                        <span class="quick-action__label">Certificado bancario</span>
+                    </button>
+                    <button class="quick-action" data-action="Más acciones">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
+                        <span class="quick-action__label">Más acciones</span>
+                    </button>
+                </div>
+            </section>
+            <section class="section hub-section">
+                <div class="section__title"><h2>Disponible para ti</h2></div>
+                <div class="hub-offer" data-action="Solicitar préstamo">
+                    <img class="hub-offer__img" src="./assets/banners/finanzas.webp" alt="" loading="lazy" draggable="false">
+                    <div class="hub-offer__text">
+                        <p class="hub-offer__title">El apoyo que necesitas para hacer realidad tus sueños</p>
+                        <button class="hub-offer__cta" data-action="Solicitar préstamo">Solicitar préstamo<span class="material-symbols-rounded">chevron_right</span></button>
+                    </div>
+                </div>
+            </section>
+            <section class="section section--bleed hub-section">
+                <div class="section__title"><h2>Tips financieros</h2></div>
+                <div class="hub-tips">
+                    <button class="hub-tip hub-tip--1" data-action="Tip: Programa tus pagos desde tu Banca Móvil en minutos">
+                        <span class="hub-tip__title">Programa tus pagos desde tu <b>Banca Móvil</b> en minutos</span>
+                        <img class="hub-tip__img" src="./assets/oso/oso.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                    <button class="hub-tip hub-tip--2" data-action="Tip: Crea metas y ahorra de manera organizada">
+                        <span class="hub-tip__title"><b>Crea metas</b> y ahorra de manera organizada</span>
+                        <img class="hub-tip__img" src="./assets/banners/finanzas.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                    <button class="hub-tip hub-tip--3" data-action="Tip: Revisa en qué gastas con Mis finanzas">
+                        <span class="hub-tip__title">Revisa en qué gastas con <b>Mis finanzas</b></span>
+                        <img class="hub-tip__img" src="./assets/banners/cashback.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                </div>
             </section>
         </div><!-- /panel Cuentas -->
 
@@ -4672,6 +4745,85 @@
                     </span>
                 </button>
             </section>
+            <section class="section hub-section">
+                <div class="quick-actions quick-actions--hub">
+                    <button class="quick-action" data-action="Nueva tarjeta">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">add_card</span></span>
+                        <span class="quick-action__label">Nueva tarjeta</span>
+                    </button>
+                    <button class="quick-action" data-action="Avance de efectivo">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">local_atm</span></span>
+                        <span class="quick-action__label">Avance de efectivo</span>
+                    </button>
+                    <button class="quick-action" data-action="Pagar tarjeta">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">credit_score</span></span>
+                        <span class="quick-action__label">Pagar tarjeta</span>
+                    </button>
+                    <button class="quick-action" data-action="Más acciones">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
+                        <span class="quick-action__label">Más acciones</span>
+                    </button>
+                </div>
+            </section>
+            <section class="section section--bleed hub-section">
+                <div class="section__title"><h2>Canjea tus millas</h2><button class="section__link" data-action="Ver catálogo de millas">Ver más</button></div>
+                <div class="hub-promos">
+                    <div class="hub-promo">
+                        <span class="hub-promo__media"><img src="./assets/banners/regalo.webp" alt="" loading="lazy" draggable="false"><span class="hub-promo__badge">-10%</span></span>
+                        <span class="hub-promo__content">
+                            <span class="hub-promo__title">Giftcard Sweet &amp; Coffee</span>
+                            <span class="hub-promo__price"><b>2.400 millas</b><s>2.700</s></span>
+                            <button class="hub-promo__cta" data-action="Canjear Giftcard Sweet y Coffee">Canjear<span class="material-symbols-rounded">chevron_right</span></button>
+                        </span>
+                    </div>
+                    <div class="hub-promo">
+                        <span class="hub-promo__media"><img src="./assets/banners/vinos.webp" alt="" loading="lazy" draggable="false"><span class="hub-promo__badge">-10%</span></span>
+                        <span class="hub-promo__content">
+                            <span class="hub-promo__title">Kit de vinos Viña Concha</span>
+                            <span class="hub-promo__price"><b>8.900 millas</b><s>9.900</s></span>
+                            <button class="hub-promo__cta" data-action="Canjear Kit de vinos Viña Concha">Canjear<span class="material-symbols-rounded">chevron_right</span></button>
+                        </span>
+                    </div>
+                    <div class="hub-promo">
+                        <span class="hub-promo__media"><img src="./assets/banners/cashback.webp" alt="" loading="lazy" draggable="false"><span class="hub-promo__badge">-10%</span></span>
+                        <span class="hub-promo__content">
+                            <span class="hub-promo__title">Cashback de $ 10,00</span>
+                            <span class="hub-promo__price"><b>1.800 millas</b><s>2.000</s></span>
+                            <button class="hub-promo__cta" data-action="Canjear Cashback de $ 10,00">Canjear<span class="material-symbols-rounded">chevron_right</span></button>
+                        </span>
+                    </div>
+                </div>
+            </section>
+            <section class="section hub-section">
+                <div class="section__title"><h2>Disponible para ti</h2></div>
+                <div class="hub-offer" data-action="Solicitar préstamo">
+                    <img class="hub-offer__img" src="./assets/banners/finanzas.webp" alt="" loading="lazy" draggable="false">
+                    <div class="hub-offer__text">
+                        <p class="hub-offer__title">El apoyo que necesitas para hacer realidad tus sueños</p>
+                        <button class="hub-offer__cta" data-action="Solicitar préstamo">Solicitar préstamo<span class="material-symbols-rounded">chevron_right</span></button>
+                    </div>
+                </div>
+            </section>
+            <section class="section section--bleed hub-section">
+                <div class="section__title"><h2>Tips financieros</h2></div>
+                <div class="hub-tips">
+                    <button class="hub-tip hub-tip--1" data-action="Tip: Retira efectivo sin tener tu Tarjeta de Débito a la mano">
+                        <span class="hub-tip__title">Retira efectivo <b>sin tener tu Tarjeta de Débito</b> a la mano</span>
+                        <img class="hub-tip__img" src="./assets/banners/ofertas.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                    <button class="hub-tip hub-tip--2" data-action="Tip: ¿Cómo uso mi Tarjeta Digital para compras en línea?">
+                        <span class="hub-tip__title">¿Cómo uso mi <b>Tarjeta Digital</b> para compras en línea?</span>
+                        <img class="hub-tip__img" src="./assets/banners/cashback.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                    <button class="hub-tip hub-tip--3" data-action="Tip: Acumula millas en cada compra">
+                        <span class="hub-tip__title">Acumula <b>millas</b> en cada compra</span>
+                        <img class="hub-tip__img" src="./assets/banners/millas.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                </div>
+            </section>
         </div><!-- /panel Tarjetas -->
 
         <!-- ============ Panel: Préstamos ============ -->
@@ -4710,6 +4862,56 @@
                     </span>
                 </button>
             </section>
+            <section class="section hub-section">
+                <div class="quick-actions quick-actions--hub">
+                    <button class="quick-action" data-action="Nuevo préstamo">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">real_estate_agent</span></span>
+                        <span class="quick-action__label">Nuevo préstamo</span>
+                    </button>
+                    <button class="quick-action" data-action="Alivio financiero">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">volunteer_activism</span></span>
+                        <span class="quick-action__label">Alivio financiero</span>
+                    </button>
+                    <button class="quick-action" data-action="Certificado bancario">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">description</span></span>
+                        <span class="quick-action__label">Certificado bancario</span>
+                    </button>
+                    <button class="quick-action" data-action="Más acciones">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
+                        <span class="quick-action__label">Más acciones</span>
+                    </button>
+                </div>
+            </section>
+            <section class="section hub-section">
+                <div class="section__title"><h2>Disponible para ti</h2></div>
+                <div class="hub-offer" data-action="Solicitar préstamo">
+                    <img class="hub-offer__img" src="./assets/banners/finanzas.webp" alt="" loading="lazy" draggable="false">
+                    <div class="hub-offer__text">
+                        <p class="hub-offer__title">El apoyo que necesitas para hacer realidad tus sueños</p>
+                        <button class="hub-offer__cta" data-action="Solicitar préstamo">Solicitar préstamo<span class="material-symbols-rounded">chevron_right</span></button>
+                    </div>
+                </div>
+            </section>
+            <section class="section section--bleed hub-section">
+                <div class="section__title"><h2>Tips financieros</h2></div>
+                <div class="hub-tips">
+                    <button class="hub-tip hub-tip--1" data-action="Tip: Programa tus pagos desde tu Banca Móvil en minutos">
+                        <span class="hub-tip__title">Programa tus pagos desde tu <b>Banca Móvil</b> en minutos</span>
+                        <img class="hub-tip__img" src="./assets/oso/oso.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                    <button class="hub-tip hub-tip--2" data-action="Tip: Crea metas y ahorra de manera organizada">
+                        <span class="hub-tip__title"><b>Crea metas</b> y ahorra de manera organizada</span>
+                        <img class="hub-tip__img" src="./assets/banners/finanzas.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                    <button class="hub-tip hub-tip--3" data-action="Tip: Revisa en qué gastas con Mis finanzas">
+                        <span class="hub-tip__title">Revisa en qué gastas con <b>Mis finanzas</b></span>
+                        <img class="hub-tip__img" src="./assets/banners/cashback.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                </div>
+            </section>
         </div><!-- /panel Prestamos -->
 
         <!-- ============ Panel: Inversiones ============ -->
@@ -4745,6 +4947,51 @@
                         <span class="cta-dashed__link">Invertir ahora</span>
                     </span>
                 </button>
+            </section>
+            <section class="section hub-section">
+                <div class="quick-actions quick-actions--hub">
+                    <button class="quick-action" data-action="Crear inversión">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">add_chart</span></span>
+                        <span class="quick-action__label">Nueva inversión</span>
+                    </button>
+                    <button class="quick-action" data-action="Renovar inversión">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">autorenew</span></span>
+                        <span class="quick-action__label">Renovar inversión</span>
+                    </button>
+                    <button class="quick-action" data-action="Certificado bancario">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">description</span></span>
+                        <span class="quick-action__label">Certificado bancario</span>
+                    </button>
+                    <button class="quick-action" data-action="Más acciones">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
+                        <span class="quick-action__label">Más acciones</span>
+                    </button>
+                </div>
+            </section>
+            <section class="section hub-section">
+                <div class="section__title"><h2>Disponible para ti</h2></div>
+                <div class="hub-offer" data-action="Simular ganancias">
+                    <img class="hub-offer__img" src="./assets/banners/finanzas.webp" alt="" loading="lazy" draggable="false">
+                    <div class="hub-offer__text">
+                        <p class="hub-offer__title">Haz crecer tus ahorros con un Depósito a Plazo</p>
+                        <button class="hub-offer__cta" data-action="Simular ganancias">Simular ganancias<span class="material-symbols-rounded">chevron_right</span></button>
+                    </div>
+                </div>
+            </section>
+            <section class="section section--bleed hub-section">
+                <div class="section__title"><h2>Tips financieros</h2></div>
+                <div class="hub-tips">
+                    <button class="hub-tip hub-tip--1" data-action="Tip: Haz crecer tus ahorros con un Depósito a Plazo">
+                        <span class="hub-tip__title">Haz crecer tus ahorros con un <b>Depósito a Plazo</b></span>
+                        <img class="hub-tip__img" src="./assets/banners/finanzas.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                    <button class="hub-tip hub-tip--2" data-action="Tip: Crea metas y ahorra de manera organizada">
+                        <span class="hub-tip__title"><b>Crea metas</b> y ahorra de manera organizada</span>
+                        <img class="hub-tip__img" src="./assets/oso/oso.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                </div>
             </section>
         </div><!-- /panel Inversiones -->
 
@@ -4787,22 +5034,66 @@
                     </span>
                 </button>
             </section>
+            <section class="section hub-section">
+                <div class="quick-actions quick-actions--hub">
+                    <button class="quick-action" data-action="Nuevo seguro">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">add_moderator</span></span>
+                        <span class="quick-action__label">Nuevo seguro</span>
+                    </button>
+                    <button class="quick-action" data-action="Renovar seguro">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">autorenew</span></span>
+                        <span class="quick-action__label">Renovar seguro</span>
+                    </button>
+                    <button class="quick-action" data-action="Certificado bancario">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">description</span></span>
+                        <span class="quick-action__label">Certificado bancario</span>
+                    </button>
+                    <button class="quick-action" data-action="Más acciones">
+                        <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
+                        <span class="quick-action__label">Más acciones</span>
+                    </button>
+                </div>
+            </section>
+            <section class="section hub-section">
+                <div class="section__title"><h2>Disponible para ti</h2></div>
+                <div class="hub-offer" data-action="Solicitar préstamo">
+                    <img class="hub-offer__img" src="./assets/banners/finanzas.webp" alt="" loading="lazy" draggable="false">
+                    <div class="hub-offer__text">
+                        <p class="hub-offer__title">El apoyo que necesitas para hacer realidad tus sueños</p>
+                        <button class="hub-offer__cta" data-action="Solicitar préstamo">Solicitar préstamo<span class="material-symbols-rounded">chevron_right</span></button>
+                    </div>
+                </div>
+            </section>
+            <section class="section section--bleed hub-section">
+                <div class="section__title"><h2>Tips financieros</h2></div>
+                <div class="hub-tips">
+                    <button class="hub-tip hub-tip--1" data-action="Tip: ¿Qué cubre tu seguro de vida?">
+                        <span class="hub-tip__title">¿Qué cubre tu <b>seguro de vida</b>?</span>
+                        <img class="hub-tip__img" src="./assets/oso/oso.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                    <button class="hub-tip hub-tip--2" data-action="Tip: Protege tus tarjetas ante fraudes">
+                        <span class="hub-tip__title">Protege tus <b>tarjetas</b> ante fraudes</span>
+                        <img class="hub-tip__img" src="./assets/banners/ofertas.webp" alt="" loading="lazy" draggable="false">
+                        <span class="hub-tip__play"><span class="material-symbols-rounded">play_arrow</span></span>
+                    </button>
+                </div>
+            </section>
         </div><!-- /panel Seguros -->
         </div><!-- /view data-view=0 -->
 
-        <div class="view placeholder-view" data-view="1">
-            <h1>Solicitudes</h1>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
+        <!-- Mis finanzas: sección de la barra inferior (asistente.js monta el dashboard) -->
+        <div class="view view--finanzas" data-view="1">
+            <div class="pf-host"></div>
         </div>
 
         <div class="view placeholder-view" data-view="2">
             <h1>Beneficios</h1>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
-            <div class="skeleton-card"><span class="skeleton skeleton--avatar"></span><span class="skeleton--lines"><span class="skeleton skeleton--title"></span><span class="skeleton skeleton--sub"></span></span></div>
+            <div class="soon">
+                <span class="soon__ic material-symbols-rounded" aria-hidden="true">redeem</span>
+                <h2 class="soon__title">Próximamente</h2>
+                <p class="soon__text">Estamos preparando descuentos y beneficios para ti por usar tus productos Pichibank.</p>
+            </div>
         </div>
 
         <div class="view placeholder-view" data-view="3">
@@ -4965,23 +5256,19 @@
     <!-- Bottom nav -->
     <nav class="nav-bar" aria-label="Navegación principal">
         <div class="nav-bar__inner">
-            <button class="nav-item active" aria-current="page">
+            <button class="nav-item active" aria-current="page" data-view="0">
                 <span class="nav-item__wrap"><span class="material-symbols-rounded">home</span></span>
                 <span class="nav-item__label">Inicio</span>
             </button>
-            <button class="nav-item">
-                <span class="nav-item__wrap"><span class="material-symbols-rounded">list_alt</span></span>
-                <span class="nav-item__label">Solicitudes</span>
+            <button class="nav-item" data-view="1">
+                <span class="nav-item__wrap"><span class="material-symbols-rounded">monitoring</span></span>
+                <span class="nav-item__label">Mis finanzas</span>
             </button>
-            <button class="nav-item">
+            <button class="nav-item" data-view="2">
                 <span class="nav-item__wrap"><span class="material-symbols-rounded">redeem</span></span>
                 <span class="nav-item__label">Beneficios</span>
             </button>
-            <button class="nav-item">
-                <span class="nav-item__wrap"><span class="material-symbols-rounded">storefront</span></span>
-                <span class="nav-item__label">Tienda</span>
-            </button>
-            <button class="nav-item">
+            <button class="nav-item" data-view="4">
                 <span class="nav-item__wrap"><span class="material-symbols-rounded">account_circle</span></span>
                 <span class="nav-item__label">Perfil</span>
             </button>
@@ -5095,6 +5382,13 @@
                     </button>
                 </div>
 
+                <!-- Consumo no reconocido: solicitud de revisión (assets/soporte.js) -->
+                <button class="cd-review" data-action="Revisar consumo">
+                    <span class="material-symbols-rounded" aria-hidden="true">report</span>
+                    <span class="cd-review__main"><b>¿No reconoces un consumo?</b><small>Solicita una revisión · toma de 2 a 6 semanas</small></span>
+                    <span class="material-symbols-rounded" aria-hidden="true">chevron_right</span>
+                </button>
+
                 <h2 class="cd-subtitle">Tus suscripciones y pagos recurrentes</h2>
 
                 <div class="cd-subs">
@@ -5187,6 +5481,9 @@
                     <span class="material-symbols-rounded">arrow_back</span>
                 </button>
                 <span class="detail-topbar__title" id="push-topbar-title"></span>
+                <button class="icon-button push-eye" id="push-eye" aria-label="Ocultar saldos" aria-pressed="false">
+                    <span class="material-symbols-rounded">visibility</span>
+                </button>
             </div>
         </div>
         <div class="push-page__inner">
@@ -5465,7 +5762,11 @@
         function setupCollapsingHeader(container, bigTitle, topbar) {
             const onScroll = () => {
                 const barH = topbar.offsetHeight;
-                const t = bigTitle.getBoundingClientRect();
+                // bigTitle puede ser una función: la página de cuenta usa su
+                // propio título (.pv-title) y el genérico queda oculto.
+                const el = typeof bigTitle === 'function' ? bigTitle() : bigTitle;
+                if (!el || !el.offsetParent) { container.classList.remove('scrolled'); return; }
+                const t = el.getBoundingClientRect();
                 const c = container.getBoundingClientRect();
                 container.classList.toggle('scrolled', (t.bottom - c.top) < barH - 6);
             };
@@ -5482,7 +5783,7 @@
         const pushLoading = document.getElementById('push-loading');
         const pushLoadingText = document.getElementById('push-loading-text');
         const pushMovs = document.getElementById('push-movs');
-        setupCollapsingHeader(pushPage, pushTitle, document.getElementById('push-topbar'));
+        setupCollapsingHeader(pushPage, () => pushPage.querySelector('.pv-title') || pushTitle, document.getElementById('push-topbar'));
 
         // Movimientos de ejemplo para dar contenido (y poder hacer scroll)
         const movData = [
@@ -5504,7 +5805,7 @@
                 <button class="sub-item" data-action="${m[1]}">
                     <span class="sub-item__logo" style="background:${m[4]};"><span class="material-symbols-rounded">${m[0]}</span></span>
                     <span class="sub-item__info"><span class="sub-item__name">${m[1]}</span><span class="sub-item__meta">${m[2]}</span></span>
-                    <span class="sub-item__price" style="color:${m[3][0] === '+' ? '#1e9e5a' : 'var(--bp-text-primary)'};">${m[3]}</span>
+                    <span class="sub-item__price" style="color:${m[3][0] === '+' ? 'var(--bp-theme-color-data-positive)' : 'var(--bp-text-primary)'};">${m[3]}</span>
                 </button>`).join('');
         }
         renderMovs();
@@ -6070,11 +6371,41 @@
             });
         }
 
+        // Atajos del buscador: abren el flujo real con los datos ya puestos
+        // (beneficiario + monto → directo a confirmar; servicio → su formulario).
+        window.__runShortcut = function (sc) {
+            const btn = document.querySelector(`#home-page [data-action="${sc.action}"]`) || document.querySelector(`[data-action="${sc.action}"]`);
+            if (!btn) return;
+            btn.click();
+            const extra = document.getElementById('push-extra');
+            const fold = (t) => String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            let tries = 0;
+            (function step() {
+                if (sc.action === 'Transferir dinero' && sc.who) {
+                    const ben = [...extra.querySelectorAll('[data-beneficiary]')].find(b => fold(b.dataset.beneficiary).startsWith(fold(sc.who)));
+                    if (ben) {
+                        ben.click();
+                        if (sc.amount > 0 && transferFlow) {
+                            transferFlow.amount = sc.amount;
+                            extra.innerHTML = transferConfirmHTML(transferFlow.beneficiary, sc.amount);
+                        }
+                        return;
+                    }
+                } else if (sc.action === 'Pagar servicios' && sc.biller) {
+                    const bb = [...extra.querySelectorAll('[data-biller]')].find(b => b.dataset.biller === sc.biller);
+                    if (bb) { bb.click(); return; }
+                } else return;
+                if (++tries < 30) setTimeout(step, 100);
+            })();
+        };
+
         function renderPushSummary(title) {
             // Productos: página propia (assets/producto.js), sin el bloque
             // genérico de Resumen/Movimientos que se repetía en todos.
             if (window.ProductView && ProductView.has(title)) {
                 pushPage.classList.add('is-product');
+                pushPage.classList.toggle('is-account', !!(ProductView.isAccount && ProductView.isAccount(title)));
+                if (ProductView.isAccount && ProductView.isAccount(title)) pushTopbarTitle.textContent = ProductView.title(title);
                 document.getElementById('push-extra').innerHTML = ProductView.html(title);
                 return;
             }
@@ -6096,7 +6427,7 @@
 
         function openPushPage(title, originEl) {
             fx('open');
-            pushPage.classList.remove('is-product');
+            pushPage.classList.remove('is-product', 'is-account');
             pushTitle.textContent = title;
             pushTopbarTitle.textContent = title;
             transferFlow = null; // reinicia el flujo si había quedado a medias
@@ -6188,6 +6519,24 @@
         }
 
         document.getElementById('push-back').addEventListener('click', closePushPage);
+        // Ojo de la cuenta: alterna el mismo ocultar-saldos global del Inicio
+        (function () {
+            const eye = document.getElementById('push-eye');
+            const global = document.getElementById('balance-toggle');
+            const sync = () => {
+                const on = document.documentElement.classList.contains('pb-masked');
+                eye.setAttribute('aria-pressed', on ? 'true' : 'false');
+                eye.setAttribute('aria-label', on ? 'Mostrar saldos' : 'Ocultar saldos');
+                eye.querySelector('.material-symbols-rounded').textContent = on ? 'visibility_off' : 'visibility';
+            };
+            eye.addEventListener('click', () => {
+                if (global) global.click();
+                else document.documentElement.classList.toggle('pb-masked');
+                setTimeout(sync, 0);
+            });
+            new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+            sync();
+        })();
         window.addEventListener('keydown', e => {
             if (e.key === 'Escape' && pushPage.classList.contains('open')) closePushPage();
         });
@@ -6302,7 +6651,7 @@
             clearTimeout(revealTimer);
             homeView.classList.remove('reveal');
             homeView.classList.add('is-loading');
-            window.scrollTo({ top: 0 });
+            AppScroll.to({ top: 0 });
             loadTimer = setTimeout(() => {
                 homeView.classList.remove('is-loading');
                 homeView.classList.add('reveal');
@@ -6315,18 +6664,23 @@
 
         // ---------- Banner de ofertas: carrusel infinito ----------
         const BANNER_SLIDES = [
-            { theme: 1, title: 'Ofertas todo el año con tus tarjetas Pichibank', cta: 'Ver ofertas', img: 'ofertas' },
-            { theme: 2, title: 'Acumula millas en cada compra con tu tarjeta de crédito', cta: 'Conocer más', img: 'millas' },
-            { theme: 3, title: 'Mira en qué se va tu plata con Mis finanzas', cta: 'Ver Mis finanzas', act: 'Modo finanzas', img: 'finanzas' },
+            // tone: 'dark' = imagen oscura (texto blanco) · 'light' = imagen clara (texto negro)
+            { theme: 1, tone: 'dark', title: 'Ofertas todo el año con tus tarjetas Pichibank', cta: 'Ver ofertas', photo: 'bp-banner-1' },
+            { theme: 2, tone: 'dark', title: 'Protección adicional para tu día a día', cta: 'Ver más', photo: 'bp-banner-2' },
+            { theme: 3, tone: 'light', title: 'Genera ganancias con un Depósito a Plazo', cta: 'Simular', photo: 'bp-banner-3' },
         ];
 
+        // bp-banner con foto de fondo (assets/banners/foto-*.jpg). Si la
+        // foto no está, el slide queda con la superficie de marca y el
+        // texto sigue legible (ver .is-nophoto en sistema.css).
         function bannerSlideHTML(s) {
             return `
-                <div class="home-banner__slide home-banner__slide--${s.theme}" data-action="${s.act || s.cta}">
-                    <img class="home-banner__img" src="./assets/banners/${s.img}.webp" alt="" loading="lazy" draggable="false">
+                <div class="home-banner__slide home-banner__slide--photo home-banner__slide--${s.theme} home-banner__slide--on-${s.tone || 'dark'}" data-action="${s.act || s.cta}">
+                    <img class="home-banner__photo" src="./assets/banners/${s.photo}.png" alt="" draggable="false"
+                         onerror="this.closest('.home-banner__slide').classList.add('is-nophoto'); this.remove();">
                     <div class="home-banner__text">
                         <p class="home-banner__title">${s.title}</p>
-                        <button class="home-banner__cta" data-action="${s.act || s.cta}">${s.cta}<span class="material-symbols-rounded">arrow_forward</span></button>
+                        <button class="home-banner__cta bp-action-button bp-action-button--icon-right" data-size="sm" data-action="${s.act || s.cta}">${s.cta}<span class="material-symbols-rounded">chevron_right</span></button>
                     </div>
                 </div>`;
         }
@@ -6370,7 +6724,8 @@
                 // se calcula su lugar dentro del scroll del track.
                 const el = slides[pos];
                 const elLeftInTrack = el.getBoundingClientRect().left - bannerTrack.getBoundingClientRect().left + bannerTrack.scrollLeft;
-                const target = elLeftInTrack - 16; // mismo padding que .section (grid-margin del DS)
+                // El padding del track es el grid/margin del DS (lo fija el CSS).
+                const target = elLeftInTrack - (parseFloat(getComputedStyle(bannerTrack).paddingLeft) || 0);
                 bannerTrack.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
             }
 
@@ -6459,7 +6814,7 @@
                 // header) para que quede realmente fuera de vista antes de
                 // ocultarlo — con menos, tabs todavía no llega a su punto
                 // sticky y se ve el banner a medio salir.
-                window.scrollTo({ top: banner.offsetHeight, behavior: 'smooth' });
+                AppScroll.to({ top: banner.offsetHeight, behavior: 'smooth' });
                 setTimeout(() => {
                     banner.classList.add('is-hidden');
                     // Ese alto que acaba de desaparecer arriba había que
@@ -6468,11 +6823,11 @@
                     // de la sección salta hacia arriba ese mismo alto de
                     // nuevo (se resta dos veces). header/tabs, al ser
                     // sticky, no se mueven ni con esto ni sin esto.
-                    window.scrollTo({ top: 0 });
+                    AppScroll.to({ top: 0 });
                 }, 400);
             } else {
                 banner.classList.remove('is-hidden');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                AppScroll.to({ top: 0, behavior: 'smooth' });
             }
         }
 
@@ -6537,7 +6892,7 @@
         }
 
         home0.addEventListener('touchstart', e => {
-            if (e.target.closest('.debit-card, .tabs, button, a')) { sw.on = false; return; }
+            if (e.target.closest('.debit-card, .tabs, button, a, .dw-stack')) { sw.on = false; return; }
             sw = { x: e.touches[0].clientX, y: e.touches[0].clientY, axis: null, on: true, dx: 0 };
         }, { passive: true });
 
@@ -6609,13 +6964,14 @@
 
             prev.classList.remove('active', 'entering');
             next.classList.add('active', 'entering');
-            window.scrollTo({ top: 0 });
+            AppScroll.to({ top: 0 });
             if (index === 0) simulateLoad(700); // Destacado sí carga datos reales
 
             viewSwitchTimer = setTimeout(() => next.classList.remove('entering'), 500);
         }
 
-        navItems.forEach((item, index) => {
+        navItems.forEach((item) => {
+            const index = +item.dataset.view;
             item.addEventListener('click', () => {
                 const alreadyOnThisView = index === currentView;
                 navItems.forEach(i => {
@@ -6631,12 +6987,26 @@
                 if (index === 0 && alreadyOnThisView) {
                     activateSectionTab(document.querySelector('.tabs .tab[data-panel="Destacado"]'));
                 }
+                // Al cambiar de sección, cada una vuelve a su pestaña inicial
+                // (Inicio → Destacado, Mis finanzas → Hoy)
+                if (!alreadyOnThisView) {
+                    if (index === 0) activateSectionTab(document.querySelector('.tabs .tab[data-panel="Destacado"]'));
+                    document.dispatchEvent(new CustomEvent('pb:view', { detail: index }));
+                }
             });
         });
 
+        // Ir a una sección desde otros módulos (p. ej. "Mis finanzas" desde Uku o el buscador)
+        window.__goView = function (index) {
+            const item = document.querySelector(`.nav-item[data-view="${index}"]`);
+            if (item && index !== currentView) item.click();
+            else AppScroll.to({ top: 0 });
+        };
+
         // Reset de navegación a Inicio/Destacado (lo usa app.js al iniciar sesión)
         window.__resetHomeView = function () {
-            navItems.forEach((i, idx) => {
+            navItems.forEach((i) => {
+                const idx = i.dataset.view ? +i.dataset.view : -1;
                 i.classList.toggle('active', idx === 0);
                 if (idx === 0) i.setAttribute('aria-current', 'page');
                 else i.removeAttribute('aria-current');
@@ -6649,10 +7019,10 @@
             document.querySelector('.home-banner').classList.remove('is-hidden');
             document.querySelector('.profile-story').classList.remove('is-hidden');
             document.querySelectorAll('.tabs .tab').forEach((t, idx) => {
-                t.classList.toggle('active', idx === 1); // "Destacado"
+                t.classList.toggle('active', t.dataset.panel === 'Destacado');
             });
             showPanel('Destacado');
-            window.scrollTo({ top: 0 });
+            AppScroll.to({ top: 0 });
         };
 
         // ---------- Ocultar / mostrar saldo ----------
@@ -6900,41 +7270,7 @@
             closeSheet();
         });
 
-        // Arrastrar para cerrar (drag-to-dismiss)
-        let dragStartY = null, dragDelta = 0;
-
-        sheet.addEventListener('pointerdown', e => {
-            // solo desde el handle o zonas no interactivas
-            if (e.target.closest('button')) return;
-            dragStartY = e.clientY;
-            dragDelta = 0;
-            sheet.classList.add('dragging');
-            sheet.setPointerCapture(e.pointerId);
-        });
-
-        sheet.addEventListener('pointermove', e => {
-            if (dragStartY === null) return;
-            const was = dragDelta > 90;
-            dragDelta = Math.max(0, e.clientY - dragStartY);
-            if (was !== dragDelta > 90) fx('detent'); // cruza el umbral de cierre
-            sheet.style.transform = `translate(-50%, ${dragDelta}px)`;
-        });
-
-        sheet.addEventListener('pointerup', () => {
-            if (dragStartY === null) return;
-            sheet.classList.remove('dragging');
-            dragStartY = null;
-            if (dragDelta > 90) {
-                closeSheet();
-            } else {
-                sheet.style.transform = '';
-            }
-        });
-
-        // Escape cierra el sheet
-        window.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && sheet.classList.contains('open')) closeSheet();
-        });
+        // Arrastrar para cerrar, Escape y "atrás": assets/sheets.js (igual para todas las hojas)
 
         // ---------- Detalle de tarjeta (estilo Apple Wallet) ----------
         const cardDetail = document.getElementById('card-detail');
@@ -7478,11 +7814,15 @@
 
     <script src="./app.js"></script>
     <script src="./haptics.js"></script>
+    <script src="./assets/sheets.js"></script>
+    <script src="./assets/clima.js"></script>
     <script src="./assets/asistente.js"></script>
+    <script src="./assets/analisis.js"></script>
     <script src="./assets/contexto.js"></script>
     <script src="./assets/buscador.js"></script>
     <script src="./assets/producto.js"></script>
     <script src="./assets/destacados.js"></script>
+    <script src="./assets/soporte.js"></script>
     <script src="./fiesta.js"></script>
 </body>
 </html>

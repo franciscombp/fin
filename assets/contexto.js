@@ -7,9 +7,8 @@
      acciones del buscador y preguntas sugeridas de esa sección.
    · answer(texto): respuestas por reglas para las preguntas de cada
      sección (tarjetas, préstamos, inversiones, seguros, cuentas).
-   · Uku acompaña: un botón con su cara (abajo a la derecha) que, al
-     cambiar de sección, dice en una burbuja lo más útil de esa sección.
-     Tocarlo abre el asistente ya en ese contexto.
+   · Uku ya no flota sobre la pantalla: sus recomendaciones (texto
+     conversacional en "c") aparecen en el buscador y en su hub.
    Los datos son los mismos que muestra la pantalla (y los de Mis finanzas).
    ===================================================================== */
 (function () {
@@ -68,25 +67,25 @@
   function insights(id) {
     var d = D(), top = subsTop(), r = [];
     if (id === 'tarjetas') {
-      if (d && d.card) r.push({ icon: 'credit_card', t: T('Tu Mastercard Black tiene {deuda} por pagar', { deuda: money(d.debt) }), s: T('Págala completa antes del 5 de noviembre y no pagas intereses.'), q: '¿Cuándo pago mi Mastercard?' });
-      r.push({ icon: 'autorenew', t: T('Pagas {total} al mes en suscripciones', { total: money(subsTotal()) }), s: T('{lugar} y {lugar2} son las más caras.', { lugar: top[0][0], lugar2: top[1][0] }), q: 'Mis suscripciones' });
-      r.push({ icon: 'directions_bus', t: T('Tu Movilidad alcanza para unos {n} viajes', { n: Math.floor(MOV.saldo / MOV.pasaje) }), s: T('Tiene {saldo}. Recárgala antes de quedarte sin saldo.', { saldo: money(MOV.saldo) }), q: '¿Para cuántos viajes me alcanza la Movilidad?' });
+      if (d && d.card) r.push({ icon: 'credit_card', t: T('Tu Mastercard Black tiene {deuda} por pagar', { deuda: money(d.debt) }), s: T('Págala completa antes del 5 de noviembre y no pagas intereses.'), q: '¿Cuándo pago mi Mastercard?', c: T('Ojo con tu Mastercard Black: tiene {deuda} por pagar. Si la pagas completa antes del 5 de noviembre, te ahorras los intereses.', { deuda: money(d.debt) }) });
+      r.push({ icon: 'autorenew', t: T('Pagas {total} al mes en suscripciones', { total: money(subsTotal()) }), s: T('{lugar} y {lugar2} son las más caras.', { lugar: top[0][0], lugar2: top[1][0] }), q: 'Mis suscripciones', c: T('Revisé tus suscripciones y se te van {total} al mes. {lugar} y {lugar2} son las que más pesan, ¿las sigues usando?', { total: money(subsTotal()), lugar: top[0][0], lugar2: top[1][0] }) });
+      r.push({ icon: 'directions_bus', t: T('Tu Movilidad alcanza para unos {n} viajes', { n: Math.floor(MOV.saldo / MOV.pasaje) }), s: T('Tiene {saldo}. Recárgala antes de quedarte sin saldo.', { saldo: money(MOV.saldo) }), q: '¿Para cuántos viajes me alcanza la Movilidad?', c: T('A tu Movilidad le quedan unos {n} viajes. Te aviso para que la recargues antes de quedarte sin saldo.', { n: Math.floor(MOV.saldo / MOV.pasaje) }) });
     } else if (id === 'cuentas') {
-      if (d) r.push({ icon: 'account_balance', t: T('Tienes {total} entre tus cuentas', { total: money(d.assets) }), s: T('El {pct} está en la corriente, que no gana intereses.', { pct: Math.round(CORRIENTE / d.assets * 100) + '%' }), q: '¿Me conviene un Ahorro Flexible?' });
+      if (d) r.push({ icon: 'account_balance', t: T('Tienes {total} entre tus cuentas', { total: money(d.assets) }), s: T('El {pct} está en la corriente, que no gana intereses.', { pct: Math.round(CORRIENTE / d.assets * 100) + '%' }), q: '¿Me conviene un Ahorro Flexible?', c: T('Tienes {total} entre tus cuentas, pero el {pct} está en la corriente y no te genera nada. ¿Vemos cómo ponerlo a ganar?', { total: money(d.assets), pct: Math.round(CORRIENTE / d.assets * 100) + '%' }) });
       if (d) { var s = d.by[1], tc = Object.keys(s).filter(function (k) { return k[0] !== '_'; }).sort(function (a, b) { return s[b] - s[a]; })[0];
-        r.push({ icon: 'insights', t: T('En septiembre gastaste {monto}', { monto: money(s._spend) }), s: T('Lo que más se lleva es {cat}.', { cat: T(catName(tc)).toLowerCase() }), q: '¿En qué se me va la plata?' }); }
+        r.push({ icon: 'insights', t: T('En septiembre gastaste {monto}', { monto: money(s._spend) }), s: T('Lo que más se lleva es {cat}.', { cat: T(catName(tc)).toLowerCase() }), q: '¿En qué se me va la plata?', c: T('Este mes gastaste {monto} y lo que más se lleva es {cat}. ¿Quieres que lo revisemos juntos?', { monto: money(s._spend), cat: T(catName(tc)).toLowerCase() }) }); }
     } else if (id === 'prestamos') {
-      r.push({ icon: 'event', t: T('Tu próxima cuota es de {cuota}', { cuota: money(LOAN.cuota) }), s: T('Vence el 15 de octubre. Llevas {n} de {de} cuotas.', { n: LOAN.n, de: LOAN.de }), q: '¿Cuánto me falta del préstamo?' });
-      r.push({ icon: 'request_quote', t: T('Tienes {monto} preaprobados', { monto: money(LOAN.pre) }), s: T('La cuota sería de unos {cuota} al mes. Mira si te alcanza antes de usarlo.', { cuota: money(cuotaDe(LOAN.pre, 36, LOAN.tasa)) }), q: '¿Me conviene el crédito preaprobado?' });
-      r.push({ icon: 'savings', t: T('Un abono de {monto} te ahorra {n} cuotas', { monto: money(500), n: Math.floor(500 / LOAN.cuota) }), s: T('Si te sobra algo este mes, abónalo a capital.'), q: '¿Y si abono $ 500 extra?' });
+      r.push({ icon: 'event', t: T('Tu próxima cuota es de {cuota}', { cuota: money(LOAN.cuota) }), s: T('Vence el 15 de octubre. Llevas {n} de {de} cuotas.', { n: LOAN.n, de: LOAN.de }), q: '¿Cuánto me falta del préstamo?', c: T('Te recuerdo que tu próxima cuota es de {cuota} y vence el 15 de octubre. Ya llevas {n} de {de}, ¡vas muy bien!', { cuota: money(LOAN.cuota), n: LOAN.n, de: LOAN.de }) });
+      r.push({ icon: 'request_quote', t: T('Tienes {monto} preaprobados', { monto: money(LOAN.pre) }), s: T('La cuota sería de unos {cuota} al mes. Mira si te alcanza antes de usarlo.', { cuota: money(cuotaDe(LOAN.pre, 36, LOAN.tasa)) }), q: '¿Me conviene el crédito preaprobado?', c: T('Tienes {monto} preaprobados. Antes de usarlos, te cuento que la cuota sería de unos {cuota} al mes.', { monto: money(LOAN.pre), cuota: money(cuotaDe(LOAN.pre, 36, LOAN.tasa)) }) });
+      r.push({ icon: 'savings', t: T('Un abono de {monto} te ahorra {n} cuotas', { monto: money(500), n: Math.floor(500 / LOAN.cuota) }), s: T('Si te sobra algo este mes, abónalo a capital.'), q: '¿Y si abono $ 500 extra?', c: T('Si este mes te sobra algo, un abono de {monto} te ahorra {n} cuotas. ¿Te muestro cómo hacerlo?', { monto: money(500), n: Math.floor(500 / LOAN.cuota) }) });
     } else if (id === 'inversiones') {
-      r.push({ icon: 'event', t: T('Tu depósito vence el 12 de noviembre'), s: T('Te deja {interes}. Decide antes si lo renuevas.', { interes: money(DEP.interes) }), q: '¿Qué hago cuando venza mi depósito?' });
-      r.push({ icon: 'trending_up', t: T('Tienes {monto} sin ganar intereses', { monto: money(CORRIENTE) }), s: T('En un depósito al 7,25% ganarían unos {gana} al año.', { gana: money(CORRIENTE * DEP.tasa) }), q: '¿Cuánto ganaría si invierto $ 1.000?' });
+      r.push({ icon: 'event', t: T('Tu depósito vence el 12 de noviembre'), s: T('Te deja {interes}. Decide antes si lo renuevas.', { interes: money(DEP.interes) }), q: '¿Qué hago cuando venza mi depósito?', c: T('Tu depósito vence el 12 de noviembre y te deja {interes}. Conviene que decidas antes si lo renuevas.', { interes: money(DEP.interes) }) });
+      r.push({ icon: 'trending_up', t: T('Tienes {monto} sin ganar intereses', { monto: money(CORRIENTE) }), s: T('En un depósito al 7,25% ganarían unos {gana} al año.', { gana: money(CORRIENTE * DEP.tasa) }), q: '¿Cuánto ganaría si invierto $ 1.000?', c: T('Tienes {monto} quietos en la corriente. En un depósito al 7,25% ganarían unos {gana} al año.', { monto: money(CORRIENTE), gana: money(CORRIENTE * DEP.tasa) }) });
     } else if (id === 'seguros') {
-      r.push({ icon: 'shield', t: T('Pagas {total} al mes en seguros', { total: money(SEG.vida + SEG.prot) }), s: T('Vida y protección de tarjetas.'), q: '¿Cuánto pago en seguros?' });
-      r.push({ icon: 'verified_user', t: T('Tus tarjetas están protegidas contra fraude'), s: T('Si ves un cobro raro, repórtalo desde la tarjeta.'), q: '¿Qué cubren mis seguros?' });
+      r.push({ icon: 'shield', t: T('Pagas {total} al mes en seguros', { total: money(SEG.vida + SEG.prot) }), s: T('Vida y protección de tarjetas.'), q: '¿Cuánto pago en seguros?', c: T('Entre vida y protección de tarjetas pagas {total} al mes. ¿Quieres saber qué te cubre cada uno?', { total: money(SEG.vida + SEG.prot) }) });
+      r.push({ icon: 'verified_user', t: T('Tus tarjetas están protegidas contra fraude'), s: T('Si ves un cobro raro, repórtalo desde la tarjeta.'), q: '¿Qué cubren mis seguros?', c: T('Tus tarjetas están protegidas contra fraude. Si ves un cobro raro, me avisas y te ayudo a reportarlo.') });
     } else if (window.Asistente && Asistente.insights) {
-      Asistente.insights().slice(0, 3).forEach(function (x) { r.push({ icon: x.icon, t: x.title, s: x.sub, q: x.ask || '¿Cómo voy en general?' }); });
+      Asistente.insights().slice(0, 3).forEach(function (x) { r.push({ icon: x.icon, t: x.title, s: x.sub, q: x.ask || '¿Cómo voy en general?', c: x.title + '. ' + x.sub }); });
     }
     return r;
   }
@@ -96,7 +95,7 @@
 
   /* ---------- ¿Dónde está la persona? ---------- */
   function get() {
-    if (document.querySelector('.pf-page.open')) return 'finanzas';
+    if (document.querySelector('.view[data-view="1"].active, .pf-page.open:not(.pf-page--inline)')) return 'finanzas';
     if (document.querySelector('.card-detail.open')) return 'tarjetas';
     var t = document.querySelector('.tabs .tab.active');
     var id = t ? t.dataset.panel.toLowerCase() : 'destacado';
@@ -159,48 +158,6 @@
     }
     return null;
   }
-
-  /* ---------- Uku acompaña: botón y burbuja ---------- */
-  var dock, tip, tipT, said = {};
-  function homeVisible() {
-    var h = document.getElementById('home-page');
-    return h && !h.classList.contains('hidden') && !document.querySelector('.push-page.open, .as-page.open, .pf-page.open, .sheet.open, .as-sheet.open, .card-detail.open, #login-screen.active, .sx.open, .story-viewer.open');
-  }
-  function mountDock() {
-    if (dock || !window.Asistente) return;
-    dock = document.createElement('button');
-    dock.className = 'uku-dock';
-    dock.setAttribute('aria-label', T('Pregúntale a {nombre}', { nombre: Asistente.name() }));
-    dock.innerHTML = '<span class="uku-dock__av">' + Asistente.faceIMG() + '</span>';
-    tip = document.createElement('button');
-    tip.className = 'uku-tip';
-    document.body.appendChild(tip); document.body.appendChild(dock);
-    dock.addEventListener('click', function () { hideTip(); fx('select'); Asistente.open({ ctx: get() }); });
-    tip.addEventListener('click', function () { var q = tip.dataset.q; hideTip(); fx('select'); Asistente.open({ ctx: get(), ask: q }); });
-    setInterval(function () { var v = homeVisible(); dock.classList.toggle('is-on', v); if (!v) hideTip(); }, 400);
-  }
-  function showTip(id) {
-    if (said[id] || !dock) return;
-    var ins = insights(id)[0];
-    if (!ins) return;
-    said[id] = 1;
-    tip.dataset.q = ins.q;
-    tip.innerHTML = '<b>' + esc(ins.t) + '</b><span>' + esc(ins.s) + '</span>';
-    tip.classList.add('is-on');
-    clearTimeout(tipT); tipT = setTimeout(hideTip, 6500);
-  }
-  function hideTip() { if (tip) tip.classList.remove('is-on'); clearTimeout(tipT); }
-
-  function init() {
-    mountDock();
-    // Al cambiar de pestaña, Uku dice lo más útil de esa sección (una vez por sesión)
-    document.addEventListener('click', function (e) {
-      var t = e.target.closest('.tabs .tab');
-      if (t) { hideTip(); setTimeout(function () { if (homeVisible()) showTip(get()); }, 900); }
-    });
-    document.addEventListener('i18n:change', function () { said = {}; if (dock) dock.setAttribute('aria-label', T('Pregúntale a {nombre}', { nombre: Asistente.name() })); });
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 
   window.Contexto = { get: get, info: info, answer: answer, subs: function () { return SUBS.slice(); } };
 })();

@@ -6,6 +6,20 @@
     <title>Pichibank app en iPhone Duo</title>
     <meta name="description" content="Concept interactivo: Pichibank app adaptada al iPhone Duo siguiendo las Human Interface Guidelines de iOS.">
     <link rel="stylesheet" href="./assets/tokens.css">
+    <script>
+        /* Modo de la colección "layout" de Figma según el ancho real del
+           dispositivo (token breakpoint): <390 mobile-xs (margen 16),
+           390 mobile-sm, 402 mobile-md, 440 mobile-lg, ≥768 tablet-md. */
+        (function () {
+            var M = [[390, 'mobile-sm'], [402, 'mobile-md'], [440, 'mobile-lg'], [768, 'tablet-md']];
+            function set() {
+                var w = window.innerWidth || document.documentElement.clientWidth || 390, m = 'mobile-xs';
+                for (var i = 0; i < M.length; i++) if (w >= M[i][0]) m = M[i][1];
+                if (document.documentElement.getAttribute('data-layout') !== m) document.documentElement.setAttribute('data-layout', m);
+            }
+            set(); window.addEventListener('resize', set);
+        })();
+    </script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=block">
     <style>
         /* =====================================================================

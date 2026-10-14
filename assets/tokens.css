@@ -7,11 +7,12 @@
  *   semantic  → API pública: tamaños, espaciado, radios, tipografía, elevación.
  *   theme     → color por modo: light y dark (data-theme en <html>).
  *   layout    → grilla por breakpoint (mode = data-layout).
+ *   interaction → estados (default/hover/active/focus) como sufijos --hover/--active/--focus.
  *   bp-*      → recetas por componente: sólo remapean tokens semánticos por tamaño.
  *
  */
 
-@layer tokens.base, tokens.layout, tokens.semantic, tokens.theme, tokens.product;
+@layer tokens.base, tokens.layout, tokens.semantic, tokens.theme, tokens.interaction, tokens.product;
 
 @layer tokens.base {
   :root {
@@ -241,18 +242,101 @@
     --bp-base-z-index-1000: 1000;
     --bp-base-z-index-1100: 1100;
   }
+    --bp-base-breakpoint-360: 360px;
+    --bp-base-breakpoint-390: 390px;
+    --bp-base-breakpoint-402: 402px;
+    --bp-base-breakpoint-440: 440px;
+    --bp-base-breakpoint-480: 480px;
+    --bp-base-breakpoint-768: 768px;
+    --bp-base-breakpoint-1024: 1024px;
+    --bp-base-breakpoint-1280: 1280px;
+    --bp-base-breakpoint-1366: 1366px;
+    --bp-base-count-0: 0;
+    --bp-base-count-1: 1;
+    --bp-base-count-2: 2;
+    --bp-base-count-4: 4;
+    --bp-base-count-8: 8;
+    --bp-base-count-12: 12;
+    --bp-base-height-667: 667px;
+    --bp-base-height-768: 768px;
+    --bp-base-height-800: 800px;
+    --bp-base-height-844: 844px;
+    --bp-base-height-874: 874px;
+    --bp-base-height-900: 900px;
+    --bp-base-height-917: 917px;
+    --bp-base-height-956: 956px;
+    --bp-base-height-1024: 1024px;
+    --bp-base-overlap-2: -2px;
+    --bp-base-overlap-4: -4px;
+    --bp-base-overlap-6: -6px;
+    --bp-base-overlap-8: -8px;
+    --bp-base-overlap-10: -10px;
+    --bp-base-overlap-12: -12px;
+    --bp-base-overlap-16: -16px;
+    --bp-base-overlap-20: -20px;
+    --bp-base-overlap-24: -24px;
+    --bp-base-overlap-32: -32px;
 }
 
 @layer tokens.layout {
   :root, :root[data-layout="mobile-sm"] {
-    --bp-layout-breakpoint: 390px;
-    --bp-layout-grid-columns: 4;
+    --bp-layout-breakpoint: var(--bp-base-breakpoint-390);
+    --bp-layout-grid-columns: var(--bp-base-count-4);
     --bp-layout-grid-gutter: var(--bp-base-dimension-24);
     --bp-layout-grid-inset: var(--bp-base-dimension-8);
-    --bp-layout-grid-margin: var(--bp-base-dimension-16);
+    --bp-layout-grid-margin: var(--bp-base-dimension-24);
+    --bp-layout-height-android: var(--bp-base-height-844);
+    --bp-layout-height-ios: var(--bp-base-height-844);
   }
-  :root[data-layout="mobile-xs"] { --bp-layout-breakpoint: 360px; --bp-layout-grid-gutter: var(--bp-base-dimension-16); }
-  :root[data-layout="mobile-lg"] { --bp-layout-breakpoint: 440px; --bp-layout-grid-inset: var(--bp-base-dimension-16); --bp-layout-grid-margin: var(--bp-base-dimension-24); }
+  :root[data-layout="mobile-xs"] {
+    --bp-layout-breakpoint: var(--bp-base-breakpoint-360);
+    --bp-layout-grid-gutter: var(--bp-base-dimension-16);
+    --bp-layout-grid-margin: var(--bp-base-dimension-16);
+    --bp-layout-height-android: var(--bp-base-height-800);
+    --bp-layout-height-ios: var(--bp-base-height-667);
+  }
+  :root[data-layout="mobile-md"] {
+    --bp-layout-breakpoint: var(--bp-base-breakpoint-402);
+    --bp-layout-height-android: var(--bp-base-height-917);
+    --bp-layout-height-ios: var(--bp-base-height-874);
+  }
+  :root[data-layout="mobile-lg"] {
+    --bp-layout-breakpoint: var(--bp-base-breakpoint-440);
+    --bp-layout-grid-inset: var(--bp-base-dimension-16);
+    --bp-layout-height-android: var(--bp-base-height-956);
+    --bp-layout-height-ios: var(--bp-base-height-956);
+  }
+  :root[data-layout="tablet-md"] {
+    --bp-layout-breakpoint: var(--bp-base-breakpoint-768);
+    --bp-layout-grid-columns: var(--bp-base-count-8);
+    --bp-layout-grid-inset: var(--bp-base-dimension-16);
+    --bp-layout-height-android: var(--bp-base-height-1024);
+    --bp-layout-height-ios: var(--bp-base-height-1024);
+  }
+  :root[data-layout="desktop-sm"] {
+    --bp-layout-breakpoint: var(--bp-base-breakpoint-1024);
+    --bp-layout-grid-columns: var(--bp-base-count-12);
+    --bp-layout-grid-inset: var(--bp-base-dimension-24);
+    --bp-layout-grid-margin: var(--bp-base-dimension-40);
+    --bp-layout-height-android: var(--bp-base-height-768);
+    --bp-layout-height-ios: var(--bp-base-height-768);
+  }
+  :root[data-layout="desktop-lg"] {
+    --bp-layout-breakpoint: var(--bp-base-breakpoint-1280);
+    --bp-layout-grid-columns: var(--bp-base-count-12);
+    --bp-layout-grid-inset: var(--bp-base-dimension-24);
+    --bp-layout-grid-margin: var(--bp-base-dimension-40);
+    --bp-layout-height-android: var(--bp-base-height-900);
+    --bp-layout-height-ios: var(--bp-base-height-900);
+  }
+  :root[data-layout="desktop-xl"] {
+    --bp-layout-breakpoint: var(--bp-base-breakpoint-1366);
+    --bp-layout-grid-columns: var(--bp-base-count-12);
+    --bp-layout-grid-inset: var(--bp-base-dimension-24);
+    --bp-layout-grid-margin: var(--bp-base-dimension-40);
+    --bp-layout-height-android: var(--bp-base-height-900);
+    --bp-layout-height-ios: var(--bp-base-height-900);
+  }
 }
 
 @layer tokens.semantic {
@@ -477,6 +561,132 @@
     --bp-semantic-typography-brand-title-sm-line-height: var(--bp-base-typography-line-height-24);
     --bp-semantic-typography-brand-title-sm-letter-spacing: var(--bp-base-typography-letter-spacing-0);
   }
+    --bp-semantic-elevation-none-blur: var(--bp-base-blur-0);
+    --bp-semantic-elevation-none-color: var(--bp-base-color-transparent);
+    --bp-semantic-elevation-none-offset-y: var(--bp-base-dimension-0);
+    --bp-semantic-size-container-narrow: var(--bp-base-breakpoint-480);
+    --bp-semantic-size-container-wide: var(--bp-base-dimension-896);
+    --bp-semantic-size-container-full: var(--bp-base-breakpoint-1280);
+    --bp-semantic-size-illustration-sm: var(--bp-base-dimension-64);
+    --bp-semantic-size-illustration-md: var(--bp-base-dimension-96);
+    --bp-semantic-size-illustration-lg: var(--bp-base-dimension-128);
+    --bp-semantic-size-illustration-xl: var(--bp-base-dimension-144);
+    --bp-semantic-size-logo-xl: var(--bp-base-dimension-48);
+    --bp-semantic-spacing-overlap-2: var(--bp-base-overlap-2);
+    --bp-semantic-spacing-overlap-4: var(--bp-base-overlap-4);
+    --bp-semantic-spacing-overlap-6: var(--bp-base-overlap-6);
+    --bp-semantic-spacing-overlap-8: var(--bp-base-overlap-8);
+    --bp-semantic-spacing-overlap-10: var(--bp-base-overlap-10);
+    --bp-semantic-spacing-overlap-12: var(--bp-base-overlap-12);
+    --bp-semantic-spacing-overlap-16: var(--bp-base-overlap-16);
+    --bp-semantic-spacing-overlap-20: var(--bp-base-overlap-20);
+    --bp-semantic-spacing-overlap-24: var(--bp-base-overlap-24);
+    --bp-semantic-spacing-overlap-32: var(--bp-base-overlap-32);
+    --bp-semantic-typography-brand-initial-xs-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-initial-xs-font-size: var(--bp-base-typography-font-size-12);
+    --bp-semantic-typography-brand-initial-xs-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-initial-xs-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-initial-xs-line-height: var(--bp-base-typography-line-height-16);
+    --bp-semantic-typography-brand-initial-sm-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-initial-sm-font-size: var(--bp-base-typography-font-size-16);
+    --bp-semantic-typography-brand-initial-sm-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-initial-sm-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-initial-sm-line-height: var(--bp-base-typography-line-height-20);
+    --bp-semantic-typography-brand-initial-md-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-initial-md-font-size: var(--bp-base-typography-font-size-22);
+    --bp-semantic-typography-brand-initial-md-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-initial-md-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-initial-md-line-height: var(--bp-base-typography-line-height-24);
+    --bp-semantic-typography-brand-initial-lg-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-initial-lg-font-size: var(--bp-base-typography-font-size-28);
+    --bp-semantic-typography-brand-initial-lg-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-initial-lg-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-initial-lg-line-height: var(--bp-base-typography-line-height-32);
+    --bp-semantic-typography-brand-initial-xl-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-initial-xl-font-size: var(--bp-base-typography-font-size-40);
+    --bp-semantic-typography-brand-initial-xl-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-initial-xl-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-initial-xl-line-height: var(--bp-base-typography-line-height-48);
+    --bp-semantic-typography-brand-initial-xxl-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-initial-xxl-font-size: var(--bp-base-typography-font-size-52);
+    --bp-semantic-typography-brand-initial-xxl-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-initial-xxl-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-initial-xxl-line-height: var(--bp-base-typography-line-height-60);
+    --bp-semantic-typography-system-headline-lg-regular-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-headline-lg-regular-font-size: var(--bp-base-typography-font-size-32);
+    --bp-semantic-typography-system-headline-lg-regular-font-weight: var(--bp-base-typography-font-weight-400);
+    --bp-semantic-typography-system-headline-lg-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-headline-lg-regular-line-height: var(--bp-base-typography-line-height-40);
+    --bp-semantic-typography-system-headline-lg-bold-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-headline-lg-bold-font-size: var(--bp-base-typography-font-size-32);
+    --bp-semantic-typography-system-headline-lg-bold-font-weight: var(--bp-base-typography-font-weight-700);
+    --bp-semantic-typography-system-headline-lg-bold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-headline-lg-bold-line-height: var(--bp-base-typography-line-height-40);
+    --bp-semantic-typography-system-headline-md-regular-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-headline-md-regular-font-size: var(--bp-base-typography-font-size-28);
+    --bp-semantic-typography-system-headline-md-regular-font-weight: var(--bp-base-typography-font-weight-400);
+    --bp-semantic-typography-system-headline-md-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-headline-md-regular-line-height: var(--bp-base-typography-line-height-32);
+    --bp-semantic-typography-system-headline-md-bold-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-headline-md-bold-font-size: var(--bp-base-typography-font-size-28);
+    --bp-semantic-typography-system-headline-md-bold-font-weight: var(--bp-base-typography-font-weight-700);
+    --bp-semantic-typography-system-headline-md-bold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-headline-md-bold-line-height: var(--bp-base-typography-line-height-32);
+    --bp-semantic-typography-system-headline-sm-regular-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-headline-sm-regular-font-size: var(--bp-base-typography-font-size-24);
+    --bp-semantic-typography-system-headline-sm-regular-font-weight: var(--bp-base-typography-font-weight-400);
+    --bp-semantic-typography-system-headline-sm-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-headline-sm-regular-line-height: var(--bp-base-typography-line-height-32);
+    --bp-semantic-typography-system-headline-sm-bold-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-headline-sm-bold-font-size: var(--bp-base-typography-font-size-24);
+    --bp-semantic-typography-system-headline-sm-bold-font-weight: var(--bp-base-typography-font-weight-700);
+    --bp-semantic-typography-system-headline-sm-bold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-headline-sm-bold-line-height: var(--bp-base-typography-line-height-32);
+    --bp-semantic-typography-system-title-md-regular-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-title-md-regular-font-size: var(--bp-base-typography-font-size-20);
+    --bp-semantic-typography-system-title-md-regular-font-weight: var(--bp-base-typography-font-weight-400);
+    --bp-semantic-typography-system-title-md-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-title-md-regular-line-height: var(--bp-base-typography-line-height-24);
+    --bp-semantic-typography-system-title-md-bold-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-title-md-bold-font-size: var(--bp-base-typography-font-size-20);
+    --bp-semantic-typography-system-title-md-bold-font-weight: var(--bp-base-typography-font-weight-700);
+    --bp-semantic-typography-system-title-md-bold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-title-md-bold-line-height: var(--bp-base-typography-line-height-24);
+    --bp-semantic-typography-system-body-md-regular-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-body-md-regular-font-size: var(--bp-base-typography-font-size-16);
+    --bp-semantic-typography-system-body-md-regular-font-weight: var(--bp-base-typography-font-weight-400);
+    --bp-semantic-typography-system-body-md-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-body-md-regular-line-height: var(--bp-base-typography-line-height-24);
+    --bp-semantic-typography-system-body-md-bold-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-body-md-bold-font-size: var(--bp-base-typography-font-size-16);
+    --bp-semantic-typography-system-body-md-bold-font-weight: var(--bp-base-typography-font-weight-700);
+    --bp-semantic-typography-system-body-md-bold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-body-md-bold-line-height: var(--bp-base-typography-line-height-24);
+    --bp-semantic-typography-system-body-sm-regular-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-body-sm-regular-font-size: var(--bp-base-typography-font-size-14);
+    --bp-semantic-typography-system-body-sm-regular-font-weight: var(--bp-base-typography-font-weight-400);
+    --bp-semantic-typography-system-body-sm-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-body-sm-regular-line-height: var(--bp-base-typography-line-height-20);
+    --bp-semantic-typography-system-body-sm-bold-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-body-sm-bold-font-size: var(--bp-base-typography-font-size-14);
+    --bp-semantic-typography-system-body-sm-bold-font-weight: var(--bp-base-typography-font-weight-700);
+    --bp-semantic-typography-system-body-sm-bold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-body-sm-bold-line-height: var(--bp-base-typography-line-height-20);
+    --bp-semantic-typography-system-body-xs-regular-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-body-xs-regular-font-size: var(--bp-base-typography-font-size-12);
+    --bp-semantic-typography-system-body-xs-regular-font-weight: var(--bp-base-typography-font-weight-400);
+    --bp-semantic-typography-system-body-xs-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-body-xs-regular-line-height: var(--bp-base-typography-line-height-16);
+    --bp-semantic-typography-system-body-xs-bold-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-body-xs-bold-font-size: var(--bp-base-typography-font-size-12);
+    --bp-semantic-typography-system-body-xs-bold-font-weight: var(--bp-base-typography-font-weight-700);
+    --bp-semantic-typography-system-body-xs-bold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-body-xs-bold-line-height: var(--bp-base-typography-line-height-16);
+    --bp-semantic-typography-system-numeric-md-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-numeric-md-font-size: var(--bp-base-typography-font-size-40);
+    --bp-semantic-typography-system-numeric-md-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-system-numeric-md-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-numeric-md-line-height: var(--bp-base-typography-line-height-48);
 }
 
 @layer tokens.theme {
@@ -572,7 +782,7 @@
     --bp-theme-color-interaction-selection-bg-hover: var(--bp-base-color-neutral-50);
     --bp-theme-color-interaction-selection-bg-pressed: var(--bp-base-color-neutral-100);
     --bp-theme-color-interaction-selection-fg: var(--bp-theme-color-text-brand);
-    --bp-theme-color-interaction-selection-fg-disabled: color-mix(in srgb, var(--bp-base-color-blue-500) 32%, transparent);
+    --bp-theme-color-interaction-selection-fg-disabled: var(--bp-base-color-neutral-500);
     --bp-theme-color-interaction-selection-fg-on-active: var(--bp-theme-color-interaction-accent-fg);
     --bp-theme-color-interaction-selection-fg-subtle: var(--bp-base-color-neutral-800);
     --bp-theme-color-interaction-tertiary-bg: var(--bp-base-color-transparent);
@@ -664,6 +874,31 @@
     --bp-theme-color-text-primary: var(--bp-base-color-neutral-950);
     --bp-theme-color-text-secondary: var(--bp-base-color-neutral-850);
     --bp-theme-color-text-tertiary: var(--bp-base-color-neutral-600);
+    --bp-theme-color-data-series-1: var(--bp-base-color-blue-500);
+    --bp-theme-color-data-series-2: var(--bp-base-color-blue-400);
+    --bp-theme-color-data-series-3: var(--bp-base-color-blue-300);
+    --bp-theme-color-data-series-4: var(--bp-base-color-blue-200);
+    --bp-theme-color-data-series-5: var(--bp-base-color-blue-100);
+    --bp-theme-color-data-series-6: var(--bp-base-color-blue-75);
+    --bp-theme-color-data-surface-default: var(--bp-base-color-neutral-100);
+    --bp-theme-color-data-surface-grid: var(--bp-base-color-blue-75);
+    --bp-theme-color-interaction-segmented-bg: color-mix(in srgb, var(--bp-base-color-neutral-1000) 4%, transparent);
+    --bp-theme-color-interaction-segmented-selected-bg: var(--bp-theme-color-interaction-selection-bg-elevated);
+    --bp-theme-color-interaction-segmented-selected-bg-hover: var(--bp-theme-color-interaction-selection-bg-hover);
+    --bp-theme-color-interaction-segmented-selected-bg-pressed: var(--bp-theme-color-interaction-selection-bg-pressed);
+    --bp-theme-color-interaction-segmented-selected-fg: var(--bp-theme-color-interaction-selection-fg);
+    --bp-theme-color-interaction-selectable-bg: color-mix(in srgb, var(--bp-base-color-neutral-1000) 4%, transparent);
+    --bp-theme-color-interaction-selectable-bg-hover: color-mix(in srgb, var(--bp-base-color-neutral-1000) 6%, transparent);
+    --bp-theme-color-interaction-selectable-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-1000) 8%, transparent);
+    --bp-theme-color-interaction-selectable-fg: var(--bp-theme-color-text-brand);
+    --bp-theme-color-interaction-selectable-selected-bg: var(--bp-theme-color-interaction-accent-bg);
+    --bp-theme-color-interaction-selectable-selected-bg-hover: var(--bp-theme-color-interaction-accent-bg-hover);
+    --bp-theme-color-interaction-selectable-selected-bg-pressed: var(--bp-theme-color-interaction-accent-bg-pressed);
+    --bp-theme-color-interaction-selectable-selected-fg: var(--bp-theme-color-interaction-accent-fg);
+    --bp-theme-color-loading-backdrop-on-brand: color-mix(in srgb, var(--bp-base-color-neutral-900) 16%, transparent);
+    --bp-theme-color-loading-backdrop-on-inverse: color-mix(in srgb, var(--bp-base-color-neutral-0) 48%, transparent);
+    --bp-theme-color-loading-backdrop-on-solid: color-mix(in srgb, var(--bp-base-color-neutral-0) 48%, transparent);
+    --bp-theme-color-loading-spinner-on-inverse: var(--bp-theme-color-icon-inverse);
     /* Anillo de foco (efecto interaction/focus: 2px gap + 4px color) */
     --bp-focus-ring-gap: var(--bp-theme-color-surface-page-default);
     --bp-focus-ring-color: var(--bp-theme-color-border-focus);
@@ -717,7 +952,7 @@
     --bp-theme-color-field-control-inactive-disabled: var(--bp-base-color-neutral-800);
     --bp-theme-color-field-thumb: var(--bp-base-color-neutral-0);
     --bp-theme-color-icon-brand: var(--bp-theme-color-brand-support);
-    --bp-theme-color-icon-disabled: var(--bp-base-color-neutral-850);
+    --bp-theme-color-icon-disabled: var(--bp-base-color-neutral-700);
     --bp-theme-color-icon-helper: var(--bp-base-color-neutral-400);
     --bp-theme-color-icon-interactive: var(--bp-base-color-blue-50);
     --bp-theme-color-icon-interactive-hover: var(--bp-base-color-neutral-0);
@@ -752,15 +987,15 @@
     --bp-theme-color-interaction-secondary-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-0) 32%, transparent);
     --bp-theme-color-interaction-secondary-fg: var(--bp-base-color-sky-50);
     --bp-theme-color-interaction-secondary-fg-disabled: color-mix(in srgb, var(--bp-base-color-neutral-0) 32%, transparent);
-    --bp-theme-color-interaction-selection-bg: var(--bp-base-color-neutral-850);
+    --bp-theme-color-interaction-selection-bg: color-mix(in srgb, var(--bp-base-color-neutral-0) 6%, transparent);
     --bp-theme-color-interaction-selection-bg-active: var(--bp-theme-color-interaction-accent-bg);
     --bp-theme-color-interaction-selection-bg-active-subtle: color-mix(in srgb, var(--bp-base-color-neutral-0) 16%, transparent);
     --bp-theme-color-interaction-selection-bg-disabled: color-mix(in srgb, var(--bp-base-color-neutral-0) 4%, transparent);
     --bp-theme-color-interaction-selection-bg-elevated: var(--bp-base-color-neutral-800);
-    --bp-theme-color-interaction-selection-bg-hover: color-mix(in srgb, var(--bp-base-color-neutral-0) 4%, transparent);
-    --bp-theme-color-interaction-selection-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-0) 8%, transparent);
+    --bp-theme-color-interaction-selection-bg-hover: color-mix(in srgb, var(--bp-base-color-neutral-0) 10%, transparent);
+    --bp-theme-color-interaction-selection-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-0) 16%, transparent);
     --bp-theme-color-interaction-selection-fg: var(--bp-theme-color-text-primary);
-    --bp-theme-color-interaction-selection-fg-disabled: color-mix(in srgb, var(--bp-base-color-blue-500) 32%, transparent);
+    --bp-theme-color-interaction-selection-fg-disabled: var(--bp-base-color-neutral-500);
     --bp-theme-color-interaction-selection-fg-on-active: var(--bp-theme-color-interaction-accent-fg);
     --bp-theme-color-interaction-selection-fg-subtle: var(--bp-theme-color-text-secondary);
     --bp-theme-color-interaction-tertiary-bg: var(--bp-base-color-transparent);
@@ -843,7 +1078,7 @@
     --bp-theme-color-surface-scrim-default: color-mix(in srgb, var(--bp-base-color-neutral-1050) 32%, transparent);
     --bp-theme-color-surface-scrim-subtle: color-mix(in srgb, var(--bp-base-color-neutral-0) 4%, transparent);
     --bp-theme-color-text-brand: var(--bp-base-color-neutral-0);
-    --bp-theme-color-text-disabled: var(--bp-base-color-neutral-850);
+    --bp-theme-color-text-disabled: var(--bp-base-color-neutral-500);
     --bp-theme-color-text-helper: var(--bp-base-color-neutral-500);
     --bp-theme-color-text-interactive: var(--bp-base-color-blue-50);
     --bp-theme-color-text-interactive-hover: var(--bp-base-color-neutral-0);
@@ -860,33 +1095,233 @@
     --bp-theme-color-interaction-tertiary-bg-adaptive: color-mix(in srgb, var(--bp-base-color-neutral-0) 12%, transparent);
     --bp-theme-color-status-important-bg: var(--bp-base-color-red-600);
     --bp-theme-color-brand-on-solid: var(--bp-base-color-neutral-0);
+    --bp-theme-color-data-series-1: var(--bp-base-color-sky-300);
+    --bp-theme-color-data-series-2: var(--bp-base-color-yellow-300);
+    --bp-theme-color-data-series-3: var(--bp-base-color-purple-300);
+    --bp-theme-color-data-series-4: var(--bp-base-color-blue-200);
+    --bp-theme-color-data-series-5: var(--bp-base-color-blue-100);
+    --bp-theme-color-data-series-6: var(--bp-base-color-blue-75);
+    --bp-theme-color-data-surface-default: var(--bp-base-color-neutral-850);
+    --bp-theme-color-data-surface-grid: var(--bp-base-color-blue-75);
+    --bp-theme-color-interaction-segmented-bg: color-mix(in srgb, var(--bp-base-color-neutral-0) 10%, transparent);
+    --bp-theme-color-interaction-segmented-selected-bg: color-mix(in srgb, var(--bp-base-color-neutral-0) 32%, transparent);
+    --bp-theme-color-interaction-segmented-selected-bg-hover: color-mix(in srgb, var(--bp-base-color-neutral-0) 40%, transparent);
+    --bp-theme-color-interaction-segmented-selected-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-0) 48%, transparent);
+    --bp-theme-color-interaction-segmented-selected-fg: var(--bp-theme-color-text-on-solid);
+    --bp-theme-color-interaction-selectable-bg: color-mix(in srgb, var(--bp-base-color-neutral-0) 20%, transparent);
+    --bp-theme-color-interaction-selectable-bg-hover: color-mix(in srgb, var(--bp-base-color-neutral-0) 24%, transparent);
+    --bp-theme-color-interaction-selectable-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-0) 32%, transparent);
+    --bp-theme-color-interaction-selectable-fg: var(--bp-theme-color-text-on-solid);
+    --bp-theme-color-interaction-selectable-selected-bg: var(--bp-theme-color-interaction-accent-bg);
+    --bp-theme-color-interaction-selectable-selected-bg-hover: var(--bp-theme-color-interaction-accent-bg-hover);
+    --bp-theme-color-interaction-selectable-selected-bg-pressed: var(--bp-theme-color-interaction-accent-bg-pressed);
+    --bp-theme-color-interaction-selectable-selected-fg: var(--bp-theme-color-interaction-accent-fg);
     --bp-focus-ring-gap: var(--bp-theme-color-surface-page-alt);
     --bp-focus-ring-color: var(--bp-theme-color-border-focus);
     color-scheme: dark;
   }
 }
 
-@layer tokens.product {
+/* Colección "interaction" (modos default · hover · active · focus).
+   En web los modos son pseudo-clases: el valor base es "default" y los demás
+   llevan sufijo --hover / --active / --focus para usarlos en :hover, :active
+   y :focus-visible. Sólo se listan los estados que cambian. */
+@layer tokens.interaction {
   :root {
-    /* Recetas bp-* (sólo remapean semánticos; los modos = data-size) */
+    --bp-interaction-accent-bg: var(--bp-theme-color-interaction-accent-bg);
+    --bp-interaction-accent-fg: var(--bp-theme-color-interaction-accent-fg);
+    --bp-interaction-control-active: var(--bp-theme-color-field-control-active);
+    --bp-interaction-control-inactive: var(--bp-theme-color-field-control-inactive);
+    --bp-interaction-destructive-bg: var(--bp-theme-color-interaction-destructive-bg);
+    --bp-interaction-destructive-fg: var(--bp-theme-color-interaction-destructive-fg);
+    --bp-interaction-field-bg: var(--bp-theme-color-field-bg);
+    --bp-interaction-field-border: var(--bp-theme-color-field-border);
+    --bp-interaction-field-caret-color: var(--bp-base-color-transparent);
+    --bp-interaction-field-clear-opacity: 0;
+    --bp-interaction-focus-ring-color: var(--bp-base-color-transparent);
+    --bp-interaction-focus-ring-gap: var(--bp-base-color-transparent);
+    --bp-interaction-primary-bg: var(--bp-theme-color-interaction-primary-bg);
+    --bp-interaction-primary-fg: var(--bp-theme-color-interaction-primary-fg);
+    --bp-interaction-row-bg: var(--bp-theme-color-row-bg);
+    --bp-interaction-row-selected-bg: var(--bp-theme-color-row-bg-selected);
+    --bp-interaction-secondary-bg: var(--bp-theme-color-interaction-secondary-bg);
+    --bp-interaction-secondary-fg: var(--bp-theme-color-interaction-secondary-fg);
+    --bp-interaction-segmented-item-selected-bg: var(--bp-theme-color-interaction-segmented-selected-bg);
+    --bp-interaction-segmented-item-selected-fg: var(--bp-theme-color-interaction-segmented-selected-fg);
+    --bp-interaction-selectable-bg: var(--bp-theme-color-interaction-selectable-bg);
+    --bp-interaction-selectable-fg: var(--bp-theme-color-interaction-selectable-fg);
+    --bp-interaction-selectable-selected-bg: var(--bp-theme-color-interaction-selectable-selected-bg);
+    --bp-interaction-selectable-selected-fg: var(--bp-theme-color-interaction-selectable-selected-fg);
+    --bp-interaction-selection-bg: var(--bp-theme-color-interaction-selection-bg);
+    --bp-interaction-selection-fg: var(--bp-theme-color-interaction-selection-fg);
+    --bp-interaction-selection-subtle-bg: var(--bp-base-color-transparent);
+    --bp-interaction-selection-subtle-fg: var(--bp-theme-color-interaction-selection-fg-subtle);
+    --bp-interaction-tertiary-bg: var(--bp-theme-color-interaction-tertiary-bg);
+    --bp-interaction-tertiary-fg: var(--bp-theme-color-interaction-tertiary-fg);
+
+    --bp-interaction-accent-bg--hover: var(--bp-theme-color-interaction-accent-bg-hover);
+    --bp-interaction-control-inactive--hover: var(--bp-theme-color-field-control-hover);
+    --bp-interaction-destructive-bg--hover: var(--bp-theme-color-interaction-destructive-bg-hover);
+    --bp-interaction-field-border--hover: var(--bp-theme-color-field-border-hover);
+    --bp-interaction-primary-bg--hover: var(--bp-theme-color-interaction-primary-bg-hover);
+    --bp-interaction-row-bg--hover: var(--bp-theme-color-row-bg-hover);
+    --bp-interaction-secondary-bg--hover: var(--bp-theme-color-interaction-secondary-bg-hover);
+    --bp-interaction-segmented-item-selected-bg--hover: var(--bp-theme-color-interaction-segmented-selected-bg-hover);
+    --bp-interaction-selectable-bg--hover: var(--bp-theme-color-interaction-selectable-bg-hover);
+    --bp-interaction-selectable-selected-bg--hover: var(--bp-theme-color-interaction-selectable-selected-bg-hover);
+    --bp-interaction-selection-bg--hover: var(--bp-theme-color-interaction-selection-bg-hover);
+    --bp-interaction-selection-subtle-bg--hover: var(--bp-theme-color-interaction-selection-bg-hover);
+    --bp-interaction-selection-subtle-fg--hover: var(--bp-theme-color-interaction-selection-fg);
+    --bp-interaction-tertiary-bg--hover: var(--bp-theme-color-interaction-tertiary-bg-hover);
+
+    --bp-interaction-accent-bg--active: var(--bp-theme-color-interaction-accent-bg-pressed);
+    --bp-interaction-control-inactive--active: var(--bp-theme-color-field-control-active);
+    --bp-interaction-destructive-bg--active: var(--bp-theme-color-interaction-destructive-bg-pressed);
+    --bp-interaction-field-border--active: var(--bp-theme-color-field-border-hover);
+    --bp-interaction-field-caret-color--active: var(--bp-theme-color-border-focus);
+    --bp-interaction-field-clear-opacity--active: 1;
+    --bp-interaction-primary-bg--active: var(--bp-theme-color-interaction-primary-bg-pressed);
+    --bp-interaction-row-bg--active: var(--bp-theme-color-row-bg-active);
+    --bp-interaction-secondary-bg--active: var(--bp-theme-color-interaction-secondary-bg-pressed);
+    --bp-interaction-segmented-item-selected-bg--active: var(--bp-theme-color-interaction-segmented-selected-bg-pressed);
+    --bp-interaction-selectable-bg--active: var(--bp-theme-color-interaction-selectable-bg-pressed);
+    --bp-interaction-selectable-selected-bg--active: var(--bp-theme-color-interaction-selectable-selected-bg-pressed);
+    --bp-interaction-selection-bg--active: var(--bp-theme-color-interaction-selection-bg-pressed);
+    --bp-interaction-selection-subtle-bg--active: var(--bp-theme-color-interaction-selection-bg-pressed);
+    --bp-interaction-selection-subtle-fg--active: var(--bp-theme-color-interaction-selection-fg);
+    --bp-interaction-tertiary-bg--active: var(--bp-theme-color-interaction-tertiary-bg-pressed);
+
+    --bp-interaction-field-caret-color--focus: var(--bp-theme-color-border-focus);
+    --bp-interaction-field-clear-opacity--focus: 1;
+    --bp-interaction-focus-ring-color--focus: var(--bp-theme-color-border-focus);
+    --bp-interaction-focus-ring-gap--focus: var(--bp-theme-color-surface-page-default);
+    --bp-interaction-selection-subtle-fg--focus: var(--bp-theme-color-interaction-selection-fg);
+  }
+}
+
+@layer tokens.product {
+  /* Recetas bp-* de Figma: sólo remapean semánticos. Los modos de cada
+     colección se eligen con data-size (o data-context en el spinner).
+     El :root fija el tamaño que más usa la app; los demás modos van abajo. */
+  :root {
+    /* bp-button · md 56 · lg 64 */
     --bp-button-size: var(--bp-semantic-size-interactive-md);
     --bp-button-padding-x: var(--bp-semantic-spacing-macro-md);
     --bp-button-padding-icon: var(--bp-semantic-spacing-micro-lg);
+    /* bp-action-button · sm 32 · md 40 · lg 48 */
     --bp-action-button-size: var(--bp-semantic-size-interactive-xs);
     --bp-action-button-padding-x: var(--bp-semantic-spacing-macro-sm);
     --bp-action-button-padding-x-icon: var(--bp-semantic-spacing-micro-lg);
     --bp-action-button-icon-size: var(--bp-semantic-size-icon-sm);
     --bp-icon-switch-size: var(--bp-semantic-size-interactive-xs);
+    /* bp-tag · sm 16 · md 24 */
     --bp-tag-height: var(--bp-semantic-size-icon-md);
+    --bp-tag-icon-size: var(--bp-semantic-size-icon-xs);
+    /* bp-avatar · xs 32 en la app (Figma default md 48) */
     --bp-avatar-size: var(--bp-semantic-size-avatar-xs);
     --bp-avatar-icon-size: var(--bp-semantic-size-icon-xs);
+    --bp-avatar-optical-size: var(--bp-semantic-size-icon-md);
+    --bp-avatar-emblem-size: var(--bp-semantic-size-icon-xs);
+    --bp-avatar-emblem-icon-size: var(--bp-semantic-size-icon-xxs);
+    --bp-avatar-font-size: var(--bp-semantic-typography-brand-initial-xs-font-size);
+    --bp-avatar-line-height: var(--bp-semantic-typography-brand-initial-xs-line-height);
+    --bp-avatar-overlap: var(--bp-semantic-spacing-overlap-8);
+    /* bp-spinner · size md 24 · context on-page */
+    --bp-spinner-size-size: var(--bp-semantic-size-icon-md);
+    --bp-spinner-context-backdrop-color: var(--bp-theme-color-loading-backdrop-on-page);
+    --bp-spinner-context-spinner-color: var(--bp-theme-color-loading-spinner-on-page);
+    /* bp-guided-tour (modo light/dark) */
+    --bp-guided-tour-background: var(--bp-base-color-neutral-900);
+    --bp-guided-tour-icon: var(--bp-theme-color-icon-inverse);
+    --bp-guided-tour-text-primary: var(--bp-theme-color-text-inverse);
+    --bp-guided-tour-text-secondary: var(--bp-theme-color-text-tertiary);
     --bp-component-interactive-icon-size: var(--bp-semantic-size-icon-md);
   }
-  [data-size="md"].bp-button, .bp-button[data-size="md"] { --bp-button-size: var(--bp-semantic-size-interactive-sm); }
+  :root[data-theme="dark"] {
+    --bp-guided-tour-background: var(--bp-base-color-neutral-0);
+    --bp-guided-tour-icon: var(--bp-theme-color-icon-primary);
+    --bp-guided-tour-text-primary: var(--bp-theme-color-text-primary);
+    --bp-guided-tour-text-secondary: var(--bp-theme-color-text-helper);
+  }
+
+  .bp-button[data-size="lg"] {
+    --bp-button-size: var(--bp-semantic-size-interactive-lg);
+    --bp-button-padding-x: var(--bp-semantic-spacing-macro-lg);
+  }
+
   .bp-action-button[data-size="sm"] {
     --bp-action-button-size: var(--bp-semantic-size-interactive-xxs);
     --bp-action-button-padding-x: var(--bp-semantic-spacing-micro-lg);
     --bp-action-button-padding-x-icon: var(--bp-semantic-spacing-micro-md);
   }
-  .bp-tag[data-size="sm"] { --bp-tag-height: var(--bp-semantic-size-icon-xs); }
+  .bp-action-button[data-size="lg"] {
+    --bp-action-button-size: var(--bp-semantic-size-interactive-sm);
+    --bp-action-button-icon-size: var(--bp-semantic-size-icon-md);
+  }
+
+  .bp-tag[data-size="sm"] {
+    --bp-tag-height: var(--bp-semantic-size-icon-xs);
+    --bp-tag-icon-size: var(--bp-semantic-size-icon-xxs);
+  }
+
+  .bp-avatar[data-size="sm"] {
+    --bp-avatar-size: var(--bp-semantic-size-avatar-sm);
+    --bp-avatar-icon-size: var(--bp-semantic-size-icon-sm);
+    --bp-avatar-font-size: var(--bp-semantic-typography-brand-initial-sm-font-size);
+    --bp-avatar-line-height: var(--bp-semantic-typography-brand-initial-sm-line-height);
+    --bp-avatar-overlap: var(--bp-semantic-spacing-overlap-10);
+  }
+  .bp-avatar[data-size="md"] {
+    --bp-avatar-size: var(--bp-semantic-size-avatar-md);
+    --bp-avatar-icon-size: var(--bp-semantic-size-icon-md);
+    --bp-avatar-emblem-size: var(--bp-semantic-size-icon-sm);
+    --bp-avatar-emblem-icon-size: var(--bp-semantic-size-icon-xs);
+    --bp-avatar-font-size: var(--bp-semantic-typography-brand-initial-md-font-size);
+    --bp-avatar-line-height: var(--bp-semantic-typography-brand-initial-md-line-height);
+    --bp-avatar-overlap: var(--bp-semantic-spacing-overlap-12);
+  }
+  .bp-avatar[data-size="lg"] {
+    --bp-avatar-size: var(--bp-semantic-size-avatar-lg);
+    --bp-avatar-icon-size: var(--bp-semantic-size-icon-lg);
+    --bp-avatar-emblem-size: var(--bp-semantic-size-icon-md);
+    --bp-avatar-emblem-icon-size: var(--bp-semantic-size-icon-sm);
+    --bp-avatar-font-size: var(--bp-semantic-typography-brand-initial-lg-font-size);
+    --bp-avatar-line-height: var(--bp-semantic-typography-brand-initial-lg-line-height);
+    --bp-avatar-overlap: var(--bp-semantic-spacing-overlap-16);
+  }
+  .bp-avatar[data-size="xl"] {
+    --bp-avatar-size: var(--bp-semantic-size-avatar-xl);
+    --bp-avatar-icon-size: var(--bp-semantic-size-icon-xl);
+    --bp-avatar-optical-size: var(--bp-semantic-size-icon-xl);
+    --bp-avatar-emblem-size: var(--bp-semantic-size-icon-lg);
+    --bp-avatar-emblem-icon-size: var(--bp-semantic-size-icon-md);
+    --bp-avatar-font-size: var(--bp-semantic-typography-brand-initial-xl-font-size);
+    --bp-avatar-line-height: var(--bp-semantic-typography-brand-initial-xl-line-height);
+    --bp-avatar-overlap: var(--bp-semantic-spacing-overlap-24);
+  }
+  .bp-avatar[data-size="xxl"] {
+    --bp-avatar-size: var(--bp-semantic-size-avatar-xxl);
+    --bp-avatar-icon-size: var(--bp-semantic-size-icon-xxl);
+    --bp-avatar-optical-size: var(--bp-semantic-size-icon-xl);
+    --bp-avatar-emblem-size: var(--bp-semantic-size-avatar-sm);
+    --bp-avatar-emblem-icon-size: var(--bp-semantic-size-avatar-xs);
+    --bp-avatar-font-size: var(--bp-semantic-typography-brand-initial-xxl-font-size);
+    --bp-avatar-line-height: var(--bp-semantic-typography-brand-initial-xxl-line-height);
+    --bp-avatar-overlap: var(--bp-semantic-spacing-overlap-32);
+  }
+
+  .bp-spinner[data-size="sm"] { --bp-spinner-size-size: var(--bp-semantic-size-icon-sm); }
+  .bp-spinner[data-size="lg"] { --bp-spinner-size-size: var(--bp-semantic-size-icon-lg); }
+  [data-context="on-brand"] {
+    --bp-spinner-context-backdrop-color: var(--bp-theme-color-loading-backdrop-on-brand);
+    --bp-spinner-context-spinner-color: var(--bp-theme-color-loading-spinner-on-brand);
+  }
+  [data-context="on-solid"] {
+    --bp-spinner-context-backdrop-color: var(--bp-theme-color-loading-backdrop-on-solid);
+    --bp-spinner-context-spinner-color: var(--bp-theme-color-loading-spinner-on-solid);
+  }
+  [data-context="on-inverse"] {
+    --bp-spinner-context-backdrop-color: var(--bp-theme-color-loading-backdrop-on-inverse);
+    --bp-spinner-context-spinner-color: var(--bp-theme-color-loading-spinner-on-inverse);
+  }
 }
