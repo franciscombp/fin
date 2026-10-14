@@ -1338,6 +1338,10 @@ msgstr ""
 msgid "Mes en curso"
 msgstr ""
 
+#: assets/asistente.js
+msgid "Meses"
+msgstr ""
+
 #: anterior
 msgid "Meta Fondo de emergencia"
 msgstr ""
@@ -1470,7 +1474,7 @@ msgstr ""
 msgid "Navegación principal"
 msgstr ""
 
-#: assets/asistente.js
+#: anterior assets/asistente.js
 msgid "No olvides pagar tu tarjeta hasta el 10 de noviembre."
 msgstr ""
 
