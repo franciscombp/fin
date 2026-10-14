@@ -162,14 +162,7 @@ html:not(.theme-y2k) .home-banner__slide--photo.is-nophoto {
   background: linear-gradient(120deg, var(--bp-base-color-blue-900) 0%, var(--bp-base-color-blue-500) 100%) !important;
 }
 .home-banner__photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: right center; z-index: -2; pointer-events: none; }
-.home-banner__slide--photo::before {
-  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  background: linear-gradient(90deg,
-    color-mix(in srgb, var(--bp-base-color-neutral-1050) 64%, transparent) 0%,
-    color-mix(in srgb, var(--bp-base-color-neutral-1050) 32%, transparent) 55%,
-    transparent 85%);
-}
-.home-banner__slide--photo.is-nophoto::before { display: none; }
+/* Sin degradado: la imagen ya trae su fondo para el texto */
 html:not(.theme-y2k) .home-banner__slide--photo .home-banner__title { color: var(--bp-theme-color-text-on-solid) !important; }
 html:not(.theme-y2k) .home-banner__slide--photo .home-banner__cta {
   height: var(--bp-semantic-size-interactive-xxs) !important;
@@ -769,9 +762,16 @@ html:not(.theme-y2k) .placeholder-view h1 { margin: 0; font: var(--cx-page) !imp
    margen a cada lado) y su alto sale de la proporción de la imagen. */
 html:not(.theme-y2k) .home-banner__slide--photo { height: auto !important; aspect-ratio: 740 / 272; padding: 14px 16px !important; }
 html:not(.theme-y2k) .home-banner__slide--photo .home-banner__photo { object-position: 70% 35%; }
-/* El banner 3 tiene fondo claro a la izquierda: texto oscuro para que se lea */
-html:not(.theme-y2k) .home-banner__slide--3.home-banner__slide--photo .home-banner__title { color: var(--bp-theme-color-text-primary) !important; }
-html:not(.theme-y2k) .home-banner__slide--3.home-banner__slide--photo .home-banner__cta { background: var(--bp-theme-color-surface-container-default) !important; color: var(--bp-theme-color-text-primary) !important; }
+/* Dos casos del componente según la imagen (no cambian con el modo oscuro:
+   la imagen es la misma). on-dark: texto blanco y botón overlay claro.
+   on-light: texto negro y botón overlay oscuro. */
+html:not(.theme-y2k) .home-banner__slide--on-dark .home-banner__title { color: var(--bp-base-color-neutral-0) !important; }
+html:not(.theme-y2k) .home-banner__slide--on-dark .home-banner__cta.bp-action-button { background: color-mix(in srgb, var(--bp-base-color-neutral-0) 16%, transparent) !important; color: var(--bp-base-color-neutral-0) !important; }
+html:not(.theme-y2k) .home-banner__slide--on-dark .home-banner__cta.bp-action-button:hover, html:not(.theme-y2k) .home-banner__slide--on-dark .home-banner__cta.bp-action-button:active { background: color-mix(in srgb, var(--bp-base-color-neutral-0) 28%, transparent) !important; }
+html:not(.theme-y2k) .home-banner__slide--on-light .home-banner__title { color: var(--bp-base-color-neutral-1050) !important; }
+html:not(.theme-y2k) .home-banner__slide--on-light .home-banner__cta.bp-action-button { background: color-mix(in srgb, var(--bp-base-color-neutral-1050) 8%, transparent) !important; color: var(--bp-base-color-neutral-1050) !important; }
+html:not(.theme-y2k) .home-banner__slide--on-light .home-banner__cta.bp-action-button:hover, html:not(.theme-y2k) .home-banner__slide--on-light .home-banner__cta.bp-action-button:active { background: color-mix(in srgb, var(--bp-base-color-neutral-1050) 16%, transparent) !important; }
+html:not(.theme-y2k) .home-banner__slide--photo .home-banner__title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; flex-shrink: 0; }
 
 /* Banner con foto (DS): título body-md regular en text/on-solid; acción
    bp-action-button sm (32) con fondo blanco 12% + blur, como bp-overlay-button. */
