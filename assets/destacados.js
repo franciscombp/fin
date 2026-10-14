@@ -141,13 +141,18 @@
     var sq = ws.some(function (w) { return w.size === 's'; });
     if (sq || free % 2) for (var k = 0; k < free; k++) need.push('s');
     else for (var j = 0; j < free / 2; j++) need.push('m');
-    // Una sola sugerencia visible a la vez (D10): si ya hay una captación en
-    // Destacados, los demás huecos invitan a "Agregar widget"
+    // Orden: 1) una sola sugerencia de producto a la vez (D10); 2) un widget
+    // útil que el cliente no colocó y para el que hay dato; 3) "Agregar
+    // widget" genérico solo si no queda nada por sugerir
     var one = !ws.some(function (w) { return capt(w.id); });
+    var wpool = USEFUL.filter(function (id) { return available(id) && owned(id) && used.indexOf(id) < 0 && off.indexOf('w:' + id) < 0; });
     need.forEach(function (z) {
-      var id = one && pool.filter(function (x) { return CATALOG[x].sizes.indexOf(z) >= 0; })[0];
-      if (id) { one = false; out.push({ id: id, size: z, sug: true }); }
-      else out.push({ slot: true, size: z });
+      var fits = function (x) { return CATALOG[x].sizes.indexOf(z) >= 0; };
+      var id = one && pool.filter(fits)[0];
+      if (id) { one = false; return out.push({ id: id, size: z, sug: true }); }
+      var wid = wpool.filter(fits)[0];
+      if (wid) { wpool.splice(wpool.indexOf(wid), 1); return out.push({ id: wid, size: z, wsug: true }); }
+      out.push({ slot: true, size: z });
     });
     return out;
   }
@@ -225,19 +230,45 @@
     preaprobado: ['Tienes un crédito preaprobado', 'Simular mi crédito'],
     pagos: ['Programa tus pagos de servicios', 'Programar pagos']
   };
-  function ghostHTML(w) {
+  // Captación (colocada o en un slot fantasma), mismo componente del hub
+  function hubHTML(w, preview) {
     var cat = CATALOG[w.id], g = GHOST[w.id] || [cat.desc, 'Ver más'], r = null;
     try { r = R[w.id](w.size, true); } catch (e) {}
-    gos[w.id] = r && r.go;
-    return '<article class="dw dw--' + w.size + ' dw--sug" data-dw-id="' + w.id + '" role="button" tabindex="0" aria-label="' + esc(g[0]) + '">' +
+    if (!preview) gos[w.id] = r && r.go;
+    return '<article class="dw dw--' + w.size + ' dw--hub' + (w.sug ? ' dw--sug' : '') + '" data-dw-id="' + w.id + '"' + (preview ? '' : ' role="button" tabindex="0"') + ' aria-label="' + esc(g[0]) + '">' +
       '<span class="dw-ghost__ic material-symbols-rounded" aria-hidden="true">' + cat.icon + '</span>' +
       '<span class="dw-ghost__t"><span class="dw-2l">' + g[0] + '</span><span class="dw-ghost__link">' + g[1] + '</span></span>' +
-      '<button class="dw-dismiss" data-dw-dismiss="' + w.id + '" aria-label="Descartar sugerencia"><span class="material-symbols-rounded">close</span></button>' +
+      (preview ? '' : w.sug ? dismissBtn(w.id) : editBtns(w, cat)) +
       '</article>';
+  }
+  // Sugerencia de widget: un ejemplo de lo que verá, sin sus datos (no suma
+  // consultas al abrir el Home)
+  var EXAMPLE = {
+    pagos: 'Tus próximos pagos con fecha y monto', pfm: 'En qué gastas este mes',
+    metas: 'El avance de tu meta de ahorro', inversion: 'Cuánto rinde y cuándo vence',
+    cuentas: 'Los intereses que ganan tus cuentas', tarjeta: 'Cuánto pagas y hasta cuándo',
+    creditos: 'Tu próxima cuota y su fecha'
+  };
+  var USEFUL = ['pagos', 'pfm', 'metas', 'inversion', 'cuentas', 'tarjeta', 'creditos'];
+  function wsugHTML(w) {
+    var cat = CATALOG[w.id];
+    return '<article class="dw dw--' + w.size + ' dw--hub dw--wsug" data-dw-id="' + w.id + '" aria-label="Sugerencia: widget ' + esc(cat.name) + '">' +
+      '<span class="dw-ghost__ic material-symbols-rounded" aria-hidden="true">' + cat.icon + '</span>' +
+      '<span class="dw-ghost__t"><span class="dw-1 dw-ghost__name">' + (w.size === 's' ? cat.short : cat.name) + '</span><span class="dw-2l">' + (EXAMPLE[w.id] || cat.desc) + '</span>' +
+        '<span class="dw-ghost__acts"><button class="dw-ghost__link" data-dw-place="' + w.id + ':' + w.size + '">+ Agregar</button>' +
+        (w.size === 'm' ? '<button class="dw-ghost__link dw-ghost__link--2" data-dw="add">Otros widgets</button>' : '') + '</span></span>' +
+      dismissBtn('w:' + w.id) +
+      '</article>';
+  }
+  function dismissBtn(id) { return '<button class="dw-dismiss" data-dw-dismiss="' + id + '" aria-label="Descartar sugerencia"><span class="material-symbols-rounded">close</span></button>'; }
+  function editBtns(w, cat) {
+    return '<button class="dw-x" data-dw-del="' + w.id + '" aria-label="Quitar ' + esc(cat.name) + '"><span class="material-symbols-rounded">remove</span></button>' +
+      (cat.sizes.length > 1 ? '<button class="dw-size" data-dw-size="' + w.id + '" aria-label="Cambiar tamaño">' + SIZE[w.size] + '<span class="material-symbols-rounded">unfold_more</span></button>' : '');
   }
 
   function widgetHTML(w, preview) {
-    if (w.sug && !preview) return ghostHTML(w);
+    if (w.wsug) return wsugHTML(w);
+    if (capt(w.id) && !(loading && !preview && !w.sug)) return hubHTML(w, preview);
     var cat = CATALOG[w.id], c = capt(w.id), r;
     try { r = R[w.id](w.size, c); } catch (e) { r = null; }
     // Cargando: esqueleto del mismo tamaño para que la pantalla no salte
@@ -248,8 +279,7 @@
     return '<article class="dw dw--' + w.size + (c ? ' dw--offer' : '') + (w.sug ? ' dw--sug' : '') + '" data-dw-id="' + w.id + '"' + (r.go && !preview ? ' role="button" tabindex="0"' : '') + ' aria-label="' + esc(cat.name) + '">' +
       '<p class="dw-h"><span class="material-symbols-rounded" aria-hidden="true">' + cat.icon + '</span><span class="dw-1">' + (w.size === 's' ? cat.short : cat.name) + '</span></p>' +
       '<div class="dw-body">' + r.body + '</div>' +
-      (preview ? '' : w.sug ? '<button class="dw-dismiss" data-dw-dismiss="' + w.id + '" aria-label="Descartar sugerencia"><span class="material-symbols-rounded">close</span></button>' : '<button class="dw-x" data-dw-del="' + w.id + '" aria-label="Quitar ' + esc(cat.name) + '"><span class="material-symbols-rounded">remove</span></button>' +
-        (cat.sizes.length > 1 ? '<button class="dw-size" data-dw-size="' + w.id + '" aria-label="Cambiar tamaño">' + SIZE[w.size] + '<span class="material-symbols-rounded">unfold_more</span></button>' : '')) +
+      (preview ? '' : editBtns(w, cat)) +
       '</article>';
   }
 
@@ -301,6 +331,12 @@
     if ((b = e.target.closest('[data-dw="edit"]'))) { e.stopPropagation(); return setEditing(!editing); }
     if ((b = e.target.closest('[data-dw="add"]'))) { e.stopPropagation(); return openGallery(); }
     if ((b = e.target.closest('[data-dw="reset"]'))) { try { localStorage.removeItem(KEY); } catch (x) {} pref = load(); if (editing) materialize(); fx('select'); return paint(); }
+    if ((b = e.target.closest('[data-dw-place]'))) {
+      e.stopPropagation(); materialize();
+      var pl = b.dataset.dwPlace.split(':');
+      if (units(pref.items) + U[pl[1]] <= CAP) pref.items.push({ id: pl[0], size: pl[1] });
+      fx('success'); return commit();
+    }
     if ((b = e.target.closest('[data-dw-dismiss]'))) { e.stopPropagation(); dismiss(b.dataset.dwDismiss); fx('toggle'); return paint(); }
     if ((b = e.target.closest('[data-dw-del]'))) {
       e.stopPropagation();
@@ -329,7 +365,7 @@
   function dragInit() {
     list.addEventListener('pointerdown', function (e) {
       var el = e.target.closest('.dw');
-      if (!el || e.target.closest('.dw-x, .dw-size, .dw-dismiss') || e.button > 0) return;
+      if (!el || e.target.closest('.dw-x, .dw-size, .dw-dismiss, [data-dw-place], [data-dw="add"]') || e.button > 0) return;
       if (!editing) {
         clearTimeout(pressT);
         var x0 = e.clientX, y0 = e.clientY;
@@ -340,7 +376,7 @@
         pressT = setTimeout(function () { off(); drag = { moved: true }; setEditing(true); setTimeout(function () { drag = null; }, 400); }, 450);
         return;
       }
-      if (el.classList.contains('dw--sug') || el.classList.contains('dw-slot')) return; // los huecos no se mueven
+      if (el.classList.contains('dw--sug') || el.classList.contains('dw--wsug') || el.classList.contains('dw-slot')) return; // los huecos no se mueven
       var r = el.getBoundingClientRect();
       drag = { el: el, id: el.dataset.dwId, ox: e.clientX - r.left, oy: e.clientY - r.top, x0: e.clientX, y0: e.clientY, moved: false, pid: e.pointerId };
       try { el.setPointerCapture(e.pointerId); } catch (x) {}
