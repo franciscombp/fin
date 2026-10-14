@@ -509,11 +509,11 @@ html:not(.theme-y2k) .tab-panel .section > .section__title + * { margin-top: var
 
 /* Acción terciaria (login: "Otro método de ingreso"): sin relleno, texto en tinta.
    Sigue la misma regla que los enlaces de acción de la app. */
-html:not(.theme-y2k) .login-button--tertiary, html:not(.theme-y2k) .login-button--tertiary:hover, html:not(.theme-y2k) .login-button--tertiary:active {
+html:not(.theme-y2k) .login-button.login-button--tertiary, html:not(.theme-y2k) .login-button.login-button--tertiary:hover, html:not(.theme-y2k) .login-button.login-button--tertiary:active {
   height: 44px !important; background: transparent !important; color: var(--cx-ink) !important; box-shadow: none !important;
   font: 600 15px/20px var(--sol-font, Roboto, sans-serif) !important; text-decoration: none !important; opacity: 1 !important;
 }
-html:not(.theme-y2k) .login-button--tertiary:active { color: var(--cx-muted) !important; }
+html:not(.theme-y2k) .login-button.login-button--tertiary:active { color: var(--cx-muted) !important; }
 /* Ojo de la sección → bp-action-button secondary icon-only (36×32) */
 html:not(.theme-y2k) .section__eye {
   width: 36px; height: var(--bp-semantic-size-interactive-xxs); padding: 0 var(--bp-semantic-spacing-micro-md);
