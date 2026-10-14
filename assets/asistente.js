@@ -437,9 +437,10 @@
       { kind: 'good', icon: 'event_available', title: 'Pagaste todo a tiempo', sub: 'Sin recargos en servicios ni tarjetas.' }] }
   };
   var VIEWS = [
+    // Hoy, el mes en curso y luego los más antiguos
     { key: 'hoy', short: 'Hoy', today: true },
-    { key: 'jun', short: 'jun', report: true }, { key: 'jul', short: 'jul', report: true },
-    { key: 'ago', short: 'ago', mi: 0 }, { key: 'sep', short: 'sep', mi: 1 }, { key: 'oct', short: 'oct', mi: 2, current: true }
+    { key: 'oct', short: 'oct', mi: 2, current: true }, { key: 'sep', short: 'sep', mi: 1 }, { key: 'ago', short: 'ago', mi: 0 },
+    { key: 'jul', short: 'jul', report: true }, { key: 'jun', short: 'jun', report: true }
   ];
   // Mis finanzas siempre abre en "Hoy" (tu dinero ahora); los meses quedan
   // para mirar atrás. Al volver a la sección desde otra, regresa a Hoy.
@@ -651,7 +652,11 @@
             '<span class="as-row__val' + (f.ok ? '' : ' is-warn') + '">' + f.val + '</span></div>';
         }).join('') + '</div>';
     } else {
+      var PL = window.UkuAnalisis ? UkuAnalisis.plans() : {};
       html += '<h3>Ajustes</h3>' +
+        (window.UkuAnalisis ? '<p class="as-sheet__label">' + T('Tipo de cliente para Analizar con Uku (demo)') + '</p><div class="as-rows">' + Object.keys(PL).map(function (k) {
+          return '<button class="as-row as-row--btn" data-plan="' + k + '" aria-pressed="' + (UkuAnalisis.plan() === k) + '"><span class="as-row__main"><b>' + PL[k] + '</b></span><span class="as-radio"></span></button>';
+        }).join('') + '</div>' : '') +
         '<p class="as-sheet__label">Probar otro escenario (solo demo)</p><div class="as-rows">' +
         Object.keys(SCEN).map(function (k) {
           return '<button class="as-row as-row--btn" data-sc="' + k + '" aria-pressed="' + (ST.scenario === k) + '"><span class="as-row__main"><b>' + SCEN[k].label + '</b></span><span class="as-radio"></span></button>';
@@ -667,6 +672,12 @@
   function onSheetClick(e) {
     var sb = e.target.closest('[data-sheet]');
     if (sb) return onSheetPF(sb);
+    var pb = e.target.closest('[data-plan]');
+    if (pb) {
+      fx('toggle'); UkuAnalisis.setPlan(pb.dataset.plan);
+      sheet.querySelectorAll('[data-plan]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === pb)); });
+      paintPF(); return;
+    }
     var cb = e.target.closest('[data-clima]');
     if (cb) {
       fx('toggle');
@@ -845,9 +856,12 @@
   }
   function txRow(t) {
     var a = acctOf(t.acct), inc = t.cat === 'ingreso', sav = t.cat === 'ahorro';
-    var cat = inc ? 'Ingreso' : sav ? 'Ahorro' : CATS[t.cat].name;
-    return '<div class="pf-tx">' + bankAv(a.bank) + '<span class="pf-tx__main"><b>' + esc(t.who) + '</b><small>' + cat + ' · ' + t.day + ' ' + MONTHS[t.mi].short.toLowerCase() + ' · ' + BANKS[a.bank].name + '</small></span>' +
-      '<span class="pf-tx__amt' + (inc ? ' is-in' : '') + '">' + (inc ? '+' : sav ? '' : '-') + money(t.amt) + '</span></div>';
+    var cat = inc ? T('Ingreso') : sav ? T('Ahorro') : T(CATS[t.cat].name);
+    var ic = inc ? 'south_west' : sav ? 'savings' : (CAT_IC[t.cat] || 'receipt_long');
+    var bank = BANKS[a.bank].own ? '' : ' · ' + BANKS[a.bank].name;
+    return '<div class="pf-tx"><span class="pf-tx__ic material-symbols-rounded" aria-hidden="true">' + ic + '</span>' +
+      '<span class="pf-tx__main"><b>' + esc(t.who) + '</b><small>' + cat + ' · ' + t.day + ' ' + MONTHS[t.mi].short.toLowerCase() + bank + '</small></span>' +
+      '<span class="pf-tx__amt' + (inc ? ' is-in' : '') + '">' + (inc ? '+' : sav ? '' : '−') + money(t.amt) + '</span></div>';
   }
   function sortedTx(filter) {
     return D.tx.filter(filter || function () { return true; }).sort(function (a, b) { return (b.mi * 40 + b.day) - (a.mi * 40 + a.day); });
@@ -901,6 +915,13 @@
       '<span class="pf-meter__sub">' + T(lv.n) + (when ? ' ' + T('en {mes}', { mes: when }) : '') + ' · ' + T('Cómo se calcula') + '<span class="material-symbols-rounded">chevron_right</span></span>' +
       '</button></section>';
   }
+  // Botón de IA: se ve distinto a todo lo demás para que quede claro que es IA
+  function aiCTA(compact) {
+    var acc = window.UkuAnalisis ? UkuAnalisis.access() : '';
+    return '<button class="ai-cta' + (compact ? ' ai-cta--sm' : '') + '" data-pf="analyze"><span class="ai-cta__spark material-symbols-rounded" aria-hidden="true">auto_awesome</span>' +
+      '<span class="ai-cta__t"><b>' + T('Analizar con {nombre}', { nombre: C().name }) + '</b>' + (acc && !compact ? '<small>' + acc + '</small>' : '') + '</span>' +
+      '<span class="ai-badge">IA</span></button>';
+  }
   // Uku en los meses: un bloque de información (sin el oso grande)
   function ukuBlock(v) {
     var mesL = T(MONTH_NAME[v.key]).toLowerCase(), list = [], body = '';
@@ -918,7 +939,7 @@
         return '<div class="pf-uku2__row"><span class="pf-uku2__ic material-symbols-rounded" aria-hidden="true">' + x.icon + '</span>' +
           '<div class="pf-uku2__txt"><b>' + x.title + '</b><p>' + x.sub + '</p>' +
           (x.det || x.ask ? '<div class="pf-uku2__links">' + (x.det ? '<button data-pf="det:' + i + '">' + T('Ver detalle') + '</button>' : '') +
-            (x.ask ? '<button data-pf="why:' + i + '">' + esc(x.ask) + '</button>' : '') + '</div>' : '') + '</div></div>';
+            (x.ask ? '<button class="is-ai" data-pf="why:' + i + '"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + esc(x.ask) + '</button>' : '') + '</div>' : '') + '</div></div>';
       }).join('') + '</div>';
     }
     var md = moodFor(v);
@@ -926,7 +947,7 @@
       '<div class="pf-uku2__head"><span class="pf-uku2__face">' + C().face() + '</span><span><b>' + C().name + ' <em>· ' + T('está {animo}', { animo: T(MOOD[md].label) }) + '</em></b><small>' +
         T(v.current ? 'Cómo vas en {mes}' : 'Lo que pasó en {mes}', { mes: mesL }) + '</small></span></div>' +
       '<p class="pf-uku2__lead">' + hintFor(v) + '</p>' + body +
-      '<button class="pf-uku2__chat" data-pf="ask"><span class="material-symbols-rounded">chat_bubble</span>' + T('Escríbele a {nombre}', { nombre: C().name }) + '</button>' +
+      aiCTA() +
       '</div></section>';
   }
   function insHTML(list, withDetail) {
@@ -944,7 +965,7 @@
     return '<section class="pf-sec pf-foot">' +
       '<button class="pf-navrow" data-pf="accounts"><span class="material-symbols-rounded">account_balance</span><span><b>Cuentas conectadas</b><small>' + T('{n} cuentas', { n: D.accts.length }) + ' · ' + Object.keys(BANKS).filter(connected).map(function (k) { return BANKS[k].name; }).join(', ') + '</small></span><span class="material-symbols-rounded">chevron_right</span></button>' +
       '<button class="pf-navrow" data-pf="health"><span class="material-symbols-rounded">favorite</span><span><b>Salud financiera</b><small>Cómo se calcula y cómo subirla</small></span><span class="material-symbols-rounded">chevron_right</span></button>' +
-      '<button class="pf-navrow" data-pf="ask"><span class="pf-navrow__av">' + C().face() + '</span><span><b>' + T('Pregúntale a {nombre}', { nombre: C().name }) + '</b><small>Lo que quieras saber de tus últimos 3 meses</small></span><span class="material-symbols-rounded">chevron_right</span></button>' +
+      '<button class="pf-navrow" data-pf="analyze"><span class="pf-navrow__av">' + C().face() + '</span><span><b>' + T('Analizar con {nombre}', { nombre: C().name }) + ' <span class="ai-badge">IA</span></b><small>' + T('Un análisis de tus finanzas hecho con IA') + '</small></span><span class="material-symbols-rounded">chevron_right</span></button>' +
       '<p class="pf-note">Tu resumen se arma al cierre de cada mes. El del mes en curso lo calculamos solo cuando lo pides, así la app carga más rápido.</p></section>';
   }
   function paintPF() {
@@ -1095,21 +1116,23 @@
   function todayHTML() {
     var cash = D.accts.filter(function (a) { return a.type === 'ahorro' && a.id !== 'sie1' || a.type === 'corriente' || a.type === 'efectivo'; });
     var avail = cash.reduce(function (s, a) { return s + a.bal; }, 0);
-    var html = sumHTML(T('Tienes disponible hoy'), money(avail), [[T('Tienes en total'), money(D.assets)], [T('Debes'), money(D.debt), D.debt ? 'is-neg' : ''], [T('Neto'), money(D.assets - D.debt)]]);
+    var html = '<section class="pf-sum2"><p class="pf-sum2__label">' + T('Tienes disponible hoy') + '</p><p class="pf-sum2__value">' + money(avail) + '</p>' +
+      '<dl class="pf-sum2__list"><div><dt>' + T('Todo lo que tienes') + '</dt><dd>' + money(D.assets) + '</dd></div>' +
+      '<div><dt>' + T('Lo que debes') + '</dt><dd>' + money(D.debt) + '</dd></div>' +
+      '<div class="is-total"><dt>' + T('Te queda neto') + '</dt><dd>' + money(D.assets - D.debt) + '</dd></div></dl></section>';
     // Lo que Uku tiene para contar vive en su globo (a demanda)
     html += '<section class="pf-sec"><div class="pf-sec__head"><h2>Cuentas</h2><button class="pf-link" data-pf="connect">Conectar</button></div><div class="pf-prods">' +
       cash.map(function (a) {
         return prodRow(bankAv(a.bank), T(a.name), BANKS[a.bank].name + (a.mask ? ' · ••' + a.mask : ''), money(a.bal), '', PB_ACTION[a.id] ? 'go:' + PB_ACTION[a.id] : 'accounts');
       }).join('') + '</div></section>';
     var sie = D.accts.filter(function (a) { return a.id === 'sie1'; })[0];
-    html += '<section class="pf-sec"><h2>Ahorros y metas</h2><div class="pf-goals">' + D.goals.map(function (g) {
-      return '<div class="pf-goal"><div class="pf-goal__top"><b>' + T(g.name) + '</b><span>' + money(g.have) + '</span></div>' +
-        '<u><i style="width:' + Math.round(Math.min(1, g.have / g.target) * 100) + '%"></i></u>' +
-        '<small>' + pct(Math.min(1, g.have / g.target)) + ' ' + T('de {monto}', { monto: money(g.target) }) + ' · ' + T('para {fecha}', { fecha: T(g.due) }) + '</small></div>';
-    }).join('') + (sie ? '<div class="pf-goal"><div class="pf-goal__top"><b>' + T(sie.name) + '</b><span>' + money(sie.bal) + '</span></div><small>' + BANKS.sierra.name + ' · ••' + sie.mask + '</small></div>' : '') + '</div></section>';
+    html += '<section class="pf-sec pf-msec"><p class="pf-msec__label">' + T('Ahorros y metas') + '</p><div class="pf-mcard">' + D.goals.map(function (g) {
+      var p = Math.min(1, g.have / g.target);
+      return meterRow({ name: T(g.name), right: money(g.have), p: p, tone: 'ok', sub: T('{pct} de {monto}', { pct: pct(p), monto: money(g.target) }) + ' · ' + T('para {fecha}', { fecha: T(g.due) }) });
+    }).join('') + (sie ? meterRow({ name: T(sie.name), right: money(sie.bal), p: 0, tone: 'ok', sub: BANKS.sierra.name + ' · ••' + sie.mask }).replace('<span class="pf-meter__bar"><i style="width:0.0%"></i></span>', '') : '') + '</div></section>';
     var cards = D.accts.filter(function (a) { return a.type === 'credito'; });
     if (cards.length) html += '<section class="pf-sec"><h2>Tarjetas de crédito</h2><div class="pf-prods">' + cards.map(function (c) {
-      return prodRow('<span class="pf-cardthumb"></span>', T(c.name), T('Cupo disponible {monto}', { monto: money(c.limit - c.owed) }) + ' · ' + T('pagas hasta el 10 nov'), money(c.owed), T('Por pagar'), 'card:' + c.name, c.owed ? 'is-neg' : '');
+      return prodRow('<span class="pf-cardthumb"></span>', T(c.name), T('Pagas hasta el 10 nov'), money(c.owed), T('Por pagar'), 'card:' + c.name);
     }).join('') + '</div></section>';
     var inv = homeRows('Inversiones'), loans = homeRows('Prestamos');
     if (inv.length) html += '<section class="pf-sec"><h2>Inversiones</h2><div class="pf-prods">' + inv.map(function (x) { return prodRow(icAv('trending_up'), esc(x.name), esc(x.sub || 'Pichibank'), esc(x.amt), '', 'go:' + x.action); }).join('') + '</div></section>';
@@ -1143,7 +1166,7 @@
     var b = D.by[v.mi]; return { spend: b._spend, save: b._save, inc: b._in, partial: !!v.current };
   }
   function histHTML(v) {
-    var ms = VIEWS.filter(function (x) { return !x.today; });
+    var ms = VIEWS.filter(function (x) { return !x.today; }).reverse(); // la gráfica va de lo antiguo a lo reciente
     var vals = ms.map(function (x) { return monthNums(x).spend; });
     var closed = ms.filter(function (x) { return !x.current; }).map(function (x) { return monthNums(x).spend; });
     var avg = closed.reduce(function (a, b) { return a + b; }, 0) / closed.length;
@@ -1321,7 +1344,7 @@
         '<p class="pf-say__t">' + m.t + '</p>' +
         '<div class="uku-say__replies">' + (m.r || '') +
           (n > 1 && say.i < n - 1 ? '<button class="uku-say__reply uku-say__reply--next" data-pf="say:next">Siguiente</button>' : '') +
-          '<button class="uku-say__reply uku-say__reply--chat" data-pf="ask">' + T('Escríbele a {nombre}', { nombre: C().name }) + '</button></div>' +
+          '<button class="uku-say__reply uku-say__reply--ai" data-pf="analyze"><span class="material-symbols-rounded">auto_awesome</span>' + T('Analizar con {nombre}', { nombre: C().name }) + '</button></div>' +
       '</div></div>';
   }
   function paintSay() {
@@ -1423,16 +1446,20 @@
     // Tocar al oso abre (o cierra) su globo de texto
     if (!b && e.target.closest('.pf-hero .b3d') && isInline()) return onSay(say.open ? 'say:close' : 'say:open');
     if (!b) return;
-    var k = b.dataset.pf;
+    return pfKey(b.dataset.pf);
+  }
+  // Acciones de Mis finanzas por clave (también las usa el análisis de Uku)
+  function pfKey(k) {
+    if (k === 'repaint') return paintPF();
     if (k.indexOf('say:') === 0) return onSay(k);
     if (k === 'close') return closePF();
     if (k === 'settings') return openSheet('settings');
-    if (k === 'ask') return open();
+    if (k === 'ask' || k === 'analyze') return analyze();
     if (k === 'health') return healthSheet();
     if (k === 'accounts') return accountsSheet();
     if (k === 'budgets') return budgetSheet();
     if (k === 'connect') return connectSheet();
-    if (k.indexOf('ask:') === 0) { var aq = k.slice(4); open(); setTimeout(function () { ask(aq); }, 350); return; }
+    if (k.indexOf('ask:') === 0) return analyze(k.slice(4));
     if (k.indexOf('go:') === 0) {
       var ga = k.slice(3), gb = document.querySelector('#home-page [data-action="' + ga + '"]') || document.querySelector('[data-action="' + ga + '"]');
       if (gb) gb.click();
@@ -1454,7 +1481,7 @@
     if (k.indexOf('breakdown:') === 0) return breakdownSheet(+k.slice(10));
     if (k.indexOf('cat:') === 0) { var p = k.split(':'); return catSheet(p[1], +p[2]); }
     if (k.indexOf('det:') === 0) return detailSheet(curIns[+k.slice(4)].det);
-    if (k.indexOf('why:') === 0) { var q = curIns[+k.slice(4)].ask; open(); setTimeout(function () { ask(q); }, 350); }
+    if (k.indexOf('why:') === 0) return analyze(curIns[+k.slice(4)].ask);
   }
   function doAction(id) {
     var before = D.score, m = ST.mods, msg;
@@ -1640,6 +1667,27 @@
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
-  window.Asistente = { petSVG: function () { return C().svg(); }, faceIMG: function () { return C().face(); }, name: function () { return C().name; }, open: open, openPF: function () { openPF(); }, ask: function (q) { open(); ask(q); }, data: function () { return D; },
+  // "Analizar con Uku" (IA): el análisis del mes que estás mirando
+  function analyze(q) {
+    var v = viewOf(ST.view);
+    if (v.today) v = viewOf('sep'); // desde Hoy se analiza el último mes cerrado
+    if (window.UkuAnalisis) UkuAnalisis.open({ view: v.key, ask: q });
+  }
+  // Datos del mes para el análisis (todo calculado aquí; la IA lo redacta)
+  function monthPack(key) {
+    var v = viewOf(key), n = monthNums(v), mes = T(MONTH_NAME[v.key]).toLowerCase();
+    if (v.current && onDemand !== 'ready') onDemand = 'ready';
+    var ins = v.current ? currentIns() : v.report ? REPORTS[v.key].ins : monthInsights(v.mi);
+    var over = v.report ? [] : Object.keys(CATS).filter(function (k) { return !CATS[k].fixed && D.by[v.mi][k] > CATS[k].budget; })
+      .map(function (k) { return { k: k, name: T(CATS[k].name), over: D.by[v.mi][k] - CATS[k].budget, budget: CATS[k].budget }; });
+    var top = v.report ? [] : catTotals(v.mi).slice(0, 3).map(function (c) { return { name: T(CATS[c.k].name), v: c.v, p: c.v / n.spend }; });
+    var closed = VIEWS.filter(function (x) { return !x.today && !x.current; }).map(function (x) { return monthNums(x).spend; });
+    var avg = closed.reduce(function (a, b) { return a + b; }, 0) / closed.length;
+    return { key: v.key, mes: mes, Mes: T(MONTH_NAME[v.key]), current: !!v.current, report: !!v.report, n: n, ins: ins, over: over, top: top, avg: avg,
+      mood: moodFor(v), moodLabel: T(MOOD[moodFor(v)].label), hint: (say.first = null, hintFor(v)), score: v.today || v.current ? D.score : v.report ? REPORTS[v.key].score : monthScore(v.mi),
+      card: D.card ? { debt: D.debt, interest: v.mi != null ? cardInterest(v.mi) : 0 } : null, goals: D.goals, txCount: v.report ? 0 : D.tx.filter(function (t) { return t.mi === v.mi; }).length };
+  }
+  window.Asistente = {
+    answer: function (q) { return answer(q); }, pack: monthPack, pf: function (k) { return pfKey(k); }, money: money, analyze: analyze, petSVG: function () { return C().svg(); }, faceIMG: function () { return C().face(); }, name: function () { return C().name; }, open: function (o) { analyze(o && o.ask); }, openPF: function () { openPF(); }, ask: function (q) { analyze(q); }, data: function () { return D; },
     insights: function () { return monthInsights(lastClosedMi()); } };
 })();

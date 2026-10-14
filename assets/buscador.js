@@ -132,7 +132,7 @@
     });
     return out;
   }
-  var APP = [];
+  var APP = [], HELP = [];
   function runApp(a) {
     close(true);
     setTimeout(function () {
@@ -144,7 +144,7 @@
   /* Sugerencia según la hora: lo que la persona suele hacer a esta hora. */
   function moment() {
     var h = new Date().getHours();
-    if (h < 12) return { title: 'Suele hacerse por la mañana', icon: 'bolt', main: 'Pagar Luz de la casa', sub: 'Vence hoy · ' + money(24.8), sc: { action: 'Pagar servicios', biller: 'Empresa Eléctrica Quito' } };
+    if (h < 12) return { title: 'Suele hacerse por la mañana', icon: 'bolt', main: 'Pagar Luz de la casa', sub: 'La pagas cada mes · ' + money(24.8), sc: { action: 'Pagar servicios', biller: 'Empresa Eléctrica Quito' } };
     if (h < 19) return { title: 'Suele hacerse a esta hora', icon: 'send_money', main: 'Transferir a María José', sub: 'Lo haces casi todos los viernes', sc: { action: 'Transferir dinero', who: 'María José' } };
     return { title: 'Suele hacerse por la noche', icon: 'insights', main: 'Revisar tus gastos de hoy', sub: 'En Mis finanzas', a: ACTIONS[4] };
   }
@@ -185,6 +185,8 @@
       var i = b.dataset.sxI;
       if (i === 'ask') { var q = input.value.trim(); close(true); setTimeout(function () { window.Asistente && Asistente.open({ ctx: ctxId, ask: q }); }, 280); return; }
       if (i === 'pfm') return runAction(ACTIONS[4]);
+      if (i === 'help') { close(true); setTimeout(function () { window.Soporte && Soporte.open(); }, 280); return; }
+      if (i.indexOf('hp:') === 0) { var hp = HELP[+i.slice(3)]; close(true); setTimeout(function () { if (!window.Soporte) return; if (hp.kind === 'tut') Soporte.openTut(hp.i); else Soporte.openFaq(hp.i); }, 280); return; }
       if (i === 'mo') { var mo = moment(); return mo.sc ? runShortcut(mo.sc) : runAction(mo.a); }
       if (i === 'it') return runShortcut(curIt);
       if (i === 'it-save') { shortcuts.push(Object.assign({}, curIt)); saveShortcuts(); fx('success'); input.value = ''; render(); return; }
@@ -273,7 +275,9 @@
     return '<button class="sx-app" data-sx-i="a:' + ACTIONS.indexOf(a) + '"><span class="sx-app__ic material-symbols-rounded">' + a.icon + '</span><span>' + a.label + '</span></button>';
   }
   function row(id, icon, main, sub, right) {
-    var ic = icon === 'uku' && window.Asistente ? '<span class="sx-row__ic sx-row__ic--uku">' + Asistente.faceIMG() + '</span>' : '<span class="sx-row__ic material-symbols-rounded">' + icon + '</span>';
+    var ic = icon === 'uku' && window.Asistente ? '<span class="sx-row__ic sx-row__ic--uku">' + Asistente.faceIMG() + '</span>'
+      : icon === 'ai' ? '<span class="sx-row__ic sx-row__ic--ai material-symbols-rounded">auto_awesome</span>'
+      : '<span class="sx-row__ic material-symbols-rounded">' + icon + '</span>';
     return '<button class="sx-row" data-sx-i="' + id + '">' + ic + '<span class="sx-row__main"><b>' + main + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (right ? '<span class="sx-row__r">' + right + '</span>' : '') + '</button>';
   }
   function T(x, v) { return window.I18n ? I18n.t(x, v) : x; }
@@ -313,6 +317,7 @@
         var m = moment();
         html += '<section class="sx-card"><h3>' + m.title + '</h3>' + row('mo', m.icon, m.main, m.sub) + '</section>';
       }
+      html += '<section class="sx-card"><h3>Ayuda</h3>' + row('help', 'help', 'Centro de ayuda', 'Preguntas frecuentes, categorías y tutoriales') + '</section>';
     } else {
       var ws = words(input.value);
       // Frase completa → el flujo ya lleno, listo para confirmar
@@ -337,10 +342,15 @@
           return row('pfm', inc ? 'south_west' : 'north_east', esc(t.who), t.day + ' ' + MON[t.mi], (inc ? '+' : '-') + money(t.amt));
         }).join('') + '</section>';
       }
-      // Uku queda al final: preguntas sobre tu plata (la respuesta vive en Mis finanzas)
+      // Ayuda: preguntas frecuentes y tutoriales del centro de ayuda
+      HELP = window.Soporte && Soporte.find ? Soporte.find(input.value, 3) : [];
+      if (HELP.length) html += '<section class="sx-card"><h3>Ayuda</h3>' + HELP.map(function (h, i) { return row('hp:' + i, h.icon, esc(h.t), h.kind === 'tut' ? 'Tutorial' : 'Pregunta frecuente'); }).join('') + '</section>';
+      // Al final, el análisis con IA de Uku (se marca como IA)
       var asks = rank(ASKS, ws, function (a) { return a.q + ' ' + a.k + ' ' + T(a.q); }).slice(0, 2);
-      if (asks.length) html += '<section class="sx-card"><h3>Pregúntale a ' + ukuName() + '</h3>' + asks.map(function (a) { return row('q:' + ASKS.indexOf(a), 'uku', a.q); }).join('') + '</section>';
-      if (!html) html += '<section class="sx-card">' + row('ask', 'uku', 'Pregúntale a ' + ukuName(), '«' + esc(input.value.trim()) + '»') + '</section>';
+      if (asks.length) html += '<section class="sx-card"><h3>Analizar con ' + ukuName() + ' <span class="ai-badge">IA</span></h3>' + asks.map(function (a) { return row('q:' + ASKS.indexOf(a), 'ai', a.q); }).join('') + '</section>';
+      if (!html) html += '<section class="sx-card sx-empty"><p>No encontramos «' + esc(input.value.trim()) + '» en la app.</p>' +
+        row('help', 'help', 'Buscar en la ayuda', 'Preguntas frecuentes y tutoriales') +
+        row('ask', 'ai', 'Analizar con ' + ukuName(), 'Pregúntale sobre tus finanzas · IA') + '</section>';
     }
     results.innerHTML = html;
   }
