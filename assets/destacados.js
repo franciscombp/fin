@@ -229,14 +229,35 @@
     preaprobado: ['Tienes un crédito preaprobado', 'Simular mi crédito'],
     pagos: ['Programa tus pagos de servicios', 'Programar pagos']
   };
-  // Captación (colocada o en un slot fantasma), mismo componente del hub
+  /* Lo que ganarías: el fantasma simula, con tus datos, lo que tendrías con
+     ese producto (como la figurita que falta en el álbum). Los montos de
+     una oferta real vienen del motor de ofertas. */
+  function ghostData(id) {
+    var d = data() || {}, accts = d.accts || [], by = d.by || [];
+    var main = accts.filter(function (a) { return a.id === 'pb1'; })[0], idle = main ? main.bal : 1900;
+    var spend = by[1] ? by[1]._spend : 1000;
+    var pays = PAYS.reduce(function (n, p) { return n + p[1]; }, 0);
+    switch (id) {
+      case 'inversion': return { t: 'Con tu saldo promedio podrías ganar ' + money(idle * .0725) + ' al año', l: 'Ganarías al año', v: money(idle * .0725), cta: 'Invierte ahora', ts: 'Podrías ganar al año' };
+      case 'metas': return { t: 'Ahorrando $ 50 al mes, en un año juntas ' + money(600), l: 'En un año', v: money(600), cta: 'Crea tu meta', ts: 'En un año juntarías' };
+      case 'cuentas': case 'deuna': return { t: 'Cobra a tus clientes y amigos al instante', l: 'Comisión por cobrar', v: money(0), cta: 'Abre tu cuenta deuna', ts: 'Cobra sin comisión' };
+      case 'creditos': case 'preaprobado': return { t: 'Tienes un crédito preaprobado', l: 'Hasta', v: money(5000), s: 'Sujeto a aprobación', cta: 'Simula tu crédito', ts: 'Crédito preaprobado' };
+      case 'tarjeta': return { t: 'Con lo que gastaste en septiembre acumularías millas', l: 'Ganarías', v: Math.round(spend).toLocaleString('es-EC') + ' millas', cta: 'Solicita tu tarjeta', ts: 'Acumularías' };
+      case 'pagos': return { t: 'Programa tus pagos y olvídate de las fechas', l: 'Pagas al mes', v: money(pays), cta: 'Programa tus pagos', ts: 'Pagas al mes' };
+    }
+    return null;
+  }
+  // Captación (colocada o en un slot fantasma): patrón de venta del hub,
+  // con la cifra que tendrías
   function hubHTML(w, preview) {
-    var cat = CATALOG[w.id], g = GHOST[w.id] || [cat.desc, 'Ver más'], r = null;
+    var cat = CATALOG[w.id], g = ghostData(w.id) || { t: (GHOST[w.id] || [cat.desc])[0], cta: (GHOST[w.id] || [0, 'Ver más'])[1] }, r = null;
     try { r = R[w.id](w.size, true); } catch (e) {}
     if (!preview) gos[w.id] = r && r.go;
-    return '<article class="dw dw--' + w.size + ' dw--hub' + (w.sug ? ' dw--sug' : '') + '" data-dw-id="' + w.id + '"' + (preview ? '' : ' role="button" tabindex="0"') + ' aria-label="' + esc(g[0]) + '">' +
-      '<span class="dw-ghost__ic material-symbols-rounded" aria-hidden="true">' + cat.icon + '</span>' +
-      '<span class="dw-ghost__t"><span class="dw-2l">' + g[0] + '</span><span class="dw-ghost__link">' + g[1] + '</span></span>' +
+    var fig = g.v ? '<span class="dw-ghost__fig"><small>' + g.l + '</small><b>' + sens(g.v) + '</b>' + (g.s ? '<em>' + g.s + '</em>' : '') + '</span>' : '';
+    return '<article class="dw dw--' + w.size + ' dw--hub dw--ghost' + (w.sug ? ' dw--sug' : '') + '" data-dw-id="' + w.id + '"' + (preview ? '' : ' role="button" tabindex="0"') + ' aria-label="' + esc(g.t) + '">' +
+      '<span class="dw-ghost__t"><span class="dw-ghost__head">' + (w.size === 's' && g.ts ? g.ts : g.t) + '</span>' + (w.size === 's' ? fig : '') +
+        '<span class="dw-ghost__link">' + g.cta + '<span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></span></span>' +
+      (w.size === 's' ? '' : fig) +
       (preview ? '' : w.sug ? dismissBtn(w.id) : editBtns(w, cat)) +
       '</article>';
   }
@@ -249,6 +270,17 @@
     creditos: 'Tu próxima cuota y su fecha'
   };
   var USEFUL = ['pagos', 'pfm', 'metas', 'inversion', 'cuentas', 'tarjeta', 'creditos'];
+  // Vista previa de la cifra que mostraría el widget
+  function wsugFig(id) {
+    var d = data() || {};
+    if (id === 'pagos') return ['Próximo pago', money(PAYS[0][1]), PAYS[0][0] + ' · ' + PAYS[0][2]];
+    if (id === 'metas' && d.goals && d.goals[0]) return [d.goals[0].name, pct(Math.min(1, d.goals[0].have / d.goals[0].target)), 'ahorrado'];
+    if (id === 'cuentas') return ['Intereses del mes', money(3.12), ''];
+    if (id === 'inversion') return ['Tu depósito rinde', '7,25%', 'al año'];
+    if (id === 'tarjeta' && d.card) return ['Por pagar', money(d.card.owed), 'hasta el 10 nov'];
+    if (id === 'creditos') return ['Próxima cuota', money(245.9), '20 oct'];
+    return null;
+  }
   function wsugHTML(w) {
     var cat = CATALOG[w.id];
     return '<article class="dw dw--' + w.size + ' dw--hub dw--wsug" data-dw-id="' + w.id + '" aria-label="Sugerencia: widget ' + esc(cat.name) + '">' +
@@ -256,6 +288,7 @@
       '<span class="dw-ghost__t"><span class="dw-1 dw-ghost__name">' + (w.size === 's' ? cat.short : cat.name) + '</span><span class="dw-2l">' + (EXAMPLE[w.id] || cat.desc) + '</span>' +
         '<span class="dw-ghost__acts"><button class="dw-ghost__link" data-dw-place="' + w.id + ':' + w.size + '">+ Agregar</button>' +
         (w.size === 'm' ? '<button class="dw-ghost__link dw-ghost__link--2" data-dw="add">Otros widgets</button>' : '') + '</span></span>' +
+        (function () { var f = w.size === 'm' && wsugFig(w.id); return f ? '<span class="dw-ghost__fig"><small>' + esc(f[0]) + '</small><b>' + sens(f[1]) + '</b>' + (f[2] ? '<em>' + esc(f[2]) + '</em>' : '') + '</span>' : ''; })() +
       dismissBtn('w:' + w.id) +
       '</article>';
   }

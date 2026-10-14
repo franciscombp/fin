@@ -227,3 +227,25 @@ button.dw-ghost__link { padding: 0; border: 0; background: none; cursor: pointer
 .dw-ghost__link--2 { color: var(--bp-theme-color-text-secondary) !important; }
 .dw--wsug .dw-ghost__t { gap: 4px; }
 .dw--wsug .dw-ghost__acts { margin-top: 4px; }
+
+/* ---------- Fantasma con lo que ganarías (figurita por pegar) ---------- */
+.dw-grid .dw.dw--ghost { align-items: center; gap: 16px; padding: 20px 44px 20px 20px; }
+.dw--ghost .dw-ghost__t { flex: 1; gap: 10px; }
+.dw--ghost .dw-ghost__head { font: 600 16px/22px var(--sol-font, Roboto, sans-serif); color: var(--bp-theme-color-text-brand); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.dw--ghost .dw-ghost__link { display: inline-flex; align-items: center; gap: 2px; }
+.dw--ghost .dw-ghost__link .material-symbols-rounded { font-size: 20px; }
+.dw-ghost__fig { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 2px; max-width: 42%; text-align: center; }
+.dw-ghost__fig small { font: var(--ui-body-sm-regular, 400 13px/18px sans-serif); color: var(--bp-theme-color-text-helper); }
+.dw-ghost__fig b { font: 600 20px/26px var(--sol-font, Roboto, sans-serif); color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dw-ghost__fig em { font: normal var(--ui-caption, 400 11px/14px sans-serif); color: var(--bp-theme-color-text-helper); }
+/* Cuadrado: título, cifra y enlace en columna */
+.dw-grid .dw--s.dw--ghost { flex-direction: column; align-items: flex-start; justify-content: space-between; padding: 16px; }
+.dw--s.dw--ghost .dw-ghost__head { font-size: 14px; line-height: 19px; -webkit-line-clamp: 2; }
+.dw--s.dw--ghost .dw-ghost__fig { align-items: flex-start; text-align: left; max-width: 100%; }
+.dw--s.dw--ghost .dw-ghost__fig b { font-size: 17px; line-height: 22px; }
+.dw--s.dw--ghost .dw-ghost__fig small, .dw--s.dw--ghost .dw-ghost__fig em { display: none; }
+.dw--s.dw--ghost .dw-ghost__link { font-size: 13px; }
+.dw--wsug .dw-ghost__fig { margin-left: auto; opacity: .85; }
+.dw-grid .dw--m.dw--wsug { padding-right: 44px; }
+.dw-grid .dw--m.dw--wsug .dw-ghost__ic { display: none; }
+.dw-ghost__acts button { white-space: nowrap; }
