@@ -1505,6 +1505,7 @@
 
   // Mis finanzas es una sección: "abrirla" es ir a su pestaña
   function openPF() {
+    if (window.PFM) return PFM.open();
     if (!pf) mountPF();
     paintPF(); if (window.__goView) window.__goView(1);
   }
@@ -1517,7 +1518,8 @@
       climaPainted = c; if (pf && viewOf(ST.view).today) paintPF();
     });
     var fv = document.querySelector('.view[data-view="1"]');
-    if (fv && fv.querySelector('.pf-host')) {
+    // Mis finanzas ahora vive en assets/pfm.js (sobre la Base de datos PFM)
+    if (fv && fv.querySelector('.pf-host') && !window.PFM) {
       mountPF(); paintPF();
       new MutationObserver(function () { if (fv.classList.contains('active')) syncHero(); }).observe(fv, { attributes: true, attributeFilter: ['class'] });
     }
@@ -1550,6 +1552,8 @@
       card: D.card ? { debt: D.debt, interest: v.mi != null ? cardInterest(v.mi) : 0 } : null, goals: D.goals, txCount: v.report ? 0 : D.tx.filter(function (t) { return t.mi === v.mi; }).length };
   }
   window.Asistente = {
-    answer: function (q) { return answer(q); }, pack: monthPack, pf: function (k) { return pfKey(k); }, money: money, analyze: analyze, petSVG: function () { return C().svg(); }, faceIMG: function () { return C().face(); }, name: function () { return C().name; }, open: function (o) { analyze(o && o.ask); }, openPF: function () { openPF(); }, ask: function (q) { analyze(q); }, data: function () { return D; },
+    // Con el PFM nuevo, Uku responde y analiza con sus datos (si no sabe, usa el motor anterior)
+    answer: function (q) { return (window.PFM && PFM.answer(q)) || answer(q); }, pack: function (k) { return window.PFM && PFM.ready() ? PFM.pack(k) : monthPack(k); },
+    pf: function (k) { if (window.PFM) { if (k === 'repaint') return PFM.paint(); return PFM.key(k); } return pfKey(k); }, money: money, analyze: analyze, petSVG: function () { return C().svg(); }, faceIMG: function () { return C().face(); }, name: function () { return C().name; }, open: function (o) { analyze(o && o.ask); }, openPF: function () { openPF(); }, ask: function (q) { analyze(q); }, data: function () { return D; },
     insights: function () { return monthInsights(lastClosedMi()); }, included: isIncl, settings: function () { openSheet('settings'); } };
 })();

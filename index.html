@@ -3930,6 +3930,7 @@
     <link rel="stylesheet" href="./assets/producto.css">
     <link rel="stylesheet" href="./assets/sistema.css">
     <link rel="stylesheet" href="./assets/finanzas.css">
+    <link rel="stylesheet" href="./assets/pfm.css">
     <link rel="stylesheet" href="./assets/analisis.css">
     <link rel="stylesheet" href="./assets/soporte.css">
 </head>
@@ -6671,7 +6672,7 @@
         let titleRaf = 0;
         window.addEventListener('scroll', () => { if (!titleRaf) titleRaf = requestAnimationFrame(() => { titleRaf = 0; collapseTitle(); }); }, { passive: true });
         document.addEventListener('i18n:change', syncTopBar);
-        document.querySelector('[data-top="pf-settings"]').addEventListener('click', () => window.Asistente && Asistente.settings());
+        document.querySelector('[data-top="pf-settings"]').addEventListener('click', () => window.PFM ? PFM.settings() : window.Asistente && Asistente.settings());
         syncTopBar();
 
         navItems.forEach((item) => {
@@ -7369,6 +7370,7 @@
     <script src="./haptics.js"></script>
     <script src="./assets/sheets.js"></script>
     <script src="./assets/clima.js"></script>
+    <script src="./assets/pfm.js"></script>
     <script src="./assets/asistente.js"></script>
     <script src="./assets/analisis.js"></script>
     <script src="./assets/contexto.js"></script>
