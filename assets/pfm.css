@@ -97,3 +97,9 @@ button.pfm-tx { width: 100%; border-left: 0; border-right: 0; border-top: 0; bac
 .pfm-scope { display: flex; gap: 10px; }
 .pfm-scope .material-symbols-rounded { font-size: 20px; color: var(--cx-muted); }
 .pfm-undo { margin-left: 8px; padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
+
+/* ---------- Fijos y variables ---------- */
+.pfm-sal__fijo { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 12px !important; font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-sal__fijo b { font: var(--ui-body-sm-semibold, 600 14px/20px sans-serif); color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
+.pfm-sal__fijo small { flex-basis: 100%; font: var(--ui-caption, 500 12px/16px sans-serif); }
+.pfm-det .material-symbols-rounded { color: var(--cx-muted); }

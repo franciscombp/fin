@@ -62,6 +62,26 @@
   };
   var PFM13 = ['Vivienda', 'Alimentación', 'Transporte', 'Servicios básicos', 'Salud y bienestar', 'Educación', 'Compras personales', 'Entretenimiento', 'Familia y dependientes', 'Servicios financieros y deudas', 'Ahorro e inversión', 'Gobierno e impuestos', 'Otros'];
   var GRIS = { 'Efectivo retirado': 1, 'Transferencias a personas': 1, 'Pagos a empresas': 1, 'Tarjetas de otros bancos': 1 };
+  /* Grupos: lo que la persona ve arriba y donde pone su presupuesto. Las
+     categorías quedan como detalle (y son lo que se recategoriza). Ver
+     "Grupos de categorías" en el documento de concepto. */
+  var GRUPOS = {
+    'Hogar': { ic: 'home', cats: ['Vivienda', 'Servicios básicos'] },
+    'Comida': { ic: 'restaurant', cats: ['Alimentación'] },
+    'Movilidad': { ic: 'directions_bus', cats: ['Transporte'] },
+    'Salud y educación': { ic: 'favorite', cats: ['Salud y bienestar', 'Educación'] },
+    'Gustos': { ic: 'local_activity', cats: ['Entretenimiento', 'Compras personales'] },
+    'Familia': { ic: 'family_restroom', cats: ['Familia y dependientes'] },
+    'Compromisos': { ic: 'account_balance', cats: ['Servicios financieros y deudas', 'Gobierno e impuestos', 'Tarjetas de otros bancos'] },
+    'Negocio': { ic: 'storefront', cats: ['Negocio'] },
+    'Sin clasificar': { ic: 'help', cats: ['Otros', 'Efectivo retirado', 'Transferencias a personas', 'Pagos a empresas'], gris: true }
+  };
+  var GRUPO = {}; Object.keys(GRUPOS).forEach(function (g) { GRUPOS[g].cats.forEach(function (c) { GRUPO[c] = g; }); });
+  function grupo(c) { return GRUPO[c] || 'Sin clasificar'; }
+  var PRES_G = ['Hogar', 'Comida', 'Movilidad', 'Salud y educación', 'Gustos', 'Familia', 'Compromisos'];
+  // Detalle dentro de una categoría: Alimentación se abre en supermercado y restaurantes
+  var SUB = { 'Supermercado y tiendas': 'Alimentación', 'Restaurantes y delivery': 'Alimentación' };
+  function detalle(r, cat) { return cat === 'Alimentación' ? (r.c === 'Restaurantes' ? 'Restaurantes y delivery' : 'Supermercado y tiendas') : cat; }
   var MAPC = { 'Restaurantes': 'Alimentación', 'Hogar': 'Compras personales', 'Salud': 'Salud y bienestar', 'Transferencia a persona': 'Transferencias a personas',
     'Pago a empresa': 'Pagos a empresas', 'Tarjetas de otros bancos (sin detalle)': 'Tarjetas de otros bancos', 'Pagos con Deuna': 'Otros' };
   function mapc(c) { return MAPC[c] || (CAT[c] ? c : 'Otros'); }
@@ -81,7 +101,7 @@
       });
       DB = { mov: U, usuarios: d.usuarios, deudas: d.deudas, escenarios: d.escenarios, hipoteca: d.hipoteca };
       if (!DB.mov[ST.u]) ST.u = 'andres';
-      cache = {};
+      cache = {}; fijoCache = {};
       return DB;
     });
     return loading;
@@ -163,17 +183,26 @@
   var cache = {};
   function ckey() { return ST.u + '|' + ST.modo + '|' + JSON.stringify(resp()) + '|' + JSON.stringify(ST.cats[ST.u] || {}); }
   function sum(list) {
-    var o = { gast: 0, ing: 0, rin: 0, rout: 0, reemb: 0, fuera: 0, cats: {}, inc: {}, n: list.length, rows: list };
+    var o = { gast: 0, ing: 0, rin: 0, rout: 0, reemb: 0, fuera: 0, cats: {}, det: {}, grupos: {}, fijo: 0, inc: {}, n: list.length, rows: list };
+    var fijos = list.length ? fijosDe(list[list.length - 1].mes) : {}, fc = {};
     list.forEach(function (r) {
-      var c = cls(r), v = Math.abs(r.m);
-      if (c.k === 'gasto' || c.k === 'rout') { o.cats[c.cat] = (o.cats[c.cat] || 0) + v; if (c.k === 'rout') o.rout += v; }
-      else if (c.k === 'reembolso') { o.cats[c.cat] = (o.cats[c.cat] || 0) - v; o.reemb += v; }
+      var c = cls(r), v = Math.abs(r.m), sg = c.k === 'reembolso' ? -v : v;
+      if (c.k === 'gasto' || c.k === 'rout' || c.k === 'reembolso') {
+        o.cats[c.cat] = (o.cats[c.cat] || 0) + sg;
+        var d = detalle(r, c.cat); o.det[d] = (o.det[d] || 0) + sg;
+        if (c.k === 'gasto' && fijos[r.cp + '|' + c.cat]) fc[c.cat] = (fc[c.cat] || 0) + v;
+        if (c.k === 'rout') o.rout += v; if (c.k === 'reembolso') o.reemb += v;
+      }
       else if (c.k === 'ingreso') { o.ing += v; o.inc[c.cat] = (o.inc[c.cat] || 0) + v; }
       else if (c.k === 'rin') o.rin += v;
       if (r.t === 'Fuera del MVP') o.fuera += v;
     });
     // Una categoría no queda en negativo: lo devuelto de más no se resta
     Object.keys(o.cats).forEach(function (k) { o.cats[k] = Math.max(0, r2(o.cats[k])); if (!o.cats[k]) delete o.cats[k]; o.gast += o.cats[k] || 0; });
+    Object.keys(o.det).forEach(function (k) { o.det[k] = Math.max(0, r2(o.det[k])); if (!o.det[k]) delete o.det[k]; });
+    Object.keys(o.cats).forEach(function (k) { var g = grupo(k); o.grupos[g] = r2((o.grupos[g] || 0) + o.cats[k]); });
+    // Lo fijo, neto de lo que te devuelven en esa misma categoría (el arriendo compartido de Daniela)
+    o.fijo = r2(Object.keys(fc).reduce(function (a, k) { return a + Math.min(fc[k], o.cats[k] || 0); }, 0));
     o.gast = r2(o.gast); o.ing = r2(o.ing); o.rin = r2(o.rin);
     return o;
   }
@@ -195,7 +224,9 @@
   function prom(m, n) {
     var ms = antes(m, n); if (!ms.length) return null;
     var o = { gast: 0, cats: {} };
-    ms.forEach(function (x) { var s = month(x); o.gast += s.gast / ms.length; Object.keys(s.cats).forEach(function (k) { o.cats[k] = (o.cats[k] || 0) + s.cats[k] / ms.length; }); });
+    o.grupos = {};
+    ms.forEach(function (x) { var s = month(x); o.gast += s.gast / ms.length; Object.keys(s.cats).forEach(function (k) { o.cats[k] = (o.cats[k] || 0) + s.cats[k] / ms.length; });
+      Object.keys(s.grupos).forEach(function (k) { o.grupos[k] = (o.grupos[k] || 0) + s.grupos[k] / ms.length; }); });
     o.n = ms.length; return o;
   }
 
@@ -207,17 +238,16 @@
   function sugerido(m) {
     var p = prom(m, 3); if (!p) return null;
     var cats = {};
-    Object.keys(p.cats).filter(function (k) { return !GRIS[k] && p.cats[k] >= 25; }).sort(function (a, b) { return p.cats[b] - p.cats[a]; }).slice(0, 5)
-      .forEach(function (k) { cats[k] = round(p.cats[k] * 1.05, 10); });
+    PRES_G.filter(function (k) { return p.grupos[k] >= 20; }).forEach(function (k) { cats[k] = round(p.grupos[k] * 1.05, 10); });
     return { general: round(p.gast * 1.05, 50), cats: cats };
   }
   function pres() {
-    var p = ST.pres[ST.u];
+    var p = (ST.presG || (ST.presG = {}))[ST.u]; // presupuesto por grupo (cats = grupos)
     if (p) return p;
     var s = sugerido(meses()[0]) || { general: 1000, cats: {} };
     return { general: s.general, cats: s.cats, auto: true };
   }
-  function setPres(p) { ST.pres[ST.u] = { general: p.general, cats: p.cats }; persist(); }
+  function setPres(p) { (ST.presG || (ST.presG = {}))[ST.u] = { general: p.general, cats: p.cats }; persist(); }
 
   /* ---------- Uku cuenta: hallazgos con reglas (MVP) ---------- */
   function hallazgos(m) {
@@ -226,8 +256,8 @@
     if (hasPrev) {
       var dd = cur ? +HOY.slice(8, 10) : 31, p = month(prev, cur ? dd : null), d = s.gast - p.gast;
       if (p.gast > 0 && Math.abs(d) / p.gast >= .05) {
-        var ch = Object.keys(Object.assign({}, s.cats, p.cats)).filter(function (k) { return !GRIS[k]; })
-          .map(function (k) { return { k: k, d: (s.cats[k] || 0) - (p.cats[k] || 0) }; })
+        var ch = Object.keys(Object.assign({}, s.grupos, p.grupos)).filter(function (k) { return !GRUPOS[k].gris; })
+          .map(function (k) { return { k: k, d: (s.grupos[k] || 0) - (p.grupos[k] || 0) }; })
           .sort(function (a, b) { return d > 0 ? b.d - a.d : a.d - b.d; })[0];
         out.push({ icon: d > 0 ? 'trending_up' : 'trending_down', kind: d > 0 ? 'warn' : 'good',
           t: T(d > 0 ? 'Gastaste {pct} más que en {mes}' : 'Gastaste {pct} menos que en {mes}', { pct: pct(Math.abs(d) / p.gast), mes: mesName(prev) }) + (cur ? ' ' + T('a esta altura') : ''),
@@ -239,11 +269,11 @@
       out.push({ icon: 'hourglass_top', kind: 'info', t: T('Todavía te estoy conociendo'), s: hasPrev ? T('Con tres meses de movimientos te cuento tus tendencias. Por ahora solo comparo con el mes anterior.') : T('Con tres meses de movimientos te cuento tus tendencias y te comparo con tus meses anteriores.') });
     } else {
       // Una categoría que subió frente a tu promedio
-      var av = prom(m, 3), up = Object.keys(s.cats).filter(function (k) { return !GRIS[k] && av.cats[k] > 15; })
-        .map(function (k) { return { k: k, r: s.cats[k] / av.cats[k] - 1, d: s.cats[k] - av.cats[k] }; })
+      var av = prom(m, 3), up = Object.keys(s.grupos).filter(function (k) { return !GRUPOS[k].gris && av.grupos[k] > 15; })
+        .map(function (k) { return { k: k, r: s.grupos[k] / av.grupos[k] - 1, d: s.grupos[k] - av.grupos[k] }; })
         .filter(function (x) { return x.r >= .2 && x.d >= 20; }).sort(function (a, b) { return b.d - a.d; })[0];
-      if (up && !cur) out.push({ icon: CAT[up.k], kind: 'warn', t: T('Tus gastos de {cat} aumentaron {pct}', { cat: up.k.toLowerCase(), pct: pct(up.r) }),
-        s: T('Fueron {monto}; tu promedio de los últimos tres meses es {prom}.', { monto: money(s.cats[up.k]), prom: money(av.cats[up.k]) }), ask: '¿En qué se me va la plata?' });
+      if (up && !cur) out.push({ icon: GRUPOS[up.k].ic, kind: 'warn', t: T('Tus gastos de {cat} aumentaron {pct}', { cat: up.k.toLowerCase(), pct: pct(up.r) }),
+        s: T('Fueron {monto}; tu promedio de los últimos tres meses es {prom}.', { monto: money(s.grupos[up.k]), prom: money(av.grupos[up.k]) }), ask: '¿En qué se me va la plata?' });
       // El día de la semana que concentra el gasto
       var by = [0, 0, 0, 0, 0, 0, 0], tot = 0, desde = antes(m, 2).concat([m]);
       rows().forEach(function (r) { if (desde.indexOf(r.mes) < 0) return; var c = cls(r); if (c.k === 'gasto' && !GRIS[c.cat] && Math.abs(r.m) < 300) { by[wday(r.f)] += -r.m; tot -= r.m; } });
@@ -274,13 +304,21 @@
     rows().forEach(function (r) {
       if (ms.indexOf(r.mes) < 0 || r.m >= 0) return; var c = cls(r);
       if (c.k !== 'gasto' || c.via || !FIJO[c.cat]) return;
-      var k = r.cp; (by[k] = by[k] || { cp: r.cp, cat: c.cat, ms: {}, dias: [], m: [] }); by[k].ms[r.mes] = 1; by[k].dias.push(r.dia); by[k].m.push(-r.m);
+      var k = r.cp + '|' + c.cat; (by[k] = by[k] || { cp: r.cp, cat: c.cat, ms: {}, dias: [], m: [] }); by[k].ms[r.mes] = 1; by[k].dias.push(r.dia); by[k].m.push(-r.m);
     });
     return Object.keys(by).map(function (k) { return by[k]; }).filter(function (x) {
       return Object.keys(x.ms).length >= 3 && x.m.length <= 6 && Math.max.apply(null, x.m) <= Math.min.apply(null, x.m) * 1.3; // mismo monto, más o menos
     })
       .map(function (x) { var d = x.dias.slice().sort(function (a, b) { return a - b; })[Math.floor(x.dias.length / 2)]; return { cp: x.cp, cat: x.cat, dia: d, monto: r2(x.m.reduce(function (a, b) { return a + b; }, 0) / x.m.length) }; })
       .sort(function (a, b) { return a.dia - b.dia; });
+  }
+  // Fijo o variable: un gasto es fijo si va a la misma persona o empresa casi todos los meses
+  var fijoCache = {};
+  function fijosDe(m) {
+    var k = ckey() + '|' + m; if (fijoCache[k]) return fijoCache[k];
+    var o = {}; fijoCache[k] = o;
+    recurrentes(m).forEach(function (x) { o[x.cp + '|' + x.cat] = 1; });
+    return o;
   }
   function anticipa(m) {
     var out = [], s = month(m), p = pres();
@@ -428,6 +466,7 @@
         '<span><i class="is-in"></i>' + T('Ingresos') + '<b>' + money(s.ing) + '</b></span>' +
         '<span><i class="is-spend"></i>' + T('Gastos') + '<b>' + money(s.gast) + '</b></span>' +
         '<span><i class="is-save"></i>' + T('Diferencia') + '<b>' + money(s.ing - s.gast) + '</b></span></div>' +
+      (s.fijo ? '<p class="pfm-sal__fijo"><span><b>' + money(s.fijo) + '</b> ' + T('fijos') + '</span><span><b>' + money(s.gast - s.fijo) + '</b> ' + T('variables') + '</span><small>' + T('Fijo es lo que pagas casi todos los meses a la misma persona o empresa.') + '</small></p>' : '') +
       (s.rin ? '<p class="pfm-sal__rev"><span class="material-symbols-rounded">help</span>' + T('Más {monto} que entraron de personas y todavía no sé qué son.', { monto: money(s.rin) }) + '</p>' : '') +
       (f ? '<p class="pf-note">' + T('La raya marca dónde deberías ir hoy, día {d} de {n}.', { d: +HOY.slice(8, 10), n: diasMes(m) }) + '</p>' : '') +
       '</section>';
@@ -474,19 +513,36 @@
 
   // Ingresos y gastos por categoría, por semana, mes y año
   function catsHTML(m) {
-    var P = periodo(m), s = P.o, ks = Object.keys(s.cats).sort(function (a, b) { return s.cats[b] - s.cats[a]; }), max = s.cats[ks[0]] || 1;
+    var P = periodo(m), s = P.o, ks = Object.keys(s.grupos).sort(function (a, b) { return (GRUPOS[a].gris ? 1 : 0) - (GRUPOS[b].gris ? 1 : 0) || s.grupos[b] - s.grupos[a]; }), max = Math.max.apply(null, ks.map(function (k) { return s.grupos[k]; }).concat([1]));
     var iks = Object.keys(s.inc).sort(function (a, b) { return s.inc[b] - s.inc[a]; });
     var seg = '<div class="pfm-seg pfm-seg--sm" role="radiogroup" aria-label="' + T('Periodo') + '">' + [['sem', 'Semana'], ['mes', 'Mes'], ['ano', 'Año']].map(function (x) {
       return '<button role="radio" aria-checked="' + (ST.per === x[0]) + '" data-pfm="per:' + x[0] + '">' + T(x[1]) + '</button>'; }).join('') + '</div>';
-    var gris = ks.filter(function (k) { return GRIS[k]; }).reduce(function (a, k) { return a + s.cats[k]; }, 0);
+    var gris = s.grupos['Sin clasificar'] || 0;
     return '<section class="pf-sec pf-msec"><div class="pf-msec__head"><p class="pf-msec__label">' + T('En qué se fue') + '</p>' + seg + '</div><div class="pf-mcard">' +
       '<p class="pf-mcard__lead">' + (ks.length ? T('Gastaste {monto} {cuando}.', { monto: money(s.gast), cuando: P.l }) : T('Sin gastos {cuando}.', { cuando: P.l })) +
         (gris ? '<small>' + T('{monto} van en gris: el banco no sabe en qué fue.', { monto: money(gris) }) + '</small>' : '') + '</p>' +
-      ks.slice(0, 5).map(function (k) { return catRow(k, s, max); }).join('') +
-      (ks.length > 5 ? '<button class="pf-mcard__more" data-pfm="allcats">' + T('Ver las {n} categorías', { n: ks.length }) + '<span class="material-symbols-rounded">chevron_right</span></button>' : '') +
+      ks.map(function (k) { return grupoRow(k, s, max); }).join('') +
+      (ks.length ? '<button class="pf-mcard__more" data-pfm="allcats">' + T('Ver por categoría') + '<span class="material-symbols-rounded">chevron_right</span></button>' : '') +
       (iks.length ? '<p class="pfm-sub">' + T('Ingresos') + '</p>' + iks.map(function (k) {
         return '<div class="pfm-inc"><span class="material-symbols-rounded">' + (ING_IC[k] || 'south_west') + '</span><span>' + esc(k) + '</span><b>' + money(s.inc[k]) + '</b></div>';
       }).join('') : '') + '</div></section>';
+  }
+  function detDe(g, s) {
+    return Object.keys(s.det).filter(function (d) { return grupo(SUB[d] || d) === g; }).sort(function (a, b) { return s.det[b] - s.det[a]; });
+  }
+  function grupoRow(g, s, max) {
+    var ds = detDe(g, s);
+    var sub = ds.length > 1 ? ds.slice(0, 3).map(function (d) { return d + ' ' + money0(s.det[d]); }).join(' · ') : T('{pct} de tu gasto', { pct: pct(s.grupos[g] / s.gast) });
+    return '<button class="pf-meter pf-meter--' + (GRUPOS[g].gris ? 'gris' : 'cat') + '" data-pfm="grupo:' + esc(g) + '"><span class="pf-meter__top"><span class="pf-meter__name"><span class="material-symbols-rounded pfm-ic">' + GRUPOS[g].ic + '</span>' + esc(g) + '</span><span class="pf-meter__right">' + money(s.grupos[g]) + '</span></span>' +
+      '<span class="pf-meter__bar"><i style="width:' + Math.max(2, s.grupos[g] / max * 100).toFixed(1) + '%"></i></span><span class="pf-meter__sub">' + esc(sub) + '</span></button>';
+  }
+  function grupoSheet(g) {
+    var P = periodo(curMes()), s = P.o, ds = detDe(g, s);
+    var list = s.rows.filter(function (r) { var c = cls(r); return c.cat && grupo(c.cat) === g && c.k !== 'ingreso' && c.k !== 'no'; }).reverse();
+    showSheet('<h3>' + esc(g) + '</h3><p>' + T('{monto} {cuando}.', { monto: money(s.grupos[g] || 0), cuando: P.l }) + (GRUPOS[g].gris ? ' ' + T('El banco no sabe en qué fue: toca un movimiento para ponerle categoría.') : '') + '</p>' +
+      (ds.length ? '<div class="pfm-cats">' + ds.map(function (d) {
+        return '<div class="pfm-inc pfm-det"><span class="material-symbols-rounded">' + (CAT[d] || CAT['Alimentación']) + '</span><span>' + esc(d) + '</span><b>' + money(s.det[d]) + '</b></div>';
+      }).join('') + '</div>' : '') + '<p class="as-sheet__label">' + T('Movimientos') + '</p><div class="pf-sheet-list">' + (list.length ? list.map(txHTML).join('') : '<p class="pf-note">' + T('Nada por aquí.') + '</p>') + '</div>');
   }
   function catRow(k, s, max) {
     return '<button class="pf-meter pf-meter--' + (GRIS[k] ? 'gris' : 'cat') + '" data-pfm="cat:' + esc(k) + '"><span class="pf-meter__top"><span class="pf-meter__name"><span class="material-symbols-rounded pfm-ic">' + CAT[k] + '</span>' + esc(k) + '</span><span class="pf-meter__right">' + money(s.cats[k]) + '</span></span>' +
@@ -494,20 +550,20 @@
   }
   function allCatsSheet() {
     var P = periodo(curMes()), s = P.o, ks = Object.keys(s.cats).sort(function (a, b) { return s.cats[b] - s.cats[a]; });
-    showSheet('<h3>' + T('En qué se fue') + '</h3><p>' + T('{monto} {cuando}, en {n} categorías.', { monto: money(s.gast), cuando: P.l, n: ks.length }) + '</p>' +
+    showSheet('<h3>' + T('Por categoría') + '</h3><p>' + T('{monto} {cuando}, en {n} categorías. Las categorías son lo que puedes cambiar en cada movimiento.', { monto: money(s.gast), cuando: P.l, n: ks.length }) + '</p>' +
       '<div class="pfm-cats">' + ks.map(function (k) { return catRow(k, s, s.cats[ks[0]]); }).join('') + '</div>');
   }
 
-  // Presupuesto por categoría
+  // Presupuesto por grupo
   function presHTML(m) {
     var s = month(m), p = pres(), ks = Object.keys(p.cats), cur = isCur(m), f = cur ? +HOY.slice(8, 10) / diasMes(m) : 1;
-    if (!ks.length) return '<section class="pf-sec pf-msec"><p class="pf-msec__label">' + T('Presupuesto por categoría') + '</p><div class="pf-mcard"><p class="pf-mcard__lead">' + T('Escoge una categoría y asígnale un monto.') + '</p><button class="pf-link pf-link--block" data-pfm="budgets">' + T('Crear presupuesto') + '</button></div></section>';
-    var over = ks.filter(function (k) { return (s.cats[k] || 0) > p.cats[k]; });
-    return '<section class="pf-sec pf-msec"><div class="pf-msec__head"><p class="pf-msec__label">' + T('Presupuesto por categoría') + '</p><button class="pf-link" data-pfm="budgets">' + T('Ajustar') + '</button></div><div class="pf-mcard">' +
+    if (!ks.length) return '<section class="pf-sec pf-msec"><p class="pf-msec__label">' + T('Presupuesto por grupo') + '</p><div class="pf-mcard"><p class="pf-mcard__lead">' + T('Escoge un grupo y asígnale un monto.') + '</p><button class="pf-link pf-link--block" data-pfm="budgets">' + T('Crear presupuesto') + '</button></div></section>';
+    var over = ks.filter(function (k) { return (s.grupos[k] || 0) > p.cats[k]; });
+    return '<section class="pf-sec pf-msec"><div class="pf-msec__head"><p class="pf-msec__label">' + T('Presupuesto por grupo') + '</p><button class="pf-link" data-pfm="budgets">' + T('Ajustar') + '</button></div><div class="pf-mcard">' +
       '<p class="pf-mcard__lead">' + (over.length ? T('Te pasaste en {n} de {t}.', { n: over.length, t: ks.length }) : cur ? T('Vas dentro de tus presupuestos.') : T('Cerraste dentro de tus presupuestos.')) + '</p>' +
-      ks.sort(function (a, b) { return (s.cats[b] || 0) / p.cats[b] - (s.cats[a] || 0) / p.cats[a]; }).map(function (k) {
-        var v = s.cats[k] || 0, B = p.cats[k], u = v / B, tone = v > B ? 'over' : u > f * .95 + .05 ? 'warn' : 'ok';
-        return '<button class="pf-meter pf-meter--' + tone + '" data-pfm="cat:' + esc(k) + '"><span class="pf-meter__top"><span class="pf-meter__name">' + esc(k) + '</span><span class="pf-meter__right">' + T('{pct} usado', { pct: pct(u) }) + '</span></span>' +
+      ks.sort(function (a, b) { return (s.grupos[b] || 0) / p.cats[b] - (s.grupos[a] || 0) / p.cats[a]; }).map(function (k) {
+        var v = s.grupos[k] || 0, B = p.cats[k], u = v / B, tone = v > B ? 'over' : u > f * .95 + .05 ? 'warn' : 'ok';
+        return '<button class="pf-meter pf-meter--' + tone + '" data-pfm="grupo:' + esc(k) + '"><span class="pf-meter__top"><span class="pf-meter__name">' + esc(k) + '</span><span class="pf-meter__right">' + T('{pct} usado', { pct: pct(u) }) + '</span></span>' +
           '<span class="pf-meter__bar"><i style="width:' + Math.max(u > 0 ? 2 : 0, Math.min(100, u * 100)).toFixed(1) + '%"></i>' + (cur ? '<em style="left:' + (f * 100).toFixed(1) + '%"></em>' : '') + '</span>' +
           '<span class="pf-meter__sub">' + (v > B ? T('Te pasaste {monto}', { monto: money(v - B) }) : T('Te quedan {monto} de {total}', { monto: money(B - v), total: money0(B) })) + '</span></button>';
       }).join('') + '</div></section>';
@@ -658,15 +714,15 @@
   var draft = null;
   function budgetSheet() {
     var p = draft || (draft = JSON.parse(JSON.stringify(pres()))), m = curMes(), sg = sugerido(m);
-    var ks = PFM13.filter(function (k) { return k !== 'Otros'; });
+    var ks = PRES_G;
     var step = function (id, v, label) {
       return '<div class="pf-step"><span>' + label + '</span><button class="pf-step__btn" data-pfm="bud:' + id + ':-' + (id === 'general' ? 50 : 10) + '" aria-label="' + T('Bajar') + '"><span class="material-symbols-rounded">remove</span></button>' +
         '<b>' + (v ? money0(v) : '—') + '</b><button class="pf-step__btn" data-pfm="bud:' + id + ':' + (id === 'general' ? 50 : 10) + '" aria-label="' + T('Subir') + '"><span class="material-symbols-rounded">add</span></button></div>';
     };
     showSheet('<h3>' + T('Tu presupuesto') + '</h3><p>' + T('Cuánto quieres gastar al mes. Uku te avisa cuando te acerques al límite.') + '</p>' +
-      (tobe() && sg ? '<button class="pfm-sug" data-pfm="bud:sug"><span class="material-symbols-rounded">auto_awesome</span><span><b>' + T('Usar el sugerido: {monto}', { monto: money0(sg.general) }) + '</b><small>' + T('Tu promedio de los últimos tres meses, por categoría, con 5% de margen.') + '</small></span></button>' : '') +
+      (tobe() && sg ? '<button class="pfm-sug" data-pfm="bud:sug"><span class="material-symbols-rounded">auto_awesome</span><span><b>' + T('Usar el sugerido: {monto}', { monto: money0(sg.general) }) + '</b><small>' + T('Tu promedio de los últimos tres meses, por grupo, con 5% de margen.') + '</small></span></button>' : '') +
       '<div class="pf-steps">' + step('general', p.general, '<b>' + T('General') + '</b>') + '</div>' +
-      '<p class="as-sheet__label">' + T('Por categoría') + '</p><div class="pf-steps">' + ks.map(function (k) { return step(k, p.cats[k], esc(k)); }).join('') + '</div>' +
+      '<p class="as-sheet__label">' + T('Por grupo') + '</p><div class="pf-steps">' + ks.map(function (k) { return step(k, p.cats[k], esc(k)); }).join('') + '</div>' +
       '<button class="pf-cta" data-pfm="bud:save">' + T('Guardar') + '</button>');
   }
 
@@ -682,14 +738,14 @@
 
   /* ---------- Acciones ---------- */
   function onClick(e) { var b = e.target.closest('[data-pfm]'); if (b) key(b.dataset.pfm); }
-  function refresh() { cache = {}; paint(); }
+  function refresh() { cache = {}; fijoCache = {}; paint(); }
   function key(k) {
     var p = k.split(':');
     switch (p[0]) {
       case 'who': return whoSheet();
       case 'modo': if (ST.modo !== p[1]) { ST.modo = p[1]; persist(); fx('toggle'); refresh(); if (sheetOpen()) whoSheet(); } return;
       case 'u': if (ST.u !== p[1]) { ST.u = p[1]; ST.mes = null; persist(); fx('toggle'); refresh(); } closeSheet(); return;
-      case 'reset': ST.resp[ST.u] = {}; ST.cats[ST.u] = {}; delete ST.pres[ST.u]; persist(); refresh(); closeSheet(); toast(T('Listo, volviste al inicio.')); return;
+      case 'reset': ST.resp[ST.u] = {}; ST.cats[ST.u] = {}; if (ST.presG) delete ST.presG[ST.u]; persist(); refresh(); closeSheet(); toast(T('Listo, volviste al inicio.')); return;
       case 'mes': ST.mes = p[1]; persist(); fx('select'); paint(); return;
       case 'per': ST.per = p[1]; persist(); fx('select'); paint(); return;
       case 'revisar': return revisarSheet();
@@ -710,6 +766,7 @@
       case 'txf': txFilter = p[1]; return allSheet();
       case 'cat': return catSheet(p.slice(1).join(':'));
       case 'allcats': return allCatsSheet();
+      case 'grupo': return grupoSheet(p.slice(1).join(':'));
       case 'budgets': draft = null; return budgetSheet();
       case 'bud': {
         if (p[1] === 'save') { setPres(draft); draft = null; closeSheet(); refresh(); fx('success'); return toast(T('Guardaste tu presupuesto.')); }
@@ -733,11 +790,11 @@
   function pack(m) {
     m = m && /^\d{4}-\d{2}$/.test(m) ? m : curMes();
     var s = month(m), p = pres(), av = prom(m, 3), cur = isCur(m), md = mood(m);
-    var over = Object.keys(p.cats).filter(function (k) { return (s.cats[k] || 0) > p.cats[k]; }).map(function (k) { return { name: k, over: s.cats[k] - p.cats[k], budget: p.cats[k] }; });
+    var over = Object.keys(p.cats).filter(function (k) { return (s.grupos[k] || 0) > p.cats[k]; }).map(function (k) { return { name: k, over: s.grupos[k] - p.cats[k], budget: p.cats[k] }; });
     var ins = anticipa(m).concat(hallazgos(m)).map(function (x) { return { icon: x.icon, kind: x.kind, title: x.t, sub: x.s, ask: x.ask }; });
     var hint = over.length ? T('Ojo con {cat}', { cat: over[0].name.toLowerCase() }) : s.gast > p.general ? T('Te pasaste de tu presupuesto') : T('Vas dentro de tu presupuesto');
     return { key: m, mes: mesName(m), Mes: Mes(m), current: cur, report: false, n: { spend: s.gast, inc: s.ing, save: Math.max(0, r2(s.ing - s.gast)) }, ins: ins, over: over,
-      top: Object.keys(s.cats).sort(function (a, b) { return s.cats[b] - s.cats[a]; }).slice(0, 3).map(function (k) { return { name: k, v: s.cats[k], p: s.cats[k] / s.gast }; }),
+      top: Object.keys(s.grupos).sort(function (a, b) { return s.grupos[b] - s.grupos[a]; }).slice(0, 3).map(function (k) { return { name: k, v: s.grupos[k], p: s.grupos[k] / s.gast }; }),
       avg: av ? av.gast : s.gast, mood: md, moodLabel: MOOD[md], hint: hint, score: salud(m), card: null, goals: [], txCount: s.n };
   }
   function answer(q) {
@@ -759,9 +816,9 @@
       return { t: T('En {mes} te entraron {monto} confirmados', { mes: mesName(m), monto: money(s.ing) }) + (s.rin ? T(', y {monto} de personas que no sé qué son.', { monto: money(s.rin) }) : '.'), s: ['¿Qué tengo por revisar?'] };
     }
     if (/gast|plata|en qu|cuánto|cuanto|queda|presupuesto/.test(s0)) {
-      var ks = Object.keys(s.cats).sort(function (a, b) { return s.cats[b] - s.cats[a]; }).slice(0, 3);
+      var ks = Object.keys(s.grupos).sort(function (a, b) { return s.grupos[b] - s.grupos[a]; }).slice(0, 3);
       return { t: T('En {mes} gastaste {monto} de tu presupuesto de {p}.', { mes: mesName(m), monto: money(s.gast), p: money0(pres().general) }) + '<br><br>' +
-        T('Lo que más pesó: {l}.', { l: ks.map(function (k) { return k.toLowerCase() + ' (' + money(s.cats[k]) + ')'; }).join(', ') }), s: ['¿Cómo cierro el mes?', '¿Qué tengo por revisar?'] };
+        T('Lo que más pesó: {l}.', { l: ks.map(function (k) { return k.toLowerCase() + ' (' + money(s.grupos[k]) + ')'; }).join(', ') }), s: ['¿Cómo cierro el mes?', '¿Qué tengo por revisar?'] };
     }
     return null;
   }
