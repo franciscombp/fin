@@ -40,6 +40,7 @@
   /* ---------- Fechas ---------- */
   var MES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
   var DIA = ['domingos', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábados'];
+  var DIA1 = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
   function mesName(m) { return MES[+m.slice(5, 7) - 1]; }
   function Mes(m) { var n = mesName(m); return n.charAt(0).toUpperCase() + n.slice(1); }
   function mesLargo(m) { return mesName(m) + (m.slice(0, 4) !== HOY.slice(0, 4) ? ' de ' + m.slice(0, 4) : ''); }
@@ -579,6 +580,23 @@
     if (a.k === 'tranquilo') return T(a.n === 1 ? 'Tengo 1 consumo nuevo para ti. ¿Lo vemos?' : 'Tengo {n} consumos nuevos para ti. ¿Los vemos?', { n: a.n });
     return T(a.n === 1 ? 'Me quedó 1 consumo por ordenar, de hace {d} días. ¿Me ayudas con él?' : 'Me quedaron {n} consumos por ordenar, algunos de hace {d} días. ¿Me ayudas?', { n: a.n, d: a.dias });
   }
+  /* Lo que Uku dice en su globo, de lo más urgente a lo más tranquilo:
+     1. pagos que vencen en 3 días (y si te alcanza), 2. consumos por ordenar,
+     3. su hallazgo más potente. Tocar el globo lleva a la acción. */
+  function globo(a) {
+    var lim = addDays(HOY, 3), urg = facturas().filter(function (x) { return x.f <= lim; }), saldo = sumv(saldos(), function (x) { return x.v; });
+    if (urg.length) {
+      var tot = sumv(urg, function (x) { return x.monto; }), x = urg[0];
+      var cuando = x.f === HOY ? T('Hoy') : x.f === addDays(HOY, 1) ? T('Mañana') : T('El {d}', { d: DIA1[wday(x.f)] });
+      return { k: 'urg', go: 'bills', gol: T('Ver por pagar'),
+        t: (urg.length === 1 ? T('{c} te cobran {m} de {n}.', { c: cuando, m: money0(x.monto), n: x.n }) : T('En los próximos 3 días te cobran {m} en {k} pagos.', { m: money0(tot), k: urg.length })) + ' ' +
+          (saldo < tot ? T('Tienes {s}: te faltan {f}.', { s: money0(saldo), f: money0(tot - saldo) }) : T('Te alcanza con lo que tienes.')) };
+    }
+    if (a.n) return { t: ukuMsg(a), go: 'game', gol: T('Clasificar ahora') };
+    var ins = insights().filter(function (x) { return x.go && x.kind !== 'info'; })[0] || insights().filter(function (x) { return x.go; })[0];
+    if (ins) return { t: T(ins.kind === 'good' ? '¡Todo clasificado! Y una buena noticia: {t}.' : ins.kind === 'warn' ? '¡Todo clasificado! Pero ojo: {t}.' : '¡Todo clasificado! {T}.', { t: ins.t.charAt(0).toLowerCase() + ins.t.slice(1), T: ins.t }), go: ins.go, gol: ins.gol };
+    return { t: ukuMsg(a) };
+  }
   function worldHTML(a) {
     var c = colchon(), pe = presEstado();
     var sig = function (ic, l, v, cls) { return '<button class="pfm-sig is-' + cls + '" data-pfm="world"><span class="material-symbols-rounded" aria-hidden="true">' + ic + '</span><small>' + l + '</small><b>' + v + '</b></button>'; };
@@ -592,7 +610,8 @@
     var html = '<section class="pf-sec pfm-uku pf-mood--' + a.k + (tobe() ? ' is-tobe' : '') + '">' +
       '<div class="pf-hero pfm-hero"><div class="b3d" data-shift=".2" data-score="' + salud(m) + '" data-bloom="' + flores() + '" data-mood="' + a.k + '"><div class="b3d__fallback">' + (window.Asistente ? Asistente.petSVG() : '') + '</div></div>' +
         // Uku habla desde su mundo: el globo sale de él, arriba a la izquierda
-        '<p class="pfm-globo" aria-live="polite">' + esc(ukuMsg(a)) + '</p></div>' +
+        (function (g) { return '<' + (g.go ? 'button data-pfm="' + esc(g.go) + '"' : 'p') + ' class="pfm-globo' + (g.k === 'urg' ? ' is-urg' : '') + '" aria-live="polite"><span>' + esc(g.t) + '</span>' +
+          (g.go ? '<b>' + esc(g.gol) + '<span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></b>' : '') + '</' + (g.go ? 'button' : 'p') + '>'; })(globo(a)) + '</div>' +
       '<p class="pfm-uku__mood"><span class="material-symbols-rounded" aria-hidden="true">' + MOOD_IC[a.k] + '</span>' + T('Uku está {animo}', { animo: T(MOOD[a.k]) }) + '</p>' +
       (a.n ? '<button class="pf-cta pfm-uku__go" data-pfm="game">' + T('Clasificar {n}', { n: Math.min(TANDA, a.n) }) + '</button>' : '') +
       (tobe() ? (off ? '<p class="pfm-uku__ai"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + esc(all[0].t) + '</p>' : '') +
@@ -733,7 +752,7 @@
   function titulo(s) { return String(s).toLowerCase().replace(/(^|\s)\S/g, function (c) { return c.toUpperCase(); }); }
   // A quién fue: el comercio o la persona; lo que dice el banco va debajo
   function quien(r) { return !r.cp || /^tú|^Pichibank$/.test(r.cp) ? desc(r) : r.cp; }
-  function cuandoDe(f, h) { return DIA[wday(f)].replace(/s$/, '') + ' ' + dshort(f) + (h ? ' · ' + h : ''); }
+  function cuandoDe(f, h) { return DIA1[wday(f)] + ' ' + dshort(f) + (h ? ' · ' + h : ''); }
   function cardHTML(it) {
     var who, sub = '', amt, cuando, por, av, pos = false, extra = '';
     if (it.t === 'm') {
@@ -752,10 +771,11 @@
       else { who = quien(r); sub = deuna ? T('Pago con Deuna') : desc(r) !== who ? desc(r) : ''; av = '<span class="pfm-card__av">' + iniciales(who) + (deuna ? '<em class="material-symbols-rounded">qr_code_2</em>' : '') + '</span>'; }
       amt = -r.m; cuando = cuandoDe(r.f, r.h); por = r.src.replace(/ Pichibank/, '');
     }
-    return '<div class="pfm-card">' + av + '<p class="pfm-card__who">' + esc(who) + '</p>' + (sub ? '<p class="pfm-card__sub">' + esc(sub) + '</p>' : '') +
-      '<p class="pfm-card__amt' + (pos ? ' is-pos' : '') + '" data-v="' + amt + '" data-s="' + (pos ? '+' : '−') + (it.t === 'm' ? '' : '') + '">' + (pos ? '+' : '−') + money(amt) + '</p>' +
-      (it.t === 'm' ? '<p class="pfm-card__row">' + T('al mes') + '</p>' : '') +
-      '<p class="pfm-card__row">' + esc(cuando) + '</p><p class="pfm-card__row">' + esc(por) + '</p>' + extra + '</div>';
+    // Jerarquía: el monto manda, luego a quién; cuándo y por dónde van chicos
+    return '<div class="pfm-card">' + av +
+      '<p class="pfm-card__amt' + (pos ? ' is-pos' : '') + '" data-v="' + amt + '" data-s="' + (pos ? '+' : '−') + '">' + (pos ? '+' : '−') + money(amt) + '</p>' +
+      '<p class="pfm-card__who">' + esc(who) + (it.t === 'm' ? ' · ' + T('al mes') : '') + '</p>' +
+      '<p class="pfm-card__meta">' + esc([sub, cuando, por].filter(Boolean).join(' · ')) + '</p>' + extra + '</div>';
   }
   function choice(g, ic, l, sug, i) {
     return '<button class="pfm-choice' + (sug ? ' is-sug' : '') + '" style="--d:' + (i * 35) + 'ms" data-g="' + esc(g) + '">' + (ic ? '<span class="material-symbols-rounded" aria-hidden="true">' + ic + '</span>' : '') + '<span>' + esc(l) + '</span>' +
@@ -767,11 +787,24 @@
       '<div class="pfm-choices is-list">' + MESOPT.map(function (o, i) { return choice('mes:' + o[0], o[2], T(o[1]), i === 0, i); }).join('') + '</div>';
     if (it.t === 'q') return '<p class="pfm-game__ask">' + T(it.q.sign === '+' ? '¿Qué es esta plata?' : '¿Qué le enviaste?') + '</p><div class="pfm-choices is-list">' +
       it.q.tpl.o.map(function (id, i) { return choice('opt:' + id, '', OPT[id].l, i === 0, i); }).join('') + '</div>';
-    var sg = it.sug && it.sug.cat, ops = OPCATS.slice();
-    if (it.cash) { ops = ops.filter(function (c) { return c[0] !== 'Otros'; }); ops.push(['Efectivo retirado', 'Un poco de todo']); }
+    // Siete grupos a un toque; "Ver todas" abre el listado completo de categorías
+    var sg = it.sug && it.sug.cat, ops = OPCATS.filter(function (c) { return c[0] !== 'Otros'; });
+    if (it.cash) ops.push(['Efectivo retirado', 'Un poco de todo']);
+    if (sg && !ops.some(function (c) { return c[0] === sg; })) ops.unshift([sg, sg]);
     ops.sort(function (a, b) { return (b[0] === sg) - (a[0] === sg); });
+    ops.push(['all', 'Ver todas']);
     return '<p class="pfm-game__ask">' + (it.cash ? T('¿En qué usaste este efectivo?') : T('¿En qué fue?')) + '<small>' + esc(it.sug ? it.sug.why : it.cash ? T('Uku no ve el efectivo. Con un toque, tu presupuesto se vuelve real.') : '') + '</small></p><div class="pfm-choices">' +
-      ops.map(function (c, i) { return choice('cat:' + c[0], c[0] === 'Efectivo retirado' ? 'payments' : GRUPOS[c[1]] ? GRUPOS[c[1]].ic : 'category', T(c[1]), c[0] === sg, i); }).join('') + '</div>';
+      ops.map(function (c, i) { return c[0] === 'all' ? choice('all', 'more_horiz', T(c[1]), false, i).replace('pfm-choice', 'pfm-choice is-more') : choice('cat:' + c[0], icono(c[0]), etiqueta(c[0]), c[0] === sg, i); }).join('') + '</div>';
+  }
+  // El listado completo: las categorías del catálogo, con su grupo
+  function allRender() {
+    var it = G.list[G.i];
+    gel.innerHTML = topHTML(T('{a} de {b}', { a: Math.min(hechos() + 1, G.list.length), b: G.list.length }), T('Resultado')) + barHTML() +
+      '<div class="pfm-game__all"><p class="pfm-game__ask">' + T('¿En qué categoría va?') + '<small>' + esc(it.cash ? T('Retiro de efectivo') : quien(it.r)) + ' · ' + money(-it.r.m) + '</small></p>' +
+      '<div class="pfm-allcats">' + PFM13.map(function (c, i) {
+        return '<button class="pfm-allcat" style="--d:' + i * 25 + 'ms" data-g="cat:' + esc(c) + '"><span class="material-symbols-rounded" aria-hidden="true">' + CAT[c] + '</span><span><b>' + esc(c) + '</b><small>' + esc(T(grupo(c))) + '</small></span></button>';
+      }).join('') + '</div><div class="pfm-game__acts"><button class="pf-link" data-g="cards">' + T('Volver') + '</button></div></div>';
+    moverBarra();
   }
   function topHTML(mid, right) {
     return '<div class="pfm-game__top"><button class="pf-round" data-g="' + (right ? 'stop' : 'close') + '" aria-label="' + T('Cerrar') + '"><span class="material-symbols-rounded" aria-hidden="true">close</span></button>' +
@@ -781,7 +814,7 @@
     var E = { mesada: 'Mesada', otra: 'Otra cosa', 'Efectivo retirado': 'Un poco de todo' };
     if (E[v]) return T(E[v]); if (OPT[v]) return OPT[v].l; var c = OPCATS.filter(function (x) { return x[0] === v; })[0]; return c ? T(c[1]) : v;
   }
-  function icono(v) { var c = OPCATS.filter(function (x) { return x[0] === v; })[0]; return v === 'mesada' ? 'event_repeat' : v === 'Efectivo retirado' ? 'payments' : c ? (GRUPOS[c[1]] ? GRUPOS[c[1]].ic : 'category') : 'person'; }
+  function icono(v) { var c = OPCATS.filter(function (x) { return x[0] === v; })[0]; return v === 'mesada' ? 'event_repeat' : v === 'Efectivo retirado' ? 'payments' : c ? (GRUPOS[c[1]] ? GRUPOS[c[1]].ic : 'category') : CAT[v] || 'person'; }
   function hechos() { return G.ans.filter(Boolean).length; }
   // Uku va en la barra: avanza con cada respuesta
   function barHTML() {
@@ -806,6 +839,7 @@
     var L = G.list, it = L[G.i];
     if (G.view === 'rule') return ruleRender();
     if (G.view === 'prog') return progRender();
+    if (G.view === 'all') return allRender();
     if (G.view === 'done') return doneRender();
     if (G.view === 'result' || !it) return resultRender();
     gel.innerHTML = topHTML(T('{a} de {b}', { a: Math.min(hechos() + 1, L.length), b: L.length }), T('Resultado')) + barHTML() +
@@ -884,7 +918,8 @@
     switch (p[0]) {
       case 'close': return gameClose();
       case 'stop': case 'result': G.view = 'result'; fx('select'); return gameRender();
-      case 'resume': G.view = 'card'; return gameRender();
+      case 'resume': case 'cards': G.view = 'card'; return gameRender();
+      case 'all': G.view = 'all'; fx('tap'); return gameRender();
       case 'back': { var j = G.i - 1; while (j > 0 && G.ans[j] && G.ans[j].auto) j--; if (j >= 0) { G.i = j; G.ans[j] = null; fx('tap'); gameRender(); } return; }
       case 'later': G.ans[G.i] = null; G.i++; fx('tap'); return gameRender();
       case 'opt': case 'cat': {
@@ -895,6 +930,7 @@
         var otros = it.t === 'r' && !it.cash && !/^tú|^Pichibank$/.test(it.r.cp) ? items().filter(function (x) {
           return x.t === 'r' && x.r.cp === it.r.cp && x.r.i !== it.r.i && !G.ans.some(function (a) { return a && a.it.t === 'r' && a.it.r.i === x.r.i; });
         }) : [];
+        G.view = 'card';
         return elegir(btn, function () { G.i++; if (otros.length) { G.view = 'rule'; G.rule = { cp: it.r.cp, v: v, list: otros }; } gameRender(); });
       }
       case 'mes': {
@@ -951,8 +987,8 @@
   // Las barras del periodo: un gasto por día (semana, mes) o por mes (6 meses, año)
   function serie() {
     var b = [], m = HOY.slice(0, 7);
-    if (ST.per === 'sem') for (var i = 6; i >= 0; i--) { var f = addDays(HOY, -i); b.push({ v: range(f, f).gast, x: INI[wday(f)], t: DIA[wday(f)].replace(/s$/, '') + ' ' + dshort(f) }); }
-    else if (ST.per === 'mes') for (var dd = 1; dd <= diasMes(m); dd++) { var g = m + '-' + pad(dd); b.push({ v: g > HOY ? null : range(g, g).gast, x: dd === 1 || dd % 7 === 1 ? String(dd) : '', t: DIA[wday(g)].replace(/s$/, '') + ' ' + dshort(g) }); }
+    if (ST.per === 'sem') for (var i = 6; i >= 0; i--) { var f = addDays(HOY, -i); b.push({ f: f, v: range(f, f).gast, x: '<b>' + (i ? DIA[wday(f)].slice(0, 3) : T('Hoy')) + '</b><small>' + +f.slice(8, 10) + '</small>', t: (i ? DIA1[wday(f)] : T('Hoy')) + ' ' + dshort(f) }); }
+    else if (ST.per === 'mes') for (var dd = 1; dd <= diasMes(m); dd++) { var g = m + '-' + pad(dd); b.push({ f: g, v: g > HOY ? null : range(g, g).gast, x: dd === 1 || dd % 7 === 1 ? String(dd) : '', t: DIA1[wday(g)] + ' ' + dshort(g) }); }
     else mesesAtras(ST.per === '6m' ? 6 : 12).forEach(function (k) { b.push({ v: month(k).gast, x: Mes(k).charAt(0), t: Mes(k) + anio(k + '-01') + (isCur(k) ? ' · ' + T('hasta hoy') : ''), cur: isCur(k) }); });
     return b;
   }
@@ -975,7 +1011,14 @@
         '<div class="pfm-chart__bars' + (b.length > 12 ? ' is-thin' : '') + '">' + b.map(function (x, i) {
           return x.v == null ? '<span class="pfm-chart__bar is-empty"></span>' : '<button class="pfm-chart__bar' + (sel === x ? ' is-on' : '') + '" data-pfm="bar:' + i + '" aria-label="' + esc(x.t + ': ' + money(x.v)) + '"><i style="height:' + y(x.v) + '"></i></button>';
         }).join('') + '</div></div>' +
-      '<div class="pfm-chart__x">' + b.map(function (x) { return '<span>' + x.x + '</span>'; }).join('') + '</div></div>';
+      '<div class="pfm-chart__x' + (ST.per === 'sem' ? ' is-days' : '') + '">' + b.map(function (x) { return '<span' + (sel === x ? ' class="is-on"' : '') + '>' + x.x + '</span>'; }).join('') + '</div></div>' +
+      (meses ? '' : sel && sel.f ? diaHTML(sel) : '<p class="pfm-chart__hint">' + T('Toca un día para ver en qué gastaste.') + '</p>');
+  }
+  // Los gastos del día elegido, debajo de la gráfica
+  function diaHTML(d) {
+    var L = rows().filter(function (r) { var c = cls(r); return r.f === d.f && (c.k === 'gasto' || c.k === 'reembolso'); }).reverse(); // los reembolsos restan del total
+    return '<div class="pf-mcard pfm-dia"><p class="pfm-dia__t">' + esc(d.t.charAt(0).toUpperCase() + d.t.slice(1)) + '<span>' + (L.length === 1 ? T('1 movimiento') : T('{n} movimientos', { n: L.length })) + '</span></p>' +
+      (L.length ? L.slice(0, 6).map(txHTML).join('') : '<p class="pf-note">' + T('Este día no gastaste nada.') + '</p>') + '</div>';
   }
   function gastosHTML() {
     var P = per(), s = P.o, pr = pres(), mb = P.m ? pr : null;
@@ -990,7 +1033,7 @@
         '<p class="pfm-budget__t"><span>' + (left >= 0 ? T('Te quedan <b>{m}</b> de {p}', { m: money0(left), p: money0(mb.general) }) : T('Llevas <b>{m}</b> más de {p}', { m: money0(-left), p: money0(mb.general) })) + '</span>' +
         '<button class="section__link" data-pfm="budgets">' + T('Presupuesto') + '</button></p></div>';
     }
-    html += '</section>' + destacadoHTML();
+    html += '</section>';
     // En qué grupos se fue, en el mismo periodo
     var ks = Object.keys(s.grupos).sort(function (a, b) { return (GRUPOS[a].gris ? 1 : 0) - (GRUPOS[b].gris ? 1 : 0) || s.grupos[b] - s.grupos[a]; });
     var max = Math.max.apply(null, ks.map(function (k) { return s.grupos[k]; }).concat([1])), nIt = items().length;
@@ -1008,6 +1051,7 @@
     var all = insights(), off = tobe() && anticipa(curMes()).length ? 1 : 0, ins = all.slice(off);
     if (!ins.length) return '';
     return '<section class="pf-sec pfm-dest"><div class="pf-sec__head"><h2>' + T('Lo destacado') + '</h2>' + (ins.length > 2 ? '<button class="section__link" data-pfm="insights">' + T('Mostrar todo') + '</button>' : '') + '</div>' +
+      '<p class="pf-sec__sub">' + T('De {mes}, hasta hoy.', { mes: mesName(curMes()) }) + '</p>' +
       ins.slice(0, 2).map(function (x, i) {
         var mx = x.cmp ? Math.max.apply(null, x.cmp.map(function (c) { return c.v; }).concat([1])) : 1;
         return '<button class="pf-mcard pfm-dcard" data-pfm="' + (x.go || 'ins:' + (i + off)) + '"><span class="pfm-dcard__tag"><span class="material-symbols-rounded" aria-hidden="true">' + (x.g ? GRUPOS[x.g].ic : x.icon) + '</span>' + esc(x.tag || (x.g ? T(x.g) : T('Tus gastos'))) + '</span>' +
@@ -1063,7 +1107,7 @@
     if (!pf) return;
     if (!DB) { scroll.innerHTML = '<header class="pf-head"><h1>Mis finanzas</h1></header><p class="pf-note" style="padding:0 24px">' + T('Cargando tus movimientos…') + '</p>'; load().then(paint); return; }
     var keep = window.scrollY;
-    scroll.innerHTML = '<header class="pf-head"><h1>Mis finanzas</h1></header>' + dineroHTML() + ukuHTML() + gastosHTML() + footHTML();
+    scroll.innerHTML = '<header class="pf-head"><h1>Mis finanzas</h1></header>' + dineroHTML() + ukuHTML() + destacadoHTML() + gastosHTML() + footHTML();
     window.scrollTo({ top: keep });
     hero3D();
   }
