@@ -61,22 +61,28 @@
 .pfm-askuku { display: inline-flex; align-items: center; gap: 6px; padding: 0 16px; border: 1px solid var(--cx-line); border-radius: 99px; background: none; color: var(--bp-theme-color-text-primary); font: var(--ui-label-md, 600 14px/22px sans-serif); cursor: pointer; }
 .pfm-askuku .material-symbols-rounded { font-size: 18px; }
 
-/* Ordena tus gastos: entrada al juego */
-.pfm-play { display: flex; align-items: center; gap: 14px; width: 100%; margin-top: 16px; padding: 16px; border: 0; border-radius: 20px; background: var(--bp-interaction-tertiary-fg); color: var(--bp-theme-color-text-on-solid, #fff); font: inherit; text-align: left; cursor: pointer; }
-.pfm-play.is-done { background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); cursor: default; }
-.pfm-play.is-done > .material-symbols-rounded { font-size: 28px; color: var(--bp-theme-color-status-success-icon, #1a8a4a); }
-.pfm-play__stack { position: relative; flex: 0 0 44px; height: 52px; }
-.pfm-play__stack i { position: absolute; inset: 4px 6px; border-radius: 8px; background: rgba(255, 255, 255, .35); }
-.pfm-play__stack i:nth-child(1) { transform: rotate(-10deg); }
-.pfm-play__stack i:nth-child(2) { transform: rotate(6deg); }
-.pfm-play__stack i:nth-child(3) { display: grid; place-items: center; background: #fff; color: var(--bp-interaction-tertiary-fg); font: 700 16px/1 var(--sol-font, Roboto, sans-serif); font-style: normal; }
-.pfm-play__t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.pfm-play__t b { font: var(--ui-body-md-semibold, 600 16px/22px sans-serif); }
-.pfm-play__t small { font: var(--cx-sub); opacity: .85; }
-.pfm-play.is-done .pfm-play__t small { color: var(--cx-muted); opacity: 1; }
-.pfm-play__bar { height: 6px; margin-top: 8px; border-radius: 99px; background: rgba(255, 255, 255, .25); overflow: hidden; }
-.pfm-play__bar i { display: block; height: 100%; border-radius: inherit; background: #fff; transition: width .4s ease; }
-.pfm-play__go { flex: 0 0 auto; padding: 8px 16px; border-radius: 99px; background: #fff; color: var(--bp-interaction-tertiary-fg); font: var(--ui-label-md, 600 14px/22px sans-serif); }
+/* La tarea de la semana: Uku la pide y su bosque muestra cómo vas */
+.pfm-task { margin-top: 16px; padding: 16px; border-radius: 20px; background: var(--bp-theme-color-surface-container-default); }
+.pfm-task__say { display: flex; align-items: flex-start; gap: 10px; }
+.pfm-task__say .pfm-face { flex-basis: 40px; width: 40px; height: 40px; }
+.pfm-task__bubble { position: relative; flex: 1; margin: 0; padding: 12px 14px; border-radius: 4px 18px 18px 18px; background: var(--cx-fill, #f3f5f8); font: var(--ui-body-md-medium, 500 15px/21px sans-serif); color: var(--bp-theme-color-text-primary); }
+.pfm-forest { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 16px; }
+.pfm-tree { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px 8px; border-radius: 14px; background: color-mix(in srgb, #b08a4a 12%, transparent); }
+.pfm-tree .material-symbols-rounded { font-size: 30px; color: #b08a4a; font-variation-settings: 'FILL' 1; }
+.pfm-tree small { font: var(--ui-caption, 500 11px/14px sans-serif); color: var(--cx-muted); white-space: nowrap; }
+.pfm-tree.is-ok { background: color-mix(in srgb, var(--bp-theme-color-status-success-icon, #1a8a4a) 14%, transparent); }
+.pfm-tree.is-ok .material-symbols-rounded { color: var(--bp-theme-color-status-success-icon, #1a8a4a); animation: pfmGrow .5s cubic-bezier(.2, 1.4, .4, 1) both; }
+.pfm-tree.is-cur { background: var(--cx-fill, #f3f5f8); box-shadow: inset 0 0 0 1.5px var(--bp-interaction-tertiary-fg); }
+.pfm-tree.is-cur .material-symbols-rounded { color: var(--bp-interaction-tertiary-fg); }
+.pfm-tree.is-dry .material-symbols-rounded { opacity: .7; }
+@keyframes pfmGrow { from { transform: scale(.5) translateY(6px); } }
+.pfm-task__meta { display: flex; align-items: center; gap: 6px; margin: 12px 0 0; font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-task__meta .material-symbols-rounded { font-size: 18px; color: #e8812a; font-variation-settings: 'FILL' 1; }
+.pfm-task__go { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; margin-top: 14px; border: 0; border-radius: 99px; background: var(--bp-interaction-tertiary-fg); color: var(--bp-theme-color-text-on-solid, #fff); font: var(--ui-label-md, 600 15px/22px sans-serif); cursor: pointer; }
+.pfm-task__go .material-symbols-rounded { font-size: 20px; }
+.pfm-task__go:active { transform: scale(.98); }
+.pfm-play__bar { height: 6px; border-radius: 99px; overflow: hidden; }
+.pfm-play__bar i { display: block; height: 100%; border-radius: inherit; transition: width .4s ease; }
 
 /* ---------- El juego (pantalla completa) ---------- */
 .pfm-game { position: fixed; inset: 0; z-index: 1200; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; padding: 8px 20px calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--bp-theme-color-surface-page-alt, #f5f5f5); color: var(--bp-theme-color-text-primary); transform: translateY(100%); visibility: hidden; transition: transform .32s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .32s; overflow-y: auto; }
@@ -87,7 +93,7 @@
 .pfm-game__title b { font: var(--ui-body-md-semibold, 600 16px/22px sans-serif); }
 .pfm-game__title small { font: var(--cx-sub); color: var(--cx-muted); }
 .pfm-game > .pfm-play__bar { margin: 8px 0 0; background: color-mix(in srgb, var(--bp-interaction-tertiary-fg) 15%, transparent); }
-.pfm-game > .pfm-play__bar i, .pfm-play__bar.is-big i { background: var(--bp-interaction-tertiary-fg); }
+.pfm-game > .pfm-play__bar i { background: var(--bp-interaction-tertiary-fg); }
 .pfm-deck { position: relative; height: 300px; margin: 24px 0 8px; }
 .pfm-card { position: absolute; inset: 0; display: flex; flex-direction: column; padding: 24px; border-radius: 28px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 12px 32px rgba(15, 38, 92, .14); touch-action: pan-y; user-select: none; transition: transform .22s ease, opacity .22s ease; }
 .pfm-card.is-top { cursor: grab; }
@@ -125,7 +131,8 @@
 .pfm-game__end { display: flex; flex-direction: column; align-items: center; margin: auto 0; padding: 24px 0; text-align: center; }
 .pfm-game__end h2 { margin: 20px 0 8px; font: 600 26px/32px var(--sol-font, Roboto, sans-serif); letter-spacing: -.4px; }
 .pfm-game__end p { margin: 0; }
-.pfm-game__end .pfm-play__bar { width: 100%; margin: 20px 0 8px; background: color-mix(in srgb, var(--bp-interaction-tertiary-fg) 15%, transparent); }
+.pfm-game__end .pfm-forest { width: 100%; margin: 20px 0 4px; }
+.pfm-game__end .pfm-task__meta { justify-content: center; }
 .pfm-game__end .pf-cta { margin-top: 24px; }
 .pfm-game__burst { width: 96px; height: 96px; border-radius: 50%; overflow: hidden; background: var(--bp-theme-color-surface-container-default); animation: pfmPop .5s cubic-bezier(.2, 1.4, .4, 1) both; }
 .pfm-game__burst img { width: 100%; height: 100%; object-fit: cover; }
