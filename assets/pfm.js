@@ -548,10 +548,20 @@
   }
 
   /* ---------- 2. Uku: lo que notó y ordenar gastos ---------- */
-  function insights() {
-    var m = curMes();
-    return (tobe() ? anticipa(m) : []).map(accion).concat(agrupar(), hallazgos(m).map(accion));
+  // La única lista de lo que Uku nota o propone: la usan el globo, las tarjetas,
+  // la hoja "Lo que notó Uku" y el análisis con IA. Los consumos por ordenar son
+  // un hallazgo más, con su acción, y van primero porque son lo que sigue.
+  function feed(m) {
+    var a = animo(), out = [];
+    if (isCur(m) && a.n) out.push(porOrdenar(a));
+    return out.concat(tobe() ? anticipa(m).map(accion) : [], agrupar(), hallazgos(m).map(accion));
   }
+  function porOrdenar(a) {
+    return { icon: 'category', kind: 'consumo', tag: T('Por ordenar'), go: 'game', gol: T('Clasificar {n}', { n: Math.min(TANDA, a.n) }),
+      t: T(a.n === 1 ? 'Tienes 1 consumo sin clasificar' : 'Tienes {n} consumos sin clasificar', { n: a.n }),
+      s: T('Uku ya ordenó casi todo; solo pregunta lo que no puede saber.') };
+  }
+  function insights() { return feed(curMes()); }
   // Agrupaciones que Uku propone: mesadas para programar y pagos repetidos para ordenar de una
   function agrupar() {
     var out = mesadas().filter(function (x) { var st = mesOf(x.cp); return !st || (st.v === 'mesada' && !st.prog); }).map(function (x) {
@@ -606,7 +616,7 @@
       sig('park', T('Tu presupuesto'), pe.l, pe.k) + '</div>';
   }
   function ukuHTML() {
-    var m = curMes(), a = animo(), all = insights(), off = tobe() && anticipa(m).length ? 1 : 0;
+    var m = curMes(), a = animo();
     var html = '<section class="pf-sec pfm-uku pf-mood--' + a.k + (tobe() ? ' is-tobe' : '') + '">' +
       '<div class="pf-hero pfm-hero"><div class="b3d" data-shift=".2" data-score="' + salud(m) + '" data-bloom="' + flores() + '" data-mood="' + a.k + '"><div class="b3d__fallback">' + (window.Asistente ? Asistente.petSVG() : '') + '</div></div>' +
         // Uku habla desde su mundo: el globo sale de él, arriba a la izquierda
@@ -615,7 +625,7 @@
       // Una sola acción: la que propone el mensaje de Uku. Clasificar queda como enlace si el mensaje pide otra cosa
       (function (g) { return (g.go ? '<button class="pf-cta pfm-uku__go" data-pfm="' + esc(g.go) + '">' + esc(g.gol) + '</button>' : '') +
         (a.n && g.go !== 'game' ? '<button class="pf-link pfm-uku__more" data-pfm="game">' + T('Clasificar {n}', { n: Math.min(TANDA, a.n) }) + '</button>' : ''); })(globo(a)) +
-      (tobe() ? (off ? '<p class="pfm-uku__ai"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + esc(all[0].t) + '</p>' : '') +
+      (tobe() ?
         '<div class="pfm-uku__acts"><button class="pf-link" data-pfm="analyze"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + T('Analizar con IA') + '</button>' +
         '<button class="pf-link" data-pfm="ai:"><span class="material-symbols-rounded" aria-hidden="true">chat_bubble</span>' + T('Pregúntale') + '</button></div>' : '') +
       worldHTML(a) + destacadoHTML() + '</section>';
@@ -1064,18 +1074,20 @@
   }
   // Lo destacado: como Salud, una frase y, si hay, la comparación que la explica
   function destacadoHTML() {
-    var all = insights(), off = tobe() && anticipa(curMes()).length ? 1 : 0, ins = all.slice(off);
+    var ins = insights();
     if (!ins.length) return '';
     // Los descubrimientos de Uku viven en su sección, debajo de su mundo
     return '<div class="pfm-dest"><div class="pf-sec__head"><h2>' + T('Lo que notó Uku') + '</h2>' + (ins.length > 2 ? '<button class="section__link" data-pfm="insights">' + T('Mostrar todo') + '</button>' : '') + '</div>' +
       '<p class="pf-sec__sub">' + T('De {mes}, hasta hoy.', { mes: mesName(curMes()) }) + '</p>' +
       ins.slice(0, 2).map(function (x, i) {
         var mx = x.cmp ? Math.max.apply(null, x.cmp.map(function (c) { return c.v; }).concat([1])) : 1;
-        return '<button class="pf-mcard pfm-dcard" data-pfm="' + (x.go || 'ins:' + (i + off)) + '"><span class="pfm-dcard__tag"><span class="material-symbols-rounded" aria-hidden="true">' + (x.g ? GRUPOS[x.g].ic : x.icon) + '</span>' + esc(x.tag || (x.g ? T(x.g) : T('Tus gastos'))) + '</span>' +
+        // La tarjeta abre su acción o su hoja; "Pregúntale" va aparte, como en la hoja
+        return '<article class="pf-mcard pfm-dcard pfm-find"><button class="pfm-find__main" data-pfm="' + (x.go || 'ins:' + i) + '"><span class="pfm-dcard__tag"><span class="material-symbols-rounded" aria-hidden="true">' + (x.g ? GRUPOS[x.g].ic : x.icon) + '</span>' + esc(x.tag || (x.g ? T(x.g) : T('Tus gastos'))) + '</span>' +
           '<span class="pfm-dcard__t">' + esc(x.t) + '</span>' +
           (x.cmp ? '<span class="pfm-dcard__cmp">' + x.cmp.map(function (c) {
             return '<span class="pfm-dcard__row' + (c.on ? ' is-on' : '') + '"><small>' + esc(c.l) + '</small><b>' + money0(c.v) + '</b><i style="width:' + Math.max(3, c.v / mx * 100).toFixed(1) + '%"></i></span>'; }).join('') + '</span>' : '') +
-          (x.go ? '<span class="pfm-dcard__go">' + esc(x.gol) + '</span>' : '') + '</button>';
+          (x.go ? '<span class="pfm-dcard__go">' + esc(x.gol) + '</span>' : '') + '</button>' +
+          (tobe() && x.ask ? '<button class="pf-link pfm-find__ask" data-pfm="ai:' + esc(x.ask) + '"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + T('Pregúntale') + '</button>' : '') + '</article>';
       }).join('') + '</div>';
   }
   // Ingresos: ya no es un filtro de la pantalla, se ven en su hoja
@@ -1397,7 +1409,7 @@
     m = m && /^\d{4}-\d{2}$/.test(m) ? m : curMes();
     var s = month(m), p = pres(), av = prom(m, 3), cur = isCur(m), md = mood(m);
     var over = Object.keys(p.cats).filter(function (k) { return (s.grupos[k] || 0) > p.cats[k]; }).map(function (k) { return { name: k, over: s.grupos[k] - p.cats[k], budget: p.cats[k] }; });
-    var ins = anticipa(m).concat(hallazgos(m)).map(function (x) { return { icon: x.icon, kind: x.kind, title: x.t, sub: x.s, ask: x.ask }; });
+    var ins = feed(m).map(function (x) { return { icon: x.icon, kind: x.kind, title: x.t, sub: x.s, ask: x.ask }; });
     var hint = over.length ? T('Ojo con {cat}', { cat: over[0].name.toLowerCase() }) : s.gast > p.general ? T('Te pasaste de tu presupuesto') : T('Vas dentro de tu presupuesto');
     return { key: m, mes: mesName(m), Mes: Mes(m), current: cur, report: false, n: { spend: s.gast, inc: s.ing, save: Math.max(0, r2(s.ing - s.gast)) }, ins: ins, over: over,
       top: Object.keys(s.grupos).sort(function (a, b) { return s.grupos[b] - s.grupos[a]; }).slice(0, 3).map(function (k) { return { name: k, v: s.grupos[k], p: s.grupos[k] / s.gast }; }),
