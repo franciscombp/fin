@@ -524,11 +524,11 @@
   function dineroHTML() {
     var pt = patrimonio(), d = deudas(), fs = facturas(), sc = SCORE[ST.u], np = productos().length;
     return '<section class="pf-sec pfm-money" aria-label="' + T('Tu dinero en Pichibank') + '">' +
-      '<div class="pf-sec__head"><h2>' + T('Tu dinero') + '</h2></div>' +
       '<div class="pfm-saldo"><span class="pfm-tile__l">' + T('Saldo disponible') + '</span>' +
         '<b>' + money(pt.tienes) + '</b><small>' + T('En tus cuentas Pichibank y Deuna') + '</small>' +
         // El patrimonio va como dato pequeño: en negativo (por una hipoteca, por ejemplo) no debe asustar
-        '<button class="pfm-net" data-pfm="net">' + T('Patrimonio en Pichibank') + ' <b>' + money0(pt.v) + '</b><span class="material-symbols-rounded" aria-hidden="true">info</span></button></div>' +
+        // Sin deudas en Pichibank el patrimonio es igual al saldo: no se repite
+        (pt.debes ? '<button class="pfm-net" data-pfm="net">' + T('Patrimonio en Pichibank') + ' <b>' + money0(pt.v) + '</b><span class="material-symbols-rounded" aria-hidden="true">info</span></button>' : '') + '</div>' +
       '<div class="pfm-tiles">' +
         tile('products', T('Tus productos'), String(np), T('Cuentas, tarjetas y créditos')) +
         tile('bills', T('Por pagar'), money0(sumv(fs, function (x) { return x.monto; })), fs.length === 1 ? T('1 pago en 30 días') : T('{n} pagos en 30 días', { n: fs.length })) +
