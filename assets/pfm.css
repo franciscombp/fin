@@ -64,66 +64,110 @@
 .pfm-world__row > span:last-child { display: flex; flex-direction: column; gap: 2px; }
 .pfm-world__row small { font: var(--cx-sub); color: var(--cx-muted); }
 
-/* ---------- El juego de clasificar (pantalla completa) ---------- */
-.pfm-game { position: fixed; inset: 0; z-index: 1200; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; padding: var(--bp-semantic-spacing-micro-md, 8px) var(--bp-layout-grid-margin, 24px) calc(var(--bp-semantic-spacing-macro-sm, 24px) + env(safe-area-inset-bottom, 0px)); background: var(--bp-theme-color-surface-page-default, #f5f5f5); color: var(--bp-theme-color-text-primary); transform: translateY(100%); visibility: hidden; transition: transform .32s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .32s; overflow-y: auto; }
+/* ---------- El juego de ordenar (pantalla completa) ----------
+   Que dé gusto: la tarjeta entra con un rebote, el botón elegido late y
+   suelta un +1, la tarjeta sale volando, Uku avanza por la barra y te
+   anima; al guardar, confeti. Sin movimiento si así lo pide el sistema. */
+.pfm-game { position: fixed; inset: 0; z-index: 1200; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; padding: var(--bp-semantic-spacing-micro-md, 8px) var(--bp-layout-grid-margin, 24px) calc(var(--bp-semantic-spacing-macro-sm, 24px) + env(safe-area-inset-bottom, 0px)); background: var(--bp-theme-color-surface-page-default, #f5f5f5); color: var(--bp-theme-color-text-primary); transform: translateY(100%); visibility: hidden; transition: transform .32s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .32s; overflow-x: hidden; overflow-y: auto; }
 .pfm-game.open { transform: none; visibility: visible; transition: transform .32s cubic-bezier(.2, .8, .2, 1); }
 .pfm-game__top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; min-height: 56px; margin: 0 -8px; }
 .pfm-game__top > :last-child { justify-self: end; }
 .pfm-game__count { font: var(--ui-body-sm-semibold); color: var(--cx-muted); font-variant-numeric: tabular-nums; }
-.pfm-play__bar { height: 4px; border-radius: 99px; overflow: hidden; }
-.pfm-play__bar i { display: block; height: 100%; border-radius: inherit; transition: width .4s ease; }
-.pfm-game .pfm-play__bar { margin-top: var(--bp-semantic-spacing-micro-md, 8px); background: var(--bp-interaction-selectable-bg); }
-.pfm-game .pfm-play__bar i { background: var(--bp-interaction-selectable-selected-bg); }
 
-/* El consumo: sin caja, con la cifra como protagonista */
-.pfm-card { display: flex; flex-direction: column; align-items: center; margin-top: var(--bp-semantic-spacing-macro-md, 40px); text-align: center; transition: transform .16s ease, opacity .16s ease; }
-.pfm-card.is-gone { transform: translateY(-12px); opacity: 0; }
+/* Uku en la barra de avance */
+.pfm-play { position: relative; margin: 14px 18px 0 0; }
+.pfm-play__bar { height: 8px; border-radius: 99px; overflow: hidden; background: var(--bp-interaction-selectable-bg); }
+.pfm-play__bar i { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--bp-interaction-primary-bg, #ffdd00); transition: width .55s cubic-bezier(.3, 1.4, .5, 1); }
+.pfm-play__uku { position: absolute; top: 50%; left: 0; width: 36px; height: 36px; margin: -18px 0 0 -6px; border: 3px solid var(--bp-theme-color-surface-page-default, #f5f5f5); border-radius: 50%; overflow: hidden; background: var(--bp-theme-color-surface-container-default); transition: left .55s cubic-bezier(.3, 1.4, .5, 1); }
+.pfm-play__uku img { width: 100%; height: 100%; object-fit: cover; }
+.pfm-play__uku.is-hop { animation: pfmHop .5s ease .15s; }
+.pfm-play__cheer { position: absolute; right: -10px; top: 18px; padding: 4px 10px; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-selectable-selected-bg); color: var(--bp-interaction-selectable-selected-fg); font: var(--ui-body-sm-semibold); white-space: nowrap; animation: pfmCheer 1.6s ease both; pointer-events: none; }
+@keyframes pfmHop { 40% { transform: translateY(-10px) rotate(-8deg); } 70% { transform: translateY(0) rotate(4deg); } }
+@keyframes pfmCheer { 0% { opacity: 0; transform: translateY(6px) scale(.6); } 15% { opacity: 1; transform: translateY(0) scale(1.08); } 25% { transform: scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-6px); } }
+
+/* La tarjeta: entra con rebote, sale volando */
+.pfm-game__stage { display: flex; flex-direction: column; }
+.pfm-card { display: flex; flex-direction: column; align-items: center; margin-top: var(--bp-semantic-spacing-macro-md, 36px); text-align: center; animation: pfmIn .45s cubic-bezier(.2, 1.3, .4, 1) both; transform-origin: 50% 80%; }
+.pfm-card.is-gone { animation: pfmOut .3s cubic-bezier(.5, 0, .9, .4) forwards; }
+@keyframes pfmIn { from { opacity: 0; transform: translateX(48px) rotate(5deg) scale(.94); } }
+@keyframes pfmOut { to { opacity: 0; transform: translate(-36px, -70px) rotate(-10deg) scale(.7); } }
 .pfm-card p { margin: 0; }
-.pfm-card__av { width: 56px; height: 56px; display: grid; place-items: center; border-radius: 50%; background: var(--bp-theme-color-avatar-bg, var(--bp-interaction-secondary-bg)); color: var(--bp-theme-color-avatar-fg, var(--bp-interaction-secondary-fg)); font: var(--ui-title-md, 600 18px/24px sans-serif); }
-.pfm-card__av .material-symbols-rounded { font-size: 28px; }
-.pfm-card__who { margin-top: var(--bp-semantic-spacing-micro-lg, 16px) !important; font: var(--ui-body-md-semibold); }
-.pfm-card__amt { margin-top: var(--bp-semantic-spacing-micro-sm, 4px) !important; font: var(--cx-amount); letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+.pfm-card__av { position: relative; width: 64px; height: 64px; display: grid; place-items: center; border-radius: 50%; background: var(--bp-theme-color-avatar-bg, var(--bp-interaction-secondary-bg)); color: var(--bp-theme-color-avatar-fg, var(--bp-interaction-secondary-fg)); font: var(--ui-title-md, 600 20px/26px sans-serif); animation: pfmPop .5s cubic-bezier(.2, 1.5, .4, 1) .08s both; }
+.pfm-card__av > .material-symbols-rounded { font-size: 30px; }
+.pfm-card__av.is-mes { background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); }
+.pfm-card__av em { position: absolute; right: -4px; bottom: -4px; width: 26px; height: 26px; display: grid; place-items: center; border: 2px solid var(--bp-theme-color-surface-page-default, #f5f5f5); border-radius: 50%; background: var(--bp-theme-color-surface-container-default); font-size: 16px; font-style: normal; color: var(--bp-interaction-tertiary-fg); }
+.pfm-card__who { margin-top: var(--bp-semantic-spacing-micro-lg, 16px) !important; font: var(--cx-headline); letter-spacing: -.2px; color: var(--bp-interaction-tertiary-fg); }
+.pfm-card__sub { margin-top: 2px !important; font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-card__amt { margin-top: var(--bp-semantic-spacing-micro-md, 8px) !important; font: var(--cx-amount); letter-spacing: -1px; font-variant-numeric: tabular-nums; }
 .pfm-card__amt.is-pos { color: var(--bp-theme-color-status-success-text, #13703b); }
 .pfm-card__row { margin-top: 2px !important; font: var(--cx-sub); color: var(--cx-muted); }
-.pfm-card__row + .pfm-card__row { margin-top: 0 !important; }
+.pfm-card__months { display: flex; align-items: flex-end; gap: 8px; height: 56px; margin-top: var(--bp-semantic-spacing-micro-lg, 16px); }
+.pfm-card__months span { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; width: 22px; height: 100%; }
+.pfm-card__months i { width: 100%; height: var(--h); border-radius: 4px 4px 0 0; background: var(--bp-interaction-tertiary-fg); transform-origin: bottom; animation: pfmGrow .5s cubic-bezier(.2, 1.3, .4, 1) both; animation-delay: calc(.2s + var(--d)); }
+.pfm-card__months small { font: var(--cx-caption); color: var(--cx-muted); }
+@keyframes pfmGrow { from { transform: scaleY(0); } }
 
-/* La pregunta y las opciones: chips del sistema (bp-filter-item), un toque */
-.pfm-game__ask { display: flex; flex-direction: column; gap: 2px; margin: var(--bp-semantic-spacing-macro-md, 40px) 0 var(--bp-semantic-spacing-micro-lg, 16px); font: var(--cx-headline); letter-spacing: -.2px; color: var(--bp-interaction-tertiary-fg); }
-.pfm-game__ask small { font: var(--cx-sub); letter-spacing: 0; color: var(--cx-muted); }
+/* La pregunta y las opciones: chips del sistema que entran en cascada */
+.pfm-game__ask { display: flex; flex-direction: column; gap: 2px; margin: var(--bp-semantic-spacing-macro-sm, 28px) 0 var(--bp-semantic-spacing-micro-lg, 16px); font: var(--ui-body-md-semibold); color: var(--bp-theme-color-text-primary); text-align: center; }
+.pfm-game__ask small { font: var(--cx-sub); color: var(--cx-muted); }
 .pfm-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--bp-semantic-spacing-micro-md, 8px); }
 .pfm-choices.is-list { grid-template-columns: 1fr; }
-.pfm-choice { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md, 8px); min-height: var(--bp-semantic-size-interactive-md, 48px); padding: 0 var(--bp-semantic-spacing-micro-lg, 16px) 0 12px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-selectable-bg); color: var(--bp-interaction-selectable-fg); font: var(--ui-body-sm-semibold); text-align: left; cursor: pointer; }
+.pfm-choice { position: relative; display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md, 8px); min-height: var(--bp-semantic-size-interactive-md, 48px); padding: 0 var(--bp-semantic-spacing-micro-lg, 16px) 0 12px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-selectable-bg); color: var(--bp-interaction-selectable-fg); font: var(--ui-body-sm-semibold); text-align: left; cursor: pointer; animation: pfmUp .35s cubic-bezier(.2, 1.2, .4, 1) both; animation-delay: calc(.12s + var(--d, 0ms)); transition: transform .15s ease, opacity .2s ease, background .15s ease; }
 .pfm-choices.is-list .pfm-choice { padding-left: var(--bp-semantic-spacing-micro-lg, 16px); }
 .pfm-choice .material-symbols-rounded { font-size: var(--bp-semantic-size-icon-sm, 20px); }
 .pfm-choice:hover { background: var(--bp-interaction-selectable-bg--hover); }
-.pfm-choice:active { background: var(--bp-interaction-selectable-bg--active); }
+.pfm-choice:active { transform: scale(.96); }
 .pfm-choice.is-sug { background: var(--bp-interaction-selectable-selected-bg); color: var(--bp-interaction-selectable-selected-fg); }
 .pfm-choice em { margin-left: auto; font-size: 18px; font-style: normal; }
-.pfm-game__acts { display: flex; justify-content: center; gap: var(--bp-semantic-spacing-micro-md, 8px); margin-top: var(--bp-semantic-spacing-macro-sm, 24px); }
-.pfm-game__note { margin: var(--bp-semantic-spacing-micro-lg, 16px) 0 0; font: var(--cx-caption); color: var(--cx-muted); text-align: center; }
+.pfm-choice.is-picked { z-index: 1; background: var(--bp-interaction-primary-bg, #ffdd00) !important; color: var(--bp-interaction-primary-fg, #0f265c) !important; animation: pfmBeat .35s ease both; }
+.pfm-choice.is-out { opacity: .25; transform: scale(.97); }
+.pfm-plus { position: absolute; right: 12px; top: 0; font: var(--ui-label-md); color: var(--bp-interaction-tertiary-fg); animation: pfmPlus .6s ease both; pointer-events: none; }
+@keyframes pfmUp { from { opacity: 0; transform: translateY(14px); } }
+@keyframes pfmBeat { 40% { transform: scale(1.06); } 100% { transform: scale(1); } }
+@keyframes pfmPlus { from { opacity: 0; transform: translateY(6px); } 30% { opacity: 1; } to { opacity: 0; transform: translateY(-28px); } }
+.pfm-game__acts { display: flex; justify-content: center; gap: var(--bp-semantic-spacing-micro-md, 8px); margin-top: var(--bp-semantic-spacing-macro-sm, 24px); padding-bottom: 8px; }
 
-/* Resultado y fin: título, lista y el botón primario abajo */
+/* Reglas y programar: un panel que sube */
+.pfm-game__panel { flex: 1; display: flex; flex-direction: column; align-items: center; padding-top: var(--bp-semantic-spacing-macro-md, 40px); text-align: center; animation: pfmUp .4s cubic-bezier(.2, 1.2, .4, 1) both; }
+.pfm-game__panel h2 { margin: var(--bp-semantic-spacing-micro-lg, 16px) 0 var(--bp-semantic-spacing-micro-md, 8px); font: var(--cx-headline); font-size: 24px; line-height: 30px; color: var(--bp-interaction-tertiary-fg); }
+.pfm-game__panel > p { margin: 0; font: var(--cx-body); color: var(--cx-muted); }
+.pfm-game__big { width: 72px; height: 72px; display: grid; place-items: center; border-radius: 50%; background: var(--bp-interaction-selectable-selected-bg); color: var(--bp-interaction-selectable-selected-fg); font-size: 36px; animation: pfmPop .5s cubic-bezier(.2, 1.5, .4, 1) both; }
+.pfm-game__big.is-ok { background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); }
+.pfm-game__stack { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md, 8px); width: 100%; max-width: 320px; margin-top: var(--bp-semantic-spacing-macro-sm, 24px); }
+.pfm-game__stack span { display: flex; justify-content: space-between; padding: 14px 16px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); font: var(--cx-sub); color: var(--cx-muted); animation: pfmUp .4s cubic-bezier(.2, 1.2, .4, 1) both; animation-delay: calc(.15s + var(--i) * 80ms); }
+.pfm-game__stack b { color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
+
+/* Resultado y fin */
 .pfm-game__result, .pfm-game__end { flex: 1; display: flex; flex-direction: column; padding-top: var(--bp-semantic-spacing-macro-sm, 24px); }
 .pfm-game__end { align-items: center; text-align: center; }
 .pfm-game__result h2, .pfm-game__end h2 { margin: 0 0 var(--bp-semantic-spacing-micro-md, 8px); font: var(--cx-page); letter-spacing: -.6px; color: var(--bp-interaction-tertiary-fg); }
 .pfm-game__end h2 { margin-top: var(--bp-semantic-spacing-macro-sm, 24px); }
 .pfm-game__result > p, .pfm-game__end > p { margin: 0; font: var(--cx-body); color: var(--cx-muted); }
+.pfm-game__check { width: 56px; height: 56px; display: grid; place-items: center; margin-bottom: var(--bp-semantic-spacing-micro-lg, 16px); border-radius: 50%; background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); font-size: 28px; animation: pfmPop .5s cubic-bezier(.2, 1.5, .4, 1) both; }
 .pfm-sum { margin-top: var(--bp-semantic-spacing-macro-sm, 24px); }
-.pfm-sum__row { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-lg, 16px); padding: 12px 0; border-bottom: var(--bp-semantic-border-thin, 1px) solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+.pfm-sum__row { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-lg, 16px); padding: 12px 0; border-bottom: var(--bp-semantic-border-thin, 1px) solid var(--bp-theme-color-border-divider, var(--cx-line)); animation: pfmUp .35s ease both; animation-delay: var(--d, 0ms); }
 .pfm-sum__row:last-child { border-bottom: 0; }
-.pfm-sum__row span:nth-child(2) { flex: 1; font: var(--ui-body-md-semibold); }
+.pfm-sum__row span:nth-child(2) { flex: 1; display: flex; flex-direction: column; font: var(--ui-body-md-semibold); }
+.pfm-sum__row span:nth-child(2) small { font: var(--cx-caption); color: var(--cx-muted); }
 .pfm-sum__row b { font: var(--cx-sub); color: var(--cx-muted); font-variant-numeric: tabular-nums; }
 .pfm-game__result .pf-note { margin: var(--bp-semantic-spacing-micro-lg, 16px) 0 0; }
 .pfm-game__foot { display: flex; flex-direction: column; align-items: center; gap: var(--bp-semantic-spacing-micro-md, 8px); width: 100%; margin-top: auto; padding-top: var(--bp-semantic-spacing-macro-sm, 24px); }
 .pfm-game__foot .pf-cta { width: 100%; margin: 0; }
 .pfm-game__foot .section__link { min-height: var(--bp-semantic-size-interactive-sm, 48px); }
 .pfm-game__mood { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 0 0 var(--bp-semantic-spacing-micro-md, 8px) !important; font: var(--ui-body-md-semibold) !important; color: var(--bp-theme-color-text-primary) !important; }
-.pfm-game__mood .material-symbols-rounded { font-size: 24px; font-variation-settings: 'FILL' 1; }
-.pfm-game__mood .material-symbols-rounded { color: var(--bp-interaction-tertiary-fg); }
-.pfm-game__burst { width: 112px; height: 112px; margin-top: var(--bp-semantic-spacing-macro-md, 40px); border-radius: 50%; overflow: hidden; background: var(--bp-theme-color-surface-container-default); animation: pfmPop .5s cubic-bezier(.2, 1.4, .4, 1) both; }
+.pfm-game__mood .material-symbols-rounded { font-size: 24px; font-variation-settings: 'FILL' 1; color: var(--bp-interaction-tertiary-fg); }
+.pfm-game__burst { width: 120px; height: 120px; margin-top: var(--bp-semantic-spacing-macro-md, 40px); border-radius: 50%; overflow: hidden; background: var(--bp-theme-color-surface-container-default); animation: pfmPop .6s cubic-bezier(.2, 1.5, .4, 1) both, pfmHop .7s ease .6s 2; }
 .pfm-game__burst img { width: 100%; height: 100%; object-fit: cover; }
-@keyframes pfmPop { from { transform: scale(.4); opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .pfm-card, .pfm-game, .pfm-game__burst { transition: none; animation: none; } }
+@keyframes pfmPop { from { transform: scale(.3); opacity: 0; } }
+.pfm-confeti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 2; }
+.pfm-confeti i { position: absolute; top: -12px; width: 8px; height: 12px; border-radius: 2px; animation: pfmFall 1.4s cubic-bezier(.3, .6, .6, 1) both; }
+@keyframes pfmFall { to { transform: translate(var(--x), 105vh) rotate(var(--r)); opacity: .9; } }
+.pfm-prog { display: flex; gap: 8px; margin-top: 16px !important; padding: 14px 16px; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); font: var(--cx-body); }
+.pfm-prog .material-symbols-rounded { color: var(--bp-interaction-tertiary-fg); }
+.pfm-mes__cmp { margin-top: 16px; }
+@media (prefers-reduced-motion: reduce) {
+  .pfm-game, .pfm-game *, .pfm-game__burst { transition: none !important; animation: none !important; }
+}
 
 /* ---------- 3. Tus gastos, como Salud de Apple ---------- */
 .pfm-flow { margin-top: var(--bp-semantic-spacing-macro-md, 40px) !important; }
