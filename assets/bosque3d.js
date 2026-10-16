@@ -10,6 +10,9 @@
    - El oso nunca cambia; el bosque crece con la salud financiera
      (0–100): de troncos y tierra seca a un bosque tupido.
    - Paleta sobria: grises, verdes apagados; el amarillo solo en flores.
+   - setBloom() llena su campo de flores amarillas (ahorro) y setMood()
+     le da un ánimo que se queda, como Duo: contento, tranquilo, triste o
+     enojado (con una nube encima cuando está triste o enojado).
    - Pausa el render cuando no se ve y respeta prefers-reduced-motion.
    - setLook() viste a Uku según el clima (assets/clima.js): en la costa
      palmeras y guayabera; sombrero de paja toquilla, gafas de sol, gorro
@@ -25,6 +28,9 @@ const lerp = THREE.MathUtils.lerp;
 let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
 let bear = null, bones = {}, forest, held = null, ground;
 let score = 50, shown = 0; // shown: puntaje con el que está dibujado el bosque
+// bloom: flores amarillas del campo (0–100, ahorro); null = como antes (salen con el bosque)
+// mood: ánimo que se queda (feliz, tranquilo, triste, enojado); null = solo los gestos
+let bloom = null, mood = null, cloud = null;
 let gesture = null, gestureT = 0, onTap = null;
 let yaw = 0, yawTo = 0, camDist = 2.6, drag = null, idleAt = 0; // giro con el dedo
 
@@ -74,6 +80,22 @@ const DECOR = (() => {
   }
   return out;
 })();
+
+const MEADOW = (() => {
+  const r = rng(71), out = [];
+  for (let i = 0; i < 44; i++) {
+    const a = r() * Math.PI * 2, d = .38 + r() * 1.5;
+    out.push({ x: Math.cos(a) * d * 1.2, z: Math.sin(a) * d * .55 + .1, t: r() * 100, s: .8 + r() * .5, rot: r() * 6.28 });
+  }
+  return out;
+})();
+function makeFlower(p, pal) {
+  const g = new THREE.Group(), petal = new THREE.MeshLambertMaterial({ color: pal.flower }), stem = new THREE.MeshLambertMaterial({ color: pal.grass });
+  const st = new THREE.Mesh(new THREE.CylinderGeometry(.006, .007, .12, 4), stem); st.position.y = .06; g.add(st);
+  for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2, m = new THREE.Mesh(new THREE.SphereGeometry(.018, 6, 4), petal); m.position.set(Math.cos(a) * .022, .125, Math.sin(a) * .022); m.scale.y = .5; g.add(m); }
+  const c = new THREE.Mesh(new THREE.SphereGeometry(.012, 6, 4), new THREE.MeshLambertMaterial({ color: pal.trunk })); c.position.y = .13; g.add(c);
+  g.position.set(p.x, 0, p.z); g.rotation.y = p.rot; g.userData.base = p.s; return g;
+}
 
 // Palmera: tronco curvo en segmentos y hojas largas que caen
 function makePalm(p, pal) {
@@ -159,9 +181,12 @@ function buildForest(full) {
   if (look.region === 'costa') [{ x: -.58, z: -.5, s: 1.05, t: 3, rot: .4 }, { x: .64, z: -.62, s: .95, t: 8, rot: 2.6 }]
     .forEach((p, i) => { want['P' + i] = () => makePalm(p, pal); });
   DECOR.forEach((p, i) => {
+    if (p.kind === 'flower' && bloom != null) { if (p.t <= bloom) want['D' + i] = () => makeDecor(p, pal); return; }
     const need = p.kind === 'flower' ? 70 : p.kind === 'grass' ? 30 : 0;
     if (score >= need && p.t <= score + 10) want['D' + i] = () => makeDecor(p, pal);
   });
+  // Con ahorro, el campo de Uku se llena de flores amarillas
+  if (bloom != null) MEADOW.forEach((p, i) => { if (p.t < bloom - 8) want['F' + i] = () => makeFlower(p, pal); });
   const have = {};
   forest.children.forEach(o => { have[o.userData.key] = o; });
   Object.keys(have).forEach(k => { have[k].userData.dir = want[k] ? 1 : -1; });
@@ -232,6 +257,18 @@ const POSES = {
                  head: [-6, 0, Math.sin(t * 6) * 7] })
 };
 const UMB_POSE = { upperarm_R: [0, 36, 12], forearm_R: [-100, 26, -30], hand_R: [-40, 4, -10] };
+// Ánimos que se quedan (los gestos pasan por encima y vuelven a esto)
+const MOODS = {
+  feliz: t => ({ upperarm_R: [0, 12, 34], forearm_R: [-24, 12, -14], hand_R: [-20, 0, -6],
+                 upperarm_L: mirror([0, 12, 34]), forearm_L: mirror([-24, 12, -14]), hand_L: mirror([-20, 0, -6]),
+                 head: [-8, Math.sin(t * .6) * 10, Math.sin(t * 2.2) * 5] }),
+  triste: t => ({ head: [24, Math.sin(t * .25) * 5, 7], neck: [8, 0, 0], spine: [7, 0, 0], chest: [4 + Math.sin(t * .9) * .8, 0, 0],
+                  upperarm_R: [0, 6, 70], forearm_R: [14, 8, 4], upperarm_L: mirror([0, 6, 70]), forearm_L: mirror([14, 8, 4]) }),
+  // enojado: brazos cruzados y la cabeza que dice que no
+  enojado: t => ({ upperarm_R: [0, 62, 46], forearm_R: [-18, 78, -24], hand_R: [-10, 10, -6],
+                   upperarm_L: mirror([0, 58, 42]), forearm_L: mirror([-18, 74, -30]), hand_L: mirror([-10, 10, -6]),
+                   head: [8, Math.sin(t * 7) * 6 * (Math.sin(t * .8) > .3 ? 1 : 0), -4] })
+};
 function target(name, t) {
   let r = REST[name] ? REST[name].slice() : [0, 0, 0];
   // vida en reposo: respiración, mirada y un balanceo leve de brazos
@@ -241,7 +278,7 @@ function target(name, t) {
   if (name === 'upperarm_R' || name === 'upperarm_L') r[1] += Math.sin(t * .9 + (name === 'upperarm_L' ? 1.5 : 0)) * 3;
   // Con paraguas, el brazo derecho lo sostiene siempre (los gestos usan la cabeza y el otro brazo)
   if (look.hat === 'paraguas' && UMB_POSE[name]) { const u = UMB_POSE[name].slice(); u[2] += Math.sin(t * .9) * 2; return u; }
-  if (!gesture || !POSES[gesture]) return r;
+  if (!gesture || !POSES[gesture]) { const m = mood && MOODS[mood] && MOODS[mood](t)[name]; return m || r; }
   const g = POSES[gesture](gestureT)[name];
   return g || r;
 }
@@ -411,7 +448,7 @@ function frame(now) {
       b.rotation.z = lerp(b.rotation.z, D(g[2]), a);
     });
     if (umb) { bear.updateMatrixWorld(true); placeUmbrella(); }
-    const hop = gesture === 'happy' ? Math.abs(Math.sin(gestureT * 6)) * .05 : 0;
+    const hop = gesture === 'happy' ? Math.abs(Math.sin(gestureT * 6)) * .05 : mood === 'feliz' && !gesture && !RM ? Math.abs(Math.sin(t * 2.4)) * .018 : 0;
     bear.position.y = lerp(bear.position.y, .45 + hop, Math.min(1, dt * 10));
   }
   if (forest) forest.children.slice().forEach(o => {
@@ -433,6 +470,13 @@ function frame(now) {
       a.setY(i, y); a.setX(i, a.getX(i) + Math.sin(t * .6 + i) * .0009);
     }
     a.needsUpdate = true;
+  }
+  if (cloud && cloud.visible) {
+    cloud.position.x = Math.sin(t * .5) * .04;
+    const dr = cloud.userData.drops.geometry.attributes.position;
+    if (!RM) for (let i = 0; i < dr.count; i += 2) { let y = dr.getY(i) - dt * 1.4; if (y < -.5) y += .42; dr.setY(i, y); dr.setY(i + 1, y - .05); }
+    dr.needsUpdate = true;
+    cloud.userData.bolt.visible = mood === 'enojado' && (RM || (t % 2.6) < .12 || ((t % 2.6) > .22 && (t % 2.6) < .3));
   }
   if (rain && rain.visible && !RM) {
     const a = rain.geometry.attributes.position;
@@ -534,6 +578,7 @@ function init() {
   buildForest();
   buildDust();
   buildRain();
+  buildCloud(); paintCloud();
   rain.visible = !!look.rain;
   raf = requestAnimationFrame(frame);
 }
@@ -556,6 +601,28 @@ export function attach(el, opts) {
   }
 }
 export function setScore(s) { if (s !== score) { score = s; if (renderer) buildForest(); } }
+export function setBloom(b) { b = b == null ? null : Math.max(0, Math.min(100, b)); if (b !== bloom) { bloom = b; if (renderer) buildForest(); } }
+export function setMood(m) { mood = MOODS[m] || m === 'tranquilo' ? m : null; if (renderer) paintCloud(); }
+function buildCloud() {
+  cloud = new THREE.Group();
+  const puff = new THREE.MeshBasicMaterial({ color: '#c3c9d4', fog: false });
+  [[0, 0, .16], [-.15, -.03, .12], [.15, -.03, .12], [.07, .06, .11], [-.08, .05, .1]].forEach(([x, y, r]) => { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 10), puff); m.position.set(x, y, 0); m.scale.z = .7; cloud.add(m); });
+  const n = 24, pos = new Float32Array(n * 6), r = rng(7);
+  for (let i = 0; i < n; i++) { const x = (r() - .5) * .36, y = -.08 - r() * .4, z = (r() - .5) * .1; pos.set([x, y, z, x, y - .05, z], i * 6); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const drops = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: '#7f9bd0', fog: false }));
+  const shape = new THREE.Shape(); [[0, 0], [.05, 0], [.01, -.09], [.06, -.09], [-.03, -.24], [0, -.12], [-.05, -.12]].forEach(([x, y], i) => i ? shape.lineTo(x, y) : shape.moveTo(x, y));
+  const bolt = new THREE.Mesh(new THREE.ShapeGeometry(shape), new THREE.MeshBasicMaterial({ color: '#ffd200', side: THREE.DoubleSide, fog: false }));
+  bolt.position.set(.02, -.1, .08); bolt.visible = false;
+  cloud.add(drops, bolt); cloud.userData = { drops, bolt, puff };
+  cloud.position.set(0, 1.13, .05); cloud.visible = false;
+  scene.add(cloud);
+}
+function paintCloud() {
+  if (!cloud) return;
+  cloud.visible = mood === 'triste' || mood === 'enojado';
+  cloud.userData.puff.color.set(mood === 'enojado' ? '#6f7686' : '#c3c9d4');
+}
 export function detach(el) { if (host === el) { host = null; } }
 export function supported() {
   try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; }

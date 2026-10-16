@@ -63,31 +63,38 @@
 .pfm-askuku { display: inline-flex; align-items: center; gap: 6px; padding: 0 16px; border: 1px solid var(--cx-line); border-radius: 99px; background: none; color: var(--bp-theme-color-text-primary); font: var(--ui-label-md, 600 14px/22px sans-serif); cursor: pointer; }
 .pfm-askuku .material-symbols-rounded { font-size: 18px; }
 
-/* La tarea de la semana: Uku la pide y su bosque muestra cómo vas */
-.pfm-task { margin-top: 16px; padding: 16px; border-radius: 20px; background: var(--bp-theme-color-surface-container-default); }
-.pfm-task__label { margin: 0; font: var(--cx-sub); color: var(--cx-muted); }
-.pfm-task__n { margin: 2px 0 0; font: 700 44px/50px var(--sol-font, Roboto, sans-serif); letter-spacing: -1.2px; font-variant-numeric: tabular-nums; }
-.pfm-task__sub { margin: 0 0 14px; font: var(--cx-sub); color: var(--cx-muted); }
-.pfm-task__say { display: flex; align-items: flex-start; gap: 10px; }
-.pfm-task__say .pfm-face { flex-basis: 40px; width: 40px; height: 40px; }
-.pfm-task__bubble { position: relative; flex: 1; margin: 0; padding: 12px 14px; border-radius: 4px 18px 18px 18px; background: var(--cx-fill, #f3f5f8); font: var(--ui-body-md-medium, 500 15px/21px sans-serif); color: var(--bp-theme-color-text-primary); }
-.pfm-forest { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 16px; }
-.pfm-tree { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px 8px; border-radius: 14px; background: color-mix(in srgb, #b08a4a 12%, transparent); }
-.pfm-tree .material-symbols-rounded { font-size: 30px; color: #b08a4a; font-variation-settings: 'FILL' 1; }
-.pfm-tree small { font: var(--ui-caption, 500 11px/14px sans-serif); color: var(--cx-muted); white-space: nowrap; }
-.pfm-tree.is-ok { background: color-mix(in srgb, var(--bp-theme-color-status-success-icon, #1a8a4a) 14%, transparent); }
-.pfm-tree.is-ok .material-symbols-rounded { color: var(--bp-theme-color-status-success-icon, #1a8a4a); animation: pfmGrow .5s cubic-bezier(.2, 1.4, .4, 1) both; }
-.pfm-tree.is-cur { background: var(--cx-fill, #f3f5f8); box-shadow: inset 0 0 0 1.5px var(--bp-interaction-tertiary-fg); }
-.pfm-tree.is-cur .material-symbols-rounded { color: var(--bp-interaction-tertiary-fg); }
-.pfm-tree.is-dry .material-symbols-rounded { opacity: .7; }
-@keyframes pfmGrow { from { transform: scale(.5) translateY(6px); } }
-.pfm-task__meta { display: flex; align-items: center; gap: 6px; margin: 12px 0 0; font: var(--cx-sub); color: var(--cx-muted); }
-.pfm-task__meta .material-symbols-rounded { font-size: 18px; color: #e8812a; font-variation-settings: 'FILL' 1; }
+/* El mundo de Uku: su ánimo, su campo de flores y su bosque */
+.pfm-ukuhero .pfm-hero { height: 240px; }
+.pfm-ukuhero__name { display: flex; align-items: center; gap: 6px; }
+.pfm-ukuhero__name .material-symbols-rounded { font-size: 20px; }
+.pf-mood--feliz .pfm-ukuhero__name .material-symbols-rounded { color: var(--bp-theme-color-status-success-icon, #1a8a4a); }
+.pf-mood--triste .pfm-ukuhero__name .material-symbols-rounded { color: #5b7bbf; }
+.pf-mood--enojado .pfm-ukuhero__name .material-symbols-rounded { color: var(--bp-theme-color-status-error-icon, #c20505); }
+.pfm-ukuhero__ai { display: flex; gap: 6px; margin: 14px 0 0 !important; font: var(--ui-body-sm-medium, 500 14px/20px sans-serif); color: var(--bp-theme-color-text-primary); }
+.pfm-ukuhero__ai .material-symbols-rounded { font-size: 18px; background: var(--ai-grad, linear-gradient(90deg, #6d5cff, #e2509c)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.pfm-world { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 0 12px 12px; }
+.pfm-world__chip { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; padding: 10px; border: 0; border-radius: 14px; background: var(--cx-fill, #f3f5f8); color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
+.pfm-world__chip > span:last-child { display: flex; flex-direction: column; min-width: 0; max-width: 100%; }
+.pfm-world__chip small { font: var(--ui-caption, 500 11px/14px sans-serif); color: var(--cx-muted); }
+.pfm-world__chip b { font: var(--ui-body-sm-semibold, 600 13px/17px sans-serif); }
+.pfm-world__chip > .material-symbols-rounded { font-size: 22px; font-variation-settings: 'FILL' 1; }
+.is-ok > .material-symbols-rounded, .is-feliz > .material-symbols-rounded { color: var(--bp-theme-color-status-success-icon, #1a8a4a); }
+.is-warn > .material-symbols-rounded, .is-tranquilo > .material-symbols-rounded { color: #c98a12; }
+.is-over > .material-symbols-rounded, .is-enojado > .material-symbols-rounded { color: var(--bp-theme-color-status-error-icon, #c20505); }
+.is-triste > .material-symbols-rounded { color: #5b7bbf; }
+.pfm-world__row { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--cx-line); }
+.pfm-world__row > .material-symbols-rounded { flex: 0 0 40px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: var(--cx-fill, #f3f5f8); font-size: 24px; font-variation-settings: 'FILL' 1; }
+.pfm-world__row > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+.pfm-world__row small { font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-sec__head--sub { margin-top: 24px; }
 .pfm-task__go { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; margin-top: 14px; border: 0; border-radius: 99px; background: var(--bp-interaction-tertiary-fg); color: var(--bp-theme-color-text-on-solid, #fff); font: var(--ui-label-md, 600 15px/22px sans-serif); cursor: pointer; }
 .pfm-task__go .material-symbols-rounded { font-size: 20px; }
 .pfm-task__go:active { transform: scale(.98); }
 .pfm-play__bar { height: 6px; border-radius: 99px; overflow: hidden; }
 .pfm-play__bar i { display: block; height: 100%; border-radius: inherit; transition: width .4s ease; }
+.pfm-game__mood { display: flex; align-items: center; gap: 6px; margin: 4px 0 8px !important; font: var(--ui-body-md-semibold, 600 16px/22px sans-serif); color: var(--bp-theme-color-text-primary) !important; }
+.pfm-game__mood .material-symbols-rounded { font-size: 24px; font-variation-settings: 'FILL' 1; }
+.pfm-game__mood.is-feliz .material-symbols-rounded { color: var(--bp-theme-color-status-success-icon, #1a8a4a); }
 
 /* ---------- El juego (pantalla completa, como Clutter) ---------- */
 .pfm-game { position: fixed; inset: 0; z-index: 1200; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; padding: 12px 20px calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--bp-theme-color-surface-container-default, #fff); color: var(--bp-theme-color-text-primary); transform: translateY(100%); visibility: hidden; transition: transform .32s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .32s; overflow-y: auto; }
@@ -133,8 +140,6 @@
 .pfm-sum__row b { font-variant-numeric: tabular-nums; }
 .pfm-game__result .pfm-task__go, .pfm-game__end .pfm-task__go { margin-top: 24px; }
 .pfm-game__result .pf-note { margin: 12px 0 0; text-align: center; }
-.pfm-game__end .pfm-forest { width: 100%; margin: 20px 0 4px; }
-.pfm-game__end .pfm-task__meta { justify-content: center; }
 .pfm-game__burst { width: 96px; height: 96px; border-radius: 50%; overflow: hidden; background: var(--cx-fill, #f2f2f2); animation: pfmPop .5s cubic-bezier(.2, 1.4, .4, 1) both; }
 .pfm-game__burst img { width: 100%; height: 100%; object-fit: cover; }
 @keyframes pfmPop { from { transform: scale(.4); opacity: 0; } }

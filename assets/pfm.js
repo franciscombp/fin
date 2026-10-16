@@ -101,10 +101,26 @@
       });
       DB = { mov: U, usuarios: d.usuarios, deudas: d.deudas, escenarios: d.escenarios, hipoteca: d.hipoteca };
       if (!DB.mov[ST.u]) ST.u = 'andres';
+      Object.keys(U).forEach(sembrar);
       cache = {}; fijoCache = {};
       return DB;
     });
     return loading;
+  }
+  /* Historial de la demo: cada persona clasificó hasta cierta fecha, así se ven
+     los cuatro ánimos de Uku. Jorge está al día (contento), Rosa tiene solo lo
+     de esta semana (tranquilo), Andrés dejó pasar 10 días (triste) y Daniela
+     no clasifica hace un mes (enojado). Se aplica una vez por persona. */
+  var AL_DIA = { jorge: '2026-10-16', rosa: '2026-10-12', andres: '2026-10-05', daniela: '2026-09-01' };
+  function sembrar(u) {
+    var seed = ST.seed || (ST.seed = {}); if (seed[u] || !AL_DIA[u]) return;
+    var prev = ST.u; ST.u = u;
+    rows().forEach(function (r) {
+      if (r.f >= AL_DIA[u]) return;
+      if (r.t === 'Por revisar') { if (!resp()[gkey(r)]) resp()[gkey(r)] = tplOf(r).o[0]; return; }
+      var c = cls(r, true); if (c.k === 'gasto' && SIN[c.cat]) (ST.cats[u] || (ST.cats[u] = {}))[r.i] = r.c === 'Transferencia a persona' ? 'Familia y dependientes' : mapc(r.c);
+    });
+    ST.u = prev; seed[u] = 1; persist();
   }
   function user() { return DB.usuarios.filter(function (x) { return x.usuario === ST.u; })[0]; }
   function nombre() { return user().nombre.split(' ')[0]; }
@@ -159,7 +175,7 @@
      (entrada por revisar) | rout (salida por revisar) | no (no suma). */
   function catOv(r) { var o = ST.cats[ST.u]; return o && o[r.i]; }
   // En el MVP, un pago con Deuna se ve sin el nombre del comercio
-  function desc(r) { return !tobe() && r.t === 'Detalle Deuna' && r.m < 0 && !catOv(r) ? T('Pago con Deuna') : r.desc; }
+  function desc(r) { return !tobe() && r.t === 'Detalle Deuna' && r.m < 0 ? T('Pago con Deuna') : r.desc; }
   function isRecarga(r) { return r.t === 'Gasto' && /^tú \(Deuna\)/.test(r.cp); }
   function cls(r, raw) {
     var a = raw ? null : answerOf(r), ov = raw ? null : catOv(r);
@@ -401,20 +417,33 @@
       total: r2(bp.concat(otras, casas).reduce(function (a, x) { return a + Math.max(0, x.saldo); }, 0)) };
   }
 
-  /* ---------- Estado de Uku ---------- */
-  var MOOD = { feliz: 'contento', atento: 'atento', preocupado: 'preocupado', tranquilo: 'tranquilo' };
-  function salud(m) {
-    var s = month(m), p = pres().general, f = isCur(m) ? +HOY.slice(8, 10) / diasMes(m) : 1;
-    return Math.max(5, Math.min(100, Math.round(100 - Math.max(0, s.gast / p - f * .9) * 160)));
+  /* ---------- El mundo de Uku (como Duo) ----------
+     Tres señales, cada una con un solo significado:
+     · Su ánimo = tus consumos clasificados. Al día: contento. Algo nuevo:
+       tranquilo. Pendiente hace más de una semana: triste. Más de tres
+       semanas (o muchos): enojado. Una semana sin gastos no cuenta en contra:
+       no hay nada que clasificar.
+     · Las flores amarillas de su campo = tu ahorro (cuántos meses te alcanza).
+     · El bosque = tu presupuesto del mes. */
+  var MOOD = { feliz: 'contento', tranquilo: 'tranquilo', triste: 'triste', enojado: 'enojado' };
+  var MOOD_IC = { feliz: 'sentiment_very_satisfied', tranquilo: 'sentiment_satisfied', triste: 'sentiment_dissatisfied', enojado: 'sentiment_extremely_dissatisfied' };
+  function animo() {
+    var it = items(); if (!it.length) return { k: 'feliz', n: 0, dias: 0 };
+    var old = it.reduce(function (a, x) { return x.f < a ? x.f : a; }, HOY);
+    var dias = Math.round((new Date(HOY + 'T12:00:00') - new Date(old + 'T12:00:00')) / 864e5);
+    return { k: dias > 21 || it.length > 25 ? 'enojado' : dias > 7 ? 'triste' : 'tranquilo', n: it.length, dias: dias };
   }
-  function mood(m) {
-    // Si quedaron consumos sin clasificar de semanas anteriores, su bosque se seca
-    var W = tareas().W; if (W.slice(0, -1).some(function (w) { return !w.ok; })) return 'preocupado';
-    var s = month(m), p = pres().general, f = isCur(m) ? +HOY.slice(8, 10) / diasMes(m) : 1;
-    if (s.gast > p) return 'preocupado';
-    if (s.gast / p > f * .95 || preguntas(m).some(function (x) { return x.enMes.length; })) return 'atento';
-    return isCur(m) ? 'tranquilo' : 'feliz';
+  function mood() { return animo().k; }
+  // Ahorro: cuántos meses de gasto cubre lo que tienes en tus cuentas
+  function colchon() { var p = prom(curMes(), 3), s = sumv(saldos(), function (x) { return x.v; }); return p && p.gast ? s / p.gast : 0; }
+  // Menos de 1 mes: sin flores; de 1 a 3 meses, el campo se va llenando
+  function flores() { var c = colchon(); return c < 1 ? 0 : Math.round(Math.min(1, .3 + (c - 1) / 2 * .7) * 100); }
+  // Presupuesto: cómo vas contra tu ritmo del mes
+  function presEstado(m) {
+    m = m || curMes(); var s = month(m), p = pres().general, f = isCur(m) ? +HOY.slice(8, 10) / diasMes(m) : 1, u = s.gast / (p * f);
+    return u <= 1 ? { k: 'ok', l: T('Vas bien'), v: 85 } : u <= 1.15 ? { k: 'warn', l: T('Con cuidado'), v: 55 } : { k: 'over', l: T('Te pasaste'), v: 25 };
   }
+  function salud(m) { return presEstado(m).v; }
 
   /* =====================================================================
      Pantalla. Tres niveles, de lo que más importa a lo que menos:
@@ -511,38 +540,56 @@
     if (A) { x.go = A[0]; x.gol = T(A[1]); }
     return x;
   }
-  function saludo() {
-    var a = tobe() ? anticipa(curMes())[0] : null;
-    return T('Hola, {n}.', { n: nombre() }) + ' ' + (a ? a.t + '.' : T('Te cuento lo que noté en tus movimientos.'));
+  function ukuMsg(a) {
+    if (a.k === 'feliz') return T('¡Todo clasificado! Así da gusto ayudarte.');
+    if (a.k === 'tranquilo') return T(a.n === 1 ? 'Tengo 1 consumo nuevo para ti. ¿Lo vemos?' : 'Tengo {n} consumos nuevos para ti. ¿Los vemos?', { n: a.n });
+    if (a.k === 'triste') return T(a.n === 1 ? 'Me dejaste 1 consumo sin clasificar hace {d} días.' : 'Me dejaste {n} consumos sin clasificar, algunos de hace {d} días.', { n: a.n, d: a.dias });
+    return T('¡{n} consumos sin clasificar, algunos de hace {d} días! Así no te puedo ayudar.', { n: a.n, d: a.dias });
+  }
+  function worldHTML(a) {
+    var c = colchon(), pe = presEstado();
+    var chip = function (k, ic, l, v, cls) { return '<button class="pfm-world__chip is-' + cls + '" data-pfm="world"><span class="material-symbols-rounded" aria-hidden="true">' + ic + '</span><span><small>' + l + '</small><b>' + v + '</b></span></button>'; };
+    return '<div class="pfm-world">' +
+      chip('mood', MOOD_IC[a.k], T('Tus consumos'), a.n ? T('{n} sin clasificar', { n: a.n }) : T('Al día'), a.k) +
+      chip('bloom', 'local_florist', T('Tu ahorro'), c >= 1 ? T(Math.floor(c) === 1 ? 'Te alcanza 1 mes' : 'Te alcanza {n} meses', { n: Math.floor(c) }) : T('Menos de 1 mes'), c >= 3 ? 'ok' : c >= 1 ? 'warn' : 'over') +
+      chip('forest', 'park', T('Tu presupuesto'), pe.l, pe.k) + '</div>';
   }
   function ukuHTML() {
-    // En el to-be la predicción va en el saludo de Uku: no se repite en las tarjetas
-    var m = curMes(), all = insights(), off = tobe() && anticipa(m).length ? 1 : 0, ins = all.slice(off);
-    var html = '<section class="pf-sec pfm-uku' + (tobe() ? ' is-tobe' : '') + '">';
-    if (tobe()) {
-      html += '<div class="pfm-ukuhero pf-mood--' + mood(m) + '"><div class="pf-hero pfm-hero"><div class="b3d" data-score="' + bosque() + '"><div class="b3d__fallback">' + (window.Asistente ? Asistente.petSVG() : '') + '</div></div></div>' +
-        '<div class="pfm-ukuhero__say"><p class="pfm-ukuhero__name">Uku · ' + T('está {animo}', { animo: MOOD[mood(m)] }) + '</p><p class="pfm-ukuhero__t">' + esc(saludo()) + '</p>' +
-        '<div class="pfm-ukuhero__acts"><button class="ai-cta ai-cta--sm" data-pfm="analyze"><span class="ai-cta__spark material-symbols-rounded" aria-hidden="true">auto_awesome</span><span class="ai-cta__t"><b>' + T('Analizar') + '</b></span><span class="ai-badge">IA</span></button>' +
-        '<button class="pfm-askuku" data-pfm="ai:"><span class="material-symbols-rounded" aria-hidden="true">chat_bubble</span>' + T('Pregúntale') + '</button></div></div></div>';
-    }
-    html += '<div class="pfm-sec__head">' + (tobe() ? '' : '<span class="pfm-face">' + face() + '</span>') + '<h2>' + T(tobe() ? 'Lo que Uku ve venir' : 'Uku te cuenta') + '</h2>' +
-      (ins.length ? '<button class="pf-link" data-pfm="insights">' + T('Ver todo') + '</button>' : '') + '</div>';
-    html += '<div class="pfm-carousel" role="list">' + ins.slice(0, 6).map(function (x, i) {
-      return '<button role="listitem" class="pfm-ins is-' + x.kind + '" data-pfm="' + (x.go || 'ins:' + (i + off)) + '"><span class="material-symbols-rounded" aria-hidden="true">' + x.icon + '</span><b>' + esc(x.t) + '</b>' +
-        (x.go ? '<span class="pfm-ins__go">' + esc(x.gol) + '<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></span>' : '') + '</button>';
-    }).join('') + '</div>';
-    return html + tareaHTML() + '</section>';
+    var m = curMes(), a = animo(), all = insights(), off = tobe() && anticipa(m).length ? 1 : 0, ins = all.slice(off);
+    var html = '<section class="pf-sec pfm-uku' + (tobe() ? ' is-tobe' : '') + '">' +
+      '<div class="pfm-ukuhero pf-mood--' + a.k + '"><div class="pf-hero pfm-hero"><div class="b3d" data-score="' + salud(m) + '" data-bloom="' + flores() + '" data-mood="' + a.k + '"><div class="b3d__fallback">' + (window.Asistente ? Asistente.petSVG() : '') + '</div></div></div>' +
+      '<div class="pfm-ukuhero__say"><p class="pfm-ukuhero__name"><span class="material-symbols-rounded" aria-hidden="true">' + MOOD_IC[a.k] + '</span>Uku · ' + T('está {animo}', { animo: T(MOOD[a.k]) }) + '</p>' +
+        '<p class="pfm-ukuhero__t">' + esc(ukuMsg(a)) + '</p>' +
+        (a.n ? '<button class="pfm-task__go" data-pfm="game">' + T('Clasificar {n}', { n: Math.min(TANDA, a.n) }) + '<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></button>' : '') +
+        (tobe() ? (off ? '<p class="pfm-ukuhero__ai"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + esc(all[0].t) + '</p>' : '') +
+          '<div class="pfm-ukuhero__acts"><button class="ai-cta ai-cta--sm" data-pfm="analyze"><span class="ai-cta__spark material-symbols-rounded" aria-hidden="true">auto_awesome</span><span class="ai-cta__t"><b>' + T('Analizar') + '</b></span><span class="ai-badge">IA</span></button>' +
+          '<button class="pfm-askuku" data-pfm="ai:"><span class="material-symbols-rounded" aria-hidden="true">chat_bubble</span>' + T('Pregúntale') + '</button></div>' : '') +
+      '</div>' + worldHTML(a) + '</div>';
+    if (ins.length) html += '<div class="pfm-sec__head pfm-sec__head--sub"><h2>' + T('Lo que notó Uku') + '</h2><button class="pf-link" data-pfm="insights">' + T('Ver todo') + '</button></div>' +
+      '<div class="pfm-carousel" role="list">' + ins.slice(0, 6).map(function (x, i) {
+        return '<button role="listitem" class="pfm-ins is-' + x.kind + '" data-pfm="' + (x.go || 'ins:' + (i + off)) + '"><span class="material-symbols-rounded" aria-hidden="true">' + x.icon + '</span><b>' + esc(x.t) + '</b>' +
+          (x.go ? '<span class="pfm-ins__go">' + esc(x.gol) + '<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></span>' : '') + '</button>';
+      }).join('') + '</div>';
+    return html + '</section>';
+  }
+  // Qué significa cada cosa del mundo de Uku
+  function worldSheet() {
+    var a = animo(), c = colchon(), pe = presEstado(), p = pres().general;
+    var row = function (ic, cls, t, s) { return '<div class="pfm-world__row is-' + cls + '"><span class="material-symbols-rounded" aria-hidden="true">' + ic + '</span><span><b>' + t + '</b><small>' + s + '</small></span></div>'; };
+    showSheet('<h3>' + T('El mundo de Uku') + '</h3><p>' + T('Uku y su campo cambian con tus finanzas. Cada cosa tiene un solo significado.') + '</p>' +
+      row(MOOD_IC[a.k], a.k, T('Su ánimo: tus consumos clasificados'), a.n ? T('Está {animo}: tienes {n} sin clasificar. Se pone triste si pasa una semana y se enoja después de tres. Si una semana no gastas, no pasa nada.', { animo: T(MOOD[a.k]), n: a.n }) : T('Está contento: todo está clasificado. Si una semana no gastas, no pasa nada.')) +
+      row('local_florist', c >= 3 ? 'ok' : c >= 1 ? 'warn' : 'over', T('Las flores amarillas: tu ahorro'), T('Lo que tienes en tus cuentas te alcanza para {n} meses de gasto. Con 3 meses o más, su campo está lleno de flores.', { n: (Math.round(c * 10) / 10).toString().replace('.', ',') })) +
+      row('park', pe.k, T('El bosque: tu presupuesto'), T('{e}: llevas {g} de {p} este mes. Si te pasas, el bosque se seca.', { e: pe.l, g: money0(month(curMes()).gast), p: money0(p) })) +
+      (a.n ? '<button class="pfm-task__go" data-pfm="game">' + T('Clasificar {n}', { n: Math.min(TANDA, a.n) }) + '<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></button>' : ''));
   }
 
-  /* El juego: tarjetas de a una, como Tinder. Derecha = Uku acertó; izquierda
-     = no, y eliges tú. Cada respuesta se guarda y se aplica a los parecidos.
-     MVP: el banco no sabe dónde pagaste con Deuna ni qué son las
-     transferencias de personas, así que hay más por ordenar. To-be: Uku ya
-     ordenó casi todo y solo pregunta lo que no puede saber. */
+  /* Lo que el banco no sabe clasificar solo. MVP: no sabe dónde pagaste con
+     Deuna ni qué son las transferencias de personas, así que hay más. To-be:
+     Uku clasificó casi todo y solo pregunta lo que no puede saber. */
   var SIN = { 'Pagos con Deuna': 1, 'Transferencias a personas': 1, 'Pagos a empresas': 1, 'Otros': 1 };
-  /* Tarea semanal: cada lunes Uku junta lo que no pudo clasificar de la
-     semana. Mira las últimas 4 semanas: cada semana al día es un árbol que
-     crece en su bosque; lo que se deja pendiente lo va secando. */
+  /* Qué falta clasificar: lo de las últimas 4 semanas, más las preguntas
+     viejas que siguen abiertas. Cada consumo guarda su fecha: de ahí sale
+     cuánto tiempo lleva esperando (y el ánimo de Uku). */
   var SEMANAS = 4;
   function lunes(f) { return addDays(f, -((wday(f) + 6) % 7)); }
   function semanas() {
@@ -575,20 +622,7 @@
     return tareas().list.filter(function (it) { return !it.done; }).map(function (it) { it.sug = it.t === 'q' ? it.q.tpl.o[0] : sugerir(it.r); return it; })
       .sort(function (a, b) { return b.sem.localeCompare(a.sem) || (a.t === 'q' ? 0 : 1) - (b.t === 'q' ? 0 : 1) || b.f.localeCompare(a.f); });
   }
-  // Racha: semanas seguidas al día, contando hacia atrás desde la anterior (y esta, si ya está)
-  function racha(W) {
-    var n = W[W.length - 1].ok ? 1 : 0;
-    for (var i = W.length - 2; i >= 0 && W[i].ok; i--) n++;
-    return n;
-  }
-  // El bosque de Uku crece con las semanas al día (de 20 a 100)
-  function bosque() { var W = tareas().W; return Math.round(20 + 80 * W.filter(function (w) { return w.ok; }).length / W.length); }
-  function forestHTML(W) {
-    return '<div class="pfm-forest" role="img" aria-label="' + T('{n} de {t} semanas al día', { n: W.filter(function (w) { return w.ok; }).length, t: W.length }) + '">' + W.map(function (w) {
-      var st = w.ok ? 'ok' : w.cur ? 'cur' : 'dry';
-      return '<span class="pfm-tree is-' + st + '"><span class="material-symbols-rounded" aria-hidden="true">' + (w.ok ? 'park' : w.cur ? 'potted_plant' : 'grass') + '</span><small>' + (w.cur ? T('Esta semana') : dshort(w.ini)) + '</small></span>';
-    }).join('') + '</div>';
-  }
+  // Lo que Uku cree que fue un consumo (reglas en el MVP; el comercio en el to-be)
   function sugerir(r) {
     var h = +r.h.slice(0, 2), v = -r.m, ap = user().nombre.split(' ')[1];
     if (ap && r.cp.indexOf(ap) >= 0) return { cat: 'Familia y dependientes', why: T('Comparte tu apellido.') };
@@ -598,22 +632,7 @@
     if ((h >= 19 || wday(r.f) % 6 === 0) && v <= 40) return { cat: 'Entretenimiento', why: T('Fue de noche o en fin de semana.') };
     return null;
   }
-  // Uku pide la tarea de la semana; su bosque muestra cómo vas
   var TANDA = 10; // se clasifica de a 10, sin prisa
-  function tareaHTML() {
-    var T0 = tareas(), W = T0.W, pend = T0.list.filter(function (it) { return !it.done; }).length;
-    // Las semanas que ya terminaron y quedaron pendientes secan el bosque
-    var secas = W.slice(0, -1).filter(function (w) { return !w.ok; }).length, rc = racha(W), msg;
-    if (pend) msg = secas ? T(secas === 1 ? 'Una semana quedó pendiente y mi bosque se está secando. ¿Me ayudas?' : '{n} semanas quedaron pendientes y mi bosque se está secando. ¿Me ayudas?', { n: secas })
-      : tobe() ? T('Clasifiqué el resto; estos solo tú los sabes.') : T('¿Me ayudas? Es un minuto.');
-    else msg = T('¡Todo clasificado! Mi bosque crece con cada semana al día. Vuelvo el lunes con lo nuevo.');
-    return '<div class="pfm-task' + (pend ? '' : ' is-done') + '">' +
-      (pend ? '<p class="pfm-task__label">' + T('Consumos sin clasificar') + '</p><p class="pfm-task__n">' + pend + '</p><p class="pfm-task__sub">' + T('Clasifica {n} cada vez, sin prisa.', { n: TANDA }) + '</p>' : '') +
-      '<div class="pfm-task__say"><span class="pfm-face">' + face() + '</span><p class="pfm-task__bubble">' + esc(msg) + '</p></div>' +
-      forestHTML(W) +
-      '<p class="pfm-task__meta"><span class="material-symbols-rounded" aria-hidden="true">local_fire_department</span>' + (rc ? T(rc === 1 ? 'Racha de 1 semana' : 'Racha de {n} semanas', { n: rc }) : T('Sin racha todavía')) + ' · ' + T('Uku te lo pide cada lunes') + '</p>' +
-      (pend ? '<button class="pfm-task__go" data-pfm="game">' + T('Clasificar {n}', { n: Math.min(TANDA, pend) }) + '<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></button>' : '') + '</div>';
-  }
 
   /* El juego, como Clutter: un consumo por pantalla, con lo que ayuda a
      recordar (monto, a quién, cuándo y por dónde) y un toque en el grupo.
@@ -623,7 +642,7 @@
   var G = null, gel = null;
   function gameOpen() {
     var all = items();
-    G = { list: all.slice(0, TANDA), total: all.length, i: 0, ans: [], from: tareas().W, view: 'card' };
+    G = { list: all.slice(0, TANDA), total: all.length, i: 0, ans: [], view: 'card' };
     if (!G.list.length) return toast(T('No tienes nada por clasificar.'));
     if (!gel) {
       gel = document.createElement('div'); gel.className = 'pfm-game'; gel.setAttribute('role', 'dialog'); gel.setAttribute('aria-modal', 'true'); gel.setAttribute('aria-label', T('Clasifica tus consumos'));
@@ -695,13 +714,13 @@
   }
   // Después de guardar: el bosque de Uku
   function doneRender() {
-    var W = tareas().W, crec = W.filter(function (w, i) { return w.ok && !G.from[i].ok; }).length, rc = racha(W), quedan = items().length;
+    var a = animo(), quedan = a.n;
     gel.innerHTML = '<div class="pfm-game__top"><button class="pfm-pill-btn" data-g="close">' + T('Cerrar') + '</button><span></span><span></span></div>' +
       '<div class="pfm-game__end"><span class="pfm-game__burst" aria-hidden="true">' + face() + '</span><h2>' + T('¡Gracias!') + '</h2>' +
-      '<p>' + (crec ? T(crec === 1 ? 'Creció 1 árbol en mi bosque.' : 'Crecieron {n} árboles en mi bosque.', { n: crec }) : T('Mi bosque crece cuando una semana queda al día.')) + '</p>' +
-      forestHTML(W) + (rc ? '<p class="pfm-task__meta"><span class="material-symbols-rounded" aria-hidden="true">local_fire_department</span>' + T(rc === 1 ? 'Racha de 1 semana' : 'Racha de {n} semanas', { n: rc }) + '</p>' : '') +
+      '<p class="pfm-game__mood is-' + a.k + '"><span class="material-symbols-rounded" aria-hidden="true">' + MOOD_IC[a.k] + '</span>' + T('Uku está {animo}', { animo: T(MOOD[a.k]) }) + '</p>' +
+      '<p>' + (quedan ? T(quedan === 1 ? 'Queda 1 consumo por clasificar.' : 'Quedan {n} consumos por clasificar.', { n: quedan }) : T('Todo está clasificado.')) + '</p>' +
       (quedan ? '<button class="pfm-task__go" data-g="more">' + T('Clasificar {n} más', { n: Math.min(TANDA, quedan) }) + '<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></button>' : '') +
-      '<button class="pf-link pf-link--block" data-g="close">' + T('Ver mis gastos') + '</button></div>';
+      '<button class="pf-link pf-link--block" data-g="close">' + T('Volver') + '</button></div>';
     fx('success');
   }
   function gameKey(k) {
@@ -817,7 +836,7 @@
     window.scrollTo({ top: keep });
     hero3D();
   }
-  // El oso en 3D solo en el to-be: en el MVP Uku es liviano (sin 3D, carga con mala conexión)
+  // El oso en 3D con su mundo: ánimo (consumos), flores (ahorro) y bosque (presupuesto)
   var b3d = null;
   function hero3D() {
     var el = scroll.querySelector('.pfm-hero .b3d');
@@ -826,9 +845,10 @@
     import(ASSET + 'bosque3d.js').then(function (m3) {
       if (!m3.supported() || !el.isConnected) return;
       b3d = m3; var c = window.Clima && Clima.last(); if (c) m3.setLook(c.look);
-      m3.attach(el, { score: +el.dataset.score, onTap: function () { fx('select'); m3.play('happy'); } });
+      m3.setBloom(+el.dataset.bloom); m3.setMood(el.dataset.mood);
+      m3.attach(el, { score: +el.dataset.score, onTap: function () { fx('select'); m3.play(el.dataset.mood === 'feliz' ? 'happy' : 'nod'); } });
       el.classList.remove('is-loading'); el.classList.add('is-3d');
-      m3.play({ preocupado: 'worried', atento: 'think', feliz: 'happy', tranquilo: 'wave' }[mood(curMes())]);
+      var g = { feliz: 'happy', tranquilo: 'wave' }[el.dataset.mood]; if (g) m3.play(g);
     }).catch(function () {});
   }
 
@@ -976,7 +996,7 @@
       case 'who': return whoSheet();
       case 'modo': if (ST.modo !== p[1]) { ST.modo = p[1]; persist(); fx('toggle'); refresh(); if (sheetOpen()) whoSheet(); } return;
       case 'u': if (ST.u !== p[1]) { ST.u = p[1]; persist(); fx('toggle'); refresh(); } closeSheet(); return;
-      case 'reset': ST.resp[ST.u] = {}; ST.cats[ST.u] = {}; if (ST.presG) delete ST.presG[ST.u]; persist(); refresh(); closeSheet(); toast(T('Listo, volviste al inicio.')); return;
+      case 'reset': ST.resp[ST.u] = {}; ST.cats[ST.u] = {}; if (ST.presG) delete ST.presG[ST.u]; if (ST.seed) delete ST.seed[ST.u]; sembrar(ST.u); persist(); refresh(); closeSheet(); toast(T('Listo, volviste al inicio.')); return;
       case 'per': ST.per = p[1]; persist(); fx('select'); paint(); return;
       case 'flujo': ST.flujo = p[1]; persist(); fx('select'); paint(); return;
       case 'ing': { ST.flujo = 'in'; ST.per = 'mes'; persist(); closeSheet(); paint(); var fl = scroll.querySelector('.pfm-flow'); if (fl) fl.scrollIntoView({ behavior: 'smooth' }); return; }
@@ -985,6 +1005,7 @@
       case 'score': return scoreSheet();
       case 'products': return productsSheet();
       case 'insights': return insightsSheet(-1);
+      case 'world': return worldSheet();
       case 'ins': return insightsSheet(+p[1]);
       case 'game': closeSheet(); return gameOpen();
       case 'ans': {
