@@ -82,7 +82,7 @@ button.pfm-globo:active { transform: scale(.97); }
    Que dé gusto: la tarjeta entra con un rebote, el botón elegido late y
    suelta un +1, la tarjeta sale volando, Uku avanza por la barra y te
    anima; al guardar, confeti. Sin movimiento si así lo pide el sistema. */
-.pfm-game { position: fixed; inset: 0; z-index: 1200; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; padding: var(--bp-semantic-spacing-micro-md, 8px) var(--bp-layout-grid-margin, 24px) calc(var(--bp-semantic-spacing-macro-sm, 24px) + env(safe-area-inset-bottom, 0px)); background: var(--bp-theme-color-surface-page-default, #f5f5f5); color: var(--bp-theme-color-text-primary); transform: translateY(100%); visibility: hidden; transition: transform .32s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .32s; overflow-x: hidden; overflow-y: auto; }
+.pfm-game { position: fixed; inset: 0; z-index: 1200; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; padding: calc(var(--bp-semantic-spacing-micro-md, 8px) + env(safe-area-inset-top, 0px)) var(--bp-layout-grid-margin, 24px) calc(var(--bp-semantic-spacing-macro-sm, 24px) + env(safe-area-inset-bottom, 0px)); background: var(--bp-theme-color-surface-page-default, #f5f5f5); color: var(--bp-theme-color-text-primary); transform: translateY(100%); visibility: hidden; transition: transform .32s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .32s; overflow-x: hidden; overflow-y: auto; }
 .pfm-game.open { transform: none; visibility: visible; transition: transform .32s cubic-bezier(.2, .8, .2, 1); }
 .pfm-game__top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; min-height: 56px; margin: 0 -8px; }
 .pfm-game__top > :last-child { justify-self: end; }
@@ -121,9 +121,9 @@ button.pfm-globo:active { transform: scale(.97); }
 @keyframes pfmGrow { from { transform: scaleY(0); } }
 
 /* La pregunta y las opciones: chips del sistema que entran en cascada */
-.pfm-game__ask { display: flex; flex-direction: column; gap: 4px; margin: var(--bp-semantic-spacing-macro-md, 36px) 0 var(--bp-semantic-spacing-micro-lg, 16px); font: var(--cx-headline); font-size: 22px; line-height: 28px; letter-spacing: -.3px; color: var(--bp-theme-color-text-primary); text-align: center; }
-.pfm-game__ask small { font: var(--cx-caption); letter-spacing: 0; color: var(--cx-muted); }
-.pfm-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--bp-semantic-spacing-micro-md, 8px); }
+.pfm-game__ask { display: flex; flex-direction: column; gap: 8px; margin: var(--bp-semantic-spacing-macro-md, 36px) 0 var(--bp-semantic-spacing-macro-sm, 24px); font: var(--cx-headline); font-size: 22px; line-height: 28px; letter-spacing: -.3px; color: var(--bp-theme-color-text-primary); text-align: center; }
+.pfm-game__ask small { max-width: 300px; margin: 0 auto; font: var(--cx-caption); line-height: 20px; letter-spacing: 0; color: var(--cx-muted); }
+.pfm-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .pfm-choices.is-list { grid-template-columns: 1fr; }
 .pfm-choice { position: relative; display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md, 8px); min-height: var(--bp-semantic-size-interactive-md, 48px); padding: 0 var(--bp-semantic-spacing-micro-lg, 16px) 0 12px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-selectable-bg); color: var(--bp-interaction-selectable-fg); font: var(--ui-body-sm-semibold); text-align: left; cursor: pointer; animation: pfmUp .35s cubic-bezier(.2, 1.2, .4, 1) both; animation-delay: calc(.12s + var(--d, 0ms)); transition: transform .15s ease, opacity .2s ease, background .15s ease; }
 .pfm-choices.is-list .pfm-choice { padding-left: var(--bp-semantic-spacing-micro-lg, 16px); }
@@ -148,7 +148,7 @@ button.pfm-globo:active { transform: scale(.97); }
 @keyframes pfmUp { from { opacity: 0; transform: translateY(14px); } }
 @keyframes pfmBeat { 40% { transform: scale(1.06); } 100% { transform: scale(1); } }
 @keyframes pfmPlus { from { opacity: 0; transform: translateY(6px); } 30% { opacity: 1; } to { opacity: 0; transform: translateY(-28px); } }
-.pfm-game__acts { display: flex; justify-content: center; gap: var(--bp-semantic-spacing-micro-md, 8px); margin-top: var(--bp-semantic-spacing-macro-sm, 24px); padding-bottom: 8px; }
+.pfm-game__acts { display: flex; justify-content: center; gap: var(--bp-semantic-spacing-micro-md, 8px); margin-top: auto; padding-top: var(--bp-semantic-spacing-macro-sm, 24px); padding-bottom: 8px; }
 
 /* Reglas y programar: un panel que sube */
 .pfm-game__panel { flex: 1; display: flex; flex-direction: column; align-items: center; padding-top: var(--bp-semantic-spacing-macro-md, 40px); text-align: center; animation: pfmUp .4s cubic-bezier(.2, 1.2, .4, 1) both; }

@@ -715,9 +715,9 @@
     if (r.c === 'Efectivo retirado') return v >= 60 ? { cat: 'Efectivo retirado', why: T('Es un retiro grande: suele ir a varias cosas.') } : { cat: 'Alimentación', why: T('Los retiros chicos suelen ir a la tienda o al bus.') };
     if (ap && r.cp.indexOf(ap) >= 0) return { cat: 'Familia y dependientes', why: T('Comparte tu apellido.') };
     if (tobe() && r.c !== 'Transferencia a persona') return { cat: mapc(r.c), why: T('Por el comercio: {c}.', { c: r.cp }) };
-    if (h >= 11 && h <= 15 && v <= 20) return { cat: 'Alimentación', why: T('Fue a la hora del almuerzo.') };
+    if (h >= 11 && h <= 15 && v <= 20) return { cat: 'Alimentación', why: T('Montos así suelen ser comida rápida o un menú.') };
     if (v <= 3) return { cat: 'Transporte', why: T('Es un monto chico, como un bus o un taxi.') };
-    if ((h >= 19 || wday(r.f) % 6 === 0) && v <= 40) return { cat: 'Entretenimiento', why: T('Fue de noche o en fin de semana.') };
+    if ((h >= 19 || wday(r.f) % 6 === 0) && v <= 40) return { cat: 'Entretenimiento', why: T('Montos así suelen ser salidas y planes.') };
     return null;
   }
   var TANDA = 10; // se clasifica de a 10, sin prisa
