@@ -592,7 +592,7 @@
         t: (urg.length === 1 ? T('{c} te cobran {m} de {n}.', { c: cuando, m: money0(x.monto), n: x.n }) : T('En los próximos 3 días te cobran {m} en {k} pagos.', { m: money0(tot), k: urg.length })) + ' ' +
           (saldo < tot ? T('Tienes {s}: te faltan {f}.', { s: money0(saldo), f: money0(tot - saldo) }) : T('Te alcanza con lo que tienes.')) };
     }
-    if (a.n) return { t: ukuMsg(a), go: 'game', gol: T('Clasificar ahora') };
+    if (a.n) return { t: ukuMsg(a), go: 'game', gol: T('Clasificar {n}', { n: Math.min(TANDA, a.n) }) };
     var ins = insights().filter(function (x) { return x.go && x.kind !== 'info'; })[0] || insights().filter(function (x) { return x.go; })[0];
     if (ins) return { t: T(ins.kind === 'good' ? '¡Todo clasificado! Y una buena noticia: {t}.' : ins.kind === 'warn' ? '¡Todo clasificado! Pero ojo: {t}.' : '¡Todo clasificado! {T}.', { t: ins.t.charAt(0).toLowerCase() + ins.t.slice(1), T: ins.t }), go: ins.go, gol: ins.gol };
     return { t: ukuMsg(a) };
@@ -610,10 +610,11 @@
     var html = '<section class="pf-sec pfm-uku pf-mood--' + a.k + (tobe() ? ' is-tobe' : '') + '">' +
       '<div class="pf-hero pfm-hero"><div class="b3d" data-shift=".2" data-score="' + salud(m) + '" data-bloom="' + flores() + '" data-mood="' + a.k + '"><div class="b3d__fallback">' + (window.Asistente ? Asistente.petSVG() : '') + '</div></div>' +
         // Uku habla desde su mundo: el globo sale de él, arriba a la izquierda
-        (function (g) { return '<' + (g.go ? 'button data-pfm="' + esc(g.go) + '"' : 'p') + ' class="pfm-globo' + (g.k === 'urg' ? ' is-urg' : '') + '" aria-live="polite"><span>' + esc(g.t) + '</span>' +
-          (g.go ? '<b>' + esc(g.gol) + '<span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></b>' : '') + '</' + (g.go ? 'button' : 'p') + '>'; })(globo(a)) + '</div>' +
+        (function (g) { return '<p class="pfm-globo' + (g.k === 'urg' ? ' is-urg' : '') + '" aria-live="polite"><span>' + esc(g.t) + '</span></p>'; })(globo(a)) + '</div>' +
       '<p class="pfm-uku__mood"><span class="material-symbols-rounded" aria-hidden="true">' + MOOD_IC[a.k] + '</span>' + T('Uku está {animo}', { animo: T(MOOD[a.k]) }) + '</p>' +
-      (a.n ? '<button class="pf-cta pfm-uku__go" data-pfm="game">' + T('Clasificar {n}', { n: Math.min(TANDA, a.n) }) + '</button>' : '') +
+      // Una sola acción: la que propone el mensaje de Uku. Clasificar queda como enlace si el mensaje pide otra cosa
+      (function (g) { return (g.go ? '<button class="pf-cta pfm-uku__go" data-pfm="' + esc(g.go) + '">' + esc(g.gol) + '</button>' : '') +
+        (a.n && g.go !== 'game' ? '<button class="pf-link pfm-uku__more" data-pfm="game">' + T('Clasificar {n}', { n: Math.min(TANDA, a.n) }) + '</button>' : ''); })(globo(a)) +
       (tobe() ? (off ? '<p class="pfm-uku__ai"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + esc(all[0].t) + '</p>' : '') +
         '<div class="pfm-uku__acts"><button class="pf-link" data-pfm="analyze"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + T('Analizar con IA') + '</button>' +
         '<button class="pf-link" data-pfm="ai:"><span class="material-symbols-rounded" aria-hidden="true">chat_bubble</span>' + T('Pregúntale') + '</button></div>' : '') +
