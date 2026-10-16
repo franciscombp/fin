@@ -11,8 +11,7 @@
      (0–100): de troncos y tierra seca a un bosque tupido.
    - Paleta sobria: grises, verdes apagados; el amarillo solo en flores.
    - setBloom() llena su campo de flores amarillas (ahorro) y setMood()
-     le da un ánimo que se queda, como Duo: contento, tranquilo, triste o
-     enojado (con una nube encima cuando está triste o enojado).
+     le da un ánimo que se queda, como Duo: contento, tranquilo o pensativo.
    - Pausa el render cuando no se ve y respeta prefers-reduced-motion.
    - setLook() viste a Uku según el clima (assets/clima.js): en la costa
      palmeras y guayabera; sombrero de paja toquilla, gafas de sol, gorro
@@ -29,8 +28,8 @@ let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
 let bear = null, bones = {}, forest, held = null, ground;
 let score = 50, shown = 0; // shown: puntaje con el que está dibujado el bosque
 // bloom: flores amarillas del campo (0–100, ahorro); null = como antes (salen con el bosque)
-// mood: ánimo que se queda (feliz, tranquilo, triste, enojado); null = solo los gestos
-let bloom = null, mood = null, cloud = null;
+// mood: ánimo que se queda (feliz, tranquilo, pensativo); null = solo los gestos
+let bloom = null, mood = null;
 let gesture = null, gestureT = 0, onTap = null;
 let yaw = 0, yawTo = 0, camDist = 2.6, drag = null, idleAt = 0; // giro con el dedo
 
@@ -262,12 +261,10 @@ const MOODS = {
   feliz: t => ({ upperarm_R: [0, 12, 34], forearm_R: [-24, 12, -14], hand_R: [-20, 0, -6],
                  upperarm_L: mirror([0, 12, 34]), forearm_L: mirror([-24, 12, -14]), hand_L: mirror([-20, 0, -6]),
                  head: [-8, Math.sin(t * .6) * 10, Math.sin(t * 2.2) * 5] }),
-  triste: t => ({ head: [24, Math.sin(t * .25) * 5, 7], neck: [8, 0, 0], spine: [7, 0, 0], chest: [4 + Math.sin(t * .9) * .8, 0, 0],
-                  upperarm_R: [0, 6, 70], forearm_R: [14, 8, 4], upperarm_L: mirror([0, 6, 70]), forearm_L: mirror([14, 8, 4]) }),
-  // enojado: brazos cruzados y la cabeza que dice que no
-  enojado: t => ({ upperarm_R: [0, 62, 46], forearm_R: [-18, 78, -24], hand_R: [-10, 10, -6],
-                   upperarm_L: mirror([0, 58, 42]), forearm_L: mirror([-18, 74, -30]), hand_L: mirror([-10, 10, -6]),
-                   head: [8, Math.sin(t * 7) * 6 * (Math.sin(t * .8) > .3 ? 1 : 0), -4] })
+  // pensativo: una mano en el mentón, la cabeza ladeada; te espera sin reproches
+  pensativo: t => ({ upperarm_R: [-10, 50, 22], forearm_R: [-40, 140, -10], hand_R: [-30, 10, -6],
+                     upperarm_L: mirror([0, 6, 70]), forearm_L: mirror([14, 8, 4]),
+                     head: [-6, -10 + Math.sin(t * .4) * 6, 10] })
 };
 function target(name, t) {
   let r = REST[name] ? REST[name].slice() : [0, 0, 0];
@@ -471,13 +468,6 @@ function frame(now) {
     }
     a.needsUpdate = true;
   }
-  if (cloud && cloud.visible) {
-    cloud.position.x = Math.sin(t * .5) * .04;
-    const dr = cloud.userData.drops.geometry.attributes.position;
-    if (!RM) for (let i = 0; i < dr.count; i += 2) { let y = dr.getY(i) - dt * 1.4; if (y < -.5) y += .42; dr.setY(i, y); dr.setY(i + 1, y - .05); }
-    dr.needsUpdate = true;
-    cloud.userData.bolt.visible = mood === 'enojado' && (RM || (t % 2.6) < .12 || ((t % 2.6) > .22 && (t % 2.6) < .3));
-  }
   if (rain && rain.visible && !RM) {
     const a = rain.geometry.attributes.position;
     for (let i = 0; i < a.count; i += 2) {
@@ -578,7 +568,7 @@ function init() {
   buildForest();
   buildDust();
   buildRain();
-  buildCloud(); paintCloud();
+  
   rain.visible = !!look.rain;
   raf = requestAnimationFrame(frame);
 }
@@ -602,27 +592,7 @@ export function attach(el, opts) {
 }
 export function setScore(s) { if (s !== score) { score = s; if (renderer) buildForest(); } }
 export function setBloom(b) { b = b == null ? null : Math.max(0, Math.min(100, b)); if (b !== bloom) { bloom = b; if (renderer) buildForest(); } }
-export function setMood(m) { mood = MOODS[m] || m === 'tranquilo' ? m : null; if (renderer) paintCloud(); }
-function buildCloud() {
-  cloud = new THREE.Group();
-  const puff = new THREE.MeshBasicMaterial({ color: '#c3c9d4', fog: false });
-  [[0, 0, .16], [-.15, -.03, .12], [.15, -.03, .12], [.07, .06, .11], [-.08, .05, .1]].forEach(([x, y, r]) => { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 10), puff); m.position.set(x, y, 0); m.scale.z = .7; cloud.add(m); });
-  const n = 24, pos = new Float32Array(n * 6), r = rng(7);
-  for (let i = 0; i < n; i++) { const x = (r() - .5) * .36, y = -.08 - r() * .4, z = (r() - .5) * .1; pos.set([x, y, z, x, y - .05, z], i * 6); }
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  const drops = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: '#7f9bd0', fog: false }));
-  const shape = new THREE.Shape(); [[0, 0], [.05, 0], [.01, -.09], [.06, -.09], [-.03, -.24], [0, -.12], [-.05, -.12]].forEach(([x, y], i) => i ? shape.lineTo(x, y) : shape.moveTo(x, y));
-  const bolt = new THREE.Mesh(new THREE.ShapeGeometry(shape), new THREE.MeshBasicMaterial({ color: '#ffd200', side: THREE.DoubleSide, fog: false }));
-  bolt.position.set(.02, -.1, .08); bolt.visible = false;
-  cloud.add(drops, bolt); cloud.userData = { drops, bolt, puff };
-  cloud.position.set(0, 1.13, .05); cloud.visible = false;
-  scene.add(cloud);
-}
-function paintCloud() {
-  if (!cloud) return;
-  cloud.visible = mood === 'triste' || mood === 'enojado';
-  cloud.userData.puff.color.set(mood === 'enojado' ? '#6f7686' : '#c3c9d4');
-}
+export function setMood(m) { mood = MOODS[m] || m === 'tranquilo' ? m : null; }
 export function detach(el) { if (host === el) { host = null; } }
 export function supported() {
   try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; }
