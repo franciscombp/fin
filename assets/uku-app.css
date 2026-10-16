@@ -1,7 +1,9 @@
 /* =====================================================================
    Versión asistente (assets/uku-app.js). Solo aplica con html.app-uku.
-   Usa los componentes del sistema: pf-cta, pf-link, section__link,
-   pf-catchip, pf-mcard y las tarjetas de consejo de Uku (pfm-tip).
+   Uku es la pantalla: su mundo ocupa todo el espacio entre la barra de
+   arriba y la de abajo, sin scroll. Encima flotan su globo, los accesos,
+   los resultados, la conversación y la barra para hablarle.
+   Componentes del sistema: pf-cta, radius sm/md, tipografía cx-*.
    ===================================================================== */
 
 /* Un solo acceso arriba: Uku en lugar de la lupa y los audífonos */
@@ -12,90 +14,76 @@
 .uk-topface img, .uk-navface img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
 .app-uku .nav-item.active .uk-navface { box-shadow: 0 0 0 2px var(--bp-interaction-tertiary-fg); }
 
-/* Uku o el PFM completo dentro de Uku */
+/* Uku o el PFM completo (que se abre como una capa y se baja para volver) */
 .app-uku .view--finanzas:not(.uk-fin) .pf-host, .app-uku .view--finanzas:not(.uk-fin) .uk-back, .app-uku .view--finanzas.uk-fin .uk { display: none; }
-.uk-back { display: inline-flex; align-items: center; gap: 4px; margin: 8px var(--bp-layout-grid-margin, 24px) 0; padding: 0 12px 0 6px; height: var(--bp-action-button-size, 40px); border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font: var(--ui-label-md); cursor: pointer; }
-.uk-back .material-symbols-rounded { font-size: 20px; }
+.uk-back { position: sticky; top: calc(64px + env(safe-area-inset-top, 0px)); z-index: 45; display: grid; place-items: center; width: 48px; height: 48px; margin: 8px auto -56px; border: 0; border-radius: 50%; background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-tertiary-fg); box-shadow: 0 2px 8px rgba(15, 38, 92, .12); cursor: pointer; }
+.uk-back .material-symbols-rounded { font-size: 28px; }
+html.uk-idle, html.uk-idle body { overflow: hidden; overscroll-behavior: none; }
 
-/* ---------- La pantalla de Uku ---------- */
-.uk { padding-bottom: 32px; }
+/* ---------- La pantalla: el mundo de Uku de borde a borde ---------- */
+.uk { position: fixed; z-index: 1; left: 0; right: 0; top: calc(56px + env(safe-area-inset-top, 0px)); bottom: var(--uk-nav, 76px); max-width: 480px; margin: 0 auto; overflow: hidden; background: linear-gradient(#e9f1f7, #f4f4f2 70%); }
 .uk p { margin: 0; }
-.uk-hello { display: flex; align-items: center; gap: 16px; margin: var(--bp-semantic-spacing-micro-lg, 16px) var(--bp-layout-grid-margin, 24px) 0; }
-.uk-hello__t { font-size: 24px !important; line-height: 30px !important; }
-.uk-hello__face { flex: 0 0 56px; width: 56px; height: 56px; border-radius: 50%; overflow: hidden; background: var(--bp-interaction-primary-bg, #ffdd00); }
-.uk-hello__face img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
-.uk-hello__t { font: var(--cx-headline); color: var(--bp-interaction-tertiary-fg); }
-.uk-hello__s { margin-top: 2px !important; font: var(--cx-sub); color: var(--cx-muted); }
+.uk-scene { position: absolute; inset: 0; }
+.uk-scene .b3d { position: absolute; inset: 0; }
+.uk-scene .b3d__fallback { position: absolute; right: 8%; bottom: 22%; width: 46%; }
+.uk-scene canvas { display: block; width: 100% !important; height: 100% !important; }
 
-/* El campo: buscar, preguntar o pedir. Queda fijo bajo la barra al bajar */
-.uk-field { position: sticky; top: calc(56px + env(safe-area-inset-top, 0px)); z-index: 40; display: flex; align-items: center; gap: 8px; margin: 0; padding: var(--bp-semantic-spacing-micro-lg, 16px) var(--bp-layout-grid-margin, 24px) var(--bp-semantic-spacing-micro-md, 8px); background: var(--bp-surface-page); }
-.uk-field > .material-symbols-rounded { position: absolute; left: calc(var(--bp-layout-grid-margin, 24px) + 14px); color: var(--cx-muted); font-size: 22px; pointer-events: none; }
-.uk-field input { flex: 1; min-width: 0; height: 56px; padding: 0 16px 0 46px; border: 1px solid var(--bp-theme-color-field-border, var(--cx-line)); border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-theme-color-field-bg, #fff); color: var(--bp-theme-color-text-primary); font: var(--ui-body-md-medium); font-size: 16px; }
-.uk-field input:focus { outline: 2px solid var(--bp-interaction-selection-bg, var(--bp-interaction-tertiary-fg)); outline-offset: -1px; }
-.uk-send { flex: 0 0 56px; width: 56px; height: 56px; display: grid; place-items: center; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); cursor: pointer; }
-.uk:not(.is-typing) .uk-send { background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); }
+/* Su globo: lo más importante, con su botón */
+.uk-globo { position: absolute; z-index: 3; top: 16px; left: 16px; right: 16px; padding: 14px 16px 16px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); box-shadow: 0 2px 12px rgba(15, 38, 92, .08); animation: ukIn .4s cubic-bezier(.2, 1.3, .4, 1) .2s both; transition: opacity .2s, transform .2s; }
+.uk-globo::after { content: ''; position: absolute; right: 30%; bottom: -10px; border: 10px solid transparent; border-bottom: 0; border-top-color: var(--bp-theme-color-surface-container-default); }
+.uk-globo__who { display: flex; justify-content: space-between; font: var(--cx-caption); color: var(--cx-muted); }
+.uk-globo__t { margin-top: 4px !important; font: var(--ui-body-md-semibold); font-size: 17px; line-height: 24px; color: var(--bp-interaction-tertiary-fg); }
+.uk-globo__go { width: 100%; height: 48px !important; margin: 12px 0 0 !important; }
+@keyframes ukIn { from { opacity: 0; transform: translateY(8px) scale(.96); } }
 
-.uk-zone, .uk-thread { padding: 0 var(--bp-layout-grid-margin, 24px); }
-.uk-thread:empty { display: none; }
-.uk-thread { display: flex; flex-direction: column; gap: 20px; padding-top: 16px; }
+/* Los accesos: a la izquierda, sobre su mundo */
+.uk-pills { position: absolute; z-index: 3; left: 16px; bottom: 92px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; max-width: 62%; }
+.uk-pill { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 16px 8px 12px; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); box-shadow: 0 2px 10px rgba(15, 38, 92, .08); text-align: left; cursor: pointer; animation: ukIn .35s ease both; }
+.uk-pill:nth-child(2) { animation-delay: .06s; } .uk-pill:nth-child(3) { animation-delay: .12s; } .uk-pill:nth-child(4) { animation-delay: .18s; }
+.uk-pill:active { transform: scale(.97); }
+.uk-pill > .material-symbols-rounded { flex: 0 0 32px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font-size: 20px; }
+.uk-pill > span:last-child { display: flex; flex-direction: column; min-width: 0; }
+.uk-pill b { font: var(--ui-body-sm-semibold); }
+.uk-pill small { font: var(--cx-caption); color: var(--cx-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* Uku habla: su cara y su globo (como en el resto de la app) */
-.uk-say { display: flex; align-items: flex-start; gap: 10px; margin-top: var(--bp-semantic-spacing-micro-lg, 16px); animation: pfmUp .35s ease both; }
-.uk-say.is-reply { margin-top: 0; }
-.uk-say__face { flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: var(--bp-interaction-primary-bg, #ffdd00); }
-.uk-say__face img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
-.uk-say__body { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
-.uk-say__bubble { max-width: 100%; padding: 12px 16px; border-radius: 4px 16px 16px 16px; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: var(--cx-body); }
-.uk-say__go { width: 100%; margin: 0 !important; }
-.uk-say__acts { display: flex; flex-wrap: wrap; gap: 8px; }
-.uk-say__acts .pf-link .material-symbols-rounded { font-size: 18px; }
-.uk-say .uk-list { width: 100%; }
-.uk-me { display: flex; justify-content: flex-end; animation: pfmUp .25s ease both; }
-.uk-me p { max-width: 80%; padding: 12px 16px; border-radius: 16px 16px 4px 16px; background: var(--bp-interaction-selectable-selected-bg); color: var(--bp-interaction-selectable-selected-fg); font: var(--ui-body-md-medium); }
+/* La barra para hablarle o buscar */
+.uk-bar { position: absolute; z-index: 5; left: 12px; right: 12px; bottom: 12px; display: flex; align-items: center; gap: 8px; margin: 0; }
+.uk-bar__f { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; }
+.uk-bar__f > .material-symbols-rounded { position: absolute; left: 14px; color: var(--cx-muted); font-size: 22px; pointer-events: none; }
+.uk-bar input { width: 100%; height: 56px; padding: 0 16px 0 46px; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); box-shadow: 0 2px 12px rgba(15, 38, 92, .12); font: var(--ui-body-md-medium); font-size: 16px; }
+.uk-bar input:focus { outline: 2px solid var(--bp-interaction-tertiary-fg); outline-offset: -2px; }
+.uk-bar__send, .uk-bar__x { flex: 0 0 56px; width: 56px; height: 56px; display: grid; place-items: center; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); box-shadow: 0 2px 12px rgba(15, 38, 92, .12); cursor: pointer; }
+.uk-bar__x { display: none; background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-tertiary-fg); }
+.uk.is-chat .uk-bar__x { display: grid; }
+.uk-exit { position: absolute; z-index: 4; right: 12px; bottom: 76px; padding: 4px 8px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: rgba(255, 255, 255, .7); color: var(--cx-muted); font: var(--cx-caption); text-decoration: underline; cursor: pointer; }
 
-.uk-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--bp-semantic-spacing-micro-lg, 16px); }
-.uk-say .uk-chips { margin-top: 0; }
-
-/* Secciones */
-.uk-sec { margin-top: var(--bp-semantic-spacing-macro-md, 36px); }
-.uk-sec.is-tight { margin-top: var(--bp-semantic-spacing-macro-sm, 24px); }
-.uk-sec .pf-sec__head { margin-bottom: var(--bp-semantic-spacing-micro-md, 8px); }
-.uk-sec .pf-sec__head h2 { margin: 0; font: var(--cx-headline); color: var(--bp-theme-color-text-primary); }
-.uk-sec__l { margin: 0 0 8px !important; font: var(--cx-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
-.uk-sec .pfm-tip + .pfm-tip { margin-top: 8px; }
-
-/* Tus finanzas en corto */
-.uk-money { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; padding: 20px; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
-.uk-money__l { font: var(--cx-sub); color: var(--cx-muted); }
-.uk-money b { font: var(--cx-amount); letter-spacing: -1px; font-variant-numeric: tabular-nums; }
-.uk-money__bar { display: block; width: 100%; height: 8px; margin-top: 12px; border-radius: 99px; background: color-mix(in srgb, var(--bp-interaction-tertiary-fg) 12%, transparent); overflow: hidden; }
-.uk-money__bar i { display: block; height: 100%; border-radius: inherit; background: var(--bp-interaction-tertiary-fg); }
-.uk-money__bar i.is-over { background: #d39b3a; }
-.uk-money__s { font: var(--cx-sub); color: var(--cx-muted); }
-.uk-money__mood { display: flex; align-items: center; gap: 6px; margin-top: 8px; font: var(--ui-body-sm-semibold); color: var(--bp-interaction-tertiary-fg); }
-.uk-money__mood .material-symbols-rounded { font-size: 18px; font-variation-settings: 'FILL' 1; }
-
-/* Hacer ahora: accesos como los de Inicio */
-.uk-quick { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding: 16px 8px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); }
-.uk-quick__b { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0; border: 0; background: none; color: var(--bp-theme-color-text-primary); font: var(--ui-body-sm-medium); text-align: center; cursor: pointer; }
-.uk-quick__ic { width: 56px; height: 56px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); }
-
-/* Listas: acciones, ayuda */
-.uk-list { padding: 0 16px !important; }
-.uk-row { display: flex; align-items: center; gap: 16px; width: 100%; min-height: 64px; padding: 12px 0; border: 0; border-bottom: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); background: none; color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
+/* Escribiendo: los resultados suben sobre su mundo */
+.uk-results { position: absolute; z-index: 4; left: 12px; right: 12px; bottom: 80px; max-height: calc(100% - 100px); padding: 4px 16px 8px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); box-shadow: 0 4px 20px rgba(15, 38, 92, .14); overflow-y: auto; animation: ukIn .25s ease both; }
+.uk:not(.is-typing) .uk-results { display: none; }
+.uk.is-typing .uk-pills, .uk.is-typing .uk-globo, .uk.is-typing .uk-exit, .uk.is-chat .uk-pills, .uk.is-chat .uk-globo, .uk.is-chat .uk-exit { opacity: 0; pointer-events: none; transform: translateY(-6px); }
+.uk.is-typing .uk-chat { opacity: .15; }
+.uk-results__l { margin: 12px 0 0 !important; font: var(--cx-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
+.uk-row { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 56px; padding: 8px 0; border: 0; border-bottom: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); background: none; color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; }
 .uk-row:last-child { border-bottom: 0; }
-.uk-row__ic { flex: 0 0 40px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); }
-.uk-row__t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.uk-row__t b { font: var(--ui-body-md-semibold); }
-.uk-row__t small { font: var(--cx-sub); color: var(--cx-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uk-row__ic { flex: 0 0 36px; width: 36px; height: 36px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); }
+.uk-row__t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.uk-row__t b { font: var(--ui-body-sm-semibold); }
+.uk-row__t small { font: var(--cx-caption); color: var(--cx-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .uk-row > .material-symbols-rounded:last-child { color: var(--cx-muted); }
+.uk-ans { display: block; width: 100%; margin-top: 6px; padding: 12px 14px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-theme-color-text-primary); font: var(--cx-sub); text-align: left; cursor: pointer; }
 
-/* Una respuesta de tus finanzas mientras escribes */
-.uk-ans { display: flex; align-items: flex-start; gap: 12px; width: 100%; padding: 16px; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: var(--cx-body); text-align: left; cursor: pointer; }
-.uk-ans__face { flex: 0 0 32px; width: 32px; height: 32px; border-radius: 50%; overflow: hidden; background: var(--bp-interaction-primary-bg, #ffdd00); }
-.uk-ans__face img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+/* La conversación: arriba, sobre su mundo; Uku a la izquierda, tú a la derecha */
+.uk-chat { position: absolute; z-index: 3; left: 12px; right: 12px; top: 12px; bottom: 80px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(transparent, #000 24px); mask-image: linear-gradient(transparent, #000 24px); padding-top: 16px; }
+.uk-chat::-webkit-scrollbar { display: none; }
+.uk:not(.is-chat) .uk-chat { display: none; }
+.uk-chat > :first-child { margin-top: auto; }
+.uk-me { display: flex; justify-content: flex-end; animation: ukIn .25s ease both; }
+.uk-me p { max-width: 78%; padding: 12px 16px; border-radius: 16px 16px 4px 16px; background: var(--bp-interaction-selectable-selected-bg); color: var(--bp-interaction-selectable-selected-fg); font: var(--ui-body-md-medium); }
+.uk-msg { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; max-width: 88%; animation: ukIn .35s ease .1s both; }
+.uk-msg__b { padding: 12px 16px; border-radius: 16px 16px 16px 4px; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); box-shadow: 0 2px 10px rgba(15, 38, 92, .08); font: var(--cx-body); }
+.uk-msg__acts { display: flex; flex-wrap: wrap; gap: 6px; }
+.uk-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 8px 12px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-tertiary-fg); box-shadow: 0 1px 6px rgba(15, 38, 92, .08); font: var(--ui-body-sm-semibold); text-align: left; cursor: pointer; }
+.uk-chip .material-symbols-rounded { font-size: 18px; }
+.uk-chip.is-ask { background: var(--bp-interaction-secondary-bg); box-shadow: none; }
 
-.uk .pf-link--block { display: flex; margin: 20px auto 0; }
-.uk-zone > .pf-note { margin: 16px 0 0; }
-.uk-foot { margin: 40px var(--bp-layout-grid-margin, 24px) 0 !important; font: var(--cx-caption); color: var(--cx-muted); text-align: center; }
-.uk-foot button { padding: 0; border: 0; background: none; color: var(--bp-theme-color-text-interactive); font: inherit; text-decoration: underline; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .uk *, .uk { animation: none !important; transition: none !important; } }
