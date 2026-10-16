@@ -1,112 +1,203 @@
 /* =====================================================================
    Mis finanzas sobre la Base de datos PFM (assets/pfm.js)
-   Reusa las piezas de finanzas.css (pf-flow, pf-mcard, pf-meter, pf-uku2,
-   pf-tx); aquí solo lo nuevo: ver como, salud financiera, preguntas de Uku,
-   tratamientos y deudas.
+   Reusa piezas de finanzas.css y sistema.css (pf-mcard, pf-meter, pf-uku2,
+   pf-tx, pf-catchip). Aquí: los tres niveles de la pantalla (tu dinero,
+   Uku y ordenar gastos, en qué se va tu plata), el juego y las hojas.
    ===================================================================== */
 
-/* ---------- Ver como (en Configuración) y controles segmentados ---------- */
+/* ---------- Comunes ---------- */
 .pfm-av { flex: 0 0 32px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: var(--cx-fill, #eef0f4); color: var(--bp-interaction-tertiary-fg); font: 600 14px/1 var(--sol-font, Roboto, sans-serif); }
 .as-row .pfm-av { flex-basis: 40px; width: 40px; height: 40px; font-size: 16px; }
 .pfm-seg { flex: 0 0 auto; display: inline-flex; padding: 3px; border-radius: 99px; background: var(--cx-fill, #eef0f4); }
-.pfm-seg button { min-width: 64px; height: 36px; padding: 0 12px; border: 0; border-radius: 99px; background: transparent; color: var(--cx-muted); font: var(--ui-label-md, 600 14px/22px sans-serif); cursor: pointer; transition: background .2s ease, color .2s ease; }
+.pfm-seg button { min-width: 88px; height: 36px; padding: 0 16px; border: 0; border-radius: 99px; background: transparent; color: var(--cx-muted); font: var(--ui-label-md, 600 14px/22px sans-serif); cursor: pointer; transition: background .2s ease, color .2s ease; }
 .pfm-seg button[aria-checked="true"] { background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); box-shadow: 0 1px 3px rgba(15, 38, 92, .14); }
-.pfm-seg--sm button { min-width: 0; height: 30px; padding: 0 10px; font-size: 13px; }
-.pf-msec__head .pfm-seg { margin-bottom: 12px; }
-
-/* ---------- Salud financiera: lo disponible primero ---------- */
-.pfm-sal__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.pfm-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 99px; font: var(--ui-body-sm-semibold, 600 13px/18px sans-serif); }
-.pfm-chip i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-.pfm-chip.is-ok { background: color-mix(in srgb, var(--bp-theme-color-status-success-icon, #1a8a4a) 14%, transparent); color: var(--bp-theme-color-status-success-text, #13703b); }
-.pfm-chip.is-warn { background: color-mix(in srgb, #e8a530 20%, transparent); color: #8a5a00; }
-.pfm-chip.is-over { background: color-mix(in srgb, var(--bp-theme-color-status-error-icon, #c20505) 12%, transparent); color: var(--bp-theme-color-status-error-text, #c20505); }
-.pfm-sal__lbl { margin-top: 16px !important; font: var(--ui-body-md-medium, 500 15px/22px sans-serif); color: var(--bp-theme-color-text-primary); }
-.pfm-sal .pf-flow__value.is-over { color: var(--bp-theme-color-status-error-text, #c20505); }
-.pfm-bar { position: relative; display: flex; height: 12px; margin-top: 20px; border-radius: 99px; overflow: visible; background: color-mix(in srgb, var(--bp-theme-color-status-success-icon, #1a8a4a) 22%, transparent); }
-.pfm-bar i { display: block; height: 100%; transition: width .4s ease; }
-.pfm-bar i:first-child { border-radius: 99px 0 0 99px; }
-.pfm-bar i.is-gast { background: var(--bp-interaction-tertiary-fg); }
-.pfm-bar i.is-gast.is-over { background: var(--bp-theme-color-status-error-icon, #c20505); border-radius: 99px; }
-.pfm-bar i.is-pend { background: repeating-linear-gradient(135deg, var(--bp-interaction-tertiary-fg) 0 4px, color-mix(in srgb, var(--bp-interaction-tertiary-fg) 35%, transparent) 4px 8px); }
-.pfm-bar em { position: absolute; top: -5px; bottom: -5px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--bp-theme-color-text-primary); opacity: .45; }
-.pfm-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-top: 12px; font: var(--cx-sub); color: var(--cx-muted); }
-.pfm-legend span { display: inline-flex; align-items: center; gap: 6px; }
-.pfm-legend b { color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
-.pfm-legend i { width: 10px; height: 10px; border-radius: 3px; }
-.pfm-legend i.is-gast { background: var(--bp-interaction-tertiary-fg); }
-.pfm-legend i.is-pend { background: repeating-linear-gradient(135deg, var(--bp-interaction-tertiary-fg) 0 2px, color-mix(in srgb, var(--bp-interaction-tertiary-fg) 35%, transparent) 2px 4px); }
-.pfm-legend i.is-libre { background: color-mix(in srgb, var(--bp-theme-color-status-success-icon, #1a8a4a) 30%, transparent); }
-.pfm-legend .pfm-mini { margin-left: auto; }
-.pfm-mini { height: 28px !important; padding: 0 10px !important; font-size: 13px !important; }
-.pfm-sal__note { margin-top: 8px !important; font: var(--ui-caption, 500 12px/16px sans-serif); color: var(--cx-muted); }
-.pfm-sal__rows { margin: 16px 0 0; padding-top: 4px; border-top: 1px solid var(--cx-line); }
-.pfm-sal__rows div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--cx-line); }
-.pfm-sal__rows div:last-child { border-bottom: 0; }
-.pfm-sal__rows dt { font: var(--cx-sub); color: var(--cx-muted); }
-.pfm-sal__rows dd { margin: 0; font: var(--ui-body-sm-semibold, 600 14px/20px sans-serif); font-variant-numeric: tabular-nums; }
-.pfm-sal .pf-note { margin: 12px 0 0; }
-.pfm-ask { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 12px; padding: 12px 14px; border: 0; border-radius: 16px; background: var(--cx-fill, #f3f5f8); color: var(--bp-theme-color-text-primary); font: var(--ui-body-sm-medium, 500 14px/20px sans-serif); text-align: left; cursor: pointer; }
-.pfm-ask > span:nth-child(2) { flex: 1; }
-.pfm-ask__face { flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: var(--bp-theme-color-surface-container-default); }
-.pfm-ask__face img { width: 100%; height: 100%; object-fit: cover; }
-
-/* ---------- Uku: preguntas de un toque ---------- */
-.pfm-uku .pfm-hero { height: 200px; margin: -4px -4px 12px; border-radius: 20px; }
-.pfm-q { padding: 16px 0; border-bottom: 1px solid var(--cx-line); }
-.pfm-q.is-inline { margin-top: 12px; padding: 16px; border: 0; border-radius: 20px; background: var(--cx-fill, #f3f5f8); }
-.pfm-q p { margin: 0; }
-.pfm-q__t { font: var(--ui-body-md-semibold, 600 16px/22px sans-serif); color: var(--bp-theme-color-text-primary); }
-.pfm-q__s { margin-top: 4px !important; font: var(--cx-sub); color: var(--cx-muted); font-variant-numeric: tabular-nums; }
-.pfm-q__ctx { display: flex; gap: 6px; margin-top: 8px !important; font: var(--ui-body-sm-regular, 400 14px/20px sans-serif); color: var(--bp-theme-color-text-primary); }
-.pfm-q__ctx .material-symbols-rounded { flex: 0 0 auto; font-size: 16px; line-height: 20px; background: var(--ai-grad, linear-gradient(90deg, #6d5cff, #e2509c)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.pfm-q .uku-say__replies { margin-top: 12px; }
-.pfm-q .uku-say__reply { cursor: pointer; }
-.pfm-q .uku-say__reply.is-sug { border-color: var(--bp-interaction-tertiary-fg); color: var(--bp-interaction-tertiary-fg); }
-.pfm-q .uku-say__reply small { margin-left: 6px; font: var(--ui-caption, 500 11px/14px sans-serif); opacity: .8; }
-.pfm-q__rule { margin-top: 10px !important; font: var(--ui-caption, 500 12px/16px sans-serif); color: var(--cx-muted); }
-.pfm-more { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 8px; padding: 12px 0 4px; border: 0; background: none; color: var(--bp-theme-color-text-interactive); font: var(--ui-label-md, 600 14px/22px sans-serif); cursor: pointer; }
-.pfm-uku .pf-uku2__list { margin-top: 8px; }
-.pfm-uku .ai-cta { margin-top: 12px; }
-
-/* ---------- Categorías e ingresos ---------- */
+.pfm-sec__head { display: flex; align-items: center; gap: 10px; margin: 0 4px 12px; }
+.pfm-sec__head h2 { flex: 1; margin: 0 !important; }
+.pfm-face { flex: 0 0 32px; width: 32px; height: 32px; border-radius: 50%; overflow: hidden; background: var(--bp-theme-color-surface-container-default); }
+.pfm-face img, .pfm-card__face img { width: 100%; height: 100%; object-fit: cover; }
 .pfm-ic { margin-right: 8px; font-size: 20px; vertical-align: -4px; color: var(--cx-muted); }
+.pfm-mini { height: 28px !important; padding: 0 10px !important; font-size: 13px !important; }
 .pf-meter--gris { --tone: #9aa1ad; }
 .pf-meter--gris .pf-meter__name { color: var(--cx-muted); }
-.pf-mcard__lead small { display: block; margin-top: 6px; font: var(--cx-sub); letter-spacing: 0; color: var(--cx-muted); }
-.pfm-sub { margin: 20px 0 4px !important; font: var(--ui-body-sm-semibold, 600 13px/18px sans-serif); color: var(--cx-muted); }
-.pfm-inc { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--cx-line); font: var(--ui-body-md-regular, 400 15px/22px sans-serif); }
-.pfm-inc:last-child { border-bottom: 0; }
-.pfm-inc span:nth-child(2) { flex: 1; }
-.pfm-inc b { font-variant-numeric: tabular-nums; }
-.pfm-inc .material-symbols-rounded { font-size: 20px; color: var(--bp-theme-color-status-success-icon, #1a8a4a); }
+.pf-meter--in { --tone: var(--bp-theme-color-status-success-icon, #1a8a4a); }
+.pf-mcard .pf-note { margin: 12px 0 16px; }
 
-/* ---------- Deudas ---------- */
+/* ---------- 1. Tu dinero en Pichibank ---------- */
+.pfm-money { margin: 0 var(--bp-layout-grid-margin, 16px); padding: 24px 20px 20px; border-radius: var(--ui-r-card, 24px); background: var(--bp-theme-color-surface-container-default); }
+.pfm-money p { margin: 0; }
+.pfm-money__label { font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-money__value { display: inline-flex; align-items: center; gap: 2px; margin-top: 4px; padding: 0; border: 0; background: none; color: var(--bp-theme-color-text-primary); font: var(--cx-amount, 600 36px/44px sans-serif); font-size: 36px; line-height: 44px; letter-spacing: -1px; font-variant-numeric: tabular-nums; cursor: pointer; }
+.pfm-money__value .material-symbols-rounded { font-size: 28px; color: var(--cx-muted); }
+.pfm-money__sub { margin-top: 2px !important; font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 20px; }
+.pfm-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; padding: 14px; border: 0; border-radius: 16px; background: var(--cx-fill, #f3f5f8); color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
+.pfm-tile:active { transform: scale(.98); }
+.pfm-tile__top { display: flex; align-items: center; gap: 6px; font: var(--ui-body-sm-medium, 500 13px/18px sans-serif); color: var(--cx-muted); }
+.pfm-tile__top .material-symbols-rounded { font-size: 18px; }
+.pfm-tile b { margin-top: 6px; font: 600 20px/26px var(--sol-font, Roboto, sans-serif); letter-spacing: -.3px; font-variant-numeric: tabular-nums; }
+.pfm-tile small { max-width: 100%; font: var(--ui-caption, 500 12px/16px sans-serif); color: var(--cx-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- 2. Uku: lo que notó ---------- */
+.pfm-uku { padding-top: 32px; }
+.pfm-carousel { display: flex; gap: 8px; margin: 0 calc(-1 * var(--bp-layout-grid-margin, 16px)); padding: 2px var(--bp-layout-grid-margin, 16px) 4px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.pfm-carousel::-webkit-scrollbar { display: none; }
+.pfm-ins { flex: 0 0 min(72%, 260px); display: flex; flex-direction: column; gap: 10px; min-height: 112px; padding: 16px; border: 0; border-radius: 20px; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; scroll-snap-align: start; cursor: pointer; }
+.pfm-ins .material-symbols-rounded { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: var(--cx-fill, #eef0f4); font-size: 18px; color: var(--bp-interaction-tertiary-fg); }
+.pfm-ins.is-warn .material-symbols-rounded { background: color-mix(in srgb, #e8a530 22%, transparent); color: #8a5a00; }
+.pfm-ins.is-good .material-symbols-rounded { background: color-mix(in srgb, var(--bp-theme-color-status-success-icon, #1a8a4a) 16%, transparent); color: var(--bp-theme-color-status-success-text, #13703b); }
+.pfm-ins b { font: var(--ui-body-md-semibold, 600 15px/20px sans-serif); }
+.pf-uku2__row.is-on { margin: 0 -12px; padding-left: 12px; padding-right: 12px; border-radius: 16px; background: var(--cx-fill, #f3f5f8); }
+
+/* To-be: Uku protagonista */
+.pfm-ukuhero { margin-bottom: 24px; border-radius: var(--ui-r-card, 24px); overflow: hidden; background: var(--bp-theme-color-surface-container-default); }
+.pfm-ukuhero .pfm-hero { height: 220px; margin: 0; }
+.pfm-ukuhero__say { padding: 0 20px 20px; }
+.pfm-ukuhero__say p { margin: 0; }
+.pfm-ukuhero__name { font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-ukuhero__t { margin-top: 6px !important; font: 600 20px/26px var(--sol-font, Roboto, sans-serif); letter-spacing: -.3px; color: var(--bp-interaction-tertiary-fg); }
+.pfm-ukuhero__acts { display: flex; gap: 8px; margin-top: 16px; }
+.pfm-ukuhero__acts .ai-cta { flex: 1; min-width: 0; margin: 0; padding: 10px 14px; }
+.pfm-ukuhero__acts .ai-cta__t b { white-space: nowrap; }
+.pfm-askuku { display: inline-flex; align-items: center; gap: 6px; padding: 0 16px; border: 1px solid var(--cx-line); border-radius: 99px; background: none; color: var(--bp-theme-color-text-primary); font: var(--ui-label-md, 600 14px/22px sans-serif); cursor: pointer; }
+.pfm-askuku .material-symbols-rounded { font-size: 18px; }
+
+/* Ordena tus gastos: entrada al juego */
+.pfm-play { display: flex; align-items: center; gap: 14px; width: 100%; margin-top: 16px; padding: 16px; border: 0; border-radius: 20px; background: var(--bp-interaction-tertiary-fg); color: var(--bp-theme-color-text-on-solid, #fff); font: inherit; text-align: left; cursor: pointer; }
+.pfm-play.is-done { background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); cursor: default; }
+.pfm-play.is-done > .material-symbols-rounded { font-size: 28px; color: var(--bp-theme-color-status-success-icon, #1a8a4a); }
+.pfm-play__stack { position: relative; flex: 0 0 44px; height: 52px; }
+.pfm-play__stack i { position: absolute; inset: 4px 6px; border-radius: 8px; background: rgba(255, 255, 255, .35); }
+.pfm-play__stack i:nth-child(1) { transform: rotate(-10deg); }
+.pfm-play__stack i:nth-child(2) { transform: rotate(6deg); }
+.pfm-play__stack i:nth-child(3) { display: grid; place-items: center; background: #fff; color: var(--bp-interaction-tertiary-fg); font: 700 16px/1 var(--sol-font, Roboto, sans-serif); font-style: normal; }
+.pfm-play__t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.pfm-play__t b { font: var(--ui-body-md-semibold, 600 16px/22px sans-serif); }
+.pfm-play__t small { font: var(--cx-sub); opacity: .85; }
+.pfm-play.is-done .pfm-play__t small { color: var(--cx-muted); opacity: 1; }
+.pfm-play__bar { height: 6px; margin-top: 8px; border-radius: 99px; background: rgba(255, 255, 255, .25); overflow: hidden; }
+.pfm-play__bar i { display: block; height: 100%; border-radius: inherit; background: #fff; transition: width .4s ease; }
+.pfm-play__go { flex: 0 0 auto; padding: 8px 16px; border-radius: 99px; background: #fff; color: var(--bp-interaction-tertiary-fg); font: var(--ui-label-md, 600 14px/22px sans-serif); }
+
+/* ---------- El juego (pantalla completa) ---------- */
+.pfm-game { position: fixed; inset: 0; z-index: 1200; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; padding: 8px 20px calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--bp-theme-color-surface-page-alt, #f5f5f5); color: var(--bp-theme-color-text-primary); transform: translateY(100%); visibility: hidden; transition: transform .32s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .32s; overflow-y: auto; }
+.pfm-game.open { transform: none; visibility: visible; transition: transform .32s cubic-bezier(.2, .8, .2, 1); }
+.pfm-game__top { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; min-height: 52px; }
+.pfm-game__x { width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--bp-theme-color-surface-container-default); color: inherit; cursor: pointer; }
+.pfm-game__title { display: flex; flex-direction: column; align-items: center; }
+.pfm-game__title b { font: var(--ui-body-md-semibold, 600 16px/22px sans-serif); }
+.pfm-game__title small { font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-game > .pfm-play__bar { margin: 8px 0 0; background: color-mix(in srgb, var(--bp-interaction-tertiary-fg) 15%, transparent); }
+.pfm-game > .pfm-play__bar i, .pfm-play__bar.is-big i { background: var(--bp-interaction-tertiary-fg); }
+.pfm-deck { position: relative; height: 300px; margin: 24px 0 8px; }
+.pfm-card { position: absolute; inset: 0; display: flex; flex-direction: column; padding: 24px; border-radius: 28px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 12px 32px rgba(15, 38, 92, .14); touch-action: pan-y; user-select: none; transition: transform .22s ease, opacity .22s ease; }
+.pfm-card.is-top { cursor: grab; }
+.pfm-card.is-drag { transition: none; cursor: grabbing; }
+.pfm-card.is-back { transform: scale(.94) translateY(14px); opacity: .7; box-shadow: none; }
+.pfm-card.is-gone-right { transform: translateX(120%) rotate(18deg); opacity: 0; }
+.pfm-card.is-gone-left { transform: translateX(-120%) rotate(-18deg); opacity: 0; }
+.pfm-card.is-gone-down { transform: translateY(40%) scale(.9); opacity: 0; }
+.pfm-card p { margin: 0; }
+.pfm-card__who { font: var(--ui-body-md-semibold, 600 16px/22px sans-serif); color: var(--cx-muted); }
+.pfm-card__amt { margin-top: 6px !important; font: var(--cx-amount, 600 40px/48px sans-serif); font-size: 40px; line-height: 48px; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+.pfm-card__amt.is-pos { color: var(--bp-theme-color-status-success-text, #13703b); }
+.pfm-card__meta { margin-top: 4px !important; font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-card__uku { display: flex; gap: 12px; margin-top: auto; padding: 14px; border-radius: 18px; background: var(--cx-fill, #f3f5f8); }
+.pfm-card__uku > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+.pfm-card__uku b { font: 600 18px/24px var(--sol-font, Roboto, sans-serif); }
+.pfm-card__uku small { font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-card__face { flex: 0 0 40px; width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: var(--bp-theme-color-surface-container-default); }
+.pfm-card__stamp { position: absolute; top: 42%; z-index: 2; padding: 4px 12px; border: 3px solid; border-radius: 10px; font: 800 22px/1.2 var(--sol-font, Roboto, sans-serif); text-transform: uppercase; opacity: 0; pointer-events: none; }
+.pfm-card__stamp.is-si { left: 24px; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-status-success-icon, #1a8a4a); transform: rotate(-12deg); opacity: var(--si, 0); }
+.pfm-card__stamp.is-no { right: 24px; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-status-error-icon, #c20505); transform: rotate(12deg); opacity: var(--no, 0); }
+.pfm-game__ask { margin: 16px 0 8px; font: var(--ui-body-md-semibold, 600 16px/22px sans-serif); text-align: center; }
+.pfm-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.pfm-choice { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 8px 14px; border: 1px solid var(--cx-line); border-radius: 14px; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: var(--ui-body-sm-medium, 500 14px/18px sans-serif); text-align: left; cursor: pointer; }
+.pfm-choice .material-symbols-rounded { font-size: 20px; color: var(--cx-muted); }
+.pfm-choice:active { transform: scale(.97); }
+.pfm-game__acts { display: flex; align-items: center; justify-content: center; gap: 20px; margin-top: 20px; }
+.pfm-gbtn { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; padding: 0; border: 0; background: none; color: var(--cx-muted); font: var(--ui-caption, 500 12px/16px sans-serif); cursor: pointer; }
+.pfm-gbtn .material-symbols-rounded { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 50%; background: var(--bp-theme-color-surface-container-default); font-size: 22px; }
+.pfm-gbtn.is-no .material-symbols-rounded, .pfm-gbtn.is-si .material-symbols-rounded { width: 64px; height: 64px; font-size: 32px; box-shadow: 0 6px 16px rgba(15, 38, 92, .12); }
+.pfm-gbtn.is-no { color: var(--bp-theme-color-status-error-icon, #c20505); }
+.pfm-gbtn.is-si { color: var(--bp-theme-color-status-success-icon, #1a8a4a); }
+.pfm-gbtn:active .material-symbols-rounded { transform: scale(.94); }
+.pfm-game__hint { margin: 16px 0 0; font: var(--cx-sub); color: var(--cx-muted); text-align: center; }
+.pfm-game__end { display: flex; flex-direction: column; align-items: center; margin: auto 0; padding: 24px 0; text-align: center; }
+.pfm-game__end h2 { margin: 20px 0 8px; font: 600 26px/32px var(--sol-font, Roboto, sans-serif); letter-spacing: -.4px; }
+.pfm-game__end p { margin: 0; }
+.pfm-game__end .pfm-play__bar { width: 100%; margin: 20px 0 8px; background: color-mix(in srgb, var(--bp-interaction-tertiary-fg) 15%, transparent); }
+.pfm-game__end .pf-cta { margin-top: 24px; }
+.pfm-game__burst { width: 96px; height: 96px; border-radius: 50%; overflow: hidden; background: var(--bp-theme-color-surface-container-default); animation: pfmPop .5s cubic-bezier(.2, 1.4, .4, 1) both; }
+.pfm-game__burst img { width: 100%; height: 100%; object-fit: cover; }
+@keyframes pfmPop { from { transform: scale(.4); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .pfm-card, .pfm-game, .pfm-game__burst { transition: none; animation: none; } }
+
+/* ---------- 3. En qué se va tu plata ---------- */
+.pfm-flow { padding-top: 40px; }
+.pfm-filters { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+.pfm-chips { display: flex; gap: 8px; margin: 0 calc(-1 * var(--bp-layout-grid-margin, 16px)); padding: 0 var(--bp-layout-grid-margin, 16px); overflow-x: auto; scrollbar-width: none; }
+.pfm-chips::-webkit-scrollbar { display: none; }
+.pfm-chips .pf-catchip { flex: 0 0 auto; }
+.pfm-total { padding: 20px 0 16px; border-bottom: 1px solid var(--cx-line); }
+.pfm-total p { margin: 0; }
+.pfm-total__v { font: var(--cx-amount, 600 32px/40px sans-serif); font-size: 32px; line-height: 40px; letter-spacing: -.8px; font-variant-numeric: tabular-nums; }
+.pfm-total__l { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 4px !important; font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-cmp { display: inline-flex; align-items: center; gap: 2px; padding: 1px 8px; border-radius: 99px; background: var(--cx-fill, #eef0f4); font: var(--ui-caption, 500 12px/16px sans-serif); color: var(--cx-muted); }
+.pfm-cmp .material-symbols-rounded { font-size: 14px; }
+.pfm-cmp.is-good { background: color-mix(in srgb, var(--bp-theme-color-status-success-icon, #1a8a4a) 14%, transparent); color: var(--bp-theme-color-status-success-text, #13703b); }
+.pfm-cmp.is-bad { background: color-mix(in srgb, #e8a530 20%, transparent); color: #8a5a00; }
+.pfm-budget { padding: 16px 0; border-bottom: 1px solid var(--cx-line); }
+.pfm-bar { position: relative; display: flex; height: 10px; border-radius: 99px; background: color-mix(in srgb, var(--bp-interaction-tertiary-fg) 15%, transparent); }
+.pfm-bar i { display: block; height: 100%; border-radius: 99px; transition: width .4s ease; }
+.pfm-bar i.is-gast { background: var(--bp-interaction-tertiary-fg); }
+.pfm-bar i.is-gast.is-over { background: var(--bp-theme-color-status-error-icon, #c20505); }
+.pfm-bar em { position: absolute; top: -5px; bottom: -5px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--bp-theme-color-text-primary); opacity: .45; }
+.pfm-budget__t { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 10px 0 0 !important; font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-budget__t b { color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
+.pfm-budget__ai { display: flex; gap: 6px; margin: 8px 0 0 !important; font: var(--ui-body-sm-medium, 500 14px/20px sans-serif); color: var(--bp-theme-color-text-primary); }
+.pfm-budget__ai .material-symbols-rounded, .pfm-sug .material-symbols-rounded { font-size: 18px; background: var(--ai-grad, linear-gradient(90deg, #6d5cff, #e2509c)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.pfm-flowcard .pf-mcard__more { margin-top: 4px; }
+
+/* ---------- Hojas: deudas, por pagar, score, productos, movimientos ---------- */
+.pfm-sheet .pf-mcard { padding: 4px 16px; background: var(--cx-fill, #f3f5f8); }
 .pfm-debt { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--cx-line); }
 .pfm-debt:last-child { border-bottom: 0; }
+.pfm-debt .pfm-ic { margin: 0; }
 .pfm-debt__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .pfm-debt__main b { font: var(--ui-body-md-semibold, 600 15px/20px sans-serif); }
 .pfm-debt__main small, .pfm-debt__val small { font: var(--cx-sub); color: var(--cx-muted); }
 .pfm-debt__val { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-variant-numeric: tabular-nums; }
-.pf-mcard .pf-note { margin: 12px 0 16px; }
-
-/* ---------- Movimientos y su tratamiento ---------- */
+.pfm-score { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; }
+.pfm-score b { font: var(--cx-amount, 600 48px/56px sans-serif); font-size: 48px; line-height: 56px; letter-spacing: -1px; }
+.pfm-score span { font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-score__bar { position: relative; height: 10px; margin-top: 12px; border-radius: 99px; background: linear-gradient(90deg, #c20505, #e8a530 45%, #1a8a4a); }
+.pfm-score__bar i { position: absolute; top: -5px; width: 20px; height: 20px; margin-left: -10px; border: 3px solid var(--bp-theme-color-surface-container-default); border-radius: 50%; background: var(--bp-theme-color-text-primary); }
+.pfm-score__scale { display: flex; justify-content: space-between; margin-top: 6px; font: var(--ui-caption, 500 12px/16px sans-serif); color: var(--cx-muted); }
+.pfm-inc { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--cx-line); font: var(--ui-body-md-regular, 400 15px/22px sans-serif); }
+.pfm-inc:last-child { border-bottom: 0; }
+.pfm-inc span:nth-child(2) { flex: 1; }
+.pfm-inc b { font-variant-numeric: tabular-nums; }
+.pfm-det .material-symbols-rounded { font-size: 20px; color: var(--cx-muted); }
+.pfm-q { padding: 16px 0; }
+.pfm-q p { margin: 0; }
+.pfm-q__t { font: var(--ui-body-md-semibold, 600 16px/22px sans-serif); }
+.pfm-q__ctx { margin-top: 6px !important; font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-q .uku-say__replies { margin-top: 12px; }
+.pfm-q .uku-say__reply { cursor: pointer; }
+.pfm-q .uku-say__reply.is-sug { border-color: var(--bp-interaction-tertiary-fg); color: var(--bp-interaction-tertiary-fg); }
 button.pfm-tx { width: 100%; border-left: 0; border-right: 0; border-top: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .pfm-tx.is-no .pf-tx__amt { color: var(--cx-muted); text-decoration: line-through; text-decoration-thickness: 1px; }
 .pfm-pill { align-self: flex-start; margin-top: 2px; padding: 1px 8px; border-radius: 99px; background: var(--cx-fill, #eef0f4); color: var(--cx-muted); font: var(--ui-caption, 500 12px/16px sans-serif); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .pfm-pill.is-ingreso, .pfm-pill.is-reembolso { background: color-mix(in srgb, var(--bp-theme-color-status-success-icon, #1a8a4a) 14%, transparent); color: var(--bp-theme-color-status-success-text, #13703b); }
 .pfm-pill.is-rin, .pfm-pill.is-rout { background: color-mix(in srgb, #e8a530 20%, transparent); color: #8a5a00; }
 .pfm-sheet .pf-sheet-list .pfm-tx:last-child { border-bottom: 0; }
-.pfm-tx__amt { margin: 8px 0 4px !important; font: var(--cx-amount, 600 32px/40px sans-serif); font-size: 32px; letter-spacing: -.8px; font-variant-numeric: tabular-nums; }
-.pfm-tx__amt.is-in { color: var(--bp-theme-color-status-success-text, #13703b); }
+.pfm-tx__amt { margin: 8px 0 4px; font: var(--cx-amount, 600 32px/40px sans-serif); font-size: 32px; letter-spacing: -.8px; font-variant-numeric: tabular-nums; }
+.pfm-tx__amt.is-pos { color: var(--bp-theme-color-status-success-text, #13703b); }
 .pfm-sheet .uku-say { margin: 16px 0 4px; }
 .pfm-dev { padding: 12px 14px; border-radius: 12px; background: var(--cx-fill, #f3f5f8); font-size: 13px !important; }
 .pfm-sug { display: flex; gap: 12px; width: 100%; margin-top: 16px; padding: 14px 16px; border: 1px solid var(--cx-line); border-radius: 16px; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
 .pfm-sug > span:last-child { display: flex; flex-direction: column; gap: 2px; }
 .pfm-sug small { font: var(--cx-sub); color: var(--cx-muted); }
-.pfm-sug .material-symbols-rounded { background: var(--ai-grad, linear-gradient(90deg, #6d5cff, #e2509c)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .pfm-scope { display: flex; gap: 10px; }
 .pfm-scope .material-symbols-rounded { font-size: 20px; color: var(--cx-muted); }
 .pfm-undo { margin-left: 8px; padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
-
-.pfm-det .material-symbols-rounded { color: var(--cx-muted); }
