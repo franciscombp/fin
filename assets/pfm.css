@@ -150,6 +150,13 @@ button.pfm-globo:active { transform: scale(.97); }
 @keyframes pfmPlus { from { opacity: 0; transform: translateY(6px); } 30% { opacity: 1; } to { opacity: 0; transform: translateY(-28px); } }
 .pfm-game__acts { display: flex; justify-content: center; gap: var(--bp-semantic-spacing-micro-md, 8px); margin-top: auto; padding-top: var(--bp-semantic-spacing-macro-sm, 24px); padding-bottom: 8px; }
 
+/* Confirmar una programación: monto, para, cuándo y desde */
+.pfm-confirm { width: 100%; max-width: 320px; margin-top: var(--bp-semantic-spacing-macro-sm, 24px); border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); text-align: left; overflow: hidden; }
+.pfm-confirm > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+.pfm-confirm > div:last-child { border-bottom: 0; }
+.pfm-confirm small { font: var(--cx-caption); color: var(--cx-muted); }
+.pfm-confirm b { font: var(--ui-body-sm-semibold); color: var(--bp-theme-color-text-primary); text-align: right; }
+
 /* Reglas y programar: un panel que sube */
 .pfm-game__panel { flex: 1; display: flex; flex-direction: column; align-items: center; padding-top: var(--bp-semantic-spacing-macro-md, 40px); text-align: center; animation: pfmUp .4s cubic-bezier(.2, 1.2, .4, 1) both; }
 .pfm-game__panel h2 { margin: var(--bp-semantic-spacing-micro-lg, 16px) 0 var(--bp-semantic-spacing-micro-md, 8px); font: var(--cx-headline); font-size: 24px; line-height: 30px; color: var(--bp-interaction-tertiary-fg); }

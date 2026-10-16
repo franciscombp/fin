@@ -839,6 +839,7 @@
     var L = G.list, it = L[G.i];
     if (G.view === 'rule') return ruleRender();
     if (G.view === 'prog') return progRender();
+    if (G.view === 'progconf') return progConfRender();
     if (G.view === 'all') return allRender();
     if (G.view === 'done') return doneRender();
     if (G.view === 'result' || !it) return resultRender();
@@ -876,6 +877,16 @@
       '<div class="pfm-game__panel"><span class="pfm-game__big is-ok material-symbols-rounded" aria-hidden="true">event_available</span>' +
       '<h2>' + T('¿La programamos?') + '</h2><p>' + T('Pichibank le envía {m} a {n} cada día {d}, sin que te acuerdes. Uku te avisa un día antes si no te alcanza.', { m: money0(x.monto), n: corto(x.cp).split(' ')[0], d: x.dia }) + '</p>' +
       '<div class="pfm-game__foot"><button class="pf-cta" data-g="prog:si">' + T('Programar cada día {d}', { d: x.dia }) + '</button><button class="section__link" data-g="prog:no">' + T('Ahora no') + '</button></div></div>';
+    moverBarra();
+  }
+  // Confirmación antes de activar: el monto, a quién, cuándo y de dónde, y un paso explícito
+  function progConfRender() {
+    var x = G.list[G.i].m;
+    gel.innerHTML = topHTML(T('{a} de {b}', { a: Math.min(hechos(), G.list.length), b: G.list.length }), T('Resultado')) + barHTML() +
+      '<div class="pfm-game__panel"><span class="pfm-game__big material-symbols-rounded" aria-hidden="true">fact_check</span>' +
+      '<h2>' + T('Confirma la programación') + '</h2><p>' + T('Revisa antes de activarla. Podrás dejarla desde el detalle de la mesada.') + '</p>' +
+      progDetails(x) +
+      '<div class="pfm-game__foot"><button class="pf-cta" data-g="prog:ok">' + T('Sí, programar {m} cada día {d}', { m: money0(x.monto), d: x.dia }) + '</button><button class="section__link" data-g="prog:back">' + T('Volver') + '</button></div></div>';
     moverBarra();
   }
   // Revisar antes de guardar: cuántos van a cada grupo
@@ -938,7 +949,11 @@
         G.ans[G.i] = { it: it, v: p[1], monto: it.m.monto };
         return elegir(btn, function () { if (p[1] === 'mesada') G.view = 'prog'; else G.i++; gameRender(); });
       }
-      case 'prog': G.ans[G.i].prog = p[1] === 'si'; G.i++; G.view = 'card'; fx(p[1] === 'si' ? 'success' : 'tap'); if (p[1] === 'si') G.cheer = T('¡Programada!'); return gameRender();
+      // "Programar" pasa primero por la confirmación; sólo "Sí, programar" la activa
+      case 'prog':
+        if (p[1] === 'si') { G.view = 'progconf'; fx('tap'); return gameRender(); }
+        if (p[1] === 'back') { G.view = 'prog'; fx('tap'); return gameRender(); }
+        G.ans[G.i].prog = p[1] === 'ok'; G.i++; G.view = 'card'; fx(p[1] === 'ok' ? 'success' : 'tap'); if (p[1] === 'ok') G.cheer = T('¡Programada!'); return gameRender();
       case 'rule': {
         var R = G.rule; G.view = 'card';
         if (p[1] === 'si') {
@@ -1239,6 +1254,21 @@
       return '<button class="pf-catchip" data-pfm="txf:' + k + '" aria-pressed="' + (txFilter === k) + '">' + T(F[k]) + '</button>'; }).join('') + '</div>' +
       '<div class="pf-sheet-list">' + (f.length ? f.slice(0, 200).map(txHTML).join('') : '<p class="pf-note">' + T('Nada por aquí.') + '</p>') + '</div>');
   }
+  // Lo que se programa, en una sola lista para que se vea antes de confirmar
+  function progDetails(x) {
+    return '<div class="pfm-confirm">' +
+      '<div><small>' + T('Monto') + '</small><b>' + money0(x.monto) + '</b></div>' +
+      '<div><small>' + T('Para') + '</small><b>' + esc(corto(x.cp)) + '</b></div>' +
+      '<div><small>' + T('Cuándo') + '</small><b>' + T('Cada día {d} del mes', { d: x.dia }) + '</b></div>' +
+      '<div><small>' + T('Desde') + '</small><b>' + esc(x.src) + '</b></div></div>';
+  }
+  // Confirmar antes de programar desde la hoja de la mesada
+  function progSheet(cp) {
+    var x = mesadas().filter(function (m) { return m.cp === cp; })[0]; if (!x) return closeSheet();
+    showSheet('<h3>' + T('Confirma la programación') + '</h3><p>' + T('Revisa antes de activarla. Podrás dejarla desde el detalle de la mesada.') + '</p>' + progDetails(x) +
+      '<button class="pf-cta" data-pfm="mesa:prog:' + esc(cp) + '">' + T('Sí, programar {m} cada día {d}', { m: money0(x.monto), d: x.dia }) + '</button>' +
+      '<button class="pf-link pf-link--block" data-pfm="mesada:' + esc(cp) + '">' + T('Volver') + '</button>');
+  }
   // Mesada: confirmar, clasificar todo de una y programarla
   function mesadaSheet(cp) {
     var x = mesadas().filter(function (m) { return m.cp === cp; })[0]; if (!x) return closeSheet();
@@ -1249,7 +1279,7 @@
       (st.v !== 'mesada' ? '<p class="pf-note">' + T('Si es una mesada, la pongo en Familia, con todos los envíos de antes.') + '</p><button class="pf-cta" ' + a + 'ok:' + esc(cp) + '">' + T('Sí, es una mesada') + '</button><button class="pf-link pf-link--block" ' + a + 'no:' + esc(cp) + '">' + T('Es otra cosa') + '</button>'
         : st.prog ? '<p class="pfm-prog"><span class="material-symbols-rounded" aria-hidden="true">event_available</span>' + T('Programada: {m} cada día {d} desde tu {src}.', { m: money0(st.prog.monto), d: st.prog.dia, src: x.src }) + '</p><button class="pf-link pf-link--block" ' + a + 'unprog:' + esc(cp) + '">' + T('Dejar de programarla') + '</button>'
         : '<p class="as-sheet__label">' + T('Programarla') + '</p><p>' + T('Pichibank le envía {m} a {n} cada día {d}, sin que te acuerdes. Uku te avisa un día antes si no te alcanza.', { m: money0(x.monto), n: n, d: x.dia }) + '</p>' +
-          '<button class="pf-cta" ' + a + 'prog:' + esc(cp) + '">' + T('Programar cada día {d}', { d: x.dia }) + '</button>'));
+          '<button class="pf-cta" ' + a + 'ask:' + esc(cp) + '">' + T('Programar cada día {d}', { d: x.dia }) + '</button>'));
   }
   // Pagos repetidos a la misma tienda o persona: un toque los ordena todos y queda la regla
   function reglaSheet(cp) {
@@ -1311,6 +1341,7 @@
       case 'mesa': {
         var mc = p.slice(2).join(':'), mx = mesadas().filter(function (m) { return m.cp === mc; })[0], st = mesOf(mc) || {};
         if (!mx) return;
+        if (p[1] === 'ask') return progSheet(mc);
         if (p[1] === 'ok') { setMesada(mx, { v: 'mesada' }); fx('success'); toast(T('Listo: la mesada a {n} está en Familia.', { n: corto(mc).split(' ')[0] })); }
         if (p[1] === 'no') { setMesada(mx, { v: 'otra' }); closeSheet(); refresh(); return toast(T('Entendido, no es una mesada.')); }
         if (p[1] === 'prog') { setMesada(mx, { v: 'mesada', prog: { dia: mx.dia, monto: mx.monto } }); fx('success'); toast(T('Programada: {m} cada día {d}.', { m: money0(mx.monto), d: mx.dia })); }
