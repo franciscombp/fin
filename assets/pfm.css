@@ -373,3 +373,13 @@ button.pfm-tx { width: 100%; border-left: 0; border-right: 0; border-top: 0; bac
 .pfm-tip.is-done { padding-bottom: 8px; }
 .pfm-tip.is-done .pfm-tip__acts { margin-top: 0; }
 button.pfm-globo.is-urg > span::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: #e2a23b; vertical-align: 1px; }
+
+/* Barra inferior de Mis finanzas: Asistente (campo abajo) y buscar (arriba al abrir) */
+.pfm-dock { position: fixed; left: 0; right: 0; z-index: 55; display: none; align-items: center; gap: 8px; max-width: 480px; margin: 0 auto; padding: 0 16px; pointer-events: none; }
+.pfm-dock.is-on { display: flex; }
+.pfm-dock > button { pointer-events: auto; border: 0; cursor: pointer; color: var(--bp-theme-color-text-primary); background: color-mix(in srgb, var(--bp-theme-color-surface-container-default, #fff) 88%, transparent); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgb(0 0 0 / .1); }
+.pfm-dock__ask { flex: 1 1 auto; min-width: 0; height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 18px; border-radius: 99px; font: var(--ui-body-sm-semibold); text-align: left; }
+.pfm-dock__ask > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pfm-dock__ask .material-symbols-rounded { color: var(--bp-interaction-tertiary-fg); }
+.pfm-dock__search { flex: 0 0 52px; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; }
+.pf-host .pfm .pf-scroll { padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px)); }
