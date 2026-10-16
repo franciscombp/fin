@@ -26,11 +26,15 @@
 .pfm-saldo, .pfm-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; min-width: 0; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
 .pfm-saldo { padding: 20px; }
 .pfm-tile { padding: 16px; }
-.pfm-saldo:active, .pfm-tile:active { background: var(--bp-interaction-tertiary-bg--active, var(--bp-interaction-secondary-bg)); }
+.pfm-saldo { cursor: default; }
+.pfm-tile:active { background: var(--bp-interaction-tertiary-bg--active, var(--bp-interaction-secondary-bg)); }
 .pfm-tile__l { font: var(--cx-sub); color: var(--cx-muted); }
-.pfm-saldo b { margin-top: 4px; font: var(--cx-amount); letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+.pfm-saldo > b { margin-top: 4px; font: var(--cx-amount); letter-spacing: -1px; font-variant-numeric: tabular-nums; }
 .pfm-tile b { margin-top: 8px; font: var(--ui-title-md, 600 20px/26px sans-serif); font-weight: 600; letter-spacing: -.3px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.pfm-saldo small, .pfm-tile small { max-width: 100%; font: var(--cx-caption); color: var(--cx-muted); }
+.pfm-saldo > small, .pfm-tile small { max-width: 100%; font: var(--cx-caption); color: var(--cx-muted); }
+.pfm-net { display: inline-flex; align-items: center; gap: 4px; margin-top: 12px; padding: 0; border: 0; background: none; color: var(--cx-muted); font: var(--cx-caption); cursor: pointer; }
+.pfm-net b { font: var(--ui-body-sm-semibold); color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
+.pfm-net .material-symbols-rounded { font-size: 16px; }
 .pfm-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--bp-semantic-spacing-micro-md, 8px); margin-top: var(--bp-semantic-spacing-micro-md, 8px); }
 
 /* ---------- 2. Uku: su mundo y lo que notó ---------- */
@@ -40,7 +44,9 @@
 .pfm-uku__mood { display: flex; align-items: center; gap: 6px; font: var(--cx-sub); color: var(--cx-muted); }
 .pfm-uku__mood .material-symbols-rounded { font-size: 20px; font-variation-settings: 'FILL' 1; }
 .pfm-uku__mood .material-symbols-rounded { color: var(--bp-interaction-tertiary-fg); }
-.pfm-uku__say { margin-top: var(--bp-semantic-spacing-micro-md, 8px) !important; font: var(--cx-headline); letter-spacing: -.2px; color: var(--bp-interaction-tertiary-fg); }
+.pfm-uku__say { margin-top: var(--bp-semantic-spacing-micro-md, 8px); }
+.pfm-uku__say .uku-say__face { flex-basis: 40px; width: 40px; height: 40px; }
+.pfm-uku__say .uku-say__bubble { font: var(--ui-body-md-semibold); }
 .pfm-uku__go { width: 100%; margin-top: var(--bp-semantic-spacing-macro-sm, 24px); }
 .pfm-uku__ai { display: flex; gap: 8px; margin-top: var(--bp-semantic-spacing-macro-sm, 24px) !important; font: var(--cx-body); color: var(--bp-theme-color-text-primary); }
 .pfm-uku__ai .material-symbols-rounded, .pfm-budget__ai .material-symbols-rounded, .pfm-sug .material-symbols-rounded { font-size: 20px; color: var(--bp-interaction-tertiary-fg); }

@@ -524,11 +524,13 @@
   function dineroHTML() {
     var pt = patrimonio(), d = deudas(), fs = facturas(), sc = SCORE[ST.u], np = productos().length;
     return '<section class="pf-sec pfm-money" aria-label="' + T('Tu dinero en Pichibank') + '">' +
-      '<div class="pf-sec__head"><h2>' + T('Tu dinero') + '</h2><button class="section__link" data-pfm="products">' + T(np === 1 ? '1 producto' : '{n} productos', { n: np }) + '</button></div>' +
-      '<button class="pfm-saldo" data-pfm="products"><span class="pfm-tile__l">' + T('Saldo disponible') + '</span>' +
-        '<b>' + money(pt.tienes) + '</b><small>' + T('En tus cuentas Pichibank y Deuna') + '</small></button>' +
+      '<div class="pf-sec__head"><h2>' + T('Tu dinero') + '</h2></div>' +
+      '<div class="pfm-saldo"><span class="pfm-tile__l">' + T('Saldo disponible') + '</span>' +
+        '<b>' + money(pt.tienes) + '</b><small>' + T('En tus cuentas Pichibank y Deuna') + '</small>' +
+        // El patrimonio va como dato pequeño: en negativo (por una hipoteca, por ejemplo) no debe asustar
+        '<button class="pfm-net" data-pfm="net">' + T('Patrimonio en Pichibank') + ' <b>' + money0(pt.v) + '</b><span class="material-symbols-rounded" aria-hidden="true">info</span></button></div>' +
       '<div class="pfm-tiles">' +
-        tile('net', T('Patrimonio'), money0(pt.v), T('Lo que tienes menos lo que debes'), pt.v < 0) +
+        tile('products', T('Tus productos'), String(np), T('Cuentas, tarjetas y créditos')) +
         tile('bills', T('Por pagar'), money0(sumv(fs, function (x) { return x.monto; })), fs.length === 1 ? T('1 pago en 30 días') : T('{n} pagos en 30 días', { n: fs.length })) +
         tile('debt', T('Deudas'), money0(tobe() ? d.total : d.totalBP), tobe() ? T('En todos tus bancos') : T('Préstamos y tarjetas')) +
         tile('score', T('Tu score'), String(sc.v), T(sc.n)) +
@@ -590,7 +592,7 @@
     var html = '<section class="pf-sec pfm-uku pf-mood--' + a.k + (tobe() ? ' is-tobe' : '') + '">' +
       '<div class="pf-hero pfm-hero"><div class="b3d" data-score="' + salud(m) + '" data-bloom="' + flores() + '" data-mood="' + a.k + '"><div class="b3d__fallback">' + (window.Asistente ? Asistente.petSVG() : '') + '</div></div></div>' +
       '<p class="pfm-uku__mood"><span class="material-symbols-rounded" aria-hidden="true">' + MOOD_IC[a.k] + '</span>' + T('Uku está {animo}', { animo: T(MOOD[a.k]) }) + '</p>' +
-      '<p class="pfm-uku__say">' + esc(ukuMsg(a)) + '</p>' +
+      '<div class="uku-say pfm-uku__say"><span class="uku-say__face">' + face() + '</span><div class="uku-say__body"><p class="uku-say__bubble">' + esc(ukuMsg(a)) + '</p></div></div>' +
       (a.n ? '<button class="pf-cta pfm-uku__go" data-pfm="game">' + T('Clasificar {n}', { n: Math.min(TANDA, a.n) }) + '</button>' : '') +
       (tobe() ? (off ? '<p class="pfm-uku__ai"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + esc(all[0].t) + '</p>' : '') +
         '<div class="pfm-uku__acts"><button class="pf-link" data-pfm="analyze"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + T('Analizar con IA') + '</button>' +
