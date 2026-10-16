@@ -321,6 +321,7 @@
     APP = appItems();
     if (!q) {
       // Antes de escribir: lo reciente, tus atajos y la ayuda. Las acciones aparecen al buscar
+      var cx = window.Contexto ? Contexto.info(ctxId) : null;
       if (recent.length) html += '<section class="sx-card"><h3>Recientes <button class="sx-link" data-sx-i="rc-clear">Borrar</button></h3>' +
         recent.map(function (t, i) { return row('rc:' + i, 'history', esc(t), ''); }).join('') + '</section>';
       // Tus atajos grabados
