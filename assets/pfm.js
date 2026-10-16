@@ -617,7 +617,7 @@
       (tobe() ? (off ? '<p class="pfm-uku__ai"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + esc(all[0].t) + '</p>' : '') +
         '<div class="pfm-uku__acts"><button class="pf-link" data-pfm="analyze"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + T('Analizar con IA') + '</button>' +
         '<button class="pf-link" data-pfm="ai:"><span class="material-symbols-rounded" aria-hidden="true">chat_bubble</span>' + T('Pregúntale') + '</button></div>' : '') +
-      worldHTML(a) + '</section>';
+      worldHTML(a) + destacadoHTML() + '</section>';
     return html;
   }
   // Qué significa cada cosa del mundo de Uku
@@ -1050,7 +1050,8 @@
   function destacadoHTML() {
     var all = insights(), off = tobe() && anticipa(curMes()).length ? 1 : 0, ins = all.slice(off);
     if (!ins.length) return '';
-    return '<section class="pf-sec pfm-dest"><div class="pf-sec__head"><h2>' + T('Lo destacado') + '</h2>' + (ins.length > 2 ? '<button class="section__link" data-pfm="insights">' + T('Mostrar todo') + '</button>' : '') + '</div>' +
+    // Los descubrimientos de Uku viven en su sección, debajo de su mundo
+    return '<div class="pfm-dest"><div class="pf-sec__head"><h2>' + T('Lo que notó Uku') + '</h2>' + (ins.length > 2 ? '<button class="section__link" data-pfm="insights">' + T('Mostrar todo') + '</button>' : '') + '</div>' +
       '<p class="pf-sec__sub">' + T('De {mes}, hasta hoy.', { mes: mesName(curMes()) }) + '</p>' +
       ins.slice(0, 2).map(function (x, i) {
         var mx = x.cmp ? Math.max.apply(null, x.cmp.map(function (c) { return c.v; }).concat([1])) : 1;
@@ -1059,7 +1060,7 @@
           (x.cmp ? '<span class="pfm-dcard__cmp">' + x.cmp.map(function (c) {
             return '<span class="pfm-dcard__row' + (c.on ? ' is-on' : '') + '"><small>' + esc(c.l) + '</small><b>' + money0(c.v) + '</b><i style="width:' + Math.max(3, c.v / mx * 100).toFixed(1) + '%"></i></span>'; }).join('') + '</span>' : '') +
           (x.go ? '<span class="pfm-dcard__go">' + esc(x.gol) + '</span>' : '') + '</button>';
-      }).join('') + '</section>';
+      }).join('') + '</div>';
   }
   // Ingresos: ya no es un filtro de la pantalla, se ven en su hoja
   function ingSheet() {
@@ -1107,7 +1108,7 @@
     if (!pf) return;
     if (!DB) { scroll.innerHTML = '<header class="pf-head"><h1>Mis finanzas</h1></header><p class="pf-note" style="padding:0 24px">' + T('Cargando tus movimientos…') + '</p>'; load().then(paint); return; }
     var keep = window.scrollY;
-    scroll.innerHTML = '<header class="pf-head"><h1>Mis finanzas</h1></header>' + dineroHTML() + ukuHTML() + destacadoHTML() + gastosHTML() + footHTML();
+    scroll.innerHTML = '<header class="pf-head"><h1>Mis finanzas</h1></header>' + dineroHTML() + ukuHTML() + gastosHTML() + footHTML();
     window.scrollTo({ top: keep });
     hero3D();
   }

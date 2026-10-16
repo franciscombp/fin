@@ -247,7 +247,7 @@ button.pfm-globo:active { transform: scale(.97); }
 /* Lo destacado: tarjetas con una frase y su comparación */
 .pfm-dest { margin-top: var(--bp-semantic-spacing-macro-md, 40px) !important; }
 .pfm-dest .pf-sec__head { margin-bottom: 0; }
-.pfm-dest .pf-sec__sub { margin-bottom: 8px; }
+.pfm-dest .pf-sec__sub { margin: 4px 0 8px !important; }
 .pfm-dcard { display: flex; flex-direction: column; align-items: stretch; gap: var(--bp-semantic-spacing-micro-md, 8px); width: 100%; margin-top: var(--bp-semantic-spacing-micro-md, 8px); padding: 20px !important; border: 0; color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
 .pfm-dcard__tag { display: flex; align-items: center; gap: 6px; font: var(--ui-body-sm-semibold); color: var(--bp-interaction-tertiary-fg); }
 .pfm-dcard__tag .material-symbols-rounded { font-size: 18px; }
