@@ -577,7 +577,7 @@
     page.querySelector('.as-level span').textContent = T('Salud financiera {n} · {nivel}', { n: D.score, nivel: T(lv.n) });
     page.querySelector('.as-level').style.setProperty('--lvl', 'var(--as-accent)');
     paintHub();
-    input.placeholder = T('Pregúntale a {nombre}', { nombre: C().name });
+    input.placeholder = T('Pregúntale a {nombre}', { nombre: 'Asistente' });
   }
 
   /* Hojas inferiores (compartidas por el PFM y el asistente) */
@@ -610,7 +610,7 @@
     } else {
       var PL = window.UkuAnalisis ? UkuAnalisis.plans() : {};
       html += '<h3>Ajustes</h3>' +
-        (window.UkuAnalisis ? '<p class="as-sheet__label">' + T('Tipo de cliente para Analizar con Uku (demo)') + '</p><div class="as-rows">' + Object.keys(PL).map(function (k) {
+        (window.UkuAnalisis ? '<p class="as-sheet__label">' + T('Tipo de cliente para Analizar con el Asistente (demo)') + '</p><div class="as-rows">' + Object.keys(PL).map(function (k) {
           return '<button class="as-row as-row--btn" data-plan="' + k + '" aria-pressed="' + (UkuAnalisis.plan() === k) + '"><span class="as-row__main"><b>' + PL[k] + '</b></span><span class="as-radio"></span></button>';
         }).join('') + '</div>' : '') +
         '<p class="as-sheet__label">Probar otro escenario (solo demo)</p><div class="as-rows">' +
@@ -854,7 +854,7 @@
   function aiCTA(compact) {
     var acc = window.UkuAnalisis ? UkuAnalisis.access() : '';
     return '<button class="ai-cta' + (compact ? ' ai-cta--sm' : '') + '" data-pf="analyze"><span class="ai-cta__spark material-symbols-rounded" aria-hidden="true">auto_awesome</span>' +
-      '<span class="ai-cta__t"><b>' + T('Analizar con {nombre}', { nombre: C().name }) + '</b>' + (acc && !compact ? '<small>' + acc + '</small>' : '') + '</span>' +
+      '<span class="ai-cta__t"><b>' + T('Analizar con {nombre}', { nombre: 'Asistente' }) + '</b>' + (acc && !compact ? '<small>' + acc + '</small>' : '') + '</span>' +
       '<span class="ai-badge">IA</span></button>';
   }
   // Uku en los meses: un bloque de información (sin el oso grande)
@@ -889,7 +889,7 @@
     return '<section class="pf-sec pf-foot">' +
       '<button class="pf-navrow" data-pf="accounts"><span class="material-symbols-rounded">account_balance</span><span><b>Cuentas conectadas</b><small>' + T('{n} cuentas', { n: D.accts.length }) + ' · ' + Object.keys(BANKS).filter(connected).map(function (k) { return BANKS[k].name; }).join(', ') + '</small></span><span class="material-symbols-rounded">chevron_right</span></button>' +
       '<button class="pf-navrow" data-pf="health"><span class="material-symbols-rounded">favorite</span><span><b>Salud financiera</b><small>Cómo se calcula y cómo subirla</small></span><span class="material-symbols-rounded">chevron_right</span></button>' +
-      '<button class="pf-navrow" data-pf="analyze"><span class="pf-navrow__av">' + C().face() + '</span><span><b>' + T('Analizar con {nombre}', { nombre: C().name }) + ' <span class="ai-badge">IA</span></b><small>' + T('Un análisis de tus finanzas hecho con IA') + '</small></span><span class="material-symbols-rounded">chevron_right</span></button>' +
+      '<button class="pf-navrow" data-pf="analyze"><span class="pf-navrow__av">' + C().face() + '</span><span><b>' + T('Analizar con {nombre}', { nombre: 'Asistente' }) + ' <span class="ai-badge">IA</span></b><small>' + T('Un análisis de tus finanzas hecho con IA') + '</small></span><span class="material-symbols-rounded">chevron_right</span></button>' +
       '<p class="pf-note">' + T('Tu resumen de cada mes estará listo al final del mes.') + '</p></section>';
   }
   // Mis finanzas vive siempre como sección (dashboard); la versión de página
@@ -1172,7 +1172,7 @@
         '<p class="pf-say__t">' + m.t + '</p>' +
         '<div class="uku-say__replies">' + (m.r || '') +
           (n > 1 && say.i < n - 1 ? '<button class="uku-say__reply uku-say__reply--next" data-pf="say:next">Siguiente</button>' : '') +
-          '<button class="uku-say__reply uku-say__reply--ai" data-pf="analyze"><span class="material-symbols-rounded">auto_awesome</span>' + T('Analizar con {nombre}', { nombre: C().name }) + '</button></div>' +
+          '<button class="uku-say__reply uku-say__reply--ai" data-pf="analyze"><span class="material-symbols-rounded">auto_awesome</span>' + T('Analizar con {nombre}', { nombre: 'Asistente' }) + '</button></div>' +
       '</div></div>';
   }
   // Clima en el fondo del héroe: "Quito · 8º" con su icono, sin texto en el globo
