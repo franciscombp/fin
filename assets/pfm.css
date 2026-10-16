@@ -195,7 +195,9 @@ button.pfm-globo:active { transform: scale(.97); }
 /* ---------- 3. Tus gastos, como Salud de Apple ---------- */
 .pfm-flow { margin-top: var(--bp-semantic-spacing-macro-md, 40px) !important; }
 .pfm-flow .pf-sec__head { margin-bottom: 0; }
-.pfm-tabs { position: sticky; top: 56px; z-index: 5; display: flex; gap: var(--bp-semantic-spacing-micro-md, 8px); padding: var(--bp-semantic-spacing-micro-md, 8px) var(--bp-layout-grid-margin, 24px); background: var(--bp-theme-color-surface-page-alt, #f5f5f5); }
+/* Fijo justo debajo de la barra de Mis finanzas (que también es fija), como
+   las pestañas de Inicio: mismo offset con el safe-area y el mismo fondo */
+.pfm-tabs { position: sticky; top: calc(56px + env(safe-area-inset-top, 0px)); z-index: 49; display: flex; gap: var(--bp-semantic-spacing-micro-md, 8px); padding: var(--bp-semantic-spacing-micro-md, 8px) var(--bp-layout-grid-margin, 24px); background: var(--bp-surface-page); }
 .pfm-flow__body { margin-top: 0 !important; }
 .pfm-tabs .tab { flex: 1 1 0; justify-content: center; }
 .pfm-chart__head { margin-top: var(--bp-semantic-spacing-macro-sm, 24px); }
