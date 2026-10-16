@@ -1,8 +1,9 @@
 /* =====================================================================
    Versión asistente (paralela): Uku es la pantalla. Un solo punto de
    entrada para buscar, pedir ayuda y entender tus finanzas.
-   - Se activa con asistente.html o index.html?app=uku. La app actual
-     queda igual: este archivo no hace nada sin ese parámetro.
+   - Es la versión principal: se activa siempre. La versión anterior
+     (Mis finanzas, buscador y ayuda por separado) queda de respaldo en
+     clasica.html o index.html?app=clasica, y ahí este archivo no hace nada.
    - Todo cabe en una pantalla, sin scroll: Uku en su mundo 3D, su globo
      con lo más importante, los accesos y la barra para hablarle.
    - Una sola conversación: Uku responde tus finanzas, la ayuda (preguntas
@@ -14,7 +15,7 @@
    ===================================================================== */
 (function () {
   'use strict';
-  if (new URLSearchParams(location.search).get('app') !== 'uku') return;
+  if (new URLSearchParams(location.search).get('app') === 'clasica') return;
   var root = document.documentElement;
   root.classList.add('app-uku');
   var ASSET = (document.currentScript && document.currentScript.src || location.href).replace(/[^/]*$/, '');
@@ -58,6 +59,7 @@
       '<div class="uk-chatbg" aria-hidden="true"></div>' +
       '<header class="uk-chathead"><span class="uk-chathead__face" aria-hidden="true">' + face() + '</span><span class="uk-chathead__t"><b>Uku</b><small>Tu asesor · en línea</small></span>' +
         '<button class="uk-chathead__x" data-k="cerrar" aria-label="Terminar conversación">' + ic('close') + '</button></header>' +
+      '<div class="uk-head"><p class="uk-head__t" role="heading" aria-level="1">Uku</p><button class="uk-head__mood" data-k="pfm:world"></button></div>' +
       '<div class="uk-globo" aria-live="polite"></div>' +
       '<div class="uk-chat" aria-live="polite"></div>' +
       '<div class="uk-pills"></div>' +
@@ -65,7 +67,7 @@
       '<form class="uk-bar" role="search"><button type="button" class="uk-bar__x" data-k="cerrar" aria-label="Terminar conversación">' + ic('close') + '</button>' +
         '<label class="uk-bar__f">' + ic('search') + '<input type="text" enterkeyhint="send" autocomplete="off" placeholder="Habla con Uku o busca algo" aria-label="Habla con Uku o busca algo"></label>' +
         '<button class="uk-bar__send" type="submit" aria-label="Enviar">' + ic('arrow_upward') + '</button></form>' +
-      '<button class="uk-exit" data-k="salir">Volver a la versión actual</button>';
+      '<p class="uk-exit"><button data-k="demo">Ver como</button> · <button data-k="salir">Versión anterior</button></p>';
     globoEl = host.querySelector('.uk-globo'); pills = host.querySelector('.uk-pills'); results = host.querySelector('.uk-results'); chat = host.querySelector('.uk-chat'); input = host.querySelector('input');
     host.querySelector('form').addEventListener('submit', function (e) { e.preventDefault(); preguntar(input.value); });
     input.addEventListener('input', function () { modo(); pintarResultados(); });
@@ -82,7 +84,12 @@
       if (!es && b3d) setTimeout(function () { b3d.play('wave'); }, 350); // vuelve a su mundo y saluda
     }
   }
-  function pintar() { modo(); pintarGlobo(); pintarAccesos(); pintarChat(); pintarResultados(); }
+  function pintar() { modo(); pintarCabeza(); pintarGlobo(); pintarAccesos(); pintarChat(); pintarResultados(); }
+  // Cabecera de la sección: el título grande y el ánimo de Uku (abre qué significa su mundo)
+  function pintarCabeza() {
+    var s = resumen(), m = host.querySelector('.uk-head__mood');
+    m.hidden = !s; if (s) m.innerHTML = ic(s.moodIc) + 'Está ' + esc(s.moodL);
+  }
 
   // Lo que dice Uku: una nota del momento o su consejo más importante (tocarlo a él pasa al siguiente)
   function pintarGlobo() {
@@ -251,7 +258,8 @@
       case 'no': uku('Cuéntame con tus palabras qué necesitas, o te paso con una persona.', [b('persona', 'Hablar con una persona', 'support_agent')]); pintarChat(); return setTimeout(function () { input.focus(); }, 300);
       case 'consejo': { var A = consejos(); if (!A.length) return resuelto('Por ahora no tengo nada más. ¡Vas muy bien!'); var x = A[0]; uku(esc(x.di || x.t), x.act ? [b('pfm:' + x.act, x.actl, 'arrow_forward')] : []); return pintarChat(); }
       case 'cerrar': msgs = []; pend = null; fx('tap'); return pintar();
-      case 'salir': location.href = location.pathname.replace(/asistente\.html$/, 'index.html'); return;
+      case 'demo': return window.PFM && PFM.settings();
+      case 'salir': location.href = 'clasica.html'; return;
     }
   }
   // Un solo punto de entrada: la lupa y la ayuda llevan a Uku (antes que el buscador y el soporte)
@@ -280,8 +288,8 @@
       nav.addEventListener('click', function () { finOn(false); });
     }
     // Arriba, un solo acceso: Uku en lugar de la lupa y los audífonos
-    var lupa = document.querySelector('.top-bar__actions [data-action="Buscar"]');
-    if (lupa) { lupa.setAttribute('aria-label', 'Uku'); lupa.innerHTML = '<span class="uk-topface">' + face() + '</span>'; }
+    var noti = document.querySelector('.top-bar__actions [data-action="Notificaciones"]');
+    if (noti) noti.dataset.in = '0 1 2 4';
     // Lo que abre Mis finanzas desde otros lugares lleva al PFM completo, dentro de Uku
     if (window.PFM) { var o = PFM.open; PFM.open = function () { finOn(true); o(); }; }
     // La pantalla de Uku cabe entre la barra de arriba y la de abajo: sin scroll

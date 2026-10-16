@@ -13,6 +13,7 @@ copia la raíz y `assets/`.
 | `mis-finanzas-pagina/` | Mis finanzas como página completa (antes de ser sección de la barra inferior) y sus funciones. |
 | `transiciones-anteriores/` | Morph de la tarjeta, apertura "creciendo" desde el botón y el primer bloque de transiciones: reemplazados por la navegación unificada (`assets/navegacion.js`). |
 | `vistas/` | Vistas sin acceso desde la app (Tienda). |
+| (versión anterior de la app) | No es una carpeta: la versión anterior, con Mis finanzas, el buscador y la ayuda por separado, sigue publicada en `clasica.html` (`index.html?app=clasica`). La principal es la versión asistente con Uku (`assets/uku-app.js`). |
 
 `solar.css` y `tokens.css` no se limpian: son la librería del design system
 compartido de Figma y traen componentes que la app todavía no usa.
