@@ -26,7 +26,7 @@ def ix(k, v):
 
 rnd = random.Random(470)
 CTA, VISA, DEUNA = 'Cuenta de ahorro Pichibank ···5108', 'Visa Pichibank ···6230', 'Deuna ···2094'
-SUELDO, MAMA = 235.0, 'Carmen Cedeño Mora'
+SUELDO, MAMA = 241.0, 'Carmen Cedeño Mora'
 ini, fin = dt.date(2025, 10, 1), dt.date(2026, 10, 15)
 
 ev = []  # (fecha, hora, orden, tipo, datos)
@@ -47,8 +47,8 @@ while d <= fin:
         if q == 2: add(f, '07:40', 'tarjeta')          # paga la tarjeta apenas cobra
         add(f, '08:15' if q == 1 else '08:30', 'retiro')  # y retira casi todo
     # Décimo tercero (diciembre) y décimo cuarto (marzo, en la Costa)
-    if m == 12: add(dt.date(y, 12, 19), '06:12', 'decimo', monto=470.0, n='Décimo tercer sueldo')
-    if m == 3: add(dt.date(y, 3, 13), '06:12', 'decimo', monto=470.0, n='Décimo cuarto sueldo')
+    if m == 12: add(dt.date(y, 12, 19), '06:12', 'decimo', monto=482.0, n='Décimo tercer sueldo')
+    if m == 3: add(dt.date(y, 3, 13), '06:12', 'decimo', monto=482.0, n='Décimo cuarto sueldo')
     # Mesada a su mamá: el 1 o 2 de cada mes, siempre parecida
     add(dt.date(y, m, rnd.choice((1, 2))), '19:%02d' % rnd.randint(0, 50), 'mesada', monto=rnd.choice((40.0, 40.0, 40.0, 35.0, 45.0)))
     # Compras con la Visa: supermercado, farmacia, comida y alguna cosa del hogar
@@ -130,7 +130,7 @@ data['movimientos'][U] = rows
 data['usuarios'].append({
     'usuario': U, 'nombre': 'Luis Cedeño', 'edad': 28, 'ciudad': 'Guayaquil', 'tipo': 'Vive al día con el sueldo básico',
     'grupo_investigacion': 'Clientes con digitalización media o básica',
-    'ingreso_mensual': '$470 de sueldo básico en dos quincenas, más los décimos',
+    'ingreso_mensual': '$482 de sueldo básico en dos quincenas, más los décimos',
     'hogar': 'Vive con su pareja y su hija de 3 años; le pasa una mesada a su mamá',
     'digitalizacion': 'Media: el día de pago retira casi todo en efectivo; usa Deuna para recargas y la tienda',
     'productos_bp': 'Cuenta de ahorro, Visa Pichibank (cupo $400), Deuna',
