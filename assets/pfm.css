@@ -82,7 +82,7 @@ button.pfm-globo:active { transform: scale(.97); }
    Que dé gusto: la tarjeta entra con un rebote, el botón elegido late y
    suelta un +1, la tarjeta sale volando, Uku avanza por la barra y te
    anima; al guardar, confeti. Sin movimiento si así lo pide el sistema. */
-.pfm-game { position: fixed; inset: 0; z-index: 1200; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; padding: var(--bp-semantic-spacing-micro-md, 8px) var(--bp-layout-grid-margin, 24px) calc(var(--bp-semantic-spacing-macro-sm, 24px) + env(safe-area-inset-bottom, 0px)); background: var(--bp-theme-color-surface-page-default, #f5f5f5); color: var(--bp-theme-color-text-primary); transform: translateY(100%); visibility: hidden; transition: transform .32s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .32s; overflow-x: hidden; overflow-y: auto; }
+.pfm-game { position: fixed; inset: 0; z-index: 1200; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; padding: calc(var(--bp-semantic-spacing-micro-md, 8px) + env(safe-area-inset-top, 0px)) var(--bp-layout-grid-margin, 24px) calc(var(--bp-semantic-spacing-macro-sm, 24px) + env(safe-area-inset-bottom, 0px)); background: var(--bp-theme-color-surface-page-default, #f5f5f5); color: var(--bp-theme-color-text-primary); transform: translateY(100%); visibility: hidden; transition: transform .32s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .32s; overflow-x: hidden; overflow-y: auto; }
 .pfm-game.open { transform: none; visibility: visible; transition: transform .32s cubic-bezier(.2, .8, .2, 1); }
 .pfm-game__top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; min-height: 56px; margin: 0 -8px; }
 .pfm-game__top > :last-child { justify-self: end; }
