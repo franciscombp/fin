@@ -257,7 +257,7 @@
         var ch = Object.keys(Object.assign({}, s.grupos, p.grupos)).filter(function (k) { return !GRUPOS[k].gris; })
           .map(function (k) { return { k: k, d: (s.grupos[k] || 0) - (p.grupos[k] || 0) }; })
           .sort(function (a, b) { return d > 0 ? b.d - a.d : a.d - b.d; })[0];
-        out.push({ icon: d > 0 ? 'trending_up' : 'trending_down', kind: d > 0 ? 'warn' : 'good',
+        out.push({ icon: d > 0 ? 'trending_up' : 'trending_down', kind: d > 0 ? 'warn' : 'good', g: ch && Math.abs(ch.d) >= 10 ? ch.k : null,
           t: T(d > 0 ? 'Gastaste {pct} más que en {mes}' : 'Gastaste {pct} menos que en {mes}', { pct: pct(Math.abs(d) / p.gast), mes: mesName(prev) }) + (cur ? ' ' + T('a esta altura') : ''),
           s: ch && Math.abs(ch.d) >= 10 ? T(ch.d > 0 ? 'Lo que más subió fue {cat}: {monto} más.' : 'Lo que más bajó fue {cat}: {monto} menos.', { cat: ch.k.toLowerCase(), monto: money(Math.abs(ch.d)) }) : T('Comparo hasta el mismo día del mes.'), ask: '¿En qué se me va la plata?' });
       }
@@ -270,7 +270,7 @@
       var av = prom(m, 3), up = Object.keys(s.grupos).filter(function (k) { return !GRUPOS[k].gris && av.grupos[k] > 15; })
         .map(function (k) { return { k: k, r: s.grupos[k] / av.grupos[k] - 1, d: s.grupos[k] - av.grupos[k] }; })
         .filter(function (x) { return x.r >= .2 && x.d >= 20; }).sort(function (a, b) { return b.d - a.d; })[0];
-      if (up && !cur) out.push({ icon: GRUPOS[up.k].ic, kind: 'warn', t: T('Tus gastos de {cat} aumentaron {pct}', { cat: up.k.toLowerCase(), pct: pct(up.r) }),
+      if (up && !cur) out.push({ icon: GRUPOS[up.k].ic, kind: 'warn', g: up.k, t: T('Tus gastos de {cat} aumentaron {pct}', { cat: up.k.toLowerCase(), pct: pct(up.r) }),
         s: T('Fueron {monto}; tu promedio de los últimos tres meses es {prom}.', { monto: money(s.grupos[up.k]), prom: money(av.grupos[up.k]) }), ask: '¿En qué se me va la plata?' });
       // El día de la semana que concentra el gasto
       var by = [0, 0, 0, 0, 0, 0, 0], tot = 0, desde = antes(m, 2).concat([m]);
@@ -501,7 +501,15 @@
   /* ---------- 2. Uku: lo que notó y ordenar gastos ---------- */
   function insights() {
     var m = curMes();
-    return (tobe() ? anticipa(m) : []).concat(hallazgos(m));
+    return (tobe() ? anticipa(m) : []).concat(hallazgos(m)).map(accion);
+  }
+  // Los hallazgos llevan a hacer algo; los que solo informan no llevan botón
+  function accion(x) {
+    var A = { credit_card: ['debt', 'Ver tus deudas'], flight_land: ['ing', 'Ver tus ingresos'], speed: ['budgets', 'Ver tu presupuesto'],
+      event_upcoming: ['bills', 'Ver por pagar'], tune: ['bud:sug', 'Usar el sugerido'], local_atm: ['grupo:Sin clasificar', 'Ver tus retiros'] }[x.icon];
+    if (x.g) A = ['grupo:' + x.g, T('Ver {g}', { g: T(x.g).toLowerCase() })];
+    if (A) { x.go = A[0]; x.gol = T(A[1]); }
+    return x;
   }
   function saludo() {
     var a = tobe() ? anticipa(curMes())[0] : null;
@@ -520,7 +528,8 @@
     html += '<div class="pfm-sec__head">' + (tobe() ? '' : '<span class="pfm-face">' + face() + '</span>') + '<h2>' + T(tobe() ? 'Lo que Uku ve venir' : 'Uku te cuenta') + '</h2>' +
       (ins.length ? '<button class="pf-link" data-pfm="insights">' + T('Ver todo') + '</button>' : '') + '</div>';
     html += '<div class="pfm-carousel" role="list">' + ins.slice(0, 6).map(function (x, i) {
-      return '<button role="listitem" class="pfm-ins is-' + x.kind + '" data-pfm="ins:' + (i + off) + '"><span class="material-symbols-rounded" aria-hidden="true">' + x.icon + '</span><b>' + esc(x.t) + '</b></button>';
+      return '<button role="listitem" class="pfm-ins is-' + x.kind + '" data-pfm="' + (x.go || 'ins:' + (i + off)) + '"><span class="material-symbols-rounded" aria-hidden="true">' + x.icon + '</span><b>' + esc(x.t) + '</b>' +
+        (x.go ? '<span class="pfm-ins__go">' + esc(x.gol) + '<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></span>' : '') + '</button>';
     }).join('') + '</div>';
     return html + tareaHTML() + '</section>';
   }
@@ -590,119 +599,133 @@
     return null;
   }
   // Uku pide la tarea de la semana; su bosque muestra cómo vas
+  var TANDA = 10; // se clasifica de a 10, sin prisa
   function tareaHTML() {
-    var T0 = tareas(), W = T0.W, cur = W[W.length - 1], pend = T0.list.filter(function (it) { return !it.done; }).length;
+    var T0 = tareas(), W = T0.W, pend = T0.list.filter(function (it) { return !it.done; }).length;
     // Las semanas que ya terminaron y quedaron pendientes secan el bosque
     var secas = W.slice(0, -1).filter(function (w) { return !w.ok; }).length, rc = racha(W), msg;
-    if (pend) msg = T(pend === 1 ? 'Tenemos 1 consumo por clasificar.' : 'Tenemos {n} consumos por clasificar.', { n: pend }) + ' ' +
-      (secas ? T(secas === 1 ? 'Una semana quedó pendiente y mi bosque se está secando. ¿Me ayudas?' : '{n} semanas quedaron pendientes y mi bosque se está secando. ¿Me ayudas?', { n: secas })
-        : tobe() ? T('Clasifiqué el resto; estos solo tú los sabes.') : T('¿Me ayudas? Es un minuto.'));
+    if (pend) msg = secas ? T(secas === 1 ? 'Una semana quedó pendiente y mi bosque se está secando. ¿Me ayudas?' : '{n} semanas quedaron pendientes y mi bosque se está secando. ¿Me ayudas?', { n: secas })
+      : tobe() ? T('Clasifiqué el resto; estos solo tú los sabes.') : T('¿Me ayudas? Es un minuto.');
     else msg = T('¡Todo clasificado! Mi bosque crece con cada semana al día. Vuelvo el lunes con lo nuevo.');
-    return '<div class="pfm-task' + (pend ? '' : ' is-done') + '"><div class="pfm-task__say"><span class="pfm-face">' + face() + '</span><p class="pfm-task__bubble">' + esc(msg) + '</p></div>' +
+    return '<div class="pfm-task' + (pend ? '' : ' is-done') + '">' +
+      (pend ? '<p class="pfm-task__label">' + T('Consumos sin clasificar') + '</p><p class="pfm-task__n">' + pend + '</p><p class="pfm-task__sub">' + T('Clasifica {n} cada vez, sin prisa.', { n: TANDA }) + '</p>' : '') +
+      '<div class="pfm-task__say"><span class="pfm-face">' + face() + '</span><p class="pfm-task__bubble">' + esc(msg) + '</p></div>' +
       forestHTML(W) +
       '<p class="pfm-task__meta"><span class="material-symbols-rounded" aria-hidden="true">local_fire_department</span>' + (rc ? T(rc === 1 ? 'Racha de 1 semana' : 'Racha de {n} semanas', { n: rc }) : T('Sin racha todavía')) + ' · ' + T('Uku te lo pide cada lunes') + '</p>' +
-      (pend ? '<button class="pfm-task__go" data-pfm="game">' + T(pend === 1 ? 'Clasificar 1 consumo' : 'Clasificar {n} consumos', { n: pend }) + '<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></button>' : '') + '</div>';
+      (pend ? '<button class="pfm-task__go" data-pfm="game">' + T('Clasificar {n}', { n: Math.min(TANDA, pend) }) + '<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></button>' : '') + '</div>';
   }
 
+  /* El juego, como Clutter: un consumo por pantalla, con lo que ayuda a
+     recordar (monto, a quién, cuándo y por dónde) y un toque en el grupo.
+     Lo que sugiere Uku va primero y marcado. Las respuestas se guardan al
+     final, después de revisar el resumen. */
   var OPCATS = [['Alimentación', 'Comida'], ['Transporte', 'Movilidad'], ['Vivienda', 'Hogar'], ['Salud y bienestar', 'Salud y educación'], ['Entretenimiento', 'Gustos'], ['Familia y dependientes', 'Familia'], ['Servicios financieros y deudas', 'Compromisos'], ['Otros', 'Otro']];
   var G = null, gel = null;
   function gameOpen() {
-    G = { list: items(), i: 0, n: 0, from: tareas().W, pick: false };
+    var all = items();
+    G = { list: all.slice(0, TANDA), total: all.length, i: 0, ans: [], from: tareas().W, view: 'card' };
     if (!G.list.length) return toast(T('No tienes nada por clasificar.'));
     if (!gel) {
       gel = document.createElement('div'); gel.className = 'pfm-game'; gel.setAttribute('role', 'dialog'); gel.setAttribute('aria-modal', 'true'); gel.setAttribute('aria-label', T('Clasifica tus consumos'));
       document.body.appendChild(gel);
       gel.addEventListener('click', function (e) { var b = e.target.closest('[data-g]'); if (b) gameKey(b.dataset.g); });
-      gel.addEventListener('pointerdown', dragStart);
-      document.addEventListener('keydown', function (e) {
-        if (!gel.classList.contains('open')) return;
-        if (e.key === 'Escape') { e.stopImmediatePropagation(); gameClose(); }
-        if (e.key === 'ArrowRight') gameKey('si'); if (e.key === 'ArrowLeft') gameKey('no');
-      }, true);
+      document.addEventListener('keydown', function (e) { if (gel.classList.contains('open') && e.key === 'Escape') { e.stopImmediatePropagation(); gameClose(); } }, true);
     }
     gameRender(); gel.classList.add('open'); document.documentElement.classList.add('has-ai'); fx('open');
   }
   function gameClose() { if (!gel) return; gel.classList.remove('open'); document.documentElement.classList.remove('has-ai'); fx('close'); refresh(); }
-  function grupoDe(cat) { return grupo(cat) === 'Sin clasificar' ? T('Otro') : grupo(cat); }
-  function cardHTML(it, back) {
-    var u = '';
+  function iniciales(n) { return String(n).replace(/^tú.*/, '').split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w.charAt(0).toUpperCase(); }).join('') || '·'; }
+  function cardHTML(it) {
+    var who, amt, cuando, por, av, pos = false;
     if (it.t === 'q') {
-      var x = it.q, o = OPT[it.sug];
-      u = '<p class="pfm-card__who">' + esc(corto(x.cp)) + '</p><p class="pfm-card__amt' + (x.sign === '+' ? ' is-pos' : '') + '">' + (x.sign === '+' ? '+' : '−') + money(x.total) + '</p>' +
-        '<p class="pfm-card__meta">' + (x.rows.length > 1 ? T('{n} transferencias, la última el {f}', { n: x.rows.length, f: dshort(x.last.f) }) : T('Transferencia del {f}', { f: dshort(x.last.f) })) + '</p>' +
-        '<div class="pfm-card__uku"><span class="pfm-card__face">' + face() + '</span><span><b>' + esc(T(x.tpl.q, { n: corto(x.cp).split(' ')[0] })) + '</b><small>' + T('Creo que {r}.', { r: o.d }) + ' ' + esc(contexto(x)) + '</small></span></div>';
+      var x = it.q; pos = x.sign === '+';
+      who = corto(x.cp); amt = x.total; av = '<span class="pfm-card__av">' + iniciales(x.cp) + '</span>';
+      cuando = x.rows.length > 1 ? T('{n} veces · la última el {f}', { n: x.rows.length, f: dshort(x.last.f) }) : DIA[wday(x.last.f)].replace(/s$/, '') + ' ' + dshort(x.last.f) + ' · ' + x.last.h;
+      por = x.last.src.replace(/ Pichibank/, '');
     } else {
-      var r = it.r, sg = it.sug;
-      u = '<p class="pfm-card__who">' + esc(desc(r)) + '</p><p class="pfm-card__amt">−' + money(-r.m) + '</p>' +
-        '<p class="pfm-card__meta">' + T('{d}, {h}', { d: DIA[wday(r.f)].replace(/s$/, '') + ' ' + dshort(r.f), h: r.h }) + ' · ' + esc(r.src.replace(/ Pichibank/, '')) + '</p>' +
-        '<div class="pfm-card__uku"><span class="pfm-card__face">' + face() + '</span><span><b>' + (sg ? T('¿Fue {g}?', { g: grupoDe(sg.cat).toLowerCase() }) : T('¿En qué fue?')) + '</b><small>' + (sg ? esc(sg.why) : T('No sé dónde pagaste: tú sí.')) + '</small></span></div>';
+      var r = it.r, d = desc(r), deuna = /Deuna/.test(r.src);
+      who = d; amt = -r.m; av = '<span class="pfm-card__av' + (deuna ? ' is-qr' : '') + '">' + (deuna && d === T('Pago con Deuna') ? '<span class="material-symbols-rounded">qr_code_2</span>' : iniciales(d)) + '</span>';
+      cuando = DIA[wday(r.f)].replace(/s$/, '') + ' ' + dshort(r.f) + ' · ' + r.h; por = r.src.replace(/ Pichibank/, '');
     }
-    return '<div class="pfm-card' + (back ? ' is-back' : ' is-top') + '"><span class="pfm-card__stamp is-si">' + T('Sí') + '</span><span class="pfm-card__stamp is-no">' + T('No') + '</span>' + u + '</div>';
+    return '<div class="pfm-card">' + av + '<p class="pfm-card__who">' + esc(who) + '</p>' +
+      '<p class="pfm-card__amt' + (pos ? ' is-pos' : '') + '">' + (pos ? '+' : '−') + money(amt) + '</p>' +
+      '<p class="pfm-card__row"><span class="material-symbols-rounded" aria-hidden="true">schedule</span>' + esc(cuando) + '</p>' +
+      '<p class="pfm-card__row"><span class="material-symbols-rounded" aria-hidden="true">' + (/Deuna/.test(por) ? 'qr_code_2' : 'account_balance') + '</span>' + esc(por) + '</p></div>';
   }
+  // Las opciones: un toque. La de Uku va primero y marcada
   function choicesHTML(it) {
-    if (it.t === 'q') return it.q.tpl.o.slice(1).concat(['gasto']).filter(function (v, i, a) { return a.indexOf(v) === i && v !== it.sug; }).map(function (id) {
-      return '<button class="pfm-choice" data-g="opt:' + id + '">' + esc(OPT[id].l) + '</button>'; }).join('');
-    return OPCATS.filter(function (c) { return !it.sug || c[0] !== it.sug.cat; }).map(function (c) {
-      return '<button class="pfm-choice" data-g="cat:' + c[0] + '"><span class="material-symbols-rounded" aria-hidden="true">' + (GRUPOS[c[1]] ? GRUPOS[c[1]].ic : 'category') + '</span>' + T(c[1]) + '</button>'; }).join('');
+    if (it.t === 'q') {
+      return '<p class="pfm-game__ask">' + T(it.q.sign === '+' ? '¿Qué es esta plata?' : '¿Qué le enviaste?') + '</p><div class="pfm-choices is-list">' + it.q.tpl.o.map(function (id, i) {
+        return '<button class="pfm-choice' + (i === 0 ? ' is-sug' : '') + '" data-g="opt:' + id + '">' + esc(OPT[id].l) + (i === 0 ? '<em class="material-symbols-rounded" title="' + T('Uku cree') + '" aria-label="' + T('Uku cree') + '">auto_awesome</em>' : '') + '</button>'; }).join('') + '</div>';
+    }
+    var sg = it.sug && it.sug.cat, ops = OPCATS.slice().sort(function (a, b) { return (b[0] === sg) - (a[0] === sg); });
+    return '<p class="pfm-game__ask">' + T('¿En qué fue?') + (it.sug ? '<small>' + esc(it.sug.why) + '</small>' : '') + '</p><div class="pfm-choices">' + ops.map(function (c) {
+      return '<button class="pfm-choice' + (c[0] === sg ? ' is-sug' : '') + '" data-g="cat:' + c[0] + '"><span class="material-symbols-rounded" aria-hidden="true">' + (GRUPOS[c[1]] ? GRUPOS[c[1]].ic : 'category') + '</span>' + T(c[1]) + (c[0] === sg ? '<em class="material-symbols-rounded" title="' + T('Uku cree') + '" aria-label="' + T('Uku cree') + '">auto_awesome</em>' : '') + '</button>'; }).join('') + '</div>';
   }
+  function topHTML(right) {
+    return '<div class="pfm-game__top"><button class="pfm-pill-btn" data-g="stop">' + T('Detener') + '</button><b class="pfm-game__count">' + (right || '') + '</b>' +
+      '<button class="pfm-pill-btn" data-g="result">' + T('Resultado') + '</button></div>';
+  }
+  function etiqueta(v) { if (OPT[v]) return OPT[v].l; var c = OPCATS.filter(function (x) { return x[0] === v; })[0]; return c ? T(c[1]) : v; }
   function gameRender() {
     var L = G.list, it = L[G.i];
-    if (!it) {
-      var W = tareas().W, crec = W.filter(function (w, i) { return w.ok && !G.from[i].ok; }).length, rc = racha(W);
-      gel.innerHTML = '<div class="pfm-game__top"><button class="pf-round pfm-game__x" data-g="close" aria-label="' + T('Cerrar') + '"><span class="material-symbols-rounded">close</span></button></div>' +
-        '<div class="pfm-game__end"><span class="pfm-game__burst" aria-hidden="true">' + face() + '</span><h2>' + (G.n ? T('¡Listo! Clasificaste {n}', { n: G.n === 1 ? T('1 consumo') : T('{n} consumos', { n: G.n }) }) : T('Por hoy está bien')) + '</h2>' +
-        '<p>' + (crec ? T(crec === 1 ? 'Creció 1 árbol en el bosque de Uku.' : 'Crecieron {n} árboles en el bosque de Uku.', { n: crec }) : T('El bosque de Uku crece cuando una semana queda al día.')) + '</p>' +
-        forestHTML(W) + (rc ? '<p class="pfm-task__meta"><span class="material-symbols-rounded" aria-hidden="true">local_fire_department</span>' + T(rc === 1 ? 'Racha de 1 semana' : 'Racha de {n} semanas', { n: rc }) + '</p>' : '') +
-        '<p class="pf-note">' + T('Lo que respondiste se aplica a los movimientos parecidos. Puedes cambiarlo en cada movimiento.') + '</p>' +
-        '<button class="pf-cta" data-g="close">' + T('Ver mis gastos') + '</button></div>';
-      fx('success'); return;
-    }
-    var sug = it.t === 'q' || it.sug, pick = G.pick || !sug;
-    gel.innerHTML = '<div class="pfm-game__top"><button class="pf-round pfm-game__x" data-g="close" aria-label="' + T('Cerrar') + '"><span class="material-symbols-rounded">close</span></button>' +
-      '<div class="pfm-game__title"><b>' + T('Clasifica tus consumos') + '</b><small>' + (it.sem === lunes(HOY) ? T('Esta semana') : T('Semana del {s}', { s: dshort(it.sem) })) + ' · ' + T('{a} de {b}', { a: G.i + 1, b: L.length }) + '</small></div><span></span></div>' +
+    if (G.view === 'result' || !it) return resultRender();
+    if (G.view === 'done') return doneRender();
+    gel.innerHTML = topHTML(T('{a} / {b}', { a: G.i + 1, b: L.length })) +
       '<div class="pfm-play__bar"><i style="width:' + (G.i / L.length * 100).toFixed(0) + '%"></i></div>' +
-      '<div class="pfm-deck">' + (L[G.i + 1] ? cardHTML(L[G.i + 1], true) : '') + cardHTML(it) + '</div>' +
-      (pick ? '<p class="pfm-game__ask">' + T(it.t === 'q' ? '¿Qué fue entonces?' : 'Escoge el grupo') + '</p><div class="pfm-choices">' + choicesHTML(it) + '</div>' : '') +
-      '<div class="pfm-game__acts">' +
-        (pick ? '<button class="pfm-gbtn" data-g="skip"><span class="material-symbols-rounded">redo</span>' + T('Saltar') + '</button>'
-          : '<button class="pfm-gbtn is-no" data-g="no" aria-label="' + T('No') + '"><span class="material-symbols-rounded">close</span></button>' +
-            '<button class="pfm-gbtn" data-g="skip"><span class="material-symbols-rounded">redo</span>' + T('Saltar') + '</button>' +
-            '<button class="pfm-gbtn is-si" data-g="si" aria-label="' + T('Sí') + '"><span class="material-symbols-rounded">check</span></button>') + '</div>' +
-      (pick ? '' : '<p class="pfm-game__hint">' + T('Desliza a la derecha si Uku acertó, a la izquierda si no.') + '</p>');
+      '<p class="pfm-game__note">' + T('Puedes cambiar tu respuesta antes de guardar.') + '</p>' +
+      cardHTML(it) + choicesHTML(it) +
+      '<div class="pfm-game__acts">' + (G.i ? '<button class="pfm-pill-btn" data-g="back"><span class="material-symbols-rounded" aria-hidden="true">undo</span>' + T('Atrás') + '</button>' : '') +
+      '<button class="pfm-pill-btn" data-g="later"><span class="material-symbols-rounded" aria-hidden="true">schedule</span>' + T('Más tarde') + '</button></div>';
   }
-  function gameNext(dir) {
-    var top = gel.querySelector('.pfm-card.is-top');
-    G.pick = false; G.i++;
-    if (top && dir) { top.classList.add('is-gone-' + dir); setTimeout(gameRender, 220); } else gameRender();
+  // Revisar antes de guardar: cuántos van a cada grupo
+  function resultRender() {
+    var by = {}, later = G.list.length - G.ans.filter(Boolean).length;
+    G.ans.forEach(function (a) { if (!a) return; var k = etiqueta(a.v); (by[k] = by[k] || { n: 0, m: 0, ic: a.ic }); by[k].n++; by[k].m += a.monto; });
+    var n = G.ans.filter(Boolean).length;
+    gel.innerHTML = '<div class="pfm-game__top"><button class="pfm-pill-btn" data-g="close">' + T('Cerrar') + '</button><span></span><span></span></div>' +
+      '<div class="pfm-game__result"><span class="pfm-game__check material-symbols-rounded" aria-hidden="true">check</span>' +
+      '<h2>' + (n === 1 ? T('1 consumo clasificado') : T('{n} consumos clasificados', { n: n })) + '</h2><p>' + T('Revísalo una última vez antes de guardar.') + '</p>' +
+      '<div class="pfm-sum">' + Object.keys(by).map(function (k) {
+        return '<div class="pfm-sum__row"><span class="material-symbols-rounded" aria-hidden="true">' + by[k].ic + '</span><span>' + esc(k) + '</span><b>' + (by[k].n === 1 ? T('1 consumo') : T('{n} consumos', { n: by[k].n })) + '</b></div>';
+      }).join('') + (later ? '<div class="pfm-sum__row"><span class="material-symbols-rounded" aria-hidden="true">schedule</span><span>' + T('Más tarde') + '</span><b>' + (later === 1 ? T('1 consumo') : T('{n} consumos', { n: later })) + '</b></div>' : '') + '</div>' +
+      (n ? '<button class="pfm-task__go" data-g="save">' + T('Guardar clasificación') + '<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></button>' : '<button class="pfm-task__go" data-g="close">' + T('Volver') + '</button>') +
+      (G.i < G.list.length ? '<button class="pf-link pf-link--block" data-g="resume">' + T('Seguir clasificando') + '</button>' : '') +
+      '<p class="pf-note">' + T('Lo que guardes se aplica a los consumos parecidos. Puedes cambiarlo en cada movimiento.') + '</p></div>';
+  }
+  // Después de guardar: el bosque de Uku
+  function doneRender() {
+    var W = tareas().W, crec = W.filter(function (w, i) { return w.ok && !G.from[i].ok; }).length, rc = racha(W), quedan = items().length;
+    gel.innerHTML = '<div class="pfm-game__top"><button class="pfm-pill-btn" data-g="close">' + T('Cerrar') + '</button><span></span><span></span></div>' +
+      '<div class="pfm-game__end"><span class="pfm-game__burst" aria-hidden="true">' + face() + '</span><h2>' + T('¡Gracias!') + '</h2>' +
+      '<p>' + (crec ? T(crec === 1 ? 'Creció 1 árbol en mi bosque.' : 'Crecieron {n} árboles en mi bosque.', { n: crec }) : T('Mi bosque crece cuando una semana queda al día.')) + '</p>' +
+      forestHTML(W) + (rc ? '<p class="pfm-task__meta"><span class="material-symbols-rounded" aria-hidden="true">local_fire_department</span>' + T(rc === 1 ? 'Racha de 1 semana' : 'Racha de {n} semanas', { n: rc }) + '</p>' : '') +
+      (quedan ? '<button class="pfm-task__go" data-g="more">' + T('Clasificar {n} más', { n: Math.min(TANDA, quedan) }) + '<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></button>' : '') +
+      '<button class="pf-link pf-link--block" data-g="close">' + T('Ver mis gastos') + '</button></div>';
+    fx('success');
   }
   function gameKey(k) {
-    var it = G && G.list[G.i];
-    if (k === 'close') return gameClose();
-    if (!it) return;
-    var p = k.split(':');
-    if (k === 'si' && (it.t === 'q' || it.sug)) { answerIt(it, it.t === 'q' ? it.sug : it.sug.cat); fx('success'); return gameNext('right'); }
-    if (k === 'no') { G.pick = true; fx('select'); return gameRender(); }
-    if (k === 'skip') { fx('tap'); return gameNext('down'); }
-    if (p[0] === 'opt' || p[0] === 'cat') { answerIt(it, p.slice(1).join(':')); fx('success'); return gameNext('left'); }
-  }
-  function answerIt(it, v) {
-    if (it.t === 'q') resp()[it.q.k] = v;
-    else (ST.cats[ST.u] || (ST.cats[ST.u] = {}))[it.r.i] = v;
-    G.n++; persist(); cache = {}; fijoCache = {};
-  }
-  // Deslizar la tarjeta de arriba
-  function dragStart(e) {
-    var card = e.target.closest('.pfm-card.is-top'); if (!card || G.pick) return;
-    var it = G.list[G.i]; if (!(it.t === 'q' || it.sug)) return;
-    var x0 = e.clientX, dx = 0;
-    card.setPointerCapture(e.pointerId); card.classList.add('is-drag');
-    function mv(ev) { dx = ev.clientX - x0; card.style.transform = 'translateX(' + dx + 'px) rotate(' + (dx / 18) + 'deg)'; card.style.setProperty('--si', Math.max(0, Math.min(1, dx / 90))); card.style.setProperty('--no', Math.max(0, Math.min(1, -dx / 90))); }
-    function up() {
-      card.removeEventListener('pointermove', mv); card.removeEventListener('pointerup', up); card.removeEventListener('pointercancel', up);
-      card.classList.remove('is-drag'); card.style.transform = ''; card.style.removeProperty('--si'); card.style.removeProperty('--no');
-      if (dx > 90) gameKey('si'); else if (dx < -90) gameKey('no');
+    var p = k.split(':'), it = G && G.list[G.i];
+    switch (p[0]) {
+      case 'close': return gameClose();
+      case 'stop': case 'result': G.view = 'result'; fx('select'); return gameRender();
+      case 'resume': G.view = 'card'; return gameRender();
+      case 'back': if (G.i) { G.i--; G.ans[G.i] = null; fx('tap'); gameRender(); } return;
+      case 'later': G.ans[G.i] = null; G.i++; fx('tap'); return gameRender();
+      case 'opt': case 'cat': {
+        if (!it) return;
+        var v = p.slice(1).join(':'), oc = OPCATS.filter(function (c) { return c[0] === v; })[0];
+        G.ans[G.i] = { it: it, v: v, monto: it.t === 'q' ? it.q.total : -it.r.m, ic: oc ? (GRUPOS[oc[1]] ? GRUPOS[oc[1]].ic : 'category') : 'person' };
+        G.i++; fx('select');
+        var card = gel.querySelector('.pfm-card'); if (card) { card.classList.add('is-gone'); setTimeout(gameRender, 160); } else gameRender();
+        return;
+      }
+      case 'save': {
+        G.ans.forEach(function (a) { if (!a) return; if (a.it.t === 'q') resp()[a.it.q.k] = a.v; else (ST.cats[ST.u] || (ST.cats[ST.u] = {}))[a.it.r.i] = a.v; });
+        persist(); cache = {}; fijoCache = {}; G.view = 'done'; return gameRender();
+      }
+      case 'more': return gameOpen();
     }
-    card.addEventListener('pointermove', mv); card.addEventListener('pointerup', up); card.addEventListener('pointercancel', up);
   }
 
   /* ---------- 3. En qué se va tu plata ---------- */
@@ -842,7 +865,7 @@
     showSheet('<h3>' + T('Lo que notó Uku') + '</h3><p>' + T('Frases cortas sobre tus movimientos de {mes}.', { mes: mesName(curMes()) }) + '</p>' +
       '<div class="pf-uku2__list">' + ins.map(function (x, j) {
         return '<div class="pf-uku2__row' + (j === i ? ' is-on' : '') + '"><span class="pf-uku2__ic material-symbols-rounded" aria-hidden="true">' + x.icon + '</span><div class="pf-uku2__txt"><b>' + esc(x.t) + '</b><p>' + esc(x.s) + '</p>' +
-          (x.act ? '<div class="pf-uku2__links"><button data-pfm="' + x.act + '">' + T('Usar este presupuesto') + '</button></div>' : '') +
+          (x.go ? '<div class="pf-uku2__links"><button data-pfm="' + x.go + '">' + esc(x.gol) + '</button></div>' : '') +
           (tobe() && x.ask ? '<div class="pf-uku2__links"><button class="is-ai" data-pfm="ai:' + esc(x.ask) + '"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + esc(x.ask) + '</button></div>' : '') + '</div></div>';
       }).join('') + '</div>');
   }
@@ -956,6 +979,7 @@
       case 'reset': ST.resp[ST.u] = {}; ST.cats[ST.u] = {}; if (ST.presG) delete ST.presG[ST.u]; persist(); refresh(); closeSheet(); toast(T('Listo, volviste al inicio.')); return;
       case 'per': ST.per = p[1]; persist(); fx('select'); paint(); return;
       case 'flujo': ST.flujo = p[1]; persist(); fx('select'); paint(); return;
+      case 'ing': { ST.flujo = 'in'; ST.per = 'mes'; persist(); closeSheet(); paint(); var fl = scroll.querySelector('.pfm-flow'); if (fl) fl.scrollIntoView({ behavior: 'smooth' }); return; }
       case 'debt': return deudasSheet();
       case 'bills': return billsSheet();
       case 'score': return scoreSheet();
