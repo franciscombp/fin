@@ -1556,6 +1556,6 @@
   window.PFM = { open: open, paint: paint,
     // Para la versión asistente: los consejos de Uku y un resumen de tu dinero
     advice: function () { return DB ? consejos() : []; },
-    summary: function () { if (!DB) return null; var s = month(curMes()), a = animo(); return { nombre: nombre(), saldo: sumv(saldos(), function (x) { return x.v; }), gast: s.gast, pres: pres().general, mes: mesName(curMes()), n: a.n, mood: a.k, moodL: T(MOOD[a.k]), moodIc: MOOD_IC[a.k] }; }, settings: function () { if (DB) whoSheet(); }, pack: pack, answer: answer, key: key, ready: function () { return !!DB; },
+    summary: function () { if (!DB) return null; var s = month(curMes()), a = animo(); return { nombre: nombre(), saldo: sumv(saldos(), function (x) { return x.v; }), gast: s.gast, pres: pres().general, mes: mesName(curMes()), n: a.n, mood: a.k, moodL: T(MOOD[a.k]), moodIc: MOOD_IC[a.k], score: salud(curMes()), bloom: flores() }; }, settings: function () { if (DB) whoSheet(); }, pack: pack, answer: answer, key: key, ready: function () { return !!DB; },
     modo: function () { return ST.modo; } };
 })();
