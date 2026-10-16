@@ -98,6 +98,8 @@ html.sx-open #home-page { filter: none; }
 .sx-card > .sx-row:last-child, .sx-card > .sx-row:has(+ .sx-link) { border-radius: 0 0 24px 24px; }
 .sx-card > h3 + .sx-row:last-child, .sx-card > .sx-row:only-child { border-radius: 24px; }
 .sx-card > .sx-link { display: flex; margin-top: 8px; border-radius: 99px; }
+.sx-card > h3 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sx-card > h3 .sx-link { margin: 0; padding: 0; border: 0; background: none; font: inherit; font-size: 14px; color: var(--bp-theme-color-text-interactive); cursor: pointer; }
 .sx-grid { padding: 20px 12px 16px !important; border-radius: 24px; background: var(--bp-theme-color-surface-container-default); }
 html:not(.theme-y2k) .sx .sx-app__ic { width: 56px !important; height: 56px !important; border-radius: 50% !important; background: var(--bp-theme-color-avatar-bg) !important; color: var(--bp-theme-color-avatar-fg) !important; box-shadow: none !important; }
 .sx-row__ic { border-radius: 50% !important; background: var(--bp-theme-color-avatar-bg) !important; color: var(--bp-theme-color-avatar-fg) !important; }
