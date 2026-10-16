@@ -509,21 +509,21 @@
     return sl.map(function (x) { return { n: x.n, v: x.v, ic: /Deuna/.test(x.n) ? 'qr_code_2' : 'account_balance', tipo: 'saldo' }; })
       .concat(d.bp.map(function (x) { return { n: x.producto, v: x.saldo, ic: /Hipoteca/.test(x.producto) ? 'home' : 'credit_card', tipo: 'deuda' }; }));
   }
-  function tile(k, ic, l, v, s, warn) {
-    return '<button class="pfm-tile' + (warn ? ' is-warn' : '') + '" data-pfm="' + k + '"><span class="pfm-tile__top"><span class="material-symbols-rounded" aria-hidden="true">' + ic + '</span>' + l + '</span>' +
-      '<b>' + v + '</b><small>' + s + '</small></button>';
+  // Una cifra que lleva a su detalle: sin caja, la jerarquía la dan el tamaño y el espacio
+  function tile(k, l, v, s) {
+    return '<button class="pfm-stat" data-pfm="' + k + '"><span class="pfm-stat__l"><b>' + l + '</b><small>' + s + '</small></span>' +
+      '<span class="pfm-stat__v">' + v + '</span><span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></button>';
   }
   function dineroHTML() {
-    var total = sumv(saldos(), function (x) { return x.v; }), d = deudas(), fs = facturas(), sc = SCORE[ST.u], deuda = tobe() ? d.total : d.totalBP;
-    return '<section class="pfm-money" aria-label="' + T('Tu dinero en Pichibank') + '">' +
-      '<p class="pfm-money__label">' + T('Saldo disponible') + '</p>' +
-      '<button class="pfm-money__value" data-pfm="products">' + money(total) + '<span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></button>' +
-      '<p class="pfm-money__sub">' + T('En tus cuentas Pichibank y Deuna') + '</p>' +
-      '<div class="pfm-tiles">' +
-        tile('debt', 'credit_card', T('Deudas'), money0(deuda), tobe() ? T('En todos tus bancos') : T('En Pichibank')) +
-        tile('bills', 'event', T('Por pagar'), money0(sumv(fs, function (x) { return x.monto; })), fs.length === 1 ? T('1 pago en 30 días') : T('{n} pagos en 30 días', { n: fs.length })) +
-        tile('score', 'speed', T('Tu score'), String(sc.v), T(sc.n)) +
-        tile('products', 'account_balance_wallet', T('Tus productos'), String(productos().length), T('Cuentas, tarjetas y créditos')) +
+    var total = sumv(saldos(), function (x) { return x.v; }), d = deudas(), fs = facturas(), sc = SCORE[ST.u], deuda = tobe() ? d.total : d.totalBP, np = productos().length;
+    return '<section class="pf-sec pfm-money" aria-label="' + T('Tu dinero en Pichibank') + '">' +
+      '<div class="pf-sec__head"><h2>' + T('Tu dinero') + '</h2><button class="section__link" data-pfm="products">' + T(np === 1 ? '1 producto' : '{n} productos', { n: np }) + '</button></div>' +
+      '<p class="pfm-money__label">' + T('Saldo disponible en Pichibank y Deuna') + '</p>' +
+      '<p class="pfm-money__value">' + money(total) + '</p>' +
+      '<div class="pfm-stats">' +
+        tile('debt', T('Deudas'), money0(deuda), tobe() ? T('En todos tus bancos') : T('En Pichibank')) +
+        tile('bills', T('Por pagar'), money0(sumv(fs, function (x) { return x.monto; })), fs.length === 1 ? T('1 pago en 30 días') : T('{n} pagos en 30 días', { n: fs.length })) +
+        tile('score', T('Tu score'), String(sc.v), T(sc.n)) +
       '</div></section>';
   }
 
@@ -548,29 +548,29 @@
   }
   function worldHTML(a) {
     var c = colchon(), pe = presEstado();
-    var chip = function (k, ic, l, v, cls) { return '<button class="pfm-world__chip is-' + cls + '" data-pfm="world"><span class="material-symbols-rounded" aria-hidden="true">' + ic + '</span><span><small>' + l + '</small><b>' + v + '</b></span></button>'; };
+    var sig = function (ic, l, v, cls) { return '<button class="pfm-sig is-' + cls + '" data-pfm="world"><span class="material-symbols-rounded" aria-hidden="true">' + ic + '</span><small>' + l + '</small><b>' + v + '</b></button>'; };
     return '<div class="pfm-world">' +
-      chip('mood', MOOD_IC[a.k], T('Tus consumos'), a.n ? T('{n} sin clasificar', { n: a.n }) : T('Al día'), a.k) +
-      chip('bloom', 'local_florist', T('Tu ahorro'), c >= 1 ? T(Math.floor(c) === 1 ? 'Te alcanza 1 mes' : 'Te alcanza {n} meses', { n: Math.floor(c) }) : T('Menos de 1 mes'), c >= 3 ? 'ok' : c >= 1 ? 'warn' : 'over') +
-      chip('forest', 'park', T('Tu presupuesto'), pe.l, pe.k) + '</div>';
+      sig(MOOD_IC[a.k], T('Tus consumos'), a.n ? T('{n} sin clasificar', { n: a.n }) : T('Al día'), a.k) +
+      sig('local_florist', T('Tu ahorro'), c >= 1 ? T(Math.floor(c) === 1 ? 'Te alcanza 1 mes' : 'Te alcanza {n} meses', { n: Math.floor(c) }) : T('Menos de 1 mes'), c >= 3 ? 'ok' : c >= 1 ? 'warn' : 'over') +
+      sig('park', T('Tu presupuesto'), pe.l, pe.k) + '</div>';
   }
   function ukuHTML() {
     var m = curMes(), a = animo(), all = insights(), off = tobe() && anticipa(m).length ? 1 : 0, ins = all.slice(off);
-    var html = '<section class="pf-sec pfm-uku' + (tobe() ? ' is-tobe' : '') + '">' +
-      '<div class="pfm-ukuhero pf-mood--' + a.k + '"><div class="pf-hero pfm-hero"><div class="b3d" data-score="' + salud(m) + '" data-bloom="' + flores() + '" data-mood="' + a.k + '"><div class="b3d__fallback">' + (window.Asistente ? Asistente.petSVG() : '') + '</div></div></div>' +
-      '<div class="pfm-ukuhero__say"><p class="pfm-ukuhero__name"><span class="material-symbols-rounded" aria-hidden="true">' + MOOD_IC[a.k] + '</span>Uku · ' + T('está {animo}', { animo: T(MOOD[a.k]) }) + '</p>' +
-        '<p class="pfm-ukuhero__t">' + esc(ukuMsg(a)) + '</p>' +
-        (a.n ? '<button class="pfm-task__go" data-pfm="game">' + T('Clasificar {n}', { n: Math.min(TANDA, a.n) }) + '<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></button>' : '') +
-        (tobe() ? (off ? '<p class="pfm-ukuhero__ai"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + esc(all[0].t) + '</p>' : '') +
-          '<div class="pfm-ukuhero__acts"><button class="ai-cta ai-cta--sm" data-pfm="analyze"><span class="ai-cta__spark material-symbols-rounded" aria-hidden="true">auto_awesome</span><span class="ai-cta__t"><b>' + T('Analizar') + '</b></span><span class="ai-badge">IA</span></button>' +
-          '<button class="pfm-askuku" data-pfm="ai:"><span class="material-symbols-rounded" aria-hidden="true">chat_bubble</span>' + T('Pregúntale') + '</button></div>' : '') +
-      '</div>' + worldHTML(a) + '</div>';
-    if (ins.length) html += '<div class="pfm-sec__head pfm-sec__head--sub"><h2>' + T('Lo que notó Uku') + '</h2><button class="pf-link" data-pfm="insights">' + T('Ver todo') + '</button></div>' +
-      '<div class="pfm-carousel" role="list">' + ins.slice(0, 6).map(function (x, i) {
-        return '<button role="listitem" class="pfm-ins is-' + x.kind + '" data-pfm="' + (x.go || 'ins:' + (i + off)) + '"><span class="material-symbols-rounded" aria-hidden="true">' + x.icon + '</span><b>' + esc(x.t) + '</b>' +
-          (x.go ? '<span class="pfm-ins__go">' + esc(x.gol) + '<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></span>' : '') + '</button>';
-      }).join('') + '</div>';
-    return html + '</section>';
+    var html = '<section class="pf-sec pfm-uku pf-mood--' + a.k + (tobe() ? ' is-tobe' : '') + '">' +
+      '<div class="pf-hero pfm-hero"><div class="b3d" data-score="' + salud(m) + '" data-bloom="' + flores() + '" data-mood="' + a.k + '"><div class="b3d__fallback">' + (window.Asistente ? Asistente.petSVG() : '') + '</div></div></div>' +
+      '<p class="pfm-uku__mood"><span class="material-symbols-rounded" aria-hidden="true">' + MOOD_IC[a.k] + '</span>' + T('Uku está {animo}', { animo: T(MOOD[a.k]) }) + '</p>' +
+      '<p class="pfm-uku__say">' + esc(ukuMsg(a)) + '</p>' +
+      (a.n ? '<button class="pf-cta pfm-uku__go" data-pfm="game">' + T('Clasificar {n}', { n: Math.min(TANDA, a.n) }) + '</button>' : '') +
+      (tobe() ? (off ? '<p class="pfm-uku__ai"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + esc(all[0].t) + '</p>' : '') +
+        '<div class="pfm-uku__acts"><button class="ai-cta ai-cta--sm" data-pfm="analyze"><span class="ai-cta__spark material-symbols-rounded" aria-hidden="true">auto_awesome</span><span class="ai-cta__t"><b>' + T('Analizar') + '</b></span><span class="ai-badge">IA</span></button>' +
+        '<button class="pf-link" data-pfm="ai:">' + T('Pregúntale') + '</button></div>' : '') +
+      worldHTML(a) + '</section>';
+    if (ins.length) html += '<section class="pf-sec pfm-notes"><div class="pf-sec__head"><h2>' + T('Lo que notó Uku') + '</h2>' + (ins.length > 3 ? '<button class="section__link" data-pfm="insights">' + T('Ver todo') + '</button>' : '') + '</div>' +
+      '<div class="pfm-notes__list">' + ins.slice(0, 3).map(function (x, i) {
+        return '<button class="pfm-note is-' + x.kind + '" data-pfm="' + (x.go || 'ins:' + (i + off)) + '"><span class="pfm-note__ic material-symbols-rounded" aria-hidden="true">' + x.icon + '</span>' +
+          '<span class="pfm-note__t"><b>' + esc(x.t) + '</b>' + (x.go ? '<span class="pfm-note__go">' + esc(x.gol) + '</span>' : '') + '</span></button>';
+      }).join('') + '</div></section>';
+    return html;
   }
   // Qué significa cada cosa del mundo de Uku
   function worldSheet() {
@@ -580,7 +580,7 @@
       row(MOOD_IC[a.k], a.k, T('Su ánimo: tus consumos clasificados'), a.n ? T('Está {animo}: tienes {n} sin clasificar. Se pone triste si pasa una semana y se enoja después de tres. Si una semana no gastas, no pasa nada.', { animo: T(MOOD[a.k]), n: a.n }) : T('Está contento: todo está clasificado. Si una semana no gastas, no pasa nada.')) +
       row('local_florist', c >= 3 ? 'ok' : c >= 1 ? 'warn' : 'over', T('Las flores amarillas: tu ahorro'), T('Lo que tienes en tus cuentas te alcanza para {n} meses de gasto. Con 3 meses o más, su campo está lleno de flores.', { n: (Math.round(c * 10) / 10).toString().replace('.', ',') })) +
       row('park', pe.k, T('El bosque: tu presupuesto'), T('{e}: llevas {g} de {p} este mes. Si te pasas, el bosque se seca.', { e: pe.l, g: money0(month(curMes()).gast), p: money0(p) })) +
-      (a.n ? '<button class="pfm-task__go" data-pfm="game">' + T('Clasificar {n}', { n: Math.min(TANDA, a.n) }) + '<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></button>' : ''));
+      (a.n ? '<button class="pf-cta pfm-block" data-pfm="game">' + T('Clasificar {n}', { n: Math.min(TANDA, a.n) }) + '</button>' : ''));
   }
 
   /* Lo que el banco no sabe clasificar solo. MVP: no sabe dónde pagaste con
@@ -668,8 +668,7 @@
     }
     return '<div class="pfm-card">' + av + '<p class="pfm-card__who">' + esc(who) + '</p>' +
       '<p class="pfm-card__amt' + (pos ? ' is-pos' : '') + '">' + (pos ? '+' : '−') + money(amt) + '</p>' +
-      '<p class="pfm-card__row"><span class="material-symbols-rounded" aria-hidden="true">schedule</span>' + esc(cuando) + '</p>' +
-      '<p class="pfm-card__row"><span class="material-symbols-rounded" aria-hidden="true">' + (/Deuna/.test(por) ? 'qr_code_2' : 'account_balance') + '</span>' + esc(por) + '</p></div>';
+      '<p class="pfm-card__row">' + esc(cuando) + '</p><p class="pfm-card__row">' + esc(por) + '</p></div>';
   }
   // Las opciones: un toque. La de Uku va primero y marcada
   function choicesHTML(it) {
@@ -681,46 +680,46 @@
     return '<p class="pfm-game__ask">' + T('¿En qué fue?') + (it.sug ? '<small>' + esc(it.sug.why) + '</small>' : '') + '</p><div class="pfm-choices">' + ops.map(function (c) {
       return '<button class="pfm-choice' + (c[0] === sg ? ' is-sug' : '') + '" data-g="cat:' + c[0] + '"><span class="material-symbols-rounded" aria-hidden="true">' + (GRUPOS[c[1]] ? GRUPOS[c[1]].ic : 'category') + '</span>' + T(c[1]) + (c[0] === sg ? '<em class="material-symbols-rounded" title="' + T('Uku cree') + '" aria-label="' + T('Uku cree') + '">auto_awesome</em>' : '') + '</button>'; }).join('') + '</div>';
   }
-  function topHTML(right) {
-    return '<div class="pfm-game__top"><button class="pfm-pill-btn" data-g="stop">' + T('Detener') + '</button><b class="pfm-game__count">' + (right || '') + '</b>' +
-      '<button class="pfm-pill-btn" data-g="result">' + T('Resultado') + '</button></div>';
+  function topHTML(mid, right) {
+    return '<div class="pfm-game__top"><button class="pf-round" data-g="' + (right ? 'stop' : 'close') + '" aria-label="' + T('Cerrar') + '"><span class="material-symbols-rounded" aria-hidden="true">close</span></button>' +
+      '<span class="pfm-game__count">' + (mid || '') + '</span>' + (right ? '<button class="section__link" data-g="result">' + right + '</button>' : '<span></span>') + '</div>';
   }
   function etiqueta(v) { if (OPT[v]) return OPT[v].l; var c = OPCATS.filter(function (x) { return x[0] === v; })[0]; return c ? T(c[1]) : v; }
   function gameRender() {
     var L = G.list, it = L[G.i];
     if (G.view === 'result' || !it) return resultRender();
     if (G.view === 'done') return doneRender();
-    gel.innerHTML = topHTML(T('{a} / {b}', { a: G.i + 1, b: L.length })) +
+    gel.innerHTML = topHTML(T('{a} de {b}', { a: G.i + 1, b: L.length }), T('Resultado')) +
       '<div class="pfm-play__bar"><i style="width:' + (G.i / L.length * 100).toFixed(0) + '%"></i></div>' +
-      '<p class="pfm-game__note">' + T('Puedes cambiar tu respuesta antes de guardar.') + '</p>' +
       cardHTML(it) + choicesHTML(it) +
-      '<div class="pfm-game__acts">' + (G.i ? '<button class="pfm-pill-btn" data-g="back"><span class="material-symbols-rounded" aria-hidden="true">undo</span>' + T('Atrás') + '</button>' : '') +
-      '<button class="pfm-pill-btn" data-g="later"><span class="material-symbols-rounded" aria-hidden="true">schedule</span>' + T('Más tarde') + '</button></div>';
+      '<div class="pfm-game__acts">' + (G.i ? '<button class="pf-link" data-g="back">' + T('Atrás') + '</button>' : '') +
+      '<button class="pf-link" data-g="later">' + T('Más tarde') + '</button></div>' +
+      '<p class="pfm-game__note">' + T('Puedes cambiar tu respuesta antes de guardar.') + '</p>';
   }
   // Revisar antes de guardar: cuántos van a cada grupo
   function resultRender() {
     var by = {}, later = G.list.length - G.ans.filter(Boolean).length;
     G.ans.forEach(function (a) { if (!a) return; var k = etiqueta(a.v); (by[k] = by[k] || { n: 0, m: 0, ic: a.ic }); by[k].n++; by[k].m += a.monto; });
     var n = G.ans.filter(Boolean).length;
-    gel.innerHTML = '<div class="pfm-game__top"><button class="pfm-pill-btn" data-g="close">' + T('Cerrar') + '</button><span></span><span></span></div>' +
-      '<div class="pfm-game__result"><span class="pfm-game__check material-symbols-rounded" aria-hidden="true">check</span>' +
+    gel.innerHTML = topHTML() +
+      '<div class="pfm-game__result">' +
       '<h2>' + (n === 1 ? T('1 consumo clasificado') : T('{n} consumos clasificados', { n: n })) + '</h2><p>' + T('Revísalo una última vez antes de guardar.') + '</p>' +
       '<div class="pfm-sum">' + Object.keys(by).map(function (k) {
-        return '<div class="pfm-sum__row"><span class="material-symbols-rounded" aria-hidden="true">' + by[k].ic + '</span><span>' + esc(k) + '</span><b>' + (by[k].n === 1 ? T('1 consumo') : T('{n} consumos', { n: by[k].n })) + '</b></div>';
-      }).join('') + (later ? '<div class="pfm-sum__row"><span class="material-symbols-rounded" aria-hidden="true">schedule</span><span>' + T('Más tarde') + '</span><b>' + (later === 1 ? T('1 consumo') : T('{n} consumos', { n: later })) + '</b></div>' : '') + '</div>' +
-      (n ? '<button class="pfm-task__go" data-g="save">' + T('Guardar clasificación') + '<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></button>' : '<button class="pfm-task__go" data-g="close">' + T('Volver') + '</button>') +
-      (G.i < G.list.length ? '<button class="pf-link pf-link--block" data-g="resume">' + T('Seguir clasificando') + '</button>' : '') +
-      '<p class="pf-note">' + T('Lo que guardes se aplica a los consumos parecidos. Puedes cambiarlo en cada movimiento.') + '</p></div>';
+        return '<div class="pfm-sum__row"><span class="pfm-sum__ic material-symbols-rounded" aria-hidden="true">' + by[k].ic + '</span><span>' + esc(k) + '</span><b>' + (by[k].n === 1 ? T('1 consumo') : T('{n} consumos', { n: by[k].n })) + '</b></div>';
+      }).join('') + (later ? '<div class="pfm-sum__row"><span class="pfm-sum__ic material-symbols-rounded" aria-hidden="true">schedule</span><span>' + T('Más tarde') + '</span><b>' + (later === 1 ? T('1 consumo') : T('{n} consumos', { n: later })) + '</b></div>' : '') + '</div>' +
+      '<p class="pf-note">' + T('Lo que guardes se aplica a los consumos parecidos. Puedes cambiarlo en cada movimiento.') + '</p>' +
+      '<div class="pfm-game__foot">' + (n ? '<button class="pf-cta" data-g="save">' + T('Guardar clasificación') + '</button>' : '<button class="pf-cta" data-g="close">' + T('Volver') + '</button>') +
+      (G.i < G.list.length ? '<button class="section__link" data-g="resume">' + T('Seguir clasificando') + '</button>' : '') + '</div></div>';
   }
   // Después de guardar: el bosque de Uku
   function doneRender() {
     var a = animo(), quedan = a.n;
-    gel.innerHTML = '<div class="pfm-game__top"><button class="pfm-pill-btn" data-g="close">' + T('Cerrar') + '</button><span></span><span></span></div>' +
+    gel.innerHTML = topHTML() +
       '<div class="pfm-game__end"><span class="pfm-game__burst" aria-hidden="true">' + face() + '</span><h2>' + T('¡Gracias!') + '</h2>' +
       '<p class="pfm-game__mood is-' + a.k + '"><span class="material-symbols-rounded" aria-hidden="true">' + MOOD_IC[a.k] + '</span>' + T('Uku está {animo}', { animo: T(MOOD[a.k]) }) + '</p>' +
       '<p>' + (quedan ? T(quedan === 1 ? 'Queda 1 consumo por clasificar.' : 'Quedan {n} consumos por clasificar.', { n: quedan }) : T('Todo está clasificado.')) + '</p>' +
-      (quedan ? '<button class="pfm-task__go" data-g="more">' + T('Clasificar {n} más', { n: Math.min(TANDA, quedan) }) + '<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></button>' : '') +
-      '<button class="pf-link pf-link--block" data-g="close">' + T('Volver') + '</button></div>';
+      '<div class="pfm-game__foot">' + (quedan ? '<button class="pf-cta" data-g="more">' + T('Clasificar {n} más', { n: Math.min(TANDA, quedan) }) + '</button>' +
+        '<button class="section__link" data-g="close">' + T('Volver a Mis finanzas') + '</button>' : '<button class="pf-cta" data-g="close">' + T('Volver a Mis finanzas') + '</button>') + '</div></div>';
     fx('success');
   }
   function gameKey(k) {
@@ -767,17 +766,17 @@
   }
   function gastosHTML() {
     var P = per(), s = P.o, ing = ST.flujo === 'in', pr = pres(), mb = P.m ? pr : null;
-    var html = '<section class="pf-sec pfm-flow"><div class="pfm-sec__head"><h2>' + T('En qué se va tu plata') + '</h2></div>' +
-      '<div class="pfm-filters"><div class="pfm-seg" role="radiogroup" aria-label="' + T('Tipo') + '">' +
-        '<button role="radio" aria-checked="' + !ing + '" data-pfm="flujo:out">' + T('Gastos') + '</button><button role="radio" aria-checked="' + ing + '" data-pfm="flujo:in">' + T('Ingresos') + '</button></div>' +
+    var html = '<section class="pf-sec pfm-flow"><div class="pf-sec__head"><h2>' + T('En qué se va tu plata') + '</h2><button class="section__link" data-pfm="alltx">' + T('Movimientos') + '</button></div>' +
+      '<div class="pfm-filters"><div class="pfm-tabs" role="tablist" aria-label="' + T('Tipo') + '">' +
+        '<button class="tab' + (ing ? '' : ' active') + '" role="tab" aria-selected="' + !ing + '" data-pfm="flujo:out">' + T('Gastos') + '</button><button class="tab' + (ing ? ' active' : '') + '" role="tab" aria-selected="' + ing + '" data-pfm="flujo:in">' + T('Ingresos') + '</button></div>' +
       '<div class="pfm-chips" role="radiogroup" aria-label="' + T('Periodo') + '">' + PER.map(function (x) {
-        return '<button class="pf-catchip" role="radio" aria-pressed="' + (ST.per === x[0]) + '" data-pfm="per:' + x[0] + '">' + T(x[1]) + '</button>'; }).join('') + '</div></div><div class="pf-mcard pfm-flowcard">';
+        return '<button class="pf-catchip" role="radio" aria-pressed="' + (ST.per === x[0]) + '" data-pfm="per:' + x[0] + '">' + T(x[1]) + '</button>'; }).join('') + '</div></div>';
     if (ing) {
       var iks = Object.keys(s.inc).sort(function (a, b) { return s.inc[b] - s.inc[a]; }), imax = Math.max.apply(null, iks.map(function (k) { return s.inc[k]; }).concat([s.rin, 1]));
       html += '<div class="pfm-total"><p class="pfm-total__v">' + money(s.ing) + '</p><p class="pfm-total__l">' + T('Te entraron {cuando}', { cuando: P.l }) + ' ' + (P.prev ? cmpHTML(s.ing, P.prev.ing, P.lp, true) : '') + '</p></div>' +
-        iks.map(function (k) { return meter('', ING_IC[k] || 'south_west', k, money(s.inc[k]), s.inc[k] / imax, 'in', P.meses ? T('unos {m} al mes', { m: money0(s.inc[k] / P.meses) }) : T('{pct} de lo que entró', { pct: pct(s.inc[k] / (s.ing || 1)) })); }).join('') +
+        '<div class="pf-mcard pfm-list">' + iks.map(function (k) { return meter('', ING_IC[k] || 'south_west', k, money(s.inc[k]), s.inc[k] / imax, 'in', P.meses ? T('unos {m} al mes', { m: money0(s.inc[k] / P.meses) }) : T('{pct} de lo que entró', { pct: pct(s.inc[k] / (s.ing || 1)) })); }).join('') +
         (s.rin ? meter('game', 'help', T('Por revisar'), money(s.rin), s.rin / imax, 'gris', T('Plata de personas: ¿qué fue? Ordénala')) : '') +
-        (!iks.length && !s.rin ? '<p class="pf-note">' + T('No te entró plata {cuando}.', { cuando: P.l }) + '</p>' : '');
+        (!iks.length && !s.rin ? '<p class="pf-note">' + T('No te entró plata {cuando}.', { cuando: P.l }) + '</p>' : '') + '</div>';
     } else {
       var ks = Object.keys(s.grupos).sort(function (a, b) { return (GRUPOS[a].gris ? 1 : 0) - (GRUPOS[b].gris ? 1 : 0) || s.grupos[b] - s.grupos[a]; });
       var max = Math.max.apply(null, ks.map(function (k) { return s.grupos[k]; }).concat([1])), nIt = items().length;
@@ -786,20 +785,23 @@
         var u = s.gast / mb.general, f = P.cur ? +HOY.slice(8, 10) / diasMes(P.m) : 1, left = mb.general - s.gast;
         html += '<div class="pfm-budget"><div class="pfm-bar"><i class="is-gast' + (u > 1 ? ' is-over' : '') + '" style="width:' + Math.min(100, u * 100).toFixed(1) + '%"></i>' + (P.cur ? '<em style="left:' + (f * 100).toFixed(1) + '%"></em>' : '') + '</div>' +
           '<p class="pfm-budget__t"><span>' + (left >= 0 ? T(P.cur ? 'Te quedan <b>{m}</b> de {p}' : 'Te sobraron <b>{m}</b> de {p}', { m: money0(left), p: money0(mb.general) }) : T('Te pasaste <b>{m}</b> de {p}', { m: money0(-left), p: money0(mb.general) })) + '</span>' +
-          '<button class="pf-link pfm-mini" data-pfm="budgets">' + T('Presupuesto') + '</button></p></div>';
+          '<button class="section__link" data-pfm="budgets">' + T('Editar') + '</button></p></div>';
       }
-      html += ks.map(function (g) {
+      html += '<div class="pf-mcard pfm-list">' + ks.map(function (g) {
         var b = mb && mb.cats[g], v = s.grupos[g], gris = GRUPOS[g].gris;
         var sub = gris ? (nIt ? T('No sabemos en qué fue · Clasifícalo') : T('Efectivo y lo que no tiene categoría')) : b ? (v > b ? T('Te pasaste {m} de {p}', { m: money0(v - b), p: money0(b) }) : T('Te quedan {m} de {p}', { m: money0(b - v), p: money0(b) }))
           : P.meses ? T('unos {m} al mes', { m: money0(v / P.meses) }) : T('{pct} de tu gasto', { pct: pct(v / (s.gast || 1)) });
         return meter(gris && nIt ? 'game' : 'grupo:' + g, GRUPOS[g].ic, T(g), money(v), b ? v / b : v / max, gris ? 'gris' : b ? (v > b ? 'over' : v / b > (P.cur ? +HOY.slice(8, 10) / diasMes(P.m) + .1 : .95) ? 'warn' : 'ok') : 'cat', sub);
-      }).join('') + (!ks.length ? '<p class="pf-note">' + T('No hay gastos {cuando}.', { cuando: P.l }) + '</p>' : '');
+      }).join('') + (!ks.length ? '<p class="pf-note">' + T('No hay gastos {cuando}.', { cuando: P.l }) + '</p>' : '') + '</div>';
     }
-    return html + '<button class="pf-mcard__more" data-pfm="alltx">' + T('Ver los movimientos') + '<span class="material-symbols-rounded">chevron_right</span></button></div></section>';
+    return html + '</section>';
   }
+  // Fila de grupo: ícono como los productos de Inicio, nombre y monto, barra y una línea de contexto
   function meter(k, ic, name, val, p, tone, sub) {
-    return '<' + (k ? 'button data-pfm="' + esc(k) + '"' : 'div') + ' class="pf-meter pf-meter--' + tone + '"><span class="pf-meter__top"><span class="pf-meter__name"><span class="material-symbols-rounded pfm-ic" aria-hidden="true">' + ic + '</span>' + esc(name) + '</span><span class="pf-meter__right">' + val + '</span></span>' +
-      '<span class="pf-meter__bar"><i style="width:' + Math.max(2, Math.min(100, p * 100)).toFixed(1) + '%"></i></span><span class="pf-meter__sub">' + sub + '</span></' + (k ? 'button' : 'div') + '>';
+    var tag = k ? 'button' : 'div';
+    return '<' + tag + (k ? ' data-pfm="' + esc(k) + '"' : '') + ' class="pfm-row pf-meter--' + tone + '"><span class="pfm-row__ic material-symbols-rounded" aria-hidden="true">' + ic + '</span>' +
+      '<span class="pfm-row__main"><span class="pfm-row__top"><b>' + esc(name) + '</b><span>' + val + '</span></span>' +
+      '<span class="pfm-row__bar"><i style="width:' + Math.max(2, Math.min(100, p * 100)).toFixed(1) + '%"></i></span><small>' + sub + '</small></span></' + tag + '>';
   }
   function detDe(g, s) {
     return Object.keys(s.det).filter(function (d) { return grupo(SUB[d] || d) === g; }).sort(function (a, b) { return s.det[b] - s.det[a]; });
@@ -823,7 +825,7 @@
       '<span class="pf-tx__amt' + (inc ? ' is-in' : '') + '">' + (inc ? '+' : '−') + money(Math.abs(r.m)) + '</span></button>';
   }
   function footHTML() {
-    return '<section class="pf-sec"><p class="pf-note pf-note--box pfm-scope"><span class="material-symbols-rounded">visibility</span><span>' +
+    return '<section class="pf-sec pfm-foot"><p class="pf-note pfm-scope"><span class="material-symbols-rounded">visibility</span><span>' +
       (tobe() ? T('Uku ve Pichibank, Deuna y las tarjetas de otros bancos que conectaste. El efectivo no lo ve.') : T('Solo vemos lo que pasa por Pichibank y Deuna. El efectivo y las tarjetas de otros bancos no aparecen.')) +
       '</span></p><p class="pf-note">' + T('Datos ficticios de la Base de datos PFM, hasta el {f}.', { f: dshort(HOY) + ' ' + HOY.slice(0, 4) }) + '</p></section>';
   }
