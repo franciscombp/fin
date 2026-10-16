@@ -93,6 +93,17 @@
   ];
   try { var sv = JSON.parse(localStorage.getItem(SC_KEY)); if (Array.isArray(sv)) shortcuts = sv; } catch (e) {}
   function saveShortcuts() { try { localStorage.setItem(SC_KEY, JSON.stringify(shortcuts)); } catch (e) {} }
+  /* ---------- Búsquedas recientes: las últimas 5 que llevaron a algo ---------- */
+  var RC_KEY = 'pb_busq_recientes_v1';
+  var recent = [];
+  try { var rv = JSON.parse(localStorage.getItem(RC_KEY)); if (Array.isArray(rv)) recent = rv.filter(function (x) { return typeof x === 'string'; }).slice(0, 5); } catch (e) {}
+  function saveRecent() { try { localStorage.setItem(RC_KEY, JSON.stringify(recent)); } catch (e) {} }
+  function addRecent(raw) {
+    var t = String(raw || '').trim().slice(0, 60);
+    if (t.length < 2) return;
+    recent = [t].concat(recent.filter(function (x) { return norm(x) !== norm(t); })).slice(0, 5);
+    saveRecent();
+  }
   function scSub(sc) {
     var a = SC_ACTS.filter(function (x) { return x[0] === sc.action; })[0];
     return [a ? a[2] : sc.action, sc.who || sc.biller || '', sc.amount ? money(sc.amount) : ''].filter(Boolean).join(' · ');
@@ -172,6 +183,7 @@
     input.addEventListener('input', render);
     el.querySelector('form').addEventListener('submit', function (e) {
       e.preventDefault();
+      addRecent(input.value);
       var first = results.querySelector('[data-sx-i]');
       if (first) first.click();
     });
@@ -183,6 +195,10 @@
       if (b.dataset.sx === 'close') return close();
       if (b.dataset.sx === 'mic') return dictate();
       var i = b.dataset.sxI;
+      // Lo que se escribió y llevó a algo queda en recientes
+      if (i.indexOf('rc') !== 0) addRecent(input.value);
+      if (i === 'rc-clear') { recent = []; saveRecent(); fx('toggle'); return render(); }
+      if (i.indexOf('rc:') === 0) { input.value = recent[+i.slice(3)] || ''; fx('tap'); return render(); }
       if (i === 'ask') { var q = input.value.trim(); close(true); setTimeout(function () { window.Asistente && Asistente.open({ ctx: ctxId, ask: q }); }, 280); return; }
       if (i === 'pfm') return runAction(ACTIONS[4]);
       if (i === 'help') { close(true); setTimeout(function () { window.Soporte && Soporte.open(); }, 280); return; }
@@ -304,11 +320,9 @@
     if (rec_) { results.innerHTML = recHTML(); return; }
     APP = appItems();
     if (!q) {
-      // Primero las acciones (contextuales a la sección desde donde se abrió)
-      var cx = window.Contexto ? Contexto.info(ctxId) : null;
-      var feat = cx ? cx.acciones.concat(FEATURED.filter(function (l) { return cx.acciones.indexOf(l) < 0; })).slice(0, 8) : FEATURED;
-      html += '<section class="sx-card"><h3>Acciones</h3><div class="sx-grid">' +
-        feat.map(function (l) { return ACTIONS.filter(function (a) { return a.label === l; })[0]; }).filter(Boolean).map(tile).join('') + '</div></section>';
+      // Antes de escribir: lo reciente, tus atajos y la ayuda. Las acciones aparecen al buscar
+      if (recent.length) html += '<section class="sx-card"><h3>Recientes <button class="sx-link" data-sx-i="rc-clear">Borrar</button></h3>' +
+        recent.map(function (t, i) { return row('rc:' + i, 'history', esc(t), ''); }).join('') + '</section>';
       // Tus atajos grabados
       html += '<section class="sx-card"><h3>Tus atajos</h3>' +
         shortcuts.map(function (sc, i) { return row('sc:' + i, sc.icon || 'bolt', esc(sc.name), esc(scSub(sc)), '<span class="sx-del" data-sx-i="del:' + i + '" role="button" aria-label="Borrar atajo"><span class="material-symbols-rounded">close</span></span>'); }).join('') +
