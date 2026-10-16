@@ -54,6 +54,10 @@
     view.insertBefore(back, host.nextSibling);
     host.innerHTML =
       '<div class="uk-scene"><div class="b3d" data-shift=".22"><div class="b3d__fallback">' + (window.Asistente ? Asistente.petSVG() : '') + '</div></div></div>' +
+      // Al conversar, su mundo se desvanece detrás de un fondo limpio y arriba queda la cabecera del chat
+      '<div class="uk-chatbg" aria-hidden="true"></div>' +
+      '<header class="uk-chathead"><span class="uk-chathead__face" aria-hidden="true">' + face() + '</span><span class="uk-chathead__t"><b>Uku</b><small>Tu asesor · en línea</small></span>' +
+        '<button class="uk-chathead__x" data-k="cerrar" aria-label="Terminar conversación">' + ic('close') + '</button></header>' +
       '<div class="uk-globo" aria-live="polite"></div>' +
       '<div class="uk-chat" aria-live="polite"></div>' +
       '<div class="uk-pills"></div>' +
@@ -70,8 +74,13 @@
     pintar();
   }
   function modo() {
+    var era = host.classList.contains('is-chat'), es = msgs.length > 0;
     host.classList.toggle('is-typing', !!input.value.trim());
-    host.classList.toggle('is-chat', msgs.length > 0);
+    host.classList.toggle('is-chat', es);
+    if (era !== es) {
+      input.placeholder = es ? 'Escríbele a Uku' : 'Habla con Uku o busca algo';
+      if (!es && b3d) setTimeout(function () { b3d.play('wave'); }, 350); // vuelve a su mundo y saluda
+    }
   }
   function pintar() { modo(); pintarGlobo(); pintarAccesos(); pintarChat(); pintarResultados(); }
 
@@ -112,7 +121,7 @@
      Cada mensaje de Uku trae sus botones; solo los del último se pueden
      tocar, así la conversación avanza y no quedan preguntas viejas abiertas. */
   function me(t) { msgs.push({ me: t }); }
-  function uku(t, btns, extra) { msgs.push({ uku: t, btns: btns || [], extra: extra || '' }); ultimo = Date.now(); }
+  function uku(t, btns, extra) { msgs.push({ uku: t, btns: btns || [], extra: extra || '', nuevo: true }); ultimo = Date.now(); }
   function b(k, t, icon, cls) { return { k: k, t: t, ic: icon, cls: cls }; }
   function mostrar() { input.value = ''; modo(); pintarChat(); pintarResultados(); }
   // Lo que escribes: tu plata, la ayuda o una acción de la app
@@ -141,21 +150,31 @@
     }
     mostrar();
   }
+  var RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches, escribe = null;
   function pintarChat() {
-    var last = -1; msgs.forEach(function (m, i) { if (m.uku != null) last = i; });
-    chat.innerHTML = msgs.map(function (m, i) {
-      if (m.me) return '<div class="uk-me"><p>' + esc(m.me) + '</p></div>';
-      var on = i === last;
-      return '<div class="uk-msg' + (on ? '' : ' is-old') + '"><p class="uk-msg__b">' + m.uku + '</p>' + m.extra +
-        (on && m.btns.length ? '<div class="uk-msg__acts">' + m.btns.map(function (x) { return '<button class="uk-chip ' + (x.cls || '') + '" data-k="' + esc(x.k) + '" data-l="' + esc(x.t) + '">' + (x.ic ? ic(x.ic) : '') + esc(x.t) + '</button>'; }).join('') + '</div>' : '') + '</div>';
-    }).join('');
+    // Lo nuevo de Uku aparece después de un "escribiendo…" corto, como en una conversación de verdad
+    var nuevo = -1; msgs.forEach(function (m, i) { if (m.uku != null && m.nuevo && nuevo < 0) nuevo = i; });
+    if (nuevo >= 0 && !RM) {
+      if (!escribe) escribe = setTimeout(function () { escribe = null; msgs.forEach(function (m) { m.nuevo = false; }); pintarChat(); if (b3d) b3d.play('nod'); }, 650);
+    } else { msgs.forEach(function (m) { m.nuevo = false; }); nuevo = -1; }
+    var vis = nuevo >= 0 ? msgs.slice(0, nuevo) : msgs, last = -1;
+    vis.forEach(function (m, i) { if (m.uku != null) last = i; });
+    chat.innerHTML = vis.map(function (m, i) {
+      if (m.me) return '<div class="uk-me' + (m.visto ? ' is-seen' : '') + '"><p>' + esc(m.me) + '</p></div>';
+      var on = i === last, cara = i === 0 || vis[i - 1].uku == null;
+      return '<div class="uk-msg' + (on ? '' : ' is-old') + (m.visto ? ' is-seen' : '') + '">' + (cara ? '<span class="uk-msg__face" aria-hidden="true">' + face() + '</span>' : '<span class="uk-msg__face is-gap"></span>') +
+        '<div class="uk-msg__body"><p class="uk-msg__b">' + m.uku + '</p>' + m.extra +
+        (on && m.btns.length && nuevo < 0 ? '<div class="uk-msg__acts">' + m.btns.map(function (x, j) { return '<button class="uk-chip ' + (x.cls || '') + '" style="--d:' + j * 50 + 'ms" data-k="' + esc(x.k) + '" data-l="' + esc(x.t) + '">' + (x.ic ? ic(x.ic) : '') + esc(x.t) + '</button>'; }).join('') + '</div>' : '') + '</div></div>';
+    }).join('') +
+      (nuevo >= 0 ? '<div class="uk-msg is-typing"><span class="uk-msg__face" aria-hidden="true">' + face() + '</span><div class="uk-msg__body"><p class="uk-msg__b uk-dots" aria-label="Uku está escribiendo"><i></i><i></i><i></i></p></div></div>' : '');
+    msgs.forEach(function (m, i) { if (i < vis.length) m.visto = true; }); // lo ya visto no vuelve a animarse
     modo();
-    requestAnimationFrame(function () { chat.scrollTop = chat.scrollHeight; });
+    requestAnimationFrame(function () { chat.scrollTo({ top: chat.scrollHeight, behavior: RM ? 'auto' : 'smooth' }); });
   }
   // Se resolvió: Uku lo celebra, cierra la conversación y vuelve a su mundo
   function resuelto(t) {
     uku(t || '¡Qué bueno! Aquí estoy si necesitas algo más.'); pintarChat(); fx('success'); if (b3d) b3d.play('happy');
-    setTimeout(function () { msgs = []; nota = '¡Listo! ¿Te ayudo con algo más?'; pintar(); setTimeout(function () { nota = null; if (!msgs.length) pintarGlobo(); }, 6000); }, 1600);
+    setTimeout(function () { msgs = []; nota = '¡Listo! ¿Te ayudo con algo más?'; pintar(); setTimeout(function () { nota = null; if (!msgs.length) pintarGlobo(); }, 6000); }, RM ? 1600 : 2300);
   }
   // Pasar con una persona, sin salir de Uku
   function persona() {
