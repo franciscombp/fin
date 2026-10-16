@@ -979,10 +979,11 @@
   }
   function gastosHTML() {
     var P = per(), s = P.o, pr = pres(), mb = P.m ? pr : null;
-    var html = '<section class="pf-sec pfm-flow"><div class="pf-sec__head"><h2>' + T('Tus gastos') + '</h2><button class="section__link" data-pfm="alltx">' + T('Movimientos') + '</button></div>' +
+    // El periodo queda fijo arriba: todo lo de abajo (gráfica, destacado, grupos) cambia con él
+    var html = '<div class="pfm-per"><section class="pf-sec pfm-flow"><div class="pf-sec__head"><h2>' + T('Tus gastos') + '</h2><button class="section__link" data-pfm="alltx">' + T('Movimientos') + '</button></div></section>' +
       '<div class="pfm-tabs" role="tablist" aria-label="' + T('Periodo') + '">' + PER.map(function (x) {
         return '<button class="tab' + (ST.per === x[0] ? ' active' : '') + '" role="tab" aria-selected="' + (ST.per === x[0]) + '" data-pfm="per:' + x[0] + '">' + T(x[1]) + '</button>'; }).join('') + '</div>' +
-      chartHTML(P);
+      '<section class="pf-sec pfm-flow__body">' + chartHTML(P);
     if (mb) {
       var u = s.gast / mb.general, f = +HOY.slice(8, 10) / diasMes(P.m), left = mb.general - s.gast;
       html += '<div class="pfm-budget"><div class="pfm-bar"><i class="is-gast' + (u > 1 ? ' is-over' : '') + '" style="width:' + Math.min(100, u * 100).toFixed(1) + '%"></i><em style="left:' + (f * 100).toFixed(1) + '%"></em></div>' +
@@ -999,7 +1000,7 @@
         var sub = gris ? (nIt ? T('No sabemos en qué fue · Clasifícalo') : T('Efectivo y lo que no tiene categoría')) : b ? (v > b ? T('{m} más de {p}', { m: money0(v - b), p: money0(b) }) : T('Te quedan {m} de {p}', { m: money0(b - v), p: money0(b) }))
           : P.meses ? T('unos {m} al mes', { m: money0(v / P.meses) }) : T('{pct} de tu gasto', { pct: pct(v / (s.gast || 1)) });
         return meter(gris && nIt ? 'game' : 'grupo:' + g, GRUPOS[g].ic, T(g), money(v), b ? v / b : v / max, gris ? 'gris' : b ? (v > b ? 'over' : v / b > +HOY.slice(8, 10) / diasMes(P.m) + .1 ? 'warn' : 'ok') : 'cat', sub);
-      }).join('') + (!ks.length ? '<p class="pf-note">' + T('No hay gastos {cuando}.', { cuando: P.l }) + '</p>' : '') + '</div></section>';
+      }).join('') + (!ks.length ? '<p class="pf-note">' + T('No hay gastos {cuando}.', { cuando: P.l }) + '</p>' : '') + '</div></section></div>';
     return html;
   }
   // Lo destacado: como Salud, una frase y, si hay, la comparación que la explica
