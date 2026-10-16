@@ -480,5 +480,6 @@
   }, true);
 
   window.Soporte = { open: open, review: function () { review(false); }, find: find,
+    faqs: function (n) { return FAQ.slice(0, n || FAQ.length).map(function (f, i) { return { kind: 'faq', i: i, icon: f.icon, t: f.t }; }); },
     openFaq: function (i) { open(); answer(i); }, openTut: function (i) { open(); tutPage(i); } };
 })();

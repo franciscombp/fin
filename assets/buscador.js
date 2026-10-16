@@ -490,5 +490,7 @@
     open();
   }, true);
 
-  window.Buscador = { open: open, close: close, shortcuts: function () { return shortcuts.slice(); } };
+  window.Buscador = { open: open, close: close, shortcuts: function () { return shortcuts.slice(); },
+    // Para la versión asistente: las acciones, su orden por palabras y cómo abrirlas
+    actions: function () { return ACTIONS.slice(); }, rank: function (q) { return rank(ACTIONS, words(q), function (a) { return a.label + ' ' + a.k; }); }, run: runAction };
 })();

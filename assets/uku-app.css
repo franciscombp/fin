@@ -1,0 +1,101 @@
+/* =====================================================================
+   Versión asistente (assets/uku-app.js). Solo aplica con html.app-uku.
+   Usa los componentes del sistema: pf-cta, pf-link, section__link,
+   pf-catchip, pf-mcard y las tarjetas de consejo de Uku (pfm-tip).
+   ===================================================================== */
+
+/* Un solo acceso arriba: Uku en lugar de la lupa y los audífonos */
+.app-uku .top-bar__actions [data-action="Soporte"] { display: none !important; }
+.app-uku.uk-here .top-bar__actions [data-action="Buscar"] { display: none !important; }
+.uk-topface, .uk-navface { display: block; width: 28px; height: 28px; border-radius: 50%; overflow: hidden; background: var(--bp-interaction-primary-bg, #ffdd00); }
+.uk-navface { width: 26px; height: 26px; }
+.uk-topface img, .uk-navface img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+.app-uku .nav-item.active .uk-navface { box-shadow: 0 0 0 2px var(--bp-interaction-tertiary-fg); }
+
+/* Uku o el PFM completo dentro de Uku */
+.app-uku .view--finanzas:not(.uk-fin) .pf-host, .app-uku .view--finanzas:not(.uk-fin) .uk-back, .app-uku .view--finanzas.uk-fin .uk { display: none; }
+.uk-back { display: inline-flex; align-items: center; gap: 4px; margin: 8px var(--bp-layout-grid-margin, 24px) 0; padding: 0 12px 0 6px; height: var(--bp-action-button-size, 40px); border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font: var(--ui-label-md); cursor: pointer; }
+.uk-back .material-symbols-rounded { font-size: 20px; }
+
+/* ---------- La pantalla de Uku ---------- */
+.uk { padding-bottom: 32px; }
+.uk p { margin: 0; }
+.uk-hello { display: flex; align-items: center; gap: 16px; margin: var(--bp-semantic-spacing-micro-lg, 16px) var(--bp-layout-grid-margin, 24px) 0; }
+.uk-hello__t { font-size: 24px !important; line-height: 30px !important; }
+.uk-hello__face { flex: 0 0 56px; width: 56px; height: 56px; border-radius: 50%; overflow: hidden; background: var(--bp-interaction-primary-bg, #ffdd00); }
+.uk-hello__face img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+.uk-hello__t { font: var(--cx-headline); color: var(--bp-interaction-tertiary-fg); }
+.uk-hello__s { margin-top: 2px !important; font: var(--cx-sub); color: var(--cx-muted); }
+
+/* El campo: buscar, preguntar o pedir. Queda fijo bajo la barra al bajar */
+.uk-field { position: sticky; top: calc(56px + env(safe-area-inset-top, 0px)); z-index: 40; display: flex; align-items: center; gap: 8px; margin: 0; padding: var(--bp-semantic-spacing-micro-lg, 16px) var(--bp-layout-grid-margin, 24px) var(--bp-semantic-spacing-micro-md, 8px); background: var(--bp-surface-page); }
+.uk-field > .material-symbols-rounded { position: absolute; left: calc(var(--bp-layout-grid-margin, 24px) + 14px); color: var(--cx-muted); font-size: 22px; pointer-events: none; }
+.uk-field input { flex: 1; min-width: 0; height: 56px; padding: 0 16px 0 46px; border: 1px solid var(--bp-theme-color-field-border, var(--cx-line)); border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-theme-color-field-bg, #fff); color: var(--bp-theme-color-text-primary); font: var(--ui-body-md-medium); font-size: 16px; }
+.uk-field input:focus { outline: 2px solid var(--bp-interaction-selection-bg, var(--bp-interaction-tertiary-fg)); outline-offset: -1px; }
+.uk-send { flex: 0 0 56px; width: 56px; height: 56px; display: grid; place-items: center; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); cursor: pointer; }
+.uk:not(.is-typing) .uk-send { background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); }
+
+.uk-zone, .uk-thread { padding: 0 var(--bp-layout-grid-margin, 24px); }
+.uk-thread:empty { display: none; }
+.uk-thread { display: flex; flex-direction: column; gap: 20px; padding-top: 16px; }
+
+/* Uku habla: su cara y su globo (como en el resto de la app) */
+.uk-say { display: flex; align-items: flex-start; gap: 10px; margin-top: var(--bp-semantic-spacing-micro-lg, 16px); animation: pfmUp .35s ease both; }
+.uk-say.is-reply { margin-top: 0; }
+.uk-say__face { flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: var(--bp-interaction-primary-bg, #ffdd00); }
+.uk-say__face img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+.uk-say__body { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.uk-say__bubble { max-width: 100%; padding: 12px 16px; border-radius: 4px 16px 16px 16px; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: var(--cx-body); }
+.uk-say__go { width: 100%; margin: 0 !important; }
+.uk-say__acts { display: flex; flex-wrap: wrap; gap: 8px; }
+.uk-say__acts .pf-link .material-symbols-rounded { font-size: 18px; }
+.uk-say .uk-list { width: 100%; }
+.uk-me { display: flex; justify-content: flex-end; animation: pfmUp .25s ease both; }
+.uk-me p { max-width: 80%; padding: 12px 16px; border-radius: 16px 16px 4px 16px; background: var(--bp-interaction-selectable-selected-bg); color: var(--bp-interaction-selectable-selected-fg); font: var(--ui-body-md-medium); }
+
+.uk-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--bp-semantic-spacing-micro-lg, 16px); }
+.uk-say .uk-chips { margin-top: 0; }
+
+/* Secciones */
+.uk-sec { margin-top: var(--bp-semantic-spacing-macro-md, 36px); }
+.uk-sec.is-tight { margin-top: var(--bp-semantic-spacing-macro-sm, 24px); }
+.uk-sec .pf-sec__head { margin-bottom: var(--bp-semantic-spacing-micro-md, 8px); }
+.uk-sec .pf-sec__head h2 { margin: 0; font: var(--cx-headline); color: var(--bp-theme-color-text-primary); }
+.uk-sec__l { margin: 0 0 8px !important; font: var(--cx-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
+.uk-sec .pfm-tip + .pfm-tip { margin-top: 8px; }
+
+/* Tus finanzas en corto */
+.uk-money { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; padding: 20px; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
+.uk-money__l { font: var(--cx-sub); color: var(--cx-muted); }
+.uk-money b { font: var(--cx-amount); letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+.uk-money__bar { display: block; width: 100%; height: 8px; margin-top: 12px; border-radius: 99px; background: color-mix(in srgb, var(--bp-interaction-tertiary-fg) 12%, transparent); overflow: hidden; }
+.uk-money__bar i { display: block; height: 100%; border-radius: inherit; background: var(--bp-interaction-tertiary-fg); }
+.uk-money__bar i.is-over { background: #d39b3a; }
+.uk-money__s { font: var(--cx-sub); color: var(--cx-muted); }
+.uk-money__mood { display: flex; align-items: center; gap: 6px; margin-top: 8px; font: var(--ui-body-sm-semibold); color: var(--bp-interaction-tertiary-fg); }
+.uk-money__mood .material-symbols-rounded { font-size: 18px; font-variation-settings: 'FILL' 1; }
+
+/* Hacer ahora: accesos como los de Inicio */
+.uk-quick { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding: 16px 8px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); }
+.uk-quick__b { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0; border: 0; background: none; color: var(--bp-theme-color-text-primary); font: var(--ui-body-sm-medium); text-align: center; cursor: pointer; }
+.uk-quick__ic { width: 56px; height: 56px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); }
+
+/* Listas: acciones, ayuda */
+.uk-list { padding: 0 16px !important; }
+.uk-row { display: flex; align-items: center; gap: 16px; width: 100%; min-height: 64px; padding: 12px 0; border: 0; border-bottom: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); background: none; color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
+.uk-row:last-child { border-bottom: 0; }
+.uk-row__ic { flex: 0 0 40px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); }
+.uk-row__t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.uk-row__t b { font: var(--ui-body-md-semibold); }
+.uk-row__t small { font: var(--cx-sub); color: var(--cx-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uk-row > .material-symbols-rounded:last-child { color: var(--cx-muted); }
+
+/* Una respuesta de tus finanzas mientras escribes */
+.uk-ans { display: flex; align-items: flex-start; gap: 12px; width: 100%; padding: 16px; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: var(--cx-body); text-align: left; cursor: pointer; }
+.uk-ans__face { flex: 0 0 32px; width: 32px; height: 32px; border-radius: 50%; overflow: hidden; background: var(--bp-interaction-primary-bg, #ffdd00); }
+.uk-ans__face img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+
+.uk .pf-link--block { display: flex; margin: 20px auto 0; }
+.uk-zone > .pf-note { margin: 16px 0 0; }
+.uk-foot { margin: 40px var(--bp-layout-grid-margin, 24px) 0 !important; font: var(--cx-caption); color: var(--cx-muted); text-align: center; }
+.uk-foot button { padding: 0; border: 0; background: none; color: var(--bp-theme-color-text-interactive); font: inherit; text-decoration: underline; cursor: pointer; }
