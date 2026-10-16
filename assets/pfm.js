@@ -442,7 +442,7 @@
   // Ahorro: cuántos meses de gasto cubre lo que tienes en tus cuentas
   function colchon() { var p = prom(curMes(), 3), s = sumv(saldos(), function (x) { return x.v; }); return p && p.gast ? s / p.gast : 0; }
   // Menos de 1 mes: sin flores; de 1 a 3 meses, el campo se va llenando
-  function flores() { var c = colchon(); return c < 1 ? 0 : Math.round(Math.min(1, .3 + (c - 1) / 2 * .7) * 100); }
+  function flores() { var c = colchon(), f = c < 1 ? 0 : Math.round(Math.min(1, .3 + (c - 1) / 2 * .7) * 100); return hecho('ahorro') ? Math.max(f, 22) : f; } // con ahorro programado, salen las primeras flores
   // Presupuesto: cómo vas contra tu ritmo del mes
   function presEstado(m) {
     m = m || curMes(); var s = month(m), p = pres().general, f = isCur(m) ? +HOY.slice(8, 10) / diasMes(m) : 1, u = s.gast / (p * f);
@@ -590,23 +590,99 @@
     if (a.k === 'tranquilo') return T(a.n === 1 ? 'Tengo 1 consumo nuevo para ti. ¿Lo vemos?' : 'Tengo {n} consumos nuevos para ti. ¿Los vemos?', { n: a.n });
     return T(a.n === 1 ? 'Me quedó 1 consumo por ordenar, de hace {d} días. ¿Me ayudas con él?' : 'Me quedaron {n} consumos por ordenar, algunos de hace {d} días. ¿Me ayudas?', { n: a.n, d: a.dias });
   }
-  /* Lo que Uku dice en su globo, de lo más urgente a lo más tranquilo:
-     1. pagos que vencen en 3 días (y si te alcanza), 2. consumos por ordenar,
-     3. su hallazgo más potente. Tocar el globo lleva a la acción. */
-  function globo(a) {
-    var lim = addDays(HOY, 3), urg = facturas().filter(function (x) { return x.f <= lim; }), saldo = sumv(saldos(), function (x) { return x.v; });
-    if (urg.length) {
-      var tot = sumv(urg, function (x) { return x.monto; }), x = urg[0];
-      var cuando = x.f === HOY ? T('Hoy') : x.f === addDays(HOY, 1) ? T('Mañana') : T('El {d}', { d: DIA1[wday(x.f)] });
-      return { k: 'urg', go: 'bills', gol: T('Ver por pagar'),
-        t: (urg.length === 1 ? T('{c} te cobran {m} de {n}.', { c: cuando, m: money0(x.monto), n: x.n }) : T('En los próximos 3 días te cobran {m} en {k} pagos.', { m: money0(tot), k: urg.length })) + ' ' +
-          (saldo < tot ? T('Tienes {s}: te faltan {f}.', { s: money0(saldo), f: money0(tot - saldo) }) : T('Te alcanza con lo que tienes.')) };
-    }
-    if (a.n) return { t: ukuMsg(a), go: 'game', gol: T('Clasificar {n}', { n: Math.min(TANDA, a.n) }) };
-    var ins = insights().filter(function (x) { return x.go && x.kind !== 'info'; })[0] || insights().filter(function (x) { return x.go; })[0];
-    if (ins) return { t: T(ins.kind === 'good' ? '¡Todo clasificado! Y una buena noticia: {t}.' : ins.kind === 'warn' ? '¡Todo clasificado! Pero ojo: {t}.' : '¡Todo clasificado! {T}.', { t: ins.t.charAt(0).toLowerCase() + ins.t.slice(1), T: ins.t }), go: ins.go, gol: ins.gol };
-    return { t: ukuMsg(a) };
+  /* ---------- Uku, tu asesor ----------
+     Una sola lista de lo que Uku descubre y te propone, ordenada por lo que
+     más importa ahora. Cada consejo dice qué notó, por qué importa y trae su
+     acción: programar un pago, ponerte un presupuesto, separar ahorro, pagar
+     el total de la tarjeta, ordenar consumos, una mesada... Lo primero lo
+     dice Uku en su globo; lo demás va en tarjetas, en la misma sección.
+     Lo que ya hiciste queda como "Listo" (con deshacer) y lo que dejas para
+     después se esconde hasta que lo pidas. */
+  function hecho(id) { var H = ST.hecho && ST.hecho[ST.u]; return H && H[id]; }
+  function setHecho(id, v) { var H = ST.hecho || (ST.hecho = {}); H[ST.u] = H[ST.u] || {}; if (v) H[ST.u][id] = v; else delete H[ST.u][id]; persist(); }
+  function oculto(id) { var O = ST.oculto && ST.oculto[ST.u]; return O && O[id]; }
+  function diasA(f) { return Math.round((new Date(f + 'T12:00:00') - new Date(HOY + 'T12:00:00')) / 864e5); }
+  function cuandoTxt(f) { var d = diasA(f); return d <= 0 ? T('Hoy') : d === 1 ? T('Mañana') : d < 7 ? T('El {d}', { d: DIA1[wday(f)] }) : T('El {f}', { f: dshort(f) }); }
+  function ingresoMes() { var ms = antes(curMes(), 3); return ms.length ? sumv(ms, function (m) { return month(m).ing; }) / ms.length : month(curMes()).ing; }
+  // Lo que conviene separar cada mes: 5% de lo que entra, redondeado a $5
+  function ahorroSug() { return Math.max(5, Math.round(ingresoMes() * .05 / 5) * 5); }
+  function minimoTarjeta() { return rows().filter(function (r) { return /mínimo/i.test(r.n) && r.c === 'Pago de tarjeta' && r.prod === 'Cuenta' && r.f >= addDays(HOY, -62); }).pop(); }
+  function consejos() {
+    var a = animo(), out = [], saldo = sumv(saldos(), function (x) { return x.v; }), pr = pres(), pe = presEstado();
+    // 1. Pagos de la próxima semana: programarlos
+    facturas().filter(function (x) { return diasA(x.f) <= 7; }).slice(0, 2).forEach(function (x) {
+      var falta = saldo < x.monto, d = diasA(x.f);
+      out.push({ id: 'pago:' + x.n, p: d <= 3 ? 100 : 80, icon: 'event', tag: T('Pago cercano'), kind: falta ? 'warn' : 'info',
+        t: T('{c} te cobran {m} de {n}', { c: cuandoTxt(x.f), m: money0(x.monto), n: x.n }),
+        s: falta ? T('Hoy tienes {s}: te faltan {f}. Si lo programas, te aviso un día antes para que llegues.', { s: money0(saldo), f: money0(x.monto - saldo) }) : T('Te alcanza con lo que tienes. Prográmalo y olvídate de la fecha.'),
+        di: T('{c} te cobran {m} de {n}.', { c: cuandoTxt(x.f), m: money0(x.monto), n: x.n }) + ' ' + (falta ? T('Te faltan {f}. ¿Lo programamos y te aviso?', { f: money0(x.monto - saldo) }) : T('Te alcanza. ¿Lo programamos?')),
+        act: 'pagar:' + x.n, actl: T('Programar el pago'), ok: T('Programado: se paga solo el {f}.', { f: dshort(x.f) }), conf: { para: x.n, monto: x.monto, cuando: dshort(x.f) } });
+    });
+    // 2. Consumos por ordenar
+    if (a.n) out.push({ id: 'ordenar', p: a.k === 'pensativo' ? 90 : 70, icon: 'category', tag: T('Por ordenar'), kind: 'info',
+      t: T(a.n === 1 ? 'Tienes 1 consumo sin clasificar' : 'Tienes {n} consumos sin clasificar', { n: a.n }),
+      s: T('Con eso tu presupuesto y lo que te digo son más reales. Toma menos de un minuto.'), di: ukuMsg(a), act: 'game', actl: T('Clasificar {n}', { n: Math.min(TANDA, a.n) }) });
+    // 3. Tarjeta: pagaste solo el mínimo
+    var min = minimoTarjeta();
+    if (min) out.push({ id: 'tarjeta', p: 75, icon: 'credit_card', tag: T('Tarjeta'), kind: 'warn', t: T('Pagaste solo el mínimo de tu tarjeta'),
+      s: T('Así la deuda crece con intereses. Si programas el pago total cada mes, dejas de pagarlos.'),
+      di: T('Vi que pagaste solo el mínimo de tu tarjeta. Si programas el pago total, dejas de pagar intereses.'),
+      act: 'tarjeta', actl: T('Programar el pago total'), ok: T('Listo: tu tarjeta se paga completa cada mes, el día que cobras.'), conf: { para: T('Tu tarjeta Pichibank'), monto: null, cuando: T('Cada mes, el día que cobras') } });
+    // 4. Presupuesto: ponerlo o revisarlo
+    if (pr.auto || hecho('pres')) out.push({ id: 'pres', p: 55, icon: 'speed', tag: T('Presupuesto'), kind: 'info', t: T('Todavía no tienes un presupuesto'),
+      s: T('Con lo que gastas, te propongo {m} al mes repartido en tus grupos. Lo puedes ajustar cuando quieras.', { m: money0(pr.general) }),
+      di: T('Todavía no tienes presupuesto. Con lo que gastas, te propongo {m} al mes.', { m: money0(pr.general) }),
+      act: 'pres', actl: T('Usar {m} al mes', { m: money0(pr.general) }), ok: T('Listo: tu presupuesto es {m} al mes.', { m: money0(pr.general) }) });
+    else if (pe.k === 'over') out.push({ id: 'pres:over', p: 72, icon: 'speed', tag: T('Presupuesto'), kind: 'warn', t: T('Vas por encima de tu presupuesto'),
+      s: T('Llevas {g} de {p} este mes. Revisa en qué grupo se fue o ajusta el plan.', { g: money0(month(curMes()).gast), p: money0(pr.general) }),
+      di: T('Vas por encima de tu presupuesto este mes. ¿Lo revisamos juntos?'), act: 'budgets', actl: T('Revisar presupuesto') });
+    // 5. Ahorro: la cuenta llega casi en cero
+    if (colchon() < 1 || hecho('ahorro')) { var q = ahorroSug();
+      out.push({ id: 'ahorro', p: 60, icon: 'savings', tag: T('Ahorro'), kind: 'warn', t: T('Tu cuenta llega casi en cero a cada sueldo'),
+        s: T('Si separas {q} cada mes, apenas cobras, en 6 meses tienes {t} para un imprevisto. Y su campo empieza a florecer.', { q: money0(q), t: money0(q * 6) }),
+        di: T('Te propongo algo: separa {q} cada mes apenas cobras. En 6 meses tendrías {t} para un imprevisto.', { q: money0(q), t: money0(q * 6) }),
+        act: 'ahorro', actl: T('Separar {q} al mes', { q: money0(q) }), ok: T('Listo: cada mes se separan {q} a tu ahorro, apenas cobras.', { q: money0(q) }),
+        conf: { para: T('Tu cuenta de ahorro'), monto: q, cuando: T('Cada mes, apenas cobras') } }); }
+    // 6. Mesadas y pagos repetidos
+    agrupar().forEach(function (x) { out.push({ id: 'g:' + x.go, p: 50, icon: x.icon, tag: x.tag, kind: 'info', t: x.t, s: x.s, cmp: x.cmp, di: x.s, act: x.go, actl: x.gol }); });
+    // 7. Lo que descubrió: anticipa (to-be) y hallazgos
+    (tobe() ? anticipa(curMes()).map(accion) : []).concat(hallazgos(curMes()).map(accion)).forEach(function (x) {
+      if (x.icon === 'tune' || x.icon === 'credit_card' && min) return; // ya están como consejo con acción
+      out.push({ id: 'h:' + x.t, p: x.kind === 'warn' ? 45 : x.kind === 'good' ? 30 : 20, icon: x.g ? GRUPOS[x.g].ic : x.icon, tag: x.g ? T(x.g) : T('Descubrí'), kind: x.kind,
+        t: x.t, s: x.s, cmp: x.cmp, ask: x.ask, act: x.go, actl: x.gol,
+        di: x.kind === 'good' ? T('Una buena noticia: {t}.', { t: x.t.charAt(0).toLowerCase() + x.t.slice(1) }) : x.kind === 'warn' ? T('Ojo: {t}.', { t: x.t.charAt(0).toLowerCase() + x.t.slice(1) }) : x.t + '.' });
+    });
+    return out.filter(function (x) { return !oculto(x.id); }).map(function (x) { x.done = hecho(x.id) ? x.ok || T('Listo') : null; return x; })
+      .sort(function (a, b) { return (a.done ? 1 : 0) - (b.done ? 1 : 0) || b.p - a.p; });
   }
+  // El globo dice el primer consejo pendiente; si no hay, Uku celebra
+  function globo(a) {
+    var x = consejos().filter(function (c) { return !c.done; })[0];
+    return x ? { t: x.di || x.t, k: x.p >= 100 ? 'urg' : '', go: x.act, gol: x.actl, id: x.id } : { t: ukuMsg(a) };
+  }
+  function consejoHTML(x) {
+    var mx = x.cmp ? Math.max.apply(null, x.cmp.map(function (c) { return c.v; }).concat([1])) : 1;
+    return '<article class="pfm-tip is-' + (x.kind || 'info') + (x.done ? ' is-done' : '') + '">' +
+      '<p class="pfm-tip__tag"><span class="material-symbols-rounded" aria-hidden="true">' + x.icon + '</span>' + esc(x.tag) + '</p>' +
+      '<p class="pfm-tip__t">' + (x.done ? '<span class="material-symbols-rounded" aria-hidden="true">check_circle</span>' + esc(x.done) : esc(x.t)) + '</p>' + (x.s && !x.done ? '<p class="pfm-tip__s">' + esc(x.s) + '</p>' : '') +
+      (x.cmp && !x.done ? '<span class="pfm-dcard__cmp">' + x.cmp.map(function (c) {
+        return '<span class="pfm-dcard__row' + (c.on ? ' is-on' : '') + '"><small>' + esc(c.l) + '</small><b>' + money0(c.v) + '</b><i style="width:' + Math.max(3, c.v / mx * 100).toFixed(1) + '%"></i></span>'; }).join('') + '</span>' : '') +
+      '<div class="pfm-tip__acts">' + (x.done ? '<button class="section__link" data-pfm="deshacer:' + esc(x.id) + '">' + T('Deshacer') + '</button>'
+        : (x.act ? '<button class="pf-link" data-pfm="' + esc(x.act) + '">' + esc(x.actl) + '</button>' : '') +
+          (tobe() && x.ask ? '<button class="pf-link" data-pfm="ai:' + esc(x.ask) + '"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + T('Pregúntale') + '</button>' : '') +
+          '<button class="section__link" data-pfm="luego:' + esc(x.id) + '">' + T('Ahora no') + '</button>') + '</div></article>';
+  }
+  // Confirmar antes de programar algo: qué, a quién, cuánto y cuándo
+  function confirmar(x) {
+    var c = x.conf;
+    showSheet('<h3>' + esc(x.actl) + '</h3><p>' + esc(x.s) + '</p><div class="pfm-confirm">' +
+      (c.monto != null ? '<div><small>' + T('Monto') + '</small><b>' + money(c.monto) + '</b></div>' : '<div><small>' + T('Monto') + '</small><b>' + T('El total de tu estado de cuenta') + '</b></div>') +
+      '<div><small>' + T('Para') + '</small><b>' + esc(c.para) + '</b></div><div><small>' + T('Cuándo') + '</small><b>' + esc(c.cuando) + '</b></div>' +
+      '<div><small>' + T('Desde') + '</small><b>' + esc((saldos()[0] || { n: 'tu cuenta' }).n.replace(/ Pichibank/, '')) + '</b></div></div>' +
+      '<p class="pf-note">' + T('Uku te avisa un día antes si no te alcanza. Lo puedes cancelar cuando quieras.') + '</p>' +
+      '<button class="pf-cta" data-pfm="hecho:' + esc(x.id) + '">' + T('Confirmar') + '</button><button class="pf-link pf-link--block" data-pfm="cerrar">' + T('Ahora no') + '</button>');
+  }
+  function consejo(id) { return consejos().filter(function (x) { return x.id === id; })[0]; }
   function worldHTML(a) {
     var c = colchon(), pe = presEstado();
     var sig = function (ic, l, v, cls) { return '<button class="pfm-sig is-' + cls + '" data-pfm="world"><span class="material-symbols-rounded" aria-hidden="true">' + ic + '</span><small>' + l + '</small><b>' + v + '</b></button>'; };
@@ -616,20 +692,22 @@
       sig('park', T('Tu presupuesto'), pe.l, pe.k) + '</div>';
   }
   function ukuHTML() {
-    var m = curMes(), a = animo();
-    var html = '<section class="pf-sec pfm-uku pf-mood--' + a.k + (tobe() ? ' is-tobe' : '') + '">' +
+    var m = curMes(), a = animo(), L = consejos(), g = globo(a), pend = L.filter(function (x) { return !x.done; }).length;
+    var resto = L.filter(function (x) { return x.id !== g.id; });
+    return '<section class="pf-sec pfm-uku pf-mood--' + a.k + (tobe() ? ' is-tobe' : '') + '">' +
+      '<div class="pf-sec__head"><h2>' + T('Uku, tu asesor') + '</h2></div>' +
       '<div class="pf-hero pfm-hero"><div class="b3d" data-shift=".2" data-score="' + salud(m) + '" data-bloom="' + flores() + '" data-mood="' + a.k + '"><div class="b3d__fallback">' + (window.Asistente ? Asistente.petSVG() : '') + '</div></div>' +
-        // Uku habla desde su mundo: el globo sale de él, arriba a la izquierda
-        (function (g) { return '<p class="pfm-globo' + (g.k === 'urg' ? ' is-urg' : '') + '" aria-live="polite"><span>' + esc(g.t) + '</span></p>'; })(globo(a)) + '</div>' +
-      '<p class="pfm-uku__mood"><span class="material-symbols-rounded" aria-hidden="true">' + MOOD_IC[a.k] + '</span>' + T('Uku está {animo}', { animo: T(MOOD[a.k]) }) + '</p>' +
-      // Una sola acción: la que propone el mensaje de Uku. Clasificar queda como enlace si el mensaje pide otra cosa
-      (function (g) { return (g.go ? '<button class="pf-cta pfm-uku__go" data-pfm="' + esc(g.go) + '">' + esc(g.gol) + '</button>' : '') +
-        (a.n && g.go !== 'game' ? '<button class="pf-link pfm-uku__more" data-pfm="game">' + T('Clasificar {n}', { n: Math.min(TANDA, a.n) }) + '</button>' : ''); })(globo(a)) +
-      (tobe() ?
-        '<div class="pfm-uku__acts"><button class="pf-link" data-pfm="analyze"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + T('Analizar con IA') + '</button>' +
+        // Uku habla desde su mundo: dice lo primero que te propone, y tocarlo lo hace
+        '<' + (g.go ? 'button data-pfm="' + esc(g.go) + '"' : 'p') + ' class="pfm-globo' + (g.k === 'urg' ? ' is-urg' : '') + '" aria-live="polite"><span>' + esc(g.t) + '</span></' + (g.go ? 'button' : 'p') + '></div>' +
+      '<p class="pfm-uku__mood"><span class="material-symbols-rounded" aria-hidden="true">' + MOOD_IC[a.k] + '</span>' + T('Uku está {animo}', { animo: T(MOOD[a.k]) }) +
+        (pend ? ' · ' + T(pend === 1 ? '1 cosa para ti' : '{n} cosas para ti', { n: pend }) : '') + '</p>' +
+      (g.go ? '<button class="pf-cta pfm-uku__go" data-pfm="' + esc(g.go) + '">' + esc(g.gol) + '</button>' : '') +
+      (tobe() ? '<div class="pfm-uku__acts"><button class="pf-link" data-pfm="analyze"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + T('Analizar con IA') + '</button>' +
         '<button class="pf-link" data-pfm="ai:"><span class="material-symbols-rounded" aria-hidden="true">chat_bubble</span>' + T('Pregúntale') + '</button></div>' : '') +
-      worldHTML(a) + destacadoHTML() + '</section>';
-    return html;
+      worldHTML(a) +
+      (resto.length ? '<div class="pfm-tips"><p class="pfm-tips__l">' + T('También te propongo') + '</p>' + resto.slice(0, 3).map(consejoHTML).join('') +
+        (resto.length > 3 ? '<button class="pf-link pf-link--block" data-pfm="insights">' + T('Ver los {n} consejos', { n: L.length }) + '</button>' : '') + '</div>' : '') +
+      '</section>';
   }
   // Qué significa cada cosa del mundo de Uku
   function worldSheet() {
@@ -1108,24 +1186,6 @@
       }).join('') + (!ks.length ? '<p class="pf-note">' + T('No hay gastos {cuando}.', { cuando: P.l }) + '</p>' : '') + '</div></section></div>';
     return html;
   }
-  // Lo destacado: como Salud, una frase y, si hay, la comparación que la explica
-  function destacadoHTML() {
-    var ins = insights();
-    if (!ins.length) return '';
-    // Los descubrimientos de Uku viven en su sección, debajo de su mundo
-    return '<div class="pfm-dest"><div class="pf-sec__head"><h2>' + T('Lo que notó Uku') + '</h2>' + (ins.length > 2 ? '<button class="section__link" data-pfm="insights">' + T('Mostrar todo') + '</button>' : '') + '</div>' +
-      '<p class="pf-sec__sub">' + T('De {mes}, hasta hoy.', { mes: mesName(curMes()) }) + '</p>' +
-      ins.slice(0, 2).map(function (x, i) {
-        var mx = x.cmp ? Math.max.apply(null, x.cmp.map(function (c) { return c.v; }).concat([1])) : 1;
-        // La tarjeta abre su acción o su hoja; "Pregúntale" va aparte, como en la hoja
-        return '<article class="pf-mcard pfm-dcard pfm-find"><button class="pfm-find__main" data-pfm="' + (x.go || 'ins:' + i) + '"><span class="pfm-dcard__tag"><span class="material-symbols-rounded" aria-hidden="true">' + (x.g ? GRUPOS[x.g].ic : x.icon) + '</span>' + esc(x.tag || (x.g ? T(x.g) : T('Tus gastos'))) + '</span>' +
-          '<span class="pfm-dcard__t">' + esc(x.t) + '</span>' +
-          (x.cmp ? '<span class="pfm-dcard__cmp">' + x.cmp.map(function (c) {
-            return '<span class="pfm-dcard__row' + (c.on ? ' is-on' : '') + '"><small>' + esc(c.l) + '</small><b>' + money0(c.v) + '</b><i style="width:' + Math.max(3, c.v / mx * 100).toFixed(1) + '%"></i></span>'; }).join('') + '</span>' : '') +
-          (x.go ? '<span class="pfm-dcard__go">' + esc(x.gol) + '</span>' : '') + '</button>' +
-          (tobe() && x.ask ? '<button class="pf-link pfm-find__ask" data-pfm="ai:' + esc(x.ask) + '"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + T('Pregúntale') + '</button>' : '') + '</article>';
-      }).join('') + '</div>';
-  }
   // Ingresos: ya no es un filtro de la pantalla, se ven en su hoja
   function ingSheet() {
     var m = curMes(), s = month(m), ks = Object.keys(s.inc).sort(function (a, b) { return s.inc[b] - s.inc[a]; }), mx = Math.max.apply(null, ks.map(function (k) { return s.inc[k]; }).concat([1]));
@@ -1220,14 +1280,11 @@
         '<button class="as-row as-row--btn" data-pfm="modo:tobe" aria-pressed="' + tobe() + '"><span class="as-row__main"><b>To-be</b><small>' + T('La visión: Uku ordena casi todo, anticipa, ve tus otros bancos y analiza con IA.') + '</small></span><span class="as-radio"></span></button></div>' +
       '<button class="pf-link pf-link--block" data-pfm="reset">' + T('Borrar mis respuestas y presupuestos') + '</button>');
   }
-  function insightsSheet(i) {
-    var ins = insights();
-    showSheet('<h3>' + T('Lo que notó Uku') + '</h3><p>' + T('Frases cortas sobre tus movimientos de {mes}.', { mes: mesName(curMes()) }) + '</p>' +
-      '<div class="pf-uku2__list">' + ins.map(function (x, j) {
-        return '<div class="pf-uku2__row' + (j === i ? ' is-on' : '') + '"><span class="pf-uku2__ic material-symbols-rounded" aria-hidden="true">' + x.icon + '</span><div class="pf-uku2__txt"><b>' + esc(x.t) + '</b><p>' + esc(x.s) + '</p>' +
-          (x.go ? '<div class="pf-uku2__links"><button data-pfm="' + x.go + '">' + esc(x.gol) + '</button></div>' : '') +
-          (tobe() && x.ask ? '<div class="pf-uku2__links"><button class="is-ai" data-pfm="ai:' + esc(x.ask) + '"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + esc(x.ask) + '</button></div>' : '') + '</div></div>';
-      }).join('') + '</div>');
+  function insightsSheet() {
+    var L = consejos();
+    showSheet('<h3>' + T('Lo que te propone Uku') + '</h3><p>' + T('Lo que descubrió en tus movimientos de {mes}, con lo que puedes hacer.', { mes: mesName(curMes()) }) + '</p>' +
+      '<div class="pfm-tips is-sheet">' + L.map(consejoHTML).join('') + '</div>' +
+      (ST.oculto && ST.oculto[ST.u] && Object.keys(ST.oculto[ST.u]).length ? '<button class="pf-link pf-link--block" data-pfm="verluego">' + T('Ver lo que dejé para después') + '</button>' : ''));
   }
   function deudasSheet() {
     var d = deudas(), h = DB.hipoteca, row = function (x, extra) {
@@ -1254,7 +1311,7 @@
     showSheet('<h3>' + T('Por pagar') + '</h3><p>' + T('Lo que pagas cada mes y viene en los próximos 30 días: {monto} en total.', { monto: money(sumv(fs, function (x) { return x.monto; })) }) + '</p>' +
       '<div class="pf-mcard">' + (fs.length ? fs.map(function (x) {
         var dd = Math.round((new Date(x.f + 'T12:00:00') - new Date(HOY + 'T12:00:00')) / 864e5);
-        return '<div class="pfm-debt"><span class="material-symbols-rounded pfm-ic">' + x.ic + '</span><span class="pfm-debt__main"><b>' + esc(x.n) + '</b><small>' + dshort(x.f) + ' · ' + (dd <= 1 ? T('mañana') : T('en {n} días', { n: dd })) + '</small></span>' +
+        return '<div class="pfm-debt"><span class="material-symbols-rounded pfm-ic">' + x.ic + '</span><span class="pfm-debt__main"><b>' + esc(x.n) + '</b><small>' + dshort(x.f) + ' · ' + (dd <= 1 ? T('mañana') : T('en {n} días', { n: dd })) + (hecho('pago:' + x.n) ? ' · ' + T('Programado') : '') + '</small></span>' +
           '<span class="pfm-debt__val"><b>' + (x.aprox ? '≈ ' : '') + money(x.monto) + '</b></span></div>';
       }).join('') : '<p class="pf-note">' + T('Nada en los próximos 30 días.') + '</p>') + '</div>' +
       '<p class="pf-note">' + T('Los montos con ≈ cambian cada mes: tomamos el último pago.') + '</p>');
@@ -1374,7 +1431,7 @@
       case 'who': return whoSheet();
       case 'modo': if (ST.modo !== p[1]) { ST.modo = p[1]; persist(); fx('toggle'); refresh(); if (sheetOpen()) whoSheet(); } return;
       case 'u': if (ST.u !== p[1]) { ST.u = p[1]; persist(); fx('toggle'); refresh(); } closeSheet(); return;
-      case 'reset': ST.resp[ST.u] = {}; ST.cats[ST.u] = {}; if (ST.rules) delete ST.rules[ST.u]; if (ST.mesadas) delete ST.mesadas[ST.u]; if (ST.presG) delete ST.presG[ST.u]; if (ST.seed) delete ST.seed[ST.u]; sembrar(ST.u); persist(); refresh(); closeSheet(); toast(T('Listo, volviste al inicio.')); return;
+      case 'reset': ST.resp[ST.u] = {}; ST.cats[ST.u] = {}; if (ST.hecho) delete ST.hecho[ST.u]; if (ST.oculto) delete ST.oculto[ST.u]; if (ST.rules) delete ST.rules[ST.u]; if (ST.mesadas) delete ST.mesadas[ST.u]; if (ST.presG) delete ST.presG[ST.u]; if (ST.seed) delete ST.seed[ST.u]; sembrar(ST.u); persist(); refresh(); closeSheet(); toast(T('Listo, volviste al inicio.')); return;
       case 'per': ST.per = p[1]; BAR = null; persist(); fx('select'); paint(); return;
       case 'bar': BAR = BAR === +p[1] ? null : +p[1]; fx('tap'); paint(); return;
       case 'ing': return ingSheet();
@@ -1385,7 +1442,15 @@
       case 'products': return productsSheet();
       case 'insights': return insightsSheet(-1);
       case 'world': return worldSheet();
-      case 'ins': return insightsSheet(+p[1]);
+      case 'ins': return insightsSheet();
+      case 'cerrar': return closeSheet();
+      // Consejos del asesor: programar (con confirmación), aplicar, deshacer o dejar para después
+      case 'pagar': case 'tarjeta': case 'ahorro': { var cx = consejo(k === 'tarjeta' || k === 'ahorro' ? k : 'pago:' + p.slice(1).join(':')); if (cx) confirmar(cx); return; }
+      case 'pres': { setPres(pres()); setHecho('pres', HOY); fx('success'); refresh(); if (b3d) b3d.play('happy'); return toast(T('Listo: ya tienes presupuesto. Lo puedes ajustar cuando quieras.'), 'deshacer:pres'); }
+      case 'hecho': { var hid = p.slice(1).join(':'), hx = consejo(hid); setHecho(hid, HOY); closeSheet(); fx('success'); refresh(); if (b3d) b3d.play('happy'); return toast(hx && hx.ok ? hx.ok : T('Listo.'), 'deshacer:' + hid); }
+      case 'deshacer': { var did = p.slice(1).join(':'); setHecho(did, null); if (did === 'pres' && ST.presG) { delete ST.presG[ST.u]; persist(); } fx('tap'); refresh(); if (sheetOpen()) insightsSheet(); return; }
+      case 'luego': { var lid = p.slice(1).join(':'); ((ST.oculto || (ST.oculto = {}))[ST.u] = ST.oculto[ST.u] || {})[lid] = HOY; persist(); fx('tap'); refresh(); if (sheetOpen()) insightsSheet(); return toast(T('Lo dejo para después.'), 'verluego'); }
+      case 'verluego': { if (ST.oculto) delete ST.oculto[ST.u]; persist(); refresh(); return insightsSheet(); }
       case 'mesada': return mesadaSheet(p.slice(1).join(':'));
       case 'mesa': {
         var mc = p.slice(2).join(':'), mx = mesadas().filter(function (m) { return m.cp === mc; })[0], st = mesOf(mc) || {};
