@@ -96,7 +96,7 @@
       Object.keys(d.movimientos).forEach(function (u) {
         U[u] = d.movimientos[u].map(function (r, i) {
           return { i: i, f: r[0], h: r[1], mes: r[0].slice(0, 7), dia: +r[0].slice(8, 10), src: D.fuente[r[2]], prod: D.producto[r[3]], desc: D.descripcion[r[4]],
-            cp: D.contraparte[r[5]], m: r[6], t: D.tratamiento[r[7]], c: D.categoria[r[8]], e: D.escenario[r[9]], n: D.nota[r[10]] };
+            cp: D.contraparte[r[5]], m: r[6], t: D.tratamiento[r[7]], c: D.categoria[r[8]], e: D.escenario[r[9]], n: D.nota[r[10]], s: r[11] };
         });
       });
       DB = { mov: U, usuarios: d.usuarios, deudas: d.deudas, escenarios: d.escenarios, hipoteca: d.hipoteca };
@@ -307,7 +307,7 @@
       var k = r.cp + '|' + c.cat; (by[k] = by[k] || { cp: r.cp, cat: c.cat, ms: {}, dias: [], m: [] }); by[k].ms[r.mes] = 1; by[k].dias.push(r.dia); by[k].m.push(-r.m);
     });
     return Object.keys(by).map(function (k) { return by[k]; }).filter(function (x) {
-      return Object.keys(x.ms).length >= 3 && x.m.length <= 6 && Math.max.apply(null, x.m) <= Math.min.apply(null, x.m) * 1.3; // mismo monto, más o menos
+      return Object.keys(x.ms).length >= 3 && x.m.length <= 6 && Math.min.apply(null, x.m) >= 5 && Math.max.apply(null, x.m) <= Math.min.apply(null, x.m) * 1.3; // mismo monto, más o menos; sin comisiones
     })
       .map(function (x) { var d = x.dias.slice().sort(function (a, b) { return a - b; })[Math.floor(x.dias.length / 2)]; return { cp: x.cp, cat: x.cat, dia: d, monto: r2(x.m.reduce(function (a, b) { return a + b; }, 0) / x.m.length) }; })
       .sort(function (a, b) { return a.dia - b.dia; });
@@ -433,14 +433,6 @@
   }
   function face() { return window.Asistente ? Asistente.faceIMG() : '<img class="as-oso as-oso--cara" src="' + ASSET + 'oso/oso-cara.webp" alt="">'; }
 
-  function demoHTML() {
-    var u = user();
-    return '<div class="pfm-demo" role="group" aria-label="Demo">' +
-      '<button class="pfm-demo__who" data-pfm="who"><span class="pfm-av">' + esc(u.nombre.charAt(0)) + '</span><span><b>' + esc(u.nombre) + '</b><small>' + esc(u.tipo) + '</small></span><span class="material-symbols-rounded">expand_more</span></button>' +
-      '<div class="pfm-seg" role="radiogroup" aria-label="Versión">' +
-        '<button role="radio" aria-checked="' + !tobe() + '" data-pfm="modo:mvp">MVP</button>' +
-        '<button role="radio" aria-checked="' + tobe() + '" data-pfm="modo:tobe">To-be</button></div></div>';
-  }
   function tabsHTML(m) {
     return '<nav class="tabs pf-tabs" aria-label="Meses"><div class="tabs__scroll">' + meses().map(function (x) {
       var l = isCur(x) ? T('Este mes') : x.slice(0, 4) === HOY.slice(0, 4) ? Mes(x) : Mes(x).slice(0, 3) + ' ' + x.slice(0, 4);
@@ -449,26 +441,59 @@
   }
 
   // Salud financiera: gastado, lo que te queda, total y avance contra el presupuesto
+  /* Salud financiera: lo que tienes disponible, no lo gastado.
+     Total = tu presupuesto del mes. Te queda = presupuesto − gastado (en el
+     to-be, también − los cobros fijos que todavía no llegan). Arriba va lo
+     que puedes gastar y cuánto es por día; abajo, de dónde sale. */
+  function porPagar(m) {
+    if (!isCur(m) || !tobe()) return [];
+    var d = +HOY.slice(8, 10), s = month(m);
+    return recurrentes(m).filter(function (x) {
+      return x.dia > d && !s.rows.some(function (r) { var c = cls(r); return r.cp === x.cp && c.cat === x.cat && c.k === 'gasto'; });
+    });
+  }
+  function saldoCuentas(m) {
+    var f = finDe(m), last = {};
+    rows().forEach(function (r) { if (r.f <= f && r.s != null && (r.prod === 'Cuenta' || r.prod === 'Deuna')) last[r.src] = r.s; });
+    return r2(Object.keys(last).reduce(function (a, k) { return a + last[k]; }, 0));
+  }
+  function estado(m) {
+    var s = month(m), p = pres().general, f = isCur(m) ? +HOY.slice(8, 10) / diasMes(m) : 1, pend = porPagar(m).reduce(function (a, x) { return a + x.monto; }, 0);
+    var u = (s.gast + pend) / p;
+    if (s.gast + pend > p) return { k: 'over', l: T('Te pasaste') };
+    if (isCur(m) ? s.gast / p > f + .05 : u > .95) return { k: 'warn', l: T('Con cuidado') };
+    return { k: 'ok', l: isCur(m) ? T('Vas bien') : T('Cerraste bien') };
+  }
   function saludHTML(m) {
-    var s = month(m), p = pres(), cur = isCur(m), q = preguntas(m).filter(function (x) { return x.sign === '+' && x.enMes.length; });
-    var rinMes = q.reduce(function (a, x) { return a + x.enMes.reduce(function (b, r) { return b + r.m; }, 0); }, 0);
-    var used = s.gast / p.general, f = cur ? +HOY.slice(8, 10) / diasMes(m) : null, over = s.gast > p.general;
-    var queda = rinMes > 0
-      ? '<button class="pfm-ask" data-pfm="q:' + esc(q[0].k) + '"><span class="pfm-ask__face">' + face() + '</span><span>' + T('Antes de decirte cuánto te queda: ¿qué fueron los {monto} que te llegaron?', { monto: money(rinMes) }) + '</span><span class="material-symbols-rounded">chevron_right</span></button>'
-      : '<p class="pfm-sal__left' + (over ? ' is-over' : '') + '">' + (over ? T('Te pasaste {monto}', { monto: money(s.gast - p.general) }) : T('Te quedan {monto}', { monto: money(p.general - s.gast) })) + '</p>';
+    var s = month(m), p = pres().general, cur = isCur(m), d = +HOY.slice(8, 10), n = diasMes(m), f = cur ? d / n : null;
+    var pp = porPagar(m), pend = r2(pp.reduce(function (a, x) { return a + x.monto; }, 0)), libre = r2(p - s.gast - pend), st = estado(m);
+    var q = preguntas(m).filter(function (x) { return x.sign === '+' && x.enMes.length; });
+    var rinMes = r2(q.reduce(function (a, x) { return a + x.enMes.reduce(function (b, r) { return b + r.m; }, 0); }, 0));
+    var w = function (v) { return Math.max(0, Math.min(100, v / Math.max(p, s.gast + pend) * 100)).toFixed(1); };
+    var lbl = cur ? (libre >= 0 ? T('Te quedan para gastar') : T('Te pasaste de tu presupuesto')) : (libre >= 0 ? T('Te sobraron en {mes}', { mes: mesName(m) }) : T('En {mes} te pasaste', { mes: mesName(m) }));
+    var sub = cur ? (libre > 0 ? T('hasta el {d} de {mes} · unos {monto} por día', { d: n, mes: mesName(m), monto: money0(Math.floor(libre / (n - d + 1))) }) : T('y faltan {n} días para que termine {mes}', { n: n - d, mes: mesName(m) }))
+      : T('de tu presupuesto de {monto}', { monto: money0(p) });
+    var saldo = saldoCuentas(m);
     return '<section class="pf-flow pfm-sal">' +
-      '<p class="pf-flow__label">' + T(cur ? 'Llevas gastado en {mes}' : 'Gastaste en {mes}', { mes: mesName(m) }) + '</p>' +
-      '<p class="pf-flow__value">' + money(s.gast) + '</p>' +
-      '<p class="pf-flow__sub">' + T('de tu presupuesto de {monto}', { monto: money0(p.general) }) + '<button class="pf-link pfm-mini" data-pfm="budgets">' + T('Ajustar') + '</button></p>' +
-      '<div class="pfm-bar' + (over ? ' is-over' : used > (f || 1) * .95 ? ' is-warn' : '') + '" role="img" aria-label="' + T('Usaste {pct} de tu presupuesto', { pct: pct(used) }) + '"><i style="width:' + Math.min(100, used * 100).toFixed(1) + '%"></i>' +
-        (f ? '<em style="left:' + (f * 100).toFixed(1) + '%"></em>' : '') + '</div>' + queda +
-      '<div class="pf-flow__keys pfm-keys">' +
-        '<span><i class="is-in"></i>' + T('Ingresos') + '<b>' + money(s.ing) + '</b></span>' +
-        '<span><i class="is-spend"></i>' + T('Gastos') + '<b>' + money(s.gast) + '</b></span>' +
-        '<span><i class="is-save"></i>' + T('Diferencia') + '<b>' + money(s.ing - s.gast) + '</b></span></div>' +
-      (s.fijo ? '<p class="pfm-sal__fijo"><span><b>' + money(s.fijo) + '</b> ' + T('fijos') + '</span><span><b>' + money(s.gast - s.fijo) + '</b> ' + T('variables') + '</span><small>' + T('Fijo es lo que pagas casi todos los meses a la misma persona o empresa.') + '</small></p>' : '') +
-      (s.rin ? '<p class="pfm-sal__rev"><span class="material-symbols-rounded">help</span>' + T('Más {monto} que entraron de personas y todavía no sé qué son.', { monto: money(s.rin) }) + '</p>' : '') +
-      (f ? '<p class="pf-note">' + T('La raya marca dónde deberías ir hoy, día {d} de {n}.', { d: +HOY.slice(8, 10), n: diasMes(m) }) + '</p>' : '') +
+      '<div class="pfm-sal__top"><p class="pf-flow__label">' + T('Salud financiera') + '</p><span class="pfm-chip is-' + st.k + '"><i></i>' + st.l + '</span></div>' +
+      '<p class="pfm-sal__lbl">' + lbl + '</p>' +
+      '<p class="pf-flow__value' + (libre < 0 ? ' is-over' : '') + '">' + money(Math.abs(libre)) + '</p>' +
+      '<p class="pf-flow__sub">' + sub + '</p>' +
+      '<div class="pfm-bar pfm-bar--seg" role="img" aria-label="' + T('Presupuesto {p}: gastado {g}, por pagar {x}, libre {l}', { p: money0(p), g: money(s.gast), x: money(pend), l: money(Math.max(0, libre)) }) + '">' +
+        '<i class="is-gast' + (s.gast > p ? ' is-over' : '') + '" style="width:' + w(s.gast) + '%"></i>' + (pend ? '<i class="is-pend" style="width:' + w(pend) + '%"></i>' : '') +
+        (f ? '<em style="left:' + (f * 100).toFixed(1) + '%"></em>' : '') + '</div>' +
+      '<div class="pfm-legend"><span><i class="is-gast"></i>' + T('Gastado') + ' <b>' + money0(s.gast) + '</b></span>' +
+        (pend ? '<span><i class="is-pend"></i>' + T('Por pagar') + ' <b>' + money0(pend) + '</b></span>' : '') +
+        '<span><i class="is-libre"></i>' + T('Libre') + ' <b>' + money0(Math.max(0, libre)) + '</b></span>' +
+        '<button class="pf-link pfm-mini" data-pfm="budgets">' + T('Presupuesto {monto}', { monto: money0(p) }) + '</button></div>' +
+      (pend ? '<p class="pfm-sal__note">' + T('Por pagar: {l}.', { l: pp.slice(0, 3).map(function (x) { return (x.cp.length > 22 ? corto(x.cp) : x.cp) + ' ' + money0(x.monto) + ' (' + x.dia + ')'; }).join(', ') }) + '</p>' : '') +
+      '<dl class="pfm-sal__rows">' +
+        '<div><dt>' + T(cur ? 'En tus cuentas hoy' : 'En tus cuentas al cierre') + '</dt><dd>' + money(saldo) + '</dd></div>' +
+        '<div><dt>' + T('Ingresos de {mes}', { mes: mesName(m) }) + '</dt><dd>' + money(s.ing) + '</dd></div>' +
+        (s.fijo ? '<div><dt>' + T('Gastos fijos y variables') + '</dt><dd>' + money0(s.fijo) + ' · ' + money0(s.gast - s.fijo) + '</dd></div>' : '') +
+      '</dl>' +
+      (rinMes > 0 ? '<button class="pfm-ask" data-pfm="q:' + esc(q[0].k) + '"><span class="pfm-ask__face">' + face() + '</span><span>' + T('Te llegaron {monto} de personas. ¿Me cuentas qué fueron? Así sé si son ingresos.', { monto: money(rinMes) }) + '</span><span class="material-symbols-rounded">chevron_right</span></button>' : '') +
+      (f ? '<p class="pf-note">' + T('La raya marca el día {d} de {n}: hasta ahí deberías ir para que te alcance.', { d: d, n: n }) + '</p>' : '') +
       '</section>';
   }
 
@@ -620,7 +645,8 @@
     if (!pf) return;
     if (!DB) { scroll.innerHTML = '<header class="pf-head"><h1>Mis finanzas</h1></header><p class="pf-note" style="padding:0 24px">' + T('Cargando tus movimientos…') + '</p>'; load().then(paint); return; }
     var m = curMes(), keep = window.scrollY;
-    var html = '<header class="pf-head"><h1>Mis finanzas</h1></header>' + demoHTML() + tabsHTML(m) +
+    // El "ver como" (usuario y versión) vive en Configuración, no en el hub
+    var html = '<header class="pf-head"><h1>Mis finanzas</h1></header>' + tabsHTML(m) +
       saludHTML(m) + ukuHTML(m) + catsHTML(m) + presHTML(m) + deudasHTML() + movsHTML(m) + footHTML(m);
     var changed = paint.last && paint.last !== m + ST.u + ST.modo;
     paint.last = m + ST.u + ST.modo;

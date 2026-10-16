@@ -53,10 +53,10 @@ for r in sorted(mov, key=lambda r: (r['fecha'], r['hora'], r['id'])):
         r['fecha'], r['hora'], ix('fuente', r['fuente']), ix('producto', r['producto']),
         ix('descripcion', r['descripcion']), ix('contraparte', r['contraparte']), r['monto'],
         ix('tratamiento', r['tratamiento']), ix('categoria', r['categoria']), ix('escenario', r['escenario']),
-        ix('nota', r['nota'])])
+        ix('nota', r['nota']), r.get('saldo')])
 
 data = {'fuente': 'Base de datos PFM (datos ficticios)', 'hoy': max(r['fecha'] for r in mov),
-        'campos': ['fecha', 'hora', 'fuente', 'producto', 'descripcion', 'contraparte', 'monto', 'tratamiento', 'categoria', 'escenario', 'nota'],
+        'campos': ['fecha', 'hora', 'fuente', 'producto', 'descripcion', 'contraparte', 'monto', 'tratamiento', 'categoria', 'escenario', 'nota', 'saldo'],
         'dic': dicts, 'usuarios': usr, 'deudas': deu, 'escenarios': esc, 'hipoteca': hipoteca, 'movimientos': out}
 dst = os.path.join(os.path.dirname(__file__), '..', 'assets', 'pfm', 'datos.json')
 json.dump(data, open(dst, 'w'), ensure_ascii=False, separators=(',', ':'))

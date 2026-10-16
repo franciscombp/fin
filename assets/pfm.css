@@ -1,41 +1,52 @@
 /* =====================================================================
    Mis finanzas sobre la Base de datos PFM (assets/pfm.js)
    Reusa las piezas de finanzas.css (pf-flow, pf-mcard, pf-meter, pf-uku2,
-   pf-tx); aquí solo lo nuevo: selector de demo, preguntas de Uku,
+   pf-tx); aquí solo lo nuevo: ver como, salud financiera, preguntas de Uku,
    tratamientos y deudas.
    ===================================================================== */
 
-/* ---------- Demo: ver como (usuario) y versión (MVP / To-be) ---------- */
-.pfm-demo { display: flex; align-items: center; gap: 8px; margin: 0 var(--bp-layout-grid-margin, 16px) 16px; }
-.pfm-demo__who { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 6px 10px 6px 6px; border: 1px solid var(--cx-line); border-radius: 99px; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
-.pfm-demo__who > span:nth-child(2) { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.pfm-demo__who b { font: var(--ui-body-sm-semibold, 600 14px/18px sans-serif); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pfm-demo__who small { font: var(--ui-caption, 500 12px/16px sans-serif); color: var(--cx-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pfm-demo__who .material-symbols-rounded { font-size: 20px; color: var(--cx-muted); }
+/* ---------- Ver como (en Configuración) y controles segmentados ---------- */
 .pfm-av { flex: 0 0 32px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: var(--cx-fill, #eef0f4); color: var(--bp-interaction-tertiary-fg); font: 600 14px/1 var(--sol-font, Roboto, sans-serif); }
 .as-row .pfm-av { flex-basis: 40px; width: 40px; height: 40px; font-size: 16px; }
-
 .pfm-seg { flex: 0 0 auto; display: inline-flex; padding: 3px; border-radius: 99px; background: var(--cx-fill, #eef0f4); }
 .pfm-seg button { min-width: 64px; height: 36px; padding: 0 12px; border: 0; border-radius: 99px; background: transparent; color: var(--cx-muted); font: var(--ui-label-md, 600 14px/22px sans-serif); cursor: pointer; transition: background .2s ease, color .2s ease; }
 .pfm-seg button[aria-checked="true"] { background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); box-shadow: 0 1px 3px rgba(15, 38, 92, .14); }
 .pfm-seg--sm button { min-width: 0; height: 30px; padding: 0 10px; font-size: 13px; }
 .pf-msec__head .pfm-seg { margin-bottom: 12px; }
 
-/* ---------- Salud financiera ---------- */
-.pfm-sal .pf-flow__sub { display: flex; align-items: center; gap: 8px; }
-.pfm-mini { height: 28px !important; padding: 0 10px !important; font-size: 13px !important; }
-.pfm-bar { position: relative; height: 12px; margin-top: 20px; border-radius: 99px; background: color-mix(in srgb, var(--bp-interaction-tertiary-fg) 18%, transparent); }
-.pfm-bar i { display: block; height: 100%; border-radius: inherit; background: var(--bp-interaction-tertiary-fg); transition: width .4s ease; }
-.pfm-bar.is-warn i { background: #e8a530; }
-.pfm-bar.is-over i { background: var(--bp-theme-color-status-error-icon, #c20505); }
+/* ---------- Salud financiera: lo disponible primero ---------- */
+.pfm-sal__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pfm-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 99px; font: var(--ui-body-sm-semibold, 600 13px/18px sans-serif); }
+.pfm-chip i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.pfm-chip.is-ok { background: color-mix(in srgb, var(--bp-theme-color-status-success-icon, #1a8a4a) 14%, transparent); color: var(--bp-theme-color-status-success-text, #13703b); }
+.pfm-chip.is-warn { background: color-mix(in srgb, #e8a530 20%, transparent); color: #8a5a00; }
+.pfm-chip.is-over { background: color-mix(in srgb, var(--bp-theme-color-status-error-icon, #c20505) 12%, transparent); color: var(--bp-theme-color-status-error-text, #c20505); }
+.pfm-sal__lbl { margin-top: 16px !important; font: var(--ui-body-md-medium, 500 15px/22px sans-serif); color: var(--bp-theme-color-text-primary); }
+.pfm-sal .pf-flow__value.is-over { color: var(--bp-theme-color-status-error-text, #c20505); }
+.pfm-bar { position: relative; display: flex; height: 12px; margin-top: 20px; border-radius: 99px; overflow: visible; background: color-mix(in srgb, var(--bp-theme-color-status-success-icon, #1a8a4a) 22%, transparent); }
+.pfm-bar i { display: block; height: 100%; transition: width .4s ease; }
+.pfm-bar i:first-child { border-radius: 99px 0 0 99px; }
+.pfm-bar i.is-gast { background: var(--bp-interaction-tertiary-fg); }
+.pfm-bar i.is-gast.is-over { background: var(--bp-theme-color-status-error-icon, #c20505); border-radius: 99px; }
+.pfm-bar i.is-pend { background: repeating-linear-gradient(135deg, var(--bp-interaction-tertiary-fg) 0 4px, color-mix(in srgb, var(--bp-interaction-tertiary-fg) 35%, transparent) 4px 8px); }
 .pfm-bar em { position: absolute; top: -5px; bottom: -5px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--bp-theme-color-text-primary); opacity: .45; }
-.pfm-sal__left { margin-top: 12px !important; font: var(--ui-body-md-semibold, 600 15px/20px sans-serif); color: var(--bp-theme-color-text-primary); }
-.pfm-sal__left.is-over { color: var(--bp-theme-color-status-error-text, #c20505); }
-.pfm-keys { padding-top: 16px; border-top: 1px solid var(--cx-line); }
-.pfm-sal__rev { display: flex; gap: 8px; margin-top: 12px !important; font: var(--cx-sub); color: var(--cx-muted); }
-.pfm-sal__rev .material-symbols-rounded { font-size: 18px; }
+.pfm-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-top: 12px; font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.pfm-legend b { color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
+.pfm-legend i { width: 10px; height: 10px; border-radius: 3px; }
+.pfm-legend i.is-gast { background: var(--bp-interaction-tertiary-fg); }
+.pfm-legend i.is-pend { background: repeating-linear-gradient(135deg, var(--bp-interaction-tertiary-fg) 0 2px, color-mix(in srgb, var(--bp-interaction-tertiary-fg) 35%, transparent) 2px 4px); }
+.pfm-legend i.is-libre { background: color-mix(in srgb, var(--bp-theme-color-status-success-icon, #1a8a4a) 30%, transparent); }
+.pfm-legend .pfm-mini { margin-left: auto; }
+.pfm-mini { height: 28px !important; padding: 0 10px !important; font-size: 13px !important; }
+.pfm-sal__note { margin-top: 8px !important; font: var(--ui-caption, 500 12px/16px sans-serif); color: var(--cx-muted); }
+.pfm-sal__rows { margin: 16px 0 0; padding-top: 4px; border-top: 1px solid var(--cx-line); }
+.pfm-sal__rows div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--cx-line); }
+.pfm-sal__rows div:last-child { border-bottom: 0; }
+.pfm-sal__rows dt { font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-sal__rows dd { margin: 0; font: var(--ui-body-sm-semibold, 600 14px/20px sans-serif); font-variant-numeric: tabular-nums; }
 .pfm-sal .pf-note { margin: 12px 0 0; }
-.pfm-ask { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 16px; padding: 12px 14px; border: 0; border-radius: 16px; background: var(--bp-interaction-tertiary-bg, #e8eefc); color: var(--bp-theme-color-text-primary); font: var(--ui-body-sm-medium, 500 14px/20px sans-serif); text-align: left; cursor: pointer; }
+.pfm-ask { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 12px; padding: 12px 14px; border: 0; border-radius: 16px; background: var(--cx-fill, #f3f5f8); color: var(--bp-theme-color-text-primary); font: var(--ui-body-sm-medium, 500 14px/20px sans-serif); text-align: left; cursor: pointer; }
 .pfm-ask > span:nth-child(2) { flex: 1; }
 .pfm-ask__face { flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: var(--bp-theme-color-surface-container-default); }
 .pfm-ask__face img { width: 100%; height: 100%; object-fit: cover; }
@@ -98,8 +109,4 @@ button.pfm-tx { width: 100%; border-left: 0; border-right: 0; border-top: 0; bac
 .pfm-scope .material-symbols-rounded { font-size: 20px; color: var(--cx-muted); }
 .pfm-undo { margin-left: 8px; padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
 
-/* ---------- Fijos y variables ---------- */
-.pfm-sal__fijo { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 12px !important; font: var(--cx-sub); color: var(--cx-muted); }
-.pfm-sal__fijo b { font: var(--ui-body-sm-semibold, 600 14px/20px sans-serif); color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
-.pfm-sal__fijo small { flex-basis: 100%; font: var(--ui-caption, 500 12px/16px sans-serif); }
 .pfm-det .material-symbols-rounded { color: var(--cx-muted); }
