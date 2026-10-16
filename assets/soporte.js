@@ -481,5 +481,19 @@
 
   window.Soporte = { open: open, review: function () { review(false); }, find: find,
     faqs: function (n) { return FAQ.slice(0, n || FAQ.length).map(function (f, i) { return { kind: 'faq', i: i, icon: f.icon, t: f.t }; }); },
+    // Para que Uku responda la ayuda dentro de su conversación (versión asistente)
+    faq: function (i) { var f = FAQ[i]; return f && { t: f.t, icon: f.icon, a: typeof f.a === 'function' ? f.a() : f.a, acts: f.acts || [] }; },
+    tut: function (i) { var u = TUT[i]; return u && { t: u.t, icon: u.icon, min: u.min, steps: u.steps, act: u.act }; },
+    contact: function () { return { phone: PHONE, caso: CASE, opts: CONTACT.map(function (c) { return { icon: c[0], t: c[1], s: c[2], k: c[3] }; }) }; },
+    // Ejecuta una acción de la ayuda (ir a un flujo, a una tarjeta, pedir revisión o pasar con un asesor)
+    run: function (k) {
+      if (k === 'review') return review(true);
+      if (k === 'agent') { open(); topic = topic || 'Consulta desde Uku'; return toAgent(); }
+      var go = function (fn) { setTimeout(fn, 60); };
+      if (k.indexOf('do:') === 0) return go(function () { var x = document.querySelector('#home-page [data-action="' + k.slice(3) + '"]') || document.querySelector('[data-action="' + k.slice(3) + '"]'); if (x) x.click(); });
+      if (k.indexOf('card:') === 0) return go(function () { if (window.__goView) window.__goView(0); var r = document.querySelector('#home-page [data-panel="Tarjetas"] .product-row[data-action="' + k.slice(5) + '"]'); if (r) r.click(); });
+      if (k.indexOf('tab:') === 0) return go(function () { if (window.__goView) window.__goView(0); var t = document.querySelector('.tabs .tab[data-panel="' + k.slice(4) + '"]'); if (t) t.click(); });
+      if (k === 'pfm') return window.Asistente && Asistente.openPF();
+    },
     openFaq: function (i) { open(); answer(i); }, openTut: function (i) { open(); tutPage(i); } };
 })();
