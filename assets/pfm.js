@@ -734,16 +734,25 @@
   var MESOPT = [['mesada', 'Sí, es una mesada', 'volunteer_activism'], ['pagoDeuda', 'Le estoy pagando un préstamo', 'handshake'], ['otra', 'Es otra cosa', 'more_horiz']];
   var ANIMO = ['¡Bien!', '¡Eso!', '¡Uno menos!', '¡Vas volando!', '¡Genial!', '¡Así se hace!', '¡Qué orden!'];
   var RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var G = null, gel = null;
+  var G = null, gel = null, festejo = false; // festejo: Uku celebra al volver después de guardar
   function gameOpen() {
     var all = items();
-    G = { list: all.slice(0, TANDA), total: all.length, i: 0, ans: [], view: 'card', rules: {}, extra: [], pw: 0, antes: animo().k };
+    G = { list: all.slice(0, TANDA), total: all.length, i: 0, ans: [], view: 'card', rules: {}, extra: [], pw: 0, antes: animo().k, hits: 0, tries: 0 };
     if (!G.list.length) return toast(T('No tienes nada por clasificar.'));
     if (!gel) {
       gel = document.createElement('div'); gel.className = 'pfm-game'; gel.setAttribute('role', 'dialog'); gel.setAttribute('aria-modal', 'true'); gel.setAttribute('aria-label', T('Clasifica tus consumos'));
       document.body.appendChild(gel);
       gel.addEventListener('click', function (e) { var b = e.target.closest('[data-g]'); if (b && !G.busy) gameKey(b.dataset.g, b); });
-      document.addEventListener('keydown', function (e) { if (gel.classList.contains('open') && e.key === 'Escape') { e.stopImmediatePropagation(); gameClose(); } }, true);
+      document.addEventListener('keydown', function (e) {
+        if (!gel.classList.contains('open')) return;
+        if (e.key === 'Escape') { e.stopImmediatePropagation(); return gameClose(); }
+        if (G.busy || e.altKey || e.ctrlKey || e.metaKey || /input|textarea/i.test(e.target.tagName)) return;
+        // Atajos: 1-9 eligen la opción, → acepta lo que cree Uku, ← lo deja para después
+        var it = G.list[G.i], ops = gel.querySelectorAll('.pfm-choice, .pfm-allcat'), n = +e.key;
+        if (n >= 1 && n <= ops.length) { e.preventDefault(); ops[n - 1].click(); }
+        else if (G.view === 'card' && it && e.key === 'ArrowRight' && sugDe(it)) { e.preventDefault(); gameKey(sugDe(it), gel.querySelector('[data-g="' + sugDe(it) + '"]')); }
+        else if (G.view === 'card' && it && e.key === 'ArrowLeft') { e.preventDefault(); gameKey('later'); }
+      }, true);
     }
     gameRender(); gel.classList.add('open'); document.documentElement.classList.add('has-ai'); fx('open');
   }
@@ -833,6 +842,28 @@
     var v = +el.dataset.v, s = el.dataset.s, t0 = performance.now();
     (function f(t) { var k = Math.min(1, (t - t0) / 420), e = 1 - Math.pow(1 - k, 3); el.textContent = s + money(v * e); if (k < 1) requestAnimationFrame(f); })(t0);
   }
+  // La opción que cree Uku (la que acepta el deslizar a la derecha)
+  function sugDe(it) { return it.t === 'q' ? 'opt:' + it.q.tpl.o[0] : it.t === 'm' ? 'mes:mesada' : it.sug && it.sug.cat ? 'cat:' + it.sug.cat : null; }
+  /* Deslizar, como en las apps de citas: a la derecha aceptas lo que cree
+     Uku, a la izquierda lo dejas para después. La tarjeta se inclina y
+     muestra un sello mientras la arrastras. */
+  function deslizar(it) {
+    var card = gel.querySelector('.pfm-card'), sug = sugDe(it), x0 = null, dx = 0;
+    if (!card || RM || !window.PointerEvent) return;
+    card.classList.add('is-drag');
+    card.insertAdjacentHTML('beforeend', (sug ? '<span class="pfm-stamp is-si" aria-hidden="true"><span class="material-symbols-rounded">check</span>' + esc(etiqueta(sug.split(':').slice(1).join(':'))) + '</span>' : '') +
+      '<span class="pfm-stamp is-no" aria-hidden="true"><span class="material-symbols-rounded">schedule</span>' + T('Más tarde') + '</span>');
+    var mover = function (v) { card.style.transform = 'translateX(' + v + 'px) rotate(' + (v / 16).toFixed(1) + 'deg)'; card.style.setProperty('--si', Math.max(0, Math.min(1, v / 90))); card.style.setProperty('--no', Math.max(0, Math.min(1, -v / 90))); };
+    card.addEventListener('pointerdown', function (e) { if (G.busy || e.button) return; x0 = e.clientX; dx = 0; card.style.animation = 'none'; card.style.transition = 'none'; card.setPointerCapture(e.pointerId); });
+    card.addEventListener('pointermove', function (e) { if (x0 == null) return; dx = e.clientX - x0; if (dx > 0 && !sug) dx *= .25; mover(dx); });
+    var soltar = function () {
+      if (x0 == null) return; x0 = null; card.style.transition = 'transform .3s cubic-bezier(.3, 1.3, .5, 1)';
+      if (dx > 90 && sug) { fx('select'); card.style.transition = 'transform .3s ease-in, opacity .3s'; mover(window.innerWidth); card.style.opacity = 0; G.busy = true; setTimeout(function () { G.busy = false; gameKey(sug, gel.querySelector('[data-g="' + sug + '"]')); }, 160); }
+      else if (dx < -90) { fx('tap'); card.style.transition = 'transform .3s ease-in, opacity .3s'; mover(-window.innerWidth); card.style.opacity = 0; G.busy = true; setTimeout(function () { gameKey('later'); }, 260); }
+      else mover(0);
+    };
+    card.addEventListener('pointerup', soltar); card.addEventListener('pointercancel', soltar);
+  }
   function gameRender() {
     G.busy = false;
     while (G.view === 'card' && G.list[G.i] && G.ans[G.i]) G.i++; // los que ya ordenó una regla
@@ -845,8 +876,9 @@
     gel.innerHTML = topHTML(T('{a} de {b}', { a: Math.min(hechos() + 1, L.length), b: L.length }), T('Resultado')) + barHTML() +
       '<div class="pfm-game__stage">' + cardHTML(it) + choicesHTML(it) + '</div>' +
       '<div class="pfm-game__acts">' + (G.i ? '<button class="pf-link" data-g="back">' + T('Atrás') + '</button>' : '') +
-      '<button class="pf-link" data-g="later">' + T('Más tarde') + '</button></div>';
-    G.cheer = null; moverBarra(); contar();
+      '<button class="pf-link" data-g="later">' + T('Más tarde') + '</button></div>' +
+      (G.i < 2 && !RM ? '<p class="pfm-game__swipe">' + (sugDe(it) ? T('Desliza a la derecha si Uku acertó, a la izquierda para después') : T('Desliza a la izquierda para dejarlo para después')) + '</p>' : '');
+    G.cheer = null; moverBarra(); contar(); deslizar(it);
   }
   // Elegir: el botón late, la tarjeta sale volando y Uku te anima
   function elegir(btn, then) {
@@ -887,6 +919,9 @@
     gel.innerHTML = topHTML() +
       '<div class="pfm-game__result"><span class="pfm-game__check material-symbols-rounded" aria-hidden="true">done_all</span>' +
       '<h2>' + (n === 1 ? T('1 consumo ordenado') : T('{n} consumos ordenados', { n: n })) + '</h2><p>' + T('Revísalo una última vez antes de guardar.') + '</p>' +
+      // Uku aprende: cuánto acertó y cuánto le enseñaste
+      (G.tries ? '<p class="pfm-game__iq"><span class="pfm-game__iqface" aria-hidden="true">' + face() + '</span><span>' + T(G.hits === G.tries ? (G.tries === 1 ? '¡Uku acertó!' : '¡Uku acertó las {t}!') : 'Uku acertó {h} de {t}.', { h: G.hits, t: G.tries }) +
+        ' ' + (G.hits < G.tries ? T('Con lo que le enseñaste, la próxima vez adivina mejor.') : T('Ya te conoce bien.')) + '</span></p>' : '') +
       '<div class="pfm-sum">' + Object.keys(by).map(function (k, i) {
         return '<div class="pfm-sum__row" style="--d:' + i * 60 + 'ms"><span class="pfm-sum__ic material-symbols-rounded" aria-hidden="true">' + by[k].ic + '</span><span>' + esc(k) + (by[k].prog ? '<small>' + T('Programada') + '</small>' : '') + '</span><b>' + (by[k].n === 1 ? T('1 consumo') : T('{n} consumos', { n: by[k].n })) + '</b></div>';
       }).join('') + (later ? '<div class="pfm-sum__row"><span class="pfm-sum__ic material-symbols-rounded" aria-hidden="true">schedule</span><span>' + T('Más tarde') + '</span><b>' + (later === 1 ? T('1 consumo') : T('{n} consumos', { n: later })) + '</b></div>' : '') + '</div>' +
@@ -926,6 +961,7 @@
         if (!it) return;
         var v = p.slice(1).join(':');
         G.ans[G.i] = { it: it, v: v, monto: it.t === 'q' ? it.q.total : -it.r.m };
+        if (sugDe(it)) { G.tries++; if (sugDe(it) === k) G.hits++; }
         // ¿Hay más pagos sin ordenar a la misma tienda o persona?
         var otros = it.t === 'r' && !it.cash && !/^tú|^Pichibank$/.test(it.r.cp) ? items().filter(function (x) {
           return x.t === 'r' && x.r.cp === it.r.cp && x.r.i !== it.r.i && !G.ans.some(function (a) { return a && a.it.t === 'r' && a.it.r.i === x.r.i; });
@@ -961,7 +997,7 @@
         });
         G.extra.forEach(function (e) { C[e.r.i] = e.v; });
         Object.keys(G.rules).forEach(function (cp) { ((ST.rules || (ST.rules = {}))[ST.u] = ST.rules[ST.u] || {})[cp] = G.rules[cp]; });
-        persist(); cache = {}; fijoCache = {}; G.view = 'done'; return gameRender();
+        persist(); cache = {}; fijoCache = {}; G.view = 'done'; festejo = true; return gameRender();
       }
       case 'more': return gameOpen();
     }
@@ -1124,7 +1160,7 @@
       m3.setBloom(+el.dataset.bloom); m3.setMood(el.dataset.mood);
       m3.attach(el, { score: +el.dataset.score, onTap: function () { fx('select'); m3.play(el.dataset.mood === 'feliz' ? 'happy' : 'nod'); } });
       el.classList.remove('is-loading'); el.classList.add('is-3d');
-      var g = { feliz: 'happy', tranquilo: 'wave' }[el.dataset.mood]; if (g) m3.play(g);
+      var g = festejo ? 'happy' : { feliz: 'happy', tranquilo: 'wave' }[el.dataset.mood]; festejo = false; if (g) m3.play(g);
     }).catch(function () {});
   }
 
