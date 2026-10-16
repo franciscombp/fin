@@ -161,8 +161,8 @@
   // En el MVP, un pago con Deuna se ve sin el nombre del comercio
   function desc(r) { return !tobe() && r.t === 'Detalle Deuna' && r.m < 0 && !catOv(r) ? T('Pago con Deuna') : r.desc; }
   function isRecarga(r) { return r.t === 'Gasto' && /^tú \(Deuna\)/.test(r.cp); }
-  function cls(r) {
-    var a = answerOf(r), ov = catOv(r);
+  function cls(r, raw) {
+    var a = raw ? null : answerOf(r), ov = raw ? null : catOv(r);
     if (a) {
       if (a.k === 'negocio') return tobe() ? { k: 'no', why: 'negocio', cat: 'Negocio' } : { k: 'gasto', cat: 'Negocio', ans: a };
       return { k: a.k, cat: ov || a.cat, why: a.why, ans: a };
@@ -408,6 +408,8 @@
     return Math.max(5, Math.min(100, Math.round(100 - Math.max(0, s.gast / p - f * .9) * 160)));
   }
   function mood(m) {
+    // Si quedaron consumos sin clasificar de semanas anteriores, su bosque se seca
+    var W = tareas().W; if (W.slice(0, -1).some(function (w) { return !w.ok; })) return 'preocupado';
     var s = month(m), p = pres().general, f = isCur(m) ? +HOY.slice(8, 10) / diasMes(m) : 1;
     if (s.gast > p) return 'preocupado';
     if (s.gast / p > f * .95 || preguntas(m).some(function (x) { return x.enMes.length; })) return 'atento';
@@ -510,7 +512,7 @@
     var m = curMes(), all = insights(), off = tobe() && anticipa(m).length ? 1 : 0, ins = all.slice(off);
     var html = '<section class="pf-sec pfm-uku' + (tobe() ? ' is-tobe' : '') + '">';
     if (tobe()) {
-      html += '<div class="pfm-ukuhero pf-mood--' + mood(m) + '"><div class="pf-hero pfm-hero"><div class="b3d" data-score="' + salud(m) + '"><div class="b3d__fallback">' + (window.Asistente ? Asistente.petSVG() : '') + '</div></div></div>' +
+      html += '<div class="pfm-ukuhero pf-mood--' + mood(m) + '"><div class="pf-hero pfm-hero"><div class="b3d" data-score="' + bosque() + '"><div class="b3d__fallback">' + (window.Asistente ? Asistente.petSVG() : '') + '</div></div></div>' +
         '<div class="pfm-ukuhero__say"><p class="pfm-ukuhero__name">Uku · ' + T('está {animo}', { animo: MOOD[mood(m)] }) + '</p><p class="pfm-ukuhero__t">' + esc(saludo()) + '</p>' +
         '<div class="pfm-ukuhero__acts"><button class="ai-cta ai-cta--sm" data-pfm="analyze"><span class="ai-cta__spark material-symbols-rounded" aria-hidden="true">auto_awesome</span><span class="ai-cta__t"><b>' + T('Analizar') + '</b></span><span class="ai-badge">IA</span></button>' +
         '<button class="pfm-askuku" data-pfm="ai:"><span class="material-symbols-rounded" aria-hidden="true">chat_bubble</span>' + T('Pregúntale') + '</button></div></div></div>';
@@ -520,7 +522,7 @@
     html += '<div class="pfm-carousel" role="list">' + ins.slice(0, 6).map(function (x, i) {
       return '<button role="listitem" class="pfm-ins is-' + x.kind + '" data-pfm="ins:' + (i + off) + '"><span class="material-symbols-rounded" aria-hidden="true">' + x.icon + '</span><b>' + esc(x.t) + '</b></button>';
     }).join('') + '</div>';
-    return html + juegoHTML() + '</section>';
+    return html + tareaHTML() + '</section>';
   }
 
   /* El juego: tarjetas de a una, como Tinder. Derecha = Uku acertó; izquierda
@@ -529,13 +531,54 @@
      transferencias de personas, así que hay más por ordenar. To-be: Uku ya
      ordenó casi todo y solo pregunta lo que no puede saber. */
   var SIN = { 'Pagos con Deuna': 1, 'Transferencias a personas': 1, 'Pagos a empresas': 1, 'Otros': 1 };
-  function items() {
-    var m = curMes(), out = preguntas(m).map(function (q) { return { t: 'q', q: q, sug: q.tpl.o[0] }; });
-    month(m).rows.slice().reverse().forEach(function (r) {
-      var c = cls(r); if (c.k !== 'gasto' || catOv(r) || !SIN[c.cat]) return;
-      out.push({ t: 'r', r: r, sug: sugerir(r) });
-    });
+  /* Tarea semanal: cada lunes Uku junta lo que no pudo clasificar de la
+     semana. Mira las últimas 4 semanas: cada semana al día es un árbol que
+     crece en su bosque; lo que se deja pendiente lo va secando. */
+  var SEMANAS = 4;
+  function lunes(f) { return addDays(f, -((wday(f) + 6) % 7)); }
+  function semanas() {
+    var ini = addDays(lunes(HOY), -7 * (SEMANAS - 1)), out = [];
+    for (var i = 0; i < SEMANAS; i++) { var a = addDays(ini, 7 * i); out.push({ ini: a, fin: addDays(a, 6), total: 0, pend: 0, cur: i === SEMANAS - 1 }); }
     return out;
+  }
+  // Todo lo que estuvo sin clasificar en la ventana (respondido o no), con su semana
+  function tareas() {
+    var W = semanas(), ini = W[0].ini, out = [], qs = {};
+    rows().forEach(function (r) {
+      if (r.f < ini || r.f > HOY) return;
+      if (r.t === 'Por revisar') { qs[gkey(r)] = 1; return; }
+      var c = cls(r, true); if (c.k !== 'gasto' || !SIN[c.cat]) return;
+      out.push({ t: 'r', r: r, f: r.f, done: !!catOv(r) });
+    });
+    // Las preguntas pendientes de antes de la ventana también cuentan (en su primera semana)
+    rows().forEach(function (r) { if (r.f < ini && r.t === 'Por revisar' && !resp()[gkey(r)]) qs[gkey(r)] = 1; });
+    Object.keys(qs).forEach(function (k) {
+      var rs = rows().filter(function (r) { return r.t === 'Por revisar' && gkey(r) === k; }), last = rs[rs.length - 1];
+      var x = { k: k, cp: last.cp, sign: last.m > 0 ? '+' : '-', rows: rs, last: last, tpl: tplOf(last), total: r2(rs.reduce(function (a, r) { return a + Math.abs(r.m); }, 0)) };
+      out.push({ t: 'q', q: x, f: last.f < ini ? ini : last.f > HOY ? HOY : last.f, done: !!resp()[k] });
+    });
+    out.forEach(function (it) { it.sem = lunes(it.f); });
+    W.forEach(function (w) { out.forEach(function (it) { if (it.sem === w.ini) { w.total++; if (!it.done) w.pend++; } }); w.ok = !w.pend; });
+    return { W: W, list: out };
+  }
+  // Lo pendiente: primero esta semana, luego las anteriores; dentro, preguntas primero y lo más reciente arriba
+  function items() {
+    return tareas().list.filter(function (it) { return !it.done; }).map(function (it) { it.sug = it.t === 'q' ? it.q.tpl.o[0] : sugerir(it.r); return it; })
+      .sort(function (a, b) { return b.sem.localeCompare(a.sem) || (a.t === 'q' ? 0 : 1) - (b.t === 'q' ? 0 : 1) || b.f.localeCompare(a.f); });
+  }
+  // Racha: semanas seguidas al día, contando hacia atrás desde la anterior (y esta, si ya está)
+  function racha(W) {
+    var n = W[W.length - 1].ok ? 1 : 0;
+    for (var i = W.length - 2; i >= 0 && W[i].ok; i--) n++;
+    return n;
+  }
+  // El bosque de Uku crece con las semanas al día (de 20 a 100)
+  function bosque() { var W = tareas().W; return Math.round(20 + 80 * W.filter(function (w) { return w.ok; }).length / W.length); }
+  function forestHTML(W) {
+    return '<div class="pfm-forest" role="img" aria-label="' + T('{n} de {t} semanas al día', { n: W.filter(function (w) { return w.ok; }).length, t: W.length }) + '">' + W.map(function (w) {
+      var st = w.ok ? 'ok' : w.cur ? 'cur' : 'dry';
+      return '<span class="pfm-tree is-' + st + '"><span class="material-symbols-rounded" aria-hidden="true">' + (w.ok ? 'park' : w.cur ? 'potted_plant' : 'grass') + '</span><small>' + (w.cur ? T('Esta semana') : dshort(w.ini)) + '</small></span>';
+    }).join('') + '</div>';
   }
   function sugerir(r) {
     var h = +r.h.slice(0, 2), v = -r.m, ap = user().nombre.split(' ')[1];
@@ -546,27 +589,28 @@
     if ((h >= 19 || wday(r.f) % 6 === 0) && v <= 40) return { cat: 'Entretenimiento', why: T('Fue de noche o en fin de semana.') };
     return null;
   }
-  // Qué tan claro está el mes: la parte del gasto que tiene categoría
-  function claridad() {
-    var s = month(curMes()), sin = Object.keys(SIN).reduce(function (a, k) { return a + (s.cats[k] || 0); }, 0);
-    return s.gast ? Math.max(0, Math.min(1, 1 - sin / s.gast)) : 1;
-  }
-  function juegoHTML() {
-    var it = items(), cl = claridad(), s = month(curMes());
-    if (!it.length) return '<div class="pfm-play is-done"><span class="material-symbols-rounded" aria-hidden="true">task_alt</span><span class="pfm-play__t"><b>' + T('Tus gastos están ordenados') + '</b><small>' + T('Tu mes está {pct} claro', { pct: pct(cl) }) + '</small></span></div>';
-    var gastos = s.rows.filter(function (r) { var k = cls(r).k; return k === 'gasto' || k === 'rout'; }).length;
-    return '<button class="pfm-play" data-pfm="game"><span class="pfm-play__stack" aria-hidden="true"><i></i><i></i><i>' + it.length + '</i></span>' +
-      '<span class="pfm-play__t"><b>' + T('Ordena tus gastos') + '</b><small>' + (tobe() ? T('Uku ordenó {a} de {b}. Revisa los que no pudo.', { a: Math.max(0, gastos - it.length), b: gastos }) : T('{n} por ordenar · tu mes está {pct} claro', { n: it.length, pct: pct(cl) })) + '</small>' +
-      '<span class="pfm-play__bar"><i style="width:' + (cl * 100).toFixed(0) + '%"></i></span></span><span class="pfm-play__go">' + T('Jugar') + '</span></button>';
+  // Uku pide la tarea de la semana; su bosque muestra cómo vas
+  function tareaHTML() {
+    var T0 = tareas(), W = T0.W, cur = W[W.length - 1], pend = T0.list.filter(function (it) { return !it.done; }).length;
+    // Las semanas que ya terminaron y quedaron pendientes secan el bosque
+    var secas = W.slice(0, -1).filter(function (w) { return !w.ok; }).length, rc = racha(W), msg;
+    if (pend) msg = T(pend === 1 ? 'Tenemos 1 consumo por clasificar.' : 'Tenemos {n} consumos por clasificar.', { n: pend }) + ' ' +
+      (secas ? T(secas === 1 ? 'Una semana quedó pendiente y mi bosque se está secando. ¿Me ayudas?' : '{n} semanas quedaron pendientes y mi bosque se está secando. ¿Me ayudas?', { n: secas })
+        : tobe() ? T('Clasifiqué el resto; estos solo tú los sabes.') : T('¿Me ayudas? Es un minuto.'));
+    else msg = T('¡Todo clasificado! Mi bosque crece con cada semana al día. Vuelvo el lunes con lo nuevo.');
+    return '<div class="pfm-task' + (pend ? '' : ' is-done') + '"><div class="pfm-task__say"><span class="pfm-face">' + face() + '</span><p class="pfm-task__bubble">' + esc(msg) + '</p></div>' +
+      forestHTML(W) +
+      '<p class="pfm-task__meta"><span class="material-symbols-rounded" aria-hidden="true">local_fire_department</span>' + (rc ? T(rc === 1 ? 'Racha de 1 semana' : 'Racha de {n} semanas', { n: rc }) : T('Sin racha todavía')) + ' · ' + T('Uku te lo pide cada lunes') + '</p>' +
+      (pend ? '<button class="pfm-task__go" data-pfm="game">' + T(pend === 1 ? 'Clasificar 1 consumo' : 'Clasificar {n} consumos', { n: pend }) + '<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></button>' : '') + '</div>';
   }
 
   var OPCATS = [['Alimentación', 'Comida'], ['Transporte', 'Movilidad'], ['Vivienda', 'Hogar'], ['Salud y bienestar', 'Salud y educación'], ['Entretenimiento', 'Gustos'], ['Familia y dependientes', 'Familia'], ['Servicios financieros y deudas', 'Compromisos'], ['Otros', 'Otro']];
   var G = null, gel = null;
   function gameOpen() {
-    G = { list: items(), i: 0, n: 0, from: claridad(), pick: false };
-    if (!G.list.length) return toast(T('No tienes nada por ordenar.'));
+    G = { list: items(), i: 0, n: 0, from: tareas().W, pick: false };
+    if (!G.list.length) return toast(T('No tienes nada por clasificar.'));
     if (!gel) {
-      gel = document.createElement('div'); gel.className = 'pfm-game'; gel.setAttribute('role', 'dialog'); gel.setAttribute('aria-modal', 'true'); gel.setAttribute('aria-label', T('Ordena tus gastos'));
+      gel = document.createElement('div'); gel.className = 'pfm-game'; gel.setAttribute('role', 'dialog'); gel.setAttribute('aria-modal', 'true'); gel.setAttribute('aria-label', T('Clasifica tus consumos'));
       document.body.appendChild(gel);
       gel.addEventListener('click', function (e) { var b = e.target.closest('[data-g]'); if (b) gameKey(b.dataset.g); });
       gel.addEventListener('pointerdown', dragStart);
@@ -604,17 +648,18 @@
   function gameRender() {
     var L = G.list, it = L[G.i];
     if (!it) {
-      var to = claridad();
+      var W = tareas().W, crec = W.filter(function (w, i) { return w.ok && !G.from[i].ok; }).length, rc = racha(W);
       gel.innerHTML = '<div class="pfm-game__top"><button class="pf-round pfm-game__x" data-g="close" aria-label="' + T('Cerrar') + '"><span class="material-symbols-rounded">close</span></button></div>' +
-        '<div class="pfm-game__end"><span class="pfm-game__burst" aria-hidden="true">' + face() + '</span><h2>' + (G.n ? T('¡Listo! Ordenaste {n}', { n: G.n === 1 ? T('1 gasto') : T('{n} gastos', { n: G.n }) }) : T('Por hoy está bien')) + '</h2>' +
-        '<p>' + T('Tu mes pasó de {a} a {b} claro.', { a: pct(G.from), b: pct(to) }) + '</p><div class="pfm-play__bar is-big"><i style="width:' + (to * 100).toFixed(0) + '%"></i></div>' +
+        '<div class="pfm-game__end"><span class="pfm-game__burst" aria-hidden="true">' + face() + '</span><h2>' + (G.n ? T('¡Listo! Clasificaste {n}', { n: G.n === 1 ? T('1 consumo') : T('{n} consumos', { n: G.n }) }) : T('Por hoy está bien')) + '</h2>' +
+        '<p>' + (crec ? T(crec === 1 ? 'Creció 1 árbol en el bosque de Uku.' : 'Crecieron {n} árboles en el bosque de Uku.', { n: crec }) : T('El bosque de Uku crece cuando una semana queda al día.')) + '</p>' +
+        forestHTML(W) + (rc ? '<p class="pfm-task__meta"><span class="material-symbols-rounded" aria-hidden="true">local_fire_department</span>' + T(rc === 1 ? 'Racha de 1 semana' : 'Racha de {n} semanas', { n: rc }) + '</p>' : '') +
         '<p class="pf-note">' + T('Lo que respondiste se aplica a los movimientos parecidos. Puedes cambiarlo en cada movimiento.') + '</p>' +
         '<button class="pf-cta" data-g="close">' + T('Ver mis gastos') + '</button></div>';
       fx('success'); return;
     }
     var sug = it.t === 'q' || it.sug, pick = G.pick || !sug;
     gel.innerHTML = '<div class="pfm-game__top"><button class="pf-round pfm-game__x" data-g="close" aria-label="' + T('Cerrar') + '"><span class="material-symbols-rounded">close</span></button>' +
-      '<div class="pfm-game__title"><b>' + T('Ordena tus gastos') + '</b><small>' + T('{a} de {b}', { a: G.i + 1, b: L.length }) + '</small></div><span></span></div>' +
+      '<div class="pfm-game__title"><b>' + T('Clasifica tus consumos') + '</b><small>' + (it.sem === lunes(HOY) ? T('Esta semana') : T('Semana del {s}', { s: dshort(it.sem) })) + ' · ' + T('{a} de {b}', { a: G.i + 1, b: L.length }) + '</small></div><span></span></div>' +
       '<div class="pfm-play__bar"><i style="width:' + (G.i / L.length * 100).toFixed(0) + '%"></i></div>' +
       '<div class="pfm-deck">' + (L[G.i + 1] ? cardHTML(L[G.i + 1], true) : '') + cardHTML(it) + '</div>' +
       (pick ? '<p class="pfm-game__ask">' + T(it.t === 'q' ? '¿Qué fue entonces?' : 'Escoge el grupo') + '</p><div class="pfm-choices">' + choicesHTML(it) + '</div>' : '') +
@@ -703,7 +748,7 @@
       }
       html += ks.map(function (g) {
         var b = mb && mb.cats[g], v = s.grupos[g], gris = GRUPOS[g].gris;
-        var sub = gris ? (nIt ? T('No sabemos en qué fue · Ordénalo') : T('Efectivo y lo que no tiene categoría')) : b ? (v > b ? T('Te pasaste {m} de {p}', { m: money0(v - b), p: money0(b) }) : T('Te quedan {m} de {p}', { m: money0(b - v), p: money0(b) }))
+        var sub = gris ? (nIt ? T('No sabemos en qué fue · Clasifícalo') : T('Efectivo y lo que no tiene categoría')) : b ? (v > b ? T('Te pasaste {m} de {p}', { m: money0(v - b), p: money0(b) }) : T('Te quedan {m} de {p}', { m: money0(b - v), p: money0(b) }))
           : P.meses ? T('unos {m} al mes', { m: money0(v / P.meses) }) : T('{pct} de tu gasto', { pct: pct(v / (s.gast || 1)) });
         return meter(gris && nIt ? 'game' : 'grupo:' + g, GRUPOS[g].ic, T(g), money(v), b ? v / b : v / max, gris ? 'gris' : b ? (v > b ? 'over' : v / b > (P.cur ? +HOY.slice(8, 10) / diasMes(P.m) + .1 : .95) ? 'warn' : 'ok') : 'cat', sub);
       }).join('') + (!ks.length ? '<p class="pf-note">' + T('No hay gastos {cuando}.', { cuando: P.l }) + '</p>' : '');
