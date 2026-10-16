@@ -717,7 +717,7 @@
     if (tobe() && r.c !== 'Transferencia a persona') return { cat: mapc(r.c), why: T('Por el comercio: {c}.', { c: r.cp }) };
     if (h >= 11 && h <= 15 && v <= 20) return { cat: 'Alimentación', why: T('Fue a la hora del almuerzo.') };
     if (v <= 3) return { cat: 'Transporte', why: T('Es un monto chico, como un bus o un taxi.') };
-    if ((h >= 19 || wday(r.f) % 6 === 0) && v <= 40) return { cat: 'Entretenimiento', why: T('Fue de noche o en fin de semana.') };
+    if ((h >= 19 || wday(r.f) % 6 === 0) && v <= 40) return { cat: 'Entretenimiento', why: T('Uku cree que es de ocio: pasó de noche o en fin de semana.') };
     return null;
   }
   var TANDA = 10; // se clasifica de a 10, sin prisa
