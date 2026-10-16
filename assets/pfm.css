@@ -349,3 +349,27 @@ button.pfm-tx { width: 100%; border-left: 0; border-right: 0; border-top: 0; bac
 .pfm-game__iq { display: flex; align-items: center; gap: 12px; margin-top: var(--bp-semantic-spacing-micro-lg, 16px) !important; padding: 12px 16px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); font: var(--cx-sub); color: var(--bp-theme-color-text-primary) !important; animation: pfmUp .4s ease .2s both; }
 .pfm-game__iqface { flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: var(--bp-interaction-primary-bg, #ffdd00); }
 .pfm-game__iqface img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ---------- Uku, tu asesor: una sola sección ----------
+   Arriba Uku dice lo primero (globo + botón); debajo, sus otros consejos
+   como tarjetas con su acción. Lo hecho queda en "Listo" con deshacer. */
+.pfm-uku > .pf-sec__head { margin-bottom: var(--bp-semantic-spacing-micro-lg, 16px); }
+.pfm-tips { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md, 8px); margin-top: var(--bp-semantic-spacing-macro-sm, 28px); }
+.pfm-tips__l { margin: 0 0 4px; font: var(--cx-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
+.pfm-tips.is-sheet { margin-top: 16px; }
+.pfm-tips.is-sheet .pfm-tip { background: var(--bp-interaction-secondary-bg); }
+.pfm-tip { display: flex; flex-direction: column; gap: 6px; padding: 16px 16px 12px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); animation: pfmUp .35s ease both; }
+.pfm-tip p { margin: 0; }
+.pfm-tip__tag { display: flex; align-items: center; gap: 6px; font: var(--ui-body-sm-semibold); color: var(--bp-interaction-tertiary-fg); }
+.pfm-tip__tag .material-symbols-rounded { font-size: 18px; }
+.pfm-tip.is-warn .pfm-tip__tag .material-symbols-rounded { color: #c98a12; }
+.pfm-tip__t { display: flex; align-items: flex-start; gap: 6px; font: var(--ui-body-md-semibold); color: var(--bp-theme-color-text-primary); }
+.pfm-tip__t .material-symbols-rounded { font-size: 22px; color: #4f8a64; font-variation-settings: 'FILL' 1; }
+.pfm-tip__s { font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-tip .pfm-dcard__cmp { margin-top: 6px; padding-top: 12px; }
+.pfm-tip__acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; }
+.pfm-tip__acts .pf-link .material-symbols-rounded { font-size: 18px; }
+.pfm-tip__acts .section__link { margin-left: auto; }
+.pfm-tip.is-done { padding-bottom: 8px; }
+.pfm-tip.is-done .pfm-tip__acts { margin-top: 0; }
+button.pfm-globo.is-urg > span::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: #e2a23b; vertical-align: 1px; }
