@@ -179,7 +179,9 @@
 
 /* ---------- 3. Tus gastos, como Salud de Apple ---------- */
 .pfm-flow { margin-top: var(--bp-semantic-spacing-macro-md, 40px) !important; }
-.pfm-tabs { display: flex; gap: var(--bp-semantic-spacing-micro-md, 8px); }
+.pfm-flow .pf-sec__head { margin-bottom: 0; }
+.pfm-tabs { position: sticky; top: 56px; z-index: 5; display: flex; gap: var(--bp-semantic-spacing-micro-md, 8px); padding: var(--bp-semantic-spacing-micro-md, 8px) var(--bp-layout-grid-margin, 24px); background: var(--bp-theme-color-surface-page-default, #f5f5f5); }
+.pfm-flow__body { margin-top: 0 !important; }
 .pfm-tabs .tab { flex: 1 1 0; justify-content: center; }
 .pfm-chart__head { margin-top: var(--bp-semantic-spacing-macro-sm, 24px); }
 .pfm-chart__head p { margin: 0; }
