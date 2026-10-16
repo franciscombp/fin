@@ -329,3 +329,17 @@ button.pfm-tx { width: 100%; border-left: 0; border-right: 0; border-top: 0; bac
 .pfm-sug small { font: var(--cx-sub); color: var(--cx-muted); }
 .pfm-block.pf-cta, .pfm-sheet .pf-cta { width: 100%; }
 .pfm-undo { margin-left: 8px; padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
+
+/* Deslizar la tarjeta: a la derecha, lo que cree Uku; a la izquierda, más tarde */
+.pfm-card.is-drag { position: relative; touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none; --si: 0; --no: 0; }
+.pfm-card.is-drag:active { cursor: grabbing; }
+.pfm-stamp { position: absolute; top: 4px; display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: var(--bp-semantic-radius-sm, 8px); font: var(--ui-label-md); pointer-events: none; transition: opacity .1s; }
+.pfm-stamp .material-symbols-rounded { font-size: 18px; }
+.pfm-stamp.is-si { left: 0; background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); opacity: var(--si); transform: rotate(-8deg) scale(calc(.8 + var(--si) * .2)); }
+.pfm-stamp.is-no { right: 0; background: var(--bp-interaction-selectable-selected-bg); color: var(--bp-interaction-selectable-selected-fg); opacity: var(--no); transform: rotate(8deg) scale(calc(.8 + var(--no) * .2)); }
+.pfm-game__swipe { margin: 8px 0 0; font: var(--cx-caption); color: var(--cx-muted); text-align: center; animation: pfmUp .4s ease .6s both; }
+
+/* Cuánto acertó Uku */
+.pfm-game__iq { display: flex; align-items: center; gap: 12px; margin-top: var(--bp-semantic-spacing-micro-lg, 16px) !important; padding: 12px 16px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); font: var(--cx-sub); color: var(--bp-theme-color-text-primary) !important; animation: pfmUp .4s ease .2s both; }
+.pfm-game__iqface { flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: var(--bp-interaction-primary-bg, #ffdd00); }
+.pfm-game__iqface img { width: 100%; height: 100%; object-fit: cover; }
