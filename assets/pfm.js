@@ -590,9 +590,10 @@
   function ukuHTML() {
     var m = curMes(), a = animo(), all = insights(), off = tobe() && anticipa(m).length ? 1 : 0;
     var html = '<section class="pf-sec pfm-uku pf-mood--' + a.k + (tobe() ? ' is-tobe' : '') + '">' +
-      '<div class="pf-hero pfm-hero"><div class="b3d" data-score="' + salud(m) + '" data-bloom="' + flores() + '" data-mood="' + a.k + '"><div class="b3d__fallback">' + (window.Asistente ? Asistente.petSVG() : '') + '</div></div></div>' +
+      '<div class="pf-hero pfm-hero"><div class="b3d" data-shift=".2" data-score="' + salud(m) + '" data-bloom="' + flores() + '" data-mood="' + a.k + '"><div class="b3d__fallback">' + (window.Asistente ? Asistente.petSVG() : '') + '</div></div>' +
+        // Uku habla desde su mundo: el globo sale de él, arriba a la izquierda
+        '<p class="pfm-globo" aria-live="polite">' + esc(ukuMsg(a)) + '</p></div>' +
       '<p class="pfm-uku__mood"><span class="material-symbols-rounded" aria-hidden="true">' + MOOD_IC[a.k] + '</span>' + T('Uku está {animo}', { animo: T(MOOD[a.k]) }) + '</p>' +
-      '<div class="uku-say pfm-uku__say"><span class="uku-say__face">' + face() + '</span><div class="uku-say__body"><p class="uku-say__bubble">' + esc(ukuMsg(a)) + '</p></div></div>' +
       (a.n ? '<button class="pf-cta pfm-uku__go" data-pfm="game">' + T('Clasificar {n}', { n: Math.min(TANDA, a.n) }) + '</button>' : '') +
       (tobe() ? (off ? '<p class="pfm-uku__ai"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + esc(all[0].t) + '</p>' : '') +
         '<div class="pfm-uku__acts"><button class="pf-link" data-pfm="analyze"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + T('Analizar con IA') + '</button>' +
