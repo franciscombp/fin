@@ -28,3 +28,15 @@ html:not(.theme-y2k) .section__title h2 {
   padding-left: var(--bp-layout-card-padding, 16px);
   padding-right: var(--bp-layout-card-padding, 16px);
 }
+
+/* Tarjeta de cuenta: el encabezado y el monto se alinean con el borde interno
+   que ya da la tarjeta; no suman un margen lateral propio. */
+.account-card .card__header { padding: 0 0 8px; }
+.account-card .amount-row { padding: 0; }
+
+/* Acciones rápidas: son una tarjeta. El token de layout da el aire interno y la
+   grilla sólo reparte; las etiquetas parten palabras largas en vez de desbordar. */
+html:not(.theme-y2k) .quick-actions {
+  padding: var(--bp-layout-card-padding, 16px);
+}
+.quick-action__label { hyphens: auto; overflow-wrap: break-word; }
