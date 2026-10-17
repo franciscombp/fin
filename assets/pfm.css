@@ -381,5 +381,4 @@ button.pfm-globo.is-urg > span::before { content: ''; display: inline-block; wid
 .pfm-dock__ask { flex: 1 1 auto; min-width: 0; height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 18px; border-radius: 99px; font: var(--ui-body-sm-semibold); text-align: left; }
 .pfm-dock__ask > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pfm-dock__ask .material-symbols-rounded { color: var(--bp-interaction-tertiary-fg); }
-.pfm-dock__search { flex: 0 0 52px; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; }
 .pf-host .pfm .pf-scroll { padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px)); }
