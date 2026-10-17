@@ -5706,9 +5706,8 @@
         // un tercero (proveedor de servicios, operador celular) que tarda
         // en cargar — a diferencia de QR/transferir, que son 100% nativas
         // del banco y responden al instante.
-        const SLOW_LOAD_ACTIONS = new Set(['Pagar servicios', 'Recargar celular']);
+        const SLOW_LOAD_ACTIONS = new Set(['Recargar celular']);
         const SLOW_LOAD_LABELS = {
-            'Pagar servicios': 'Conectando con el proveedor de servicios…',
             'Recargar celular': 'Conectando con tu operador…',
         };
         const SLOW_LOAD_MS = 5000;
@@ -5747,17 +5746,33 @@
         const fmtMoney = n => n.toFixed(2).replace('.', ',');
 
         function transferPickHTML() {
+            const avatar = b => `
+                <button class="push-beneficiary" data-beneficiary="${b[1]}">
+                    <span class="push-beneficiary__avatar">${b[0]}</span>
+                    <span class="push-beneficiary__name">${b[1].split(' ')[0]}</span>
+                </button>`;
+            const contacto = b => `
+                <button class="sub-item" data-beneficiary="${b[1]}">
+                    <span class="sub-item__logo">${b[0]}</span>
+                    <span class="sub-item__info"><span class="sub-item__name">${b[1]}</span><span class="sub-item__meta">Cuenta ••${b[2]}</span></span>
+                    <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
+                </button>`;
+            const otra = (icon, nombre, meta, attr) => `
+                <button class="sub-item" ${attr}>
+                    <span class="sub-item__logo"><span class="material-symbols-rounded">${icon}</span></span>
+                    <span class="sub-item__info"><span class="sub-item__name">${nombre}</span><span class="sub-item__meta">${meta}</span></span>
+                    <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
+                </button>`;
             return `
-                <div class="push-beneficiaries">
-                    <button class="push-beneficiary push-beneficiary--new" data-beneficiary="__new">
-                        <span class="push-beneficiary__avatar"><span class="material-symbols-rounded">add</span></span>
-                        <span class="push-beneficiary__name">Nuevo</span>
-                    </button>
-                    ${BENEFICIARIES.map(b => `
-                        <button class="push-beneficiary" data-beneficiary="${b[1]}">
-                            <span class="push-beneficiary__avatar">${b[0]}</span>
-                            <span class="push-beneficiary__name">${b[1].split(' ')[0]}</span>
-                        </button>`).join('')}
+                <p class="finance-subtitle" style="margin-top:0;">Favoritos</p>
+                <div class="push-beneficiaries">${BENEFICIARIES.slice(0, 3).map(avatar).join('')}</div>
+                <p class="finance-subtitle">Contactos</p>
+                <div class="card">${BENEFICIARIES.map(contacto).join('')}</div>
+                <p class="finance-subtitle">Otras formas</p>
+                <div class="card">
+                    ${otra('add', 'Nueva cuenta', 'Otro banco o cuenta', 'data-beneficiary="__new"')}
+                    ${otra('public', 'Transferencia al exterior', 'Envía a otro país', 'data-soon="Transferencia al exterior"')}
+                    ${otra('smartphone', 'Transferencia por celular', 'Usa el número de celular', 'data-soon="Transferencia por número de celular"')}
                 </div>`;
         }
 
@@ -5827,16 +5842,30 @@
         let serviceFlow = null; // { biller, idTypeIdx, idValue, bill, account }
 
         function servicePickHTML() {
+            const fila = s => `
+                <button class="sub-item" data-biller="${s.name}">
+                    <span class="sub-item__logo"><span class="material-symbols-rounded">${s.icon}</span></span>
+                    <span class="sub-item__info"><span class="sub-item__name">${s.name}</span><span class="sub-item__meta">${s.category}</span></span>
+                    <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
+                </button>`;
+            const pago = (icon, nombre, ir) => `
+                <button class="sub-item" data-go="${ir}">
+                    <span class="sub-item__logo"><span class="material-symbols-rounded">${icon}</span></span>
+                    <span class="sub-item__info"><span class="sub-item__name">${nombre}</span></span>
+                    <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
+                </button>`;
+            const categorias = [...new Set(SERVICE_BILLERS.map(s => s.category))];
             return `
-                <p class="finance-subtitle" style="margin-top:0;">Elige un servicio</p>
+                <p class="finance-subtitle" style="margin-top:0;">Favoritos</p>
+                <div class="card">${SERVICE_BILLERS.slice(0, 2).map(fila).join('')}</div>
+                <p class="finance-subtitle">Programados</p>
+                <div class="card"><p style="margin:0;padding:16px;color:var(--bp-text-helper);">No tienes pagos programados.</p></div>
+                <p class="finance-subtitle">Pagos</p>
                 <div class="card">
-                    ${SERVICE_BILLERS.map(s => `
-                        <button class="sub-item" data-biller="${s.name}">
-                            <span class="sub-item__logo"><span class="material-symbols-rounded">${s.icon}</span></span>
-                            <span class="sub-item__info"><span class="sub-item__name">${s.name}</span><span class="sub-item__meta">${s.category}</span></span>
-                            <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
-                        </button>`).join('')}
-                </div>`;
+                    ${pago('credit_card', 'Pagar tarjeta de crédito', 'Pagar tarjeta')}
+                    ${pago('smartphone', 'Recargas de celular', 'Recargar celular')}
+                </div>
+                ${categorias.map(c => `<p class="finance-subtitle">${c}</p><div class="card">${SERVICE_BILLERS.filter(s => s.category === c).map(fila).join('')}</div>`).join('')}`;
         }
 
         function serviceFormHTML(biller, idTypeIdx, idValue) {
@@ -6016,6 +6045,11 @@
                 return;
             }
 
+            const soonBtn = e.target.closest('[data-soon]');
+            if (soonBtn) { extra.innerHTML = soonHTML(soonBtn.dataset.soon); return; }
+            const goBtn = e.target.closest('[data-go]');
+            if (goBtn) { openPushPage(goBtn.dataset.go); return; }
+
             const benBtn = e.target.closest('[data-beneficiary]');
             if (benBtn) {
                 const key = benBtn.dataset.beneficiary;
@@ -6177,6 +6211,11 @@
         }
 
         // Página de "Próximamente" para acciones que todavía no tienen su función
+        function soonHTML(title) {
+            return '<div class="soon"><span class="soon__ic material-symbols-rounded" aria-hidden="true">' + ((typeof pushIcons !== 'undefined' && pushIcons[title]) || 'bolt') + '</span>' +
+                '<h2 class="soon__title">Próximamente</h2>' +
+                '<p class="soon__text">Estamos preparando ' + title.toLowerCase() + ' para ti. Mientras tanto, puedes pedirle ayuda a Uku.</p></div>';
+        }
         function renderSoon(title, on) {
             let el = document.getElementById('push-soon');
             if (!el) {
@@ -6186,9 +6225,7 @@
                 document.querySelector('#push-page .push-page__inner').prepend(el);
             }
             el.hidden = !on;
-            if (on) el.innerHTML = '<span class="soon__ic material-symbols-rounded" aria-hidden="true">' + (pushIcons[title] || 'bolt') + '</span>' +
-                '<h2 class="soon__title">Próximamente</h2>' +
-                '<p class="soon__text">Estamos preparando ' + title.toLowerCase() + ' para ti. Mientras tanto, puedes pedirle ayuda a Uku.</p>';
+            if (on) el.innerHTML = soonHTML(title);
         }
 
         function openPushPage(title, originEl) {
