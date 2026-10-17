@@ -59,15 +59,17 @@
       '<div class="uk-chatbg" aria-hidden="true"></div>' +
       '<header class="uk-chathead"><span class="uk-chathead__face" aria-hidden="true">' + face() + '</span><span class="uk-chathead__t"><b>Uku</b><small>Tu asesor · en línea</small></span>' +
         '<button class="uk-chathead__x" data-k="cerrar" aria-label="Terminar conversación">' + ic('close') + '</button></header>' +
-      '<div class="uk-head"><p class="uk-head__t" role="heading" aria-level="1">Uku</p><button class="uk-head__mood" data-k="pfm:world"></button></div>' +
+      '<div class="uk-head"><p class="uk-head__t" role="heading" aria-level="1">Uku</p><div class="uk-head__acts"><button class="uk-head__mood" data-k="pfm:world"></button>' +
+        '<button class="uk-head__set" data-k="ajustes" aria-label="Ajustes" aria-expanded="false">' + ic('settings') + '</button>' +
+        '<div class="uk-menu" hidden><button data-k="demo">Ver como</button><button data-k="salir">Versión anterior</button></div></div></div>' +
       '<div class="uk-globo" aria-live="polite"></div>' +
       '<div class="uk-chat" aria-live="polite"></div>' +
       '<div class="uk-pills"></div>' +
       '<div class="uk-results"></div>' +
       '<form class="uk-bar" role="search"><button type="button" class="uk-bar__x" data-k="cerrar" aria-label="Terminar conversación">' + ic('close') + '</button>' +
         '<label class="uk-bar__f">' + ic('search') + '<input type="text" enterkeyhint="send" autocomplete="off" placeholder="Habla con Uku o busca algo" aria-label="Habla con Uku o busca algo"></label>' +
-        '<button class="uk-bar__send" type="submit" aria-label="Enviar">' + ic('arrow_upward') + '</button></form>' +
-      '<p class="uk-exit"><button data-k="demo">Ver como</button> · <button data-k="salir">Versión anterior</button></p>';
+        '</form>' +
+      '';
     globoEl = host.querySelector('.uk-globo'); pills = host.querySelector('.uk-pills'); results = host.querySelector('.uk-results'); chat = host.querySelector('.uk-chat'); input = host.querySelector('input');
     host.querySelector('form').addEventListener('submit', function (e) { e.preventDefault(); preguntar(input.value); });
     input.addEventListener('input', function () { modo(); pintarResultados(); });
@@ -258,6 +260,7 @@
       case 'no': uku('Cuéntame con tus palabras qué necesitas, o te paso con una persona.', [b('persona', 'Hablar con una persona', 'support_agent')]); pintarChat(); return setTimeout(function () { input.focus(); }, 300);
       case 'consejo': { var A = consejos(); if (!A.length) return resuelto('Por ahora no tengo nada más. ¡Vas muy bien!'); var x = A[0]; uku(esc(x.di || x.t), x.act ? [b('pfm:' + x.act, x.actl, 'arrow_forward')] : []); return pintarChat(); }
       case 'cerrar': msgs = []; pend = null; fx('tap'); return pintar();
+      case 'ajustes': { var mn = host.querySelector('.uk-menu'), on = mn.hidden; mn.hidden = !on; el.setAttribute('aria-expanded', String(on)); fx('tap'); return; }
       case 'demo': return window.PFM && PFM.settings();
       case 'salir': location.href = 'clasica.html'; return;
     }
