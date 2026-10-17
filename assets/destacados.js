@@ -101,7 +101,10 @@
   var ELIGIBLE = { cuentas: true, inversion: true, metas: true, tarjeta: true, creditos: true, pagos: true, preaprobado: true, deuna: true };
   function available(id) { var c = CATALOG[id]; return !!(c && c.salida && c.salida <= RELEASE); }
   function capt(id) { return !owned(id) && !!ELIGIBLE[id]; } // captación (widget fantasma)
+  // Las pre-ofertas (tarjetas amarillas de captación) quedan ocultas por ahora: OFERTAS = true las vuelve a mostrar
+  var OFERTAS = false;
   function shown(id) {
+    if (!OFERTAS && !owned(id)) return false;
     var f = CATALOG[id] && CATALOG[id].fam;
     if (f) return available(id) && capt(id) && owned(f); // sin la familia, ya la sugiere su captación
     return available(id) && (owned(id) || capt(id));
