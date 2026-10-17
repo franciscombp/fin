@@ -7,7 +7,7 @@
    ===================================================================== */
 
 /* Arriba solo queda Notificaciones: buscar, ayuda y finanzas viven en Uku */
-.app-uku .top-bar__actions > :not([data-action="Notificaciones"]) { display: none !important; }
+.app-uku .top-bar__actions > :not([data-action="Notificaciones"]):not([data-top="perfil"]) { display: none !important; }
 /* En su pantalla, el título grande va en la sección (como en las demás), no en la barra */
 .app-uku.uk-idle .top-bar__title { opacity: 0 !important; }
 .uk-topface, .uk-navface { display: block; width: 28px; height: 28px; border-radius: 50%; overflow: hidden; background: var(--bp-interaction-primary-bg, #ffdd00); }
