@@ -695,7 +695,7 @@
     var m = curMes(), a = animo(), L = consejos(), g = globo(a), pend = L.filter(function (x) { return !x.done; }).length;
     var resto = L.filter(function (x) { return x.id !== g.id; });
     return '<section class="pf-sec pfm-uku pf-mood--' + a.k + (tobe() ? ' is-tobe' : '') + '">' +
-      '<div class="pf-sec__head"><h2>' + T('Uku, tu asesor') + '</h2></div>' +
+      '<div class="pf-sec__head"><h2>' + T('Tu asistente') + '</h2></div>' +
       '<div class="pf-hero pfm-hero"><div class="b3d" data-shift=".2" data-score="' + salud(m) + '" data-bloom="' + flores() + '" data-mood="' + a.k + '"><div class="b3d__fallback">' + (window.Asistente ? Asistente.petSVG() : '') + '</div></div>' +
         // Uku habla desde su mundo: dice lo primero que te propone, y tocarlo lo hace
         '<' + (g.go ? 'button data-pfm="' + esc(g.go) + '"' : 'p') + ' class="pfm-globo' + (g.k === 'urg' ? ' is-urg' : '') + '" aria-live="polite"><span>' + esc(g.t) + '</span></' + (g.go ? 'button' : 'p') + '></div>' +
