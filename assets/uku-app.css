@@ -7,13 +7,9 @@
    ===================================================================== */
 
 /* Arriba solo queda Notificaciones: buscar, ayuda y finanzas viven en Uku */
-.app-uku .top-bar__actions > :not([data-action="Notificaciones"]):not([data-top="perfil"]) { display: none !important; }
+.app-uku .top-bar__actions > :not([data-action="Notificaciones"]) { display: none !important; }
 /* En su pantalla, el título grande va en la sección (como en las demás), no en la barra */
 .app-uku.uk-idle .top-bar__title { opacity: 0 !important; }
-.uk-navface { display: block; width: 28px; height: 28px; border-radius: 50%; overflow: hidden; background: var(--bp-interaction-primary-bg, #ffdd00); }
-.uk-navface { width: 26px; height: 26px; }
-.uk-navface img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
-.app-uku .nav-item.active .uk-navface { box-shadow: 0 0 0 2px var(--bp-interaction-tertiary-fg); }
 
 /* Uku o el PFM completo (que se abre como una capa y se baja para volver) */
 .app-uku .view--finanzas:not(.uk-fin) .pf-host, .app-uku .view--finanzas:not(.uk-fin) .uk-back, .app-uku .view--finanzas.uk-fin .uk { display: none; }
