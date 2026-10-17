@@ -11,15 +11,18 @@ html:not(.theme-y2k) .section__title h2 {
   color: var(--bp-theme-color-text-helper);
 }
 
-/* Tarjeta: el mismo padding interno en los cuatro lados. Solo algunos casos
-   (por ejemplo, una tarjeta con su propio encabezado) agregan más, por variante. */
+/* Tarjeta: padding interno con el token de layout (16px en teléfono, 24px desde tablet).
+   Una tarjeta de contenido libre lo aplica a sus cuatro lados.
+   Una tarjeta de lista no tiene padding propio: cada ítem trae el mismo token. */
 .card {
-  padding: var(--bp-layout-grid-margin, 16px);
+  padding: var(--bp-layout-card-padding, 16px);
 }
-/* Las filas dentro de una tarjeta ocupan el ancho útil (sin doble margen) */
-.card > .sub-item {
-  margin-left: calc(-1 * var(--bp-layout-grid-margin, 16px));
-  margin-right: calc(-1 * var(--bp-layout-grid-margin, 16px));
-  padding-left: var(--bp-layout-grid-margin, 16px);
-  padding-right: var(--bp-layout-grid-margin, 16px);
+.card:has(> .sub-item),
+.card:has(> .pf-meter) {
+  padding: 0;
+}
+.card > .sub-item,
+.card > .pf-meter {
+  padding-left: var(--bp-layout-card-padding, 16px);
+  padding-right: var(--bp-layout-card-padding, 16px);
 }

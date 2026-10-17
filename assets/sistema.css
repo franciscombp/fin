@@ -426,7 +426,7 @@ html:not(.theme-y2k) .cta-dashed__text { font: var(--cx-sub) !important; color: 
    p 24/16, divisor border/divider, título body-md/semibold, descripción
    body-sm/medium secondary, monto body-md/medium (positivo data/positive). */
 html:not(.theme-y2k) .product-row, html:not(.theme-y2k) .list-item, .sub-item {
-  min-height: var(--ui-row); padding: var(--bp-semantic-spacing-macro-md) var(--bp-semantic-spacing-macro-sm) !important;
+  min-height: var(--ui-row); padding: var(--bp-semantic-spacing-macro-md) var(--bp-layout-card-padding, 16px) !important;
   gap: var(--bp-semantic-spacing-micro-lg) !important; align-items: center !important;
   background: var(--bp-interaction-row-bg); border-bottom: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider) !important;
 }
