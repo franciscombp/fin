@@ -735,7 +735,7 @@
   function worldSheet() {
     var a = animo(), c = colchon(), pe = presEstado(), p = pres().general;
     var row = function (ic, cls, t, s) { return '<div class="pfm-world__row is-' + cls + '"><span class="material-symbols-rounded" aria-hidden="true">' + ic + '</span><span><b>' + t + '</b><small>' + s + '</small></span></div>'; };
-    showSheet('<h3>' + T('El mundo de Uku') + '</h3><p>' + T('Uku y su campo cambian con tus finanzas. Cada cosa tiene un solo significado.') + '</p>' +
+    showSheet('<h3>' + T('El mundo de tu Asistente') + '</h3><p>' + T('Uku y su campo cambian con tus finanzas. Cada cosa tiene un solo significado.') + '</p>' +
       row(MOOD_IC[a.k], a.k, T('Su ánimo: tus consumos clasificados'), a.n ? T('Está {animo}: tienes {n} sin clasificar. Si pasa más de una semana se queda pensativo, esperándote. Si una semana no gastas, no pasa nada.', { animo: T(MOOD[a.k]), n: a.n }) : T('Está contento: todo está clasificado. Si una semana no gastas, no pasa nada.')) +
       row('local_florist', c >= 3 ? 'ok' : c >= 1 ? 'warn' : 'over', T('Las flores amarillas: tu ahorro'), T('Lo que tienes en tus cuentas te alcanza para {n} meses de gasto. Con 3 meses o más, su campo está lleno de flores.', { n: (Math.round(c * 10) / 10).toString().replace('.', ',') })) +
       row('park', pe.k, T('El bosque: tu presupuesto'), T('{e}: llevas {g} de {p} este mes. Si te pasas, el bosque se seca.', { e: pe.l, g: money0(month(curMes()).gast), p: money0(p) })) +
@@ -899,7 +899,7 @@
   }
   function choice(g, ic, l, sug, i) {
     return '<button class="pfm-choice' + (sug ? ' is-sug' : '') + '" style="--d:' + (i * 35) + 'ms" data-g="' + esc(g) + '">' + (ic ? '<span class="material-symbols-rounded" aria-hidden="true">' + ic + '</span>' : '') + '<span>' + esc(l) + '</span>' +
-      (sug ? '<em class="material-symbols-rounded" title="' + T('Uku cree') + '" aria-label="' + T('Uku cree') + '">auto_awesome</em>' : '') + '</button>';
+      (sug ? '<em class="material-symbols-rounded" title="' + T('Tu Asistente cree') + '" aria-label="' + T('Tu Asistente cree') + '">auto_awesome</em>' : '') + '</button>';
   }
   // Las opciones: un toque. La de Uku va primero y marcada
   function choicesHTML(it) {
