@@ -482,6 +482,7 @@
   window.Soporte = { open: open, review: function () { review(false); }, find: find,
     faqs: function (n) { return FAQ.slice(0, n || FAQ.length).map(function (f, i) { return { kind: 'faq', i: i, icon: f.icon, t: f.t }; }); },
     // Para que Uku responda la ayuda dentro de su conversación (versión asistente)
+    tuts: function () { return TUT.map(function (u, i) { return { kind: 'tut', i: i, icon: u.icon, t: u.t }; }); },
     faq: function (i) { var f = FAQ[i]; return f && { t: f.t, icon: f.icon, a: typeof f.a === 'function' ? f.a() : f.a, acts: f.acts || [] }; },
     tut: function (i) { var u = TUT[i]; return u && { t: u.t, icon: u.icon, min: u.min, steps: u.steps, act: u.act }; },
     contact: function () { return { phone: PHONE, caso: CASE, opts: CONTACT.map(function (c) { return { icon: c[0], t: c[1], s: c[2], k: c[3] }; }) }; },
