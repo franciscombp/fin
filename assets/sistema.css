@@ -273,7 +273,6 @@ html:not(.theme-y2k) .section__link, .cta-dashed__link, .debit-card-disabled__li
   font: var(--ui-link-md) !important; text-decoration: underline !important; text-underline-offset: 3px;
   border-radius: var(--bp-semantic-radius-sm) !important;
 }
-html:not(.theme-y2k) .section__title h2 { font: var(--ui-label-sm); font-size: 14px; letter-spacing: 0; color: var(--bp-theme-color-text-helper); }
 
 /* ---- bp-quick-action (accesos): botón 64×64 radius sm, secondary ---- */
 html:not(.theme-y2k) .quick-action__icon, .sx-app__ic, .pv-acts .material-symbols-rounded {
@@ -395,7 +394,7 @@ html:not(.theme-y2k) .section--bleed > .section__title { padding: 0 var(--bp-lay
 /* Dentro de páginas que ya aplican grid/margin, la sección no lo suma otra vez */
 html:not(.theme-y2k) .push-page__inner .section, html:not(.theme-y2k) .cd-inner .section { padding-left: 0 !important; padding-right: 0 !important; }
 html:not(.theme-y2k) .section__title { height: var(--bp-semantic-size-interactive-xs); gap: var(--bp-semantic-spacing-micro-lg); }
-html:not(.theme-y2k) .section__title h2, .pf-sec h2, .as-hub__head h2, .pv-sec h2, .dw-section .section__title h2, html:not(.theme-y2k) .cd-subtitle {
+.pf-sec h2, .as-hub__head h2, .pv-sec h2, .dw-section .section__title h2, html:not(.theme-y2k) .cd-subtitle {
   font: var(--ui-label-sm) !important; font-size: 14px !important; letter-spacing: 0 !important; color: var(--bp-theme-color-text-helper) !important;
 }
 .pf-head h1, .as-hub__hi { font: var(--cx-page) !important; letter-spacing: 0 !important; }
