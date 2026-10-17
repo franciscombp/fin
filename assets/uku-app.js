@@ -67,7 +67,7 @@
       '<div class="uk-pills"></div>' +
       '<div class="uk-results"></div>' +
       '<form class="uk-bar" role="search"><button type="button" class="uk-bar__x" data-k="cerrar" aria-label="Terminar conversación">' + ic('close') + '</button>' +
-        '<label class="uk-bar__f">' + ic('search') + '<input type="text" enterkeyhint="send" autocomplete="off" placeholder="Habla con Uku o busca algo" aria-label="Habla con Uku o busca algo"></label>' +
+        '<label class="uk-bar__f">' + ic('search') + '<input type="text" enterkeyhint="send" autocomplete="off" placeholder="Pregunta o pide algo" aria-label="Pregunta o pide algo"></label>' +
         '</form>' +
       '';
     globoEl = host.querySelector('.uk-globo'); pills = host.querySelector('.uk-pills'); results = host.querySelector('.uk-results'); chat = host.querySelector('.uk-chat'); input = host.querySelector('input');
@@ -286,7 +286,7 @@
     // La pestaña Mis finanzas pasa a ser Uku
     var nav = document.querySelector('.nav-item[data-view="1"]');
     if (nav) {
-      nav.querySelector('.nav-item__label').textContent = 'Uku';
+      nav.querySelector('.nav-item__label').textContent = 'Asistente';
       nav.querySelector('.nav-item__wrap').innerHTML = '<span class="uk-navface">' + face() + '</span>';
       nav.addEventListener('click', function () { finOn(false); });
     }

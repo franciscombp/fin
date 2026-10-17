@@ -4044,6 +4044,9 @@
                     <button class="icon-button" aria-label="Ajustes" data-top="pf-settings" data-in="1" hidden>
                         <span class="material-symbols-rounded">tune</span>
                     </button>
+                    <button class="icon-button" aria-label="Perfil" data-top="perfil" data-in="0 1 2">
+                        <span class="material-symbols-rounded">account_circle</span>
+                    </button>
                     <button class="icon-button" aria-label="Notificaciones" data-action="Notificaciones" data-in="0 4">
                         <span class="material-symbols-rounded">notifications</span>
                     </button>
@@ -5005,13 +5008,13 @@
             </button>
             <button class="nav-item" data-view="1">
                 <span class="nav-item__wrap"><span class="material-symbols-rounded">monitoring</span></span>
-                <span class="nav-item__label">Mis finanzas</span>
+                <span class="nav-item__label">Asistente</span>
             </button>
             <button class="nav-item" data-view="2">
                 <span class="nav-item__wrap"><span class="material-symbols-rounded">redeem</span></span>
                 <span class="nav-item__label">Beneficios</span>
             </button>
-            <button class="nav-item" data-view="4">
+            <button class="nav-item" data-view="4" style="display:none" aria-hidden="true" tabindex="-1">
                 <span class="nav-item__wrap"><span class="material-symbols-rounded">account_circle</span></span>
                 <span class="nav-item__label">Perfil</span>
             </button>
@@ -6675,6 +6678,7 @@
         window.addEventListener('scroll', () => { if (!titleRaf) titleRaf = requestAnimationFrame(() => { titleRaf = 0; collapseTitle(); }); }, { passive: true });
         document.addEventListener('i18n:change', syncTopBar);
         document.querySelector('[data-top="pf-settings"]').addEventListener('click', () => window.PFM ? PFM.settings() : window.Asistente && Asistente.settings());
+        document.querySelector('[data-top="perfil"]').addEventListener('click', () => window.__goView(4));
         syncTopBar();
 
         navItems.forEach((item) => {
