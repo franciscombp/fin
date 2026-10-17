@@ -363,9 +363,12 @@
       // Al final, el análisis con IA de Uku (se marca como IA)
       var asks = rank(ASKS, ws, function (a) { return a.q + ' ' + a.k + ' ' + T(a.q); }).slice(0, 2);
       if (asks.length) html += '<section class="sx-card"><h3>Analizar con ' + ukuName() + ' <span class="ai-badge">IA</span></h3>' + asks.map(function (a) { return row('q:' + ASKS.indexOf(a), 'ai', a.q); }).join('') + '</section>';
-      if (!html) html += '<section class="sx-card sx-empty"><p>No encontramos «' + esc(input.value.trim()) + '» en la app.</p>' +
-        row('help', 'help', 'Buscar en la ayuda', 'Preguntas frecuentes y tutoriales') +
-        row('ask', 'ai', 'Analizar con ' + ukuName(), 'Pregúntale sobre tus finanzas · IA') + '</section>';
+      // Lo que no se resuelve aquí (o es una pregunta) va al Asistente, con la misma frase
+      var hadResults = !!html, esPregunta = /[?¿]|^(cu[aá]nto|c[oó]mo|qu[eé]|por qu[eé]|d[oó]nde|cu[aá]ndo|cu[aá]l|en qu[eé]|me |debo|puedo)/i.test(input.value.trim());
+      if (!hadResults) html += '<section class="sx-card sx-empty"><p>No encontramos «' + esc(input.value.trim()) + '» en la app.</p>' +
+        row('help', 'help', 'Buscar en la ayuda', 'Preguntas frecuentes y tutoriales') + '</section>';
+      var askRow = '<section class="sx-card sx-ask">' + row('ask', 'ai', esc(input.value.trim()), 'Pregúntale a ' + ukuName() + ' · IA') + '</section>';
+      html = (esPregunta || !hadResults) ? askRow + html : html + askRow;
     }
     results.innerHTML = html;
   }

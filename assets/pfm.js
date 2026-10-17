@@ -473,19 +473,14 @@
     pf.addEventListener('click', onClick);
     mountDock();
   }
-  // Barra inferior de Mis finanzas (como iOS): Asistente a la izquierda y buscar a la derecha.
-  // El buscador abre arriba; el Asistente sigue con su campo abajo.
+  // Una sola caja abajo en Mis finanzas, como la nueva Siri: abre el buscador arriba.
+  // Lo que el buscador no resuelve pasa al Asistente con la misma pregunta.
   function mountDock() {
     var dock = document.createElement('div');
     dock.className = 'pfm-dock';
-    dock.innerHTML = '<button class="pfm-dock__ask" data-dock="ask"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span><span>' + T('Pregúntale a tu Asistente') + '</span></button>' +
-      '<button class="pfm-dock__search" data-dock="search" aria-label="' + T('Buscar') + '"><span class="material-symbols-rounded" aria-hidden="true">search</span></button>';
+    dock.innerHTML = '<button class="pfm-dock__ask" data-dock="search"><span class="material-symbols-rounded" aria-hidden="true">search</span><span>' + T('Busca o pregunta') + '</span></button>';
     document.body.appendChild(dock);
-    dock.addEventListener('click', function (e) {
-      var b = e.target.closest('[data-dock]'); if (!b) return;
-      if (b.dataset.dock === 'search') { if (window.Buscador) Buscador.open(); return; }
-      if (window.Asistente) Asistente.open();
-    });
+    dock.addEventListener('click', function () { if (window.Buscador) Buscador.open(); });
     var view = document.querySelector('.view[data-view="1"]');
     var sync = function () {
       dock.classList.toggle('is-on', view.classList.contains('active'));
