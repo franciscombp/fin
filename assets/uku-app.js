@@ -16,29 +16,16 @@
   root.classList.add('app-uku');
   var ASSET = (document.currentScript && document.currentScript.src || location.href).replace(/[^/]*$/, '');
 
-  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-  function norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
-  function money(v) { return '$ ' + Number(v || 0).toLocaleString('es-EC', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-  function money0(v) { return money(v).replace(/,00$/, ''); }
-  function fx(n) { try { window.Haptics && Haptics.fx && Haptics.fx(n); } catch (e) {} }
-  function face() { return window.Asistente ? Asistente.faceIMG() : ''; }
-  function ic(n) { return '<span class="material-symbols-rounded" aria-hidden="true">' + n + '</span>'; }
+  // Utilidades compartidas (assets/uku-util.js)
+  var U = window.UkuUtil;
+  var esc = U.esc, norm = U.norm, money = U.money, money0 = U.money0, fx = U.fx, face = U.face, ic = U.ic, acciones = U.acciones, accion = U.accion, ayuda = U.ayuda, finanzas = U.finanzas, resumen = U.resumen, consejos = U.consejos;
+  var HACER = U.HACER, PLATA = U.PLATA, PREG = U.PREG;
 
   var view, host, globoEl, props, pills, results, chat, input, b3d = null;
   var msgs = [], gi = 0, nota = null, ultimo = 0;
   var pend = null; // lo que saliste a hacer: al volver, Uku pregunta cómo te fue
 
   var PRUEBA = ['¿En qué se me va la plata?', '¿Cuánto debo?', 'Bloquear mi tarjeta', 'Transferir'];
-  function acciones(q) { return window.Buscador && Buscador.rank ? Buscador.rank(q) : []; }
-  function accion(label) { return window.Buscador && Buscador.actions ? Buscador.actions().filter(function (a) { return a.label === label; })[0] : null; }
-  function ayuda(q, n) { return window.Soporte && Soporte.find ? Soporte.find(q, n || 3) : []; }
-  // Las cifras solo cuando preguntas por tu plata; "perdí mi tarjeta" es ayuda, no deuda
-  var HACER = /perd|bloque|rob|clave|contrase|pin\b|transfer|recarg|pagar con|cobrar|retirar|enviar|mandar|activar|cancel|cambiar|reclam|reconozco|como (uso|pago|hago|activo|cambio)/;
-  var PLATA = /cuant|gast|deb|deuda|plata|dinero|ingres|sueldo|pension|remesa|presupuesto|ahorr|cierr|ritmo|revis|pregunt|queda/;
-  function finanzas(q) { var n = norm(q); if (HACER.test(n) || !PLATA.test(n)) return null; try { return window.PFM && PFM.ready() ? PFM.answer(q) : null; } catch (e) { return null; } }
-  var PREG = /^(como|cuanto|cuando|que|por que|donde|puedo|se puede)|\?|no (puedo|reconozco|me |funciona)|perd|rob|olvid/;
-  function resumen() { return window.PFM && PFM.summary ? PFM.summary() : null; }
-  function consejos() { return (window.PFM && PFM.advice ? PFM.advice() : []).filter(function (x) { return !x.done; }); }
 
   /* ---------- La pantalla: Uku y su mundo ---------- */
   function mount() {
