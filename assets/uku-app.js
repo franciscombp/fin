@@ -83,7 +83,8 @@
     host.classList.toggle('is-chat', es);
     if (era !== es) {
       input.placeholder = es ? 'Escríbele a Uku' : 'Habla con Uku o busca algo';
-      if (!es && b3d) setTimeout(function () { b3d.play('wave'); }, 350); // vuelve a su mundo y saluda
+      if (!es && b3d) setTimeout(function () { b3d.play('wave'); setTimeout(function () { if (!msgs.length) b3d.play('walk'); }, 2200); }, 350); // vuelve a su mundo, saluda y camina
+      if (es && b3d) b3d.play(null); // en la conversación se queda quieto
     }
   }
   function pintar() { modo(); pintarCabeza(); pintarGlobo(); pintarAccesos(); pintarChat(); pintarResultados(); }
@@ -221,7 +222,7 @@
       if (s) { m3.setBloom(s.bloom); m3.setMood(s.mood); }
       m3.attach(el, { score: s ? s.score : 60, onTap: function () { fx('select'); m3.play('happy'); if (!msgs.length) { nota = null; gi++; pintarGlobo(); } } });
       el.classList.add('is-3d');
-      if (!escena.hola) { escena.hola = 1; m3.play('wave'); }
+      if (!escena.hola) { escena.hola = 1; m3.play('wave'); setTimeout(function () { if (!msgs.length) m3.play('walk'); }, 2200); }
     }).catch(function () {});
   }
 

@@ -38,10 +38,13 @@ html.uk-idle, html.uk-idle body { overflow: hidden; overscroll-behavior: none; }
 @keyframes ukIn { from { opacity: 0; transform: translateY(8px) scale(.96); } }
 
 /* Los accesos: a la izquierda, sobre su mundo */
-.uk-pills { position: absolute; z-index: 3; left: 16px; bottom: 92px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; max-width: 62%; }
+.uk-pills { position: absolute; z-index: 3; left: 12px; right: 12px; bottom: 92px; display: flex; flex-direction: row; align-items: stretch; gap: 10px; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; padding: 4px 4px 8px; }
+.uk-pills::-webkit-scrollbar { display: none; }
 .uk-pill { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 16px 8px 12px; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); box-shadow: 0 2px 10px rgba(15, 38, 92, .08); text-align: left; cursor: pointer; animation: ukIn .35s ease both; }
 .uk-pill:nth-child(2) { animation-delay: .06s; } .uk-pill:nth-child(3) { animation-delay: .12s; } .uk-pill:nth-child(4) { animation-delay: .18s; }
 .uk-pill:active { transform: scale(.97); }
+.uk-pill { flex: 0 0 auto; width: 150px; min-height: 0; flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px; box-shadow: 0 6px 18px rgb(0 0 0 / .08); scroll-snap-align: start; }
+.uk-pill small { white-space: normal; }
 .uk-pill > .material-symbols-rounded { flex: 0 0 32px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font-size: 20px; }
 .uk-pill > span:last-child { display: flex; flex-direction: column; min-width: 0; }
 .uk-pill b { font: var(--ui-body-sm-semibold); }

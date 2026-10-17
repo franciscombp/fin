@@ -251,6 +251,9 @@ const POSES = {
   worried: t => ({ upperarm_R: [0, 34, 36], forearm_R: [-46, 44, -26], hand_R: [-22, 8, -6],
                    upperarm_L: mirror([0, 34, 36]), forearm_L: mirror([-46, 44, -26]), hand_L: mirror([-22, 8, -6]),
                    head: [16, 0, 9 + Math.sin(t * 1.6) * 3] }),
+  // caminar: piernas y brazos alternan; el paso lo da el movimiento de la escena
+  walk:  t => ({ thigh_R: [Math.sin(t * 6) * 24, 0, 0], thigh_L: [-Math.sin(t * 6) * 24, 0, 0],
+                 upperarm_R: [-Math.sin(t * 6) * 14, 6, 56], upperarm_L: mirror([Math.sin(t * 6) * 14, 6, 56]), head: [0, 0, Math.sin(t * 6) * 2] }),
   happy: t => ({ upperarm_R: [0, 14, 6 - Math.sin(t * 8) * 6], forearm_R: [-30, 10, -28], hand_R: [-24, 0, -10],
                  upperarm_L: mirror([0, 14, 6 - Math.sin(t * 8) * 6]), forearm_L: mirror([-30, 10, -28]), hand_L: mirror([-24, 0, -10]),
                  head: [-6, 0, Math.sin(t * 6) * 7] })
@@ -279,6 +282,7 @@ function target(name, t) {
   const g = POSES[gesture](gestureT)[name];
   return g || r;
 }
+const BEAR_S = .62, WALK_W = .42; // Uku más pequeño para dejar lugar a las tarjetas; el paseo es corto
 const BONES = ['hips', 'spine', 'chest', 'neck', 'head', 'shoulder_L', 'shoulder_R', 'upperarm_L', 'upperarm_R', 'forearm_L', 'forearm_R', 'hand_L', 'hand_R', 'thigh_L', 'thigh_R'];
 
 function holdObject(kind) {
@@ -434,7 +438,7 @@ function frame(now) {
   if (now - last < 32) return; // ~30 fps: suficiente y cuida batería
   last = now;
   const dt = clock.getDelta(), t = clock.elapsedTime;
-  if (gesture) { gestureT += dt; if (gestureT > (gesture === 'hold' ? 3.2 : 2)) { gesture = null; holdObject(null); } }
+  if (gesture) { gestureT += dt; if (gesture !== 'walk' && gestureT > (gesture === 'hold' ? 3.2 : 2)) { gesture = null; holdObject(null); } }
   if (bear) {
     const a = RM ? 1 : Math.min(1, dt * 4.5); // suavizado: entra y sale de cada gesto sin golpes
     BONES.forEach(n => {
@@ -446,7 +450,10 @@ function frame(now) {
     });
     if (umb) { bear.updateMatrixWorld(true); placeUmbrella(); }
     const hop = gesture === 'happy' ? Math.abs(Math.sin(gestureT * 6)) * .05 : mood === 'feliz' && !gesture && !RM ? Math.abs(Math.sin(t * 2.4)) * .018 : 0;
-    bear.position.y = lerp(bear.position.y, .45 + hop, Math.min(1, dt * 10));
+    bear.position.y = lerp(bear.position.y, .45 * BEAR_S + hop, Math.min(1, dt * 10));
+    // Caminando: va y viene por el mundo; al detenerse vuelve al centro
+    const wx = gesture === 'walk' && !RM ? Math.sin(gestureT * .45) * WALK_W : 0;
+    bear.position.x = lerp(bear.position.x, wx, Math.min(1, dt * 3));
   }
   if (forest) forest.children.slice().forEach(o => {
     const u = o.userData;
@@ -531,8 +538,8 @@ function init() {
         if (flat.map) { bearMat = flat; baseMap = flat.map; }
       }
     });
-    bear.position.y = .45; // pies sobre el suelo (el modelo va de -0.45 a 0.45)
-    bear.scale.setScalar(1);
+    bear.position.y = .45 * BEAR_S; // pies sobre el suelo (el modelo va de -0.45 a 0.45)
+    bear.scale.setScalar(BEAR_S);
     scene.add(bear);
     dressBear();
     play('wave');
