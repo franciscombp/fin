@@ -283,8 +283,7 @@
       case 'sp': salir(l, !/^(review|agent)$/.test(v)); if (window.Soporte) Soporte.run(v); return pintarChat();
       case 'pfm': salir(l); if (window.PFM) PFM.key(v); return;
       // Mis finanzas se responde en la conversación; abrir la pantalla es una opción más
-      case 'fin': { fx('select'); me(l); var sf = resumen(); if (!sf) { finOn(true); return; } uku('Tu saldo está en ' + money0(sf.saldo) + '. Uku está ' + sf.moodL + (sf.n ? ' y te quedan ' + sf.n + ' consumos por ordenar.' : '.') + ' ¿Qué quieres hacer?', [b('finabrir', 'Abrir Mis finanzas', 'open_in_new'), b('pfm:game', 'Clasificar ' + Math.min(10, sf.n || 0), 'category')].filter(function (x) { return x.k !== 'pfm:game' || sf.n; })); return pintarChat(); }
-      case 'finabrir': fx('select'); salir('Mis finanzas'); return finOn(true);
+      case 'fin': fx('select'); return finOn(true);
       case 'home': fx('tap'); finOn(false); return;
       // Ayuda es su sección: se abre el centro de ayuda; el chat empieza cuando hay algo que resolver
       case 'ayuda': fx('tap'); salir('Ayuda'); if (window.Soporte) Soporte.open(); return;
