@@ -245,7 +245,9 @@
       case 'act': { var a = accion(v); if (!a) return; salir(a.label, true); return window.Buscador && Buscador.run(a); }
       case 'sp': salir(l, !/^(review|agent)$/.test(v)); if (window.Soporte) Soporte.run(v); return pintarChat();
       case 'pfm': salir(l); if (window.PFM) PFM.key(v); return;
-      case 'fin': fx('select'); salir('ver lo que buscabas en tus finanzas'); return finOn(true);
+      // Mis finanzas se responde en la conversación; abrir la pantalla es una opción más
+      case 'fin': { fx('select'); me(l); var sf = resumen(); if (!sf) { finOn(true); return; } uku('Tu saldo está en ' + money0(sf.saldo) + '. Uku está ' + sf.moodL + (sf.n ? ' y te quedan ' + sf.n + ' consumos por ordenar.' : '.') + ' ¿Qué quieres hacer?', [b('finabrir', 'Abrir Mis finanzas', 'open_in_new'), b('pfm:game', 'Clasificar ' + Math.min(10, sf.n || 0), 'category')].filter(function (x) { return x.k !== 'pfm:game' || sf.n; })); return pintarChat(); }
+      case 'finabrir': fx('select'); salir('Mis finanzas'); return finOn(true);
       case 'home': fx('tap'); finOn(false); return;
       case 'ayuda': me('Necesito ayuda'); uku('Claro. ¿Con qué te ayudo? Elige un tema o cuéntamelo con tus palabras.',
         (Soporte.faqs ? Soporte.faqs(4) : []).map(function (f) { return b('faq:' + f.i, f.t, f.icon, 'is-ask'); }).concat([b('persona', 'Hablar con una persona', 'support_agent'), b('centro', 'Ver todos los temas', 'menu_book', 'is-ask')])); return mostrar();
