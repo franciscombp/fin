@@ -4180,7 +4180,7 @@
                 </button>
                 <button class="quick-action" data-sheet="actions">
                     <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
-                    <span class="quick-action__label">Más acciones</span>
+                    <span class="quick-action__label">Más transacciones</span>
                 </button>
             </div>
         </section>
@@ -4360,9 +4360,9 @@
                         <span class="quick-action__icon"><span class="material-symbols-rounded">description</span></span>
                         <span class="quick-action__label">Certificado bancario</span>
                     </button>
-                    <button class="quick-action" data-action="Más acciones">
+                    <button class="quick-action" data-action="Más transacciones">
                         <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
-                        <span class="quick-action__label">Más acciones</span>
+                        <span class="quick-action__label">Más transacciones</span>
                     </button>
                 </div>
             </section>
@@ -4515,9 +4515,9 @@
                         <span class="quick-action__icon"><span class="material-symbols-rounded">credit_score</span></span>
                         <span class="quick-action__label">Pagar tarjeta</span>
                     </button>
-                    <button class="quick-action" data-action="Más acciones">
+                    <button class="quick-action" data-action="Más transacciones">
                         <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
-                        <span class="quick-action__label">Más acciones</span>
+                        <span class="quick-action__label">Más transacciones</span>
                     </button>
                 </div>
             </section>
@@ -4632,9 +4632,9 @@
                         <span class="quick-action__icon"><span class="material-symbols-rounded">description</span></span>
                         <span class="quick-action__label">Certificado bancario</span>
                     </button>
-                    <button class="quick-action" data-action="Más acciones">
+                    <button class="quick-action" data-action="Más transacciones">
                         <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
-                        <span class="quick-action__label">Más acciones</span>
+                        <span class="quick-action__label">Más transacciones</span>
                     </button>
                 </div>
             </section>
@@ -4718,9 +4718,9 @@
                         <span class="quick-action__icon"><span class="material-symbols-rounded">description</span></span>
                         <span class="quick-action__label">Certificado bancario</span>
                     </button>
-                    <button class="quick-action" data-action="Más acciones">
+                    <button class="quick-action" data-action="Más transacciones">
                         <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
-                        <span class="quick-action__label">Más acciones</span>
+                        <span class="quick-action__label">Más transacciones</span>
                     </button>
                 </div>
             </section>
@@ -4804,9 +4804,9 @@
                         <span class="quick-action__icon"><span class="material-symbols-rounded">description</span></span>
                         <span class="quick-action__label">Certificado bancario</span>
                     </button>
-                    <button class="quick-action" data-action="Más acciones">
+                    <button class="quick-action" data-action="Más transacciones">
                         <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
-                        <span class="quick-action__label">Más acciones</span>
+                        <span class="quick-action__label">Más transacciones</span>
                     </button>
                 </div>
             </section>
@@ -5568,8 +5568,8 @@
             'Pagar con QR': 'qr_code_scanner', 'Cobrar con QR': 'qr_code_2',
             'Transferir dinero': 'send_money', 'Transferir': 'send_money',
             'Recibir dinero': 'control_point_duplicate', 'Pagar servicios': 'emoji_objects',
-            'Pagar tarjeta': 'credit_card', 'Retirar sin tarjeta': 'payments',
-            'Recargar celular': 'smartphone', 'Más acciones': 'apps',
+            'Pagar tarjeta': 'credit_card', 'Retirar sin tarjeta': 'payments', 'Más transacciones': 'apps',
+            'Recargar celular': 'smartphone', 'Más transacciones': 'apps',
             'Pagar transporte': 'directions_transit', 'Verificar pago': 'verified_user',
             'Cuenta PRINCIPAL': 'account_balance_wallet'
         };
@@ -5720,10 +5720,52 @@
         // ícono+Resumen cuando la acción tiene un flujo propio reconocible.
         const ACTION_EXTRAS = {
             'Pagar con QR': () => `
+                <div class="qr-scan">
+                    <div class="qr-scan__view"><video id="qr-video" playsinline muted></video><span class="qr-scan__frame"></span></div>
+                    <p class="qr-scan__msg" id="qr-msg">Apunta la cámara al código QR del negocio</p>
+                    <div class="push-chip-row"><button class="push-chip" data-soon="Ingresar código del comercio">Ingresar código</button></div>
+                </div>`,
+            'Recibir dinero': () => `
+                <p class="finance-subtitle" style="margin-top:0;">Compartir mis datos</p>
+                <div class="card">
+                    <button class="sub-item" data-copy="PRINCIPAL ***7890">
+                        <span class="sub-item__logo"><span class="material-symbols-rounded">account_balance</span></span>
+                        <span class="sub-item__info"><span class="sub-item__name">Cuenta PRINCIPAL</span><span class="sub-item__meta">***7890 · Copiar número</span></span>
+                        <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">content_copy</span>
+                    </button>
+                    <button class="sub-item" data-copy="https://pichibank.app/cobro/mi-cuenta">
+                        <span class="sub-item__logo"><span class="material-symbols-rounded">link</span></span>
+                        <span class="sub-item__info"><span class="sub-item__name">Compartir link de cobro</span><span class="sub-item__meta">Pagan desde cualquier banco</span></span>
+                        <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">ios_share</span>
+                    </button>
+                </div>
+                <p class="finance-subtitle">Mostrar QR</p>
                 <div class="push-qr">
                     <div class="push-qr__code">${FAKE_QR_SVG}</div>
-                    <p class="push-qr__caption">Apunta la cámara al código QR del negocio para pagar al instante.</p>
+                    <p class="push-qr__caption">Que te paguen apuntando la cámara a este código.</p>
+                </div>
+                <p class="finance-subtitle">Recibir del exterior</p>
+                <div class="card">
+                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">Banco</span><span class="sub-item__meta">Banco Pichincha C.A.</span></span></div>
+                    <button class="sub-item" data-copy="PICHEC2X">
+                        <span class="sub-item__info"><span class="sub-item__name">Código SWIFT</span><span class="sub-item__meta">PICHEC2X · Copiar</span></span>
+                        <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">content_copy</span>
+                    </button>
                 </div>`,
+            'Más transacciones': () => `
+                ${[
+                    ['Pagos', [['qr_code_scanner', 'Pagar con QR', 'go'], ['emoji_objects', 'Pagar servicios', 'go'], ['credit_card', 'Pagar tarjeta', 'go'], ['smartphone', 'Recargar celular', 'go']]],
+                    ['Transferencias', [['send_money', 'Transferir dinero', 'go'], ['control_point_duplicate', 'Recibir dinero', 'go'], ['public', 'Transferencia al exterior', 'soon'], ['smartphone', 'Transferencia por número de celular', 'soon']]],
+                    ['Efectivo', [['payments', 'Retirar sin tarjeta', 'go'], ['savings', 'Depositar en cajero', 'soon']]],
+                    ['Cobros y programados', [['qr_code_2', 'Cobrar con QR', 'go'], ['event_repeat', 'Pagos programados', 'soon'], ['history', 'Historial de transacciones', 'soon']]]
+                ].map(([titulo, filas]) => `
+                    <p class="finance-subtitle">${titulo}</p>
+                    <div class="card">${filas.map(([icon, nombre, tipo]) => `
+                        <button class="sub-item" ${tipo === 'go' ? `data-go="${nombre}"` : `data-soon="${nombre}"`}>
+                            <span class="sub-item__logo"><span class="material-symbols-rounded">${icon}</span></span>
+                            <span class="sub-item__info"><span class="sub-item__name">${nombre}</span></span>
+                            <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
+                        </button>`).join('')}</div>`).join('')}`,
             'Cobrar con QR': () => `
                 <div class="push-qr">
                     <div class="push-qr__amount">$ 0,00</div>
@@ -5732,6 +5774,34 @@
                 </div>`,
             'Transferir dinero': () => transferPickHTML(),
             'Pagar servicios': () => servicePickHTML(),
+            'Retirar sin tarjeta': () => `
+                <p class="finance-subtitle" style="margin-top:0;">Monto</p>
+                <div class="push-chip-row">
+                    ${[20, 40, 60, 100].map((m, i) => `<button class="push-chip${i === 1 ? ' is-selected' : ''}" data-action="Retirar ${m}">$ ${m}</button>`).join('')}
+                </div>
+                <p class="finance-subtitle">Puntos de retiro cercanos</p>
+                <div class="retiro-map" aria-label="Mapa esquemático de puntos de retiro">
+                    <svg viewBox="0 0 320 170" aria-hidden="true">
+                        <path d="M0 120 C70 90 120 150 200 110 S300 60 320 80" class="retiro-map__road"/>
+                        <path d="M60 0 L90 170 M210 0 L180 170 M0 50 L320 40" class="retiro-map__street"/>
+                        <circle cx="160" cy="85" r="6" class="retiro-map__you"/>
+                        <g class="retiro-map__pin"><circle cx="92" cy="52" r="8"/><circle cx="240" cy="120" r="8"/><circle cx="250" cy="40" r="8"/></g>
+                    </svg>
+                </div>
+                <div class="card">
+                    <button class="sub-item" data-action="Punto de retiro">
+                        <span class="sub-item__logo"><span class="material-symbols-rounded">atm</span></span>
+                        <span class="sub-item__info"><span class="sub-item__name">Cajero Pichibank · Norte</span><span class="sub-item__meta">A 300 m · 24 horas</span></span>
+                    </button>
+                    <button class="sub-item" data-action="Punto de retiro">
+                        <span class="sub-item__logo"><span class="material-symbols-rounded">storefront</span></span>
+                        <span class="sub-item__info"><span class="sub-item__name">Punto de retiro en tienda</span><span class="sub-item__meta">A 1,1 km · hasta 18:00</span></span>
+                    </button>
+                    <button class="sub-item" data-action="Punto de retiro">
+                        <span class="sub-item__logo"><span class="material-symbols-rounded">atm</span></span>
+                        <span class="sub-item__info"><span class="sub-item__name">Cajero Pichibank · Centro</span><span class="sub-item__meta">A 2,4 km · 24 horas</span></span>
+                    </button>
+                </div>`,
             'Recargar celular': () => `
                 <p class="finance-subtitle" style="margin-top:0;">Operador</p>
                 <div class="push-chip-row">
@@ -6048,6 +6118,8 @@
                 return;
             }
 
+            const cp = e.target.closest('[data-copy]');
+            if (cp) { if (navigator.clipboard) navigator.clipboard.writeText(cp.dataset.copy).catch(() => {}); showToast('Copiado'); return; }
             const soonBtn = e.target.closest('[data-soon]');
             if (soonBtn) { extra.innerHTML = soonHTML(soonBtn.dataset.soon); return; }
             const goBtn = e.target.closest('[data-go]');
@@ -6136,11 +6208,39 @@
             }
         });
 
+        // Escáner: cámara trasera + lectura de QR si el navegador la soporta
+        let qrStream = null, qrTimer = null;
+        function setQrMsg(t) { const m = document.getElementById('qr-msg'); if (m) m.textContent = t; }
+        function startQrScan() {
+            stopQrScan();
+            const video = document.getElementById('qr-video');
+            if (!video) return;
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { setQrMsg('La cámara no está disponible en este dispositivo'); return; }
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false }).then(stream => {
+                if (!document.getElementById('qr-video')) { stream.getTracks().forEach(t => t.stop()); return; }
+                qrStream = stream; video.srcObject = stream; video.play().catch(() => {});
+                if (!('BarcodeDetector' in window)) { setQrMsg('Lectura automática no disponible en este navegador'); return; }
+                const det = new BarcodeDetector({ formats: ['qr_code'] });
+                qrTimer = setInterval(() => {
+                    det.detect(video).then(codes => {
+                        if (!codes.length) return;
+                        stopQrScan(); setQrMsg('Código leído');
+                        showToast('Código leído: ' + codes[0].rawValue.slice(0, 30));
+                    }).catch(() => {});
+                }, 400);
+            }).catch(() => setQrMsg('Permite el acceso a la cámara para escanear'));
+        }
+        function stopQrScan() {
+            clearInterval(qrTimer); qrTimer = null;
+            if (qrStream) { qrStream.getTracks().forEach(t => t.stop()); qrStream = null; }
+        }
+
         function renderPushExtra(title) {
             const build = ACTION_EXTRAS[title];
             const extra = document.getElementById('push-extra');
             const hero = document.getElementById('push-hero');
             extra.innerHTML = build ? build() : '';
+            if (title === 'Pagar con QR') startQrScan(); else stopQrScan();
             // Con una plantilla propia, el ícono genérico amarillo sobra —
             // el QR/los chips/los beneficiarios ya comunican la acción.
             hero.classList.toggle('is-hidden', !!build);
@@ -6280,6 +6380,7 @@
 
         function closePushPage() {
             if (!pushPage.classList.contains('open')) return;
+            stopQrScan();
             fx('close');
             clearTimeout(pushLoadingTimer);
             pushLoading.classList.remove('is-active');
@@ -7005,15 +7106,6 @@
                 <div class="sheet__row"><span class="sheet__row-label">Cupo diario</span><span class="sheet__row-value">$ 500,00</span></div>
                 <div class="sheet__row"><span class="sheet__row-label">Consumo del mes</span><span class="sheet__row-value">$ 312,45</span></div>
                 <button class="sheet__cta" data-toast="Tarjeta congelada temporalmente">Congelar tarjeta</button>`,
-            actions: () => `
-                <h2 class="sheet__title">Más acciones</h2>
-                <p class="sheet__subtitle">Todo lo que puedes hacer</p>
-                <div class="sheet__grid">
-                    <button class="quick-action" data-toast="Certificados"><span class="quick-action__icon"><span class="material-symbols-rounded">description</span></span><span class="quick-action__label">Certificados</span></button>
-                    <button class="quick-action" data-toast="Divisas"><span class="quick-action__icon"><span class="material-symbols-rounded">currency_exchange</span></span><span class="quick-action__label">Divisas</span></button>
-                    <button class="quick-action" data-toast="Inversiones"><span class="quick-action__icon"><span class="material-symbols-rounded">trending_up</span></span><span class="quick-action__label">Inversiones</span></button>
-                    <button class="quick-action" data-toast="Seguros"><span class="quick-action__icon"><span class="material-symbols-rounded">shield</span></span><span class="quick-action__label">Seguros</span></button>
-                </div>`,
             payment: (el) => `
                 <h2 class="sheet__title">${el.dataset.title}</h2>
                 <p class="sheet__subtitle">Servicio básico · Pago pendiente</p>
