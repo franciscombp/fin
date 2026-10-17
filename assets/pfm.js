@@ -23,6 +23,7 @@
   var KEY = 'pb_pfm_v1';
   var ST = { u: 'andres', modo: 'mvp', per: 'mes', resp: {}, cats: {}, pres: {} };
   try { var sv = JSON.parse(localStorage.getItem(KEY)); if (sv) ST = Object.assign(ST, sv); } catch (e) {}
+  if (window.Persona) ST.u = Persona.get(); // la persona se elige en Perfil, para toda la app
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(ST)); } catch (e) {} }
   function fx(n) { try { window.Haptics && Haptics.fx && Haptics.fx(n); } catch (e) {} }
   function T(s, v) { return window.I18n ? I18n.t(s, v) : s.replace(/\{(\w+)\}/g, function (m, k) { return v && k in v ? v[k] : m; }); }
@@ -1267,11 +1268,7 @@
   function sheetOpen() { return sheet && sheet.classList.contains('open'); }
 
   function whoSheet() {
-    showSheet('<h3>' + T('Ver como') + '</h3><p>' + T('Cinco perfiles ficticios de la investigación, con sus movimientos de octubre 2025 a octubre 2026.') + '</p>' +
-      '<div class="as-rows">' + DB.usuarios.map(function (u) {
-        return '<button class="as-row as-row--btn" data-pfm="u:' + u.usuario + '" aria-pressed="' + (u.usuario === ST.u) + '"><span class="pfm-av">' + esc(u.nombre.charAt(0)) + '</span>' +
-          '<span class="as-row__main"><b>' + esc(u.nombre) + ', ' + u.edad + ' · ' + esc(u.ciudad) + '</b><small>' + esc(u.tipo) + '. ' + esc(u.lo_que_necesita) + '.</small></span><span class="as-radio"></span></button>';
-      }).join('') + '</div>' +
+    showSheet('<h3>' + T('Versión') + '</h3><p>' + T('Cómo se comporta Uku con tus datos.') + '</p>' +
       '<p class="as-sheet__label">' + T('Versión') + '</p><div class="as-rows">' +
         '<button class="as-row as-row--btn" data-pfm="modo:mvp" aria-pressed="' + !tobe() + '"><span class="as-row__main"><b>MVP</b><small>' + T('Fase 1: solo Pichibank y Deuna, con reglas y sin IA. Hay más gastos por ordenar.') + '</small></span><span class="as-radio"></span></button>' +
         '<button class="as-row as-row--btn" data-pfm="modo:tobe" aria-pressed="' + tobe() + '"><span class="as-row__main"><b>To-be</b><small>' + T('La visión: Uku ordena casi todo, anticipa, ve tus otros bancos y analiza con IA.') + '</small></span><span class="as-radio"></span></button></div>' +
@@ -1543,6 +1540,7 @@
   function open() { mount(); paint(); if (window.__goView) window.__goView(1); }
   function init() {
     mount(); if (!pf) return;
+    document.addEventListener('persona:change', function (e) { ST.u = e.detail; persist(); cache = {}; fijoCache = {}; paint(); });
     paint();
     var fv = document.querySelector('.view[data-view="1"]');
     new MutationObserver(function () { if (fv.classList.contains('active')) hero3D(); }).observe(fv, { attributes: true, attributeFilter: ['class'] });
