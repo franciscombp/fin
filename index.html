@@ -597,6 +597,7 @@
         }
 
         /* ---------- Tarjeta de débito con glow ---------- */
+        .debit-card-wrap[hidden] { display: none !important; }
         .debit-card-wrap {
             padding: 8px 16px 16px;
             perspective: 900px;
@@ -4122,7 +4123,8 @@
                 </div>
 
                 <!-- Tarjeta de débito con resplandor reactivo al giroscopio -->
-                <div class="debit-card-wrap">
+                <!-- Tarjeta de débito oculta por ahora: quita el "hidden" de este bloque para volver a mostrarla -->
+                <div class="debit-card-wrap" hidden>
                     <button class="debit-card" id="debit-card" aria-label="Tarjeta Débito Digital 1234">
                         <img class="debit-card__art" src="./assets/card-debit.svg" alt="" aria-hidden="true">
                         <div class="debit-card__bg">
@@ -6352,8 +6354,7 @@
         // ---------- Banner de ofertas: carrusel infinito ----------
         const BANNER_SLIDES = [
             // tone: 'dark' = imagen oscura (texto blanco) · 'light' = imagen clara (texto negro)
-            // Oferta amarilla oculta por ahora: para volver a mostrarla, quita los // de esta línea
-            // { theme: 1, tone: 'dark', title: 'Ofertas todo el año con tus tarjetas Pichibank', cta: 'Ver ofertas', photo: 'bp-banner-1' },
+            { theme: 1, tone: 'dark', title: 'Ofertas todo el año con tus tarjetas Pichibank', cta: 'Ver ofertas', photo: 'bp-banner-1' },
             { theme: 2, tone: 'dark', title: 'Protección adicional para tu día a día', cta: 'Ver más', photo: 'bp-banner-2' },
             { theme: 3, tone: 'light', title: 'Genera ganancias con un Depósito a Plazo', cta: 'Simular', photo: 'bp-banner-3' },
         ];
