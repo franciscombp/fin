@@ -471,23 +471,6 @@
     host.appendChild(pf);
     scroll = pf.querySelector('.pf-scroll');
     pf.addEventListener('click', onClick);
-    mountDock();
-  }
-  // Una sola caja abajo en Mis finanzas, como la nueva Siri: abre el buscador arriba.
-  // Lo que el buscador no resuelve pasa al Asistente con la misma pregunta.
-  function mountDock() {
-    var dock = document.createElement('div');
-    dock.className = 'pfm-dock';
-    dock.innerHTML = '<button class="pfm-dock__ask" data-dock="search"><span class="material-symbols-rounded" aria-hidden="true">search</span><span>' + T('Busca o pregunta') + '</span></button>';
-    document.body.appendChild(dock);
-    dock.addEventListener('click', function () { if (window.Buscador) Buscador.open(); });
-    var view = document.querySelector('.view[data-view="1"]');
-    var sync = function () {
-      dock.classList.toggle('is-on', view.classList.contains('active') && view.classList.contains('uk-fin'));
-      var nav = document.querySelector('.nav-bar'); if (nav) dock.style.bottom = nav.offsetHeight + 'px';
-    };
-    new MutationObserver(sync).observe(view, { attributes: true, attributeFilter: ['class'] });
-    window.addEventListener('resize', sync); sync();
   }
   function face() { return window.Asistente ? Asistente.faceIMG() : '<img class="as-oso as-oso--cara" src="' + ASSET + 'oso/oso-cara.webp" alt="">'; }
   function pad(n) { return (n < 10 ? '0' : '') + n; }
