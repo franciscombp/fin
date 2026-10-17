@@ -316,9 +316,14 @@
       '<div class="sx-rec__acts"><button class="sx-btn sx-btn--ghost" data-sx-i="rec-cancel">Cancelar</button><button class="sx-btn" data-sx-i="rec-save">Guardar atajo</button></div></section>';
   }
   function render() {
-    var q = norm(input.value.trim()), html = '';
+    var q = norm(input.value.trim()), html = '', ayudaCtx = ctxId === 'ayuda';
     if (rec_) { results.innerHTML = recHTML(); return; }
     APP = appItems();
+    if (!q && ayudaCtx) {
+      HELP = window.Soporte ? Soporte.faqs(6) : [];
+      results.innerHTML = '<section class="sx-card"><h3>Temas de ayuda</h3>' + HELP.map(function (h, i) { return row('hp:' + i, h.icon, esc(h.t), 'Pregunta frecuente'); }).join('') + '</section>';
+      return;
+    }
     if (!q) {
       // Antes de escribir: lo reciente, tus atajos y la ayuda. Las acciones aparecen al buscar
       var cx = window.Contexto ? Contexto.info(ctxId) : null;
@@ -358,11 +363,13 @@
         }).join('') + '</section>';
       }
       // Ayuda: preguntas frecuentes y tutoriales del centro de ayuda
-      HELP = window.Soporte && Soporte.find ? Soporte.find(input.value, 3) : [];
-      if (HELP.length) html += '<section class="sx-card"><h3>Ayuda</h3>' + HELP.map(function (h, i) { return row('hp:' + i, h.icon, esc(h.t), h.kind === 'tut' ? 'Tutorial' : 'Pregunta frecuente'); }).join('') + '</section>';
+      HELP = window.Soporte && Soporte.find ? Soporte.find(input.value, ayudaCtx ? 6 : 3) : [];
+      if (HELP.length && !ayudaCtx) html += '<section class="sx-card"><h3>Ayuda</h3>' + HELP.map(function (h, i) { return row('hp:' + i, h.icon, esc(h.t), h.kind === 'tut' ? 'Tutorial' : 'Pregunta frecuente'); }).join('') + '</section>';
       // Al final, el análisis con IA de Uku (se marca como IA)
       var asks = rank(ASKS, ws, function (a) { return a.q + ' ' + a.k + ' ' + T(a.q); }).slice(0, 2);
       if (asks.length) html += '<section class="sx-card"><h3>Analizar con ' + ukuName() + ' <span class="ai-badge">IA</span></h3>' + asks.map(function (a) { return row('q:' + ASKS.indexOf(a), 'ai', a.q); }).join('') + '</section>';
+      // En Ayuda, los temas de ayuda van primero
+      if (ayudaCtx && HELP.length) html = '<section class="sx-card"><h3>Ayuda</h3>' + HELP.map(function (h, i) { return row('hp:' + i, h.icon, esc(h.t), h.kind === 'tut' ? 'Tutorial' : 'Pregunta frecuente'); }).join('') + '</section>' + html;
       // Lo que no se resuelve aquí (o es una pregunta) va al Asistente, con la misma frase
       var hadResults = !!html, esPregunta = /[?¿]|^(cu[aá]nto|c[oó]mo|qu[eé]|por qu[eé]|d[oó]nde|cu[aá]ndo|cu[aá]l|en qu[eé]|me |debo|puedo)/i.test(input.value.trim());
       if (!hadResults) html += '<section class="sx-card sx-empty"><p>No encontramos «' + esc(input.value.trim()) + '» en la app.</p>' +
@@ -406,12 +413,12 @@
     try { r.start(); } catch (e) { rec = null; el.classList.remove('is-listening'); input.placeholder = 'Busca o pregunta'; }
   }
 
-  function open() {
+  function open(c) {
     if (!el) mount();
     if (open_) return;
     open_ = true;
     rec_ = null;
-    ctxId = window.Contexto ? Contexto.get() : null; // la sección desde donde se abre
+    ctxId = c || (window.Contexto ? Contexto.get() : null); // la sección desde donde se abre (o 'ayuda')
     input.value = '';
     render();
     el.classList.add('open');

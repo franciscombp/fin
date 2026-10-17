@@ -180,7 +180,7 @@
     el.setAttribute('aria-label', 'Ayuda');
     el.innerHTML =
       '<header class="sp-top"><button class="pf-round" data-sp="back" aria-label="Volver"><span class="material-symbols-rounded">arrow_back</span></button>' +
-        '<span class="sp-top__title"><b>Ayuda</b><small></small></span><span></span></header>' +
+        '<span class="sp-top__title"><b>Ayuda</b><small></small></span><button class="pf-round" data-sp="search" aria-label="Buscar"><span class="material-symbols-rounded" aria-hidden="true">search</span></button></header>' +
       '<div class="sp-body">' +
         '<div class="sp-hub">' +
           '<div class="sp-hello"></div>' +
@@ -316,6 +316,7 @@
     // Elegir una opción de contacto deja la elección como respuesta y quita las demás
     var grp = /^(agent|call|callback)$/.test(k) && b.closest('.sp-acts');
     if (grp) { grp.remove(); me(b.textContent); }
+    if (k === 'search') { return window.Buscador && Buscador.open('ayuda'); }
     if (k === 'back') { if (b.closest('.sp-acts')) { reset(); el.querySelector('.sp-body').scrollTop = 0; return; } return back(); }
     if (k.indexOf('faq:') === 0) { var fa = b.closest('.sp-acts'); if (fa) fa.remove(); hidePage(); return answer(+k.slice(4)); }
     if (k.indexOf('cat:') === 0) return catPage(k.slice(4));
@@ -482,7 +483,6 @@
   window.Soporte = { open: open, review: function () { review(false); }, find: find,
     faqs: function (n) { return FAQ.slice(0, n || FAQ.length).map(function (f, i) { return { kind: 'faq', i: i, icon: f.icon, t: f.t }; }); },
     // Para que Uku responda la ayuda dentro de su conversación (versión asistente)
-    tuts: function () { return TUT.map(function (u, i) { return { kind: 'tut', i: i, icon: u.icon, t: u.t }; }); },
     faq: function (i) { var f = FAQ[i]; return f && { t: f.t, icon: f.icon, a: typeof f.a === 'function' ? f.a() : f.a, acts: f.acts || [] }; },
     tut: function (i) { var u = TUT[i]; return u && { t: u.t, icon: u.icon, min: u.min, steps: u.steps, act: u.act }; },
     contact: function () { return { phone: PHONE, caso: CASE, opts: CONTACT.map(function (c) { return { icon: c[0], t: c[1], s: c[2], k: c[3] }; }) }; },
