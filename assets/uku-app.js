@@ -1,17 +1,13 @@
 /* =====================================================================
-   Versión asistente (paralela): Uku es la pantalla. Un solo punto de
-   entrada para buscar, pedir ayuda y entender tus finanzas.
-   - Es la versión principal: se activa siempre. La versión anterior
-     (Mis finanzas, buscador y ayuda por separado) queda de respaldo en
-     clasica.html o index.html?app=clasica, y ahí este archivo no hace nada.
-   - Todo cabe en una pantalla, sin scroll: Uku en su mundo 3D, su globo
-     con lo más importante, los accesos y la barra para hablarle.
-   - Una sola conversación: Uku responde tus finanzas, la ayuda (preguntas
-     frecuentes y tutoriales, con "¿Te sirvió?" y el paso a una persona)
-     y te lleva a hacer las cosas. Cuando sales a hacer algo, al volver te
-     pregunta si lo lograste; si algo cambió, te lo confirma.
-   Reusa: Buscador (acciones), Soporte (ayuda), PFM (finanzas y consejos)
-   y bosque3d (el mundo de Uku).
+   Asistente: Uku es la pantalla principal. Un solo punto de entrada para
+   buscar, pedir ayuda y entender tus finanzas.
+   - Inicio: Uku en su mundo, sus propuestas (carrusel), los accesos
+     (Mis finanzas, Solicitudes, Ayuda) y el campo para escribir o buscar.
+   - Ayuda, Solicitudes y Mis finanzas se abren dentro de su mundo; la
+     búsqueda es la universal, con el contexto de la sección.
+   - El chat aparece solo cuando hay algo que resolver, y se cierra al salir.
+   Reusa: Buscador (búsqueda y acciones), Soporte (ayuda), PFM (finanzas y
+   propuestas) y bosque3d (el mundo de Uku).
    ===================================================================== */
 (function () {
   'use strict';
@@ -304,13 +300,7 @@
       // Ayuda es su sección: se abre el centro de ayuda; el chat empieza cuando hay algo que resolver
       case 'ayuda': fx('tap'); salir('Ayuda'); if (window.Soporte) Soporte.open(); return;
       case 'sol': return abrirSol();
-      case 'centro': salir('encontrar lo que buscabas en la ayuda'); return Soporte.open();
       case 'persona': persona(); return pintarChat();
-      case 'agent': salir('resolverlo con el asesor'); return Soporte.run('agent');
-      case 'call': { var c = Soporte.contact(); uku('Llama al <b>' + esc(c.phone) + '</b>, las 24 horas. Dale este código al asesor y ya sabrá de qué se trata: <b>' + esc(c.caso) + '</b>.', [b('tel', 'Llamar ahora', 'call'), b('ok', 'Listo, gracias', 'thumb_up', 'is-ask')]); return pintarChat(); }
-      case 'tel': location.href = 'tel:' + Soporte.contact().phone.replace(/\s/g, ''); return;
-      case 'callback': uku('¿Cuándo te llamamos?', [b('cb:en unos minutos', 'Ahora'), b('cb:en 30 minutos', 'En 30 minutos'), b('cb:mañana entre 9:00 y 11:00', 'Mañana en la mañana')]); return pintarChat();
-      case 'cb': return resuelto('Listo. Un asesor te llama ' + esc(v) + ' y ya tiene el resumen de tu caso ' + esc(Soporte.contact().caso) + '. No tendrás que repetir nada.');
       case 'ok': return resuelto();
       case 'no': uku('Cuéntame con tus palabras qué necesitas, o te paso con una persona.', [b('persona', 'Hablar con una persona', 'support_agent')]); pintarChat(); return setTimeout(function () { input.focus(); }, 300);
       case 'consejo': { var A = consejos(); if (!A.length) return resuelto('Por ahora no tengo nada más. ¡Vas muy bien!'); var x = A[0]; uku(esc(x.di || x.t), x.act ? [b('pfm:' + x.act, x.actl, 'arrow_forward')] : []); return pintarChat(); }
