@@ -297,7 +297,7 @@
     return '<button class="sx-row" data-sx-i="' + id + '">' + ic + '<span class="sx-row__main"><b>' + main + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (right ? '<span class="sx-row__r">' + right + '</span>' : '') + '</button>';
   }
   function T(x, v) { return window.I18n ? I18n.t(x, v) : x; }
-  function ukuName() { return (window.Asistente && Asistente.name && Asistente.name()) || 'Uku'; }
+  function ukuName() { return 'Asistente'; }
   function readRec() {
     var n = results.querySelector('[data-rec="name"]'), m = results.querySelector('[data-rec="amt"]');
     if (n) rec_.name = n.value.trim();
