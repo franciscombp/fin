@@ -255,8 +255,8 @@
       case 'fin': { fx('select'); me(l); var sf = resumen(); if (!sf) { finOn(true); return; } uku('Tu saldo está en ' + money0(sf.saldo) + '. Uku está ' + sf.moodL + (sf.n ? ' y te quedan ' + sf.n + ' consumos por ordenar.' : '.') + ' ¿Qué quieres hacer?', [b('finabrir', 'Abrir Mis finanzas', 'open_in_new'), b('pfm:game', 'Clasificar ' + Math.min(10, sf.n || 0), 'category')].filter(function (x) { return x.k !== 'pfm:game' || sf.n; })); return pintarChat(); }
       case 'finabrir': fx('select'); salir('Mis finanzas'); return finOn(true);
       case 'home': fx('tap'); finOn(false); return;
-      case 'ayuda': me('Necesito ayuda'); uku('Claro. ¿Con qué te ayudo? Elige un tema o cuéntamelo con tus palabras.',
-        (Soporte.faqs ? Soporte.faqs(4) : []).map(function (f) { return b('faq:' + f.i, f.t, f.icon, 'is-ask'); }).concat([b('persona', 'Hablar con una persona', 'support_agent'), b('centro', 'Ver todos los temas', 'menu_book', 'is-ask')])); return mostrar();
+      // Ayuda es su sección: se abre el centro de ayuda; el chat empieza cuando hay algo que resolver
+      case 'ayuda': fx('tap'); salir('Ayuda'); if (window.Soporte) Soporte.open(); return;
       case 'centro': salir('encontrar lo que buscabas en la ayuda'); return Soporte.open();
       case 'persona': persona(); return pintarChat();
       case 'agent': salir('resolverlo con el asesor'); return Soporte.run('agent');
