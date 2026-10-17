@@ -487,8 +487,7 @@
         }
 
         .section__title h2 {
-            font-size: 18px;
-            font-weight: 600;
+            font: var(--ui-label-sm);
         }
 
         /* Los links usan --link-color (por defecto el azul interactivo) para que
@@ -598,6 +597,10 @@
 
         /* ---------- Tarjeta de débito con glow ---------- */
         .debit-card-wrap[hidden] { display: none !important; }
+        /* Espacio bajo el saldo: respira antes de la siguiente sección */
+        .account-card { margin-bottom: 24px; }
+        .amount-row { padding-bottom: 16px; }
+
         .debit-card-wrap {
             padding: 8px 16px 16px;
             perspective: 900px;
@@ -3390,9 +3393,7 @@
         .section { padding: 8px var(--bp-layout-grid-margin, 16px) 16px; }
         .section__title { height: 40px; margin-bottom: 8px; }
         .section__title h2 {
-            font-size: 18px;
-            line-height: 24px;
-            font-weight: 600;
+            font: var(--ui-label-sm);
             color: var(--bp-text-primary);
         }
         .section__link {
@@ -6175,6 +6176,21 @@
             document.getElementById('push-movs-section').style.display = '';
         }
 
+        // Página de "Próximamente" para acciones que todavía no tienen su función
+        function renderSoon(title, on) {
+            let el = document.getElementById('push-soon');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'push-soon';
+                el.className = 'soon';
+                document.querySelector('#push-page .push-page__inner').prepend(el);
+            }
+            el.hidden = !on;
+            if (on) el.innerHTML = '<span class="soon__ic material-symbols-rounded" aria-hidden="true">' + (pushIcons[title] || 'bolt') + '</span>' +
+                '<h2 class="soon__title">Próximamente</h2>' +
+                '<p class="soon__text">Estamos preparando ' + title.toLowerCase() + ' para ti. Mientras tanto, puedes pedirle ayuda a Uku.</p>';
+        }
+
         function openPushPage(title, originEl) {
             fx('open');
             pushPage.classList.remove('is-product', 'is-account');
@@ -6206,10 +6222,13 @@
             // específica — se ocultan para no diluir el flujo real con
             // datos que no vienen al caso.
             const hasExtra = !!ACTION_EXTRAS[title];
+            // Lo que aún no tiene pantalla propia muestra "Próximamente", no la genérica
+            const soon = !hasExtra && !PRODUCT_DETAILS[title] && title.indexOf('Cuenta') !== 0;
             document.querySelectorAll('#push-page .section').forEach(s => {
-                s.style.display = hasExtra ? 'none' : '';
+                s.style.display = (hasExtra || soon) ? 'none' : '';
             });
-            if (!hasExtra) renderPushSummary(title);
+            if (!hasExtra && !soon) renderPushSummary(title);
+            renderSoon(title, soon);
             pushHeroIcon.textContent = (PRODUCT_DETAILS[title] && PRODUCT_DETAILS[title].icon) || pushIcons[title] || 'bolt';
             pushPage.classList.remove('scrolled');
             pushPage.scrollTop = 0;
@@ -6400,6 +6419,15 @@
             let bannerPaused = false;
             const realIdxToSlide = i => i + 1;
 
+            // Salto invisible entre un clon y su original: sin snap mientras
+            // se mueve, para que el navegador no lo devuelva al clon.
+            function teleportTo(pos) {
+                const prev = bannerTrack.style.scrollSnapType;
+                bannerTrack.style.scrollSnapType = 'none';
+                goToSlidePos(pos, false);
+                requestAnimationFrame(() => { bannerTrack.style.scrollSnapType = prev; });
+            }
+
             function goToSlidePos(pos, smooth) {
                 // scrollLeft directo sobre el track (no scrollIntoView): así
                 // sólo se mueve el carrusel y nunca el scroll vertical de la
@@ -6428,14 +6456,8 @@
                 if (bannerPaused) return;
                 bannerIdx++;
                 goToSlidePos(realIdxToSlide(bannerIdx), true);
-                if (bannerIdx >= N) {
-                    // Cruzó al clon del primero: al terminar el scroll
-                    // suave, salto instantáneo (mismo aspecto) al slide 0 real.
-                    setTimeout(() => {
-                        bannerIdx = 0;
-                        goToSlidePos(realIdxToSlide(0), false);
-                    }, 420);
-                }
+                // Si llega al clon del primero, el salto al slide real lo hace
+                // el listener de scroll al asentarse (no con un tiempo fijo).
             }
 
             function startBannerAutoplay() {
@@ -6472,10 +6494,10 @@
                     });
                     if (pos === 0) { // clon del último (retrocedió de más)
                         bannerIdx = N - 1;
-                        goToSlidePos(realIdxToSlide(bannerIdx), false);
+                        teleportTo(realIdxToSlide(bannerIdx));
                     } else if (pos === slides.length - 1) { // clon del primero (avanzó de más)
                         bannerIdx = 0;
-                        goToSlidePos(realIdxToSlide(bannerIdx), false);
+                        teleportTo(realIdxToSlide(bannerIdx));
                     } else {
                         bannerIdx = pos - 1;
                     }
