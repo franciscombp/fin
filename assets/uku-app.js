@@ -73,6 +73,9 @@
     globoEl = host.querySelector('.uk-globo'); pills = host.querySelector('.uk-pills'); results = host.querySelector('.uk-results'); chat = host.querySelector('.uk-chat'); input = host.querySelector('input');
     host.querySelector('form').addEventListener('submit', function (e) { e.preventDefault(); preguntar(input.value); });
     input.addEventListener('input', function () { modo(); pintarResultados(); });
+    // En su mundo, el campo de abajo es el buscador (como deslizar desde arriba): responde o lleva a la acción.
+    // En la conversación sigue siendo el campo para hablar con Uku.
+    input.addEventListener('focus', function () { if (!msgs.length && window.Buscador) { input.blur(); Buscador.open(); } });
     view.addEventListener('click', onClick);
     document.addEventListener('pfm:change', function () { gi = 0; if (pend) pend.cambio = true; if (!msgs.length) pintar(); });
     pintar();
