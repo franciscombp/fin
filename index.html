@@ -4045,9 +4045,6 @@
                     <button class="icon-button" aria-label="Ajustes" data-top="pf-settings" data-in="1" hidden>
                         <span class="material-symbols-rounded">tune</span>
                     </button>
-                    <button class="icon-button" aria-label="Perfil" data-top="perfil" data-in="0 1 2">
-                        <span class="material-symbols-rounded">account_circle</span>
-                    </button>
                     <button class="icon-button" aria-label="Notificaciones" data-action="Notificaciones" data-in="0 4">
                         <span class="material-symbols-rounded">notifications</span>
                     </button>
@@ -5008,15 +5005,20 @@
                 <span class="nav-item__wrap"><span class="material-symbols-rounded">home</span></span>
                 <span class="nav-item__label">Inicio</span>
             </button>
-            <button class="nav-item" data-view="1">
-                <span class="nav-item__wrap"><span class="material-symbols-rounded">monitoring</span></span>
-                <span class="nav-item__label">Asistente</span>
+            <!-- Pagos no es una vista: abre el flujo de transferir (ver navItems) -->
+            <button class="nav-item nav-item--action" data-action-nav="pagos">
+                <span class="nav-item__wrap"><span class="material-symbols-rounded">send_money</span></span>
+                <span class="nav-item__label">Pagos</span>
             </button>
             <button class="nav-item" data-view="2">
                 <span class="nav-item__wrap"><span class="material-symbols-rounded">redeem</span></span>
                 <span class="nav-item__label">Beneficios</span>
             </button>
-            <button class="nav-item" data-view="4" style="display:none" aria-hidden="true" tabindex="-1">
+            <button class="nav-item" data-view="1">
+                <span class="nav-item__wrap"><span class="material-symbols-rounded">support_agent</span></span>
+                <span class="nav-item__label">Asistente</span>
+            </button>
+            <button class="nav-item" data-view="4">
                 <span class="nav-item__wrap"><span class="material-symbols-rounded">account_circle</span></span>
                 <span class="nav-item__label">Perfil</span>
             </button>
@@ -6680,10 +6682,16 @@
         window.addEventListener('scroll', () => { if (!titleRaf) titleRaf = requestAnimationFrame(() => { titleRaf = 0; collapseTitle(); }); }, { passive: true });
         document.addEventListener('i18n:change', syncTopBar);
         document.querySelector('[data-top="pf-settings"]').addEventListener('click', () => window.PFM ? PFM.settings() : window.Asistente && Asistente.settings());
-        document.querySelector('[data-top="perfil"]').addEventListener('click', () => window.__goView(4));
         syncTopBar();
 
+        // Pagos abre el flujo de transferir sin cambiar de pantalla
+        document.querySelector('[data-action-nav="pagos"]').addEventListener('click', () => {
+            const a = window.Buscador && Buscador.actions().filter(x => x.label === 'Transferir')[0];
+            if (a) Buscador.run(a);
+        });
+
         navItems.forEach((item) => {
+            if (!item.dataset.view) return; // Pagos: se maneja arriba
             const index = +item.dataset.view;
             item.addEventListener('click', () => {
                 const alreadyOnThisView = index === currentView;

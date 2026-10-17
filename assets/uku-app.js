@@ -321,7 +321,7 @@
     var nav = document.querySelector('.nav-item[data-view="1"]');
     if (nav) {
       nav.querySelector('.nav-item__label').textContent = 'Asistente';
-      nav.querySelector('.nav-item__wrap').innerHTML = '<span class="uk-navface">' + face() + '</span>';
+      nav.querySelector('.nav-item__wrap').innerHTML = ic('support_agent');
       nav.addEventListener('click', function () { finOn(false); });
     }
     // Arriba, un solo acceso: Uku en lugar de la lupa y los audífonos
