@@ -600,7 +600,10 @@
         /* ---------- Tarjeta de débito con glow ---------- */
         .debit-card-wrap[hidden] { display: none !important; }
         /* Espacio bajo el saldo: respira antes de la siguiente sección */
-        .account-card { margin-bottom: 24px; }
+        /* Secciones como grupos: título gris arriba y tarjeta redondeada con aire interno */
+        .section .card { border-radius: var(--bp-semantic-radius-md, 20px); padding: 4px 16px; }
+        .section .card > .sub-item:first-child { margin-top: 4px; }
+        .section .account-card { margin-bottom: 24px; padding: 16px 16px 20px; }
         .amount-row { padding-bottom: 16px; }
 
         .debit-card-wrap {
