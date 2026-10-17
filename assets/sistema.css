@@ -32,7 +32,7 @@
 .pv-sub { font: var(--cx-sub); color: var(--cx-muted); }
 
 /* ---------- Encabezados de sección (iguales en todas las pantallas) ---------- */
-.pf-sec h2, .as-hub__head h2, .pv-sec h2, .dw-section .section__title h2 { font: var(--cx-headline); letter-spacing: -.2px; margin: 0; }
+.pf-sec h2, .as-hub__head h2, .pv-sec h2, .dw-section .section__title h2 { font: var(--ui-label-sm); letter-spacing: 0; margin: 0; }
 .pf-sec h2 { margin-bottom: 4px; }
 .pv-sec h2 { margin-bottom: 8px; }
 .pf-sec, .as-hub__sec { padding-top: 0; margin-top: 40px; }
@@ -212,6 +212,7 @@ html:not(.theme-y2k) .section--bleed .section__title { padding: 0 var(--bp-layou
   --ui-sel-bg: var(--bp-interaction-selectable-selected-bg); --ui-sel-fg: var(--bp-interaction-selectable-selected-fg);
   --ui-label-lg: var(--bp-semantic-typography-brand-label-lg-semibold-font-weight) var(--bp-semantic-typography-brand-label-lg-semibold-font-size)/var(--bp-semantic-typography-brand-label-lg-semibold-line-height) var(--sol-font, Roboto, sans-serif);
   --ui-label-md: var(--bp-semantic-typography-brand-label-md-semibold-font-weight) var(--bp-semantic-typography-brand-label-md-semibold-font-size)/var(--bp-semantic-typography-brand-label-md-semibold-line-height) var(--sol-font, Roboto, sans-serif);
+  --ui-label-sm: var(--bp-semantic-typography-brand-label-sm-semibold-font-weight) var(--bp-semantic-typography-brand-label-sm-semibold-font-size)/var(--bp-semantic-typography-brand-label-sm-semibold-line-height) var(--sol-font, Roboto, sans-serif);
   --ui-link-lg: var(--bp-semantic-typography-brand-link-lg-font-weight) var(--bp-semantic-typography-brand-link-lg-font-size)/var(--bp-semantic-typography-brand-link-lg-line-height) var(--sol-font, Roboto, sans-serif);
   --ui-link-md: var(--bp-semantic-typography-brand-link-md-font-weight) var(--bp-semantic-typography-brand-link-md-font-size)/var(--bp-semantic-typography-brand-link-md-line-height) var(--sol-font, Roboto, sans-serif);
   --ui-body-md-medium: var(--bp-semantic-typography-brand-body-md-medium-font-weight) var(--bp-semantic-typography-brand-body-md-medium-font-size)/var(--bp-semantic-typography-brand-body-md-medium-line-height) var(--sol-font, Roboto, sans-serif);
@@ -272,7 +273,7 @@ html:not(.theme-y2k) .section__link, .cta-dashed__link, .debit-card-disabled__li
   font: var(--ui-link-md) !important; text-decoration: underline !important; text-underline-offset: 3px;
   border-radius: var(--bp-semantic-radius-sm) !important;
 }
-html:not(.theme-y2k) .section__title h2 { font: var(--cx-headline); letter-spacing: -.2px; color: var(--cx-ink); }
+html:not(.theme-y2k) .section__title h2 { font: var(--ui-label-sm); letter-spacing: 0; color: var(--cx-ink); }
 
 /* ---- bp-quick-action (accesos): botón 64×64 radius sm, secondary ---- */
 html:not(.theme-y2k) .quick-action__icon, .sx-app__ic, .pv-acts .material-symbols-rounded {
@@ -395,7 +396,7 @@ html:not(.theme-y2k) .section--bleed > .section__title { padding: 0 var(--bp-lay
 html:not(.theme-y2k) .push-page__inner .section, html:not(.theme-y2k) .cd-inner .section { padding-left: 0 !important; padding-right: 0 !important; }
 html:not(.theme-y2k) .section__title { height: var(--bp-semantic-size-interactive-xs); gap: var(--bp-semantic-spacing-micro-lg); }
 html:not(.theme-y2k) .section__title h2, .pf-sec h2, .as-hub__head h2, .pv-sec h2, .dw-section .section__title h2, html:not(.theme-y2k) .cd-subtitle {
-  font: var(--cx-headline) !important; letter-spacing: 0 !important; color: var(--bp-theme-color-text-primary) !important;
+  font: var(--ui-label-sm) !important; letter-spacing: 0 !important; color: var(--bp-theme-color-text-primary) !important;
 }
 .pf-head h1, .as-hub__hi { font: var(--cx-page) !important; letter-spacing: 0 !important; }
 .pv-value { font: var(--cx-amount) !important; letter-spacing: 0 !important; }
