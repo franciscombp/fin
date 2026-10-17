@@ -6530,7 +6530,7 @@
         function bannerSlideHTML(s) {
             return `
                 <div class="home-banner__slide home-banner__slide--photo home-banner__slide--${s.theme} home-banner__slide--on-${s.tone || 'dark'}" data-action="${s.act || s.cta}">
-                    <img class="home-banner__photo" src="./assets/banners/${s.photo}.png" alt="" draggable="false"
+                    <img class="home-banner__photo" src="./assets/banners/${s.photo}.png" alt="" draggable="false" decoding="sync" fetchpriority="high"
                          onerror="this.closest('.home-banner__slide').classList.add('is-nophoto'); this.remove();">
                     <div class="home-banner__text">
                         <p class="home-banner__title">${s.title}</p>
@@ -6554,6 +6554,9 @@
                 bannerSlideHTML(BANNER_SLIDES[N - 1]) +
                 BANNER_SLIDES.map(bannerSlideHTML).join('') +
                 bannerSlideHTML(BANNER_SLIDES[0]);
+
+            // Precarga y decodificación de todas las fotos: al deslizar, el siguiente ya está listo
+            BANNER_SLIDES.forEach(s => { const im = new Image(); im.decoding = 'sync'; im.src = './assets/banners/' + s.photo + '.png'; im.decode && im.decode().catch(() => {}); });
 
             const slides = [...bannerTrack.children];
             // bannerIdx es el índice REAL (0..N-1); realIdxToSlide(i) da la
