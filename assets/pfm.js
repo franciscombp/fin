@@ -483,7 +483,7 @@
     dock.addEventListener('click', function () { if (window.Buscador) Buscador.open(); });
     var view = document.querySelector('.view[data-view="1"]');
     var sync = function () {
-      dock.classList.toggle('is-on', view.classList.contains('active'));
+      dock.classList.toggle('is-on', view.classList.contains('active') && view.classList.contains('uk-fin'));
       var nav = document.querySelector('.nav-bar'); if (nav) dock.style.bottom = nav.offsetHeight + 'px';
     };
     new MutationObserver(sync).observe(view, { attributes: true, attributeFilter: ['class'] });
