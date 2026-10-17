@@ -129,3 +129,7 @@
 .sp-tutpage .pf-cta { width: 100%; }
 .sp-tutpage__more { margin: 16px 0 0; text-align: center; font: var(--ui-body-sm-regular); color: var(--bp-theme-color-text-secondary); }
 .sp-row__ic { background: var(--bp-theme-color-avatar-bg) !important; color: var(--bp-theme-color-avatar-fg) !important; }
+
+/* Ayuda: el único buscador es el universal (lupa arriba); sus campos propios quedan ocultos y el chat solo aparece al conversar */
+.sp-find { display: none !important; }
+.sp:not(.is-chat):not(.is-agent) .sp-composer { display: none !important; }
