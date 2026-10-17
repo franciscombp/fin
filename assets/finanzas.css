@@ -93,6 +93,9 @@
 .pf-meter { --tone: var(--bp-interaction-tertiary-fg); display: flex; flex-direction: column; gap: 10px; width: 100%; padding: 20px 0; border: 0; border-bottom: 1px solid var(--cx-line); background: none; color: var(--bp-theme-color-text-primary); text-align: left; font: inherit; }
 button.pf-meter { cursor: pointer; }
 .pf-meter:last-child { border-bottom: 0; }
+/* Grupo de tarjeta (como Inicio): título gris encima y filas con aire */
+.pf-sec .card, .pfm-dest .pf-mcard { border-radius: var(--bp-semantic-radius-md, 20px); }
+.pf-sec .pf-meter { padding: 16px; }
 .pf-meter__top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .pf-meter__name { min-width: 0; font: var(--ui-body-lg-medium, 500 17px/24px sans-serif); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pf-meter__right { flex: 0 0 auto; font: var(--ui-body-md-regular, 400 15px/22px sans-serif); color: var(--cx-muted); font-variant-numeric: tabular-nums; }
