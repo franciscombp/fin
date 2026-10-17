@@ -241,27 +241,28 @@
   /* ---------- Ayuda dentro del mundo de Uku ----------
      Primero lo que se toca (temas frecuentes y acciones); si no sirve, se busca en ayuda
      con la misma caja; si tampoco aparece, la frase pasa a Uku. */
-  var sec = null, secQ = '';
+  var sec = null, secQ = '', todos = false;
   function row(s, icon, t, sub) { return '<button class="uk-sec__row" data-s="' + s + '">' + ic(icon) + '<span><b>' + esc(t) + '</b><small>' + esc(sub) + '</small></span></button>'; }
   function abrirAyuda() {
-    mountSec(); secQ = ''; sec.querySelector('input').value = ''; pintarSec(); sec.hidden = false; fx('open');
+    mountSec(); secQ = ''; todos = false; sec.querySelector('input').value = ''; pintarSec(); sec.hidden = false; host.classList.add('uk-in-sec'); fx('open');
   }
-  function cerrarAyuda() { if (sec) sec.hidden = true; }
+  function cerrarAyuda() { if (sec) sec.hidden = true; host.classList.remove('uk-in-sec'); }
   function mountSec() {
     if (sec) return;
     sec = document.createElement('section'); sec.className = 'uk-sec'; sec.hidden = true; sec.setAttribute('aria-label', 'Ayuda');
+    // Una sola caja de búsqueda, arriba. El chat solo aparece cuando hay algo que resolver
     sec.innerHTML = '<div class="uk-sec__top"><button class="uk-sec__back" data-s="back" aria-label="Volver">' + ic('arrow_back') + '</button><p class="uk-sec__t">Ayuda</p></div>' +
-      '<div class="uk-sec__body"></div>' +
-      '<form class="uk-sec__bar" role="search">' + ic('search') + '<input type="text" enterkeyhint="search" autocomplete="off" placeholder="Busca en ayuda o pregunta" aria-label="Busca en ayuda o pregunta"></form>';
+      '<form class="uk-sec__bar" role="search">' + ic('search') + '<input type="search" enterkeyhint="search" autocomplete="off" placeholder="Busca en ayuda" aria-label="Busca en ayuda"></form>' +
+      '<div class="uk-sec__body"></div>';
     host.appendChild(sec);
     sec.addEventListener('click', function (e) {
       var b = e.target.closest('[data-s]'); if (!b) return;
       var v = b.dataset.s, i = v.indexOf(':'), k = i < 0 ? v : v.slice(0, i), x = i < 0 ? '' : v.slice(i + 1);
       fx('tap');
-      if (k === 'back') return cerrarAyuda();
+      if (k === 'back') { if (todos || secQ) { todos = false; secQ = ''; sec.querySelector('input').value = ''; return pintarSec(); } return cerrarAyuda(); }
       if (k === 'faq') return Soporte.openFaq(+x);
       if (k === 'tut') return Soporte.openTut(+x);
-      if (k === 'todos') return Soporte.open();
+      if (k === 'todos') { todos = true; return pintarSec(); }
       if (k === 'persona') { cerrarAyuda(); persona(); return pintarChat(); }
       if (k === 'chat') { var q = secQ; cerrarAyuda(); return preguntar(q); }
     });
@@ -276,6 +277,11 @@
   // Solo se repinta el listado: la caja conserva lo escrito y el foco
   function pintarSec() {
     var body = sec.querySelector('.uk-sec__body');
+    if (todos && !secQ) {
+      body.innerHTML = '<p class="uk-sec__l">Preguntas frecuentes</p>' + (window.Soporte ? Soporte.faqs().map(function (f) { return row('faq:' + f.i, f.icon, f.t, 'Pregunta frecuente'); }).join('') : '') +
+        '<p class="uk-sec__l">Tutoriales</p>' + (window.Soporte ? Soporte.tuts().map(function (x) { return row('tut:' + x.i, x.icon, x.t, 'Tutorial'); }).join('') : '');
+      return;
+    }
     if (!secQ) {
       body.innerHTML = '<p class="uk-sec__l">Lo más pedido</p>' + (window.Soporte ? Soporte.faqs(4).map(function (f) { return row('faq:' + f.i, f.icon, f.t, 'Pregunta frecuente'); }).join('') : '') +
         row('todos', 'menu_book', 'Ver todos los temas', 'Preguntas, tutoriales y contacto') + row('persona', 'support_agent', 'Hablar con una persona', 'Le cuento a Uku lo que pasó');
