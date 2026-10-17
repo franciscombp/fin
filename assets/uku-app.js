@@ -28,7 +28,7 @@
   function face() { return window.Asistente ? Asistente.faceIMG() : ''; }
   function ic(n) { return '<span class="material-symbols-rounded" aria-hidden="true">' + n + '</span>'; }
 
-  var view, host, globoEl, pills, results, chat, input, b3d = null;
+  var view, host, globoEl, props, pills, results, chat, input, b3d = null;
   var msgs = [], gi = 0, nota = null, ultimo = 0;
   var pend = null; // lo que saliste a hacer: al volver, Uku pregunta cómo te fue
 
@@ -63,6 +63,7 @@
         '<button class="uk-head__set" data-k="ajustes" aria-label="Ajustes" aria-expanded="false">' + ic('settings') + '</button>' +
         '<div class="uk-menu" hidden><button data-k="demo">Ver como</button><button data-k="salir">Versión anterior</button></div></div></div>' +
       '<div class="uk-globo" aria-live="polite"></div>' +
+      '<div class="uk-props" hidden></div>' +
       '<div class="uk-chat" aria-live="polite"></div>' +
       '<div class="uk-pills"></div>' +
       '<div class="uk-results"></div>' +
@@ -70,7 +71,7 @@
         '<label class="uk-bar__f">' + ic('search') + '<input type="text" enterkeyhint="send" autocomplete="off" placeholder="Pregunta o pide algo" aria-label="Pregunta o pide algo"></label>' +
         '</form>' +
       '';
-    globoEl = host.querySelector('.uk-globo'); pills = host.querySelector('.uk-pills'); results = host.querySelector('.uk-results'); chat = host.querySelector('.uk-chat'); input = host.querySelector('input');
+    props = host.querySelector('.uk-props'); globoEl = host.querySelector('.uk-globo'); pills = host.querySelector('.uk-pills'); results = host.querySelector('.uk-results'); chat = host.querySelector('.uk-chat'); input = host.querySelector('input');
     host.querySelector('form').addEventListener('submit', function (e) { e.preventDefault(); preguntar(input.value); });
     input.addEventListener('input', function () { modo(); pintarResultados(); });
     // En su mundo, el campo de abajo es el buscador (como deslizar desde arriba): responde o lleva a la acción.
@@ -92,7 +93,22 @@
       if (es && b3d) b3d.play(null); // en la conversación se queda quieto
     }
   }
-  function pintar() { modo(); pintarCabeza(); pintarGlobo(); pintarAccesos(); pintarChat(); pintarResultados(); }
+  function pintar() { modo(); pintarCabeza(); pintarPropuestas(); pintarGlobo(); pintarAccesos(); pintarChat(); pintarResultados(); }
+  // Lo que Uku te propone (antes en Mis finanzas): un carrusel arriba, con puntos y una acción por tarjeta
+  function pintarPropuestas() {
+    var A = consejos().slice(0, 6);
+    props.hidden = !A.length; globoEl.style.display = A.length ? 'none' : '';
+    if (!A.length) return;
+    props.innerHTML = '<div class="uk-props__track">' + A.map(function (x) {
+      return '<article class="uk-prop"><p class="uk-prop__tag">' + ic(x.icon || 'lightbulb') + esc(x.tag || 'Te propongo') + '</p><p class="uk-prop__t">' + esc(x.t) + '</p>' +
+        (x.act ? '<button class="pf-cta uk-prop__go" data-k="pfm:' + esc(x.act) + '" data-l="' + esc(x.actl || x.t) + '">' + esc(x.actl || 'Ver') + '</button>' : '') + '</article>';
+    }).join('') + '</div><div class="uk-props__dots">' + A.map(function (_, i) { return '<i' + (i ? '' : ' class="is-on"') + '></i>'; }).join('') + '</div>';
+    var tr = props.querySelector('.uk-props__track'), dots = props.querySelectorAll('.uk-props__dots i');
+    tr.addEventListener('scroll', function () {
+      var w = tr.firstElementChild.offsetWidth + 10, n = Math.round(tr.scrollLeft / w);
+      dots.forEach(function (d, i) { d.classList.toggle('is-on', i === n); });
+    }, { passive: true });
+  }
   // Cabecera de la sección: el título grande y el ánimo de Uku (abre qué significa su mundo)
   function pintarCabeza() {
     var s = resumen(), m = host.querySelector('.uk-head__mood');
