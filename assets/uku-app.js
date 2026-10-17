@@ -112,6 +112,7 @@
   function pintarAccesos() {
     var s = resumen(), A = consejos(), p = function (k, icon, t, sub) { return '<button class="uk-pill" data-k="' + k + '" data-l="' + esc(t) + '">' + ic(icon) + '<span><b>' + esc(t) + '</b>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span></button>'; };
     pills.innerHTML = p('fin', 'monitoring', 'Mis finanzas', s ? 'Saldo ' + money0(s.saldo) : '') +
+      p('sol', 'assignment', 'Solicitudes', 'Revisar o pedir algo') +
       (s && s.n ? p('pfm:game', 'category', 'Clasificar ' + Math.min(10, s.n), 'Uku está ' + s.moodL) : '') +
       (A.length > 1 ? p('pfm:insights', 'lightbulb', 'Tus consejos', A.length + ' para ti') : '') +
       p('ayuda', 'support_agent', 'Ayuda', 'Preguntas y contacto');
@@ -238,6 +239,36 @@
     if (window.AppScroll) AppScroll.to({ top: 0 }); else window.scrollTo(0, 0);
     if (on) { if (window.PFM) PFM.paint(); } else setTimeout(escena, 60);
   }
+  /* ---------- Solicitudes dentro del mundo de Uku ----------
+     Lo que se puede pedir o revisar, a un toque; la búsqueda es la universal (contexto: solicitudes). */
+  var solSec = null;
+  function solRows() {
+    var rows = [row('rev', 'receipt_long', 'Revisar un consumo que no reconoces', 'Pedimos la revisión por ti')];
+    ['Préstamos', 'Mis tarjetas', 'Seguridad'].forEach(function (l) { var a = accion(l); if (a) rows.push(row('act:' + l, a.icon, l, 'Pedir o revisar')); });
+    rows.push(row('persona', 'support_agent', 'Hablar con una persona', 'Le cuento a Uku lo que pasó'));
+    return rows.join('');
+  }
+  function row(s, icon, t, sub) { return '<button class="uk-sec__row" data-s="' + esc(s) + '">' + ic(icon) + '<span><b>' + esc(t) + '</b><small>' + esc(sub) + '</small></span></button>'; }
+  function abrirSol() {
+    if (!solSec) {
+      solSec = document.createElement('section'); solSec.className = 'uk-sec'; solSec.hidden = true; solSec.setAttribute('aria-label', 'Solicitudes');
+      solSec.innerHTML = '<div class="uk-sec__top"><button class="uk-sec__back" data-s="back" aria-label="Volver">' + ic('arrow_back') + '</button><p class="uk-sec__t">Solicitudes</p>' +
+        '<button class="uk-sec__back uk-sec__find" data-s="buscar" aria-label="Buscar">' + ic('search') + '</button></div>' +
+        '<div class="uk-sec__body">' + '<p class="uk-sec__l">Lo que puedes pedir</p>' + solRows() + '</div>';
+      host.appendChild(solSec);
+      solSec.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-s]'); if (!b) return;
+        var v = b.dataset.s, i = v.indexOf(':'), k = i < 0 ? v : v.slice(0, i), x = i < 0 ? '' : v.slice(i + 1);
+        fx('tap');
+        if (k === 'back') { solSec.hidden = true; host.classList.remove('uk-in-sec'); return; }
+        if (k === 'buscar') return window.Buscador && Buscador.open('solicitudes');
+        if (k === 'rev') return window.Soporte && Soporte.review();
+        if (k === 'persona') { solSec.hidden = true; host.classList.remove('uk-in-sec'); persona(); return pintarChat(); }
+        if (k === 'act') { var a = accion(x); if (a && window.Buscador) { solSec.hidden = true; host.classList.remove('uk-in-sec'); Buscador.run(a); } }
+      });
+    }
+    solSec.hidden = false; host.classList.add('uk-in-sec'); fx('open');
+  }
   function onClick(e) {
     var el = e.target.closest('[data-k]');
     if (!el || !view.contains(el)) return;
@@ -257,6 +288,7 @@
       case 'home': fx('tap'); finOn(false); return;
       // Ayuda es su sección: se abre el centro de ayuda; el chat empieza cuando hay algo que resolver
       case 'ayuda': fx('tap'); salir('Ayuda'); if (window.Soporte) Soporte.open(); return;
+      case 'sol': return abrirSol();
       case 'centro': salir('encontrar lo que buscabas en la ayuda'); return Soporte.open();
       case 'persona': persona(); return pintarChat();
       case 'agent': salir('resolverlo con el asesor'); return Soporte.run('agent');
