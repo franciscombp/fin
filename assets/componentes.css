@@ -18,7 +18,9 @@ html:not(.theme-y2k) .section__title h2 {
   padding: var(--bp-layout-card-padding, 16px);
 }
 .card:has(> .sub-item),
-.card:has(> .pf-meter) {
+.card:has(> .pf-meter),
+.card:has(> .list-item),
+.card:has(> .product-row) {
   padding: 0;
 }
 .card > .sub-item,
