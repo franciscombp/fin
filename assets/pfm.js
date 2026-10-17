@@ -693,7 +693,6 @@
   }
   function ukuHTML() {
     var m = curMes(), a = animo(), L = consejos(), g = globo(a), pend = L.filter(function (x) { return !x.done; }).length;
-    var resto = L.filter(function (x) { return x.id !== g.id; });
     return '<section class="pf-sec pfm-uku pf-mood--' + a.k + (tobe() ? ' is-tobe' : '') + '">' +
       '<div class="pf-sec__head"><h2>' + T('Tu asistente') + '</h2></div>' +
       '<div class="pf-hero pfm-hero"><div class="b3d" data-shift=".2" data-score="' + salud(m) + '" data-bloom="' + flores() + '" data-mood="' + a.k + '"><div class="b3d__fallback">' + (window.Asistente ? Asistente.petSVG() : '') + '</div></div>' +
@@ -705,8 +704,6 @@
       (tobe() ? '<div class="pfm-uku__acts"><button class="pf-link" data-pfm="analyze"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + T('Analizar con IA') + '</button>' +
         '<button class="pf-link" data-pfm="ai:"><span class="material-symbols-rounded" aria-hidden="true">chat_bubble</span>' + T('Pregúntale') + '</button></div>' : '') +
       worldHTML(a) +
-      (resto.length ? '<div class="pfm-tips"><p class="pfm-tips__l">' + T('También te propongo') + '</p>' + resto.slice(0, 3).map(consejoHTML).join('') +
-        (resto.length > 3 ? '<button class="pf-link pf-link--block" data-pfm="insights">' + T('Ver los {n} consejos', { n: L.length }) + '</button>' : '') + '</div>' : '') +
       '</section>';
   }
   // Qué significa cada cosa del mundo de Uku

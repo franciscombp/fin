@@ -64,7 +64,7 @@ html.uk-idle, html.uk-idle body { overflow: hidden; overscroll-behavior: none; }
 /* Escribiendo: los resultados suben sobre su mundo */
 .uk-results { position: absolute; z-index: 4; left: 12px; right: 12px; bottom: 80px; max-height: calc(100% - 100px); padding: 4px 16px 8px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); box-shadow: 0 4px 20px rgba(15, 38, 92, .14); overflow-y: auto; animation: ukIn .25s ease both; }
 .uk:not(.is-typing) .uk-results { display: none; }
-.uk.is-typing .uk-pills, .uk.is-typing .uk-globo, .uk.is-typing .uk-exit, .uk.is-chat .uk-pills, .uk.is-chat .uk-globo, .uk.is-chat .uk-exit { opacity: 0; pointer-events: none; transform: translateY(-6px); }
+.uk.is-typing .uk-props, .uk.is-chat .uk-props, .uk.is-typing .uk-pills, .uk.is-typing .uk-globo, .uk.is-typing .uk-exit, .uk.is-chat .uk-pills, .uk.is-chat .uk-globo, .uk.is-chat .uk-exit { opacity: 0; pointer-events: none; transform: translateY(-6px); }
 .uk.is-typing .uk-chat { opacity: .15; }
 .uk-results__l { margin: 12px 0 0 !important; font: var(--cx-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
 .uk-row { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 56px; padding: 8px 0; border: 0; border-bottom: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); background: none; color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; }
@@ -123,6 +123,20 @@ html.uk-idle, html.uk-idle body { overflow: hidden; overscroll-behavior: none; }
 .uk-sec__row > span:last-child { display: flex; flex-direction: column; min-width: 0; }
 .uk-sec__row b { font: var(--ui-body-sm-semibold); }
 .uk-sec__row small { font: var(--cx-caption); color: var(--cx-muted); }
+
+/* Propuestas de Uku: carrusel arriba con puntos (como las tarjetas de la referencia) */
+.uk-props { position: absolute; z-index: 3; top: 60px; left: 12px; right: 12px; transition: opacity .3s ease; }
+.uk-props[hidden] { display: none; }
+.uk-props__track { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.uk-props__track::-webkit-scrollbar { display: none; }
+.uk-prop { flex: 0 0 100%; scroll-snap-align: start; box-sizing: border-box; padding: 18px; border-radius: 20px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 8px 24px rgb(0 0 0 / .08); display: flex; flex-direction: column; gap: 8px; }
+.uk-prop__tag { margin: 0 !important; display: flex; align-items: center; gap: 6px; font: var(--cx-caption); color: var(--cx-muted); }
+.uk-prop__tag .material-symbols-rounded { font-size: 18px; }
+.uk-prop__t { margin: 0 !important; font: var(--cx-headline); font-size: 18px; line-height: 24px; color: var(--bp-interaction-tertiary-fg); }
+.uk-prop__go { align-self: flex-start; margin-top: 4px !important; }
+.uk-props__dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+.uk-props__dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--cx-line, #c9ced8); transition: width .2s ease, background .2s ease; }
+.uk-props__dots i.is-on { width: 18px; background: var(--bp-interaction-tertiary-fg); }
 
 /* Chat a pantalla completa: sin barra superior ni de navegación */
 html.uk-chatting .header, html.uk-chatting .nav-bar { display: none !important; }
