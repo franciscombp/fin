@@ -108,6 +108,11 @@ html.uk-idle, html.uk-idle body { overflow: hidden; overscroll-behavior: none; }
 .uk.is-chat .uk-scene { transform: scale(1.08); filter: blur(10px); opacity: .5; }
 .uk-chatbg { position: absolute; inset: 0; z-index: 2; background: var(--bp-surface-page, #f5f5f5); opacity: 0; pointer-events: none; transition: opacity .45s ease; }
 .uk.is-chat .uk-chatbg { opacity: .92; }
+/* Chat a pantalla completa: sin barra superior ni de navegación */
+html.uk-chatting .header, html.uk-chatting .nav-bar { display: none !important; }
+html.uk-chatting .uk { top: 0 !important; bottom: 0 !important; }
+html.uk-chatting .uk-chathead { padding-top: calc(12px + env(safe-area-inset-top, 0px)); }
+html.uk-chatting .uk-bar { bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
 .uk-chathead { position: absolute; z-index: 6; left: 0; right: 0; top: 0; display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 16px; background: var(--bp-surface-page, #f5f5f5); border-bottom: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); transform: translateY(-100%); opacity: 0; pointer-events: none; transition: transform .4s cubic-bezier(.2, .8, .2, 1), opacity .3s ease; }
 .uk.is-chat .uk-chathead { transform: none; opacity: 1; pointer-events: auto; transition-delay: .1s; }
 .uk-chathead__face { flex: 0 0 40px; width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: var(--bp-interaction-primary-bg, #ffdd00); }

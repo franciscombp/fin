@@ -81,6 +81,8 @@
     var era = host.classList.contains('is-chat'), es = msgs.length > 0;
     host.classList.toggle('is-typing', !!input.value.trim());
     host.classList.toggle('is-chat', es);
+    // En la conversación no hay barra superior ni inferior: el chat ocupa la pantalla
+    document.documentElement.classList.toggle('uk-chatting', es && view.classList.contains('active'));
     if (era !== es) {
       input.placeholder = es ? 'Escríbele a Uku' : 'Habla con Uku o busca algo';
       if (!es && b3d) setTimeout(function () { b3d.play('wave'); setTimeout(function () { if (!msgs.length) b3d.play('walk'); }, 2200); }, 350); // vuelve a su mundo, saluda y camina
