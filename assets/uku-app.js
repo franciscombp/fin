@@ -86,7 +86,7 @@
     if (!A.length) return;
     props.innerHTML = '<div class="uk-props__track">' + A.map(function (x) {
       return '<article class="uk-prop"><p class="uk-prop__tag">' + ic(x.icon || 'lightbulb') + esc(x.tag || 'Te propongo') + '</p><p class="uk-prop__t">' + esc(x.t) + '</p>' +
-        (x.act ? '<button class="pf-cta uk-prop__go" data-k="pfm:' + esc(x.act) + '" data-l="' + esc(x.actl || x.t) + '">' + esc(x.actl || 'Ver') + '</button>' : '') + '</article>';
+        (x.act ? '<button class="btn btn--tertiary uk-prop__go" data-k="pfm:' + esc(x.act) + '" data-l="' + esc(x.actl || x.t) + '">' + esc(x.actl || 'Ver') + '</button>' : '') + '</article>';
     }).join('') + '</div><div class="uk-props__dots">' + A.map(function (_, i) { return '<i' + (i ? '' : ' class="is-on"') + '></i>'; }).join('') + '</div>';
     var tr = props.querySelector('.uk-props__track'), dots = props.querySelectorAll('.uk-props__dots i');
     tr.addEventListener('scroll', function () {

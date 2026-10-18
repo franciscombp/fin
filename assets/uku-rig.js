@@ -57,7 +57,7 @@ function solveChain(ch, bones, nodes) {
   aim(fo, _c.clone().sub(_e), _t.clone().sub(_e));
 }
 
-export async function loadUkuRig(container, { onLog = console.log } = {}) {
+export async function loadUkuRig(container, { onLog = console.log, frame = { dist: 4.2, y: .85 } } = {}) {
   const gltf = await new Promise((ok, fail) => new GLTFLoader().load(new URL(MODEL, import.meta.url).href, ok, undefined, fail));
   const root = gltf.scene;
   const report = { errors: [], warnings: [] };
@@ -98,7 +98,7 @@ export async function loadUkuRig(container, { onLog = console.log } = {}) {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#f6f6f5');
   const camera = new THREE.PerspectiveCamera(30, 1, .05, 50);
-  camera.position.set(0, 1.1, 4.2); camera.lookAt(0, .85, 0);
+  camera.position.set(0, frame.y + .25, frame.dist); camera.lookAt(0, frame.y, 0);
   scene.add(new THREE.AmbientLight('#ffffff', 1.4));
   const sun = new THREE.DirectionalLight('#ffffff', 1.2); sun.position.set(2, 4, 3); scene.add(sun);
   const floor = new THREE.Mesh(new THREE.CircleGeometry(6, 48), new THREE.MeshLambertMaterial({ color: '#e7ebf2' }));
@@ -202,7 +202,7 @@ export function ukuAdapter() {
     attach(host, opts = {}) {
       if (el === host) return;
       el = host; onTap = opts.onTap || null;
-      loadUkuRig(host, { onLog: () => {} }).then(r => {
+      loadUkuRig(host, { onLog: () => {}, frame: { dist: 6.4, y: 1.0 } }).then(r => {
         rig = r; r.start(); apply(want);
         host.addEventListener('pointerup', () => { if (onTap) onTap(); });
       });

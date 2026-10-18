@@ -120,15 +120,17 @@ html:not(.theme-y2k) .uk-globo__go.btn { height: auto !important; min-height: 0 
 .uk-sec__row small { font: var(--cx-caption); color: var(--cx-muted); }
 
 /* Propuestas de Uku: carrusel arriba con puntos (como las tarjetas de la referencia) */
-.uk-props { position: absolute; z-index: 3; top: 60px; left: 12px; right: 12px; transition: opacity .3s ease; }
+.uk-props { position: absolute; z-index: 3; top: 64px; left: 16px; width: min(78%, 300px); transition: opacity .3s ease; }
 .uk-props[hidden] { display: none; }
 .uk-props__track { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .uk-props__track::-webkit-scrollbar { display: none; }
-.uk-prop { flex: 0 0 100%; scroll-snap-align: start; box-sizing: border-box; padding: 18px; border-radius: 20px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 8px 24px rgb(0 0 0 / .08); display: flex; flex-direction: column; gap: 8px; }
-.uk-prop__tag { margin: 0 !important; display: flex; align-items: center; gap: 6px; font: var(--cx-caption); color: var(--cx-muted); }
-.uk-prop__tag .material-symbols-rounded { font-size: 18px; }
-.uk-prop__t { margin: 0 !important; font: var(--cx-headline); font-size: 18px; line-height: 24px; color: var(--bp-interaction-tertiary-fg); }
-.uk-prop__go { align-self: flex-start; margin-top: 4px !important; }
+.uk-prop { position: relative; flex: 0 0 100%; scroll-snap-align: start; box-sizing: border-box; padding: 12px 14px; border-radius: 18px 18px 18px 4px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 18px rgba(15, 38, 92, .10); display: flex; flex-direction: column; gap: 4px; }
+.uk-prop::after { content: ''; position: absolute; left: 12px; bottom: -8px; border: 8px solid transparent; border-bottom: 0; border-top-color: var(--bp-theme-color-surface-container-default); }
+.uk-prop__tag { margin: 0 !important; display: flex; align-items: center; gap: 4px; font: var(--cx-caption); color: var(--cx-muted); }
+.uk-prop__tag .material-symbols-rounded { font-size: 16px; }
+.uk-prop__t { margin: 0 !important; font-size: 15px; line-height: 21px; font-weight: 400; color: var(--bp-theme-color-text-primary); }
+.uk-prop__go { align-self: flex-start; margin-top: 2px !important; }
+html:not(.theme-y2k) .uk-prop__go.btn { height: auto !important; min-height: 0 !important; padding: 0 !important; font-size: 14px !important; }
 .uk-props__dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
 .uk-props__dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--cx-line, #c9ced8); transition: width .2s ease, background .2s ease; }
 .uk-props__dots i.is-on { width: 18px; background: var(--bp-interaction-tertiary-fg); }
