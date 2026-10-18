@@ -25,9 +25,10 @@ const D = THREE.MathUtils.degToRad;
 const lerp = THREE.MathUtils.lerp;
 
 let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
-let bear = null, bones = {}, forest, held = null, ground, walkSpeed = 0, walkOffset = 0;
-// El bosque da la vuelta en esta franja de z: el borde cercano cae fuera de cuadro y el lejano queda en la niebla
-const WALK_Z0 = -4.6, WALK_Z1 = 1;
+let bear = null, bones = {}, forest, held = null, ground, stage = null, walkAng = 0, walkAmt = 0;
+// Mundo pequeño: un planeta esférico de radio PLANET_R; su punto más alto está bajo los pies de Uku.
+// SPOT_F convierte las posiciones planas del bosque en distancias sobre la esfera.
+const PLANET_R = .6, SPOT_F = .18, PLANET_C = new THREE.Vector3(0, -.6, 0);
 let score = 50, shown = 0; // shown: puntaje con el que está dibujado el bosque
 // bloom: flores amarillas del campo (0–100, ahorro); null = como antes (salen con el bosque)
 // mood: ánimo que se queda (feliz, tranquilo, pensativo); null = solo los gestos
@@ -158,6 +159,29 @@ function makeDecor(p, pal) {
   const g = new THREE.Group(); g.add(m); g.position.set(p.x, 0, p.z); g.userData.base = p.s; return g;
 }
 
+const _dir = new THREE.Vector3(), _tan = new THREE.Vector3(), _X = new THREE.Vector3(), _Mb = new THREE.Matrix4();
+const _cam = new THREE.Vector3(), _look = new THREE.Vector3(), _camUp = new THREE.Vector3();
+// Uku sobre la superficie: su eje vertical es la normal del planeta y su frente, la tangente
+function placeStage() {
+  const c = Math.cos(walkAng), s = Math.sin(walkAng);
+  _dir.set(0, c, -s); _tan.set(0, -s, -c);
+  _X.crossVectors(_dir, _tan);
+  stage.quaternion.setFromRotationMatrix(_Mb.makeBasis(_X, _dir, _tan));
+  stage.position.copy(PLANET_C).addScaledVector(_dir, PLANET_R);
+  stage.updateMatrixWorld(true);
+}
+// Pone un árbol, roca o flor sobre la esfera: sus coordenadas planas son arcos de la esfera
+const _sp = new THREE.Vector3(), _nrm = new THREE.Vector3(0, 1, 0);
+function placeOnPlanet(o) {
+  // Ángulo = distancia mínima + avance: nada queda pegado al oso, y la esfera se llena hacia afuera
+  // Carril libre al centro: nada queda justo en el camino de Uku
+  const ax = Math.sign(o.position.x) * (.6 + SPOT_F * Math.abs(o.position.x));
+  const az = Math.sign(o.position.z) * (.55 + SPOT_F * Math.abs(o.position.z));
+  _sp.set(Math.sin(ax), Math.cos(ax) * Math.cos(az), Math.cos(ax) * Math.sin(az));
+  o.position.copy(PLANET_C).addScaledVector(_sp, PLANET_R);
+  o.quaternion.setFromUnitVectors(_nrm, _sp);
+}
+
 /* El bosque se actualiza por diferencia: al cambiar el puntaje sólo crecen
    los árboles que faltan y se encogen los que sobran; nada se recrea de
    golpe, así cambiar de mes no parpadea. (full = rehacer, p. ej. al cambiar
@@ -195,7 +219,7 @@ function buildForest(full) {
     if (have[k]) return;
     const o = want[k](); o.userData.key = k; o.userData.dir = 1;
     o.userData.grow = full ? 1 : 0; o.scale.setScalar(o.userData.base * (full ? 1 : .001));
-    o.userData.bz = o.position.z;
+    placeOnPlanet(o);
     forest.add(o);
   });
   shown = score;
@@ -287,7 +311,7 @@ function target(name, t) {
   const g = POSES[gesture](gestureT)[name];
   return g || r;
 }
-const BEAR_S = .62, WALK_SPEED = .32; // Uku más pequeño para dejar lugar a las tarjetas; al caminar, el bosque pasa hacia la cámara (unidades/s)
+const BEAR_S = .62, WALK_ANG = .35; // Uku más pequeño para dejar lugar a las tarjetas; al caminar avanza sobre el planeta (rad/s)
 const BONES = ['hips', 'spine', 'chest', 'neck', 'head', 'shoulder_L', 'shoulder_R', 'upperarm_L', 'upperarm_R', 'forearm_L', 'forearm_R', 'hand_L', 'hand_R', 'thigh_L', 'thigh_R'];
 // Nombres de la pose (arriba) → huesos del modelo nuevo, con el nombre que three.js
 // les guarda (sin puntos). spine001 y spine002 son el torso medio y alto; "chest" es
@@ -489,16 +513,14 @@ function frame(now) {
     const hop = gesture === 'happy' ? Math.abs(Math.sin(gestureT * 6)) * .05 : mood === 'feliz' && !gesture && !RM ? Math.abs(Math.sin(t * 2.4)) * .018 : 0;
     bear.position.y = lerp(bear.position.y, .45 * BEAR_S + hop, Math.min(1, dt * 10));
     bear.position.x = lerp(bear.position.x, 0, Math.min(1, dt * 3));
-    // Caminando: Uku se da la vuelta (de espaldas a la cámara) y avanza; el bosque
-    // pasa hacia la cámara bajo él. Sin fin mientras camine; al parar vuelve de frente.
-    bear.rotation.y = lerp(bear.rotation.y, gesture === 'walk' && !RM ? Math.PI : 0, Math.min(1, dt * 3));
+    // Caminando, Uku mira hacia donde avanza; quieto, mira a la cámara
+    bear.rotation.y = lerp(bear.rotation.y, gesture === 'walk' && !RM ? 0 : Math.PI, Math.min(1, dt * 3));
   }
-  walkSpeed = lerp(walkSpeed, gesture === 'walk' && !RM ? WALK_SPEED : 0, Math.min(1, dt * 2));
-  if (walkSpeed > 1e-4) walkOffset += walkSpeed * dt;
-  if (forest && (walkSpeed > 1e-4 || walkOffset)) forest.children.forEach(o => {
-    const span = WALK_Z1 - WALK_Z0;
-    o.position.z = WALK_Z0 + (((o.userData.bz + walkOffset - WALK_Z0) % span) + span) % span;
-  });
+  // Mundo pequeño: al caminar, Uku recorre la superficie del planeta y el bosque
+  // pasa bajo él; sin fin mientras camine, y todo se queda quieto al parar.
+  walkAmt = lerp(walkAmt, gesture === 'walk' && !RM ? 1 : 0, Math.min(1, dt * 2));
+  walkAng = (walkAng + WALK_ANG * walkAmt * dt) % (2 * Math.PI);
+  placeStage();
   if (forest) forest.children.slice().forEach(o => {
     const u = o.userData;
     if ((u.dir > 0 && u.grow < 1) || (u.dir < 0 && u.grow > 0)) {
@@ -531,9 +553,12 @@ function frame(now) {
   // Giro: el dedo manda (con un pequeño rebote en los topes); a los 3 s vuelve de frente.
   if (!drag) { if (performance.now() - idleAt > 3000) yawTo = 0; else yawTo = Math.max(-1.13, Math.min(1.13, yawTo)); }
   yaw = RM ? yawTo : lerp(yaw, yawTo, Math.min(1, dt * (drag ? 14 : 2.5)));
+  // La cámara va sujeta a Uku, siempre del lado de su cara en reposo; al caminar, Uku
+  // gira y queda de espaldas a ella
   const sway = RM || drag ? 0 : Math.sin(t * .15) * .12;
-  camera.position.set(Math.sin(yaw) * camDist + Math.cos(yaw) * sway, .75, Math.cos(yaw) * camDist - Math.sin(yaw) * sway);
-  camera.lookAt(0, .55, 0);
+  camera.position.copy(stage.localToWorld(_cam.set(Math.sin(yaw) * camDist + Math.cos(yaw) * sway, .75, -Math.cos(yaw) * camDist - Math.sin(yaw) * sway)));
+  camera.up.copy(_camUp.set(0, 1, 0).applyQuaternion(stage.quaternion));
+  camera.lookAt(stage.localToWorld(_look.set(0, .55, 0)));
   renderer.render(scene, camera);
 }
 
@@ -567,8 +592,9 @@ function init() {
   camera.position.set(0, .75, 2.6);
   // Ilustración: solo luz ambiente, colores planos sin sombreado
   scene.add(new THREE.AmbientLight('#ffffff', Math.PI));
-  ground = new THREE.Mesh(new THREE.CircleGeometry(7, 48), new THREE.MeshLambertMaterial({ color: pal.ground }));
-  ground.rotation.x = -Math.PI / 2; scene.add(ground);
+  ground = new THREE.Mesh(new THREE.SphereGeometry(PLANET_R, 64, 32), new THREE.MeshLambertMaterial({ color: pal.ground }));
+  ground.position.copy(PLANET_C); scene.add(ground);
+  stage = new THREE.Group(); scene.add(stage); placeStage();
   clock = new THREE.Clock();
   new GLTFLoader().load(new URL('./oso/oso.glb', import.meta.url).href, g => {
     // El modelo va dentro de un pivote: el pivote es lo que camina, respira y salta.
@@ -603,7 +629,7 @@ function init() {
     });
     bear.position.y = .45 * BEAR_S; // pies sobre el suelo (el modelo va de -0.45 a 0.45)
     bear.scale.setScalar(BEAR_S);
-    scene.add(bear);
+    stage.add(bear);
     dressBear();
     play('wave');
   });
