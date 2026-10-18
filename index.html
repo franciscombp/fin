@@ -4018,7 +4018,7 @@
     <!-- Splash de bienvenida (amarillo) mientras autentica -->
     <div class="welcome-splash" id="welcome-splash" aria-hidden="true">
         <img src="./assets/pichibank-logo--blue.svg" alt="Pichibank" class="welcome-splash__logo">
-        <h1 class="welcome-splash__title">¡Bienvenido de nuevo!</h1>
+        <h1 class="welcome-splash__title">¡Bienvenido de nuevo<span id="welcome-name"></span>!</h1>
         <p class="welcome-splash__subtitle">Estamos preparando tu Pichibank…</p>
     </div>
 
@@ -4026,8 +4026,8 @@
         <!-- Header -->
         <header class="header">
             <div class="top-bar">
-                <button class="profile-story" aria-label="Perfil de Francisco">
-                    <span class="profile-story__inner"><img width="24" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAMKADAAQAAAABAAAAMAAAAADbN2wMAAABdElEQVRoBe1ZsWoCQRCdveQDjvyAir0EbFPY2pk+kO+wM6WfYBnIB6QQUliIfyBYq9em8wfMObt4x4GyBz50nDAHi97tvpl57+3sgbp8TTkpvhLFtYfSjYC0g+aAOQAqoH4LPYIC1MLT/lvtmtiC3c9XbJrUO2AEov7eYNIcuIHI0RTqHbj6MTodz6IKrjZPNJx0o2tik1cn8NL5jeWH59RvISMA7wEwgDkACgjDzQFYQjCAs9+FQAVRuPUAqiCKNwdQBVG8OYAqiOL/hQM7VAVJvHcgkywAze0JLNAgkviE/yFbShaA5k7ogb45iNo+SFwrFP+JKiGFdz5xvqUm/dFWqggkb3gPsAsZE/hAAklhgwM+ObuQckPPeTxLFXNJ3vJNHHrB0SsHyS4JJIUpHSgKOPbDnO+bxbN7/jwh4IvVRKLcQlWVfVO7NrU0NPZZB6pkght7GpGj9+rze/leS6AoNJxSe+rx/YBHgwn50yrlIXodAAqmNsvMgaiDAAAAAElFTkSuQmCC" alt=""></span>
+                <button class="profile-story" aria-label="Perfil">
+                    <span class="profile-story__inner"><span class="profile-story__ini" id="top-ini"></span></span>
                 </button>
                 <!-- Título pequeño de la sección: aparece cuando el título grande
                      sube detrás de la barra (patrón de títulos grandes de iOS) -->
@@ -5000,11 +5000,6 @@
             <button class="nav-item active" aria-current="page" data-view="0">
                 <span class="nav-item__wrap"><span class="material-symbols-rounded">home</span></span>
                 <span class="nav-item__label">Inicio</span>
-            </button>
-            <!-- Pagos no es una vista: abre el flujo de transferir (ver navItems) -->
-            <button class="nav-item nav-item--action" data-action-nav="pagos">
-                <span class="nav-item__wrap"><span class="material-symbols-rounded">send_money</span></span>
-                <span class="nav-item__label">Pagos</span>
             </button>
             <button class="nav-item" data-view="2">
                 <span class="nav-item__wrap"><span class="material-symbols-rounded">redeem</span></span>
@@ -6842,14 +6837,7 @@
         document.querySelector('[data-top="pf-settings"]').addEventListener('click', () => window.PFM ? PFM.settings() : window.Asistente && Asistente.settings());
         syncTopBar();
 
-        // Pagos abre el flujo de transferir sin cambiar de pantalla
-        document.querySelector('[data-action-nav="pagos"]').addEventListener('click', () => {
-            const a = window.Buscador && Buscador.actions().filter(x => x.label === 'Transferir')[0];
-            if (a) Buscador.run(a);
-        });
-
         navItems.forEach((item) => {
-            if (!item.dataset.view) return; // Pagos: se maneja arriba
             const index = +item.dataset.view;
             item.addEventListener('click', () => {
                 const alreadyOnThisView = index === currentView;

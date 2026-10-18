@@ -40,3 +40,17 @@ html:not(.theme-y2k) .quick-actions {
   padding: var(--bp-layout-card-padding, 16px);
 }
 .quick-action__label { hyphens: auto; overflow-wrap: break-word; }
+
+/* Familia de botones: misma forma y altura en toda la app; sólo el color dice qué tan
+   importante es. Primario (relleno fuerte) · secundario (tinte suave) · terciario (sólo texto). */
+html:not(.theme-y2k) .btn, html:not(.theme-y2k) .pf-cta, html:not(.theme-y2k) .uk-chip, html:not(.theme-y2k) .as-chip {
+  height: 48px !important; min-height: 48px; padding: 0 var(--bp-semantic-spacing-macro-sm); border: 0 !important;
+  border-radius: var(--bp-semantic-radius-md, 12px) !important; box-shadow: none !important;
+  font: var(--ui-body-md-semibold) !important; line-height: 20px; cursor: pointer;
+}
+html:not(.theme-y2k) .btn--primary, html:not(.theme-y2k) .pf-cta { background: var(--bp-theme-color-interaction-primary-bg); color: var(--bp-theme-color-interaction-primary-fg); }
+html:not(.theme-y2k) .btn--secondary, html:not(.theme-y2k) .uk-chip, html:not(.theme-y2k) .as-chip { background: var(--bp-theme-color-interaction-secondary-bg); color: var(--bp-theme-color-interaction-secondary-fg); }
+html:not(.theme-y2k) .btn--tertiary { background: transparent; color: var(--bp-theme-color-interaction-tertiary-fg); }
+
+/* Avatar de la barra superior: iniciales de la persona activa */
+.profile-story__ini { font: var(--ui-label-sm); color: var(--bp-theme-color-text-primary); line-height: 1; }
