@@ -13,12 +13,12 @@ const TARGET_HEIGHT = 1.70; // metros, como pidió el brief
 const key = (n) => n.replace(/[\[\].:\/]/g, '');
 // Cadenas de dos huesos: el extremo (end) es la mano o el pie; el objetivo y el polo son controles
 const CHAINS = [
-  { name: 'brazo.L', upper: 'upper_arm.L_012', fore: 'forearm.L_013', end: 'hand.L_014', target: 'ik_hand.L', pole: 'pole_elbow.L' },
-  { name: 'brazo.R', upper: 'upper_arm.R_020', fore: 'forearm.R_021', end: 'hand.R_022', target: 'ik_hand.R', pole: 'pole_elbow.R' },
-  { name: 'pierna.L', upper: 'thigh.L_028', fore: 'shin.L_029', end: 'foot.L_030', target: 'ik_foot.L', pole: 'pole_knee.L' },
-  { name: 'pierna.R', upper: 'thigh.R_031', fore: 'shin.R_032', end: 'foot.R_033', target: 'ik_foot.R', pole: 'pole_knee.R' },
+  { name: 'brazo.L', upper: 'upper_arm.L', fore: 'forearm.L', end: 'hand.L', target: 'ik_hand.L', pole: 'pole_elbow.L' },
+  { name: 'brazo.R', upper: 'upper_arm.R', fore: 'forearm.R', end: 'hand.R', target: 'ik_hand.R', pole: 'pole_elbow.R' },
+  { name: 'pierna.L', upper: 'thigh.L', fore: 'shin.L', end: 'foot.L', target: 'ik_foot.L', pole: 'pole_knee.L' },
+  { name: 'pierna.R', upper: 'thigh.R', fore: 'shin.R', end: 'foot.R', target: 'ik_foot.R', pole: 'pole_knee.R' },
 ];
-const BLINK_BONES = ['eye.L_09', 'eye.R_010'];
+const BLINK_BONES = ['eye.L', 'eye.R'];
 const NEEDED = [...new Set(CHAINS.flatMap(c => [c.upper, c.fore, c.end, c.target, c.pole]).concat(BLINK_BONES, ['hips_01', 'head_06']))].map(key);
 
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _t = new THREE.Vector3(), _p = new THREE.Vector3();
@@ -39,6 +39,8 @@ function solveChain(ch, bones, nodes) {
   const up = bones[key(ch.upper)], fo = bones[key(ch.fore)], en = bones[key(ch.end)], tg = nodes[key(ch.target)], pl = nodes[key(ch.pole)];
   if (!up || !fo || !en || !tg || !pl) return;
   up.getWorldPosition(_a); fo.getWorldPosition(_b); en.getWorldPosition(_c); tg.getWorldPosition(_t); pl.getWorldPosition(_p);
+  // El control se mide desde su posición de reposo: en reposo la mano queda donde está, y se mueve con el control
+  _t.sub(ch.off);
   const L1 = _a.distanceTo(_b), L2 = _b.distanceTo(_c);
   _d1.subVectors(_t, _a);
   const d = THREE.MathUtils.clamp(_d1.length(), 1e-4, (L1 + L2) * .9999);
@@ -76,11 +78,21 @@ export async function loadUkuRig(container, { onLog = console.log } = {}) {
   const clips = gltf.animations || [];
   log('Clips: ' + (clips.length ? clips.map(c => '"' + c.name + '" (' + c.tracks.length + ' pistas)').join(', ') : 'ninguno'));
 
+  // Desfase de reposo entre cada control y el extremo de su cadena (en el archivo, el control no siempre está en la muñeca)
+  root.updateMatrixWorld(true);
+  CHAINS.forEach(ch => {
+    const tg = nodes[key(ch.target)], en = bones[key(ch.end)];
+    ch.off = new THREE.Vector3();
+    if (tg && en) { const t = new THREE.Vector3(), e = new THREE.Vector3(); tg.getWorldPosition(t); en.getWorldPosition(e); ch.off.subVectors(t, e); }
+  });
+
   // Verificación de huesos y morph targets: todo lo que el código usa debe existir
   NEEDED.forEach(n => { if (!bones[n]) report.errors.push('hueso inexistente: ' + n); });
   const morphs = {};
   skinned.forEach(m => { if (m.morphTargetDictionary) Object.assign(morphs, m.morphTargetDictionary); });
-  if (!Object.keys(morphs).length) report.warnings.push('ningún morph target en el archivo: blink y expresiones no tienen dónde actuar');
+  const morphMesh = skinned.find(m => m.morphTargetDictionary && Object.keys(m.morphTargetDictionary).length);
+  if (!morphMesh) report.warnings.push('ningún morph target en el archivo: expresiones no tienen dónde actuar');
+  else log('Morph targets en "' + (morphMesh.parent && morphMesh.parent.name || morphMesh.name) + '": ' + Object.keys(morphMesh.morphTargetDictionary).join(', '));
 
   // Escena mínima: cámara, luz, suelo y Uku de pie en el origen
   const scene = new THREE.Scene();
@@ -92,7 +104,12 @@ export async function loadUkuRig(container, { onLog = console.log } = {}) {
   const floor = new THREE.Mesh(new THREE.CircleGeometry(6, 48), new THREE.MeshLambertMaterial({ color: '#e7ebf2' }));
   floor.rotation.x = -Math.PI / 2; scene.add(floor);
   // Altura: la geometría en reposo mide ~1.50; se escala uniforme a 1.70 (pies en el suelo)
-  const geo = skinned[0] && skinned[0].geometry; geo.computeBoundingBox();
+  // El cuerpo es la malla con morph targets; la boca y la ropa son sólo piezas que siguen al esqueleto
+  // El cuerpo es la pieza más alta (la boca y la ropa son piezas pequeñas que siguen al esqueleto)
+  const hOf = (m) => { m.geometry.computeBoundingBox(); return m.geometry.boundingBox.max.y - m.geometry.boundingBox.min.y; };
+  const body = skinned.reduce((a, m) => (hOf(m) > hOf(a) ? m : a), skinned[0]);
+  log('Alturas de piezas: ' + skinned.map(m => (m.name || '?') + ' ' + hOf(m).toFixed(3)).join(', '));
+  const geo = body.geometry;
   const h0 = geo.boundingBox.max.y - geo.boundingBox.min.y, k = TARGET_HEIGHT / h0;
   root.scale.setScalar(k); root.position.y = -geo.boundingBox.min.y * k;
   scene.add(root);
@@ -119,8 +136,11 @@ export async function loadUkuRig(container, { onLog = console.log } = {}) {
   const eyeRest = BLINK_BONES.map(n => B(n) ? B(n).scale.clone() : null);
   let blink = 0;
   function setBlink(v) { blink = THREE.MathUtils.clamp(v, 0, 1); }
+  // Expresiones: influencia de un morph target del cuerpo (target_0 … target_19)
   function setExpression(name, v) {
-    if (!(name in morphs)) { report.warnings.push('expresión inexistente: ' + name); log('AVISO: no hay morph target "' + name + '"'); return false; }
+    const idx = morphMesh && morphMesh.morphTargetDictionary[name];
+    if (idx === undefined) { report.warnings.push('expresión inexistente: ' + name); log('AVISO: no hay morph target "' + name + '"'); return false; }
+    morphMesh.morphTargetInfluences[idx] = THREE.MathUtils.clamp(v, 0, 1);
     return true;
   }
   function applyBlink() {
@@ -163,7 +183,7 @@ export async function loadUkuRig(container, { onLog = console.log } = {}) {
     tg.position.add(offset); tg.updateMatrixWorld(true);
     update(0);
     const want = new THREE.Vector3(), got = new THREE.Vector3();
-    tg.getWorldPosition(want); en.getWorldPosition(got);
+    tg.getWorldPosition(want); want.sub(ch.off); en.getWorldPosition(got);
     tg.position.sub(offset); tg.updateMatrixWorld(true);
     return { error: +want.distanceTo(got).toFixed(4), target: want.toArray().map(v => +v.toFixed(3)), hand: got.toArray().map(v => +v.toFixed(3)) };
   }
