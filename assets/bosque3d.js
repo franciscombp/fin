@@ -27,8 +27,7 @@ const lerp = THREE.MathUtils.lerp;
 let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
 let bear = null, bones = {}, forest, held = null, ground, stage = null, walkAng = 0, walkAmt = 0;
 // Mundo pequeño: un planeta esférico de radio PLANET_R; su punto más alto está bajo los pies de Uku.
-// SPOT_F convierte las posiciones planas del bosque en distancias sobre la esfera.
-const PLANET_R = .6, SPOT_F = .18, PLANET_C = new THREE.Vector3(0, -.6, 0);
+const PLANET_R = .8, PLANET_C = new THREE.Vector3(0, -PLANET_R, 0);
 let score = 50, shown = 0; // shown: puntaje con el que está dibujado el bosque
 // bloom: flores amarillas del campo (0–100, ahorro); null = como antes (salen con el bosque)
 // mood: ánimo que se queda (feliz, tranquilo, pensativo); null = solo los gestos
@@ -65,38 +64,38 @@ function palette() {
 /* ---------- Bosque procedural ---------- */
 // Posiciones fijas (semilla) para que el bosque no "salte" entre visitas.
 function rng(s) { return () => (s = (s * 16807) % 2147483647) / 2147483647; }
-const SPOTS = (() => {
-  const r = rng(11), out = [];
-  for (let i = 0; i < 46; i++) {
-    const a = r() * Math.PI * 2, d = 1.1 + r() * 3.4;
-    const x = Math.cos(a) * d, z = -Math.abs(Math.sin(a) * d) - .25 - r() * .8; // detrás del oso
-    out.push({ x, z, s: .7 + r() * .7, t: r() * 100, kind: r() < .62 ? 'pine' : 'round', rot: r() * 6.28 });
-  }
-  return out.sort((a, b) => a.t - b.t);
-})();
-const DECOR = (() => {
-  const r = rng(29), out = [];
-  for (let i = 0; i < 40; i++) {
-    const a = r() * Math.PI * 2, d = .45 + r() * 2.2;
-    out.push({ x: Math.cos(a) * d, z: Math.sin(a) * d * .7 - .2, t: r() * 100, kind: r() < .45 ? 'grass' : r() < .7 ? 'rock' : 'flower', s: .6 + r() * .8 });
+/* ---------- Mundo procedural ----------
+   Nada se guarda en el archivo: cada celda de la esfera (ángulo a lo largo del
+   camino y ángulo de lado) decide con una semilla fija si tiene un árbol, roca,
+   flor o pasto. El mismo mundo sale siempre. Los umbrales t siguen a los insights
+   (salud financiera para árboles y pasto, ahorro para las flores). */
+const CELL = .2, LOOP_N = Math.round(2 * Math.PI / CELL), LAT_MAX = 1.4, LAT_N = Math.round(2 * LAT_MAX / CELL);
+function cellRng(k, m, salt) {
+  const s = (Math.imul(k + 101, 73856093) ^ Math.imul(m + 211, 19349663) ^ Math.imul(salt, 83492791)) >>> 0;
+  return rng(s % 2147483646 + 1);
+}
+// Recorre las celdas del planeta; mk(r, az, ax) crea el objeto de una celda ocupada
+function procedural(salt, chance, mk) {
+  const out = [];
+  for (let k = 0; k < LOOP_N; k++) for (let m = 0; m < LAT_N; m++) {
+    const r = cellRng(k, m, salt);
+    if (r() > chance) continue;
+    const az = (k + r()) * CELL - Math.PI, ax = -LAT_MAX + (m + r()) * CELL;
+    if (Math.abs(ax) < .45) continue; // carril libre por donde camina Uku
+    out.push(mk(r, az, ax));
   }
   return out;
-})();
+}
+const SPOTS = procedural(11, .16, (r, az, ax) => ({ az, ax, s: .7 + r() * .7, t: r() * 100, kind: r() < .62 ? 'pine' : 'round', rot: r() * 6.28 })).sort((a, b) => a.t - b.t);
+const DECOR = procedural(29, .2, (r, az, ax) => ({ az, ax, t: r() * 100, kind: r() < .45 ? 'grass' : r() < .7 ? 'rock' : 'flower', s: .6 + r() * .8 }));
+const MEADOW = procedural(71, .15, (r, az, ax) => ({ az, ax, t: r() * 100, s: .8 + r() * .5, rot: r() * 6.28 }));
 
-const MEADOW = (() => {
-  const r = rng(71), out = [];
-  for (let i = 0; i < 44; i++) {
-    const a = r() * Math.PI * 2, d = .38 + r() * 1.5;
-    out.push({ x: Math.cos(a) * d * 1.2, z: Math.sin(a) * d * .55 + .1, t: r() * 100, s: .8 + r() * .5, rot: r() * 6.28 });
-  }
-  return out;
-})();
 function makeFlower(p, pal) {
   const g = new THREE.Group(), petal = new THREE.MeshLambertMaterial({ color: pal.flower }), stem = new THREE.MeshLambertMaterial({ color: pal.grass });
   const st = new THREE.Mesh(new THREE.CylinderGeometry(.006, .007, .12, 4), stem); st.position.y = .06; g.add(st);
   for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2, m = new THREE.Mesh(new THREE.SphereGeometry(.018, 6, 4), petal); m.position.set(Math.cos(a) * .022, .125, Math.sin(a) * .022); m.scale.y = .5; g.add(m); }
   const c = new THREE.Mesh(new THREE.SphereGeometry(.012, 6, 4), new THREE.MeshLambertMaterial({ color: pal.trunk })); c.position.y = .13; g.add(c);
-  g.position.set(p.x, 0, p.z); g.rotation.y = p.rot; g.userData.base = p.s; return g;
+  placeOnPlanet(g, p); g.userData.base = p.s; return g;
 }
 
 // Palmera: tronco curvo en segmentos y hojas largas que caen
@@ -118,7 +117,7 @@ function makePalm(p, pal) {
   }
   const coco = new THREE.MeshLambertMaterial({ color: pal.trunk });
   [[.03, 0], [-.025, .02], [0, -.03]].forEach(([dx, dz]) => { const m = new THREE.Mesh(new THREE.SphereGeometry(.025, 6, 5), coco); m.position.set(x + dx, y - .03, dz); g.add(m); });
-  g.position.set(p.x, 0, p.z); g.rotation.y = p.rot; g.userData.base = p.s;
+  placeOnPlanet(g, p); g.userData.base = p.s;
   return g;
 }
 function makeTree(p, pal) {
@@ -138,13 +137,13 @@ function makeTree(p, pal) {
     const top = new THREE.Mesh(new THREE.IcosahedronGeometry(.3, 0), new THREE.MeshLambertMaterial({ color: c, flatShading: true }));
     top.position.y = .62; top.scale.y = 1.1; g.add(top);
   }
-  g.position.set(p.x, 0, p.z); g.rotation.y = p.rot; g.userData.base = p.s;
+  placeOnPlanet(g, p); g.userData.base = p.s;
   return g;
 }
 function makeStump(p, pal) {
   const g = new THREE.Group();
   const m = new THREE.Mesh(new THREE.CylinderGeometry(.05, .07, .14, 6), new THREE.MeshLambertMaterial({ color: pal.trunk }));
-  m.position.y = .07; g.add(m); g.position.set(p.x, 0, p.z); g.userData.base = p.s;
+  m.position.y = .07; g.add(m); placeOnPlanet(g, p); g.userData.base = p.s;
   return g;
 }
 function makeDecor(p, pal) {
@@ -156,7 +155,7 @@ function makeDecor(p, pal) {
     const st = new THREE.Mesh(new THREE.CylinderGeometry(.006, .006, .1, 4), new THREE.MeshLambertMaterial({ color: pal.grass })); st.position.y = .05; m.add(st);
     const fl = new THREE.Mesh(new THREE.SphereGeometry(.025, 6, 4), new THREE.MeshLambertMaterial({ color: pal.flower })); fl.position.y = .1; m.add(fl);
   }
-  const g = new THREE.Group(); g.add(m); g.position.set(p.x, 0, p.z); g.userData.base = p.s; return g;
+  const g = new THREE.Group(); g.add(m); placeOnPlanet(g, p); g.userData.base = p.s; return g;
 }
 
 const _dir = new THREE.Vector3(), _tan = new THREE.Vector3(), _X = new THREE.Vector3(), _Mb = new THREE.Matrix4();
@@ -170,16 +169,13 @@ function placeStage() {
   stage.position.copy(PLANET_C).addScaledVector(_dir, PLANET_R);
   stage.updateMatrixWorld(true);
 }
-// Pone un árbol, roca o flor sobre la esfera: sus coordenadas planas son arcos de la esfera
-const _sp = new THREE.Vector3(), _nrm = new THREE.Vector3(0, 1, 0);
-function placeOnPlanet(o) {
-  // Ángulo = distancia mínima + avance: nada queda pegado al oso, y la esfera se llena hacia afuera
-  // Carril libre al centro: nada queda justo en el camino de Uku
-  const ax = Math.sign(o.position.x) * (.6 + SPOT_F * Math.abs(o.position.x));
-  const az = Math.sign(o.position.z) * (.55 + SPOT_F * Math.abs(o.position.z));
-  _sp.set(Math.sin(ax), Math.cos(ax) * Math.cos(az), Math.cos(ax) * Math.sin(az));
-  o.position.copy(PLANET_C).addScaledVector(_sp, PLANET_R);
-  o.quaternion.setFromUnitVectors(_nrm, _sp);
+// Pone un objeto sobre la esfera en (az, ax) y lo alinea con su normal; p.rot lo gira alrededor de ella
+const _sp = new THREE.Vector3(), _nrm = new THREE.Vector3(0, 1, 0), _yaw = new THREE.Quaternion();
+function placeOnPlanet(g, p) {
+  _sp.set(Math.sin(p.ax), Math.cos(p.ax) * Math.cos(p.az), Math.cos(p.ax) * Math.sin(p.az));
+  g.position.copy(PLANET_C).addScaledVector(_sp, PLANET_R);
+  g.quaternion.setFromUnitVectors(_nrm, _sp);
+  if (p.rot) g.quaternion.multiply(_yaw.setFromAxisAngle(_nrm, p.rot));
 }
 
 /* El bosque se actualiza por diferencia: al cambiar el puntaje sólo crecen
@@ -203,7 +199,7 @@ function buildForest(full) {
     else if (i < nTrees + 6 && score < 60) want['S' + i] = () => makeStump(p, pal);
   });
   // En la costa, dos palmeras cerca de Uku para que se lean a primera vista
-  if (look.region === 'costa') [{ x: -.58, z: -.5, s: 1.05, t: 3, rot: .4 }, { x: .64, z: -.62, s: .95, t: 8, rot: 2.6 }]
+  if (look.region === 'costa') [{ az: -.5, ax: -.6, s: 1.05, t: 3, rot: .4 }, { az: -.62, ax: .64, s: .95, t: 8, rot: 2.6 }]
     .forEach((p, i) => { want['P' + i] = () => makePalm(p, pal); });
   DECOR.forEach((p, i) => {
     if (p.kind === 'flower' && bloom != null) { if (p.t <= bloom) want['D' + i] = () => makeDecor(p, pal); return; }
@@ -219,7 +215,6 @@ function buildForest(full) {
     if (have[k]) return;
     const o = want[k](); o.userData.key = k; o.userData.dir = 1;
     o.userData.grow = full ? 1 : 0; o.scale.setScalar(o.userData.base * (full ? 1 : .001));
-    placeOnPlanet(o);
     forest.add(o);
   });
   shown = score;
