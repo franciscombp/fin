@@ -25,7 +25,8 @@ const D = THREE.MathUtils.degToRad;
 const lerp = THREE.MathUtils.lerp;
 
 let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
-let bear = null, bones = {}, forest, held = null, ground;
+let bear = null, bones = {}, forest, held = null, ground, planetSpeed = 0;
+const _yAxis = new THREE.Vector3(0, 1, 0), _spinQ = new THREE.Quaternion();
 let score = 50, shown = 0; // shown: puntaje con el que está dibujado el bosque
 // bloom: flores amarillas del campo (0–100, ahorro); null = como antes (salen con el bosque)
 // mood: ánimo que se queda (feliz, tranquilo, pensativo); null = solo los gestos
@@ -251,8 +252,11 @@ const POSES = {
                    upperarm_L: mirror([0, 34, 36]), forearm_L: mirror([-46, 44, -26]), hand_L: mirror([-22, 8, -6]),
                    head: [16, 0, 9 + Math.sin(t * 1.6) * 3] }),
   // caminar: piernas y brazos alternan; el paso lo da el movimiento de la escena
+  // caminar: las piernas y los brazos se balancean en X (el eje de lado tras aim())
   walk:  t => ({ thigh_R: [Math.sin(t * 6) * 24, 0, 0], thigh_L: [-Math.sin(t * 6) * 24, 0, 0],
-                 upperarm_R: [-Math.sin(t * 6) * 14, 6, 56], upperarm_L: mirror([Math.sin(t * 6) * 14, 6, 56]), head: [0, 0, Math.sin(t * 6) * 2] }),
+                 upperarm_R: [-Math.sin(t * 6) * 14, 0, 0], upperarm_L: [Math.sin(t * 6) * 14, 0, 0],
+                 forearm_R: [-14 - Math.max(0, -Math.sin(t * 6)) * 8, 0, 0], forearm_L: [-14 - Math.max(0, Math.sin(t * 6)) * 8, 0, 0],
+                 head: [0, 0, Math.sin(t * 6) * 2] }),
   happy: t => ({ upperarm_R: [0, 14, 6 - Math.sin(t * 8) * 6], forearm_R: [-30, 10, -28], hand_R: [-24, 0, -10],
                  upperarm_L: mirror([0, 14, 6 - Math.sin(t * 8) * 6]), forearm_L: mirror([-30, 10, -28]), hand_L: mirror([-24, 0, -10]),
                  head: [-6, 0, Math.sin(t * 6) * 7] })
@@ -281,7 +285,7 @@ function target(name, t) {
   const g = POSES[gesture](gestureT)[name];
   return g || r;
 }
-const BEAR_S = .62, WALK_W = .42; // Uku más pequeño para dejar lugar a las tarjetas; el paseo es corto
+const BEAR_S = .62, WALK_SPIN = .35; // Uku más pequeño para dejar lugar a las tarjetas; al caminar, el bosque gira (rad/s) como un planeta pequeño
 const BONES = ['hips', 'spine', 'chest', 'neck', 'head', 'shoulder_L', 'shoulder_R', 'upperarm_L', 'upperarm_R', 'forearm_L', 'forearm_R', 'hand_L', 'hand_R', 'thigh_L', 'thigh_R'];
 // Nombres de la pose (arriba) → huesos del modelo nuevo, con el nombre que three.js
 // les guarda (sin puntos). spine001 y spine002 son el torso medio y alto; "chest" es
@@ -290,7 +294,8 @@ const BONE_NAME = { hips: 'hips', spine: 'spine001', chest: 'spine002', neck: 'n
   shoulder_L: 'shoulderL', shoulder_R: 'shoulderR', upperarm_L: 'upper_armL', upperarm_R: 'upper_armR',
   forearm_L: 'forearmL', forearm_R: 'forearmR', hand_L: 'handL', hand_R: 'handR', thigh_L: 'thighL', thigh_R: 'thighR' };
 // Reposo de cada hueso: la pose se suma sobre él (el modelo no trae reposo en identidad)
-const REST_Q = {};
+const REST_Q = {}, REST_PARENT_Q = {};
+const _rx = new THREE.Vector3(1, 0, 0);
 const _e = new THREE.Euler(), _q = new THREE.Quaternion(), _tq = new THREE.Quaternion(), _v = new THREE.Vector3();
 // Los huesos del modelo nuevo van a lo largo de su eje Y y en T. aim() deja el brazo
 // colgando (Y hacia abajo) con X de lado, para que doblar en X sea el codo y abrir en Z
@@ -468,16 +473,28 @@ function frame(now) {
     BONES.forEach(n => {
       const b = bones[n]; if (!b) return;
       const g = target(n, RM ? 0 : t);
-      _e.set(D(g[0]), D(g[1]), D(g[2]), b.rotation.order);
-      _tq.copy(REST_Q[n]).multiply(_q.setFromEuler(_e));
+      if (REST_PARENT_Q[n]) {
+        // pierna: el giro en X del mundo, llevado al espacio del hueso padre
+        _q.setFromAxisAngle(_rx, D(g[0]));
+        _tq.copy(REST_PARENT_Q[n]).invert().multiply(_q).multiply(REST_PARENT_Q[n]).multiply(REST_Q[n]);
+      } else {
+        _e.set(D(g[0]), D(g[1]), D(g[2]), b.rotation.order);
+        _tq.copy(REST_Q[n]).multiply(_q.setFromEuler(_e));
+      }
       b.quaternion.slerp(_tq, a);
     });
     if (umb) { bear.updateMatrixWorld(true); placeUmbrella(); }
     const hop = gesture === 'happy' ? Math.abs(Math.sin(gestureT * 6)) * .05 : mood === 'feliz' && !gesture && !RM ? Math.abs(Math.sin(t * 2.4)) * .018 : 0;
     bear.position.y = lerp(bear.position.y, .45 * BEAR_S + hop, Math.min(1, dt * 10));
-    // Caminando: va y viene por el mundo; al detenerse vuelve al centro
-    const wx = gesture === 'walk' && !RM ? Math.sin(gestureT * .45) * WALK_W : 0;
-    bear.position.x = lerp(bear.position.x, wx, Math.min(1, dt * 3));
+    bear.position.x = lerp(bear.position.x, 0, Math.min(1, dt * 3));
+  }
+  // Caminando: el oso se queda en su sitio y el bosque y el suelo giran bajo él,
+  // como un planeta pequeño; sin fin mientras camine, y se frena al parar
+  planetSpeed = lerp(planetSpeed, gesture === 'walk' && !RM ? WALK_SPIN : 0, Math.min(1, dt * 2));
+  if (Math.abs(planetSpeed) > 1e-4) {
+    _spinQ.setFromAxisAngle(_yAxis, planetSpeed * dt);
+    if (forest) forest.quaternion.premultiply(_spinQ);
+    if (ground) ground.quaternion.premultiply(_spinQ);
   }
   if (forest) forest.children.slice().forEach(o => {
     const u = o.userData;
@@ -570,6 +587,8 @@ function init() {
     });
     bear.updateMatrixWorld(true);
     ['upperarm_R', 'upperarm_L'].forEach(aim);
+    // Piernas: sin calibrar (su reposo es el del archivo); el giro de caminar se hace sobre el eje de lado del mundo
+    ['thigh_R', 'thigh_L'].forEach(key => { const b = bones[key]; if (b && b.parent) { REST_PARENT_Q[key] = b.parent.getWorldQuaternion(new THREE.Quaternion()); } });
     bear.traverse(o => {
       if (o.isMesh) {
         o.frustumCulled = false;
