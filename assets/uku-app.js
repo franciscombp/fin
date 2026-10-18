@@ -23,6 +23,8 @@
 
   var view, host, globoEl, props, pills, results, chat, input, b3d = null;
   var msgs = [], gi = 0, nota = null, ultimo = 0, saludado = false;
+  // ?oso=v1 vuelve al oso procedural de bosque3d; por defecto Uku usa el rig nuevo
+  var OSO_V1 = /[?&]oso=v1\b/.test(location.search);
   var pend = null; // lo que saliste a hacer: al volver, Uku pregunta cómo te fue
 
   var PRUEBA = ['¿En qué se me va la plata?', '¿Cuánto debo?', 'Bloquear mi tarjeta', 'Transferir'];
@@ -214,7 +216,8 @@
   function escena() {
     var el = host && host.querySelector('.uk-scene .b3d'), s = resumen();
     if (!el || !view.classList.contains('active') || view.classList.contains('uk-fin')) return;
-    import(ASSET + 'bosque3d.js').then(function (m3) {
+    import(ASSET + (OSO_V1 ? 'bosque3d.js' : 'uku-rig.js')).then(function (mod) {
+      var m3 = OSO_V1 ? mod : mod.ukuAdapter();
       if (!m3.supported()) return;
       b3d = m3; var c = window.Clima && Clima.last(); if (c) m3.setLook(c.look);
       if (s) { m3.setBloom(s.bloom); m3.setMood(s.mood); }

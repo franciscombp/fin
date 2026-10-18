@@ -190,3 +190,30 @@ export async function loadUkuRig(container, { onLog = console.log } = {}) {
 
   return { root, scene, camera, bones, nodes, clips, skinned, morphs, report, playClip, setBlink, setExpression, update, mixer, container, renderer, start, stop, reach };
 }
+
+/* Adaptador para la app: la misma API que bosque3d (attach, play, setAmbient…) sobre el rig nuevo.
+   Los gestos se traducen a clips; al terminar, Uku vuelve a su estado de reposo (caminar). */
+const CLIP_OF = { wave: 'saludar', happy: 'celebrar', worried: 'preocupado', walk: 'caminar', idle: 'idle' };
+export function ukuAdapter() {
+  let rig = null, el = null, onTap = null, ambient = 'idle', timer = 0, want = 'idle';
+  const apply = (g) => { if (rig) rig.playClip(CLIP_OF[g] || CLIP_OF.idle); };
+  return {
+    supported: () => !!window.WebGLRenderingContext,
+    attach(host, opts = {}) {
+      if (el === host) return;
+      el = host; onTap = opts.onTap || null;
+      loadUkuRig(host, { onLog: () => {} }).then(r => {
+        rig = r; r.start(); apply(want);
+        host.addEventListener('pointerup', () => { if (onTap) onTap(); });
+      });
+    },
+    play(name) {
+      clearTimeout(timer);
+      want = CLIP_OF[name] ? name : 'idle';
+      apply(want);
+      if (name !== ambient) timer = setTimeout(() => { want = ambient; apply(ambient); }, 2600);
+    },
+    setAmbient(name) { ambient = name === 'walk' ? 'walk' : 'idle'; if (!timer) { want = ambient; apply(ambient); } },
+    setLook() {}, setBloom() {}, setMood() {}, setScore() {},
+  };
+}
