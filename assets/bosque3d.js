@@ -3,10 +3,9 @@
    finanzas o el chat).
 
    - Un único renderer WebGL que se "muda" al contenedor activo.
-   - El oso (assets/oso/oso.glb) tiene un esqueleto de 20 huesos hecho
-     a medida (ver respaldo/oso-fuente/rig.py): se anima por código,
-     sin clips: respira, mira, saluda, asiente, piensa, habla, celebra
-     y puede sostener objetos en la mano (hand_R).
+   - Uku (assets/oso/uku-rig.glb, ver uku-rig.js) con sus clips: idle,
+     caminar, saludar, celebrar y preocupado. Puede sostener objetos en la
+     mano (hand.R) y los accesorios van en la cabeza (head_06).
    - El oso nunca cambia; el bosque crece con la salud financiera
      (0–100): de troncos y tierra seca a un bosque tupido.
    - Paleta sobria: grises, verdes apagados; el amarillo solo en flores.
@@ -18,14 +17,14 @@
      de lana o paraguas (con lluvia).
    ===================================================================== */
 import * as THREE from './vendor/three/three.module.min.js';
-import { GLTFLoader } from './vendor/three/jsm/loaders/GLTFLoader.js';
+import { loadUkuGltf, ukuFrom } from './uku-rig.js';
 
 const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const D = THREE.MathUtils.degToRad;
 const lerp = THREE.MathUtils.lerp;
 
 let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
-let bear = null, bones = {}, forest, held = null, ground, stage = null, walkAng = 0, walkAmt = 0, walkMoving = false;
+let bear = null, rig = null, bones = {}, forest, held = null, ground, stage = null, walkAng = 0, walkAmt = 0, walkMoving = false;
 let waterOn = false, waterT = 0, drops = [], ambient = null; // ambient: lo que Uku hace cuando no hay gesto (p. ej. caminar)
 // Mundo pequeño: un planeta esférico de radio PLANET_R; su punto más alto está bajo los pies de Uku.
 const PLANET_R = 1.5, PLANET_C = new THREE.Vector3(0, -PLANET_R, 0);
@@ -89,7 +88,18 @@ function procedural(salt, chance, mk) {
 }
 const SPOTS = procedural(11, .16, (r, az, ax) => ({ az, ax, s: .7 + r() * .7, t: r() * 100, kind: r() < .62 ? 'pine' : 'round', rot: r() * 6.28 })).sort((a, b) => a.t - b.t);
 const DECOR = procedural(29, .2, (r, az, ax) => ({ az, ax, t: r() * 100, kind: r() < .45 ? 'grass' : r() < .7 ? 'rock' : 'flower', s: .6 + r() * .8 }));
-const MEADOW = procedural(71, .15, (r, az, ax) => ({ az, ax, t: r() * 100, s: .8 + r() * .5, rot: r() * 6.28 }));
+// Las flores van junto al camino de Uku, en la franja que la cámara ve (el resto del planeta queda detrás del horizonte)
+const MEADOW = (() => {
+  const out = [];
+  for (let k = 0; k < LOOP_N; k++) for (let m = 0; m < 6; m++) {
+    const r = cellRng(k, m, 71);
+    if (r() > .5) continue;
+    const az = (k + r()) * CELL - Math.PI;
+    if (Math.abs(az) > .9) continue;
+    out.push({ az, ax: (m < 3 ? -1 : 1) * (.5 + r() * .4), t: r() * 100, s: .8 + r() * .5, rot: r() * 6.28 });
+  }
+  return out;
+})();
 
 function makeFlower(p, pal) {
   const g = new THREE.Group(), petal = new THREE.MeshLambertMaterial({ color: pal.flower }), stem = new THREE.MeshLambertMaterial({ color: pal.grass });
@@ -256,89 +266,10 @@ function buildDust() {
    · sostener→ giro − grande: la palma mira arriba
    El giro se reparte entre antebrazo y muñeca (como el radio y el cúbito),
    así la piel de la muñeca no se retuerce. Ninguna articulación pasa de ~70°. */
-function mirror(v) { return [v[0], -v[1], -v[2]]; }
-// Sin desplazamiento de reposo: el brazo cuelga por aim() al cargar el modelo.
-const REST_R = { upperarm: [0, 0, 0], forearm: [0, 0, 0], hand: [0, 0, 0], shoulder: [0, 0, 0] };
-const REST = {};
-Object.keys(REST_R).forEach(k => { REST[k + '_R'] = REST_R[k]; REST[k + '_L'] = mirror(REST_R[k]); });
-const POSES = {
-  // brazo derecho (el izquierdo se refleja si el gesto lo pide)
-  wave:  t => ({ upperarm_R: [0, 22, -42], forearm_R: [-34, 12, -52 + Math.sin(t * 7) * 8], hand_R: [-29, 0, -6 + Math.sin(t * 9) * 14], head: [0, -6, 6] }),
-  nod:   t => ({ head: [12 + Math.sin(t * 7) * 9, 0, 0] }),
-  talk:  t => ({ upperarm_R: [0, 38, 38], forearm_R: [-48, 34, -18 + Math.sin(t * 4) * 10], hand_R: [-36, 6, -10 + Math.sin(t * 5) * 6],
-                 upperarm_L: mirror([0, 20, 48]), forearm_L: mirror([10, 28, 8]), hand_L: mirror([10, 6, 4]),
-                 head: [Math.sin(t * 5) * 3, Math.sin(t * 1.7) * 6, Math.sin(t * 2.3) * 3] }),
-  think: t => ({ upperarm_R: [0, 52, 34], forearm_R: [-30, 42, -64], hand_R: [-24, 10, -18], head: [8, -7, -8] }),
-  hold:  t => ({ upperarm_R: [0, 46, 38], forearm_R: [-62, 34, -36], hand_R: [-48, 4, -14], head: [14, -12, 0] }),
-  // preocupado: manos juntas delante de la panza, cabeza gacha y ladeada
-  worried: t => ({ upperarm_R: [0, 34, 36], forearm_R: [-46, 44, -26], hand_R: [-22, 8, -6],
-                   upperarm_L: mirror([0, 34, 36]), forearm_L: mirror([-46, 44, -26]), hand_L: mirror([-22, 8, -6]),
-                   head: [16, 0, 9 + Math.sin(t * 1.6) * 3] }),
-  // caminar: piernas y brazos alternan; el paso lo da el movimiento de la escena
-  // caminar: las piernas y los brazos se balancean en X (el eje de lado tras aim())
-  walk:  t => ({ thigh_R: [Math.sin(t * 3.4) * 22, 0, 0], thigh_L: [-Math.sin(t * 3.4) * 22, 0, 0],
-                 upperarm_R: [-Math.sin(t * 3.4) * 12, 0, 0], upperarm_L: [Math.sin(t * 3.4) * 12, 0, 0],
-                 forearm_R: [-14 - Math.max(0, -Math.sin(t * 3.4)) * 8, 0, 0], forearm_L: [-14 - Math.max(0, Math.sin(t * 3.4)) * 8, 0, 0],
-                 head: [0, Math.sin(t * .9) * 10, 0] }),
-  // regar: el brazo derecho inclina la regadera hacia las flores
-  water: t => ({ upperarm_R: [-58, 16, 26], forearm_R: [-70, 0, 0], hand_R: [-30, 0, -14 + Math.sin(t * 7) * 6], head: [10, 0, 0] }),
-  happy: t => ({ upperarm_R: [0, 14, 6 - Math.sin(t * 8) * 6], forearm_R: [-30, 10, -28], hand_R: [-24, 0, -10],
-                 upperarm_L: mirror([0, 14, 6 - Math.sin(t * 8) * 6]), forearm_L: mirror([-30, 10, -28]), hand_L: mirror([-24, 0, -10]),
-                 head: [-6, 0, Math.sin(t * 6) * 7] })
-};
-const UMB_POSE = { upperarm_R: [0, 36, 12], forearm_R: [-100, 26, -30], hand_R: [-40, 4, -10] };
-// Ánimos que se quedan (los gestos pasan por encima y vuelven a esto)
-const MOODS = {
-  feliz: t => ({ upperarm_R: [0, 12, 34], forearm_R: [-24, 12, -14], hand_R: [-20, 0, -6],
-                 upperarm_L: mirror([0, 12, 34]), forearm_L: mirror([-24, 12, -14]), hand_L: mirror([-20, 0, -6]),
-                 head: [-8, Math.sin(t * .6) * 10, Math.sin(t * 2.2) * 5] }),
-  // pensativo: una mano en el mentón, la cabeza ladeada; te espera sin reproches
-  pensativo: t => ({ upperarm_R: [-10, 50, 22], forearm_R: [-40, 140, -10], hand_R: [-30, 10, -6],
-                     upperarm_L: mirror([0, 6, 70]), forearm_L: mirror([14, 8, 4]),
-                     head: [-6, -10 + Math.sin(t * .4) * 6, 10] })
-};
-function target(name, t) {
-  let r = REST[name] ? REST[name].slice() : [0, 0, 0];
-  // vida en reposo: respiración, mirada y un balanceo leve de brazos
-  if (name === 'chest') r[0] += Math.sin(t * 1.6) * 1.2;
-  if (name === 'head') { r[1] += Math.sin(t * .35) * 9; r[0] += Math.sin(t * .5) * 2; }
-  if (name === 'spine') r[2] += Math.sin(t * .8) * 1.2;
-  if (name === 'upperarm_R' || name === 'upperarm_L') r[1] += Math.sin(t * .9 + (name === 'upperarm_L' ? 1.5 : 0)) * 3;
-  // Con paraguas, el brazo derecho lo sostiene siempre (los gestos usan la cabeza y el otro brazo)
-  if (look.hat === 'paraguas' && UMB_POSE[name]) { const u = UMB_POSE[name].slice(); u[2] += Math.sin(t * .9) * 2; return u; }
-  if (!gesture || !POSES[gesture] || (gesture === 'walk' && !walkMoving)) { const m = mood && MOODS[mood] && MOODS[mood](t)[name]; return m || r; }
-  const g = POSES[gesture](gestureT)[name];
-  return g || r;
-}
+// Clip de Uku según el gesto; caminar sólo se mueve mientras avanza
+const CLIP_OF = { wave: 'saludar', happy: 'celebrar', worried: 'preocupado' };
+function clipFor() { if (gesture === 'walk') return walkMoving ? 'caminar' : 'idle'; return (gesture && CLIP_OF[gesture]) || 'idle'; }
 const BEAR_S = .62, WALK_ANG = .13, WALK_CYCLE = 8, WALK_MOVE = 4.5; // Uku más pequeño para dejar lugar a las tarjetas; al caminar avanza sobre el planeta (rad/s)
-const BONES = ['hips', 'spine', 'chest', 'neck', 'head', 'shoulder_L', 'shoulder_R', 'upperarm_L', 'upperarm_R', 'forearm_L', 'forearm_R', 'hand_L', 'hand_R', 'thigh_L', 'thigh_R'];
-// Nombres de la pose (arriba) → huesos del modelo nuevo, con el nombre que three.js
-// les guarda (sin puntos). spine001 y spine002 son el torso medio y alto; "chest" es
-// el alto, el que lleva cuello y hombros.
-const BONE_NAME = { hips: 'hips', spine: 'spine001', chest: 'spine002', neck: 'neck', head: 'head',
-  shoulder_L: 'shoulderL', shoulder_R: 'shoulderR', upperarm_L: 'upper_armL', upperarm_R: 'upper_armR',
-  forearm_L: 'forearmL', forearm_R: 'forearmR', hand_L: 'handL', hand_R: 'handR', thigh_L: 'thighL', thigh_R: 'thighR' };
-// Reposo de cada hueso: la pose se suma sobre él (el modelo no trae reposo en identidad)
-const REST_Q = {}, REST_PARENT_Q = {};
-const _rx = new THREE.Vector3(1, 0, 0);
-const _e = new THREE.Euler(), _q = new THREE.Quaternion(), _tq = new THREE.Quaternion(), _v = new THREE.Vector3();
-// Los huesos del modelo nuevo van a lo largo de su eje Y y en T. aim() deja el brazo
-// colgando (Y hacia abajo) con X de lado, para que doblar en X sea el codo y abrir en Z
-// sea el brazo hacia afuera. El lado izquierdo queda reflejado. (Las piernas se dejan
-// en su reposo original: calibrarlas así desplomaba el cuerpo.)
-function aim(key) {
-  const b = bones[key]; if (!b || !b.parent) return;
-  const qw = b.getWorldQuaternion(new THREE.Quaternion()), qp = b.parent.getWorldQuaternion(new THREE.Quaternion());
-  // 1) el eje largo (Y) apunta hacia abajo
-  const drop = new THREE.Quaternion().setFromUnitVectors(_v.set(0, 1, 0).applyQuaternion(qw), new THREE.Vector3(0, -1, 0));
-  // 2) el eje X queda de lado (+X en el derecho, −X en el izquierdo) girando sobre Y
-  const x = new THREE.Vector3(1, 0, 0).applyQuaternion(qw).applyQuaternion(drop);
-  const spin = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(x.z, x.x) + (key.endsWith('_L') ? Math.PI : 0));
-  // 3) de mundo al espacio del hueso padre
-  const local = qp.invert().multiply(spin).multiply(drop).multiply(qw);
-  b.quaternion.copy(local); REST_Q[key] = local.clone();
-}
-
 function holdObject(kind) {
   if (held) { held.parent && held.parent.remove(held); held = null; }
   if (!kind || !bones.hand_R || umb) return; // con el paraguas en la mano no sostiene otra cosa
@@ -515,20 +446,8 @@ function frame(now) {
   // Caminar: avanza unos segundos y se detiene a mirar el paisaje
   walkMoving = gesture === 'walk' && !RM && (gestureT % WALK_CYCLE) < WALK_MOVE;
   if (bear) {
-    const a = RM ? 1 : Math.min(1, dt * 4.5); // suavizado: entra y sale de cada gesto sin golpes
-    BONES.forEach(n => {
-      const b = bones[n]; if (!b) return;
-      const g = target(n, RM ? 0 : t);
-      if (REST_PARENT_Q[n]) {
-        // pierna: el giro en X del mundo, llevado al espacio del hueso padre
-        _q.setFromAxisAngle(_rx, D(g[0]));
-        _tq.copy(REST_PARENT_Q[n]).invert().multiply(_q).multiply(REST_PARENT_Q[n]).multiply(REST_Q[n]);
-      } else {
-        _e.set(D(g[0]), D(g[1]), D(g[2]), b.rotation.order);
-        _tq.copy(REST_Q[n]).multiply(_q.setFromEuler(_e));
-      }
-      b.quaternion.slerp(_tq, a);
-    });
+    rig.playClip(clipFor());
+    rig.update(dt);
     if (umb) { bear.updateMatrixWorld(true); placeUmbrella(); }
     const hop = mood === 'feliz' && !gesture && !RM ? Math.abs(Math.sin(t * 2.4)) * .018 : 0;
     bear.position.y = lerp(bear.position.y, .45 * BEAR_S + hop, Math.min(1, dt * 10));
@@ -623,40 +542,30 @@ function init() {
   ground.position.copy(PLANET_C); scene.add(ground);
   stage = new THREE.Group(); scene.add(stage); placeStage();
   clock = new THREE.Clock();
-  new GLTFLoader().load(new URL('./oso/oso.glb', import.meta.url).href, g => {
+  loadUkuGltf().then(g => {
+    rig = ukuFrom(g);
     // El modelo va dentro de un pivote: el pivote es lo que camina, respira y salta.
-    // Se escala a la altura del oso anterior (−0.45 a 0.45) y se centra en x y z.
-    // La caja sale de la geometría en reposo (no de la piel, que aún no tiene pose)
-    const model = g.scene, mesh = model.getObjectByProperty('isSkinnedMesh', true);
-    mesh.geometry.computeBoundingBox();
-    const box = mesh.geometry.boundingBox, mid = box.getCenter(new THREE.Vector3());
+    // Se escala a 0.9 m (la altura del oso anterior) y se centra en x y z.
+    const model = g.scene, box = rig.body.geometry.boundingBox, mid = box.getCenter(new THREE.Vector3());
     const k = .9 / box.getSize(new THREE.Vector3()).y;
     model.scale.setScalar(k);
     model.position.set(-mid.x * k, -.45 - box.min.y * k, -mid.z * k);
     bear = new THREE.Group(); bear.add(model);
-    const byName = {};
-    bear.traverse(o => { if (o.isBone) byName[o.name] = o; });
-    Object.keys(BONE_NAME).forEach(key => {
-      const b = byName[BONE_NAME[key]]; if (!b) return;
-      bones[key] = b; REST_Q[key] = b.quaternion.clone();
-      if (/^(upperarm|forearm|hand)_/.test(key)) b.rotation.order = 'YZX';
-    });
-    bear.updateMatrixWorld(true);
-    ['upperarm_R', 'upperarm_L'].forEach(aim);
-    // Piernas: sin calibrar (su reposo es el del archivo); el giro de caminar se hace sobre el eje de lado del mundo
-    ['thigh_R', 'thigh_L'].forEach(key => { const b = bones[key]; if (b && b.parent) { REST_PARENT_Q[key] = b.parent.getWorldQuaternion(new THREE.Quaternion()); } });
     bear.traverse(o => {
       if (o.isMesh) {
         o.frustumCulled = false;
-        // Color plano: la textura tal cual, sin luz ni sombras
+        // Color plano: la textura y los colores de vértice tal cual, sin luz ni sombras
         const src = o.material, flat = new THREE.MeshBasicMaterial({ map: src.map || null, color: src.map ? 0xffffff : (src.color || 0xffffff), transparent: !!src.transparent, opacity: src.opacity, fog: false });
+        if (o.geometry.attributes.color) flat.vertexColors = true;
         o.material = flat; src.dispose && src.dispose();
         if (flat.map) { bearMat = flat; baseMap = flat.map; }
       }
     });
-    bear.position.y = .45 * BEAR_S; // pies sobre el suelo (el modelo va de -0.45 a 0.45)
+    bear.position.y = .45 * BEAR_S; // pies sobre el suelo (el cuerpo va de -0.45 a 0.45)
     bear.scale.setScalar(BEAR_S);
     stage.add(bear);
+    // Lo que se sostiene, se pone o se atacha usa estos huesos
+    bones.hand_R = rig.B('hand.R'); bones.head = rig.B('head_06');
     dressBear();
     play('wave');
   });
@@ -716,7 +625,7 @@ export function attach(el, opts) {
 }
 export function setScore(s) { if (s !== score) { score = s; if (renderer) buildForest(); } }
 export function setBloom(b) { b = b == null ? null : Math.max(0, Math.min(100, b)); waterOn = !!b; if (b !== bloom) { bloom = b; if (renderer) buildForest(); } }
-export function setMood(m) { mood = MOODS[m] || m === 'tranquilo' ? m : null; }
+export function setMood(m) { mood = ['feliz', 'tranquilo', 'pensativo'].includes(m) ? m : null; }
 export function detach(el) { if (host === el) { host = null; } }
 export function supported() {
   try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; }
