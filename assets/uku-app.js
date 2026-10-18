@@ -22,7 +22,7 @@
   var HACER = U.HACER, PLATA = U.PLATA, PREG = U.PREG;
 
   var view, host, globoEl, props, pills, results, chat, input, b3d = null;
-  var msgs = [], gi = 0, nota = null, ultimo = 0;
+  var msgs = [], gi = 0, nota = null, ultimo = 0, saludado = false;
   var pend = null; // lo que saliste a hacer: al volver, Uku pregunta cómo te fue
 
   var PRUEBA = ['¿En qué se me va la plata?', '¿Cuánto debo?', 'Bloquear mi tarjeta', 'Transferir'];
@@ -100,12 +100,16 @@
 
   // Lo que dice Uku: una nota del momento o su consejo más importante (tocarlo a él pasa al siguiente)
   function pintarGlobo() {
-    var A = consejos(), x = A.length ? A[gi % A.length] : null, s = resumen();
-    var t = nota || (x ? x.di || x.t : s && !s.n ? '¡Todo en orden, ' + s.nombre + '! ¿En qué te ayudo hoy?' : 'Hola, soy Uku. ¿En qué te ayudo?');
-    globoEl.innerHTML = '<p class="uk-globo__who">' + (s ? 'Hola, ' + esc(s.nombre) : 'Uku') + (!nota && A.length > 1 ? '<span>' + (gi % A.length + 1) + ' de ' + A.length + '</span>' : '') + '</p>' +
+    var A = consejos(), x = A.length ? A[gi % A.length] : null, s = resumen(), hola = !saludado && !nota;
+    var nombre = s && s.nombre ? s.nombre.split(' ')[0] : '';
+    var t = nota || (hola ? (nombre ? '¡Hola, ' + nombre + '! Qué gusto verte. ¿Vemos cómo vas hoy?' : '¡Hola! Soy Uku. ¿Vemos cómo vas hoy?')
+      : x ? x.di || x.t : '¡Todo va bien por ahora! ¿Hacemos algo hoy?');
+    globoEl.innerHTML = '<p class="uk-globo__who">' + (hola ? 'Uku' : (s ? esc(s.nombre) : 'Uku')) + (!hola && !nota && A.length > 1 ? '<span>' + (gi % A.length + 1) + ' de ' + A.length + '</span>' : '') + '</p>' +
       '<p class="uk-globo__t">' + esc(t) + '</p>' +
-      (!nota && x && x.act ? '<button class="pf-cta uk-globo__go" data-k="pfm:' + esc(x.act) + '" data-l="' + esc(x.actl) + '">' + esc(x.actl) + '</button>' : '');
+      (!hola && !nota && x && x.act ? '<button class="pf-cta uk-globo__go" data-k="pfm:' + esc(x.act) + '" data-l="' + esc(x.actl) + '">' + esc(x.actl) + '</button>' : '');
     globoEl.classList.remove('is-new'); void globoEl.offsetWidth; globoEl.classList.add('is-new');
+    // Uku hace lo que dice: saluda, habla, se preocupa o celebra según el mensaje
+    if (b3d) b3d.play(hola ? 'wave' : nota ? 'happy' : !x ? 'happy' : x.kind === 'warn' ? 'worried' : 'talk');
   }
   // Los accesos: Mis finanzas, ordenar, consejos y ayuda, a un toque desde Uku
   function pintarAccesos() {
@@ -136,7 +140,7 @@
      Cada mensaje de Uku trae sus botones; solo los del último se pueden
      tocar, así la conversación avanza y no quedan preguntas viejas abiertas. */
   function me(t) { msgs.push({ me: t }); }
-  function uku(t, btns, extra) { msgs.push({ uku: t, btns: btns || [], extra: extra || '', nuevo: true }); ultimo = Date.now(); }
+  function uku(t, btns, extra) { msgs.push({ uku: t, btns: btns || [], extra: extra || '', nuevo: true }); ultimo = Date.now(); if (b3d) b3d.play('talk'); }
   function b(k, t, icon, cls) { return { k: k, t: t, ic: icon, cls: cls }; }
   function mostrar() { input.value = ''; modo(); pintarChat(); pintarResultados(); }
   // Lo que escribes: tu plata, la ayuda o una acción de la app
@@ -202,20 +206,9 @@
      vuelves a su pantalla (cerraste la hoja, el juego o regresaste desde
      otra sección), te confirma lo que cambió o te pregunta si lo lograste. */
   var CAPAS = '.sp.open, .pfm-game.open, .as-sheet.open, .push-page.open, .as-page.open, .card-detail.open, .sx.open, .ai-page.open';
-  function salir(label, decir) {
-    pend = { l: label, fuera: false, cambio: false, t: Date.now() };
-    if (decir && msgs.length) { uku('Te llevo a ' + esc(label.toLowerCase()) + '. Cuando vuelvas, me cuentas cómo te fue.'); pintarChat(); }
-  }
+  function salir() {}
   function enUku() { return view.classList.contains('active') && !view.classList.contains('uk-fin') && !document.querySelector(CAPAS); }
-  setInterval(function () {
-    if (!pend || !host) return;
-    if (!enUku()) { pend.fuera = true; return; }
-    if (!pend.fuera) { if (Date.now() - pend.t > 2500) pend = null; return; } // no se abrió nada
-    var p = pend; pend = null;
-    if (p.cambio) { uku('¡Listo, ya quedó! ¿Te ayudo con algo más?', [b('ok', 'No, eso es todo', 'thumb_up', 'is-ask'), b('consejo', 'Qué más me propones', 'lightbulb', 'is-ask')]); if (b3d) b3d.play('happy'); }
-    else uku('¿Pudiste ' + esc(p.l.toLowerCase()) + '?', [b('ok', 'Sí, listo', 'thumb_up', 'is-ask'), b('no', 'No, ayúdame', null, 'is-ask')]);
-    pintar(); fx('tap');
-  }, 500);
+
 
   /* ---------- Su mundo en 3D ---------- */
   function escena() {
@@ -225,9 +218,9 @@
       if (!m3.supported()) return;
       b3d = m3; var c = window.Clima && Clima.last(); if (c) m3.setLook(c.look);
       if (s) { m3.setBloom(s.bloom); m3.setMood(s.mood); }
-      m3.attach(el, { score: s ? s.score : 60, onTap: function () { fx('select'); m3.play('happy'); if (!msgs.length) { nota = null; gi++; pintarGlobo(); } } });
+      m3.attach(el, { score: s ? s.score : 60, onTap: function () { fx('select'); if (!msgs.length) { nota = null; if (saludado) gi++; saludado = true; pintarGlobo(); } } });
       el.classList.add('is-3d');
-      if (!escena.hola) { escena.hola = 1; m3.play('wave'); setTimeout(function () { if (!msgs.length) m3.play('walk'); }, 2200); }
+      if (!escena.hola) { escena.hola = 1; pintarGlobo(); }
     }).catch(function () {});
   }
 

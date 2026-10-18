@@ -28,7 +28,7 @@ let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
 let bear = null, bones = {}, forest, held = null, ground, stage = null, walkAng = 0, walkAmt = 0, walkMoving = false;
 let waterOn = false, waterT = 0, drops = [];
 // Mundo pequeño: un planeta esférico de radio PLANET_R; su punto más alto está bajo los pies de Uku.
-const PLANET_R = .8, PLANET_C = new THREE.Vector3(0, -PLANET_R, 0);
+const PLANET_R = 1.5, PLANET_C = new THREE.Vector3(0, -PLANET_R, 0);
 let score = 50, shown = 0; // shown: puntaje con el que está dibujado el bosque
 // bloom: flores amarillas del campo (0–100, ahorro); null = como antes (salen con el bosque)
 // mood: ánimo que se queda (feliz, tranquilo, pensativo); null = solo los gestos
@@ -215,6 +215,7 @@ function buildForest(full) {
   Object.keys(want).forEach(k => {
     if (have[k]) return;
     const o = want[k](); o.userData.key = k; o.userData.dir = 1;
+    o.userData.base *= PLANET_R / .8; // el mundo es más grande: los objetos crecen con él
     o.userData.grow = full ? 1 : 0; o.scale.setScalar(o.userData.base * (full ? 1 : .001));
     forest.add(o);
   });
@@ -582,9 +583,9 @@ function frame(now) {
   yaw = RM ? yawTo : lerp(yaw, yawTo, Math.min(1, dt * (drag ? 14 : 2.5)));
   // La cámara va sujeta a Uku, siempre de frente: camina hacia ella
   const sway = RM || drag ? 0 : Math.sin(t * .15) * .12;
-  camera.position.copy(stage.localToWorld(_cam.set(Math.sin(yaw) * camDist + Math.cos(yaw) * sway, .75, Math.cos(yaw) * camDist - Math.sin(yaw) * sway)));
+  camera.position.copy(stage.localToWorld(_cam.set(Math.sin(yaw) * camDist + Math.cos(yaw) * sway, .55, Math.cos(yaw) * camDist - Math.sin(yaw) * sway)));
   camera.up.copy(_camUp.set(0, 1, 0).applyQuaternion(stage.quaternion));
-  camera.lookAt(stage.localToWorld(_look.set(0, .55, 0)));
+  camera.lookAt(stage.localToWorld(_look.set(0, .3, 0)));
   renderer.render(scene, camera);
 }
 
