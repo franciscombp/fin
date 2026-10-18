@@ -553,7 +553,10 @@ function init() {
   new GLTFLoader().load(new URL('./oso/oso.glb', import.meta.url).href, g => {
     // El modelo va dentro de un pivote: el pivote es lo que camina, respira y salta.
     // Se escala a la altura del oso anterior (−0.45 a 0.45) y se centra en x y z.
-    const model = g.scene, box = new THREE.Box3().setFromObject(model), mid = box.getCenter(new THREE.Vector3());
+    // La caja sale de la geometría en reposo (no de la piel, que aún no tiene pose)
+    const model = g.scene, mesh = model.getObjectByProperty('isSkinnedMesh', true);
+    mesh.geometry.computeBoundingBox();
+    const box = mesh.geometry.boundingBox, mid = box.getCenter(new THREE.Vector3());
     const k = .9 / box.getSize(new THREE.Vector3()).y;
     model.scale.setScalar(k);
     model.position.set(-mid.x * k, -.45 - box.min.y * k, -mid.z * k);
