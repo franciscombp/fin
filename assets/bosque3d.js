@@ -25,7 +25,8 @@ const D = THREE.MathUtils.degToRad;
 const lerp = THREE.MathUtils.lerp;
 
 let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
-let bear = null, bones = {}, forest, held = null, ground, stage = null, walkAng = 0, walkAmt = 0;
+let bear = null, bones = {}, forest, held = null, ground, stage = null, walkAng = 0, walkAmt = 0, walkMoving = false;
+let waterOn = false, waterT = 0, drops = [];
 // Mundo pequeño: un planeta esférico de radio PLANET_R; su punto más alto está bajo los pies de Uku.
 const PLANET_R = .8, PLANET_C = new THREE.Vector3(0, -PLANET_R, 0);
 let score = 50, shown = 0; // shown: puntaje con el que está dibujado el bosque
@@ -163,7 +164,7 @@ const _cam = new THREE.Vector3(), _look = new THREE.Vector3(), _camUp = new THRE
 // Uku sobre la superficie: su eje vertical es la normal del planeta y su frente, la tangente
 function placeStage() {
   const c = Math.cos(walkAng), s = Math.sin(walkAng);
-  _dir.set(0, c, -s); _tan.set(0, -s, -c);
+  _dir.set(0, c, s); _tan.set(0, -s, c);
   _X.crossVectors(_dir, _tan);
   stage.quaternion.setFromRotationMatrix(_Mb.makeBasis(_X, _dir, _tan));
   stage.position.copy(PLANET_C).addScaledVector(_dir, PLANET_R);
@@ -274,10 +275,12 @@ const POSES = {
                    head: [16, 0, 9 + Math.sin(t * 1.6) * 3] }),
   // caminar: piernas y brazos alternan; el paso lo da el movimiento de la escena
   // caminar: las piernas y los brazos se balancean en X (el eje de lado tras aim())
-  walk:  t => ({ thigh_R: [Math.sin(t * 6) * 24, 0, 0], thigh_L: [-Math.sin(t * 6) * 24, 0, 0],
-                 upperarm_R: [-Math.sin(t * 6) * 14, 0, 0], upperarm_L: [Math.sin(t * 6) * 14, 0, 0],
-                 forearm_R: [-14 - Math.max(0, -Math.sin(t * 6)) * 8, 0, 0], forearm_L: [-14 - Math.max(0, Math.sin(t * 6)) * 8, 0, 0],
-                 head: [0, 0, Math.sin(t * 6) * 2] }),
+  walk:  t => ({ thigh_R: [Math.sin(t * 3.4) * 22, 0, 0], thigh_L: [-Math.sin(t * 3.4) * 22, 0, 0],
+                 upperarm_R: [-Math.sin(t * 3.4) * 12, 0, 0], upperarm_L: [Math.sin(t * 3.4) * 12, 0, 0],
+                 forearm_R: [-14 - Math.max(0, -Math.sin(t * 3.4)) * 8, 0, 0], forearm_L: [-14 - Math.max(0, Math.sin(t * 3.4)) * 8, 0, 0],
+                 head: [0, Math.sin(t * .9) * 10, 0] }),
+  // regar: el brazo derecho inclina la regadera hacia las flores
+  water: t => ({ upperarm_R: [-58, 16, 26], forearm_R: [-70, 0, 0], hand_R: [-30, 0, -14 + Math.sin(t * 7) * 6], head: [10, 0, 0] }),
   happy: t => ({ upperarm_R: [0, 14, 6 - Math.sin(t * 8) * 6], forearm_R: [-30, 10, -28], hand_R: [-24, 0, -10],
                  upperarm_L: mirror([0, 14, 6 - Math.sin(t * 8) * 6]), forearm_L: mirror([-30, 10, -28]), hand_L: mirror([-24, 0, -10]),
                  head: [-6, 0, Math.sin(t * 6) * 7] })
@@ -302,11 +305,11 @@ function target(name, t) {
   if (name === 'upperarm_R' || name === 'upperarm_L') r[1] += Math.sin(t * .9 + (name === 'upperarm_L' ? 1.5 : 0)) * 3;
   // Con paraguas, el brazo derecho lo sostiene siempre (los gestos usan la cabeza y el otro brazo)
   if (look.hat === 'paraguas' && UMB_POSE[name]) { const u = UMB_POSE[name].slice(); u[2] += Math.sin(t * .9) * 2; return u; }
-  if (!gesture || !POSES[gesture]) { const m = mood && MOODS[mood] && MOODS[mood](t)[name]; return m || r; }
+  if (!gesture || !POSES[gesture] || (gesture === 'walk' && !walkMoving)) { const m = mood && MOODS[mood] && MOODS[mood](t)[name]; return m || r; }
   const g = POSES[gesture](gestureT)[name];
   return g || r;
 }
-const BEAR_S = .62, WALK_ANG = .35; // Uku más pequeño para dejar lugar a las tarjetas; al caminar avanza sobre el planeta (rad/s)
+const BEAR_S = .62, WALK_ANG = .13, WALK_CYCLE = 8, WALK_MOVE = 4.5; // Uku más pequeño para dejar lugar a las tarjetas; al caminar avanza sobre el planeta (rad/s)
 const BONES = ['hips', 'spine', 'chest', 'neck', 'head', 'shoulder_L', 'shoulder_R', 'upperarm_L', 'upperarm_R', 'forearm_L', 'forearm_R', 'hand_L', 'hand_R', 'thigh_L', 'thigh_R'];
 // Nombres de la pose (arriba) → huesos del modelo nuevo, con el nombre que three.js
 // les guarda (sin puntos). spine001 y spine002 son el torso medio y alto; "chest" es
@@ -342,11 +345,30 @@ function holdObject(kind) {
     held = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, .014, 28), new THREE.MeshLambertMaterial({ color: '#ffd200' }));
     // sobre la palma: en reposo la palma mira a (0, -0.89, 0.45) en el espacio del hueso
     held.rotation.x = -.46; held.position.set(-.03, -.052, .026);
+  } else if (kind === 'can') {
+    // Regadera: cuerpo, boquilla y asa
+    held = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(.05, .045, .07, 20), new THREE.MeshLambertMaterial({ color: '#7fa6c9' }));
+    const spout = new THREE.Mesh(new THREE.CylinderGeometry(.008, .014, .08, 10), new THREE.MeshLambertMaterial({ color: '#7fa6c9' }));
+    spout.position.set(.06, .05, 0); spout.rotation.z = -.9;
+    const handle = new THREE.Mesh(new THREE.TorusGeometry(.04, .006, 6, 16, Math.PI), new THREE.MeshLambertMaterial({ color: '#4c6a8a' }));
+    handle.position.set(-.03, .03, 0); handle.rotation.z = Math.PI / 2;
+    held.add(body, spout, handle);
+    held.position.set(-.03, -.05, .03); held.rotation.set(-.2, 0, 0);
   } else if (kind === 'leaf') {
     held = new THREE.Mesh(new THREE.ConeGeometry(.035, .1, 4), new THREE.MeshLambertMaterial({ color: palette().pine[0], flatShading: true }));
     held.position.set(-.03, -.06, .03); held.rotation.set(-.46 + Math.PI, 0, -.4); // el tallo sale de la palma
   }
   held && bones.hand_R.add(held);
+}
+// Gotas que caen de la boquilla mientras Uku riega
+const _dropG = new THREE.SphereGeometry(.012, 6, 4), _dropM = new THREE.MeshBasicMaterial({ color: '#8ec5ef' });
+const _spout = new THREE.Vector3(), _spoutLocal = new THREE.Vector3(.1, .1, 0);
+function spawnDrop() {
+  if (!held || !bones.hand_R || drops.length > 14) return;
+  const d = new THREE.Mesh(_dropG, _dropM);
+  held.localToWorld(_spout.copy(_spoutLocal)); d.position.copy(_spout); scene.add(d);
+  drops.push({ m: d, v: new THREE.Vector3(.05, -.2, 0), life: 0 });
 }
 
 
@@ -488,7 +510,9 @@ function frame(now) {
   if (now - last < 32) return; // ~30 fps: suficiente y cuida batería
   last = now;
   const dt = clock.getDelta(), t = clock.elapsedTime;
-  if (gesture) { gestureT += dt; if (gesture !== 'walk' && gestureT > (gesture === 'hold' ? 3.2 : 2)) { gesture = null; holdObject(null); } }
+  if (gesture) { gestureT += dt; if (gesture !== 'walk' && gestureT > (gesture === 'hold' || gesture === 'water' ? 3.2 : 2)) { gesture = null; holdObject(null); } }
+  // Caminar: avanza unos segundos y se detiene a mirar el paisaje
+  walkMoving = gesture === 'walk' && !RM && (gestureT % WALK_CYCLE) < WALK_MOVE;
   if (bear) {
     const a = RM ? 1 : Math.min(1, dt * 4.5); // suavizado: entra y sale de cada gesto sin golpes
     BONES.forEach(n => {
@@ -509,13 +533,21 @@ function frame(now) {
     bear.position.y = lerp(bear.position.y, .45 * BEAR_S + hop, Math.min(1, dt * 10));
     bear.position.x = lerp(bear.position.x, 0, Math.min(1, dt * 3));
     // Caminando, Uku mira hacia donde avanza; quieto, mira a la cámara
-    bear.rotation.y = lerp(bear.rotation.y, gesture === 'walk' && !RM ? 0 : Math.PI, Math.min(1, dt * 3));
+    bear.rotation.y = lerp(bear.rotation.y, 0, Math.min(1, dt * 3));
   }
   // Mundo pequeño: al caminar, Uku recorre la superficie del planeta y el bosque
   // pasa bajo él; sin fin mientras camine, y todo se queda quieto al parar.
-  walkAmt = lerp(walkAmt, gesture === 'walk' && !RM ? 1 : 0, Math.min(1, dt * 2));
+  walkAmt = lerp(walkAmt, walkMoving ? 1 : 0, Math.min(1, dt * 2));
   walkAng = (walkAng + WALK_ANG * walkAmt * dt) % (2 * Math.PI);
   placeStage();
+  // Regar: si hay ahorro, Uku riega las flores cada cierto tiempo
+  if (waterOn && !gesture && !RM) { waterT += dt; if (waterT > 9) { waterT = 0; play('water', { hold: 'can' }); } }
+  if (gesture === 'water' && gestureT > .6 && gestureT < 2.8) { if (Math.floor(gestureT * 12) !== Math.floor((gestureT - dt) * 12)) spawnDrop(); }
+  drops = drops.filter(d => {
+    d.life += dt; d.v.y -= 1.6 * dt; d.m.position.addScaledVector(d.v, dt);
+    if (d.life > .9 || d.m.position.y < 0) { scene.remove(d.m); return false; }
+    return true;
+  });
   if (forest) forest.children.slice().forEach(o => {
     const u = o.userData;
     if ((u.dir > 0 && u.grow < 1) || (u.dir < 0 && u.grow > 0)) {
@@ -548,10 +580,9 @@ function frame(now) {
   // Giro: el dedo manda (con un pequeño rebote en los topes); a los 3 s vuelve de frente.
   if (!drag) { if (performance.now() - idleAt > 3000) yawTo = 0; else yawTo = Math.max(-1.13, Math.min(1.13, yawTo)); }
   yaw = RM ? yawTo : lerp(yaw, yawTo, Math.min(1, dt * (drag ? 14 : 2.5)));
-  // La cámara va sujeta a Uku, siempre del lado de su cara en reposo; al caminar, Uku
-  // gira y queda de espaldas a ella
+  // La cámara va sujeta a Uku, siempre de frente: camina hacia ella
   const sway = RM || drag ? 0 : Math.sin(t * .15) * .12;
-  camera.position.copy(stage.localToWorld(_cam.set(Math.sin(yaw) * camDist + Math.cos(yaw) * sway, .75, -Math.cos(yaw) * camDist - Math.sin(yaw) * sway)));
+  camera.position.copy(stage.localToWorld(_cam.set(Math.sin(yaw) * camDist + Math.cos(yaw) * sway, .75, Math.cos(yaw) * camDist - Math.sin(yaw) * sway)));
   camera.up.copy(_camUp.set(0, 1, 0).applyQuaternion(stage.quaternion));
   camera.lookAt(stage.localToWorld(_look.set(0, .55, 0)));
   renderer.render(scene, camera);
@@ -682,7 +713,7 @@ export function attach(el, opts) {
   }
 }
 export function setScore(s) { if (s !== score) { score = s; if (renderer) buildForest(); } }
-export function setBloom(b) { b = b == null ? null : Math.max(0, Math.min(100, b)); if (b !== bloom) { bloom = b; if (renderer) buildForest(); } }
+export function setBloom(b) { b = b == null ? null : Math.max(0, Math.min(100, b)); waterOn = !!b; if (b !== bloom) { bloom = b; if (renderer) buildForest(); } }
 export function setMood(m) { mood = MOODS[m] || m === 'tranquilo' ? m : null; }
 export function detach(el) { if (host === el) { host = null; } }
 export function supported() {
