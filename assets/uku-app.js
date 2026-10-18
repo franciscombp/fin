@@ -104,9 +104,9 @@
     var nombre = s && s.nombre ? s.nombre.split(' ')[0] : '';
     var t = nota || (hola ? (nombre ? '¡Hola, ' + nombre + '! Qué gusto verte. ¿Vemos cómo vas hoy?' : '¡Hola! Soy Uku. ¿Vemos cómo vas hoy?')
       : x ? x.di || x.t : '¡Todo va bien por ahora! ¿Hacemos algo hoy?');
-    globoEl.innerHTML = '<p class="uk-globo__who">' + (hola ? 'Uku' : (s ? esc(s.nombre) : 'Uku')) + (!hola && !nota && A.length > 1 ? '<span>' + (gi % A.length + 1) + ' de ' + A.length + '</span>' : '') + '</p>' +
-      '<p class="uk-globo__t">' + esc(t) + '</p>' +
-      (!hola && !nota && x && x.act ? '<button class="pf-cta uk-globo__go" data-k="pfm:' + esc(x.act) + '" data-l="' + esc(x.actl) + '">' + esc(x.actl) + '</button>' : '');
+    // Como si Uku te lo contara: sin encabezado; la acción es un enlace, no un botón principal
+    globoEl.innerHTML = '<p class="uk-globo__t">' + esc(t) + '</p>' +
+      (!hola && !nota && x && x.act ? '<button class="btn btn--tertiary uk-globo__go" data-k="pfm:' + esc(x.act) + '" data-l="' + esc(x.actl) + '">' + esc(x.actl) + '</button>' : '');
     globoEl.classList.remove('is-new'); void globoEl.offsetWidth; globoEl.classList.add('is-new');
     // Uku hace lo que dice: saluda, habla, se preocupa o celebra según el mensaje
     if (b3d) b3d.play(hola ? 'wave' : nota ? 'happy' : !x ? 'happy' : x.kind === 'warn' ? 'worried' : 'talk');
@@ -218,9 +218,9 @@
       if (!m3.supported()) return;
       b3d = m3; var c = window.Clima && Clima.last(); if (c) m3.setLook(c.look);
       if (s) { m3.setBloom(s.bloom); m3.setMood(s.mood); }
-      m3.attach(el, { score: s ? s.score : 60, onTap: function () { fx('select'); if (!msgs.length) { nota = null; if (saludado) gi++; saludado = true; pintarGlobo(); } } });
+      m3.attach(el, { score: s ? s.score : 60, onTap: function () { fx('select'); m3.play('wave'); if (!msgs.length) { nota = null; if (saludado) gi++; saludado = true; pintarGlobo(); } } });
       el.classList.add('is-3d');
-      if (!escena.hola) { escena.hola = 1; pintarGlobo(); }
+      if (!escena.hola) { escena.hola = 1; m3.setAmbient('walk'); pintarGlobo(); }
     }).catch(function () {});
   }
 
