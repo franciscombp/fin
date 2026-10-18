@@ -233,9 +233,8 @@ function buildDust() {
    El giro se reparte entre antebrazo y muñeca (como el radio y el cúbito),
    así la piel de la muñeca no se retuerce. Ninguna articulación pasa de ~70°. */
 function mirror(v) { return [v[0], -v[1], -v[2]]; }
-// El hombro también baja (16°): así la manga cae redonda desde el hombro y no
-// forma un ángulo recto; el brazo queda un poco separado de la panza.
-const REST_R = { upperarm: [0, 6, 56], forearm: [14, 18, 8], hand: [12, 8, 4], shoulder: [0, 0, 16] };
+// Sin desplazamiento de reposo: el brazo cuelga por aim() al cargar el modelo.
+const REST_R = { upperarm: [0, 0, 0], forearm: [0, 0, 0], hand: [0, 0, 0], shoulder: [0, 0, 0] };
 const REST = {};
 Object.keys(REST_R).forEach(k => { REST[k + '_R'] = REST_R[k]; REST[k + '_L'] = mirror(REST_R[k]); });
 const POSES = {
@@ -284,6 +283,31 @@ function target(name, t) {
 }
 const BEAR_S = .62, WALK_W = .42; // Uku más pequeño para dejar lugar a las tarjetas; el paseo es corto
 const BONES = ['hips', 'spine', 'chest', 'neck', 'head', 'shoulder_L', 'shoulder_R', 'upperarm_L', 'upperarm_R', 'forearm_L', 'forearm_R', 'hand_L', 'hand_R', 'thigh_L', 'thigh_R'];
+// Nombres de la pose (arriba) → huesos del modelo nuevo, con el nombre que three.js
+// les guarda (sin puntos). spine001 y spine002 son el torso medio y alto; "chest" es
+// el alto, el que lleva cuello y hombros.
+const BONE_NAME = { hips: 'hips', spine: 'spine001', chest: 'spine002', neck: 'neck', head: 'head',
+  shoulder_L: 'shoulderL', shoulder_R: 'shoulderR', upperarm_L: 'upper_armL', upperarm_R: 'upper_armR',
+  forearm_L: 'forearmL', forearm_R: 'forearmR', hand_L: 'handL', hand_R: 'handR', thigh_L: 'thighL', thigh_R: 'thighR' };
+// Reposo de cada hueso: la pose se suma sobre él (el modelo no trae reposo en identidad)
+const REST_Q = {};
+const _e = new THREE.Euler(), _q = new THREE.Quaternion(), _tq = new THREE.Quaternion(), _v = new THREE.Vector3();
+// Los huesos del modelo nuevo van a lo largo de su eje Y y en T. aim() deja el brazo
+// colgando (Y hacia abajo) con X de lado, para que doblar en X sea el codo y abrir en Z
+// sea el brazo hacia afuera. El lado izquierdo queda reflejado. (Las piernas se dejan
+// en su reposo original: calibrarlas así desplomaba el cuerpo.)
+function aim(key) {
+  const b = bones[key]; if (!b || !b.parent) return;
+  const qw = b.getWorldQuaternion(new THREE.Quaternion()), qp = b.parent.getWorldQuaternion(new THREE.Quaternion());
+  // 1) el eje largo (Y) apunta hacia abajo
+  const drop = new THREE.Quaternion().setFromUnitVectors(_v.set(0, 1, 0).applyQuaternion(qw), new THREE.Vector3(0, -1, 0));
+  // 2) el eje X queda de lado (+X en el derecho, −X en el izquierdo) girando sobre Y
+  const x = new THREE.Vector3(1, 0, 0).applyQuaternion(qw).applyQuaternion(drop);
+  const spin = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(x.z, x.x) + (key.endsWith('_L') ? Math.PI : 0));
+  // 3) de mundo al espacio del hueso padre
+  const local = qp.invert().multiply(spin).multiply(drop).multiply(qw);
+  b.quaternion.copy(local); REST_Q[key] = local.clone();
+}
 
 function holdObject(kind) {
   if (held) { held.parent && held.parent.remove(held); held = null; }
@@ -444,9 +468,9 @@ function frame(now) {
     BONES.forEach(n => {
       const b = bones[n]; if (!b) return;
       const g = target(n, RM ? 0 : t);
-      b.rotation.x = lerp(b.rotation.x, D(g[0]), a);
-      b.rotation.y = lerp(b.rotation.y, D(g[1]), a);
-      b.rotation.z = lerp(b.rotation.z, D(g[2]), a);
+      _e.set(D(g[0]), D(g[1]), D(g[2]), b.rotation.order);
+      _tq.copy(REST_Q[n]).multiply(_q.setFromEuler(_e));
+      b.quaternion.slerp(_tq, a);
     });
     if (umb) { bear.updateMatrixWorld(true); placeUmbrella(); }
     const hop = gesture === 'happy' ? Math.abs(Math.sin(gestureT * 6)) * .05 : mood === 'feliz' && !gesture && !RM ? Math.abs(Math.sin(t * 2.4)) * .018 : 0;
@@ -527,9 +551,23 @@ function init() {
   ground.rotation.x = -Math.PI / 2; scene.add(ground);
   clock = new THREE.Clock();
   new GLTFLoader().load(new URL('./oso/oso.glb', import.meta.url).href, g => {
-    bear = g.scene;
+    // El modelo va dentro de un pivote: el pivote es lo que camina, respira y salta.
+    // Se escala a la altura del oso anterior (−0.45 a 0.45) y se centra en x y z.
+    const model = g.scene, box = new THREE.Box3().setFromObject(model), mid = box.getCenter(new THREE.Vector3());
+    const k = .9 / box.getSize(new THREE.Vector3()).y;
+    model.scale.setScalar(k);
+    model.position.set(-mid.x * k, -.45 - box.min.y * k, -mid.z * k);
+    bear = new THREE.Group(); bear.add(model);
+    const byName = {};
+    bear.traverse(o => { if (o.isBone) byName[o.name] = o; });
+    Object.keys(BONE_NAME).forEach(key => {
+      const b = byName[BONE_NAME[key]]; if (!b) return;
+      bones[key] = b; REST_Q[key] = b.quaternion.clone();
+      if (/^(upperarm|forearm|hand)_/.test(key)) b.rotation.order = 'YZX';
+    });
+    bear.updateMatrixWorld(true);
+    ['upperarm_R', 'upperarm_L'].forEach(aim);
     bear.traverse(o => {
-      if (o.isBone) { bones[o.name] = o; if (/^(upperarm|forearm|hand)_/.test(o.name)) o.rotation.order = 'YZX'; }
       if (o.isMesh) {
         o.frustumCulled = false;
         // Color plano: la textura tal cual, sin luz ni sombras
