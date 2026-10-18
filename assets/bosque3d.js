@@ -26,7 +26,7 @@ const lerp = THREE.MathUtils.lerp;
 
 let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
 let bear = null, bones = {}, forest, held = null, ground, stage = null, walkAng = 0, walkAmt = 0, walkMoving = false;
-let waterOn = false, waterT = 0, drops = [];
+let waterOn = false, waterT = 0, drops = [], ambient = null; // ambient: lo que Uku hace cuando no hay gesto (p. ej. caminar)
 // Mundo pequeño: un planeta esférico de radio PLANET_R; su punto más alto está bajo los pies de Uku.
 const PLANET_R = 1.5, PLANET_C = new THREE.Vector3(0, -PLANET_R, 0);
 let score = 50, shown = 0; // shown: puntaje con el que está dibujado el bosque
@@ -511,7 +511,7 @@ function frame(now) {
   if (now - last < 32) return; // ~30 fps: suficiente y cuida batería
   last = now;
   const dt = clock.getDelta(), t = clock.elapsedTime;
-  if (gesture) { gestureT += dt; if (gesture !== 'walk' && gestureT > (gesture === 'hold' || gesture === 'water' ? 3.2 : 2)) { gesture = null; holdObject(null); } }
+  if (gesture) { gestureT += dt; if (gesture !== 'walk' && gestureT > (gesture === 'hold' || gesture === 'water' ? 3.2 : 2)) { gesture = ambient; gestureT = 0; holdObject(null); } }
   // Caminar: avanza unos segundos y se detiene a mirar el paisaje
   walkMoving = gesture === 'walk' && !RM && (gestureT % WALK_CYCLE) < WALK_MOVE;
   if (bear) {
@@ -530,7 +530,7 @@ function frame(now) {
       b.quaternion.slerp(_tq, a);
     });
     if (umb) { bear.updateMatrixWorld(true); placeUmbrella(); }
-    const hop = gesture === 'happy' ? Math.abs(Math.sin(gestureT * 6)) * .05 : mood === 'feliz' && !gesture && !RM ? Math.abs(Math.sin(t * 2.4)) * .018 : 0;
+    const hop = mood === 'feliz' && !gesture && !RM ? Math.abs(Math.sin(t * 2.4)) * .018 : 0;
     bear.position.y = lerp(bear.position.y, .45 * BEAR_S + hop, Math.min(1, dt * 10));
     bear.position.x = lerp(bear.position.x, 0, Math.min(1, dt * 3));
     // Caminando, Uku mira hacia donde avanza; quieto, mira a la cámara
@@ -696,6 +696,7 @@ function init() {
   raf = requestAnimationFrame(frame);
 }
 
+export function setAmbient(name) { ambient = name || null; if (!gesture && ambient) { gesture = ambient; gestureT = 0; } }
 export function play(name, opts) {
   gesture = name; gestureT = 0;
   holdObject(opts && opts.hold);
