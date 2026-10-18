@@ -33,7 +33,8 @@ let score = 50, shown = 0; // shown: puntaje con el que está dibujado el bosque
 // mood: ánimo que se queda (feliz, tranquilo, pensativo); null = solo los gestos
 let bloom = null, mood = null;
 let gesture = null, gestureT = 0, onTap = null;
-let yaw = 0, yawTo = 0, camDist = 2.6, drag = null, idleAt = 0; // giro con el dedo
+let yaw = 0, yawTo = 0, camDist = 3.6, drag = null, idleAt = 0; // giro con el dedo
+const CAM_H = 1.3; // altura de la cámara sobre los pies de Uku
 
 /* ---------- Colores (claro / oscuro) ---------- */
 let look = { region: 'sierra', shirt: 'sueter', hat: null, shades: false, rain: false };
@@ -69,7 +70,8 @@ function rng(s) { return () => (s = (s * 16807) % 2147483647) / 2147483647; }
    camino y ángulo de lado) decide con una semilla fija si tiene un árbol, roca,
    flor o pasto. El mismo mundo sale siempre. Los umbrales t siguen a los insights
    (salud financiera para árboles y pasto, ahorro para las flores). */
-const CELL = .2, LOOP_N = Math.round(2 * Math.PI / CELL), LAT_MAX = 1.4, LAT_N = Math.round(2 * LAT_MAX / CELL);
+// Celdas de CELL_U metros sobre la esfera: la densidad no cambia aunque el planeta crezca
+const CELL_U = .35, CELL = CELL_U / PLANET_R, LOOP_N = Math.round(2 * Math.PI / CELL), LAT_MAX = 1.4, LAT_N = Math.round(2 * LAT_MAX / CELL);
 function cellRng(k, m, salt) {
   const s = (Math.imul(k + 101, 73856093) ^ Math.imul(m + 211, 19349663) ^ Math.imul(salt, 83492791)) >>> 0;
   return rng(s % 2147483646 + 1);
@@ -81,25 +83,16 @@ function procedural(salt, chance, mk) {
     const r = cellRng(k, m, salt);
     if (r() > chance) continue;
     const az = (k + r()) * CELL - Math.PI, ax = -LAT_MAX + (m + r()) * CELL;
-    if (Math.abs(ax) < .45) continue; // carril libre por donde camina Uku
+    if (Math.abs(ax) * PLANET_R < .4) continue; // carril libre por donde camina Uku
     out.push(mk(r, az, ax));
   }
   return out;
 }
-const SPOTS = procedural(11, .16, (r, az, ax) => ({ az, ax, s: .7 + r() * .7, t: r() * 100, kind: r() < .62 ? 'pine' : 'round', rot: r() * 6.28 })).sort((a, b) => a.t - b.t);
+// Los árboles no se plantan junto al oso: queda un claro de 0.8 m alrededor
+const SPOTS = procedural(11, .5, (r, az, ax) => ({ az, ax, s: .7 + r() * .7, t: r() * 100, kind: r() < .62 ? 'pine' : 'round', rot: r() * 6.28 }))
+  .filter(p => Math.hypot(p.az, p.ax) * PLANET_R > .8).sort((a, b) => a.t - b.t);
 const DECOR = procedural(29, .2, (r, az, ax) => ({ az, ax, t: r() * 100, kind: r() < .45 ? 'grass' : r() < .7 ? 'rock' : 'flower', s: .6 + r() * .8 }));
-// Las flores van junto al camino de Uku, en la franja que la cámara ve (el resto del planeta queda detrás del horizonte)
-const MEADOW = (() => {
-  const out = [];
-  for (let k = 0; k < LOOP_N; k++) for (let m = 0; m < 6; m++) {
-    const r = cellRng(k, m, 71);
-    if (r() > .5) continue;
-    const az = (k + r()) * CELL - Math.PI;
-    if (Math.abs(az) > .9) continue;
-    out.push({ az, ax: (m < 3 ? -1 : 1) * (.5 + r() * .4), t: r() * 100, s: .8 + r() * .5, rot: r() * 6.28 });
-  }
-  return out;
-})();
+const MEADOW = procedural(71, .3, (r, az, ax) => ({ az, ax, t: r() * 100, s: .8 + r() * .5, rot: r() * 6.28 }));
 
 function makeFlower(p, pal) {
   const g = new THREE.Group(), petal = new THREE.MeshLambertMaterial({ color: pal.flower }), stem = new THREE.MeshLambertMaterial({ color: pal.grass });
@@ -225,8 +218,7 @@ function buildForest(full) {
   Object.keys(want).forEach(k => {
     if (have[k]) return;
     const o = want[k](); o.userData.key = k; o.userData.dir = 1;
-    o.userData.base *= PLANET_R / .8; // el mundo es más grande: los objetos crecen con él
-    o.userData.grow = full ? 1 : 0; o.scale.setScalar(o.userData.base * (full ? 1 : .001));
+      o.userData.grow = full ? 1 : 0; o.scale.setScalar(o.userData.base * (full ? 1 : .001));
     forest.add(o);
   });
   shown = score;
@@ -502,7 +494,7 @@ function frame(now) {
   yaw = RM ? yawTo : lerp(yaw, yawTo, Math.min(1, dt * (drag ? 14 : 2.5)));
   // La cámara va sujeta a Uku, siempre de frente: camina hacia ella
   const sway = RM || drag ? 0 : Math.sin(t * .15) * .12;
-  camera.position.copy(stage.localToWorld(_cam.set(Math.sin(yaw) * camDist + Math.cos(yaw) * sway, .55, Math.cos(yaw) * camDist - Math.sin(yaw) * sway)));
+  camera.position.copy(stage.localToWorld(_cam.set(Math.sin(yaw) * camDist + Math.cos(yaw) * sway, CAM_H, Math.cos(yaw) * camDist - Math.sin(yaw) * sway)));
   camera.up.copy(_camUp.set(0, 1, 0).applyQuaternion(stage.quaternion));
   camera.lookAt(stage.localToWorld(_look.set(0, .3, 0)));
   renderer.render(scene, camera);
@@ -516,7 +508,7 @@ function resize() {
   camera.aspect = w / h;
   // Encuadre: el oso siempre entra completo, más cerca en pantallas altas.
   camera.fov = camera.aspect < .8 ? 38 : 30;
-  camDist = camera.aspect < .8 ? 3.1 : 2.6;
+  camDist = camera.aspect < .8 ? 3.4 : 3.6; // planeta: desde más lejos y más alto se ve el horizonte curvo
   // Escenario: data-shift corre el encuadre (fracción del ancho) para que Uku
   // no quede detrás del globo de texto.
   const sh = parseFloat(host.dataset.shift || 0);
