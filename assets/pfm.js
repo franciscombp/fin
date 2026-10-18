@@ -1230,8 +1230,12 @@
     if (!pf) return;
     if (!DB) { scroll.innerHTML = '<header class="pf-head"><h1>Mis finanzas</h1></header><p class="pf-note" style="padding:0 24px">' + T('Cargando tus movimientos…') + '</p>'; load().then(paint); return; }
     var keep = window.scrollY;
-    scroll.innerHTML = '<header class="pf-head"><h1>Mis finanzas</h1></header>' + dineroHTML() + ukuHTML() + gastosHTML() + footHTML();
-    window.scrollTo({ top: keep });
+    // Primero la salud financiera (Uku) y un resumen de gastos; al tocarlo, el detalle
+    var body = vistaGastos === 'gastos'
+      ? '<button class="pf-back" data-pfm="inicio"><span class="material-symbols-rounded" aria-hidden="true">chevron_left</span>' + T('Mis finanzas') + '</button>' + gastosHTML() + dineroHTML()
+      : ukuHTML() + resumenGastosHTML() + footHTML();
+    scroll.innerHTML = '<header class="pf-head"><h1>' + (vistaGastos === 'gastos' ? T('Tus gastos') : 'Mis finanzas') + '</h1></header>' + body;
+    window.scrollTo({ top: vistaGastos ? 0 : keep });
     hero3D();
   }
   // El oso en 3D con su mundo: ánimo (consumos), flores (ahorro) y bosque (presupuesto)
@@ -1418,6 +1422,17 @@
 
   /* ---------- Acciones ---------- */
   function onClick(e) { var b = e.target.closest('[data-pfm]'); if (b) key(b.dataset.pfm); }
+  // Resumen de gastos del mes en el inicio: un toque lleva a gastos y sus gráficas
+  var vistaGastos = null;
+  function resumenGastosHTML() {
+    var s = month(curMes()), pr = pres(), g = s.gast, p = pr.general;
+    var t = !p ? '' : g > p ? T('Te pasaste {m} de tu presupuesto', { m: money0(g - p) }) : T('Te quedan {m} de {p}', { m: money0(p - g), p: money0(p) });
+    return '<section class="pf-sec pfm-resumen"><button class="pfm-resumen__card" data-pfm="gastos">' +
+      '<span class="pfm-resumen__t">' + T('Gastaste este mes') + '</span>' +
+      '<b class="pfm-resumen__m">' + money0(g) + '</b>' +
+      (t ? '<span class="pfm-resumen__s">' + t + '</span>' : '') +
+      '<span class="pfm-resumen__go">' + T('Ver en qué gastaste') + '<span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></span></button></section>';
+  }
   function refresh() { cache = {}; fijoCache = {}; paint(); document.dispatchEvent(new Event('pfm:change')); }
   function key(k) {
     var p = k.split(':');
@@ -1427,6 +1442,8 @@
       case 'u': if (ST.u !== p[1]) { ST.u = p[1]; persist(); fx('toggle'); refresh(); } closeSheet(); return;
       case 'reset': ST.resp[ST.u] = {}; ST.cats[ST.u] = {}; if (ST.hecho) delete ST.hecho[ST.u]; if (ST.oculto) delete ST.oculto[ST.u]; if (ST.rules) delete ST.rules[ST.u]; if (ST.mesadas) delete ST.mesadas[ST.u]; if (ST.presG) delete ST.presG[ST.u]; if (ST.seed) delete ST.seed[ST.u]; sembrar(ST.u); persist(); refresh(); closeSheet(); toast(T('Listo, volviste al inicio.')); return;
       case 'per': ST.per = p[1]; BAR = null; persist(); fx('select'); paint(); return;
+      case 'gastos': vistaGastos = 'gastos'; BAR = null; fx('tap'); paint(); return;
+      case 'inicio': vistaGastos = null; fx('tap'); paint(); return;
       case 'bar': BAR = BAR === +p[1] ? null : +p[1]; fx('tap'); paint(); return;
       case 'ing': return ingSheet();
       case 'debt': return deudasSheet();
