@@ -29,12 +29,16 @@
   function money(v) { return '$ ' + Number(v || 0).toLocaleString('es-EC', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
   // Perfil: nombre, datos y la lista de personas de demostración (cuentas y deudas van en Inicio y Mis finanzas)
+  // Nombre y iniciales de la persona activa: saludo de bienvenida, avatar de la barra y Perfil
   function pintarPerfil() {
-    var view = document.querySelector('.view[data-view="4"]');
-    if (!view) return;
     var id = get();
     persona(id).then(function (u) {
       if (!u) return;
+      var wn = document.getElementById('welcome-name'); if (wn) wn.textContent = ', ' + u.nombre.split(' ')[0];
+      var ti = document.getElementById('top-ini'); if (ti) ti.textContent = iniciales(u.nombre);
+      var ps = document.querySelector('.profile-story'); if (ps) ps.setAttribute('aria-label', 'Perfil de ' + u.nombre);
+      var view = document.querySelector('.view[data-view="4"]');
+      if (!view) return;
       var av = view.querySelector('.profile-head__avatar'); if (av) av.textContent = iniciales(u.nombre);
       var nm = view.querySelector('.profile-head__name'); if (nm) nm.textContent = u.nombre;
       var ml = view.querySelector('.profile-head__mail'); if (ml) ml.textContent = email(u);
