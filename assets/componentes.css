@@ -54,3 +54,10 @@ html:not(.theme-y2k) .btn--tertiary { background: transparent; color: var(--bp-t
 
 /* Avatar de la barra superior: iniciales de la persona activa */
 .profile-story__ini { font: var(--ui-label-sm); color: var(--bp-theme-color-text-primary); line-height: 1; }
+
+/* Mis finanzas: resumen de gastos en el inicio y vuelta desde el detalle */
+.pfm-resumen__card { display: flex; flex-direction: column; gap: 4px; width: 100%; margin: 0; padding: var(--bp-layout-card-padding, 16px); border: 0; border-radius: 16px; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; font: inherit; }
+.pfm-resumen__t, .pfm-resumen__s { font: var(--ui-body-sm-medium); color: var(--bp-theme-color-text-helper); }
+.pfm-resumen__m { font: var(--ui-headline-sm, 700 28px/34px sans-serif); color: var(--bp-theme-color-text-primary); }
+.pfm-resumen__go { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; font: var(--ui-body-md-semibold); color: var(--bp-theme-color-text-interactive); }
+.pf-back { display: inline-flex; align-items: center; gap: 4px; margin: 8px 16px 0; padding: 0; border: 0; background: none; font: var(--ui-body-md-semibold); color: var(--bp-theme-color-text-interactive); cursor: pointer; }
