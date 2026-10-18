@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es"><head><meta charset="UTF-8"><link rel="icon" href="data:,"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Uku rig · prueba</title>
+<style>html,body{margin:0;background:#f6f6f5;font:14px sans-serif}#stage{width:100vw;height:70vh}pre{margin:0;padding:12px;white-space:pre-wrap}</style>
+</head><body>
+<div id="stage"></div>
+<pre id="out">cargando…</pre>
+<script type="module">
+import { loadUkuRig } from './assets/uku-rig.js';
+const out = document.getElementById('out');
+const lines = [];
+const log = (m) => { lines.push(m); console.log('[uku-rig] ' + m); out.textContent = lines.join('\n'); };
+const uku = await loadUkuRig(document.getElementById('stage'), { onLog: log });
+window.uku = uku;
+uku.start();
+log('--- verificación ---');
+log('clips disponibles: ' + uku.clips.map(c => c.name).join(' | '));
+log('playClip("Body|ShowPose"): ' + uku.playClip('Body|ShowPose'));
+log('playClip("saludar") -> ' + uku.playClip('saludar'));
+log('setBlink(1) ok; setExpression("target_0", .5) -> ' + uku.setExpression('target_0', .5));
+log('IK brazo.L (-0.10 x, -0.10 y, +0.10 z; dentro del alcance): ' + JSON.stringify(uku.reach('brazo.L', new uku.root.position.constructor(-0.10, -0.10, 0.10))));
+log('IK brazo.L (+0.15 x; fuera de alcance, debe quedar cerca del límite): ' + JSON.stringify(uku.reach('brazo.L', new uku.root.position.constructor(0.15, 0, 0))));
+log('IK pierna.R (+0.05 en y): ' + JSON.stringify(uku.reach('pierna.R', new uku.root.position.constructor(0, 0.05, 0))));
+log('errores: ' + (uku.report.errors.length ? uku.report.errors.join('; ') : 'ninguno'));
+log('avisos: ' + (uku.report.warnings.length ? uku.report.warnings.join('; ') : 'ninguno'));
+</script></body></html>
