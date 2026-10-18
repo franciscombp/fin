@@ -25,8 +25,9 @@ const D = THREE.MathUtils.degToRad;
 const lerp = THREE.MathUtils.lerp;
 
 let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
-let bear = null, bones = {}, forest, held = null, ground, planetSpeed = 0;
-const _yAxis = new THREE.Vector3(0, 1, 0), _spinQ = new THREE.Quaternion();
+let bear = null, bones = {}, forest, held = null, ground, walkSpeed = 0, walkOffset = 0;
+// El bosque da la vuelta en esta franja de z: el borde cercano cae fuera de cuadro y el lejano queda en la niebla
+const WALK_Z0 = -4.6, WALK_Z1 = 1;
 let score = 50, shown = 0; // shown: puntaje con el que está dibujado el bosque
 // bloom: flores amarillas del campo (0–100, ahorro); null = como antes (salen con el bosque)
 // mood: ánimo que se queda (feliz, tranquilo, pensativo); null = solo los gestos
@@ -194,6 +195,7 @@ function buildForest(full) {
     if (have[k]) return;
     const o = want[k](); o.userData.key = k; o.userData.dir = 1;
     o.userData.grow = full ? 1 : 0; o.scale.setScalar(o.userData.base * (full ? 1 : .001));
+    o.userData.bz = o.position.z;
     forest.add(o);
   });
   shown = score;
@@ -285,7 +287,7 @@ function target(name, t) {
   const g = POSES[gesture](gestureT)[name];
   return g || r;
 }
-const BEAR_S = .62, WALK_SPIN = .35; // Uku más pequeño para dejar lugar a las tarjetas; al caminar, el bosque gira (rad/s) como un planeta pequeño
+const BEAR_S = .62, WALK_SPEED = .32; // Uku más pequeño para dejar lugar a las tarjetas; al caminar, el bosque pasa hacia la cámara (unidades/s)
 const BONES = ['hips', 'spine', 'chest', 'neck', 'head', 'shoulder_L', 'shoulder_R', 'upperarm_L', 'upperarm_R', 'forearm_L', 'forearm_R', 'hand_L', 'hand_R', 'thigh_L', 'thigh_R'];
 // Nombres de la pose (arriba) → huesos del modelo nuevo, con el nombre que three.js
 // les guarda (sin puntos). spine001 y spine002 son el torso medio y alto; "chest" es
@@ -487,15 +489,16 @@ function frame(now) {
     const hop = gesture === 'happy' ? Math.abs(Math.sin(gestureT * 6)) * .05 : mood === 'feliz' && !gesture && !RM ? Math.abs(Math.sin(t * 2.4)) * .018 : 0;
     bear.position.y = lerp(bear.position.y, .45 * BEAR_S + hop, Math.min(1, dt * 10));
     bear.position.x = lerp(bear.position.x, 0, Math.min(1, dt * 3));
+    // Caminando: Uku se da la vuelta (de espaldas a la cámara) y avanza; el bosque
+    // pasa hacia la cámara bajo él. Sin fin mientras camine; al parar vuelve de frente.
+    bear.rotation.y = lerp(bear.rotation.y, gesture === 'walk' && !RM ? Math.PI : 0, Math.min(1, dt * 3));
   }
-  // Caminando: el oso se queda en su sitio y el bosque y el suelo giran bajo él,
-  // como un planeta pequeño; sin fin mientras camine, y se frena al parar
-  planetSpeed = lerp(planetSpeed, gesture === 'walk' && !RM ? WALK_SPIN : 0, Math.min(1, dt * 2));
-  if (Math.abs(planetSpeed) > 1e-4) {
-    _spinQ.setFromAxisAngle(_yAxis, planetSpeed * dt);
-    if (forest) forest.quaternion.premultiply(_spinQ);
-    if (ground) ground.quaternion.premultiply(_spinQ);
-  }
+  walkSpeed = lerp(walkSpeed, gesture === 'walk' && !RM ? WALK_SPEED : 0, Math.min(1, dt * 2));
+  if (walkSpeed > 1e-4) walkOffset += walkSpeed * dt;
+  if (forest && (walkSpeed > 1e-4 || walkOffset)) forest.children.forEach(o => {
+    const span = WALK_Z1 - WALK_Z0;
+    o.position.z = WALK_Z0 + (((o.userData.bz + walkOffset - WALK_Z0) % span) + span) % span;
+  });
   if (forest) forest.children.slice().forEach(o => {
     const u = o.userData;
     if ((u.dir > 0 && u.grow < 1) || (u.dir < 0 && u.grow > 0)) {
