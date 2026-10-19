@@ -41,6 +41,19 @@
   color: var(--bp-theme-color-text-primary);
   opacity: .75;
 }
+.ing__form[hidden] { display: none; }
+.ing__enlace {
+  align-self: center;
+  padding: 8px;
+  border: none;
+  background: none;
+  color: var(--bp-theme-color-text-primary);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
 .ing__error {
   margin: 0;
   min-height: 20px;
