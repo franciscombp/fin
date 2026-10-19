@@ -170,8 +170,8 @@
       pagos: { v: lateN ? 0 : 1, label: 'Pagos a tiempo', icon: 'event_available', ok: !lateN, val: lateN ? T('{n} pago atrasado', { n: lateN }) : T('Todo al día'),
         tip: lateN ? 'Todavía tienes pendiente el agua de septiembre. Si la pagas hoy, evitas otro recargo.' : 'No tienes nada atrasado en los últimos 3 meses.',
         act: lateN ? { id: 'payLate', label: T('Pagar agua ({monto})', { monto: money(18.35) }) } : null },
-      presupuesto: { v: 1 - Math.min(1, overCats.length / 3), label: 'Presupuesto', icon: 'pie_chart', ok: !overCats.length, val: overCats.length ? T('Te pasaste en {n}', { n: overCats.length }) : T('Todo en orden'),
-        tip: overCats.length ? T('Te pasaste en {cats}. Si vuelves a lo presupuestado, tu salud sube.', { cats: list(overCats.map(catLow)) }) : T('En septiembre no te pasaste en nada.'),
+      presupuesto: { v: 1 - Math.min(1, overCats.length / 3), label: 'Presupuesto', icon: 'pie_chart', ok: !overCats.length, val: overCats.length ? T('Excediste en {n}', { n: overCats.length }) : T('Todo en orden'),
+        tip: overCats.length ? T('Excediste el presupuesto en {cats}. Si vuelves a lo presupuestado, tu salud sube.', { cats: list(overCats.map(catLow)) }) : T('En septiembre no excediste el presupuesto en nada.'),
         act: overCats.length ? { id: 'cat:' + overCats[0], label: T('Ver {cat}', { cat: catLow(overCats[0]) }) } : null },
       deuda: { v: card ? 1 - Math.min(1, util / .6) : 1, label: 'Uso de tarjetas', icon: 'credit_card', ok: util < .3, val: card ? T('{pct} del cupo', { pct: pct(util) }) : T('Sin tarjetas conectadas'),
         tip: !card ? 'Conecta tus tarjetas de otros bancos para verlas aquí.' : util < .3 ? 'Usas menos del 30% de tu cupo, que es lo ideal para tu historial.' : 'Estás usando más del 30% de tu cupo y eso pesa en tu historial. Bajarlo es lo que más te ayuda este mes.',
@@ -218,12 +218,12 @@
     // Preguntas de cada sección (tarjetas, préstamos, inversiones, seguros…)
     var cx = window.Contexto && Contexto.answer(s);
     if (cx) return cx;
-    if (/^(hola|buenas|buenos|hey|que tal)\b/.test(s)) return { t: T('Hola, ¿qué tal? Cuéntame qué quieres revisar. Te puedo decir en qué se te está yendo la plata, cómo vas con tus metas o en qué te pasaste del presupuesto.'),
+    if (/^(hola|buenas|buenos|hey|que tal)\b/.test(s)) return { t: T('Hola, ¿qué tal? Cuéntame qué quieres revisar. Te puedo decir en qué se te está yendo la plata, cómo vas con tus metas o en qué excediste tu presupuesto.'),
       s: ['¿En qué se me va la plata?', '¿Cómo voy con mis metas?', '¿En qué me pasé?'] };
     if (OLD.test(s)) return reports(s);
     if (/tarde|atras|recargo|vencid/.test(s)) {
       return { t: D.lateN ? T('En septiembre pagaste el agua 5 días tarde y te cobraron {monto} de recargo. Si activas el pago automático, se paga solito el día que vence y no te vuelve a pasar.', { monto: money(1.5) })
-        : T('Tranquilo, en los últimos 3 meses pagaste todo a tiempo. Si algún día se te pasa una fecha, te pueden cobrar un recargo y eso queda en tu historial.'),
+        : T('Tranquilo, en los últimos 3 meses pagaste todo a tiempo. Si algún día se te olvida una fecha, te pueden cobrar un recargo y eso queda en tu historial.'),
         s: ['¿Cuánto pago en servicios?', '¿Cómo voy en general?'] };
     }
     if (/interes/.test(s)) {
@@ -287,7 +287,7 @@
         s: ['¿En qué se me va la plata?', '¿En qué me pasé?'] };
     }
     if (/presupuesto|pase|exced|limite|tope/.test(s)) {
-      return { t: D.overCats.length ? T('Te pasaste del presupuesto en <b>{cats}</b>. En lo demás vas bien.', { cats: list(D.overCats.map(catLow)) }) : T('En septiembre no te pasaste en nada. ¡Todo dentro del presupuesto!'),
+      return { t: D.overCats.length ? T('Excediste el presupuesto en <b>{cats}</b>. En lo demás vas bien.', { cats: list(D.overCats.map(catLow)) }) : T('En septiembre no excediste el presupuesto en nada. ¡Todo dentro del presupuesto!'),
         h: bars(Object.keys(CATS).filter(function (k) { return !CATS[k].fixed; }).map(function (k) { return { k: k, v: sep[k], c: sep[k] > CATS[k].budget ? '#c20505' : '', label: T('{cat} · de {monto}', { cat: T(CATS[k].name), monto: money(CATS[k].budget) }) }; }).sort(function (a, b) { return b.v - a.v; })),
         s: D.overCats.length ? ['¿Cuánto gasté en ' + CATS[D.overCats[0]].name.toLowerCase() + '?', '¿Cuánto más puedo ahorrar?'] : ['¿Cuánto más puedo ahorrar?', '¿Cómo voy con mis metas?'] };
     }
@@ -331,7 +331,7 @@
       ['Jul', 'Ahorraste el 9%', 'pagaste todo a tiempo', 62 + base[0] * 6],
       ['Jun', 'Ahorraste el 7%', 'un pago atrasado', 48 + base[0] * 4],
       ['May', 'Ahorraste el 11%', 'completaste la meta de la laptop', 81 + base[1] * 4],
-      ['Abr', 'Ahorraste el 5%', 'te pasaste del presupuesto', 39 + base[0] * 3]
+      ['Abr', 'Ahorraste el 5%', 'excediste el presupuesto', 39 + base[0] * 3]
     ];
     return { t: T('El detalle de cada movimiento lo tengo solo desde agosto. De los meses anteriores te puedo mostrar un resumen:'),
       h: '<div class="as-report">' + rows.map(function (r) {
@@ -496,7 +496,7 @@
     }
     if (rate >= .08 && over.length) { say.first = 'savings'; return T('Ahorraste {monto}, pero ojo con {cat}', { monto: money(n.save).replace(/,00$/, ''), cat: catLow(over[0]) }); }
     if (rate >= .08) { say.first = 'savings'; return T('¡Muy bien! Ahorraste {monto}', { monto: money(n.save).replace(/,00$/, '') }); }
-    if (over.length) { say.first = 'warn'; return T('Ojo: te pasaste en {cat}', { cat: catLow(over[0]) }); }
+    if (over.length) { say.first = 'warn'; return T('Ojo: excediste el presupuesto en {cat}', { cat: catLow(over[0]) }); }
     return T('¿Revisamos cómo te fue en {mes}?', { mes: mes });
   }
   function isIncl(id) { return ST.off.indexOf(id) < 0; }

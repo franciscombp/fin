@@ -156,7 +156,7 @@
      a una ayuda (faq) o a una acción de la app. */
   var FLOWS = [
     { id: 'entrar', icon: 'login', t: 'No puedo entrar a la app', k: 'no puedo entrar ingresar acceso bloqueado olvide usuario clave', s: {
-      ini: { q: '¿Qué te pasa al entrar?', ops: [['Olvidé mi usuario', 'faq:Olvidé mi usuario'], ['Olvidé mi clave', 'faq:Olvidé mi clave'], ['Me bloqueé por intentos', 'faq:Me bloqueé: ingresé mal mi clave'], ['Cambié de celular', 'faq:¿Cómo uso la app en un celular nuevo?'], ['Otra cosa', 'persona']] } } },
+      ini: { q: '¿Qué pasa al ingresar?', ops: [['Olvidé mi usuario', 'faq:Olvidé mi usuario'], ['Olvidé mi clave', 'faq:Olvidé mi clave'], ['Me bloqueé por intentos', 'faq:Me bloqueé: ingresé mal mi clave'], ['Cambié de celular', 'faq:¿Cómo uso la app en un celular nuevo?'], ['Otra cosa', 'persona']] } } },
     { id: 'consumo', icon: 'report', t: 'No reconozco un consumo', k: 'no reconozco consumo cobro cargo doble dos veces cobraron fraude debitaron', s: {
       ini: { q: 'Vamos a revisarlo. ¿Puede ser una suscripción o un cobro que llegó con días de retraso?', ops: [['Puede ser', 'go:rev'], ['No, no es mío', 'go:tarjeta']] },
       rev: { q: 'Revísalo en tus movimientos: el nombre del comercio a veces es distinto al de la tienda. Si sigue sin cuadrar, pedimos la revisión.', ops: [['Ver mis movimientos', 'do:Cuenta PRINCIPAL'], ['No es mío, seguir', 'go:tarjeta']] },
