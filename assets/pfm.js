@@ -1583,8 +1583,9 @@
     }
     if (/gast|plata|en qu|cuánto|cuanto|queda|presupuesto/.test(s0)) {
       var ks = Object.keys(s.grupos).sort(function (a, b) { return s.grupos[b] - s.grupos[a]; }).slice(0, 3);
-      return { t: T('En {mes} gastaste {monto} de tu presupuesto de {p}.', { mes: mesName(m), monto: money(s.gast), p: money0(pres().general) }) + '<br><br>' +
-        T('Lo que más pesó: {l}.', { l: ks.map(function (k) { return k.toLowerCase() + ' (' + money(s.grupos[k]) + ')'; }).join(', ') }), s: ['¿Cómo cierro el mes?', '¿Qué tengo por revisar?'] };
+      var pa = pres();
+      return { t: (pa.auto ? T('En {mes} gastaste {monto}; todavía no tienes presupuesto.', { mes: mesName(m), monto: money(s.gast) }) : T('En {mes} gastaste {monto} de tu presupuesto de {p}.', { mes: mesName(m), monto: money(s.gast), p: money0(pa.general) })) + '<br><br>' +
+        T('Lo que más pesó: {l}.', { l: ks.map(function (k) { return k.toLowerCase() + ' (' + money(s.grupos[k]) + ')'; }).join(', ') }), s: ['¿Cómo cierro el mes?', '¿Qué tengo por revisar?'], acts: [[T('Ver mis gastos'), 'gastos']].concat(pa.auto ? [[T('Armar mi presupuesto'), 'pres']] : []) };
     }
     return null;
   }

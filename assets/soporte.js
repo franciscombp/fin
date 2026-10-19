@@ -29,8 +29,8 @@
     { icon: 'event', cat: 'tarjetas', t: '¿Cuándo es mi fecha de corte y de pago?', k: 'fecha corte pago tarjeta cuando pago vence vencimiento minimo estado de cuenta',
       a: function () { var c = card(); return 'Tu Mastercard Black corta el 25 de cada mes y la fecha máxima de pago es el 10 del mes siguiente. Hoy debes ' + money(c.owed) + ' y el pago mínimo es ' + money(c.min) + '. Si pagas el total, no te cobran intereses.'; },
       acts: [['Pagar tarjeta', 'do:Pagar tarjeta'], ['Ver mi tarjeta', 'card:Mastercard Black']] },
-    { icon: 'report', cat: 'tarjetas', t: 'No reconozco un consumo', k: 'no reconozco consumo cobro cargo raro fraude desconocido debito doble dos veces',
-      a: 'Pide una revisión desde aquí: eliges el consumo y nos cuentas qué pasó. La revisión toma entre 2 y 6 semanas y, mientras tanto, ese monto no te genera intereses.',
+    { icon: 'report', cat: 'reclamos', t: 'No reconozco un consumo', k: 'no reconozco consumo cobro cargo raro fraude desconocido debito doble dos veces cobraron',
+      a: 'Primero revisa la fecha y la hora del consumo y si puede ser una suscripción o un cobro que llega con días de retraso. Si no es tuyo, bloquea la tarjeta y pide la revisión desde aquí: eliges el consumo y nos cuentas qué pasó. Un reclamo nacional se resuelve en hasta 15 días hábiles y, mientras tanto, ese monto no te genera intereses.',
       acts: [['Solicitar revisión', 'review'], ['Bloquear mi tarjeta', 'card:Mastercard Black']] },
     { icon: 'cancel', cat: 'app', t: '¿Cómo cancelo un producto?', k: 'cancelar cerrar cuenta tarjeta seguro producto dar de baja anular',
       a: 'Cuentas, tarjetas y seguros se cancelan desde la app: entra al producto › Más › Cancelar producto. Antes revisa que no tenga saldo ni deudas pendientes. ¿Cuál quieres cancelar?',
@@ -41,11 +41,11 @@
     { icon: 'trending_up', cat: 'tarjetas', t: 'Quiero subir el cupo de mi tarjeta', k: 'subir aumentar cupo limite tarjeta credito',
       a: function () { return 'Tienes ' + money(card().avail) + ' de cupo disponible. Puedes pedir un aumento en tu tarjeta › Límites; la respuesta llega en minutos.'; },
       acts: [['Ver mi tarjeta', 'card:Mastercard Black']] },
-    { icon: 'password', cat: 'seguridad', t: 'Olvidé mi clave', k: 'olvide clave contrasena password usuario bloqueado acceso entrar pin',
-      a: 'Crea una nueva con tu cédula y un código que te llega por SMS. Toma menos de 2 minutos.',
+    { icon: 'password', cat: 'seguridad', t: 'Olvidé mi clave', k: 'olvide clave contrasena password acceso entrar pin recuperar',
+      a: 'En la pantalla de ingreso toca «¿Problemas para ingresar?» y elige «Olvidé mi contraseña». Te llega una contraseña temporal al correo registrado y la app te pide crear una nueva. Toma menos de 2 minutos.',
       acts: [['Ir a Seguridad', 'do:Seguridad']] },
     { icon: 'sync_alt', cat: 'cuentas', t: '¿Cuándo llega mi transferencia?', k: 'transferencia no llego llega demora interbancaria pendiente deposito cuando',
-      a: 'Entre cuentas Pichibank llega al instante. A otros bancos, hasta 24 horas hábiles si la hiciste después de las 15:00 o en fin de semana.',
+      a: 'Entre cuentas Pichibank y a un número de celular llega al instante. A otros bancos, hasta 24 horas hábiles si la hiciste después de las 15:00 o en fin de semana. El comprobante queda en tus movimientos.',
       acts: [['Ver mis movimientos', 'do:Cuenta PRINCIPAL']] },
     { icon: 'description', cat: 'cuentas', t: 'Necesito un certificado bancario', k: 'certificado bancario referencia carta documento',
       a: 'Lo descargas al instante en PDF, firmado electrónicamente y sin costo.',
@@ -91,13 +91,97 @@
     { icon: 'insights', cat: 'app', t: '¿Qué es Mis finanzas?', k: 'mis finanzas pfm gastos presupuesto metas resumen',
       a: 'Es donde ves tu dinero de hoy, en qué gastas cada mes, tus presupuestos y metas. Uku te cuenta lo importante de cada mes.', acts: [['Ir a Mis finanzas', 'pfm']] },
     { icon: 'bolt', cat: 'app', t: '¿Cómo creo un atajo?', k: 'atajo grabar repetir rapido buscador',
-      a: 'En el buscador toca Grabar un atajo, elige la acción y sus datos. Después la repites con un toque.', acts: [['Abrir el buscador', 'search']] }
+      a: 'En el buscador toca Grabar un atajo, elige la acción y sus datos. Después la repites con un toque.', acts: [['Abrir el buscador', 'search']] },
+    // Lo que más se consulta en el centro de ayuda del banco: acceso, bloqueos, reclamos y documentos
+    { icon: 'person_search', cat: 'seguridad', t: 'Olvidé mi usuario', k: 'olvide usuario no recuerdo usuario recuperar usuario ingresar',
+      a: 'En la pantalla de ingreso toca «¿Problemas para ingresar?» y elige «Olvidé mi usuario». Te pedimos tu cédula, el código dactilar y una foto para verificar que eres tú. Tu usuario llega por SMS al celular registrado.',
+      acts: [['Ir a Seguridad', 'do:Seguridad']] },
+    { icon: 'lock_clock', cat: 'seguridad', t: 'Me bloqueé: ingresé mal mi clave', k: 'bloqueado bloqueo acceso tres intentos ingrese mal clave usuario bloqueada',
+      a: 'Al tercer intento fallido la app bloquea el acceso por seguridad. No tienes que llamar: toca «Olvidé mi contraseña», crea una nueva y entras de inmediato.',
+      acts: [['Ir a Seguridad', 'do:Seguridad']] },
+    { icon: 'fingerprint', cat: 'seguridad', t: '¿Cómo entro con mi huella o mi cara?', k: 'huella face id rostro biometria entrar rapido',
+      a: 'En Seguridad › Ingreso rápido activa la huella o el reconocimiento facial. Se usa el que ya tiene tu celular; el banco no guarda tu huella.',
+      acts: [['Ir a Seguridad', 'do:Seguridad']] },
+    { icon: 'pause_circle', cat: 'tarjetas', t: '¿Cómo bloqueo temporalmente mi tarjeta de débito?', k: 'bloqueo temporal debito pausar tarjeta debito bloquear temporalmente',
+      a: 'En Solicitudes › Tarjetas de débito eliges la tarjeta y tocas «Bloqueo temporal». Es inmediato y lo quitas cuando quieras. Esta opción es solo para tarjetas de débito; la de crédito se congela desde la tarjeta.',
+      acts: [['Ver mis tarjetas', 'tab:Tarjetas']] },
+    { icon: 'block', cat: 'tarjetas', t: '¿Cómo bloqueo definitivamente mi tarjeta?', k: 'bloqueo definitivo cancelar tarjeta fisica robo perdida definitivo reponer nueva',
+      a: 'Si la perdiste o te la robaron, bloquéala de forma definitiva desde la tarjeta › Bloquear › Definitivo. Ahí mismo pides la reposición; mientras llega, tu tarjeta digital sigue funcionando para pagar con el celular.',
+      acts: [['Ver mis tarjetas', 'tab:Tarjetas']] },
+    { icon: 'pin', cat: 'tarjetas', t: '¿Cómo cambio la clave de mi tarjeta?', k: 'cambiar clave tarjeta cajero pin 4 digitos clave de retiro',
+      a: 'Desde la tarjeta › Cambiar clave. Eliges una nueva de 4 dígitos y queda activa al instante para cajeros y compras.',
+      acts: [['Ver mis tarjetas', 'tab:Tarjetas']] },
+    { icon: 'event_busy', cat: 'tarjetas', t: 'Mi tarjeta aparece caducada o vencida', k: 'caducada vencida tarjeta expiro no funciona renovar',
+      a: 'Cuando la tarjeta vence, la nueva se emite sola y te llega a tu dirección registrada. En la tarjeta ves la fecha de vencimiento y, si ya pasó, pides la renovación desde ahí.',
+      acts: [['Ver mis tarjetas', 'tab:Tarjetas']] },
+    { icon: 'contactless', cat: 'tarjetas', t: '¿Cómo pago con el celular (Apple Pay o Google Pay)?', k: 'apple pay google pay wallet billetera digital registrar tarjeta celular pagar contactless',
+      a: 'Desde la tarjeta › Agregar a mi billetera. Si no se registra sola, hazlo manual en la app Wallet con los datos de la tarjeta. Tu tarjeta de débito digital también sirve para esto.',
+      acts: [['Ver mis tarjetas', 'tab:Tarjetas']] },
+    { icon: 'calendar_month', cat: 'tarjetas', t: '¿Puedo diferir una compra?', k: 'diferir diferido cuotas meses compra tarjeta credito plazo',
+      a: 'Sí: consumos desde $ 50 se difieren desde la app hasta 12 meses, con interés. Entras a la tarjeta › Consumos, eliges el consumo y tocas Diferir.',
+      acts: [['Ver mi tarjeta', 'card:Mastercard Black']] },
+    { icon: 'gpp_maybe', cat: 'tarjetas', t: 'Sospecho un fraude con mi tarjeta digital', k: 'fraude tarjeta digital vulnerar datos sospecha clonada datos',
+      a: 'Bloquéala ahora desde la tarjeta: la digital se bloquea igual que la física. Luego pide una revisión de los consumos que no reconoces. Si compartiste datos por un enlace o una llamada, cambia también tu clave de acceso.',
+      acts: [['Bloquear mi tarjeta', 'card:Mastercard Black'], ['Solicitar revisión', 'review']] },
+    { icon: 'help_center', cat: 'reclamos', t: '¿Qué es un consumo no reconocido?', k: 'que es consumo no reconocido reclamo significa',
+      a: 'Es un cobro que aparece en tus movimientos o en tu estado de cuenta y que no recuerdas haber hecho ni autorizado. El banco analiza la transacción para saber de dónde salió y te da una respuesta formal.',
+      acts: [['Solicitar revisión', 'review']] },
+    { icon: 'checklist', cat: 'reclamos', t: '¿Qué reviso antes de reclamar?', k: 'antes de reclamar revisar suscripcion fecha hora notificacion spam',
+      a: 'Tres cosas: la fecha y la hora (algunos comercios cobran días después), si es una suscripción que olvidaste, y si compartiste los datos de tu tarjeta con alguien. También revisa el correo y los SMS, incluido spam: te avisamos de cada consumo.',
+      acts: [['Ver mis movimientos', 'do:Cuenta PRINCIPAL'], ['Solicitar revisión', 'review']] },
+    { icon: 'schedule', cat: 'reclamos', t: '¿Cuánto tarda un reclamo?', k: 'cuanto tarda reclamo tiempo dias habiles respuesta',
+      a: 'Un reclamo nacional se resuelve en hasta 15 días hábiles, según el caso. Te avisamos por correo y lo sigues en Solicitudes.',
+      acts: [['Ver mis solicitudes', 'sol']] },
+    { icon: 'manage_search', cat: 'reclamos', t: 'No encuentro mi reclamo', k: 'no encuentro reclamo seguimiento estado donde veo mi reclamo',
+      a: 'En Solicitudes ves los reclamos que pusiste desde la app. Si lo pusiste por teléfono o en agencia, dale el número de caso a un asesor y te cuenta cómo va.',
+      acts: [['Ver mis solicitudes', 'sol'], ['Hablar con una persona', 'handoff']] },
+    { icon: 'receipt_long', cat: 'cuentas', t: '¿Cómo descargo mi estado de cuenta?', k: 'estado de cuenta descargar pdf mensual cuenta',
+      a: 'Entra a tu cuenta › Estados de cuenta y descarga el mes que necesites en PDF. Los tienes de los últimos 12 meses, sin costo.',
+      acts: [['Ver mi cuenta', 'do:Cuenta PRINCIPAL']] },
+    { icon: 'badge', cat: 'cuentas', t: '¿Cómo actualizo mis datos?', k: 'actualizar datos direccion telefono correo celular cambiar datos',
+      a: 'En Perfil › Mis datos cambias tu celular, correo y dirección. Confirmas con un código por SMS y queda al instante.',
+      acts: [['Mis datos', 'do:Datos personales']] },
+    { icon: 'smartphone', cat: 'cuentas', t: '¿Cómo transfiero a un número de celular?', k: 'transferir celular numero telefono deuna contacto sin cuenta',
+      a: 'En Transferir eliges «A un celular», buscas el contacto y pones el monto. Llega al instante y sin costo hasta $ 500 al día. La persona recibe el dinero en la cuenta que vinculó a su número.',
+      acts: [['Transferir', 'do:Transferir dinero']] },
+    { icon: 'phone_android', cat: 'pagos', t: '¿Cómo recargo un celular?', k: 'recargar celular saldo recarga operadora',
+      a: 'En Recargar eliges la operadora, escribes el número y el monto. Se acredita al instante y el comprobante queda en tus movimientos.',
+      acts: [['Recargar', 'do:Recargar celular']] },
+    { icon: 'support_agent', cat: 'app', t: '¿Por dónde me atienden?', k: 'canales atencion telefono whatsapp agencia horario comunicarme',
+      a: 'Aquí mismo con Uku las 24 horas; con una persona por chat, por teléfono al ' + PHONE + ' o pidiendo que te llamen. Para lo que no se puede hacer en la app, en cualquier agencia.',
+      acts: [['Hablar con una persona', 'handoff']] }
+  ];
+  /* Inconvenientes guiados: Uku pregunta lo justo para llevarte a la solución.
+     Cada paso tiene una pregunta y opciones; cada opción lleva a otro paso,
+     a una ayuda (faq) o a una acción de la app. */
+  var FLOWS = [
+    { id: 'entrar', icon: 'login', t: 'No puedo entrar a la app', k: 'no puedo entrar ingresar acceso bloqueado olvide usuario clave', s: {
+      ini: { q: '¿Qué te pasa al entrar?', ops: [['Olvidé mi usuario', 'faq:Olvidé mi usuario'], ['Olvidé mi clave', 'faq:Olvidé mi clave'], ['Me bloqueé por intentos', 'faq:Me bloqueé: ingresé mal mi clave'], ['Cambié de celular', 'faq:¿Cómo uso la app en un celular nuevo?'], ['Otra cosa', 'persona']] } } },
+    { id: 'consumo', icon: 'report', t: 'No reconozco un consumo', k: 'no reconozco consumo cobro cargo doble dos veces cobraron fraude debitaron', s: {
+      ini: { q: 'Vamos a revisarlo. ¿Puede ser una suscripción o un cobro que llegó con días de retraso?', ops: [['Puede ser', 'go:rev'], ['No, no es mío', 'go:tarjeta']] },
+      rev: { q: 'Revísalo en tus movimientos: el nombre del comercio a veces es distinto al de la tienda. Si sigue sin cuadrar, pedimos la revisión.', ops: [['Ver mis movimientos', 'do:Cuenta PRINCIPAL'], ['No es mío, seguir', 'go:tarjeta']] },
+      tarjeta: { q: '¿Todavía tienes la tarjeta contigo?', ops: [['Sí, la tengo', 'go:reclamo'], ['No, la perdí o me la robaron', 'go:bloqueo']] },
+      bloqueo: { q: 'Bloquéala ahora para que nadie más la use. Después pedimos la revisión del consumo.', ops: [['Bloquear mi tarjeta', 'card:Mastercard Black'], ['Ya la bloqueé, seguir', 'go:reclamo']] },
+      reclamo: { q: 'Pide la revisión: eliges el consumo y nos cuentas qué pasó. Se resuelve en hasta 15 días hábiles y ese monto no te genera intereses mientras tanto.', ops: [['Solicitar revisión', 'review'], ['Hablar con una persona', 'persona']] } } },
+    { id: 'tarjeta', icon: 'credit_card_off', t: 'Problema con mi tarjeta', k: 'tarjeta no funciona rechazada perdi robo caducada clave', s: {
+      ini: { q: '¿Qué pasa con tu tarjeta?', ops: [['La perdí o me la robaron', 'faq:¿Cómo bloqueo definitivamente mi tarjeta?'], ['Me la rechazan al pagar', 'go:rechazo'], ['Aparece vencida', 'faq:Mi tarjeta aparece caducada o vencida'], ['Olvidé su clave', 'faq:¿Cómo cambio la clave de mi tarjeta?'], ['Quiero pausarla un tiempo', 'faq:¿Cómo bloqueo temporalmente mi tarjeta de débito?']] },
+      rechazo: { q: '¿Dónde te la rechazaron?', ops: [['En una compra en línea', 'go:online'], ['En el exterior', 'faq:Voy a viajar: ¿mi tarjeta funciona afuera?'], ['En una tienda o cajero', 'go:fisico']] },
+      online: { q: 'Revisa que las compras en línea estén activas en tu tarjeta › Límites, y que tengas cupo disponible.', ops: [['Ver mi tarjeta', 'card:Mastercard Black'], ['Sigue sin funcionar', 'persona']] },
+      fisico: { q: 'Puede ser la clave, el cupo o un bloqueo temporal. En tu tarjeta ves si está activa y cuánto cupo tienes.', ops: [['Ver mi tarjeta', 'card:Mastercard Black'], ['Sigue sin funcionar', 'persona']] } } },
+    { id: 'transfer', icon: 'sync_problem', t: 'Mi transferencia no llegó', k: 'transferencia no llego no llega demora pendiente', s: {
+      ini: { q: '¿A dónde la enviaste?', ops: [['A otra cuenta Pichibank o a un celular', 'go:instant'], ['A otro banco', 'go:otro']] },
+      instant: { q: 'Esas llegan al instante. Revisa en tus movimientos que se haya debitado y que el número o el contacto sean los correctos.', ops: [['Ver mis movimientos', 'do:Cuenta PRINCIPAL'], ['Se debitó y no llegó', 'persona']] },
+      otro: { q: 'A otros bancos puede tardar hasta 24 horas hábiles si la hiciste después de las 15:00 o en fin de semana. Tu comprobante está en tus movimientos.', ops: [['Ver mis movimientos', 'do:Cuenta PRINCIPAL'], ['Ya pasó más de un día', 'persona']] } } },
+    { id: 'pago', icon: 'hourglass_top', t: 'Pagué y no se refleja', k: 'pague servicio no se refleja no aparece pendiente', s: {
+      ini: { q: 'La empresa lo registra en hasta 24 horas. Tu comprobante está en tus movimientos por si te lo piden.', ops: [['Ver mis movimientos', 'do:Cuenta PRINCIPAL'], ['Ya pasó más de un día', 'persona']] } } },
+    { id: 'documento', icon: 'description', t: 'Necesito un documento', k: 'documento certificado estado de cuenta referencia constancia', s: {
+      ini: { q: '¿Cuál necesitas?', ops: [['Certificado bancario', 'faq:Necesito un certificado bancario'], ['Estado de cuenta', 'faq:¿Cómo descargo mi estado de cuenta?'], ['Actualizar mis datos', 'faq:¿Cómo actualizo mis datos?']] } } }
   ];
   /* Categorías del centro de ayuda */
   var CATS = [
-    ['tarjetas', 'credit_card', 'Tarjetas'], ['cuentas', 'account_balance', 'Cuentas y transferencias'], ['pagos', 'payments', 'Pagos y recargas'],
-    ['prestamos', 'request_quote', 'Préstamos'], ['inversiones', 'trending_up', 'Inversiones'], ['seguros', 'shield', 'Seguros'],
-    ['seguridad', 'lock', 'Seguridad y acceso'], ['app', 'smartphone', 'Tu app']
+    ['seguridad', 'lock', 'Seguridad y acceso'], ['tarjetas', 'credit_card', 'Tarjetas'], ['reclamos', 'report', 'Reclamos'], ['cuentas', 'account_balance', 'Cuentas y transferencias'],
+    ['pagos', 'payments', 'Pagos y recargas'], ['prestamos', 'request_quote', 'Préstamos'], ['inversiones', 'trending_up', 'Inversiones'], ['seguros', 'shield', 'Seguros'],
+    ['app', 'smartphone', 'Tu app']
   ];
   /* Tutoriales: paso a paso, con un botón para hacerlo ahora */
   var TUT = [
@@ -121,9 +205,10 @@
     var STOP = { como: 1, cuanto: 1, cuando: 1, que: 1, por: 1, para: 1, mis: 1, una: 1, los: 1, las: 1, del: 1, con: 1, puedo: 1, quiero: 1, tengo: 1, hago: 1 };
     var ws = norm(q).replace(/[¿?¡!.,]/g, ' ').split(/\s+/).filter(function (w) { return w.length > 2 && !STOP[w]; });
     if (!ws.length) return [];
-    var all = FAQ.map(function (f, i) { return { kind: 'faq', i: i, icon: f.icon, t: f.t, txt: f.t + ' ' + f.k }; })
+    var all = FLOWS.map(function (f, i) { return { kind: 'flow', i: i, icon: f.icon, t: f.t, txt: f.t + ' ' + f.k, sc0: 1 }; })
+      .concat(FAQ.map(function (f, i) { return { kind: 'faq', i: i, icon: f.icon, t: f.t, txt: f.t + ' ' + f.k }; }))
       .concat(TUT.map(function (u, i) { return { kind: 'tut', i: i, icon: u.icon, t: u.t, txt: u.t + ' ' + u.k }; }));
-    return all.map(function (x) { var k = ' ' + norm(x.txt) + ' ', sc = 0; ws.forEach(function (w) { if (k.indexOf(' ' + w) >= 0) sc += 2; else if (k.indexOf(w) >= 0) sc += 1; }); x.sc = sc; return x; })
+    return all.map(function (x) { var k = ' ' + norm(x.txt) + ' ', sc = 0; ws.forEach(function (w) { if (k.indexOf(' ' + w) >= 0) sc += 2; else if (k.indexOf(w) >= 0) sc += 1; }); x.sc = sc ? sc + (x.sc0 || 0) : 0; return x; })
       .filter(function (x) { return x.sc > 0; }).sort(function (a, b) { return b.sc - a.sc; }).slice(0, n || 5);
   }
   // Lo que sí necesita a una persona: no se puede hacer en la app
@@ -183,10 +268,11 @@
         '<span class="sp-top__title"><b>Ayuda</b><small></small></span><button class="pf-round" data-sp="search" aria-label="Buscar"><span class="material-symbols-rounded" aria-hidden="true">search</span></button></header>' +
       '<div class="sp-body">' +
         '<div class="sp-hub">' +
-          '<div class="sp-hello"></div>' +
           '<label class="sp-find"><span class="material-symbols-rounded" aria-hidden="true">search</span><input type="search" placeholder="Busca en la ayuda" aria-label="Busca en la ayuda" data-sp-find></label>' +
           '<div class="sp-found" hidden></div>' +
-          '<section class="sp-sec"><h2>Lo más consultado</h2><div class="sp-list">' + [0, 1, 3, 6, 5].map(function (i) { return faqRow(i); }).join('') + '</div></section>' +
+          '<section class="sp-sec"><h2>Solucionar un inconveniente</h2><p class="sp-sec__sub">Uku te pregunta lo justo y te lleva a donde se arregla.</p><div class="sp-list">' + FLOWS.map(function (f, i) {
+            return '<button class="sp-row" data-sp="flow:' + i + '"><span class="sp-row__ic material-symbols-rounded">' + f.icon + '</span><span class="sp-row__main"><b>' + f.t + '</b></span><span class="material-symbols-rounded">chevron_right</span></button>'; }).join('') + '</div></section>' +
+          '<section class="sp-sec"><h2>Lo más consultado</h2><div class="sp-list">' + [0, 5, 6, 7, 13].map(function (i) { return faqRow(i); }).join('') + '</div></section>' +
           '<section class="sp-sec"><h2>Categorías</h2><div class="sp-cats">' + CATS.map(function (c) {
             var n = FAQ.filter(function (f) { return f.cat === c[0]; }).length + TUT.filter(function (u) { return u.cat === c[0]; }).length;
             return '<button class="sp-cat" data-sp="cat:' + c[0] + '"><span class="sp-row__ic material-symbols-rounded">' + c[1] + '</span><b>' + c[2] + '</b><small>' + n + ' temas</small></button>';
@@ -320,6 +406,7 @@
     if (k === 'back') { if (b.closest('.sp-acts')) { reset(); el.querySelector('.sp-body').scrollTop = 0; return; } return back(); }
     if (k.indexOf('faq:') === 0) { var fa = b.closest('.sp-acts'); if (fa) fa.remove(); hidePage(); return answer(+k.slice(4)); }
     if (k.indexOf('cat:') === 0) return catPage(k.slice(4));
+    if (k.indexOf('flow:') === 0) { if (window.UkuAsistente && UkuAsistente.flow) return UkuAsistente.flow(+k.slice(5)); return send(FLOWS[+k.slice(5)].t); }
     if (k.indexOf('tut:') === 0) return tutPage(+k.slice(4));
     if (k === 'ask') { hidePage(); chat(); say('Cuéntame qué pasó y te ayudo.'); setTimeout(function () { input.focus(); }, 600); return; }
     if (k === 'askq') { var fq = el.querySelector('[data-sp-find]'), qq = fq.value.trim(); fq.value = ''; paintFound(''); if (qq) send(qq); return; }
@@ -462,8 +549,6 @@
     if (!inline && window.UkuAsistente) return UkuAsistente.ayuda();
     if (!el) mount();
     if (!withAgent) reset(); // con un asesor conectado, la conversación sigue
-    el.querySelector('.sp-hello').innerHTML = '<span class="sp-av">' + face() + '</span><p>Hola' + (firstName() ? ', ' + esc(firstName()) : '') + '. Soy ' + uku() +
-      '. Pregúntame lo que necesites: te doy la respuesta con tus datos y te llevo a donde lo resuelves tú mismo.</p>';
     if (!withAgent) el.querySelector('.sp-body').scrollTop = 0;
     // Dentro de Asistente no es una capa: no usa .open (que empuja la página de abajo)
     if (inline) el.classList.add('sp--on'); else { el.classList.add('open'); document.body.style.overflow = 'hidden'; }
@@ -496,7 +581,12 @@
   window.Soporte = { open: open, into: into, review: function () { review(false); }, find: find,
     faqs: function (n) { return FAQ.slice(0, n || FAQ.length).map(function (f, i) { return { kind: 'faq', i: i, icon: f.icon, t: f.t }; }); },
     // Para que Uku responda la ayuda dentro de su conversación (versión asistente)
-    faq: function (i) { var f = FAQ[i]; return f && { t: f.t, icon: f.icon, a: typeof f.a === 'function' ? f.a() : f.a, acts: f.acts || [] }; },
+    faq: function (i) { var f = FAQ[i]; return f && { t: f.t, icon: f.icon, cat: f.cat, a: typeof f.a === 'function' ? f.a() : f.a, acts: f.acts || [] }; },
+    faqIndex: function (t) { for (var i = 0; i < FAQ.length; i++) if (FAQ[i].t === t) return i; return -1; },
+    flows: function () { return FLOWS.map(function (f, i) { return { i: i, id: f.id, icon: f.icon, t: f.t }; }); },
+    flow: function (i) { var f = FLOWS[i]; return f && { i: i, id: f.id, icon: f.icon, t: f.t, s: f.s }; },
+    cats: function () { return CATS.map(function (c) { return { id: c[0], icon: c[1], t: c[2] }; }); },
+    byCat: function (id) { return FAQ.map(function (f, i) { return f.cat === id ? { kind: 'faq', i: i, icon: f.icon, t: f.t } : null; }).filter(Boolean).concat(TUT.map(function (u, i) { return u.cat === id ? { kind: 'tut', i: i, icon: u.icon, t: u.t } : null; }).filter(Boolean)); },
     tut: function (i) { var u = TUT[i]; return u && { t: u.t, icon: u.icon, min: u.min, steps: u.steps, act: u.act }; },
     contact: function () { return { phone: PHONE, caso: CASE, agente: AGENT, respuestas: AGENT_REPLIES, opts: CONTACT.map(function (c) { return { icon: c[0], t: c[1], s: c[2], k: c[3] }; }) }; },
     // Ejecuta una acción de la ayuda (ir a un flujo, a una tarjeta, pedir revisión o pasar con un asesor)
@@ -508,6 +598,7 @@
       if (k.indexOf('card:') === 0) return go(function () { if (window.__goView) window.__goView(0); var r = document.querySelector('#home-page [data-panel="Tarjetas"] .product-row[data-action="' + k.slice(5) + '"]'); if (r) r.click(); });
       if (k.indexOf('tab:') === 0) return go(function () { if (window.__goView) window.__goView(0); var t = document.querySelector('.tabs .tab[data-panel="' + k.slice(4) + '"]'); if (t) t.click(); });
       if (k === 'pfm') return window.Asistente && Asistente.openPF();
+      if (k === 'sol' || k === 'handoff') return window.UkuAsistente && UkuAsistente[k === 'sol' ? 'solicitudes' : 'persona'] && UkuAsistente[k === 'sol' ? 'solicitudes' : 'persona']();
     },
     openFaq: function (i) { open(); answer(i); }, openTut: function (i) { open(); tutPage(i); } };
 })();
