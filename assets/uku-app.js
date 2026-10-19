@@ -184,17 +184,21 @@
   }
 
   /* ---------- Escribiendo: resultados flotando sobre su mundo ---------- */
+  // Una sugerencia: texto y, si hace falta, de qué tipo es; sin ícono (la lista ya dice qué es)
   function fila(k, icon, t, s) {
-    return '<button class="uk-row" data-k="' + esc(k) + '" data-l="' + esc(t) + '"><span class="uk-row__ic">' + ic(icon) + '</span><span class="uk-row__t"><b>' + esc(t) + '</b>' + (s ? '<small>' + esc(s) + '</small>' : '') + '</span>' + ic('chevron_right') + '</button>';
+    return '<button class="uk-row" data-k="' + esc(k) + '" data-l="' + esc(t) + '"><span class="uk-row__t"><b>' + esc(t) + '</b>' + (s ? '<small>' + esc(s) + '</small>' : '') + '</span>' + ic('chevron_right') + '</button>';
   }
   function texto(t) { return String(t || '').replace(/<br\s*\/?>/g, ' ').replace(/<[^>]+>/g, ''); }
   function pintarResultados() {
     var q = input.value.trim();
     if (!q) { results.innerHTML = ''; return; }
-    var acts = acciones(q).slice(0, 3), fin = finanzas(q), H = ayuda(q, 3), html = fila('ask:' + q, 'auto_awesome', 'Preguntarle a Uku', '“' + q + '”');
-    if (fin) html += '<p class="uk-results__l">Tus finanzas</p><button class="uk-ans" data-k="ask:' + esc(q) + '">' + esc(texto(fin.t)) + '</button>';
-    if (H.length) html += '<p class="uk-results__l">Ayuda</p>' + H.map(function (h) { return fila(h.kind + ':' + h.i, h.icon || 'help', h.t, h.kind === 'tut' ? 'Tutorial' : 'Uku te lo explica'); }).join('');
-    if (acts.length) html += '<p class="uk-results__l">Hacer</p>' + acts.map(function (a) { return fila('act:' + a.label, a.icon, a.label, ''); }).join('');
+    // Pocas sugerencias y buenas: con una sola palabra, la ayuda solo si está en el título de la pregunta
+    var n = norm(q), ws = n.split(/\s+/).filter(Boolean), dinero = (DINERO.test(n) || (PLATA.test(n) && !HACER.test(n))) && resumen();
+    var acts = acciones(q).slice(0, 2), H = ayuda(q, 4).filter(function (h) { return h.kind !== 'flow' && (ws.length > 1 || norm(h.t).indexOf(ws[0]) >= 0); }).slice(0, 2);
+    var html = fila('ask:' + q, null, 'Preguntarle a Uku', '“' + q + '”');
+    if (dinero) html += '<p class="uk-results__l">Tu dinero</p>' + fila('dinero', null, 'Cómo va mi dinero', 'Disponible, gastos y presupuesto');
+    if (H.length) html += '<p class="uk-results__l">Ayuda</p>' + H.map(function (h) { return fila(h.kind + ':' + h.i, null, h.t, h.kind === 'tut' ? 'Tutorial' : ''); }).join('');
+    if (acts.length) html += '<p class="uk-results__l">Hacer</p>' + acts.map(function (a) { return fila('act:' + a.label, null, a.label, ''); }).join('');
     results.innerHTML = html;
   }
 
@@ -210,7 +214,7 @@
      1. saber cómo va mi dinero (mi salud, mis gastos, mi presupuesto),
      2. una respuesta simple (la ayuda), 3. un inconveniente con mi cuenta (guiado).
      Lo que se resuelve con reglas se resuelve aquí; lo demás, con una persona. */
-  var DINERO = /como (va|voy|esta|estoy|ando)|salud financiera|mi dinero|mi plata|mis finanzas|resumen|como me fue|cuanto tengo/;
+  var DINERO = /como (va|voy|esta|estoy|ando)|salud financiera|mi dinero|mi plata|mis finanzas|resumen|como me fue|cuanto tengo|^saldo|mi saldo|disponible/;
   function preguntar(q) {
     q = String(q || '').trim(); if (!q) return;
     me(q); input.blur(); fx('select'); if (b3d) b3d.play('nod');
