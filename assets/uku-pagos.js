@@ -15,6 +15,41 @@
 
   function numero(t) { return parseFloat(t.replace(/\./g, '').replace(',', '.')); }
 
+  /* QR en la foto: con BarcodeDetector si el navegador lo tiene; si no, con jsQR (assets/vendor/jsqr),
+     que se carga solo la primera vez. Devuelve el texto del QR o null. */
+  var ASSET = (document.currentScript && document.currentScript.src || location.href).replace(/[^/]*$/, '');
+  function conJsQR() {
+    if (window.jsQR) return Promise.resolve(window.jsQR);
+    return new Promise(function (ok, no) { var sc = document.createElement('script'); sc.src = ASSET + 'vendor/jsqr/jsQR.js'; sc.onload = function () { ok(window.jsQR); }; sc.onerror = no; document.head.appendChild(sc); });
+  }
+  function pixeles(file, max) {
+    return createImageBitmap(file).then(function (bm) {
+      var k = Math.min(1, max / Math.max(bm.width, bm.height)), c = document.createElement('canvas');
+      c.width = Math.round(bm.width * k); c.height = Math.round(bm.height * k);
+      var g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(bm, 0, 0, c.width, c.height);
+      return g.getImageData(0, 0, c.width, c.height);
+    });
+  }
+  function leerQR(file) {
+    if (!window.createImageBitmap) return Promise.resolve(null);
+    var nativo = 'BarcodeDetector' in window ? createImageBitmap(file).then(function (bm) { return new BarcodeDetector({ formats: ['qr_code'] }).detect(bm); })
+      .then(function (r) { return r.length ? r[0].rawValue : null; }).catch(function () { return null; }) : Promise.resolve(null);
+    return nativo.then(function (v) {
+      if (v) return v;
+      return Promise.all([conJsQR(), pixeles(file, 1000)]).then(function (r) { var q = r[0](r[1].data, r[1].width, r[1].height, { inversionAttempts: 'attemptBoth' }); return q && q.data ? q.data : null; }).catch(function () { return null; });
+    });
+  }
+  /* Qué dice un QR de pago (demo): texto libre o JSON con comercio, monto y referencia.
+     Acepta «PICHIBANK|Comercio|12.50|REF», «{"comercio":..,"monto":..}» o cualquier texto con un monto. */
+  function interpretarQR(data) {
+    var d = String(data || ''), o = null;
+    try { o = JSON.parse(d); } catch (e) {}
+    if (o && typeof o === 'object') return { qr: true, comercio: o.comercio || o.nombre || o.merchant || 'el comercio', monto: o.monto != null ? Number(o.monto) : (o.amount != null ? Number(o.amount) : null), ref: o.ref || o.referencia || null, leido: true };
+    var partes = d.split('|').map(function (x) { return x.trim(); });
+    if (partes.length >= 3 && /^[\d.,]+$/.test(partes[2])) return { qr: true, comercio: partes[1], monto: numero(partes[2].replace(/\.(?=\d{2}$)/, ',')), ref: partes[3] || null, leido: true };
+    var m = /\$?\s*(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})/.exec(d);
+    return { qr: true, comercio: (d.split(/[\n|;]/)[0] || 'el comercio').replace(/[\d$.,]+/g, '').trim() || 'el comercio', monto: m ? numero(m[1].replace(/\.(?=\d{2}$)/, ',')) : null, ref: null, leido: !!d };
+  }
   // Texto de la imagen, si el navegador sabe leerlo; si no, cadena vacía
   function leer(file) {
     if (!('TextDetector' in window) || !window.createImageBitmap) return Promise.resolve('');
@@ -34,6 +69,12 @@
   function propuesta(id, doc) {
     return Promise.all([Persona.cuentas(id), Persona.deudas(id)]).then(function (r) {
       var cuentas = r[0], deudas = r[1];
+      // Un QR de pago: se paga al comercio por el monto del código
+      if (doc.qr) {
+        var dq = cuentas.filter(function (c) { return c.tipo === 'transaccional'; })[0];
+        if (!doc.monto) return null;
+        return { id: 'qr|' + doc.comercio + '|' + doc.monto, titulo: 'el pago con QR', para: doc.comercio, institucion: '', monto: doc.monto, vence: null, ref: doc.ref, desde: dq ? dq.nombre + ' ···' + dq.numero : 'tu cuenta', leido: true, qr: true };
+      }
       var pagables = deudas.filter(function (d) { return d.clase !== 'cobrar' && Number(d.saldo) > 0; });
       var desde = cuentas.filter(function (c) { return c.tipo === 'transaccional'; })[0];
       var elegida = null;
@@ -63,5 +104,5 @@
     return todos[id];
   }
 
-  window.UkuPagos = { leer: leer, interpretar: interpretar, propuesta: propuesta, pagar: pagar, pagos: pagos };
+  window.UkuPagos = { leerQR: leerQR, interpretarQR: interpretarQR, leer: leer, interpretar: interpretar, propuesta: propuesta, pagar: pagar, pagos: pagos };
 })();

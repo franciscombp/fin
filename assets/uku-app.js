@@ -67,8 +67,9 @@
       '<div class="uk-results"></div>' +
       '<form class="uk-bar" role="search">' +
         '<label class="uk-bar__f">' + ic('search') + '<input type="text" enterkeyhint="send" autocomplete="off" placeholder="Pregunta o pide algo" aria-label="Pregunta o pide algo"></label>' +
-        '<button type="button" class="uk-bar__mic uk-bar__add" data-k="escanear" aria-label="Adjuntar una factura o estado de cuenta">' + ic('add') + '</button>' +
-        '<button type="button" class="uk-bar__mic" data-k="voz" aria-label="Hablar" hidden>' + ic('mic') + '</button>' +
+        // Foto (un QR, una factura o un estado de cuenta) y voz, siempre a la vista
+        '<button type="button" class="uk-bar__mic uk-bar__add" data-k="escanear" aria-label="Tomar una foto de un QR o una factura">' + ic('photo_camera') + '</button>' +
+        '<button type="button" class="uk-bar__mic" data-k="voz" aria-label="Hablar">' + ic('mic') + '</button>' +
         '</form>' +
       '<input type="file" accept="image/*" capture="environment" hidden>' +
       // Contenedor de las subsecciones: Mis finanzas (.pf-host) y Ayuda (.uk-ayuda-slot) viven aquí, dentro de Asistente
@@ -91,7 +92,6 @@
     // En la conversación sigue siendo el campo para hablar con Uku.
     input.addEventListener('focus', function () { if (!msgs.length && window.Buscador) { input.blur(); Buscador.open(); } });
     // Dictado: el mismo del buscador, con la frase como búsqueda o pregunta
-    if (window.SpeechRecognition || window.webkitSpeechRecognition) host.querySelector('.uk-bar__mic').hidden = false;
     view.addEventListener('click', onClick);
     gestos();
     host.classList.add('is-fresh'); setTimeout(function () { host.classList.remove('is-fresh'); }, 1500); // los accesos solo entran animados la primera vez
@@ -220,6 +220,7 @@
     me(q); input.blur(); fx('select'); if (b3d) b3d.play('nod');
     var n = norm(q);
     if (agente) return responde();
+    if (fotoPend && montoEscrito(q)) return mostrar();
     // Pedir una persona es pedir una persona: sin rodeos
     if (/persona|humano|asesor|agente|ejecutiv/.test(n)) { persona(); return mostrar(); }
     // Su mundo: Uku te cuenta cómo está, en primera persona (sus flores, su bosque y su ánimo son tus finanzas)
@@ -578,17 +579,43 @@
     solSec.hidden = false; host.classList.add('uk-in-sec'); fx('open'); modo();
   }
   /* ---------- Factura o estado de cuenta: Uku lo lee y propone el pago ---------- */
+  /* Una foto: primero busca un QR (se paga al comercio), después texto de factura o estado de cuenta
+     (donde el navegador sabe leerlo) y, si no pudo leer nada, pregunta el monto. */
+  var fotoPend = null; // la foto que no se pudo leer: espera el monto escrito
   function escanear(file) {
-    uku('Leo tu documento…'); pintarChat();
-    UkuPagos.leer(file).then(function (texto) {
-      return UkuPagos.propuesta(Persona.get(), UkuPagos.interpretar(texto));
+    uku('Miro tu foto…'); pintarChat();
+    UkuPagos.leerQR(file).then(function (qr) {
+      if (qr) return UkuPagos.propuesta(Persona.get(), UkuPagos.interpretarQR(qr));
+      // Sin texto legible no se adivina: se pregunta el monto
+      return UkuPagos.leer(file).then(function (texto) { return texto ? UkuPagos.propuesta(Persona.get(), UkuPagos.interpretar(texto)) : null; });
     }).then(function (p) {
-      if (!p) { uku('No encontré en tu documento un monto que pueda pagar. ¿Me cuentas qué es?', [b('persona', 'Hablar con una persona', 'support_agent')]); return pintarChat(); }
-      var leido = p.leido ? 'Lo leí en tu documento. ' : 'No puedo leer el texto de la imagen en este navegador, así que lo comparé con tus productos. ';
-      uku(leido + 'Es ' + p.titulo + ' de ' + p.para + ' por ' + money(p.monto) + (p.vence ? ', vence el ' + p.vence : '') + '. ¿Lo pago desde ' + p.desde + '?',
-        [b('pago:si:' + encodeURIComponent(JSON.stringify(p)), 'Pagar ' + money(p.monto), 'payments'), b('pago:no', 'Ahora no', 'schedule')]);
-      pintarChat();
+      if (!p) {
+        fotoPend = file;
+        uku('No pude leer un QR ni el texto de esta foto. Dime el monto y te preparo el pago.', [b('ask:Es una factura de luz', 'Es una factura', null, 'is-ask'), b('persona', 'Hablar con una persona', 'support_agent', 'is-ask')], '', { title: 'Tu foto' });
+        pintarChat(); setTimeout(function () { input.focus(); }, 400); return;
+      }
+      propuestaPago(p);
     });
+  }
+  function propuestaPago(p) {
+    var leido = p.qr ? 'Leí el QR. ' : p.manual ? 'Con el monto que me diste: ' : p.leido ? 'Lo leí en tu documento. ' : 'No puedo leer el texto de la imagen en este navegador, así que lo comparé con tus productos. ';
+    uku(leido + 'Es ' + p.titulo + ' de ' + p.para + (p.vence ? ', vence el ' + p.vence : '') + (p.ref ? ' (ref. ' + p.ref + ')' : '') + '. ¿Lo pago desde ' + p.desde + '?',
+      [b('pago:si:' + encodeURIComponent(JSON.stringify(p)), 'Pagar ' + money(p.monto), 'payments'), b('pago:no', 'Ahora no', null, 'is-ask')], '',
+      { title: p.qr ? 'Pago con QR' : 'Pago de ' + p.titulo.replace(/^(el|la) /, ''), num: { v: money(p.monto), l: 'a ' + p.para } });
+    pintarChat();
+  }
+  // El monto escrito después de una foto que no se pudo leer
+  function montoEscrito(q) {
+    var m = /(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,2})?)/.exec(q); if (!m) return false;
+    var v = parseFloat(m[1].replace(/\.(?=\d{3})/g, '').replace(',', '.')); if (!(v > 0)) return false;
+    var tipo = /tarjeta|estado/i.test(q) ? 'estado' : 'factura', sv = /luz|el[eé]ctric/i.test(q) ? 'la luz' : /agua/i.test(q) ? 'el agua' : /internet|wifi/i.test(q) ? 'el internet' : /tel[eé]fono|celular|plan/i.test(q) ? 'el teléfono' : /gas/i.test(q) ? 'el gas' : null;
+    fotoPend = null;
+    UkuPagos.propuesta(Persona.get(), { monto: v, tipo: tipo, leido: false, vence: null }).then(function (p) {
+      if (!p) { uku('No encontré a quién pagar ' + money(v) + '. ¿Me cuentas qué es?'); return pintarChat(); }
+      if (!p.qr && p.para === 'la factura que leí') { p.titulo = 'la factura'; p.para = sv || 'tu factura'; }
+      p.manual = true; propuestaPago(p);
+    });
+    return true;
   }
   // El pago pide confirmación antes de registrarse
   function pago(v) {
@@ -623,7 +650,7 @@
       // Mis finanzas se responde en la conversación; abrir la pantalla es una opción más
       case 'fin': fx('select'); return seccion('fin');
       case 'gastos': fx('select'); seccion('fin'); if (window.PFM) { PFM.key('gastos'); if (v) PFM.key('per:' + v); } return;
-      case 'voz': fx('tap'); if (window.Buscador) Buscador.voice(); return;
+      case 'voz': fx('tap'); if (!(window.SpeechRecognition || window.webkitSpeechRecognition)) { uku('En este navegador no puedo escucharte. Escríbeme abajo y te respondo igual.', [b('ask:¿Cómo va mi dinero?', '¿Cómo va mi dinero?', null, 'is-ask')]); return pintarChat(); } if (window.Buscador) Buscador.voice(); return;
       // Volver: en el detalle de gastos, a la lista de Mis finanzas; si no, a Tu asistente
       case 'atras': { var pb = view.querySelector('.pf-back'); return pb ? pb.click() : seccion('uku'); }
       case 'escanear': fx('tap'); return fileIn.click();
