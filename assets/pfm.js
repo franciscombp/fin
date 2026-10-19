@@ -348,7 +348,7 @@
       var varHoy = s.gast - rec.filter(function (x) { return x.dia <= d; }).reduce(function (a, x) { return a + Math.min(x.monto, s.cats[x.cat] || 0); }, 0);
       var proj = r2(s.gast + fijo + Math.max(0, varHoy) / d * (n - d));
       out.push({ icon: 'speed', kind: proj > p.general ? 'warn' : 'good', t: T('A este ritmo cierras {mes} en {monto}', { mes: mesName(m), monto: money0(proj) }),
-        s: proj > p.general ? T('Te pasarías {monto} de tu presupuesto. Cuenta los cobros fijos que todavía no llegan.', { monto: money0(proj - p.general) }) : T('Te sobrarían {monto} de tu presupuesto, contando los cobros fijos que faltan.', { monto: money0(p.general - proj) }), ask: '¿Cómo cierro el mes?' });
+        s: proj > p.general ? T('Podrías excederte en {monto} de tu presupuesto. Cuenta los cobros fijos que todavía no llegan.', { monto: money0(proj - p.general) }) : T('Te sobrarían {monto} de tu presupuesto, contando los cobros fijos que faltan.', { monto: money0(p.general - proj) }), ask: '¿Cómo cierro el mes?' });
       var sem = falta.filter(function (x) { return x.dia <= d + 10; });
       if (sem.length) out.push({ icon: 'event_upcoming', kind: 'info', t: T('En los próximos días te cobran {monto}', { monto: money(sem.reduce(function (a, x) { return a + x.monto; }, 0)) }),
         s: sem.slice(0, 3).map(function (x) { return (x.cp.length > 22 ? corto(x.cp) : x.cp) + ' (' + x.dia + ' ' + MES[+m.slice(5, 7) - 1].slice(0, 3) + ')'; }).join(', ') + '.' });
@@ -356,7 +356,7 @@
     var ps = sugerido(m);
     if (ps && p.auto !== true && Math.abs(ps.general - p.general) / p.general > .1) out.push({ icon: 'tune', kind: 'info', t: T('Te sugiero un presupuesto de {monto}', { monto: money0(ps.general) }), s: T('Es tu promedio de los últimos tres meses, con un margen de 5%.'), act: 'budgets' });
     var deb = DB.deudas.filter(function (x) { return x.usuario === ST.u && /mínimo/.test(x.nota); })[0];
-    if (deb) out.push({ icon: 'credit_card', kind: 'warn', t: T('Tu {t} sigue creciendo', { t: deb.producto.replace(/ ···\d+/, '') + (deb.producto.indexOf(deb.institucion) < 0 ? ' ' + deb.institucion : '') }), s: T('Debes {monto} y solo pagas el mínimo. Si le pasas lo que sobra cada quincena, la cierras antes.', { monto: money(deb.saldo) }) });
+    if (deb) out.push({ icon: 'credit_card', kind: 'warn', t: T('Tu {t} sigue creciendo', { t: deb.producto.replace(/ ···\d+/, '') + (deb.producto.indexOf(deb.institucion) < 0 ? ' ' + deb.institucion : '') }), s: T('Debes {monto} y solo pagas el mínimo. Si destinas lo que te sobra cada quincena, la cierras antes.', { monto: money(deb.saldo) }) });
     return out;
   }
 
@@ -376,7 +376,7 @@
       pago_otro_banco: T('No lo cuento: ya conté lo que compraste con esa tarjeta, que conectaste.'),
       negocio: T('Es de tu negocio: lo saco de tus gastos de la casa.')
     }[c.why] || T('No lo cuento en tu resumen.');
-    if (c.k === 'rin' || c.k === 'rout') return T('Es de una persona o empresa, así que no sé qué fue. Lo cuento marcado hasta que me cuentes.');
+    if (c.k === 'rin' || c.k === 'rout') return T('No sé qué fue: es de una persona o empresa. Lo cuento marcado hasta que me digas.');
     if (c.k === 'ingreso') return T('Cuenta como ingreso de {mes} ({cat}).', { mes: mes, cat: c.cat.toLowerCase() });
     if (c.k === 'reembolso') return T('Te devolvieron parte de un gasto: lo resto de {cat}. No es un ingreso.', { cat: c.cat });
     if (r.c === 'Tarjetas de otros bancos (sin detalle)') return T('Es el pago de una tarjeta de otro banco. Lo cuento como gasto porque no veo en qué la usaste.');
@@ -631,8 +631,8 @@
       act: 'tarjeta', actl: T('Programar el pago total'), ok: T('Listo: tu tarjeta se paga completa cada mes, el día que cobras.'), conf: { para: T('Tu tarjeta Pichibank'), monto: null, cuando: T('Cada mes, el día que cobras') } });
     // 4. Presupuesto: ponerlo o revisarlo
     if (pr.auto || hecho('pres')) out.push({ id: 'pres', p: 55, icon: 'speed', tag: T('Presupuesto'), kind: 'info', t: T('Todavía no tienes un presupuesto'),
-      s: T('Te entran unos {i} al mes. Te propongo cuánto gastar y cómo repartirlo; tú decides.', { i: money0(Math.round(ingresoMes())) }),
-      di: T('Todavía no tienes presupuesto. Con lo que te entra y lo que gastas, te ayudo a armarlo en tres pasos.'),
+      s: T('Recibes unos {i} al mes. Te propongo cuánto gastar y cómo repartirlo; tú decides.', { i: money0(Math.round(ingresoMes())) }),
+      di: T('Todavía no tienes presupuesto. Con lo que recibes y lo que gastas, te ayudo a armarlo en tres pasos.'),
       act: 'pres', actl: T('Armar mi presupuesto'), ok: T('Listo: tu presupuesto es {m} al mes.', { m: money0(pr.general) }) });
     else if (pe.k === 'over') out.push({ id: 'pres:over', p: 72, icon: 'speed', tag: T('Presupuesto'), kind: 'warn', t: T('Vas por encima de tu presupuesto'),
       s: T('Llevas {g} de {p} este mes. Revisa en qué grupo se fue o ajusta el plan.', { g: money0(month(curMes()).gast), p: money0(pr.general) }),
@@ -689,7 +689,7 @@
       { ic: 'local_florist', l: T('Sus flores'), v: c >= 1 ? T(Math.floor(c) === 1 ? 'Te alcanza 1 mes' : 'Te alcanza {n} meses', { n: Math.floor(c) }) : T('Menos de 1 mes'), cls: c >= 3 ? 'ok' : c >= 1 ? 'warn' : 'over',
         d: c >= 3 ? T('Su campo está lleno de flores: tienes ahorro de sobra.') : T('Con 3 meses de ahorro, su campo se llena de flores.') },
       { ic: 'park', l: 'Su bosque', v: pe.l, cls: pe.k,
-        d: pe.k === 'over' ? T('Te pasaste del presupuesto y el bosque se seca.') : T('Mientras no te pases del presupuesto, el bosque sigue verde.') }
+        d: pe.k === 'over' ? T('Excediste el presupuesto y el bosque se seca.') : T('Mientras no excedas el presupuesto, el bosque sigue verde.') }
     ];
   }
   function worldSheet() {
@@ -698,7 +698,7 @@
     showSheet('<h3>' + T('El mundo de tu Asistente') + '</h3><p>' + T('Uku y su campo cambian con tus finanzas. Cada cosa tiene un solo significado.') + '</p>' +
       row(MOOD_IC[a.k], a.k, T('Su ánimo: tus consumos clasificados'), a.n ? T('Está {animo}: tienes {n} sin clasificar. Si pasa más de una semana se queda pensativo, esperándote. Si una semana no gastas, no pasa nada.', { animo: T(MOOD[a.k]), n: a.n }) : T('Está contento: todo está clasificado. Si una semana no gastas, no pasa nada.')) +
       row('local_florist', c >= 3 ? 'ok' : c >= 1 ? 'warn' : 'over', T('Las flores amarillas: tu ahorro'), T('Lo que tienes en tus cuentas te alcanza para {n} meses de gasto. Con 3 meses o más, su campo está lleno de flores.', { n: (Math.round(c * 10) / 10).toString().replace('.', ',') })) +
-      row('park', pe.k, T('El bosque: tu presupuesto'), T('{e}: llevas {g} de {p} este mes. Si te pasas, el bosque se seca.', { e: pe.l, g: money0(month(curMes()).gast), p: money0(p) })) +
+      row('park', pe.k, T('El bosque: tu presupuesto'), T('{e}: llevas {g} de {p} este mes. Si excedes el presupuesto, el bosque se seca.', { e: pe.l, g: money0(month(curMes()).gast), p: money0(p) })) +
       (a.n ? '<button class="pf-cta pfm-block" data-pfm="game">' + T('Clasificar {n}', { n: Math.min(TANDA, a.n) }) + '</button>' : ''));
   }
 
@@ -978,7 +978,7 @@
     var x = G.list[G.i].m;
     gel.innerHTML = topHTML(T('{a} de {b}', { a: Math.min(hechos(), G.list.length), b: G.list.length }), T('Resultado')) + barHTML() +
       '<div class="pfm-game__panel"><span class="pfm-game__big is-ok material-symbols-rounded" aria-hidden="true">event_available</span>' +
-      '<h2>' + T('¿La programamos?') + '</h2><p>' + T('Pichibank le envía {m} a {n} cada día {d}, sin que te acuerdes. Uku te avisa un día antes si no te alcanza.', { m: money0(x.monto), n: corto(x.cp).split(' ')[0], d: x.dia }) + '</p>' +
+      '<h2>' + T('¿La programamos?') + '</h2><p>' + T('Pichibank le envía {m} a {n} cada día {d}, sin que tengas que acordarte. Uku te avisa un día antes si no te alcanza.', { m: money0(x.monto), n: corto(x.cp).split(' ')[0], d: x.dia }) + '</p>' +
       '<div class="pfm-game__foot"><button class="pf-cta" data-g="prog:si">' + T('Programar cada día {d}', { d: x.dia }) + '</button><button class="section__link" data-g="prog:no">' + T('Ahora no') + '</button></div></div>';
     moverBarra();
   }
@@ -1171,10 +1171,10 @@
   // Ingresos: ya no es un filtro de la pantalla, se ven en su hoja
   function ingSheet() {
     var m = curMes(), s = month(m), ks = Object.keys(s.inc).sort(function (a, b) { return s.inc[b] - s.inc[a]; }), mx = Math.max.apply(null, ks.map(function (k) { return s.inc[k]; }).concat([1]));
-    showSheet('<h3>' + T('Tus ingresos') + '</h3><div class="pfm-tx__amt">' + money(s.ing) + '</div><p>' + T('Te entraron en {mes}.', { mes: mesName(m) }) + '</p>' +
+    showSheet('<h3>' + T('Tus ingresos') + '</h3><div class="pfm-tx__amt">' + money(s.ing) + '</div><p>' + T('Recibiste dinero en {mes}.', { mes: mesName(m) }) + '</p>' +
       '<div class="pf-mcard pfm-list">' + ks.map(function (k) { return meter('', ING_IC[k] || 'south_west', k, money(s.inc[k]), s.inc[k] / mx, 'in', T('{pct} de lo que entró', { pct: pct(s.inc[k] / (s.ing || 1)) })); }).join('') +
       (s.rin ? meter('game', 'help', T('Por revisar'), money(s.rin), s.rin / mx, 'gris', T('Plata de personas: ¿qué fue? Ordénala')) : '') +
-      (!ks.length && !s.rin ? '<p class="pf-note">' + T('No te entró plata este mes.') + '</p>' : '') + '</div>');
+      (!ks.length && !s.rin ? '<p class="pf-note">' + T('No recibiste dinero este mes.') + '</p>' : '') + '</div>');
   }
   // Fila de grupo: ícono como los productos de Inicio, nombre y monto, barra y una línea de contexto
   function meter(k, ic, name, val, p, tone, sub) {
@@ -1349,7 +1349,7 @@
       '<span class="pfm-dcard__cmp pfm-mes__cmp">' + x.porMes.map(function (c, i) { return '<span class="pfm-dcard__row' + (i === x.porMes.length - 1 ? ' is-on' : '') + '"><small>' + esc(c.l) + '</small><b>' + (c.v ? money0(c.v) : '—') + '</b><i style="width:' + Math.max(2, c.v / mx * 100).toFixed(1) + '%"></i></span>'; }).join('') + '</span>' +
       (st.v !== 'mesada' ? '<p class="pf-note">' + T('Si es una mesada, la pongo en Familia, con todos los envíos de antes.') + '</p><button class="pf-cta" ' + a + 'ok:' + esc(cp) + '">' + T('Sí, es una mesada') + '</button><button class="pf-link pf-link--block" ' + a + 'no:' + esc(cp) + '">' + T('Es otra cosa') + '</button>'
         : st.prog ? '<p class="pfm-prog"><span class="material-symbols-rounded" aria-hidden="true">event_available</span>' + T('Programada: {m} cada día {d} desde tu {src}.', { m: money0(st.prog.monto), d: st.prog.dia, src: x.src }) + '</p><button class="pf-link pf-link--block" ' + a + 'unprog:' + esc(cp) + '">' + T('Dejar de programarla') + '</button>'
-        : '<p class="as-sheet__label">' + T('Programarla') + '</p><p>' + T('Pichibank le envía {m} a {n} cada día {d}, sin que te acuerdes. Uku te avisa un día antes si no te alcanza.', { m: money0(x.monto), n: n, d: x.dia }) + '</p>' +
+        : '<p class="as-sheet__label">' + T('Programarla') + '</p><p>' + T('Pichibank le envía {m} a {n} cada día {d}, sin que tengas que acordarte. Uku te avisa un día antes si no te alcanza.', { m: money0(x.monto), n: n, d: x.dia }) + '</p>' +
           '<button class="pf-cta" ' + a + 'ask:' + esc(cp) + '">' + T('Programar cada día {d}', { d: x.dia }) + '</button>'));
   }
   // Pagos repetidos a la misma tienda o persona: un toque los ordena todos y queda la regla
@@ -1378,7 +1378,7 @@
   }
 
   /* Arma tu presupuesto: si no lo tienes, Uku lo propone con tus datos y tú decides.
-     1. Cuánto gastar al mes: como gastas hoy o ahorrando 10% o 20% de lo que te entra.
+     1. Cuánto gastar al mes: como gastas hoy o ahorrando 10% o 20% de lo que recibes.
      2. Cómo repartirlo: lo fijo queda como está y lo flexible se ajusta al total.
      3. Lo que eso significa hoy: cuánto te queda al día hasta fin de mes. */
   var FIJO = ['Hogar', 'Compromisos', 'Salud y educación', 'Familia'], wiz = null;
@@ -1406,11 +1406,11 @@
     if (wiz.paso === 1) {
       draft = null;
       return showSheet('<p class="as-sheet__label">' + T('Paso 1 de 3') + '</p><h3>' + T('Arma tu presupuesto') + '</h3>' +
-        '<p>' + T('Te entran unos {i} al mes y gastas en promedio {g}. ¿Cuánto quieres gastar?', { i: money0(Math.round(P.ing)), g: money0(Math.round(P.prom)) }) + '</p>' +
+        '<p>' + T('Recibes unos {i} al mes y gastas en promedio {g}. ¿Cuánto quieres gastar?', { i: money0(Math.round(P.ing)), g: money0(Math.round(P.prom)) }) + '</p>' +
         '<div class="as-rows pfm-planes">' + P.L.map(function (x) {
           return '<button class="as-row as-row--btn" data-pfm="presw:plan:' + x.id + '" aria-pressed="' + (x.id === wiz.plan) + '"><span class="as-row__main"><b>' + esc(x.t) + ' · ' + money0(x.v) + '</b><small>' +
             (x.rec ? '<span class="pfm-rec">' + T('Recomendado') + '</span> ' : '') +
-            (x.libre >= 0 ? T('Te quedan {m} libres al mes', { m: money0(x.libre) }) : T('Gastarías {m} más de lo que te entra', { m: money0(-x.libre) })) + '</small></span><span class="as-radio"></span></button>'; }).join('') + '</div>' +
+            (x.libre >= 0 ? T('Te quedan {m} libres al mes', { m: money0(x.libre) }) : T('Gastarías {m} más de lo que recibes', { m: money0(-x.libre) })) + '</small></span><span class="as-radio"></span></button>'; }).join('') + '</div>' +
         '<p class="pf-note">' + T('Uku lo calcula con tus últimos tres meses. Lo puedes cambiar cuando quieras.') + '</p>' +
         '<button class="pf-cta" data-pfm="presw:2">' + T('Siguiente') + '</button><button class="pf-link pf-link--block" data-pfm="cerrar">' + T('Ahora no') + '</button>');
     }
@@ -1430,7 +1430,7 @@
     return showSheet('<p class="as-sheet__label">' + T('Paso 3 de 3') + '</p><h3>' + T('Tu presupuesto') + '</h3>' +
       '<div class="pfm-tx__amt">' + money0(draft.general) + '</div><p>' + T('al mes') + '</p>' +
       '<div class="pfm-confirm"><div><small>' + T('Este mes llevas') + '</small><b>' + money0(g) + '</b></div>' +
-        '<div><small>' + T('Te quedan') + '</small><b>' + (queda > 0 ? money0(queda) : T('Ya te pasaste {m}', { m: money0(-queda) })) + '</b></div>' +
+        '<div><small>' + T('Te quedan') + '</small><b>' + (queda > 0 ? money0(queda) : T('Te excediste por {m}', { m: money0(-queda) })) + '</b></div>' +
         (queda > 0 ? '<div><small>' + T('Para gastar al día') + '</small><b>' + T('{m} por {d} días', { m: money0(queda / dias), d: dias }) + '</b></div>' : '') + '</div>' +
       '<p class="pf-note">' + T('Uku te avisa cuando llegues al 80% de un grupo, y cada lunes te cuenta cómo vas.') + '</p>' +
       '<button class="pf-cta" data-pfm="presw:save">' + T('Guardar presupuesto') + '</button><button class="pf-link pf-link--block" data-pfm="presw:2">' + T('Atrás') + '</button>');
@@ -1452,7 +1452,7 @@
   var vistaGastos = null;
   function resumenGastosHTML() {
     var s = month(curMes()), pr = pres(), g = s.gast, p = pr.general;
-    var t = !p ? '' : g > p ? T('Te pasaste {m} de tu presupuesto', { m: money0(g - p) }) : T('Te quedan {m} de {p}', { m: money0(p - g), p: money0(p) });
+    var t = !p ? '' : g > p ? T('Excediste tu presupuesto por {m}', { m: money0(g - p) }) : T('Te quedan {m} de {p}', { m: money0(p - g), p: money0(p) });
     return '<section class="pf-sec pfm-resumen"><button class="pfm-resumen__card" data-pfm="gastos">' +
       '<span class="pfm-resumen__t">' + T('Gastaste este mes') + '</span>' +
       '<b class="pfm-resumen__m">' + money0(g) + '</b>' +
@@ -1553,7 +1553,7 @@
     var s = month(m), p = pres(), av = prom(m, 3), cur = isCur(m), md = mood(m);
     var over = Object.keys(p.cats).filter(function (k) { return (s.grupos[k] || 0) > p.cats[k]; }).map(function (k) { return { name: k, over: s.grupos[k] - p.cats[k], budget: p.cats[k] }; });
     var ins = feed(m).map(function (x) { return { icon: x.icon, kind: x.kind, title: x.t, sub: x.s, ask: x.ask }; });
-    var hint = over.length ? T('Ojo con {cat}', { cat: over[0].name.toLowerCase() }) : s.gast > p.general ? T('Te pasaste de tu presupuesto') : T('Vas dentro de tu presupuesto');
+    var hint = over.length ? T('Ojo con {cat}', { cat: over[0].name.toLowerCase() }) : s.gast > p.general ? T('Excediste tu presupuesto') : T('Vas dentro de tu presupuesto');
     return { key: m, mes: mesName(m), Mes: Mes(m), current: cur, report: false, n: { spend: s.gast, inc: s.ing, save: Math.max(0, r2(s.ing - s.gast)) }, ins: ins, over: over,
       top: Object.keys(s.grupos).sort(function (a, b) { return s.grupos[b] - s.grupos[a]; }).slice(0, 3).map(function (k) { return { name: k, v: s.grupos[k], p: s.grupos[k] / s.gast }; }),
       avg: av ? av.gast : s.gast, mood: md, moodLabel: MOOD[md], hint: hint, score: salud(m), card: null, goals: [], txCount: s.n };
@@ -1574,12 +1574,12 @@
       return { t: a && isCur(m) ? a.t + '. ' + a.s : T('En {mes} gastaste {monto}.', { mes: mesName(m), monto: money(s.gast) }), s: ['¿En qué se me va la plata?'] };
     }
     if (/ingres|gan|sueldo|pensi|remesa/.test(s0)) {
-      return { t: T('En {mes} te entraron {monto} confirmados', { mes: mesName(m), monto: money(s.ing) }) + (s.rin ? T(', y {monto} de personas que no sé qué son.', { monto: money(s.rin) }) : '.'), s: ['¿Qué tengo por revisar?'] };
+      return { t: T('En {mes} recibiste {monto} confirmados', { mes: mesName(m), monto: money(s.ing) }) + (s.rin ? T(', y {monto} de otras personas o cuentas.', { monto: money(s.rin) }) : '.'), s: ['¿Qué tengo por revisar?'] };
     }
     if (/presupuesto|limite|límite|tope/.test(s0) && isCur(m)) {
       var pz = pres(), dz = diasMes(m) - +HOY.slice(8, 10) + 1, qz = pz.general - s.gast;
-      if (pz.auto) return { t: T('Todavía no tienes presupuesto. Te entran unos {i} al mes y gastas en promedio {g}.', { i: money0(Math.round(ingresoMes())), g: money0(Math.round((prom(m, 3) || s).gast)) }) + '<br><br>' + T('Te propongo cuánto gastar y cómo repartirlo, y tú decides.'), s: [], acts: [[T('Armar mi presupuesto'), 'pres']] };
-      return { t: T('Tu presupuesto es {p} al mes y llevas {g}.', { p: money0(pz.general), g: money0(s.gast) }) + ' ' + (qz > 0 ? T('Te quedan {q}: unos {d} al día hasta fin de mes.', { q: money0(qz), d: money0(qz / dz) }) : T('Te pasaste {q}. ¿Lo revisamos?', { q: money0(-qz) })), s: ['¿En qué se me va la plata?'], acts: [[T('Ajustar mi presupuesto'), 'budgets']] };
+      if (pz.auto) return { t: T('Todavía no tienes presupuesto. Recibes unos {i} al mes y gastas en promedio {g}.', { i: money0(Math.round(ingresoMes())), g: money0(Math.round((prom(m, 3) || s).gast)) }) + '<br><br>' + T('Te propongo cuánto gastar y cómo repartirlo, y tú decides.'), s: [], acts: [[T('Armar mi presupuesto'), 'pres']] };
+      return { t: T('Tu presupuesto es {p} al mes y llevas {g}.', { p: money0(pz.general), g: money0(s.gast) }) + ' ' + (qz > 0 ? T('Te quedan {q}: unos {d} al día hasta fin de mes.', { q: money0(qz), d: money0(qz / dz) }) : T('Excediste tu presupuesto por {q}. ¿Lo revisamos?', { q: money0(-qz) })), s: ['¿En qué se me va la plata?'], acts: [[T('Ajustar mi presupuesto'), 'budgets']] };
     }
     if (/gast|plata|en qu|cuánto|cuanto|queda|presupuesto/.test(s0)) {
       var ks = Object.keys(s.grupos).sort(function (a, b) { return s.grupos[b] - s.grupos[a]; }).slice(0, 3);

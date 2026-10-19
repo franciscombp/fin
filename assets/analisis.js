@@ -43,7 +43,7 @@
       : T('En {mes} gastaste {gasto}, {comp} tu promedio de {prom}.', { mes: p.mes, gasto: money(n.spend), prom: money(p.avg),
           comp: Math.abs(diff) < .03 ? T('casi igual que') : T(diff > 0 ? '{pct} más que' : '{pct} menos que', { pct: pct(Math.abs(diff)) }) }) +
         ' ' + (n.save ? T('Ahorraste {monto}, el {pct} de tus ingresos.', { monto: money(n.save), pct: pct(rate) }) : T('Este mes no ahorraste.')) +
-        (p.over.length ? ' ' + T('Lo que más pesó fue {cat}, donde te pasaste {monto}.', { cat: p.over[0].name.toLowerCase(), monto: money(p.over[0].over) }) : '');
+        (p.over.length ? ' ' + T('Lo que más pesó fue {cat}, donde gastaste {monto} de más.', { cat: p.over[0].name.toLowerCase(), monto: money(p.over[0].over) }) : '');
     var finds = p.ins.slice(0, 3).map(function (x) { return { icon: x.icon, t: x.title, s: x.sub }; });
     var plan = [];
     if (p.card && p.card.interest > 0) plan.push({ t: T('Paga el total de tu Mastercard Black'), s: T('Así dejas de pagar unos {monto} de intereses al mes.', { monto: money(p.card.interest) }), k: 'go:Pagar tarjeta', b: T('Pagar tarjeta') });
@@ -146,7 +146,7 @@
     if (b.dataset.aiDo) { var k = b.dataset.aiDo; close(); setTimeout(function () { A().pf(k); }, 260); return; }
     var k2 = b.dataset.ai;
     if (k2 === 'close') return close();
-    if (k2 === 'plans') { fx('select'); toast(T('Los planes y precios los define el área de negocio. Esto es un prototipo.')); }
+    if (k2 === 'plans') { fx('select'); toast(T('Esto es un prototipo: los planes y precios todavía no están definidos.')); }
   }
   var toastT;
   function toast(t) {
