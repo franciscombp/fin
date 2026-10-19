@@ -13,9 +13,14 @@
 
 /* Uku o el PFM completo (que se abre como una capa y se baja para volver) */
 /* Asistente: una sola pantalla. El selector de arriba cambia entre Uku, Mis finanzas y Ayuda */
-.app-uku .view--finanzas:not(.uk-fin) .pf-host, .app-uku .view--finanzas.uk-fin .uk, .app-uku .view--finanzas.uk-ayuda .uk { display: none; }
-.app-uku .view--finanzas.uk-fin .pf-host { padding-top: calc(56px + env(safe-area-inset-top, 0px)); }
-.app-uku .view--finanzas:not(.uk-ayuda) .uk-ayuda-host { display: none; }
+/* Asistente: Uku y sus subsecciones son una sola pantalla; la subsección ocupa el contenedor de Uku */
+.app-uku .view--finanzas:not(.uk-fin) .pf-host { display: none; }
+.app-uku .view--finanzas:not(.uk-ayuda) .uk-ayuda-slot { display: none; }
+.app-uku .view--finanzas:not(.uk-fin):not(.uk-ayuda) .uk-panel { display: none; }
+.app-uku .view--finanzas.uk-fin .uk > :not(.uk-head):not(.uk-panel), .app-uku .view--finanzas.uk-ayuda .uk > :not(.uk-head):not(.uk-panel) { display: none; }
+.app-uku .view--finanzas.uk-fin .uk-panel, .app-uku .view--finanzas.uk-ayuda .uk-panel { display: flex; }
+.app-uku .view--finanzas.uk-fin .uk-menu-btn, .app-uku .view--finanzas.uk-ayuda .uk-menu-btn { display: none; }
+.app-uku .view--finanzas.uk-fin .uk-back-btn, .app-uku .view--finanzas.uk-ayuda .uk-back-btn { display: grid; }
 html.uk-idle, html.uk-idle body { overflow: hidden; overscroll-behavior: none; }
 
 /* ---------- La pantalla: el mundo de Uku de borde a borde ---------- */
@@ -197,11 +202,8 @@ html.uk-chatting .uk-bar { bottom: calc(12px + env(safe-area-inset-bottom, 0px))
 
 /* ---------- Selector de sección (Uku · Mis finanzas · Ayuda) ---------- */
 /* Ayuda ocupa el espacio de Uku, entre el selector y la barra de abajo */
-.uk-ayuda-host { position: fixed; z-index: 1; left: 0; right: 0; top: calc(56px + env(safe-area-inset-top, 0px)); height: calc(100vh - 56px - var(--uk-nav, 76px) - env(safe-area-inset-top, 0px)); max-width: 480px; margin: 0 auto; overflow: hidden; background: var(--bp-surface-page, #f5f5f5); }
 
 /* El carrusel de Ayuda no empuja la pantalla de Asistente */
-.app-uku .view--finanzas.uk-ayuda { overflow: clip; }
-.uk-ayuda-host .sp { overflow: hidden; }
 
 /* Orden del flujo: título, insights, el mundo (fondo), estados, accesos y buscador */
 .uk-head { order: 1; }
@@ -218,3 +220,13 @@ html.uk-chatting .uk-bar { bottom: calc(12px + env(safe-area-inset-bottom, 0px))
 .uk-sec__txt { display: flex; flex-direction: column; min-width: 0; }
 .uk-sec__txt b { font: var(--ui-body-md-semibold); }
 .uk-sec__txt small { font: var(--cx-caption); color: var(--cx-muted); }
+
+/* Contenedor de las subsecciones: ocupa lo que dejan el encabezado y, dentro de Asistente */
+.uk-back-btn { display: none; }
+.uk-panel { flex: 1 1 auto; min-height: 0; flex-direction: column; margin: 0 -16px -16px; }
+.uk-panel .pf-host { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+.uk-panel .pf-head { display: none; }
+.uk-ayuda-slot { position: relative; flex: 1 1 auto; min-height: 0; }
+/* El encabezado de Asistente va arriba y la subsección debajo; Ayuda no repite su propio título */
+.uk-panel { order: 2; }
+.uk-ayuda-slot .sp-top { display: none; }

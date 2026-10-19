@@ -21,7 +21,7 @@
   var esc = U.esc, norm = U.norm, money = U.money, money0 = U.money0, fx = U.fx, face = U.face, ic = U.ic, acciones = U.acciones, accion = U.accion, ayuda = U.ayuda, finanzas = U.finanzas, resumen = U.resumen, consejos = U.consejos;
   var HACER = U.HACER, PLATA = U.PLATA, PREG = U.PREG;
 
-  var view, host, ayudaHost, fileIn, sheet, globoEl, props, pills, results, chat, input, b3d = null;
+  var view, host, panel, ayudaSlot, headT, fileIn, sheet, globoEl, props, pills, results, chat, input, b3d = null;
   var msgs = [], gi = 0, nota = null, ultimo = 0, saludado = false;
   var pend = null; // lo que saliste a hacer: al volver, Uku pregunta cómo te fue
 
@@ -34,8 +34,6 @@
     host = document.createElement('div'); host.className = 'uk';
     view.insertBefore(host, view.firstChild);
     // Mis finanzas y Ayuda se abren desde el menú de la cabecera, dentro de esta pantalla
-    ayudaHost = document.createElement('div'); ayudaHost.className = 'uk-ayuda-host';
-    view.appendChild(ayudaHost);
     // Para el resto de la app: Ayuda se abre aquí, dentro de Asistente
     window.UkuAsistente = { ayuda: function () { if (window.__goView) window.__goView(1); seccion('ayuda'); } };
     // Ayuda, dentro de esta pantalla: al volver desde su flecha, regresa a Uku
@@ -46,7 +44,8 @@
       '<div class="uk-chatbg" aria-hidden="true"></div>' +
       '<header class="uk-chathead"><span class="uk-chathead__face" aria-hidden="true">' + face() + '</span><span class="uk-chathead__t"><b>Uku</b><small>Tu asesor · en línea</small></span>' +
         '<button class="uk-chathead__x" data-k="cerrar" aria-label="Terminar conversación">' + ic('close') + '</button></header>' +
-      '<div class="uk-head"><button type="button" class="icon-button" data-k="secciones" aria-label="Secciones de Asistente">' + ic('menu') + '</button>' +
+      '<div class="uk-head"><button type="button" class="icon-button uk-menu-btn" data-k="secciones" aria-label="Secciones de Asistente">' + ic('menu') + '</button>' +
+        '<button type="button" class="icon-button uk-back-btn" data-k="seccion:uku" aria-label="Volver a Tu asistente">' + ic('arrow_back') + '</button>' +
         '<p class="uk-head__t" role="heading" aria-level="1">Tu asistente</p></div>' +
       '<div class="uk-globo" aria-live="polite"></div>' +
       '<div class="uk-props" hidden></div>' +
@@ -59,10 +58,17 @@
         '<button type="button" class="uk-bar__mic" data-k="voz" aria-label="Hablar" hidden>' + ic('mic') + '</button>' +
         '</form>' +
       '<input type="file" accept="image/*" capture="environment" hidden>' +
+      // Contenedor de las subsecciones: Mis finanzas (.pf-host) y Ayuda (.uk-ayuda-slot) viven aquí, dentro de Asistente
+      '<div class="uk-panel"><div class="uk-ayuda-slot"></div></div>' +
       '';
     props = host.querySelector('.uk-props'); globoEl = host.querySelector('.uk-globo'); pills = host.querySelector('.uk-pills'); results = host.querySelector('.uk-results'); chat = host.querySelector('.uk-chat'); input = host.querySelector('input');
     host.querySelector('form').addEventListener('submit', function (e) { e.preventDefault(); preguntar(input.value); });
     fileIn = host.querySelector('input[type=file]');
+    headT = host.querySelector('.uk-head__t');
+    panel = host.querySelector('.uk-panel'); ayudaSlot = panel.querySelector('.uk-ayuda-slot');
+    // El contenedor de Mis finanzas se mueve dentro de Asistente (PFM sigue pintando en el mismo nodo)
+    var pfHost = document.querySelector('.view[data-view="1"] .pf-host');
+    if (pfHost) panel.insertBefore(pfHost, ayudaSlot);
     fileIn.addEventListener('change', function () { if (fileIn.files[0]) escanear(fileIn.files[0]); fileIn.value = ''; });
     input.addEventListener('input', function () { modo(); pintarResultados(); });
     // En su mundo, el campo de abajo es el buscador (como deslizar desde arriba): responde o lleva a la acción.
@@ -235,7 +241,8 @@
   }
 
   /* ---------- Toques ---------- */
-  function libre() { root.classList.toggle('uk-idle', view.classList.contains('active') && !view.classList.contains('uk-fin') && !view.classList.contains('uk-ayuda')); }
+  // En todas las secciones de Asistente, el título va en su encabezado (no en la barra de arriba)
+  function libre() { root.classList.toggle('uk-idle', view.classList.contains('active')); }
   function finOn(on) {
     view.classList.toggle('uk-fin', !!on); libre();
     if (window.AppScroll) AppScroll.to({ top: 0 }); else window.scrollTo(0, 0);
@@ -247,9 +254,10 @@
     view.classList.toggle('uk-ayuda', ayuda);
     if (ayuda) {
       if (view.classList.contains('uk-fin')) finOn(false);
-      if (window.Soporte) Soporte.into(ayudaHost);
+      if (window.Soporte) Soporte.into(ayudaSlot);
     } else if (n === 'fin') { if (window.PFM) PFM.open(); else finOn(true); }
     else finOn(false);
+    headT.textContent = ayuda ? 'Ayuda y soporte' : n === 'fin' ? 'Mis finanzas' : 'Tu asistente';
     libre();
   }
   /* ---------- Solicitudes dentro del mundo de Uku ----------
@@ -388,7 +396,7 @@
     if (nav) {
       nav.querySelector('.nav-item__label').textContent = 'Asistente';
       nav.querySelector('.nav-item__wrap').innerHTML = ic('support_agent');
-      nav.addEventListener('click', function () { finOn(false); });
+      nav.addEventListener('click', function () { seccion('uku'); });
     }
     // Arriba, un solo acceso: Uku en lugar de la lupa y los audífonos
     var noti = document.querySelector('.top-bar__actions [data-action="Notificaciones"]');
