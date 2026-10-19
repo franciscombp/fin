@@ -130,7 +130,7 @@ html:not(.theme-y2k) .uk-globo__go.btn { height: auto !important; min-height: 0 
 .uk-props[hidden] { display: none; }
 .uk-props__track { display: flex; align-items: flex-start; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .uk-props__track::-webkit-scrollbar { display: none; }
-.uk-prop { position: relative; flex: 0 0 100%; scroll-snap-align: start; box-sizing: border-box; padding: 12px 14px; border-radius: 16px 16px 16px 4px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 18px rgba(15, 38, 92, .10); display: flex; flex-direction: column; gap: 4px; }
+.uk-prop { cursor: pointer; position: relative; flex: 0 0 100%; scroll-snap-align: start; box-sizing: border-box; padding: 12px 14px; border-radius: 16px 16px 16px 4px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 18px rgba(15, 38, 92, .10); display: flex; flex-direction: column; gap: 4px; }
 .uk-prop::after { content: ''; position: absolute; left: 12px; bottom: -8px; border: 8px solid transparent; border-bottom: 0; border-top-color: var(--bp-theme-color-surface-container-default); }
 .uk-prop__tag { margin: 0 !important; display: flex; align-items: center; gap: 4px; font: var(--cx-caption); color: var(--cx-muted); }
 .uk-prop__tag .material-symbols-rounded { font-size: 16px; }
