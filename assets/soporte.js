@@ -222,11 +222,11 @@
   var el, log, input, topic = null, withAgent = false, agentN = 0, misses = 0, pageEl = null;
   function faqRow(i) {
     var f = FAQ[i];
-    return '<button class="sp-row" data-sp="faq:' + i + '"><span class="sp-row__ic material-symbols-rounded">' + f.icon + '</span><span class="sp-row__main"><b>' + f.t + '</b></span><span class="material-symbols-rounded">chevron_right</span></button>';
+    return '<button class="sp-row" data-sp="faq:' + i + '"><span class="sp-row__main"><b>' + f.t + '</b></span><span class="material-symbols-rounded">chevron_right</span></button>';
   }
   function tutRow(i) {
     var u = TUT[i];
-    return '<button class="sp-row" data-sp="tut:' + i + '"><span class="sp-row__ic material-symbols-rounded">' + u.icon + '</span><span class="sp-row__main"><b>' + u.t + '</b><small>Tutorial · ' + u.steps.length + ' pasos</small></span><span class="material-symbols-rounded">chevron_right</span></button>';
+    return '<button class="sp-row" data-sp="tut:' + i + '"><span class="sp-row__main"><b>' + u.t + '</b><small>Tutorial · ' + u.steps.length + ' pasos</small></span><span class="material-symbols-rounded">chevron_right</span></button>';
   }
   // Páginas dentro de Ayuda: una categoría o un tutorial
   function showPage(html, title) {
@@ -271,7 +271,7 @@
           '<label class="sp-find"><span class="material-symbols-rounded" aria-hidden="true">search</span><input type="search" placeholder="Busca en la ayuda" aria-label="Busca en la ayuda" data-sp-find></label>' +
           '<div class="sp-found" hidden></div>' +
           '<section class="sp-sec"><h2>Solucionar un inconveniente</h2><p class="sp-sec__sub">Uku te pregunta lo justo y te lleva a donde se arregla.</p><div class="sp-list">' + FLOWS.map(function (f, i) {
-            return '<button class="sp-row" data-sp="flow:' + i + '"><span class="sp-row__ic material-symbols-rounded">' + f.icon + '</span><span class="sp-row__main"><b>' + f.t + '</b></span><span class="material-symbols-rounded">chevron_right</span></button>'; }).join('') + '</div></section>' +
+            return '<button class="sp-row" data-sp="flow:' + i + '"><span class="sp-row__main"><b>' + f.t + '</b></span><span class="material-symbols-rounded">chevron_right</span></button>'; }).join('') + '</div></section>' +
           '<section class="sp-sec"><h2>Lo más consultado</h2><div class="sp-list">' + [0, 5, 6, 7, 13].map(function (i) { return faqRow(i); }).join('') + '</div></section>' +
           '<section class="sp-sec"><h2>Categorías</h2><div class="sp-cats">' + CATS.map(function (c) {
             var n = FAQ.filter(function (f) { return f.cat === c[0]; }).length + TUT.filter(function (u) { return u.cat === c[0]; }).length;
