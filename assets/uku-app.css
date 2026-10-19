@@ -119,7 +119,8 @@ html:not(.theme-y2k) .uk-globo__go.btn { height: auto !important; min-height: 0 
 .uk-sec__body { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 8px; }
 .uk-sec__l { margin: 8px 0 0 !important; font: var(--cx-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
 .uk-sec__row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; }
-.uk-sec__row > .material-symbols-rounded { flex: 0 0 36px; width: 36px; height: 36px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); }
+.uk-sec__row > .material-symbols-rounded { color: var(--cx-muted); }
+.uk-sec__row > span:first-child { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .uk-sec__row > span:last-child { display: flex; flex-direction: column; min-width: 0; }
 .uk-sec__row b { font: var(--ui-body-sm-semibold); }
 .uk-sec__row small { font: var(--cx-caption); color: var(--cx-muted); }
