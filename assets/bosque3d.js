@@ -26,7 +26,7 @@ const D = THREE.MathUtils.degToRad;
 const lerp = THREE.MathUtils.lerp;
 
 let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
-let bear = null, rig = null, bones = {}, forest, held = null, ground, stage = null, walkAng = 0, walkAmt = 0, walkMoving = false;
+let bear = null, readyFns = [], rig = null, bones = {}, forest, held = null, ground, stage = null, walkAng = 0, walkAmt = 0, walkMoving = false;
 let waterOn = false, waterT = 0, drops = [], ambient = null, focus = false, ambFocus = null;
 let focusAmt = 0, shiftTo = { x: 0, y: 0 }, shiftCur = { x: 0, y: 0 }; // la cámara se acerca y se corre suavemente, nunca de golpe // focus: Uku sale del mundo y se acerca a conversar // ambient: lo que Uku hace cuando no hay gesto (p. ej. caminar)
 // Mundo: un planeta esférico de radio PLANET_R; su punto más alto está bajo los pies de Uku.
@@ -270,7 +270,7 @@ const IDLE = 'Happy Idle';
 // Conversando solo saluda o se queda en reposo: los gestos que lo agachan (asentir, regar, plantar) quedan para su mundo
 function clipFor() { if (focus) return gesture === 'wave' ? 'Waving' : IDLE; if (gesture === 'walk') return walkMoving ? 'Walking' : IDLE; return (gesture && CLIP_OF[gesture]) || IDLE; }
 const MOOD_TINT = { feliz: new THREE.Color('#ffffff'), pensativo: new THREE.Color('#c4cfe4'), tranquilo: new THREE.Color('#ffffff') }, WHITE = new THREE.Color('#ffffff');
-const BEAR_S = .5, WALK_ANG = .035 / WORLD_S, WALK_CYCLE = 14, WALK_MOVE = 3.5; // Uku grande; se queda parado casi todo el tiempo y al caminar avanza despacio sobre el planeta
+const BEAR_S = .58, WALK_ANG = .035 / WORLD_S, WALK_CYCLE = 14, WALK_MOVE = 3.5; // Uku grande; se queda parado casi todo el tiempo y al caminar avanza despacio sobre el planeta
 function holdObject(kind) {
   if (held) { held.parent && held.parent.remove(held); held = null; }
   if (!kind || !bones.hand_R || umb) return; // con el paraguas en la mano no sostiene otra cosa
@@ -591,6 +591,7 @@ function init() {
     bones.hand_R = rig.B('mixamorig:RightHand'); bones.head = rig.B('mixamorig:Head');
     dressBear();
     play('wave');
+    readyFns.splice(0).forEach(f => { try { f(); } catch (e) {} });
   });
   const cv = renderer.domElement;
   cv.style.touchAction = 'pan-y'; // el scroll vertical de la página sigue funcionando
@@ -643,6 +644,7 @@ export function attach(el, opts) {
     else if (opts.score !== score) { score = opts.score; buildForest(); }
   }
   if (opts && opts.onTap) onTap = opts.onTap;
+  if (opts && opts.onReady) { if (bear) opts.onReady(); else readyFns.push(opts.onReady); }
   resize();
   attach._ro && attach._ro.disconnect();
   attach._ro = new ResizeObserver(resize); attach._ro.observe(el); // el contenedor cambia de alto al conversar
