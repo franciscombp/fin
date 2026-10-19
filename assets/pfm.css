@@ -360,3 +360,8 @@ button.pfm-tx { width: 100%; border-left: 0; border-right: 0; border-top: 0; bac
 .pfm-planes { margin-top: var(--bp-semantic-spacing-micro-lg, 16px); text-align: left; }
 .pfm-rec { display: inline-block; margin-right: 4px; padding: 0 8px; border-radius: 999px; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: var(--cx-caption); font-weight: 600; }
 .pf-step > span small { display: block; font: var(--cx-caption); color: var(--cx-muted); }
+
+/* Semana: la cifra de cada día sobre su barra */
+.pfm-chart__bar { position: relative; }
+.pfm-chart__bar em { position: absolute; left: 0; right: 0; margin-bottom: 4px; font: var(--cx-caption); font-style: normal; font-variant-numeric: tabular-nums; text-align: center; color: var(--cx-muted); white-space: nowrap; }
+.pfm-chart__bar.is-on em { color: var(--bp-theme-color-text-primary); font-weight: 600; }
