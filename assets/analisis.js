@@ -181,5 +181,5 @@
     if (window.Asistente && Asistente.pf) try { Asistente.pf('repaint'); } catch (e) {}
   }
 
-  window.UkuAnalisis = { open: open, close: close, access: access, plan: function () { return st.plan; }, setPlan: setPlan, plans: function () { return PLANS; } };
+  window.UkuAnalisis = { open: open, close: close, access: access, build: build, plan: function () { return st.plan; }, setPlan: setPlan, plans: function () { return PLANS; } };
 })();

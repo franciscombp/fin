@@ -28,7 +28,7 @@ const lerp = THREE.MathUtils.lerp;
 let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
 let bear = null, readyFns = [], rig = null, bones = {}, forest, held = null, ground, stage = null, walkAng = 0, walkAmt = 0, walkMoving = false;
 let waterOn = false, waterT = 0, drops = [], ambient = null, focus = false, ambFocus = null;
-let focusAmt = 0, shiftTo = { x: 0, y: 0 }, shiftCur = { x: 0, y: 0 }; // la cámara se acerca y se corre suavemente, nunca de golpe // focus: Uku sale del mundo y se acerca a conversar // ambient: lo que Uku hace cuando no hay gesto (p. ej. caminar)
+let focusAmt = 0, shiftTo = { x: 0, y: 0 }, shiftCur = { x: 0, y: 0 }, zoomTo = 1, zoomCur = 1; // la cámara se acerca y se corre suavemente, nunca de golpe // focus: Uku sale del mundo y se acerca a conversar // ambient: lo que Uku hace cuando no hay gesto (p. ej. caminar)
 // Mundo: un planeta esférico de radio PLANET_R; su punto más alto está bajo los pies de Uku.
 // WORLD_S agranda el mundo (planeta, árboles, flores y el paso de Uku); el oso mide lo mismo.
 const WORLD_S = 2, PLANET_R = 1.5 * WORLD_S, PLANET_C = new THREE.Vector3(0, -PLANET_R, 0);
@@ -516,10 +516,11 @@ function frame(now) {
   // Conversando, la cámara se acerca y lo mira a la cara; su mundo queda apagado detrás
   focusAmt = RM ? (focus ? 1 : 0) : lerp(focusAmt, focus ? 1 : 0, Math.min(1, dt * 4));
   // De frente y cerca: la cámara baja casi a su altura; conversando se acerca un poco más
-  const cd = camDist * (.66 - .1 * focusAmt), ch = CAM_H * (.6 - .04 * focusAmt);
+  const cd = camDist * (.66 - .1 * focusAmt) * zoomCur, ch = CAM_H * (.6 - .04 * focusAmt);
   // El encuadre (corrimiento) también se mueve con suavidad
   const k = RM ? 1 : Math.min(1, dt * 5);
   if (Math.abs(shiftCur.x - shiftTo.x) > 1e-4 || Math.abs(shiftCur.y - shiftTo.y) > 1e-4) { shiftCur.x = lerp(shiftCur.x, shiftTo.x, k); shiftCur.y = lerp(shiftCur.y, shiftTo.y, k); applyShift(); }
+  if (Math.abs(zoomCur - zoomTo) > 1e-3) zoomCur = lerp(zoomCur, zoomTo, k);
   camera.position.copy(stage.localToWorld(_cam.set(Math.sin(yaw) * cd + Math.cos(yaw) * sway, ch, Math.cos(yaw) * cd - Math.sin(yaw) * sway)));
   camera.up.copy(_camUp.set(0, 1, 0).applyQuaternion(stage.quaternion));
   camera.lookAt(stage.localToWorld(_look.set(0, .32 + .04 * focusAmt, 0)));
@@ -588,7 +589,7 @@ function init() {
     stage.add(bear);
     if (target != null) { score = target; target = null; buildForest(); }
     // Lo que se sostiene, se pone o se atacha usa estos huesos
-    bones.hand_R = rig.B('mixamorig:RightHand'); bones.head = rig.B('mixamorig:Head');
+    bones.hand_R = rig.B('mixamorig:RightHand'); bones.head = rig.B('mixamorig:Head'); bones.headTop = rig.B('mixamorig:HeadTop_End');
     dressBear();
     play('wave');
     readyFns.splice(0).forEach(f => { try { f(); } catch (e) {} });
@@ -672,6 +673,21 @@ export function snapshot() {
   try { if (bear) bear.visible = false; renderer.render(scene, camera); const u = renderer.domElement.toDataURL('image/png'); if (bear) bear.visible = true; return u; } catch (e) { if (bear) bear.visible = true; return null; }
 }
 export function setShift(f, fy) { shiftTo = { x: +f || 0, y: +fy || 0 }; }
+// La cámara se aleja (z > 1) o se acerca; sirve para que la cara de Uku quepa donde hay sitio
+export function setZoom(z) { zoomTo = Math.max(.8, Math.min(1.8, +z || 1)); }
+// Dónde está su cara en pantalla (px del contenedor): centro, radio aproximado y el encuadre actual.
+// Con esto, la app calcula un corrimiento para que nada le tape la cara.
+const _h1 = new THREE.Vector3(), _h2 = new THREE.Vector3();
+export function head() {
+  if (!bear || !bones.head || !host || !camera) return null;
+  const w = host.clientWidth, h = host.clientHeight; if (!w || !h) return null;
+  bones.head.getWorldPosition(_h1);
+  const top = bones.headTop; if (top) top.getWorldPosition(_h2); else _h2.copy(_h1).add(_camUp.set(0, 1, 0).applyQuaternion(stage.quaternion).multiplyScalar(.2 * BEAR_S));
+  _h1.project(camera); _h2.project(camera);
+  const x1 = (_h1.x + 1) / 2 * w, y1 = (1 - _h1.y) / 2 * h, x2 = (_h2.x + 1) / 2 * w, y2 = (1 - _h2.y) / 2 * h;
+  const r = Math.hypot(x2 - x1, y2 - y1) * .62; // la mitad de cuello a coronilla, con margen para las orejas
+  return { x: (x1 + x2) / 2, y: (y1 + y2) / 2, r, shiftX: shiftCur.x, shiftY: shiftCur.y, zoom: zoomCur };
+}
 export function setMood(m) { mood = ['feliz', 'tranquilo', 'pensativo'].includes(m) ? m : null; }
 export function isReady() { return !!bear; }
 export function detach(el) { if (host === el) { host = null; } }
