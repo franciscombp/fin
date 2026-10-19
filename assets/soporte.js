@@ -133,7 +133,7 @@
       a: 'Un reclamo nacional se resuelve en hasta 15 días hábiles, según el caso. Te avisamos por correo y lo sigues en Solicitudes.',
       acts: [['Ver mis solicitudes', 'sol']] },
     { icon: 'manage_search', cat: 'reclamos', t: 'No encuentro mi reclamo', k: 'no encuentro reclamo seguimiento estado donde veo mi reclamo',
-      a: 'En Solicitudes ves los reclamos que pusiste desde la app. Si lo pusiste por teléfono o en agencia, dale el número de caso a un asesor y te cuenta cómo va.',
+      a: 'En Solicitudes ves los reclamos que registraste desde la app. Si lo pusiste por teléfono o en agencia, dale el número de caso a un asesor y te dirá cómo va.',
       acts: [['Ver mis solicitudes', 'sol'], ['Hablar con una persona', 'handoff']] },
     { icon: 'receipt_long', cat: 'cuentas', t: '¿Cómo descargo mi estado de cuenta?', k: 'estado de cuenta descargar pdf mensual cuenta',
       a: 'Entra a tu cuenta › Estados de cuenta y descarga el mes que necesites en PDF. Los tienes de los últimos 12 meses, sin costo.',
@@ -430,7 +430,7 @@
     if (k === 'agent') return toAgent();
     if (k === 'call') {
       chat();
-      return say('Llama al <b>' + PHONE + '</b> (las 24 horas). Dale este código al asesor y ya sabrá de qué se trata: <b>' + CASE + '</b>.', [['Llamar ahora', 'tel:' + PHONE.replace(/\s/g, '')]]);
+      return say('Llama al <b>' + PHONE + '</b> (las 24 horas). Dile este código al asesor y sabrá de qué se trata: <b>' + CASE + '</b>.', [['Llamar ahora', 'tel:' + PHONE.replace(/\s/g, '')]]);
     }
     if (k === 'callback') {
       chat();

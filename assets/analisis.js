@@ -146,7 +146,7 @@
     if (b.dataset.aiDo) { var k = b.dataset.aiDo; close(); setTimeout(function () { A().pf(k); }, 260); return; }
     var k2 = b.dataset.ai;
     if (k2 === 'close') return close();
-    if (k2 === 'plans') { fx('select'); toast(T('Los planes y precios los define el área de negocio. Esto es un prototipo.')); }
+    if (k2 === 'plans') { fx('select'); toast(T('Esto es un prototipo: los planes y precios todavía no están definidos.')); }
   }
   var toastT;
   function toast(t) {
