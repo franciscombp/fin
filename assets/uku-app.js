@@ -254,7 +254,7 @@
   function dinero() {
     var s = resumen(), A = consejos(), x = A[0], pres = s.pres && !(window.PFM.advice().some(function (c) { return c.id === 'pres' && !c.done; }));
     var nivel = s.score >= 85 ? 'Vas bien' : s.score >= 55 ? 'Con cuidado' : 'Por encima del plan';
-    var stats = [{ ic: 'account_balance_wallet', l: 'Disponible', v: money0(s.saldo) }, { ic: 'favorite', l: 'Tu salud', v: nivel, cls: s.score >= 85 ? 'ok' : 'warn' }, { ic: 'category', l: 'Por ordenar', v: s.n ? String(s.n) : 'Nada', cls: s.n ? 'warn' : 'ok' }];
+    var stats = [{ ic: 'account_balance_wallet', l: 'Disponible', v: money0(s.saldo), saldo: true }, { ic: 'favorite', l: 'Tu salud', v: nivel, cls: s.score >= 85 ? 'ok' : 'warn' }, { ic: 'category', l: 'Por ordenar', v: s.n ? String(s.n) : 'Nada', cls: s.n ? 'warn' : 'ok' }];
     var t = pres ? (s.score >= 85 ? 'Vas bien con tu presupuesto.' : s.score >= 55 ? 'Vas un poco rápido con tu presupuesto: con cuidado llegas.' : 'Vas por encima de tu presupuesto: revisemos en qué.') : 'Todavía no tienes presupuesto. Con lo que recibes y lo que gastas, te ayudo a armarlo.';
     if (x && x.id !== 'pres' && x.kind === 'warn') t += ' ' + (x.di || x.t);
     uku(esc(t), [b('gastos', 'Ver mis gastos', 'account_balance_wallet'), pres ? b('pfm:budgets', 'Ajustar mi presupuesto', 'speed') : b('pfm:pres', 'Armar mi presupuesto', 'speed')]
@@ -320,7 +320,7 @@
         '<div class="uk-card__body">' + (m.num ? '<p class="uk-num"><b>' + esc(m.num.v) + '</b><small>' + esc(m.num.l) + '</small></p>' : '') +
         (m.meter ? '<div class="uk-meter' + (m.meter.cls ? ' is-' + m.meter.cls : '') + '"><i style="width:' + Math.max(2, Math.min(100, m.meter.v / (m.meter.max || 1) * 100)).toFixed(1) + '%"></i></div><p class="uk-meter__l">' + esc(m.meter.l) + '</p>' : '') +
         '<p class="uk-card__t">' + m.uku + '</p>' +
-        (m.stats ? '<div class="uk-stats">' + m.stats.map(function (x) { return '<div class="uk-stat' + (x.cls ? ' is-' + x.cls : '') + '">' + ic(x.ic || 'info') + '<b>' + esc(x.v) + '</b><small>' + esc(x.l) + '</small></div>'; }).join('') + '</div>' : '') +
+        (m.stats ? '<div class="uk-stats">' + m.stats.map(function (x) { return '<div class="uk-stat' + (x.cls ? ' is-' + x.cls : '') + '"' + (x.saldo ? ' data-saldo' : '') + '>' + ic(x.ic || 'info') + '<b>' + esc(x.v) + '</b><small>' + esc(x.l) + '</small></div>'; }).join('') + '</div>' : '') +
         (m.bars ? '<div class="uk-barras">' + (function () { var mx = Math.max.apply(null, m.bars.map(function (b) { return b.v; }).concat([1])); return m.bars.map(function (b) { return '<div class="uk-barra"><span>' + esc(b.l) + '</span><b>' + money0(b.v) + '</b><i style="width:' + Math.max(3, b.v / mx * 100).toFixed(1) + '%"></i></div>'; }).join(''); })() + '</div>' : '') +
         (m.rows ? '<dl class="uk-card__data">' + m.rows.map(function (r) { return '<div><dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('') + '</dl>' : '') + m.extra +
         (nav.length ? '<div class="uk-card__nav">' + nav.map(function (x, j) { return '<button class="uk-card__row" style="--d:' + j * 40 + 'ms" data-k="' + esc(x.k) + '" data-l="' + esc(x.t) + '"><span>' + esc(x.t) + '</span>' + ic('chevron_right') + '</button>'; }).join('') + '</div>' : '') +

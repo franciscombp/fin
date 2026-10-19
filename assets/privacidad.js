@@ -2,9 +2,9 @@
    Privacidad de saldos: un solo interruptor para toda la app.
    - El ojo (cualquier [data-eye]) muestra u oculta todos los montos.
    - Un monto oculto se ve siempre igual: "$ ••,••", sin importar su valor.
-   - Se enmascara cada monto que aparezca en el texto (saldos, filas,
-     totales, gastos, insights y mensajes de Uku), también los que llegan
-     después por una nueva pantalla o una nueva persona.
+   - Se enmascaran solo los saldos (lo que tienes o debes): el saldo del
+     inicio, las filas de productos, Tu dinero en Mis finanzas y los datos
+     marcados con data-saldo. Los montos a pagar o elegir no se tocan.
    - La elección se recuerda en este navegador.
    ===================================================================== */
 (function () {
@@ -14,6 +14,9 @@
   var BUSCA = /\$\s?\d[\d.]*(?:,\d{2})?/;
   var CAMBIA = /\$\s?\d[\d.]*(?:,\d{2})?/g;
   var NO_TOCAR = /^(SCRIPT|STYLE|TEXTAREA|INPUT|NOSCRIPT)$/;
+  // Solo se ocultan los saldos (lo que tienes o debes en una cuenta o tarjeta). Lo que vas a pagar,
+  // elegir o confirmar (montos de recarga, cuotas, precios, totales de una compra) se ve siempre.
+  var SALDO = '#balance, .amount-row, .product-row__amount, .product-row__masked, .skeleton--balance, .pfm-saldo, .pfm-net, .pfm-tile, .finance-total, [data-saldo]';
   var oculto = false, timer = null, original = new WeakMap();
   try { oculto = localStorage.getItem(KEY) === '1'; } catch (e) {}
 
@@ -26,7 +29,7 @@
       var st = original.get(n);
       if (st && n.nodeValue === st.mask) { if (!oculto) { n.nodeValue = st.real; original.delete(n); } continue; }
       if (st) original.delete(n); // la app volvió a escribir este texto
-      if (oculto && BUSCA.test(n.nodeValue)) {
+      if (oculto && BUSCA.test(n.nodeValue) && p.closest && p.closest(SALDO)) {
         var real = n.nodeValue, mask = real.replace(CAMBIA, MASK);
         original.set(n, { real: real, mask: mask });
         n.nodeValue = mask;
