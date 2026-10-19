@@ -95,7 +95,7 @@
     view.addEventListener('click', onClick);
     gestos();
     host.classList.add('is-fresh'); setTimeout(function () { host.classList.remove('is-fresh'); }, 1500); // los accesos solo entran animados la primera vez
-    document.addEventListener('pfm:change', function () { gi = 0; if (pend) pend.cambio = true; if (!msgs.length) pintar(); });
+    document.addEventListener('pfm:change', function () { if (pend) pend.cambio = true; if (!msgs.length) pintar(); }); // el índice se queda: al saltar una propuesta, el globo sigue con la siguiente
     pintar();
   }
   function modo() {
@@ -123,21 +123,8 @@
   function pintar() { modo(); pintarMundo(); pintarPropuestas(); pintarGlobo(); pintarAccesos(); pintarChat(); pintarResultados(); }
   // Lo que Uku te propone (antes en Mis finanzas): un carrusel arriba, con puntos y una acción por tarjeta
   function pintarPropuestas() {
-    // Pocas y enfocadas (como las intenciones de Tolan): una frase y una acción por tarjeta. Las señales de su
-    // mundo entran solo cuando piden algo; el resto lo cuenta Uku al tocarlo.
-    var S = window.PFM && PFM.world && resumen() ? PFM.world().filter(function (x) { return /warn|over|pensativo/.test(x.cls || ''); }).map(function (x) { return { icon: x.ic, tag: x.l, t: x.v, s: x.d, k: 'mundo' }; }) : [];
-    var A = S.concat(consejos().slice(0, 4));
-    props.hidden = !A.length; globoEl.style.display = '';
-    if (!A.length) return;
-    props.innerHTML = '<div class="uk-props__track">' + A.map(function (x) {
-      return '<article class="uk-prop" data-k="' + esc(x.k || 'prop:' + x.id) + '" data-l="' + esc(x.t) + '"><p class="uk-prop__tag">' + ic(x.icon || 'lightbulb') + esc(x.tag || 'Te propongo') + '</p><p class="uk-prop__t">' + esc(x.t) + '</p>' +
-        (x.act ? '<button class="btn btn--tertiary uk-prop__go" data-k="pfm:' + esc(x.act) + '" data-l="' + esc(x.actl || x.t) + '">' + esc(x.actl || 'Ver') + '</button>' : '<button class="btn btn--tertiary uk-prop__go" data-k="' + esc(x.k || 'prop:' + x.id) + '" data-l="' + esc(x.t) + '">Cuéntame</button>') + '</article>';
-    }).join('') + '</div><div class="uk-props__dots">' + A.map(function (_, i) { return '<i' + (i ? '' : ' class="is-on"') + '></i>'; }).join('') + '</div>';
-    var tr = props.querySelector('.uk-props__track'), dots = props.querySelectorAll('.uk-props__dots i');
-    tr.addEventListener('scroll', function () {
-      var w = tr.firstElementChild.offsetWidth + 10, n = Math.round(tr.scrollLeft / w);
-      dots.forEach(function (d, i) { d.classList.toggle('is-on', i === n); });
-    }, { passive: true });
+      // Las propuestas viven en el globo: el carrusel ya no se usa
+    props.hidden = true; props.innerHTML = ''; globoEl.style.display = '';
   }
   // El ánimo y las flores de su campo siguen a tus finanzas (las señales van en los insights)
   function pintarMundo() {
@@ -167,13 +154,22 @@
     }
   }
   // Lo que dice Uku: el saludo del momento, una nota o su consejo más importante (tocarlo a él pasa al siguiente)
+  /* El globo es la voz de Uku: primero el saludo del momento y después, una por una, sus
+     propuestas (y las señales de su mundo que piden algo). Cada una trae su acción, «Ahora no»
+     para dejarla para después y «Siguiente» para pasar; la lista se renueva cuando haces o saltas algo. */
+  function propuestas() {
+    var S = window.PFM && PFM.world && resumen() ? PFM.world().filter(function (x) { return /warn|over|pensativo/.test(x.cls || ''); }).map(function (x) { return { id: 'mundo', tag: x.l, t: x.d, k: 'mundo', l: 'Cuéntame' }; }) : [];
+    return consejos().map(function (x) { return { id: x.id, tag: x.tag, t: x.di || x.t, k: x.act ? 'pfm:' + x.act : 'prop:' + x.id, l: x.actl || 'Cuéntame', luego: 'pfm:luego:' + x.id, kind: x.kind }; }).concat(S);
+  }
   function pintarGlobo() {
-    var A = consejos(), x = A.length ? A[gi % A.length] : null, hola = !saludado && !nota, sal = hola ? saludo() : null;
-    var t = nota || (hola ? sal.t : x ? x.di || x.t : '¡Todo va bien por ahora! ¿Hacemos algo hoy?');
-    // Como si Uku te lo contara: sin encabezado; la acción es un enlace, no un botón principal
-    var go = hola ? sal : (!nota && x && x.act ? { k: 'pfm:' + x.act, l: x.actl } : null);
-    globoEl.innerHTML = '<p class="uk-globo__t">' + esc(t) + '</p>' +
-      (go ? '<button class="btn btn--tertiary uk-globo__go" data-k="' + esc(go.k) + '" data-l="' + esc(go.l) + '">' + esc(go.l) + '</button>' : '');
+    var P = propuestas(), n = P.length, hola = !saludado && !nota, sal = hola ? saludo() : null, x = !hola && !nota && n ? P[gi % n] : null;
+    var t = nota || (hola ? sal.t : x ? x.t : '¡Todo va bien por ahora! ¿Hacemos algo hoy?');
+    var go = hola ? sal : x ? { k: x.k, l: x.l } : null;
+    globoEl.innerHTML = (x ? '<p class="uk-globo__tag">' + esc(x.tag) + '</p>' : '') + '<p class="uk-globo__t">' + esc(t) + '</p>' +
+      '<div class="uk-globo__acts">' + (go ? '<button class="btn btn--tertiary uk-globo__go" data-k="' + esc(go.k) + '" data-l="' + esc(go.l) + '">' + esc(go.l) + '</button>' : '') +
+      (x && x.luego ? '<button class="uk-globo__skip" data-k="' + esc(x.luego) + '" data-l="Ahora no">Ahora no</button>' : '') +
+      ((hola && n) || (x && n > 1) ? '<button class="uk-globo__skip" data-k="siguiente" data-l="Siguiente">' + (hola ? 'Qué me propones' : 'Siguiente') + '</button>' : '') + '</div>' +
+      (!hola && n > 1 ? '<div class="uk-globo__dots">' + P.map(function (_, i) { return '<i' + (i === gi % n ? ' class="is-on"' : '') + '></i>'; }).join('') + '</div>' : '');
     globoEl.classList.remove('is-new'); void globoEl.offsetWidth; globoEl.classList.add('is-new');
     // Uku hace lo que dice: saluda, habla, se preocupa o celebra según el mensaje
     if (b3d) b3d.play(hola ? 'wave' : nota ? 'happy' : !x ? 'happy' : x.kind === 'warn' ? 'worried' : 'talk');
@@ -627,6 +623,7 @@
       case 'fl': { var fp = v.split(':'); return flujo(+fp[0], fp[1]); }
       case 'flow': return flujo(+v, 'ini', !enChat);
       case 'dinero': dinero(); return mostrar();
+      case 'siguiente': fx('tap'); nota = null; if (saludado) gi++; saludado = true; return pintarGlobo();
       case 'prop': return propuesta(v);
       case 'mundo': mundo(); return mostrar();
       case 'ayudatoda': fx('select'); return seccion('ayuda');
