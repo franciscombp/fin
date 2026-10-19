@@ -113,14 +113,15 @@
   function pintar() { modo(); pintarMundo(); pintarPropuestas(); pintarGlobo(); pintarAccesos(); pintarChat(); pintarResultados(); }
   // Lo que Uku te propone (antes en Mis finanzas): un carrusel arriba, con puntos y una acción por tarjeta
   function pintarPropuestas() {
-    var S = window.PFM && PFM.world && resumen() ? PFM.world().map(function (x) { return { icon: x.ic, tag: x.l, t: x.v, s: x.d }; }) : [];
-    var A = S.concat(consejos().slice(0, 6));
+    // Pocas y enfocadas (como las intenciones de Tolan): una frase y una acción por tarjeta. Las señales de su
+    // mundo entran solo cuando piden algo; el resto lo cuenta Uku al tocarlo.
+    var S = window.PFM && PFM.world && resumen() ? PFM.world().filter(function (x) { return /warn|over|pensativo/.test(x.cls || ''); }).map(function (x) { return { icon: x.ic, tag: x.l, t: x.v, s: x.d, k: 'mundo' }; }) : [];
+    var A = S.concat(consejos().slice(0, 4));
     props.hidden = !A.length; globoEl.style.display = A.length ? 'none' : '';
     if (!A.length) return;
     props.innerHTML = '<div class="uk-props__track">' + A.map(function (x) {
-      return '<article class="uk-prop"><p class="uk-prop__tag">' + ic(x.icon || 'lightbulb') + esc(x.tag || 'Te propongo') + '</p><p class="uk-prop__t">' + esc(x.t) + '</p>' +
-        (x.s ? '<p class="uk-prop__s">' + esc(x.s) + '</p>' : '') +
-        (x.act ? '<button class="btn btn--tertiary uk-prop__go" data-k="pfm:' + esc(x.act) + '" data-l="' + esc(x.actl || x.t) + '">' + esc(x.actl || 'Ver') + '</button>' : '') + '</article>';
+      return '<article class="uk-prop" data-k="' + esc(x.k || 'prop:' + x.id) + '" data-l="' + esc(x.t) + '"><p class="uk-prop__tag">' + ic(x.icon || 'lightbulb') + esc(x.tag || 'Te propongo') + '</p><p class="uk-prop__t">' + esc(x.t) + '</p>' +
+        (x.act ? '<button class="btn btn--tertiary uk-prop__go" data-k="pfm:' + esc(x.act) + '" data-l="' + esc(x.actl || x.t) + '">' + esc(x.actl || 'Ver') + '</button>' : '<button class="btn btn--tertiary uk-prop__go" data-k="' + esc(x.k || 'prop:' + x.id) + '" data-l="' + esc(x.t) + '">Cuéntame</button>') + '</article>';
     }).join('') + '</div><div class="uk-props__dots">' + A.map(function (_, i) { return '<i' + (i ? '' : ' class="is-on"') + '></i>'; }).join('') + '</div>';
     var tr = props.querySelector('.uk-props__track'), dots = props.querySelectorAll('.uk-props__dots i');
     tr.addEventListener('scroll', function () {
@@ -210,9 +211,11 @@
   }
   function mundo() {
     var W = PFM.world(), s = resumen(), pend = s && s.n;
-    uku('Te cuento cómo está mi mundo: ' + W.map(function (x) { return '<span class="uk-msg__q">' + esc(x.l.replace(/^Su /, 'Mi ').replace(/^Sus /, 'Mis ')) + ': ' + esc(String(x.v).toLowerCase()) + '</span>' + esc(x.d); }).join('') +
-      '<span class="uk-msg__q">Todo lo que ves aquí lo cuidas tú con tus finanzas.</span>',
-      (pend ? [b('pfm:game', 'Clasificar conmigo', 'category')] : []).concat([b('pfm:world', 'Qué significa cada cosa', 'park', 'is-ask'), b('ok', 'Qué lindo, gracias', 'thumb_up', 'is-ask')]));
+    // Lo que pide algo va en la frase; el estado de cada cosa, en filas
+    var pide = W.filter(function (x) { return /warn|over|pensativo/.test(x.cls || ''); })[0];
+    uku(esc(pide ? pide.d : 'Todo mi mundo está bien, y es porque tus finanzas lo están.') + ' Todo lo que ves aquí lo cuidas tú con tus finanzas.',
+      (pend ? [b('pfm:game', 'Clasificar conmigo', 'category')] : []).concat([b('pfm:world', 'Qué significa cada cosa', null, 'is-ask'), b('ok', 'Qué lindo, gracias', 'thumb_up', 'is-ask')]), '',
+      { title: 'Mi mundo', rows: W.map(function (x) { return [x.l.replace(/^Su /, 'Mi ').replace(/^Sus /, 'Mis '), String(x.v)]; }) });
     if (b3d) b3d.play('happy');
   }
   // Cómo va tu dinero: lo que responde a la primera pregunta de todos, con lo que puedes hacer después
@@ -227,6 +230,15 @@
       .concat(x && x.act && x.id !== 'pres' ? [b('pfm:' + x.act, x.actl, null, 'is-ask')] : [])
       .concat([b('ask:¿En qué se me va la plata?', '¿En qué se me va la plata?', null, 'is-ask')]), '', { title: 'Así vas en ' + s.mes, rows: rows });
     if (b3d) b3d.play(s.score >= 85 ? 'happy' : 'talk');
+  }
+  // Una propuesta, en su momento: Uku la cuenta, con su acción y la siguiente a un toque
+  function propuesta(id) {
+    var A = consejos(), x = A.filter(function (c) { return c.id === id; })[0] || A[0]; if (!x) return;
+    var i = A.indexOf(x), sig = A[(i + 1) % A.length];
+    uku(esc(x.di || (x.t + (x.s ? '. ' + x.s : ''))), (x.act ? [b('pfm:' + x.act, x.actl, 'arrow_forward')] : [])
+      .concat([b('pfm:luego:' + x.id, 'Ahora no', null, 'is-ask')]).concat(sig && sig !== x ? [b('prop:' + sig.id, 'Siguiente propuesta', null, 'is-ask')] : []), '', { title: x.tag, rows: x.cmp ? x.cmp.map(function (c) { return [c.l, money0(c.v)]; }) : null });
+    if (b3d) b3d.play(x.kind === 'warn' ? 'worried' : 'talk');
+    mostrar();
   }
   // Un inconveniente guiado (Soporte.flow): Uku pregunta lo justo y cada respuesta lleva al siguiente paso o a la solución
   function flujo(i, paso, pedir) {
@@ -542,6 +554,8 @@
       case 'fl': { var fp = v.split(':'); return flujo(+fp[0], fp[1]); }
       case 'flow': return flujo(+v, 'ini', !enChat);
       case 'dinero': dinero(); return mostrar();
+      case 'prop': return propuesta(v);
+      case 'mundo': mundo(); return mostrar();
       case 'ayudatoda': fx('select'); return seccion('ayuda');
       case 'hum': return humano(v);
       case 'tel': location.href = 'tel:' + v; return;
