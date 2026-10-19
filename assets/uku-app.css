@@ -396,3 +396,14 @@ html.uk-chatting .uk { padding-top: calc(8px + env(safe-area-inset-top, 0px)); p
 .uk-card__top, .uk-panel .uk-head, .uk-sec__top { touch-action: pan-x; cursor: grab; }
 .uk-card__top::before, .uk-sec__top::before, .uk-panel .uk-head::before { content: ''; position: absolute; left: 50%; top: 6px; width: 36px; height: 4px; margin-left: -18px; border-radius: 2px; background: var(--cx-line, #c9ced8); }
 .uk-card__top, .uk-sec__top, .uk-panel .uk-head { position: relative; padding-top: 16px; }
+
+/* El globo con las propuestas dentro: etiqueta, frase, acción, «Ahora no» y «Siguiente», y los puntos */
+.uk-globo { max-width: 340px; }
+.uk-globo__tag { margin: 0 0 2px !important; font: var(--cx-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
+.uk-globo__acts { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 16px; margin-top: 6px; }
+html:not(.theme-y2k) .uk-globo__acts .uk-globo__go.btn { margin: 0 !important; }
+.uk-globo__skip { padding: 0; border: 0; background: none; font: var(--ui-body-sm-medium); color: var(--cx-muted); cursor: pointer; }
+.uk-globo__dots { display: flex; gap: 5px; margin-top: 8px; }
+.uk-globo__dots i { width: 5px; height: 5px; border-radius: 3px; background: var(--cx-line, #c9ced8); transition: width .2s ease, background .2s ease; }
+.uk-globo__dots i.is-on { width: 14px; background: var(--bp-interaction-tertiary-fg); }
+.uk-props { display: none !important; }

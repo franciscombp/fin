@@ -514,13 +514,14 @@ function frame(now) {
   const sway = RM || drag || focus ? 0 : Math.sin(t * .15) * .12;
   // Conversando, la cámara se acerca y lo mira a la cara; su mundo queda apagado detrás
   focusAmt = RM ? (focus ? 1 : 0) : lerp(focusAmt, focus ? 1 : 0, Math.min(1, dt * 4));
-  const cd = camDist * (1 - .3 * focusAmt), ch = CAM_H * (1 - .1 * focusAmt);
+  // De frente y cerca: la cámara baja casi a su altura; conversando se acerca un poco más
+  const cd = camDist * (.8 - .22 * focusAmt), ch = CAM_H * (.72 - .08 * focusAmt);
   // El encuadre (corrimiento) también se mueve con suavidad
   const k = RM ? 1 : Math.min(1, dt * 5);
   if (Math.abs(shiftCur.x - shiftTo.x) > 1e-4 || Math.abs(shiftCur.y - shiftTo.y) > 1e-4) { shiftCur.x = lerp(shiftCur.x, shiftTo.x, k); shiftCur.y = lerp(shiftCur.y, shiftTo.y, k); applyShift(); }
   camera.position.copy(stage.localToWorld(_cam.set(Math.sin(yaw) * cd + Math.cos(yaw) * sway, ch, Math.cos(yaw) * cd - Math.sin(yaw) * sway)));
   camera.up.copy(_camUp.set(0, 1, 0).applyQuaternion(stage.quaternion));
-  camera.lookAt(stage.localToWorld(_look.set(0, .2 + .1 * focusAmt, 0)));
+  camera.lookAt(stage.localToWorld(_look.set(0, .26 + .06 * focusAmt, 0)));
   renderer.render(scene, camera);
 }
 
