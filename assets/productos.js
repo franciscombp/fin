@@ -8,22 +8,26 @@
 (function () {
   'use strict';
 
-  var TIPO = { transaccional: 'Cuenta', ahorro: 'Cuenta de ahorro', meta: 'Meta de ahorro', inversion: 'Inversión a plazo' };
   var esc = function (t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
   var money = function (v) { return '$ ' + Number(Math.abs(v || 0)).toLocaleString('es-EC', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
   var ultimos = function (t) { var m = /(\d{4})\b/.exec(t || ''); return m ? '******' + m[1] : ''; };
 
+  // Mismo diseño de fila que antes: avatar con ícono, nombre, detalle, número enmascarado y monto
   function fila(p) {
     return '<button class="product-row" data-action="' + esc(p.nombre) + '">' +
+      '<span class="avatar-lg"><span class="material-symbols-rounded">' + esc(p.ic || 'account_balance') + '</span></span>' +
       '<span class="product-row__info"><span class="product-row__name">' + esc(p.nombre) + '</span>' +
-      '<span class="product-row__sub">' + esc(p.sub) + '</span>' +
+      (p.sub ? '<span class="product-row__sub">' + esc(p.sub) + '</span>' : '') +
       (p.masked ? '<span class="product-row__masked">' + esc(p.masked) + '</span>' : '') + '</span>' +
       '<span class="product-row__right">' + (p.label ? '<span class="product-row__label">' + esc(p.label) + '</span>' : '') +
       '<span class="product-row__amount">' + esc(p.monto) + '</span></span></button>';
   }
-  function grupo(titulo, filas) {
-    if (!filas.length) return '';
-    return '<div class="section__title"><h2>' + esc(titulo) + '</h2></div><div class="card">' + filas.map(fila).join('') + '</div>';
+  // Dentro de la tarjeta del hub: los grupos van uno debajo del otro; el título sólo a partir del segundo
+  function grupos(lista) {
+    var con = lista.filter(function (g) { return g.filas.length; });
+    return con.map(function (g, i) {
+      return (i && g.titulo ? '<p class="prod-hub__t">' + esc(g.titulo) + '</p>' : '') + g.filas.map(fila).join('');
+    }).join('');
   }
   function vacio(texto) { return '<div class="card prod-empty"><p>' + esc(texto) + '</p></div>'; }
 
@@ -33,46 +37,47 @@
       return Persona.cuentas(id).then(function (cs) {
         var vistas = cs.filter(function (c) { return c.tipo !== 'inversion'; });
         var cuentas = vistas.filter(function (c) { return c.tipo === 'transaccional' || c.tipo === 'ahorro'; }).map(function (c) {
-          return { nombre: c.nombre, sub: TIPO[c.tipo], masked: ultimos(c.fuente) || ('******' + c.numero), monto: money(c.saldo) };
+          return { nombre: c.nombre, sub: 'Pichibank', masked: ultimos(c.fuente) || ('******' + c.numero), monto: money(c.saldo), ic: 'account_balance' };
         });
         var metas = vistas.filter(function (c) { return c.tipo === 'meta'; }).map(function (c) {
-          return { nombre: c.nombre, sub: 'Meta: ' + money(c.meta), monto: money(c.saldo), label: 'Llevas' };
+          return { nombre: c.nombre, sub: 'Meta: ' + money(c.meta), monto: money(c.saldo), label: 'Llevas', ic: 'savings' };
         });
-        return grupo('Cuentas', cuentas) + grupo('Metas', metas) || vacio('Todavía no tienes cuentas en Pichibank.');
+        return grupos([{ titulo: 'Cuentas', filas: cuentas }, { titulo: 'Metas', filas: metas }]) || vacio('Todavía no tienes cuentas en Pichibank.');
       });
     },
     Tarjetas: function (id) {
       return Persona.deudas(id).then(function (ds) {
         var tj = ds.filter(function (d) { return d.clase === 'tarjeta'; });
         var mvp = function (d) { return String(d.en_mvp).indexOf('Sí') === 0; };
-        var pich = tj.filter(mvp).map(function (d) { return { nombre: d.producto, sub: d.institucion, masked: ultimos(d.producto), monto: money(d.saldo), label: 'Saldo a pagar' }; });
-        var otras = tj.filter(function (d) { return !mvp(d); }).map(function (d) { return { nombre: d.producto, sub: d.institucion, masked: ultimos(d.producto), monto: money(d.saldo), label: 'Saldo a pagar' }; });
-        return grupo('Pichibank', pich) + grupo('Otros bancos y tiendas', otras) || vacio('No tienes tarjetas registradas.');
+        var pich = tj.filter(mvp).map(function (d) { return { nombre: d.producto, sub: d.institucion, masked: ultimos(d.producto), monto: money(d.saldo), label: 'Saldo a pagar', ic: 'credit_card' }; });
+        var otras = tj.filter(function (d) { return !mvp(d); }).map(function (d) { return { nombre: d.producto, sub: d.institucion, masked: ultimos(d.producto), monto: money(d.saldo), label: 'Saldo a pagar', ic: 'credit_card' }; });
+        return grupos([{ titulo: 'Pichibank', filas: pich }, { titulo: 'Otros bancos y tiendas', filas: otras }]) || vacio('No tienes tarjetas registradas.');
       });
     },
     Prestamos: function (id) {
       return Persona.deudas(id).then(function (ds) {
-        var fila2 = function (d) { return { nombre: d.producto, sub: d.institucion, monto: money(d.saldo), label: 'Saldo' }; };
+        var ICO = { hipoteca: 'home', prestamo: 'payments', cobrar: 'handshake' };
+        var fila2 = function (d) { return { nombre: d.producto, sub: d.institucion, monto: money(d.saldo), label: 'Saldo', ic: ICO[d.clase] }; };
         var hip = ds.filter(function (d) { return d.clase === 'hipoteca'; }).map(fila2);
         var pre = ds.filter(function (d) { return d.clase === 'prestamo'; }).map(fila2);
-        var cob = ds.filter(function (d) { return d.clase === 'cobrar'; }).map(function (d) { return { nombre: d.producto, sub: d.institucion, monto: money(d.saldo), label: 'Te deben' }; });
-        return grupo('Hipotecas', hip) + grupo('Préstamos', pre) + grupo('Por cobrar', cob) || vacio('No tienes préstamos registrados.');
+        var cob = ds.filter(function (d) { return d.clase === 'cobrar'; }).map(function (d) { return { nombre: d.producto, sub: d.institucion, monto: money(d.saldo), label: 'Te deben', ic: ICO.cobrar }; });
+        return grupos([{ titulo: 'Hipotecas', filas: hip }, { titulo: 'Préstamos', filas: pre }, { titulo: 'Por cobrar', filas: cob }]) || vacio('No tienes préstamos registrados.');
       });
     },
     Metas: function (id) {
       return Persona.cuentas(id).then(function (cs) {
         var metas = cs.filter(function (c) { return c.tipo === 'meta'; }).map(function (c) {
-          return { nombre: c.nombre, sub: 'Meta: ' + money(c.meta), monto: money(c.saldo), label: 'Llevas' };
+          return { nombre: c.nombre, sub: 'Meta: ' + money(c.meta), monto: money(c.saldo), label: 'Llevas', ic: 'savings' };
         });
-        return grupo('Metas de ahorro', metas) || vacio('Todavía no tienes metas de ahorro.');
+        return grupos([{ titulo: 'Metas de ahorro', filas: metas }]) || vacio('Todavía no tienes metas de ahorro.');
       });
     },
     Inversiones: function (id) {
       return Persona.cuentas(id).then(function (cs) {
         var inv = cs.filter(function (c) { return c.tipo === 'inversion'; }).map(function (c) {
-          return { nombre: c.nombre, sub: TIPO.inversion, masked: ultimos(c.fuente) || ('******' + c.numero), monto: money(c.saldo) };
+          return { nombre: c.nombre, sub: 'Pichibank', masked: ultimos(c.fuente) || ('******' + c.numero), monto: money(c.saldo), ic: 'trending_up' };
         });
-        return grupo('Depósitos', inv) || vacio('No tienes inversiones registradas.');
+        return grupos([{ titulo: 'Depósitos', filas: inv }]) || vacio('No tienes inversiones registradas.');
       });
     },
     // Pichibank no tiene seguros en la base de datos de demostración: el hub lo dice en vez de mostrar otros

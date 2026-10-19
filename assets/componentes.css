@@ -61,3 +61,6 @@ html:not(.theme-y2k) .btn--tertiary { background: transparent; color: var(--bp-t
 .pfm-resumen__m { font: var(--ui-headline-sm, 700 28px/34px sans-serif); color: var(--bp-theme-color-text-primary); }
 .pfm-resumen__go { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; font: var(--ui-body-md-semibold); color: var(--bp-theme-color-text-interactive); }
 .pf-back { display: inline-flex; align-items: center; gap: 4px; margin: 8px 16px 0; padding: 0; border: 0; background: none; font: var(--ui-body-md-semibold); color: var(--bp-theme-color-text-interactive); cursor: pointer; }
+
+/* Hubs de productos: título de grupo dentro de la tarjeta, como los títulos de sección */
+.prod-hub__t { margin: 16px 0 0; font: var(--ui-label-sm); font-size: 14px; color: var(--bp-theme-color-text-helper); }

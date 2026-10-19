@@ -48,7 +48,7 @@
     // Ayuda, dentro de esta pantalla: al volver desde su flecha, regresa a Uku
     document.addEventListener('soporte:cerrar', function () { seccion('uku'); });
     host.innerHTML =
-      '<div class="uk-scene"><div class="b3d" data-shift=".3"></div></div>' +
+      '<div class="uk-scene"><div class="b3d"></div></div>' +
       // Al conversar, su mundo se desvanece detrás de un fondo limpio y arriba queda la cabecera del chat
       '<div class="uk-chatbg" aria-hidden="true"></div>' +
       '<header class="uk-chathead"><span class="uk-chathead__face" aria-hidden="true">' + face() + '</span><span class="uk-chathead__t"><b>Uku</b><small>Tu asesor · en línea</small></span>' +
@@ -133,9 +133,9 @@
   function pintarAccesos() {
     var s = resumen(), A = consejos(), p = function (k, icon, t, sub) { return '<button class="uk-pill" data-k="' + k + '" data-l="' + esc(t) + '">' + ic(icon) + '<span><b>' + esc(t) + '</b>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span></button>'; };
     // Los accesos de Asistente: presupuesto, ayuda y solicitudes
-    pills.innerHTML = p('gastos', 'account_balance_wallet', 'Mis gastos', s ? money0(s.gast) + ' de ' + money0(s.pres) : 'Presupuesto') +
-      p('ayuda', 'support_agent', 'Ayuda y soporte', 'Preguntas y contacto') +
-      p('sol', 'assignment', 'Solicitudes', 'Revisar o pedir algo');
+    pills.innerHTML = p('gastos', 'account_balance_wallet', 'Mis gastos', s ? money0(s.gast) : 'Presupuesto') +
+      p('ayuda', 'support_agent', 'Ayuda', 'Soporte') +
+      p('sol', 'assignment', 'Solicitudes', 'Pedir o revisar');
   }
 
   /* ---------- Escribiendo: resultados flotando sobre su mundo ---------- */

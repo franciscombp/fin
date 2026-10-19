@@ -266,7 +266,7 @@ function buildDust() {
 const CLIP_OF = { wave: 'Waving_dl', happy: 'Waving_dl', worried: 'Thinking' };
 function clipFor() { if (gesture === 'walk') return walkMoving ? 'Walking' : 'Thinking'; return (gesture && CLIP_OF[gesture]) || 'Thinking'; }
 const MOOD_TINT = { feliz: new THREE.Color('#fff1c2'), pensativo: new THREE.Color('#c4cfe4'), tranquilo: new THREE.Color('#ffffff') }, WHITE = new THREE.Color('#ffffff');
-const BEAR_S = .62, WALK_ANG = .13 / WORLD_S, WALK_CYCLE = 8, WALK_MOVE = 4.5; // Uku más pequeño para dejar lugar a las tarjetas; al caminar avanza sobre el planeta (rad/s)
+const BEAR_S = .7, WALK_ANG = .035 / WORLD_S, WALK_CYCLE = 14, WALK_MOVE = 3.5; // Uku grande; se queda parado casi todo el tiempo y al caminar avanza despacio sobre el planeta
 function holdObject(kind) {
   if (held) { held.parent && held.parent.remove(held); held = null; }
   if (!kind || !bones.hand_R || umb) return; // con el paraguas en la mano no sostiene otra cosa
@@ -455,10 +455,12 @@ function frame(now) {
     rig.update(dt);
     if (umb) { bear.updateMatrixWorld(true); placeUmbrella(); }
     const hop = mood === 'feliz' && !gesture && !RM ? Math.abs(Math.sin(t * 2.4)) * .018 : 0;
-    bear.position.y = lerp(bear.position.y, .45 * BEAR_S + hop, Math.min(1, dt * 10));
+    // Respira y se mece un poco mientras está quieto
+    const breath = RM || walkMoving ? 0 : Math.sin(t * 1.7) * .006;
+    bear.position.y = lerp(bear.position.y, .45 * BEAR_S + hop + breath, Math.min(1, dt * 10));
     bear.position.x = lerp(bear.position.x, 0, Math.min(1, dt * 3));
     // Caminando, Uku mira hacia donde avanza; quieto, mira a la cámara
-    bear.rotation.y = lerp(bear.rotation.y, 0, Math.min(1, dt * 3));
+    bear.rotation.y = lerp(bear.rotation.y, walkMoving || RM ? 0 : Math.sin(t * .5) * .09, Math.min(1, dt * 3));
   }
   // Mundo pequeño: al caminar, Uku recorre la superficie del planeta y el bosque
   // pasa bajo él; sin fin mientras camine, y todo se queda quieto al parar.
@@ -509,7 +511,7 @@ function frame(now) {
   const sway = RM || drag ? 0 : Math.sin(t * .15) * .12;
   camera.position.copy(stage.localToWorld(_cam.set(Math.sin(yaw) * camDist + Math.cos(yaw) * sway, CAM_H, Math.cos(yaw) * camDist - Math.sin(yaw) * sway)));
   camera.up.copy(_camUp.set(0, 1, 0).applyQuaternion(stage.quaternion));
-  camera.lookAt(stage.localToWorld(_look.set(0, .3, 0)));
+  camera.lookAt(stage.localToWorld(_look.set(0, .2, 0)));
   renderer.render(scene, camera);
 }
 

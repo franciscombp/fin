@@ -19,22 +19,22 @@
 html.uk-idle, html.uk-idle body { overflow: hidden; overscroll-behavior: none; }
 
 /* ---------- La pantalla: el mundo de Uku de borde a borde ---------- */
-.uk { position: fixed; z-index: 1; left: 0; right: 0; top: calc(108px + env(safe-area-inset-top, 0px)); bottom: var(--uk-nav, 76px); max-width: 480px; margin: 0 auto; overflow: hidden; background: linear-gradient(#e9f1f7, #f4f4f2 70%); }
+.uk { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md, 12px); padding: var(--bp-semantic-spacing-micro-md, 8px) var(--bp-layout-grid-margin, 16px) var(--bp-semantic-spacing-micro-lg, 16px); box-sizing: border-box; position: fixed; z-index: 1; left: 0; right: 0; top: calc(108px + env(safe-area-inset-top, 0px)); bottom: var(--uk-nav, 76px); max-width: 480px; margin: 0 auto; overflow: hidden; background: linear-gradient(#e9f1f7, #f4f4f2 70%); }
 .uk p { margin: 0; }
-.uk-scene { position: absolute; left: 0; right: 0; top: 196px; bottom: 236px; }
+.uk-scene { position: absolute; inset: 0; z-index: 0; }
 .uk-scene .b3d { position: absolute; inset: 0; }
 .uk-scene canvas { display: block; width: 100% !important; height: 100% !important; }
 
 /* Su globo: lo más importante, con su botón */
 /* Su globo: como si Uku te lo contara, en una nube pequeña junto a él */
-.uk-globo { position: absolute; z-index: 3; top: 52px; left: 16px; width: min(72%, 280px); padding: 12px 14px; border-radius: 18px 18px 18px 4px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 18px rgba(15, 38, 92, .10); animation: ukIn .4s cubic-bezier(.2, 1.3, .4, 1) .2s both; transition: opacity .2s, transform .2s; }
+.uk-globo { position: relative; z-index: 3; align-self: flex-start; max-width: 320px; padding: 12px 14px; border-radius: 18px 18px 18px 4px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 18px rgba(15, 38, 92, .10); animation: ukIn .4s cubic-bezier(.2, 1.3, .4, 1) .2s both; transition: opacity .2s, transform .2s; }
 .uk-globo::after { content: ''; position: absolute; left: 12px; bottom: -8px; border: 8px solid transparent; border-bottom: 0; border-top-color: var(--bp-theme-color-surface-container-default); }
 .uk-globo__t { margin: 0 !important; font: var(--ui-body-md-regular, 400 15px/21px sans-serif); font-size: 15px; line-height: 21px; color: var(--bp-theme-color-text-primary); }
 html:not(.theme-y2k) .uk-globo__go.btn { height: auto !important; min-height: 0 !important; margin: 4px 0 0 !important; padding: 0 !important; font-size: 14px !important; }
 @keyframes ukIn { from { opacity: 0; transform: translateY(8px) scale(.96); } }
 
 /* Los accesos: a la izquierda, sobre su mundo */
-.uk-pills { position: absolute; z-index: 3; left: 12px; right: 12px; bottom: 84px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 0; }
+.uk-pills { position: relative; z-index: 3; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 0; }
 .uk-pills::-webkit-scrollbar { display: none; }
 .uk-pill { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 16px 8px 12px; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); box-shadow: 0 2px 10px rgba(15, 38, 92, .08); text-align: left; cursor: pointer; animation: ukIn .35s ease both; }
 .uk-pill:nth-child(2) { animation-delay: .06s; } .uk-pill:nth-child(3) { animation-delay: .12s; } .uk-pill:nth-child(4) { animation-delay: .18s; }
@@ -45,10 +45,10 @@ html:not(.theme-y2k) .uk-globo__go.btn { height: auto !important; min-height: 0 
 .uk-pill > .material-symbols-rounded { flex: 0 0 28px; width: 28px; height: 28px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font-size: 20px; }
 .uk-pill > span:last-child { display: flex; flex-direction: column; min-width: 0; }
 .uk-pill b { font: var(--ui-body-sm-semibold); }
-.uk-pill small { font: var(--cx-caption); color: var(--cx-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.uk-pill small { font: var(--cx-caption); color: var(--cx-muted); }
 
 /* La barra para hablarle o buscar */
-.uk-bar { position: absolute; z-index: 5; left: 12px; right: 12px; bottom: 12px; display: flex; align-items: center; gap: 8px; margin: 0; }
+.uk-bar { position: relative; z-index: 5; display: flex; align-items: center; gap: 8px; margin: 0; }
 .uk-bar__f { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; }
 .uk-bar__f > .material-symbols-rounded { position: absolute; left: 14px; color: var(--cx-muted); font-size: 22px; pointer-events: none; }
 .uk-bar input { width: 100%; height: 56px; padding: 0 16px 0 46px; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); box-shadow: 0 2px 12px rgba(15, 38, 92, .12); font: var(--ui-body-md-medium); font-size: 16px; }
@@ -123,7 +123,7 @@ html:not(.theme-y2k) .uk-globo__go.btn { height: auto !important; min-height: 0 
 .uk-sec__row small { font: var(--cx-caption); color: var(--cx-muted); }
 
 /* Propuestas de Uku: carrusel arriba con puntos (como las tarjetas de la referencia) */
-.uk-props { position: absolute; z-index: 3; top: 52px; left: 16px; width: min(78%, 300px); transition: opacity .3s ease; }
+.uk-props { position: relative; z-index: 3; width: 100%; transition: opacity .3s ease; }
 .uk-props[hidden] { display: none; }
 .uk-props__track { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .uk-props__track::-webkit-scrollbar { display: none; }
@@ -187,19 +187,20 @@ html.uk-chatting .uk-bar { bottom: calc(12px + env(safe-area-inset-bottom, 0px))
    El fondo de la página baja suave sobre su mundo (sin corte con la barra)
    y el título grande va como en Mis finanzas o Perfil, con el ánimo de Uku. */
 .uk::before { content: ''; position: absolute; z-index: 2; left: 0; right: 0; top: 0; height: 132px; background: linear-gradient(var(--bp-surface-page, #f5f5f5) 30%, transparent); pointer-events: none; transition: opacity .3s ease; }
-.uk-head { position: absolute; z-index: 3; top: 4px; left: var(--bp-layout-grid-margin, 24px); right: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; transition: opacity .3s ease, transform .35s cubic-bezier(.2, .8, .2, 1); }
+.uk-head { position: relative; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 12px; transition: opacity .3s ease, transform .35s cubic-bezier(.2, .8, .2, 1); }
 .uk-head__t { margin: 0; font: var(--cx-page); letter-spacing: -.6px; color: var(--bp-interaction-tertiary-fg); }
 .uk-head { flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 10px; }
 /* Las tres señales de su mundo: texto sobre la página, sin cajas */
-.uk-estados { position: absolute; z-index: 3; left: 12px; right: 12px; bottom: 170px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.uk-estados { position: relative; z-index: 3; margin-top: auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--bp-semantic-spacing-micro-md, 8px); padding: var(--bp-semantic-spacing-micro-md, 10px) var(--bp-semantic-spacing-micro-md, 12px); border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 18px rgb(0 0 0 / .06); }
 .uk-estados[hidden] { display: none; }
 .uk-sig { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; padding: 0; border: 0; background: none; color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
 .uk-sig .material-symbols-rounded { font-size: 20px; font-variation-settings: 'FILL' 1; color: var(--bp-interaction-tertiary-fg); }
 .uk-sig.is-ok .material-symbols-rounded, .uk-sig.is-feliz .material-symbols-rounded { color: #4f8a64; }
 .uk-sig small { font: var(--cx-caption); color: var(--cx-muted); }
 .uk-sig b { font: var(--ui-body-sm-semibold); line-height: 1.25; }
-.uk-sig em { font-style: normal; font-size: 12px; line-height: 16px; color: var(--cx-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.uk-sig em { font-style: normal; font-size: 12px; line-height: 16px; color: var(--cx-muted); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
 .uk.is-chat .uk-head, .uk.is-typing .uk-head { opacity: 0; transform: translateY(-12px); pointer-events: none; }
+.uk.is-chat .uk-props, .uk.is-chat .uk-globo, .uk.is-chat .uk-estados, .uk.is-chat .uk-pills { display: none; }
 .uk.is-chat::before { opacity: 0; }
 
 /* ---------- Selector de sección (Uku · Mis finanzas · Ayuda) ---------- */
@@ -213,3 +214,10 @@ html.uk-chatting .uk-bar { bottom: calc(12px + env(safe-area-inset-bottom, 0px))
 /* El carrusel de Ayuda no empuja la pantalla de Asistente */
 .app-uku .view--finanzas.uk-ayuda { overflow: clip; }
 .uk-ayuda-host .sp { overflow: hidden; }
+
+/* Orden del flujo: título, insights, el mundo (fondo), estados, accesos y buscador */
+.uk-head { order: 1; }
+.uk-props, .uk-globo { order: 2; }
+.uk-estados { order: 4; }
+.uk-pills { order: 5; }
+.uk-bar { order: 6; }
