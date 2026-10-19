@@ -447,7 +447,7 @@
       sub: T('Y apenas vamos por el {pct} del mes.', { pct: pct(day / 31) }), det: 'cat:' + hot + ':2' });
     var next = [];
     ['servicios', 'subs'].forEach(function (k) { CATS[k].fixed.forEach(function (p, i) { var d = 3 + i * 4; if (d > day && d <= day + 7) next.push({ who: p[0], amt: p[1], d: d }); }); });
-    if (next.length) out.push({ kind: 'info', icon: 'event', title: T('Esta semana te cobran {monto}', { monto: money(next.reduce(function (s, n) { return s + n.amt; }, 0)) }),
+    if (next.length) out.push({ kind: 'info', icon: 'event', title: T('Esta semana vencen pagos por {monto}', { monto: money(next.reduce(function (s, n) { return s + n.amt; }, 0)) }),
       sub: next.map(function (n) { return T(n.who) + ' (' + n.d + ' ' + T('oct') + ')'; }).join(', ') + '.' });
     return out;
   }
