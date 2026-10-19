@@ -35,7 +35,6 @@
     persona(id).then(function (u) {
       if (!u) return;
       var wn = document.getElementById('welcome-name'); if (wn) wn.textContent = ', ' + u.nombre.split(' ')[0];
-      var ti = document.getElementById('top-ini'); if (ti) ti.textContent = iniciales(u.nombre);
       var ps = document.querySelector('.profile-story'); if (ps) ps.setAttribute('aria-label', 'Perfil de ' + u.nombre);
       var view = document.querySelector('.view[data-view="4"]');
       if (!view) return;

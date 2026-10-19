@@ -271,6 +271,7 @@
             cursor: pointer;
         }
 
+        .profile-story__logo { width: 70%; height: 70%; display: block; }
         .profile-story__inner {
             width: 100%;
             height: 100%;
@@ -4023,7 +4024,7 @@
         <header class="header">
             <div class="top-bar">
                 <button class="profile-story" aria-label="Perfil">
-                    <span class="profile-story__inner"><span class="profile-story__ini" id="top-ini"></span></span>
+                    <span class="profile-story__inner"><img class="profile-story__logo" src="./assets/pichibank-icono.svg" alt="" width="28" height="28"></span>
                 </button>
                 <!-- Título pequeño de la sección: aparece cuando el título grande
                      sube detrás de la barra (patrón de títulos grandes de iOS) -->
@@ -5100,7 +5101,7 @@
     <div class="story-viewer" id="story-viewer" role="dialog" aria-modal="true" aria-label="Stories">
         <div class="story-progress" id="story-progress"></div>
         <div class="story-header">
-            <span class="story-header__avatar" style="background: var(--bp-surface-brand); color: var(--bp-text-brand);">B</span>
+            <span class="story-header__avatar"><img src="./assets/pichibank-icono.svg" alt="" width="28" height="28"></span>
             <span class="story-header__name">Pichibank</span>
             <button class="story-close" id="story-close" aria-label="Cerrar stories">
                 <span class="material-symbols-rounded">close</span>
