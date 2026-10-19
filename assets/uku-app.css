@@ -171,7 +171,7 @@ html.uk-chatting .uk { top: 0 !important; bottom: 0 !important; }
 
 /* Uku está escribiendo… */
 .uk-dots { display: inline-flex; gap: 4px; padding: 14px 16px !important; }
-.uk-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--cx-muted); animation: ukDot 1s ease-in-out infinite; }
+.uk-dots i { width: 7px; height: 7px; border-radius: 16px; background: var(--cx-muted); animation: ukDot 1s ease-in-out infinite; }
 .uk-dots i:nth-child(2) { animation-delay: .15s; } .uk-dots i:nth-child(3) { animation-delay: .3s; }
 @keyframes ukDot { 0%, 60%, 100% { transform: translateY(0); opacity: .4; } 30% { transform: translateY(-4px); opacity: 1; } }
 
@@ -228,7 +228,7 @@ html.uk-chatting .uk { top: 0 !important; bottom: 0 !important; }
 .uk.is-chat .uk-chathead { transform: none; opacity: 1; pointer-events: none; }
 .uk.is-chat .uk-chathead__x { pointer-events: auto; }
 .uk-bar { padding: 6px; border-radius: 28px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 24px rgb(0 0 0 / .12); }
-.uk-bar input { height: 48px; background: transparent; box-shadow: none; border-radius: 22px; }
+.uk-bar input { height: 48px; background: transparent; box-shadow: none; border-radius: 16px; }
 .uk-bar__mic { width: 48px; height: 48px; flex-basis: 48px; background: transparent; box-shadow: none; }
 .uk-msg__b, .uk-me p { box-shadow: 0 4px 16px rgb(0 0 0 / .08); }
 .uk-me p { background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); }
