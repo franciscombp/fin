@@ -332,16 +332,27 @@
     mostrar();
   }
   function ultimaPregunta() { for (var i = msgs.length - 1; i >= 0; i--) if (msgs[i].me) return msgs[i].me; return null; }
-  /* Onboarding: la primera vez, Uku se presenta en tres pasos (sus tarjetas): qué hace y cómo hablarle */
-  var ONB = 'uk-onboard', PASOS = [
-    { t: 'Hola, soy Uku', s: 'Tu asistente en Pichibank. Te cuento cómo va tu dinero, respondo tus dudas y te ayudo a resolver inconvenientes sin salir de aquí.' },
-    { t: 'Mi mundo eres tú', s: 'Las flores son tu ahorro, el bosque es tu presupuesto y mi ánimo depende de tus gastos ordenados. Tócame y te cuento cómo estoy.' },
-    { t: 'Háblame como quieras', s: 'Escribe, dicta o toma una foto de un QR o una factura. Si algo no lo sé, lo busco por ti y, solo si hace falta, te comunico con una persona.' }];
+  /* Onboarding: la primera vez, Uku se presenta en tres pasos. Es una tarjeta arriba, sobre su mundo
+     (sin conversación), con un botón principal claro; él, grande, te mira y saluda. */
+  var ONB = 'uk-onboard', onbEl = null, PASOS = [
+    { ic: 'waving_hand', t: 'Hola, soy Uku', s: 'Tu asistente en Pichibank. Te cuento cómo va tu dinero, respondo tus dudas y te ayudo a resolver inconvenientes sin salir de aquí.' },
+    { ic: 'park', t: 'Mi mundo eres tú', s: 'Las flores son tu ahorro, el bosque es tu presupuesto y mi ánimo depende de tus gastos ordenados. Tócame y te cuento cómo estoy.' },
+    { ic: 'forum', t: 'Háblame como quieras', s: 'Escribe, dicta o toma una foto de un QR o una factura. Si algo no lo sé, lo busco por ti y, solo si hace falta, te comunico con una persona.' }];
   function onboarding(i) {
     i = i || 0; var p = PASOS[i], fin = i === PASOS.length - 1;
-    if (i === 0) msgs = [];
-    uku(esc(p.s), [b(fin ? 'onb:fin' : 'onb:' + (i + 1), fin ? 'Empezar' : 'Siguiente', fin ? 'check' : 'arrow_forward')].concat(fin ? [] : [b('onb:fin', 'Saltar', null, 'is-ask')]), '', { title: p.t });
-    mostrar();
+    if (!onbEl) { onbEl = document.createElement('section'); onbEl.className = 'uk-onb'; onbEl.setAttribute('aria-label', 'Conoce a Uku'); host.appendChild(onbEl); host.classList.add('is-onb'); if (b3d) { b3d.play('wave'); b3d.setShift(0, -.16); } } // baja un poco para quedar entero bajo la tarjeta
+    onbEl.innerHTML = '<div class="uk-onb__card" style="--k:' + i + '"><p class="uk-onb__dots">' + PASOS.map(function (_, j) { return '<i' + (j === i ? ' class="is-on"' : '') + '></i>'; }).join('') + '</p>' +
+      '<p class="uk-onb__ic">' + ic(p.ic) + '</p><h2 class="uk-onb__t">' + esc(p.t) + '</h2><p class="uk-onb__s">' + esc(p.s) + '</p>' +
+      '<button class="pf-cta uk-onb__go" data-k="' + (fin ? 'onb:fin' : 'onb:' + (i + 1)) + '">' + (fin ? 'Empezar' : 'Siguiente') + '</button>' +
+      (fin ? '' : '<button class="uk-onb__skip" data-k="onb:fin">Saltar</button>') + '</div>';
+    fx('select');
+  }
+  function onboardingFin() {
+    try { localStorage.setItem(ONB, '1'); } catch (e) {}
+    if (onbEl) { onbEl.classList.add('is-out'); setTimeout(function () { onbEl.remove(); onbEl = null; host.classList.remove('is-onb'); }, 260); }
+    if (b3d) b3d.setShift(0, 0);
+    fx('success'); if (b3d) b3d.play('happy');
+    nota = 'Listo. Pregúntame cómo va tu dinero cuando quieras.'; pintarGlobo(); setTimeout(function () { nota = null; if (!msgs.length) pintarGlobo(); }, 6000);
   }
   // Una pregunta frecuente o un tutorial, respondido por Uku aquí mismo
   function ayudaEn(h, otras, acts) {
@@ -741,7 +752,7 @@
       case 'dinero': dinero(); return mostrar();
       case 'voto': return votar(v);
       case 'ia': if (!enChat) me('Que Uku IA lo revise'); uku('Lo reviso…'); pintarChat(); return setTimeout(function () { msgs.pop(); iaResponde(v); }, 1400);
-      case 'onb': if (v === 'fin') { try { localStorage.setItem(ONB, '1'); } catch (e) {} return resuelto('Listo. Cuando quieras, pregúntame cómo va tu dinero.'); } return onboarding(+v);
+      case 'onb': if (v === 'fin') return onboardingFin(); return onboarding(+v);
       case 'siguiente': fx('tap'); nota = null; if (saludado) gi++; saludado = true; return pintarGlobo();
       case 'prop': return propuesta(v);
       case 'mundo': mundo(); return mostrar();
