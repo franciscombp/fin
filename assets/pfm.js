@@ -34,6 +34,7 @@
   }
   function money0(v) { return money(v).replace(/,00$/, ''); }
   function pct(v) { return Math.round(v * 100) + '%'; }
+  function norm(x) { return String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
   function r2(v) { return Math.round(v * 100) / 100; }
   var ASSET = (document.currentScript && document.currentScript.src || location.href).replace(/[^/]*$/, '');
   function tobe() { return ST.modo === 'tobe'; }
@@ -1543,6 +1544,7 @@
     }
   }
   function analyze(q) {
+    if (window.UkuAsistente && UkuAsistente.ia) { closeSheet(); return UkuAsistente.ia(q || T('¿Cómo voy este mes?')); }
     if (!window.UkuAnalisis) return;
     closeSheet();
     UkuAnalisis.open({ view: curMes(), ask: q });
@@ -1559,9 +1561,55 @@
       top: Object.keys(s.grupos).sort(function (a, b) { return s.grupos[b] - s.grupos[a]; }).slice(0, 3).map(function (k) { return { name: k, v: s.grupos[k], p: s.grupos[k] / s.gast }; }),
       avg: av ? av.gast : s.gast, mood: md, moodLabel: MOOD[md], hint: hint, score: salud(m), card: null, goals: [], txCount: s.n };
   }
+  /* Preguntas por grupo o categoría, con las palabras de la gente: «comida», «super», «uber», «luz»… */
+  var SINON = [['Comida', /comida|aliment|restauran|supermerc|super\b|mercado|almuerz|cena|desayun|cafe|delivery|rappi|pedidos/], ['Hogar', /hogar|casa|arriendo|alquiler|vivienda|luz|agua|internet|servicios basicos|electric/],
+    ['Movilidad', /movilidad|transporte|uber|taxi|bus|gasolina|combustible|carro|auto|parqueo|peaje/], ['Salud y educación', /salud|medic|farmacia|doctor|hospital|educaci|colegio|universidad|curso|escuela/],
+    ['Gustos', /gustos|entreten|cine|netflix|spotify|suscripcion|compras|ropa|zapatos|tienda|juegos|salidas|bar|fiesta/], ['Familia', /familia|mesada|mama|papa|hijos|hija|hijo|abuel/], ['Compromisos', /compromisos|deudas|cuota|prestamo|tarjeta de otro|impuesto|sri|matricula/]];
+  function grupoDe(s0) { for (var i = 0; i < SINON.length; i++) if (SINON[i][1].test(s0)) return SINON[i][0]; return null; }
+  function mesDe(s0) { var m = curMes(); if (/mes pasado|anterior/.test(s0)) return prevMes(m); var i = MESES_N.findIndex(function (x) { return s0.indexOf(x) >= 0; }); return i >= 0 ? (m.slice(0, 4) + '-' + pad(i + 1) > m ? String(+m.slice(0, 4) - 1) : m.slice(0, 4)) + '-' + pad(i + 1) : m; }
+  var MESES_N = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  function topComercios(m, g, n) {
+    var acc = {};
+    rows().forEach(function (r) { if (r.mes !== m) return; var c = cls(r); if (c.k !== 'gasto' || grupo(c.cat) !== g) return; var k = corto(r.cp || r.desc || r.n); acc[k] = (acc[k] || 0) - r.m; });
+    return Object.keys(acc).sort(function (a, b) { return acc[b] - acc[a]; }).slice(0, n).map(function (k) { return { l: k, v: r2(acc[k]) }; });
+  }
   function answer(q) {
     if (!DB) return null;
-    var s0 = q.toLowerCase(), m = curMes(), s = month(m);
+    var s0 = norm(q), m = mesDe(s0), s = month(m), g = grupoDe(s0);
+    // Cuánto gasté en comida / en el super / en uber…
+    if (g && /gast|cuant|en que|fue|pague|pago/.test(s0) && !/presupuesto/.test(s0)) {
+      var v = s.grupos[g] || 0, pv = month(prevMes(m)).grupos[g] || 0, d = pv ? (v - pv) / pv : 0, pg = pres().cats[g];
+      return { title: T('{g} en {mes}', { g: g, mes: mesName(m) }), num: { v: money0(v), l: T('gastaste en {g}', { g: g.toLowerCase() }) },
+        meter: pg ? { v: v, max: pg, l: T('{g} de {p} de presupuesto', { g: money0(v), p: money0(pg) }), cls: v > pg ? 'over' : v > pg * .85 ? 'warn' : 'ok' } : null,
+        t: !v ? T('Este mes no tienes gastos en {g}.', { g: g.toLowerCase() }) : pv ? T(d > .05 ? 'Es {pct} más que en {mes}.' : d < -.05 ? 'Es {pct} menos que en {mes}.' : 'Casi igual que en {mes}.', { pct: pct(Math.abs(d)), mes: mesName(prevMes(m)) }) : T('Aquí va lo que más pesó.'),
+        bars: topComercios(m, g, 4), s: ['¿En qué gasto más?', T('¿Cuánto me queda este mes?')], acts: [[T('Ver mis gastos'), 'gastos']] };
+    }
+    // Cuánto me queda / cuánto puedo gastar
+    if (/me queda|puedo gastar|alcanza|hasta fin de mes/.test(s0)) {
+      var saldo = sumv(saldos(), function (x) { return x.v; }), fac = facturas().filter(function (x) { return diasA(x.f) <= 30; }), comp = sumv(fac, function (x) { return x.monto; }), dias = diasMes(m) - +HOY.slice(8, 10) + 1, libre = saldo - comp;
+      return { title: T('Lo que te queda'), num: { v: money0(Math.max(0, libre)), l: T('libres después de tus pagos') }, t: (fac.length ? T('Tienes {s} disponibles y {n} pagos por {c} en los próximos días.', { s: money0(saldo), n: fac.length, c: money0(comp) }) : T('Tienes {s} disponibles y ningún pago pendiente.', { s: money0(saldo) })) + ' ' + T('Son unos {d} al día hasta fin de mes.', { d: money0(Math.max(0, libre) / dias) }),
+        bars: fac.slice(0, 3).map(function (x) { return { l: x.n, v: x.monto }; }), s: ['¿En qué gasto más?'], acts: [[T('Ver mis gastos'), 'gastos']] };
+    }
+    // Qué pagos tengo / qué vence
+    if (/que pagos|pagos pendientes|que vence|proximos pagos|por pagar|que debo pagar/.test(s0)) {
+      var fs = facturas().slice(0, 5);
+      return { title: T('Tus próximos pagos'), t: fs.length ? T('Tienes {n} pagos en camino por {m}. Te aviso un día antes de cada uno.', { n: fs.length, m: money0(sumv(fs, function (x) { return x.monto; })) }) : T('No tienes pagos pendientes por ahora.'),
+        rows: fs.map(function (x) { return [x.n + ' · ' + cuandoTxt(x.f), money0(x.monto)]; }), s: [T('¿Cuánto me queda este mes?')], acts: [[T('Ver mis pagos'), 'bills']] };
+    }
+    // Cuánto ahorré / me sobró
+    if (/ahorr|me sobro|sobra/.test(s0) && !/meta/.test(s0)) {
+      var sob = r2(s.ing - s.gast), c = colchon();
+      return { title: T('Tu ahorro en {mes}', { mes: mesName(m) }), num: { v: money0(Math.max(0, sob)), l: sob >= 0 ? T('te sobró de lo que recibiste') : T('gastaste más de lo que recibiste') }, t: T('Lo que tienes en tus cuentas te alcanza para {n} meses de gasto.', { n: (Math.round(c * 10) / 10).toString().replace('.', ',') }) + ' ' + (c < 3 ? T('Con 3 meses tienes un buen respaldo.') : T('Es un buen respaldo.')),
+        bars: [{ l: T('Recibiste'), v: s.ing }, { l: T('Gastaste'), v: s.gast }], s: ['¿En qué gasto más?'], acts: [[T('Separar un ahorro'), 'ahorro']] };
+    }
+    // Comparar con el mes pasado
+    if (/mes pasado|comparad|que el mes|vs|versus|diferencia/.test(s0)) {
+      m = curMes(); s = month(m); // comparar es siempre este mes contra el anterior
+      var pm = prevMes(m), ps = month(pm, isCur(m) ? +HOY.slice(8, 10) : null), dd = s.gast - ps.gast;
+      return { title: T('{a} contra {b}', { a: Mes(m), b: Mes(pm) }), num: { v: money0(Math.abs(dd)), l: T(dd > 0 ? 'más que en {mes} a esta altura' : 'menos que en {mes} a esta altura', { mes: mesName(pm) }) }, t: T('En {mes} llevas {a}; en {pm} a esta altura ibas en {b}.', { mes: mesName(m), a: money0(s.gast), pm: mesName(pm), b: money0(ps.gast) }),
+        bars: [{ l: Mes(m), v: s.gast }, { l: Mes(pm), v: ps.gast }], s: ['¿En qué gasto más?'], acts: [[T('Ver mis gastos'), 'gastos']] };
+    }
+    s0 = q.toLowerCase();
     if (/revis|pregunt|no sabes/.test(s0)) {
       var qs = preguntas(m);
       return { t: qs.length ? T('Tengo {n} preguntas: {l}.', { n: qs.length, l: qs.slice(0, 3).map(function (x) { return corto(x.cp); }).join(', ') }) : T('No tengo nada por revisar.'), s: ['¿En qué gasto más?'] };

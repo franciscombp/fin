@@ -17,7 +17,7 @@
   function ayuda(q, n) { return window.Soporte && Soporte.find ? Soporte.find(q, n || 3) : []; }
   // Las cifras solo cuando preguntas por tu plata; "perdí mi tarjeta" es ayuda, no deuda
   var HACER = /perd|bloque|rob|clave|contrase|pin\b|transfer|recarg|pagar con|cobrar|retirar|enviar|mandar|activar|cancel|cambiar|reclam|reconozco|como (uso|pago|hago|activo|cambio)/;
-  var PLATA = /cuant|gast|deb|deuda|plata|dinero|saldo|disponible|ingres|sueldo|pension|remesa|presupuesto|ahorr|cierr|ritmo|revis|pregunt|queda/;
+  var PLATA = /cuant|gast|deb|deuda|plata|dinero|saldo|disponible|ingres|sueldo|pension|remesa|presupuesto|ahorr|cierr|ritmo|revis|pregunt|queda|pagos|vence|compar|mes pasado|diferencia|sobr/;
   function finanzas(q) { var n = norm(q); if (HACER.test(n) || !PLATA.test(n)) return null; try { return window.PFM && PFM.ready() ? PFM.answer(q) : null; } catch (e) { return null; } }
   var PREG = /^(como|cuanto|cuando|que|por que|donde|puedo|se puede)|\?|no (puedo|reconozco|me |funciona)|perd|rob|olvid/;
   function resumen() { return window.PFM && PFM.summary ? PFM.summary() : null; }
