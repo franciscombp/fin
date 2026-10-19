@@ -157,7 +157,10 @@
   /* El globo es la voz de Uku: primero el saludo del momento y después, una por una, sus
      propuestas (y las señales de su mundo que piden algo). Cada una trae su acción, «Ahora no»
      para dejarla para después y «Siguiente» para pasar; la lista se renueva cuando haces o saltas algo. */
+  var QUIET = 'uk-quiet', globoOff = false;
+  function quiet() { try { return localStorage.getItem(QUIET) === '1'; } catch (e) { return false; } }
   function propuestas() {
+    if (quiet()) return [];
     var S = window.PFM && PFM.world && resumen() ? PFM.world().filter(function (x) { return /warn|over|pensativo/.test(x.cls || ''); }).map(function (x) { return { id: 'mundo', tag: x.l, t: x.d, k: 'mundo', l: 'Cuéntame' }; }) : [];
     return consejos().map(function (x) { return { id: x.id, tag: x.tag, t: x.di || x.t, k: x.act ? 'pfm:' + x.act : 'prop:' + x.id, l: x.actl || 'Cuéntame', luego: 'pfm:luego:' + x.id, kind: x.kind }; }).concat(S);
   }
@@ -165,7 +168,11 @@
     var P = propuestas(), n = P.length, hola = !saludado && !nota, sal = hola ? saludo() : null, x = !hola && !nota && n ? P[gi % n] : null;
     var t = nota || (hola ? sal.t : x ? x.t : 'Todo está en orden por ahora. ¿Quieres hacer algo hoy?');
     var go = hola ? sal : x ? { k: x.k, l: x.l } : null;
-    globoEl.innerHTML = (x ? '<p class="uk-globo__tag">' + esc(x.tag) + '</p>' : '') + '<p class="uk-globo__t">' + esc(t) + '</p>' +
+    // Sin nada que decir (o en silencio), el globo se va y Uku se queda tranquilo
+    if (!hola && !nota && !x) { if (b3d) b3d.play('happy'); return ocultarGlobo(); }
+    globoEl.hidden = false; globoEl.classList.remove('is-off');
+    globoEl.innerHTML = '<button class="uk-globo__x" data-k="globo:cerrar" aria-label="Cerrar">' + ic('close') + '</button>' +
+      (x ? '<p class="uk-globo__tag">' + esc(x.tag) + '</p>' : '') + '<p class="uk-globo__t">' + esc(t) + '</p>' +
       '<div class="uk-globo__acts">' + (go ? '<button class="btn btn--tertiary uk-globo__go" data-k="' + esc(go.k) + '" data-l="' + esc(go.l) + '">' + esc(go.l) + '</button>' : '') +
       (x && x.luego ? '<button class="uk-globo__skip" data-k="' + esc(x.luego) + '" data-l="Ahora no">Ahora no</button>' : '') +
       (hola && n ? '<button class="uk-globo__skip" data-k="siguiente" data-l="Qué me propones">Qué me propones</button>' : '') + '</div>' +
@@ -176,6 +183,7 @@
     // Uku hace lo que dice: saluda, habla, se preocupa o celebra según el mensaje
     if (b3d) b3d.play(hola ? 'wave' : nota ? 'happy' : !x ? 'happy' : x.kind === 'warn' ? 'worried' : 'talk');
   }
+  function ocultarGlobo() { globoOff = true; globoEl.classList.add('is-off'); setTimeout(function () { if (globoOff) globoEl.hidden = true; }, 260); }
   // Los accesos: Mis finanzas, ordenar, consejos y ayuda, a un toque desde Uku
   function pintarAccesos() {
     var s = resumen(), A = consejos(), p = function (k, icon, t, sub) { return '<button class="uk-pill" data-k="' + k + '" data-l="' + esc(t) + '">' + ic(icon) + '<span><b>' + esc(t) + '</b>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span></button>'; };
@@ -342,7 +350,7 @@
     { ic: 'forum', t: 'Háblame como quieras', s: 'Escribe, dicta o toma una foto de un QR o una factura. Si algo no lo sé, lo busco por ti y, solo si hace falta, te comunico con una persona.' }];
   function onboarding(i) {
     i = i || 0; var p = PASOS[i], fin = i === PASOS.length - 1;
-    if (!onbEl) { onbEl = document.createElement('section'); onbEl.className = 'uk-onb'; onbEl.setAttribute('aria-label', 'Conoce a Uku'); host.appendChild(onbEl); host.classList.add('is-onb'); if (b3d) { b3d.play('wave'); b3d.setShift(0, -.16); } } // baja un poco para quedar entero bajo la tarjeta
+    if (!onbEl) { onbEl = document.createElement('section'); onbEl.className = 'uk-onb'; onbEl.setAttribute('aria-label', 'Conoce a Uku'); host.appendChild(onbEl); host.classList.add('is-onb'); if (b3d) { b3d.play('wave'); b3d.setShift(0, -.3); } } // baja para quedar entero bajo la tarjeta
     onbEl.innerHTML = '<div class="uk-onb__card" style="--k:' + i + '"><p class="uk-onb__dots">' + PASOS.map(function (_, j) { return '<i' + (j === i ? ' class="is-on"' : '') + '></i>'; }).join('') + '</p>' +
       '<p class="uk-onb__ic">' + ic(p.ic) + '</p><h2 class="uk-onb__t">' + esc(p.t) + '</h2><p class="uk-onb__s">' + esc(p.s) + '</p>' +
       '<button class="pf-cta uk-onb__go" data-k="' + (fin ? 'onb:fin' : 'onb:' + (i + 1)) + '">' + (fin ? 'Empezar' : 'Siguiente') + '</button>' +
@@ -755,6 +763,7 @@
       case 'ia': if (!enChat) me('Que Uku IA lo revise'); uku('Lo reviso…'); pintarChat(); return setTimeout(function () { msgs.pop(); iaResponde(v); }, 1400);
       case 'onb': if (v === 'fin') return onboardingFin(); return onboarding(+v);
       case 'siguiente': fx('tap'); nota = null; if (saludado) gi++; saludado = true; return pintarGlobo();
+      case 'globo': fx('tap'); saludado = true; nota = null; return ocultarGlobo();
       case 'prop': return propuesta(v);
       case 'mundo': mundo(); return mostrar();
       case 'ayudatoda': fx('select'); return seccion('ayuda');
@@ -825,6 +834,18 @@
     (function esperar(n) { if (window.PFM && PFM.ready()) { pintar(); var visto = false; try { visto = localStorage.getItem(ONB) === '1'; } catch (e) {} if (!visto && view.classList.contains('active')) setTimeout(function () { if (!msgs.length) onboarding(0); }, 900); return; } if (n < 60) setTimeout(function () { esperar(n + 1); }, 150); })(0);
     // La primera vez que entras a Asistente (si cargó antes de que vinieras), Uku se presenta
     nav && nav.addEventListener('click', function () { var visto = false; try { visto = localStorage.getItem(ONB) === '1'; } catch (e) {} if (!visto && !msgs.length) setTimeout(function () { onboarding(0); }, 500); });
+    // Desde Perfil: Uku en silencio (solo saluda; no propone nada hasta que lo vuelvas a encender)
+    var qr = document.getElementById('uk-quiet-row');
+    if (qr) {
+      qr.setAttribute('aria-pressed', String(!quiet()));
+      qr.addEventListener('click', function () {
+        var on = quiet(); // on = estaba en silencio → se encienden las propuestas
+        try { if (on) localStorage.removeItem(QUIET); else localStorage.setItem(QUIET, '1'); } catch (e) {}
+        qr.setAttribute('aria-pressed', String(on)); fx('toggle');
+        if (window.PFM && PFM.toast) PFM.toast(on ? 'Uku vuelve a proponerte cosas.' : 'Uku solo te saluda. Lo demás, cuando le preguntes.');
+        globoOff = false; saludado = false; pintarGlobo();
+      });
+    }
     // Desde Perfil: volver a empezar (el onboarding de Uku y el estado de Mis finanzas)
     var rr = document.getElementById('onb-reset-row');
     rr && rr.addEventListener('click', function () {
