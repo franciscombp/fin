@@ -14,12 +14,12 @@
 /* Uku o el PFM completo (que se abre como una capa y se baja para volver) */
 /* Asistente: una sola pantalla. El selector de arriba cambia entre Uku, Mis finanzas y Ayuda */
 .app-uku .view--finanzas:not(.uk-fin) .pf-host, .app-uku .view--finanzas.uk-fin .uk, .app-uku .view--finanzas.uk-ayuda .uk { display: none; }
-.app-uku .view--finanzas.uk-fin .pf-host { padding-top: calc(108px + env(safe-area-inset-top, 0px)); }
+.app-uku .view--finanzas.uk-fin .pf-host { padding-top: calc(56px + env(safe-area-inset-top, 0px)); }
 .app-uku .view--finanzas:not(.uk-ayuda) .uk-ayuda-host { display: none; }
 html.uk-idle, html.uk-idle body { overflow: hidden; overscroll-behavior: none; }
 
 /* ---------- La pantalla: el mundo de Uku de borde a borde ---------- */
-.uk { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md, 12px); padding: var(--bp-semantic-spacing-micro-md, 8px) var(--bp-layout-grid-margin, 16px) var(--bp-semantic-spacing-micro-lg, 16px); box-sizing: border-box; position: fixed; z-index: 1; left: 0; right: 0; top: calc(108px + env(safe-area-inset-top, 0px)); bottom: var(--uk-nav, 76px); max-width: 480px; margin: 0 auto; overflow: hidden; background: linear-gradient(#e9f1f7, #f4f4f2 70%); }
+.uk { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md, 12px); padding: var(--bp-semantic-spacing-micro-md, 8px) var(--bp-layout-grid-margin, 16px) var(--bp-semantic-spacing-micro-lg, 16px); box-sizing: border-box; position: fixed; z-index: 1; left: 0; right: 0; top: calc(56px + env(safe-area-inset-top, 0px)); bottom: var(--uk-nav, 76px); max-width: 480px; margin: 0 auto; overflow: hidden; background: linear-gradient(#e9f1f7, #f4f4f2 70%); }
 .uk p { margin: 0; }
 .uk-scene { position: absolute; inset: 0; z-index: 0; }
 .uk-scene .b3d { position: absolute; inset: 0; }
@@ -125,7 +125,7 @@ html:not(.theme-y2k) .uk-globo__go.btn { height: auto !important; min-height: 0 
 /* Propuestas de Uku: carrusel arriba con puntos (como las tarjetas de la referencia) */
 .uk-props { position: relative; z-index: 3; width: 100%; transition: opacity .3s ease; }
 .uk-props[hidden] { display: none; }
-.uk-props__track { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.uk-props__track { display: flex; align-items: flex-start; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .uk-props__track::-webkit-scrollbar { display: none; }
 .uk-prop { position: relative; flex: 0 0 100%; scroll-snap-align: start; box-sizing: border-box; padding: 12px 14px; border-radius: 18px 18px 18px 4px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 18px rgba(15, 38, 92, .10); display: flex; flex-direction: column; gap: 4px; }
 .uk-prop::after { content: ''; position: absolute; left: 12px; bottom: -8px; border: 8px solid transparent; border-bottom: 0; border-top-color: var(--bp-theme-color-surface-container-default); }
@@ -189,27 +189,15 @@ html.uk-chatting .uk-bar { bottom: calc(12px + env(safe-area-inset-bottom, 0px))
 .uk::before { content: ''; position: absolute; z-index: 2; left: 0; right: 0; top: 0; height: 132px; background: linear-gradient(var(--bp-surface-page, #f5f5f5) 30%, transparent); pointer-events: none; transition: opacity .3s ease; }
 .uk-head { position: relative; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 12px; transition: opacity .3s ease, transform .35s cubic-bezier(.2, .8, .2, 1); }
 .uk-head__t { margin: 0; font: var(--cx-page); letter-spacing: -.6px; color: var(--bp-interaction-tertiary-fg); }
-.uk-head { flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 10px; }
+.uk-head { flex-direction: row; align-items: center; justify-content: flex-start; gap: 12px; }
 /* Las tres señales de su mundo: texto sobre la página, sin cajas */
-.uk-estados { position: relative; z-index: 3; margin-top: auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--bp-semantic-spacing-micro-md, 8px); padding: var(--bp-semantic-spacing-micro-md, 10px) var(--bp-semantic-spacing-micro-md, 12px); border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 18px rgb(0 0 0 / .06); }
-.uk-estados[hidden] { display: none; }
-.uk-sig { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; padding: 0; border: 0; background: none; color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
-.uk-sig .material-symbols-rounded { font-size: 20px; font-variation-settings: 'FILL' 1; color: var(--bp-interaction-tertiary-fg); }
-.uk-sig.is-ok .material-symbols-rounded, .uk-sig.is-feliz .material-symbols-rounded { color: #4f8a64; }
-.uk-sig small { font: var(--cx-caption); color: var(--cx-muted); }
-.uk-sig b { font: var(--ui-body-sm-semibold); line-height: 1.25; }
-.uk-sig em { font-style: normal; font-size: 12px; line-height: 16px; color: var(--cx-muted); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
 .uk.is-chat .uk-head, .uk.is-typing .uk-head { opacity: 0; transform: translateY(-12px); pointer-events: none; }
-.uk.is-chat .uk-props, .uk.is-chat .uk-globo, .uk.is-chat .uk-estados, .uk.is-chat .uk-pills { display: none; }
+.uk.is-chat .uk-props, .uk.is-chat .uk-globo, .uk.is-chat .uk-pills { display: none; }
 .uk.is-chat::before { opacity: 0; }
 
 /* ---------- Selector de sección (Uku · Mis finanzas · Ayuda) ---------- */
-.uk-seg { position: fixed; z-index: 4; left: 0; right: 0; top: calc(56px + env(safe-area-inset-top, 0px)); max-width: 480px; margin: 0 auto; padding: 4px var(--bp-layout-grid-margin, 16px) 0; box-sizing: border-box; }
-.uk-seg__track { display: flex; gap: 4px; padding: 4px; border-radius: 99px; background: var(--bp-theme-color-surface-container-default); }
-.uk-seg__track button { flex: 1; min-width: 0; height: 36px; padding: 0 8px; border: 0; border-radius: 99px; background: transparent; color: var(--bp-theme-color-text-helper); font: var(--ui-body-sm-semibold); cursor: pointer; white-space: nowrap; }
-.uk-seg__track button[aria-selected="true"] { background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); }
 /* Ayuda ocupa el espacio de Uku, entre el selector y la barra de abajo */
-.uk-ayuda-host { position: fixed; z-index: 1; left: 0; right: 0; top: calc(108px + env(safe-area-inset-top, 0px)); height: calc(100vh - 108px - var(--uk-nav, 76px) - env(safe-area-inset-top, 0px)); max-width: 480px; margin: 0 auto; overflow: hidden; background: var(--bp-surface-page, #f5f5f5); }
+.uk-ayuda-host { position: fixed; z-index: 1; left: 0; right: 0; top: calc(56px + env(safe-area-inset-top, 0px)); height: calc(100vh - 56px - var(--uk-nav, 76px) - env(safe-area-inset-top, 0px)); max-width: 480px; margin: 0 auto; overflow: hidden; background: var(--bp-surface-page, #f5f5f5); }
 
 /* El carrusel de Ayuda no empuja la pantalla de Asistente */
 .app-uku .view--finanzas.uk-ayuda { overflow: clip; }
@@ -218,6 +206,24 @@ html.uk-chatting .uk-bar { bottom: calc(12px + env(safe-area-inset-bottom, 0px))
 /* Orden del flujo: título, insights, el mundo (fondo), estados, accesos y buscador */
 .uk-head { order: 1; }
 .uk-props, .uk-globo { order: 2; }
-.uk-estados { order: 4; }
 .uk-pills { order: 5; }
 .uk-bar { order: 6; }
+
+/* Menú de secciones (cabecera) y pie de la propuesta */
+.uk-menu-btn { flex: 0 0 40px; width: 40px; height: 40px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-tertiary-fg); box-shadow: 0 2px 8px rgb(0 0 0 / .08); cursor: pointer; }
+.uk-prop__s { margin: 0 !important; font: var(--ui-body-sm-regular, 400 13px/18px sans-serif); color: var(--cx-muted); }
+.uk-sheet { position: fixed; inset: 0; z-index: 320; visibility: hidden; }
+.uk-sheet.open { visibility: visible; }
+.uk-sheet__back { position: absolute; inset: 0; background: rgb(0 0 0 / .32); opacity: 0; transition: opacity .25s ease; }
+.uk-sheet.open .uk-sheet__back { opacity: 1; }
+.uk-sheet__panel { position: absolute; left: 50%; bottom: 0; width: 100%; max-width: 480px; box-sizing: border-box; padding: 8px var(--bp-layout-grid-margin, 16px) calc(16px + env(safe-area-inset-bottom, 0px)); border-radius: 24px 24px 0 0; background: var(--bp-theme-color-surface-container-default); transform: translate(-50%, 100%); transition: transform .3s cubic-bezier(.2, .8, .2, 1); }
+.uk-sheet.open .uk-sheet__panel { transform: translate(-50%, 0); }
+.uk-sheet__item { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 8px 0; border: 0; border-bottom: 1px solid var(--cx-line, #e3e6ec); background: none; text-align: left; color: var(--bp-theme-color-text-primary); cursor: pointer; }
+.uk-sheet__item:last-child { border-bottom: 0; }
+.uk-sheet__item > .material-symbols-rounded { flex: 0 0 40px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); }
+.uk-sheet__item span { display: flex; flex-direction: column; min-width: 0; }
+.uk-sheet__item b { font: var(--ui-body-md-semibold); }
+.uk-sheet__item small { font: var(--cx-caption); color: var(--cx-muted); }
+/* La pantalla se ordena de arriba abajo: el mundo queda en medio y los accesos y el buscador, al pie */
+.uk-pills { margin-top: auto; }
+.uk.is-chat .uk-bar, .uk.is-typing .uk-bar { margin-top: auto; }
