@@ -79,6 +79,8 @@
     fileIn = host.querySelector('input[type=file]');
     headT = host.querySelector('.uk-head__t');
     panel = host.querySelector('.uk-panel'); ayudaSlot = panel.querySelector('.uk-ayuda-slot');
+    // Las secciones (Mis finanzas, Ayuda) son una tarjeta sobre su mundo: su cabecera (flecha y título) va dentro
+    panel.insertBefore(host.querySelector('.uk-head'), panel.firstChild);
     new MutationObserver(function () { if (view.classList.contains('uk-fin')) tituloDe('fin'); }).observe(panel, { childList: true, subtree: true, characterData: true });
     // El contenedor de Mis finanzas se mueve dentro de Asistente (PFM sigue pintando en el mismo nodo)
     var pfHost = document.querySelector('.view[data-view="1"] .pf-host');
@@ -95,13 +97,13 @@
     pintar();
   }
   function modo() {
-    var era = host.classList.contains('is-chat'), es = msgs.length > 0;
+    // Conversación o sección: en ambos Uku sale de su mundo y lo que ves es una tarjeta sobre él
+    var enSec = view.classList.contains('uk-fin') || view.classList.contains('uk-ayuda') || host.classList.contains('uk-in-sec');
+    var era = host.classList.contains('is-chat'), es = msgs.length > 0 || enSec;
     host.classList.toggle('is-typing', !!input.value.trim());
     host.classList.toggle('is-chat', es);
-    // En la conversación no hay barra superior ni inferior: el chat ocupa la pantalla.
-    // En Mis finanzas o Ayuda vuelven las barras, aunque la conversación siga esperando
-    var enSec = view.classList.contains('uk-fin') || view.classList.contains('uk-ayuda');
-    document.documentElement.classList.toggle('uk-chatting', es && view.classList.contains('active') && !enSec);
+    // Sin barra superior ni inferior: la tarjeta ocupa la pantalla y se baja con la flecha de arriba
+    document.documentElement.classList.toggle('uk-chatting', es && view.classList.contains('active'));
     // Al conversar, Uku sale de su mundo (que queda como foto borrosa detrás), se acerca y baja a la
     // esquina junto a la barra (como Tolan): deja el espacio a las tarjetas sin irse
     if (b3d && era !== es) {
@@ -435,7 +437,7 @@
   /* ---------- Su mundo en 3D ---------- */
   function escena() {
     var el = host && host.querySelector('.uk-scene .b3d'), s = resumen();
-    if (!el || !view.classList.contains('active') || view.classList.contains('uk-fin') || view.classList.contains('uk-ayuda')) return;
+    if (!el || !view.classList.contains('active')) return;
     import(ASSET + 'bosque3d.js').then(function (m3) {
       if (!m3.supported()) return;
       b3d = m3; var c = window.Clima && Clima.last(); if (c) m3.setLook(c.look);
@@ -450,7 +452,8 @@
   // Un solo título por sección: el del encabezado. En Mis finanzas, el de su página (Mis finanzas o Tus gastos)
   function tituloDe(n) {
     var h = panel && panel.querySelector('.pf-head h1');
-    headT.textContent = n === 'ayuda' ? 'Ayuda y soporte' : n === 'fin' ? (h ? h.textContent : 'Mis finanzas') : 'Tu asistente';
+    var t = n === 'ayuda' ? 'Ayuda y soporte' : n === 'fin' ? (h ? h.textContent : 'Mis finanzas') : 'Tu asistente';
+    if (headT.textContent !== t) headT.textContent = t; // la cabecera vive dentro del panel observado: escribir igual lo volvería a disparar
   }
   // En todas las secciones de Asistente, el título va en su encabezado (no en la barra de arriba)
   function libre() { root.classList.toggle('uk-idle', view.classList.contains('active')); }
@@ -458,6 +461,7 @@
     view.classList.toggle('uk-fin', !!on); libre();
     if (window.AppScroll) AppScroll.to({ top: 0 }); else window.scrollTo(0, 0);
     if (on) { if (window.PFM) PFM.paint(); } else setTimeout(escena, 60);
+    modo();
   }
   // Las tres secciones de Asistente: Uku (su mundo y conversación), Mis finanzas y Ayuda
   function seccion(n) {
@@ -494,7 +498,7 @@
         var b = e.target.closest('[data-s]'); if (!b) return;
         var v = b.dataset.s, i = v.indexOf(':'), k = i < 0 ? v : v.slice(0, i), x = i < 0 ? '' : v.slice(i + 1);
         fx('tap');
-        if (k === 'back') { solSec.hidden = true; host.classList.remove('uk-in-sec'); return; }
+        if (k === 'back') { solSec.hidden = true; host.classList.remove('uk-in-sec'); modo(); return; }
         if (k === 'buscar') return window.Buscador && Buscador.open('solicitudes');
         if (k === 'rev') return window.Soporte && Soporte.review();
         if (k === 'caso') { var cx = casos.filter(function (y) { return y.id === x; })[0]; solSec.hidden = true; host.classList.remove('uk-in-sec'); if (cx) { me('¿Cómo va mi caso ' + cx.id + '?'); uku('Tu caso ' + esc(cx.id) + ' sobre «' + esc(cx.t) + '» está en revisión. Te llega un correo con la respuesta en máximo 48 horas.', [{ k: 'hum:agent', t: 'Escribirle a un asesor', ic: 'support_agent', cls: 'is-ask' }, { k: 'ok', t: 'Gracias', ic: 'thumb_up', cls: 'is-ask' }]); } return pintarChat(); }
@@ -503,7 +507,7 @@
       });
     }
     solSec.querySelector('.uk-sec__body').innerHTML = solRows();
-    solSec.hidden = false; host.classList.add('uk-in-sec'); fx('open');
+    solSec.hidden = false; host.classList.add('uk-in-sec'); fx('open'); modo();
   }
   /* ---------- Factura o estado de cuenta: Uku lo lee y propone el pago ---------- */
   function escanear(file) {
@@ -574,7 +578,7 @@
       case 'ok': return resuelto();
       case 'no': uku('Cuéntame con tus palabras qué necesitas, o te paso con una persona.', [b('persona', 'Hablar con una persona', 'support_agent')]); pintarChat(); return setTimeout(function () { input.focus(); }, 300);
       case 'consejo': { var A = consejos(); if (!A.length) return resuelto('Por ahora no tengo nada más. ¡Vas muy bien!'); var x = A[0]; uku(esc(x.di || x.t), x.act ? [b('pfm:' + x.act, x.actl, 'arrow_forward')] : []); return pintarChat(); }
-      case 'cerrar': msgs = []; pend = null; agente = null; fx('tap'); return pintar();
+      case 'cerrar': msgs = []; pend = null; agente = null; fx('tap'); if (solSec && !solSec.hidden) { solSec.hidden = true; host.classList.remove('uk-in-sec'); } seccion('uku'); return pintar();
     }
   }
   // Un solo punto de entrada: la lupa y la ayuda llevan a Uku (antes que el buscador y el soporte)

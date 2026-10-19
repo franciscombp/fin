@@ -17,7 +17,8 @@
 .app-uku .view--finanzas:not(.uk-fin) .pf-host { display: none; }
 .app-uku .view--finanzas:not(.uk-ayuda) .uk-ayuda-slot { display: none; }
 .app-uku .view--finanzas:not(.uk-fin):not(.uk-ayuda) .uk-panel { display: none; }
-.app-uku .view--finanzas.uk-fin .uk > :not(.uk-head):not(.uk-panel), .app-uku .view--finanzas.uk-ayuda .uk > :not(.uk-head):not(.uk-panel) { display: none; }
+.app-uku .view--finanzas.uk-fin .uk > .uk-globo, .app-uku .view--finanzas.uk-fin .uk > .uk-props, .app-uku .view--finanzas.uk-fin .uk > .uk-pills, .app-uku .view--finanzas.uk-fin .uk > .uk-chat, .app-uku .view--finanzas.uk-fin .uk > .uk-results,
+.app-uku .view--finanzas.uk-ayuda .uk > .uk-globo, .app-uku .view--finanzas.uk-ayuda .uk > .uk-props, .app-uku .view--finanzas.uk-ayuda .uk > .uk-pills, .app-uku .view--finanzas.uk-ayuda .uk > .uk-chat, .app-uku .view--finanzas.uk-ayuda .uk > .uk-results { display: none; }
 .app-uku .view--finanzas.uk-fin .uk-panel, .app-uku .view--finanzas.uk-ayuda .uk-panel { display: flex; }
 .app-uku .view--finanzas.uk-fin .uk-back-btn, .app-uku .view--finanzas.uk-ayuda .uk-back-btn { display: grid; }
 html.uk-idle, html.uk-idle body { overflow: hidden; overscroll-behavior: none; }
@@ -110,7 +111,7 @@ html:not(.theme-y2k) .uk-globo__go.btn { height: auto !important; min-height: 0 
 /* Secciones dentro del mundo de Uku (Solicitudes): se ven encima, con su propia cabecera */
 .uk-sec { position: absolute; inset: 0; z-index: 8; display: flex; flex-direction: column; gap: 12px; padding: calc(12px + env(safe-area-inset-top, 0px)) 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--bp-theme-color-surface-page-default, #f5f5f5); overflow: hidden; }
 .uk-sec[hidden] { display: none; }
-.uk.uk-in-sec .uk-bar, .uk.uk-in-sec .uk-pills, .uk.uk-in-sec .uk-globo { display: none; }
+.uk.uk-in-sec .uk-pills, .uk.uk-in-sec .uk-globo, .uk.uk-in-sec .uk-props, .uk.uk-in-sec .uk-chat { display: none; }
 .uk-sec__top { display: flex; align-items: center; gap: 12px; }
 .uk-sec__back { width: 40px; height: 40px; flex: 0 0 40px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-tertiary-fg); cursor: pointer; }
 .uk-sec__find { margin-left: auto; }
@@ -357,3 +358,23 @@ html.uk-chatting .uk { padding-top: calc(8px + env(safe-area-inset-top, 0px)); p
 .app-uku .view--finanzas:not(.uk-fin):not(.uk-ayuda) .uk-globo { margin-top: 12px; }
 /* Dentro de Asistente, Mis finanzas se desplaza en su propio contenedor: las pestañas se pegan a su borde, no bajo la zona segura */
 .app-uku .uk-panel .pfm-tabs { top: 0; }
+
+/* ---------- Las secciones son tarjetas sobre su mundo ----------
+   Mis finanzas, Ayuda y Solicitudes se ven como una respuesta más de Uku: una tarjeta grande
+   sobre su mundo borroso, con él delante y la barra abajo. Dentro, su cabecera (flecha y título)
+   y el contenido con su propio desplazamiento. La flecha de arriba baja la tarjeta. */
+.uk.is-chat .uk-panel, .uk.is-chat .uk-sec { position: absolute; z-index: 3; left: 12px; right: 12px; top: calc(58px + env(safe-area-inset-top, 0px)); bottom: 176px; margin: 0; padding: 0; display: flex; flex-direction: column; border-radius: 16px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 10px 30px rgba(15, 38, 92, .16); overflow: hidden; animation: ukCard .4s cubic-bezier(.2, 1.1, .4, 1) both; }
+.uk-sec[hidden] { display: none !important; }
+.uk.is-chat .uk-panel .uk-head { display: flex !important; opacity: 1; transform: none; pointer-events: auto; flex: 0 0 auto; gap: 6px; padding: 10px 12px 6px; }
+.uk-panel .uk-head__t { font: var(--ui-body-lg-semibold, 600 17px/22px sans-serif); font-size: 17px; line-height: 22px; letter-spacing: 0; color: var(--bp-theme-color-text-primary); }
+.uk-panel .uk-back-btn { width: 32px; height: 32px; border-radius: 50%; background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-tertiary-fg); }
+.uk-panel .pf-host, .uk-ayuda-slot { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; }
+.uk-panel .pf-host::-webkit-scrollbar { display: none; }
+.uk-sec__top { padding: 10px 12px 6px; }
+.uk-sec__t { font: var(--ui-body-lg-semibold, 600 17px/22px sans-serif); font-size: 17px; line-height: 22px; letter-spacing: 0; color: var(--bp-theme-color-text-primary); }
+.uk-sec__back { width: 32px; height: 32px; flex-basis: 32px; background: var(--bp-interaction-secondary-bg); }
+.uk-sec__body { padding: 0 16px 16px; }
+.uk-sec__row { padding: 12px 0; border-radius: 0; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); background: none; }
+/* La sección no deja el encabezado grande de la página ni el fondo de la página */
+.app-uku .view--finanzas.uk-fin .uk::before, .app-uku .view--finanzas.uk-ayuda .uk::before { opacity: 0; }
+.uk-panel .uk-head { order: -1; }

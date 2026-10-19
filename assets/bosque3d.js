@@ -27,7 +27,7 @@ const lerp = THREE.MathUtils.lerp;
 
 let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
 let bear = null, rig = null, bones = {}, forest, held = null, ground, stage = null, walkAng = 0, walkAmt = 0, walkMoving = false;
-let waterOn = false, waterT = 0, drops = [], ambient = null, focus = false; // focus: Uku sale del mundo y se acerca a conversar // ambient: lo que Uku hace cuando no hay gesto (p. ej. caminar)
+let waterOn = false, waterT = 0, drops = [], ambient = null, focus = false, ambFocus = null; // focus: Uku sale del mundo y se acerca a conversar // ambient: lo que Uku hace cuando no hay gesto (p. ej. caminar)
 // Mundo: un planeta esférico de radio PLANET_R; su punto más alto está bajo los pies de Uku.
 // WORLD_S agranda el mundo (planeta, árboles, flores y el paso de Uku); el oso mide lo mismo.
 const WORLD_S = 2, PLANET_R = 1.5 * WORLD_S, PLANET_C = new THREE.Vector3(0, -PLANET_R, 0);
@@ -456,13 +456,13 @@ function frame(now) {
     rig.playClip(clipFor());
     rig.update(dt);
     if (umb) { bear.updateMatrixWorld(true); placeUmbrella(); }
-    const hop = mood === 'feliz' && !gesture && !RM ? Math.abs(Math.sin(t * 2.4)) * .018 : 0;
+    const hop = mood === 'feliz' && !gesture && !RM && !focus ? Math.abs(Math.sin(t * 2.4)) * .018 : 0;
     // Respira y se mece un poco mientras está quieto
     const breath = RM || walkMoving ? 0 : Math.sin(t * 1.7) * .006;
     bear.position.y = lerp(bear.position.y, .45 * BEAR_S + hop + breath, Math.min(1, dt * 10));
     bear.position.x = lerp(bear.position.x, 0, Math.min(1, dt * 3));
     // Caminando, Uku mira hacia donde avanza; quieto, mira a la cámara
-    bear.rotation.y = lerp(bear.rotation.y, walkMoving || RM ? 0 : Math.sin(t * .5) * .09, Math.min(1, dt * 3));
+    bear.rotation.y = lerp(bear.rotation.y, walkMoving || RM ? 0 : Math.sin(t * .5) * (focus ? .025 : .09), Math.min(1, dt * 3)); // conversando se queda quieto, mirándote
   }
   // Mundo pequeño: al caminar, Uku recorre la superficie del planeta y el bosque
   // pasa bajo él; sin fin mientras camine, y todo se queda quieto al parar.
@@ -510,7 +510,7 @@ function frame(now) {
   if (!drag) { if (performance.now() - idleAt > 3000) yawTo = 0; else yawTo = Math.max(-1.13, Math.min(1.13, yawTo)); }
   yaw = RM ? yawTo : lerp(yaw, yawTo, Math.min(1, dt * (drag ? 14 : 2.5)));
   // La cámara va sujeta a Uku, siempre de frente: camina hacia ella
-  const sway = RM || drag ? 0 : Math.sin(t * .15) * .12;
+  const sway = RM || drag || focus ? 0 : Math.sin(t * .15) * .12;
   // Conversando, la cámara se acerca y lo mira a la cara; su mundo queda apagado detrás
   const cd = focus ? camDist * .7 : camDist, ch = focus ? CAM_H * .9 : CAM_H;
   camera.position.copy(stage.localToWorld(_cam.set(Math.sin(yaw) * cd + Math.cos(yaw) * sway, ch, Math.cos(yaw) * cd - Math.sin(yaw) * sway)));
@@ -645,7 +645,10 @@ export function setBloom(b) { b = b == null ? null : Math.max(0, Math.min(100, b
 /* Uku sale de su mundo para conversar: el bosque, el suelo y el polvo se apagan y queda él solo,
    nítido, sobre una foto borrosa de su mundo (snapshot). Al volver, todo reaparece. */
 export function setFocus(on) {
+  if (!!on === focus) return;
   focus = !!on;
+  // Conversando no camina ni pasea: se queda contigo. Al volver a su mundo retoma lo que hacía.
+  if (focus) { ambFocus = ambient; ambient = null; if (gesture === 'walk') gesture = null; } else { ambient = ambFocus; if (ambient && !gesture) { gesture = ambient; gestureT = 0; } }
   [forest, ground, dust, rain, umb].forEach(o => { if (o) o.visible = focus ? false : (o === rain ? !!look.rain : true); });
   if (scene) scene.fog.near = focus ? 1e4 : 2.4 * WORLD_S;
 }
