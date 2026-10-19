@@ -313,10 +313,15 @@
     { h: 'Mi dinero', items: [['Ver mis movimientos', 'swap_horiz'], ['¿En qué gasto más?', 'insights'], ['Pedir un préstamo', 'request_quote']] },
     { h: 'Ayuda y seguridad', items: [['Bloquear mi tarjeta', 'lock'], ['Cambiar mi clave', 'key'], ['Necesito ayuda', 'help']] }
   ];
-  var SUG_PLANA = [];
+  // Frases frecuentes: van como chips arriba de las secciones
+  var SUG_CHIPS = ['Ayúdame a mejorar mis finanzas', 'Necesito ayuda', 'Quiero ver mis últimos movimientos', 'Cómo puedo solicitar una tarjeta de crédito', 'Quiero conocer mis seguros'];
+  var SUG_PLANA = SUG_CHIPS.map(function (t) { return { t: t }; });
   SUGERENCIAS.forEach(function (g) { g.items.forEach(function (it) { SUG_PLANA.push({ t: it[0], icon: it[1] }); }); });
   function sugerencias() {
-    return SUGERENCIAS.map(function (g) {
+    var chips = '<section class="sx-card"><div class="sx-chips">' + SUG_CHIPS.map(function (t, i) {
+      return '<button class="sx-chip" data-sx-i="sug:' + i + '">' + esc(t) + '</button>';
+    }).join('') + '</div></section>';
+    return chips + SUGERENCIAS.map(function (g) {
       return '<section class="sx-card"><h3>' + g.h + '</h3>' + g.items.map(function (it) {
         return row('sug:' + SUG_PLANA.findIndex(function (x) { return x.t === it[0]; }), it[1], esc(it[0]));
       }).join('') + '</section>';
