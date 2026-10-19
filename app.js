@@ -80,22 +80,28 @@ document.addEventListener('DOMContentLoaded', () => {
   // del toque: la disponibilidad se averigua al cargar, no en el click.
   const auth = window.BPAuth;
   let platformOk = !!(auth && auth.supported); // optimista mientras responde
-  if (auth && auth.supported) auth.platformAvailable().then(ok => { platformOk = ok; });
+  // La etiqueta dice Face ID, huella o PIN según lo que tenga el celular
+  const pintarEtiqueta = () => {
+    if (btnLoginBiometric && !btnLoginBiometric.disabled) btnLoginBiometric.textContent = window.Ingreso.etiqueta(platformOk);
+  };
+  if (auth && auth.supported) auth.platformAvailable().then(ok => { platformOk = ok; pintarEtiqueta(); });
+  pintarEtiqueta();
 
   if (btnLoginBiometric) {
     btnLoginBiometric.addEventListener('click', async () => {
+      // Sin biometría del dispositivo: PIN del celular (usuario y contraseña si falla)
+      if (!(auth && auth.supported && platformOk)) { window.Ingreso.pin(); return; }
       const original = btnLoginBiometric.textContent;
-      const useReal = auth && auth.supported && platformOk;
-      const hadCred = useReal && auth.hasCredential();
+      const hadCred = auth.hasCredential();
       const t0 = Date.now();
       window.__authBusy = true;
       // Sin audio vivo durante Face ID: iOS interrumpe la sesión de audio
       // y un contexto a medio sonar queda colgado emitiendo ruido.
-      if (useReal && window.Haptics_killAudio) window.Haptics_killAudio();
+      if (window.Haptics_killAudio) window.Haptics_killAudio();
       // La llamada a WebAuthn va primero, todavía dentro del gesto.
-      const pending = useReal ? auth.verify() : new Promise(r => setTimeout(r, 1600));
+      const pending = auth.verify();
       btnLoginBiometric.disabled = true;
-      btnLoginBiometric.textContent = useReal ? (hadCred ? 'Verificando…' : 'Registrando…') : 'Autenticando...';
+      btnLoginBiometric.textContent = hadCred ? 'Verificando…' : 'Registrando…';
       // Pantalla amarilla de bienvenida mientras autentica
       if (welcomeSplash) welcomeSplash.classList.add('show');
       if (loadingSpinner) loadingSpinner.style.display = 'inline-block';
@@ -126,16 +132,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Otro método de ingreso: entra directo, sin pedir identificación,
-  // pero con la misma pantalla de bienvenida que el login biométrico
-  // para que la transición se sienta igual de intencional.
+  // Otro método de ingreso: usuario y contraseña (assets/ingreso.js)
   if (btnLoginOther) {
-    btnLoginOther.addEventListener('click', () => {
+    btnLoginOther.addEventListener('click', () => window.Ingreso.clave());
+  }
+
+  // Lo usa Ingreso al identificar a la persona: misma bienvenida que el login biométrico
+  window.BPLogin = {
+    entrar(usuario) {
+      if (window.Persona) Persona.set(usuario);
       if (welcomeSplash) welcomeSplash.classList.add('show');
       if (window.Haptics) window.Haptics.welcome();
       setTimeout(showHome, 1400);
-    });
-  }
+    }
+  };
 
   // Cerrar sesión
   if (btnLogout) {
