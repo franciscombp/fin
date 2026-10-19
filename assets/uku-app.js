@@ -44,7 +44,7 @@
       '<div class="uk-chatbg" aria-hidden="true"></div>' +
       '<header class="uk-chathead"><button class="icon-button uk-chathead__x" data-k="cerrar" aria-label="Volver a su mundo">' + ic('expand_more') + '</button></header>' +
       '<div class="uk-head"><button type="button" class="icon-button uk-menu-btn" data-k="secciones" aria-label="Secciones de Asistente">' + ic('menu') + '</button>' +
-        '<button type="button" class="icon-button uk-back-btn" data-k="seccion:uku" aria-label="Volver a Tu asistente">' + ic('arrow_back') + '</button>' +
+        '<button type="button" class="icon-button uk-back-btn" data-k="atras" aria-label="Volver">' + ic('arrow_back') + '</button>' +
         '<p class="uk-head__t" role="heading" aria-level="1">Tu asistente</p></div>' +
       '<div class="uk-globo" aria-live="polite"></div>' +
       '<div class="uk-props" hidden></div>' +
@@ -65,6 +65,7 @@
     fileIn = host.querySelector('input[type=file]');
     headT = host.querySelector('.uk-head__t');
     panel = host.querySelector('.uk-panel'); ayudaSlot = panel.querySelector('.uk-ayuda-slot');
+    new MutationObserver(function () { if (view.classList.contains('uk-fin')) tituloDe('fin'); }).observe(panel, { childList: true, subtree: true, characterData: true });
     // El contenedor de Mis finanzas se mueve dentro de Asistente (PFM sigue pintando en el mismo nodo)
     var pfHost = document.querySelector('.view[data-view="1"] .pf-host');
     if (pfHost) panel.insertBefore(pfHost, ayudaSlot);
@@ -241,6 +242,11 @@
   }
 
   /* ---------- Toques ---------- */
+  // Un solo título por sección: el del encabezado. En Mis finanzas, el de su página (Mis finanzas o Tus gastos)
+  function tituloDe(n) {
+    var h = panel && panel.querySelector('.pf-head h1');
+    headT.textContent = n === 'ayuda' ? 'Ayuda y soporte' : n === 'fin' ? (h ? h.textContent : 'Mis finanzas') : 'Tu asistente';
+  }
   // En todas las secciones de Asistente, el título va en su encabezado (no en la barra de arriba)
   function libre() { root.classList.toggle('uk-idle', view.classList.contains('active')); }
   function finOn(on) {
@@ -257,7 +263,7 @@
       if (window.Soporte) Soporte.into(ayudaSlot);
     } else if (n === 'fin') { if (window.PFM) PFM.open(); else finOn(true); }
     else finOn(false);
-    headT.textContent = ayuda ? 'Ayuda y soporte' : n === 'fin' ? 'Mis finanzas' : 'Tu asistente';
+    tituloDe(n);
     libre();
   }
   /* ---------- Solicitudes dentro del mundo de Uku ----------
@@ -359,6 +365,8 @@
       case 'voz': fx('tap'); if (window.Buscador) Buscador.voice(); return;
       case 'secciones': fx('tap'); return abrirSecciones();
       case 'seccion': cerrarSecciones(); return seccion(v);
+      // Volver: en el detalle de gastos, a la lista de Mis finanzas; si no, a Tu asistente
+      case 'atras': { var pb = view.querySelector('.pf-back'); return pb ? pb.click() : seccion('uku'); }
       case 'escanear': fx('tap'); cerrarSecciones(); return fileIn.click();
       case 'pago': return pago(v);
       // Ayuda es su sección: se abre el centro de ayuda; el chat empieza cuando hay algo que resolver
