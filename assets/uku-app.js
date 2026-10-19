@@ -49,7 +49,12 @@
       // Desde Ayuda y Soporte: un inconveniente guiado, Solicitudes o una persona, siempre en la conversación de Uku
       flow: function (i) { seccion('uku'); flujo(i, 'ini', true); },
       solicitudes: function () { seccion('uku'); abrirSol(); },
-      persona: function () { seccion('uku'); persona(); pintarChat(); } };
+      persona: function () { seccion('uku'); persona(); pintarChat(); },
+      // Una pregunta frecuente, un tutorial o lo que escribas en Ayuda: siempre una tarjeta de Uku, no otro chat
+      faq: function (i) { seccion('uku'); me(Soporte.faq(i).t); ayudaEn({ kind: 'faq', i: i }); },
+      tut: function (i) { seccion('uku'); me(Soporte.tut(i).t); ayudaEn({ kind: 'tut', i: i }); },
+      preguntar: function (q) { seccion('uku'); preguntar(q); },
+      escribir: function () { seccion('uku'); setTimeout(function () { input.focus(); }, 350); } };
     // Ayuda, dentro de esta pantalla: al volver desde su flecha, regresa a Uku
     document.addEventListener('soporte:cerrar', function () { seccion('uku'); });
     host.innerHTML =

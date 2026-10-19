@@ -447,12 +447,12 @@
     if (grp) { grp.remove(); me(b.textContent); }
     if (k === 'search') { return window.Buscador && Buscador.open('ayuda'); }
     if (k === 'back') { if (b.closest('.sp-acts')) { reset(); el.querySelector('.sp-body').scrollTop = 0; return; } return back(); }
-    if (k.indexOf('faq:') === 0) { var fa = b.closest('.sp-acts'); if (fa) fa.remove(); hidePage(); return answer(+k.slice(4)); }
+    if (k.indexOf('faq:') === 0) { if (window.UkuAsistente && UkuAsistente.faq) return UkuAsistente.faq(+k.slice(4)); var fa = b.closest('.sp-acts'); if (fa) fa.remove(); hidePage(); return answer(+k.slice(4)); }
     if (k.indexOf('cat:') === 0) return catPage(k.slice(4));
     if (k.indexOf('flow:') === 0) { if (window.UkuAsistente && UkuAsistente.flow) return UkuAsistente.flow(+k.slice(5)); return send(FLOWS[+k.slice(5)].t); }
-    if (k.indexOf('tut:') === 0) return tutPage(+k.slice(4));
-    if (k === 'ask') { hidePage(); chat(); say('Cuéntame qué pasó y te ayudo.'); setTimeout(function () { input.focus(); }, 600); return; }
-    if (k === 'askq') { var fq = el.querySelector('[data-sp-find]'), qq = fq.value.trim(); fq.value = ''; paintFound(''); if (qq) send(qq); return; }
+    if (k.indexOf('tut:') === 0) { if (window.UkuAsistente && UkuAsistente.tut) return UkuAsistente.tut(+k.slice(4)); return tutPage(+k.slice(4)); }
+    if (k === 'ask') { if (window.UkuAsistente && UkuAsistente.escribir) return UkuAsistente.escribir(); hidePage(); chat(); say('Cuéntame qué pasó y te ayudo.'); setTimeout(function () { input.focus(); }, 600); return; }
+    if (k === 'askq') { var fq = el.querySelector('[data-sp-find]'), qq = fq.value.trim(); fq.value = ''; paintFound(''); if (qq) { if (window.UkuAsistente && UkuAsistente.preguntar) return UkuAsistente.preguntar(qq); send(qq); } return; }
     if (k === 'search') { close(); setTimeout(function () { window.Buscador && Buscador.open(); }, 300); return; }
     if (k === 'other') { b.closest('.sp-acts').remove(); me('No, es otra cosa'); say('Cuéntame con tus palabras qué necesitas.'); setTimeout(function () { input.focus(); }, 700); return; }
     if (k === 'review') {
@@ -645,5 +645,6 @@
       if (k === 'pfm') return window.Asistente && Asistente.openPF();
       if (k === 'sol' || k === 'handoff') return window.UkuAsistente && UkuAsistente[k === 'sol' ? 'solicitudes' : 'persona'] && UkuAsistente[k === 'sol' ? 'solicitudes' : 'persona']();
     },
-    openFaq: function (i) { open(); answer(i); }, openTut: function (i) { open(); tutPage(i); } };
+    openFaq: function (i) { if (window.UkuAsistente && UkuAsistente.faq) return UkuAsistente.faq(i); open(); answer(i); },
+    openTut: function (i) { if (window.UkuAsistente && UkuAsistente.tut) return UkuAsistente.tut(i); open(); tutPage(i); } };
 })();
