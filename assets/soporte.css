@@ -12,6 +12,8 @@
   transition: transform var(--cx-dur, .4s) var(--cx-ease, cubic-bezier(.32,.72,0,1)), visibility 0s linear var(--cx-dur, .4s);
 }
 .sp.open { transform: none; visibility: visible; transition: transform var(--cx-dur, .4s) var(--cx-ease, cubic-bezier(.32,.72,0,1)); }
+/* Ayuda dentro de Asistente: ocupa el panel de la pantalla, sin capa propia */
+.sp.sp--in, .sp.sp--in.sp--on { position: absolute; inset: 0; max-width: none; transform: none; visibility: visible; transition: none; }
 .sp-top { flex: 0 0 auto; display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; gap: 4px; min-height: var(--bp-semantic-size-interactive-md, 56px); padding: calc(4px + env(safe-area-inset-top, 0px)) var(--bp-layout-grid-inset, 8px) 4px; background: var(--bp-theme-color-surface-page-alt); }
 .sp-top__title { display: flex; flex-direction: column; align-items: center; min-width: 0; }
 .sp-top__title b { font: var(--ui-title-md, 600 17px/24px sans-serif); color: var(--bp-interaction-tertiary-fg); }

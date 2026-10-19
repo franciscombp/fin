@@ -4254,39 +4254,9 @@
                     </button>
                 </div>
                 <div class="card">
-                    <button class="product-row" data-action="Cuenta PRINCIPAL">
-                        <span class="avatar-lg"><span class="material-symbols-rounded">account_balance</span></span>
-                        <span class="product-row__info">
-                            <span class="product-row__name">PRINCIPAL</span>
-                            <span class="product-row__sub">Cuenta de ahorros</span>
-                            <span class="product-row__masked">******7890</span>
-                        </span>
-                        <span class="product-row__right">
-                            <span class="product-row__amount">$ 1.906,04</span>
-                        </span>
-                    </button>
-                    <button class="product-row" data-action="Cuenta Ahorro transaccional">
-                        <span class="avatar-lg"><span class="material-symbols-rounded">account_balance_wallet</span></span>
-                        <span class="product-row__info">
-                            <span class="product-row__name">Sueldo</span>
-                            <span class="product-row__sub">Ahorro transaccional</span>
-                            <span class="product-row__masked">******7980</span>
-                        </span>
-                        <span class="product-row__right">
-                            <span class="product-row__amount">$ 100,00</span>
-                        </span>
-                    </button>
-                    <button class="product-row" data-action="Cuenta Corriente">
-                        <span class="avatar-lg"><span class="material-symbols-rounded">payments</span></span>
-                        <span class="product-row__info">
-                            <span class="product-row__name">Sueldo</span>
-                            <span class="product-row__sub">Corriente</span>
-                            <span class="product-row__masked">******1234</span>
-                        </span>
-                        <span class="product-row__right">
-                            <span class="product-row__amount">$ 1.440,35</span>
-                        </span>
-                    </button>
+                    <div class="prod-hub" data-hub="Cuentas"></div>
+                    
+                    
                     <div class="card__footer">
                         <span class="card__footer-label">Saldo disponible total</span>
                         <span class="card__footer-value">$ 3.446,39</span>
@@ -4298,43 +4268,6 @@
                     <span class="cta-dashed__text">
                         Tu dinero siempre disponible, creciendo cada día.
                         <span class="cta-dashed__link">Crear Ahorro Flexible</span>
-                    </span>
-                </button>
-            </section>
-
-            <section class="section">
-                <div class="section__title">
-                    <h2>Mis metas</h2>
-                    <button class="section__eye" data-eye aria-label="Ocultar montos de metas" aria-pressed="false">
-                        <span class="material-symbols-rounded">visibility</span>
-                    </button>
-                </div>
-                <div class="card">
-                    <button class="goal-row" data-action="Meta Viaje de finde">
-                        <span class="avatar-lg"><span class="material-symbols-rounded">beach_access</span></span>
-                        <span class="goal-row__info">
-                            <span class="goal-row__name">Viaje de finde</span>
-                            <span class="goal-row__meta">Meta: 21 ago 2029</span>
-                            <span class="goal-progress"><span class="goal-progress__fill" style="width: 30%;"></span></span>
-                        </span>
-                        <span class="goal-row__amount">$ 15,00</span>
-                    </button>
-                    <button class="goal-row" data-action="Meta Fondo de emergencia">
-                        <span class="avatar-lg"><span class="material-symbols-rounded">health_and_safety</span></span>
-                        <span class="goal-row__info">
-                            <span class="goal-row__name">Fondo de emergencia</span>
-                            <span class="goal-row__meta">Meta: 15 dic 2026</span>
-                            <span class="goal-progress"><span class="goal-progress__fill" style="width: 62%;"></span></span>
-                        </span>
-                        <span class="goal-row__amount">$ 620,00</span>
-                    </button>
-                </div>
-
-                <button class="cta-dashed" data-action="Crear meta de ahorro">
-                    <span class="avatar-lg"><span class="material-symbols-rounded">flag</span></span>
-                    <span class="cta-dashed__text">
-                        Ponle nombre a tu próximo sueño y ahorra para lograrlo.
-                        <span class="cta-dashed__link">Crear nueva meta</span>
                     </span>
                 </button>
             </section>
@@ -4393,20 +4326,8 @@
         <!-- ============ Panel: Tarjetas ============ -->
         <div class="tab-panel" data-panel="Tarjetas">
             <section class="section">
-                <div class="section__title">
-                    <h2>Débito</h2>
-                </div>
                 <div class="card">
-                    <button class="product-row" data-action="Visa Débito">
-                        <span class="card-thumb card-thumb--visa">
-                            <span class="card-thumb__brand" translate="no">PICHI<br>BANK</span>
-                            <span class="card-thumb__foot"><span class="card-thumb__visa">VISA</span></span>
-                        </span>
-                        <span class="product-row__info">
-                            <span class="product-row__name">Visa Débito</span>
-                            <span class="product-row__masked">1234 **** **** 1234</span>
-                        </span>
-                    </button>
+                    <div class="prod-hub" data-hub="Tarjetas"></div>
                 </div>
 
                 <button class="cta-dashed" data-action="Solicitar Débito Digital">
@@ -4417,79 +4338,6 @@
                     <span class="cta-dashed__text">
                         Para todas tus compras y pagos por internet.
                         <span class="cta-dashed__link">Solicitar Débito Digital</span>
-                    </span>
-                </button>
-            </section>
-
-            <section class="section">
-                <div class="section__title">
-                    <h2>Crédito</h2>
-                    <button class="section__eye" data-eye aria-label="Ocultar saldos de crédito" aria-pressed="false">
-                        <span class="material-symbols-rounded">visibility</span>
-                    </button>
-                </div>
-                <div class="card">
-                    <button class="product-row" data-action="Mastercard Black">
-                        <span class="card-thumb card-thumb--black">
-                            <span class="card-thumb__brand" translate="no">PICHI<br>BANK</span>
-                            <span class="card-thumb__foot"><span class="mc-dots"><i></i><i></i></span></span>
-                        </span>
-                        <span class="product-row__info">
-                            <span class="product-row__name">Mastercard Black</span>
-                            <span class="product-row__masked">5221 **** **** 7643</span>
-                        </span>
-                        <span class="product-row__right">
-                            <span class="product-row__label">Saldo a pagar</span>
-                            <span class="product-row__amount">$ 15,00</span>
-                        </span>
-                    </button>
-                    <button class="product-row" data-action="Diners Club">
-                        <span class="card-thumb card-thumb--diners">
-                            <span class="card-thumb__diners">Diners Club</span>
-                        </span>
-                        <span class="product-row__info">
-                            <span class="product-row__name">Diners Club</span>
-                            <span class="product-row__masked">3295 **** **** 4863</span>
-                        </span>
-                        <span class="product-row__right">
-                            <span class="product-row__label">Saldo a pagar</span>
-                            <span class="product-row__amount">$ 0,00</span>
-                        </span>
-                    </button>
-                    <div class="card__footer">
-                        <span class="card__footer-label">Pendiente de pago</span>
-                        <span class="card__footer-value">$ 15,00</span>
-                    </div>
-                </div>
-            </section>
-
-            <section class="section">
-                <div class="section__title">
-                    <h2>Movilidad</h2>
-                    <button class="section__eye" data-eye aria-label="Ocultar saldo de movilidad" aria-pressed="false">
-                        <span class="material-symbols-rounded">visibility</span>
-                    </button>
-                </div>
-                <div class="card">
-                    <button class="product-row" data-action="Tarjeta Movilidad">
-                        <span class="avatar-lg"><span class="material-symbols-rounded">directions_bus</span></span>
-                        <span class="product-row__info">
-                            <span class="product-row__name">Tarjeta Movilidad</span>
-                            <span class="product-row__sub">Transporte y peajes</span>
-                            <span class="product-row__masked">******5566</span>
-                        </span>
-                        <span class="product-row__right">
-                            <span class="product-row__label">Saldo</span>
-                            <span class="product-row__amount">$ 8,50</span>
-                        </span>
-                    </button>
-                </div>
-
-                <button class="cta-dashed" data-action="Recargar Movilidad">
-                    <span class="avatar-lg"><span class="material-symbols-rounded">add_card</span></span>
-                    <span class="cta-dashed__text">
-                        Recarga tu tarjeta y muévete sin filas.
-                        <span class="cta-dashed__link">Recargar ahora</span>
                     </span>
                 </button>
             </section>
@@ -4584,18 +4432,7 @@
                     </button>
                 </div>
                 <div class="card">
-                    <button class="product-row" data-action="Préstamo de consumo">
-                        <span class="avatar-lg"><span class="material-symbols-rounded">real_estate_agent</span></span>
-                        <span class="product-row__info">
-                            <span class="product-row__name">Préstamo de consumo</span>
-                            <span class="product-row__sub">Cuota 6 de 36</span>
-                            <span class="goal-progress"><span class="goal-progress__fill" style="width: 17%;"></span></span>
-                        </span>
-                        <span class="product-row__right">
-                            <span class="product-row__label">Próx. cuota</span>
-                            <span class="product-row__amount">$ 245,90</span>
-                        </span>
-                    </button>
+                    <div class="prod-hub" data-hub="Prestamos"></div>
                     <div class="card__footer">
                         <span class="card__footer-label">Saldo pendiente</span>
                         <span class="card__footer-value">$ 7.380,50</span>
@@ -4672,18 +4509,9 @@
                     </button>
                 </div>
                 <div class="card">
-                    <button class="product-row" data-action="Depósito a plazo">
-                        <span class="avatar-lg"><span class="material-symbols-rounded">trending_up</span></span>
-                        <span class="product-row__info">
-                            <span class="product-row__name">Depósito a plazo</span>
-                            <span class="product-row__sub">Vence: 12 nov 2026 · 7,25%</span>
-                        </span>
-                        <span class="product-row__right">
-                            <span class="product-row__amount">$ 3.000,00</span>
-                        </span>
-                    </button>
+                    <div class="prod-hub" data-hub="Inversiones"></div>
                     <div class="card__footer">
-                        <span class="card__footer-label">Interés proyectado</span>
+                        <span class="card__footer-label">Total invertido</span>
                         <span class="card__footer-value">$ 217,50</span>
                     </div>
                 </div>
@@ -4750,28 +4578,8 @@
                     <h2>Mis seguros</h2>
                 </div>
                 <div class="card">
-                    <button class="product-row" data-action="Seguro de vida">
-                        <span class="avatar-lg"><span class="material-symbols-rounded">health_and_safety</span></span>
-                        <span class="product-row__info">
-                            <span class="product-row__name">Seguro de vida</span>
-                            <span class="product-row__sub">Vigente · Renueva 01 ene 2027</span>
-                        </span>
-                        <span class="product-row__right">
-                            <span class="product-row__label">Prima mensual</span>
-                            <span class="product-row__amount">$ 12,90</span>
-                        </span>
-                    </button>
-                    <button class="product-row" data-action="Seguro de tarjetas">
-                        <span class="avatar-lg"><span class="material-symbols-rounded">shield</span></span>
-                        <span class="product-row__info">
-                            <span class="product-row__name">Protección de tarjetas</span>
-                            <span class="product-row__sub">Vigente · Cobertura por fraude</span>
-                        </span>
-                        <span class="product-row__right">
-                            <span class="product-row__label">Prima mensual</span>
-                            <span class="product-row__amount">$ 3,50</span>
-                        </span>
-                    </button>
+                    <div class="prod-hub" data-hub="Seguros"></div>
+                    
                 </div>
 
                 <button class="cta-dashed" data-action="Contratar seguro">
@@ -5289,141 +5097,17 @@
                 Patrimonio neto: <strong>-$ 2.211,65</strong>
             </div>
 
-            <section class="section" style="padding-left:0; padding-right:0;">
-                <div class="section__title"><h2>Cuentas</h2></div>
-                <div class="card">
-                    <button class="product-row" data-action="Cuenta Ahorro transaccional">
-                        <span class="avatar-lg"><span class="material-symbols-rounded">account_balance_wallet</span></span>
-                        <span class="product-row__info">
-                            <span class="product-row__name">Sueldo</span>
-                            <span class="product-row__sub">Ahorro transaccional</span>
-                        </span>
-                        <span class="product-row__right"><span class="product-row__amount">$ 100,00</span></span>
-                    </button>
-                    <button class="product-row" data-action="Cuenta Corriente">
-                        <span class="avatar-lg"><span class="material-symbols-rounded">payments</span></span>
-                        <span class="product-row__info">
-                            <span class="product-row__name">Sueldo</span>
-                            <span class="product-row__sub">Corriente</span>
-                        </span>
-                        <span class="product-row__right"><span class="product-row__amount">$ 1.440,35</span></span>
-                    </button>
-                    <div class="card__footer">
-                        <span class="card__footer-label">Saldo disponible</span>
-                        <span class="card__footer-value">$ 1.540,35</span>
-                    </div>
-                </div>
-            </section>
+            <div class="prod-hub" data-hub="Cuentas"></div>
 
-            <section class="section" style="padding-left:0; padding-right:0;">
-                <div class="section__title"><h2>Metas de ahorro</h2></div>
-                <div class="card">
-                    <button class="goal-row" data-action="Meta Viaje de finde">
-                        <span class="avatar-lg"><span class="material-symbols-rounded">beach_access</span></span>
-                        <span class="goal-row__info">
-                            <span class="goal-row__name">Viaje de finde</span>
-                            <span class="goal-progress"><span class="goal-progress__fill" style="width: 30%;"></span></span>
-                        </span>
-                        <span class="goal-row__amount">$ 15,00</span>
-                    </button>
-                    <button class="goal-row" data-action="Meta Fondo de emergencia">
-                        <span class="avatar-lg"><span class="material-symbols-rounded">health_and_safety</span></span>
-                        <span class="goal-row__info">
-                            <span class="goal-row__name">Fondo de emergencia</span>
-                            <span class="goal-progress"><span class="goal-progress__fill" style="width: 62%;"></span></span>
-                        </span>
-                        <span class="goal-row__amount">$ 620,00</span>
-                    </button>
-                </div>
-            </section>
+            <div class="prod-hub" data-hub="Metas"></div>
 
-            <section class="section" style="padding-left:0; padding-right:0;">
-                <div class="section__title"><h2>Tarjetas de crédito</h2></div>
-                <div class="card">
-                    <button class="product-row" data-action="Mastercard Black">
-                        <span class="card-thumb card-thumb--black">
-                            <span class="card-thumb__brand" translate="no">PICHI<br>BANK</span>
-                            <span class="card-thumb__foot"><span class="mc-dots"><i></i><i></i></span></span>
-                        </span>
-                        <span class="product-row__info"><span class="product-row__name">Mastercard Black</span></span>
-                        <span class="product-row__right">
-                            <span class="product-row__label">Saldo a pagar</span>
-                            <span class="product-row__amount">$ 15,00</span>
-                        </span>
-                    </button>
-                    <button class="product-row" data-action="Diners Club">
-                        <span class="card-thumb card-thumb--diners">
-                            <span class="card-thumb__diners">Diners Club</span>
-                        </span>
-                        <span class="product-row__info"><span class="product-row__name">Diners Club</span></span>
-                        <span class="product-row__right">
-                            <span class="product-row__label">Saldo a pagar</span>
-                            <span class="product-row__amount">$ 0,00</span>
-                        </span>
-                    </button>
-                    <div class="card__footer">
-                        <span class="card__footer-label">Pendiente de pago</span>
-                        <span class="card__footer-value">$ 15,00</span>
-                    </div>
-                </div>
-            </section>
+            <div class="prod-hub" data-hub="Tarjetas"></div>
 
-            <section class="section" style="padding-left:0; padding-right:0;">
-                <div class="section__title"><h2>Préstamos</h2></div>
-                <div class="card">
-                    <button class="product-row" data-action="Préstamo de consumo">
-                        <span class="avatar-lg"><span class="material-symbols-rounded">real_estate_agent</span></span>
-                        <span class="product-row__info">
-                            <span class="product-row__name">Préstamo de consumo</span>
-                            <span class="product-row__sub">Cuota 6 de 36</span>
-                        </span>
-                        <span class="product-row__right">
-                            <span class="product-row__label">Próx. cuota</span>
-                            <span class="product-row__amount">$ 245,90</span>
-                        </span>
-                    </button>
-                    <div class="card__footer">
-                        <span class="card__footer-label">Saldo pendiente</span>
-                        <span class="card__footer-value">$ 7.380,50</span>
-                    </div>
-                </div>
-            </section>
+            <div class="prod-hub" data-hub="Prestamos"></div>
 
-            <section class="section" style="padding-left:0; padding-right:0;">
-                <div class="section__title"><h2>Inversiones</h2></div>
-                <div class="card">
-                    <button class="product-row" data-action="Depósito a plazo">
-                        <span class="avatar-lg"><span class="material-symbols-rounded">trending_up</span></span>
-                        <span class="product-row__info">
-                            <span class="product-row__name">Depósito a plazo</span>
-                            <span class="product-row__sub">7,25% anual</span>
-                        </span>
-                        <span class="product-row__right"><span class="product-row__amount">$ 3.000,00</span></span>
-                    </button>
-                </div>
-            </section>
+            <div class="prod-hub" data-hub="Inversiones"></div>
 
-            <section class="section" style="padding-left:0; padding-right:0;">
-                <div class="section__title"><h2>Seguros activos</h2></div>
-                <div class="card">
-                    <button class="product-row" data-action="Seguro de vida">
-                        <span class="avatar-lg"><span class="material-symbols-rounded">health_and_safety</span></span>
-                        <span class="product-row__info"><span class="product-row__name">Seguro de vida</span></span>
-                        <span class="product-row__right">
-                            <span class="product-row__label">Mensual</span>
-                            <span class="product-row__amount">$ 12,90</span>
-                        </span>
-                    </button>
-                    <button class="product-row" data-action="Seguro de tarjetas">
-                        <span class="avatar-lg"><span class="material-symbols-rounded">shield</span></span>
-                        <span class="product-row__info"><span class="product-row__name">Protección de tarjetas</span></span>
-                        <span class="product-row__right">
-                            <span class="product-row__label">Mensual</span>
-                            <span class="product-row__amount">$ 3,50</span>
-                        </span>
-                    </button>
-                </div>
-            </section>
+            <div class="prod-hub" data-hub="Seguros"></div>
         </div>
     </div>
 
@@ -7524,6 +7208,7 @@
     <script src="./assets/sheets.js"></script>
     <script src="./assets/clima.js"></script>
     <script src="./assets/persona.js"></script>
+    <script src="./assets/productos.js"></script>
     <script src="./assets/pfm.js"></script>
     <script src="./assets/asistente.js"></script>
     <script src="./assets/analisis.js"></script>
