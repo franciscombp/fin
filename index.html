@@ -2871,6 +2871,7 @@
         .push-page.is-form-flow .card,
         .push-page.is-form-flow .push-transfer-target { background: var(--bp-surface-page); }
 
+        .soon[hidden] { display: none; } /* el aviso «próximamente» vacío no deja una caja en blanco */
         .push-field { margin-bottom: 16px; }
         .push-field__label {
             display: block;
@@ -5443,13 +5444,27 @@
                     </button>
                 </div>`,
             'Recargar celular': () => `
-                <p class="finance-subtitle" style="margin-top:0;">Operador</p>
+                <div class="push-field" style="margin-top:4px;">
+                    <label class="push-field__label" for="recharge-phone">Número de celular</label>
+                    <input class="push-input" type="tel" inputmode="numeric" id="recharge-phone" placeholder="099 123 4567" value="099 *** 4521" autocomplete="off">
+                    <p class="push-field__hint">Tu número, o el de alguien más.</p>
+                </div>
+                <p class="finance-subtitle">Operador</p>
                 <div class="push-chip-row">
                     ${CARRIERS.map((c, i) => `<button class="push-chip${i === 0 ? ' is-selected' : ''}" data-action="Operador ${c}">${c}</button>`).join('')}
                 </div>
                 <p class="finance-subtitle">Monto</p>
                 <div class="push-chip-row">
                     ${RECHARGE_AMOUNTS.map((a, i) => `<button class="push-chip${i === 1 ? ' is-selected' : ''}" data-action="Recargar ${a}">${a}</button>`).join('')}
+                </div>
+                <div class="push-field" style="margin-top:20px;">
+                    <label class="push-field__label" for="recharge-account">Cuenta de origen</label>
+                    <div class="push-select-wrap">
+                        <select class="push-select" id="recharge-account" data-saldo>
+                            ${ORIGIN_ACCOUNTS.map((a, i) => `<option value="${i}">${a.name} ****${a.acct} · $ ${fmtMoney(a.balance)}</option>`).join('')}
+                        </select>
+                        <span class="material-symbols-rounded push-select-wrap__chevron">expand_more</span>
+                    </div>
                 </div>`,
         };
 
@@ -5653,7 +5668,7 @@
                 <div class="push-field">
                     <label class="push-field__label" for="service-account">Cuenta de origen</label>
                     <div class="push-select-wrap">
-                        <select class="push-select" id="service-account" data-service-account>
+                        <select class="push-select" id="service-account" data-service-account data-saldo>
                             ${ORIGIN_ACCOUNTS.map((a, i) => `<option value="${i}">${a.name} ****${a.acct} · $ ${fmtMoney(a.balance)}</option>`).join('')}
                         </select>
                         <span class="material-symbols-rounded push-select-wrap__chevron">expand_more</span>
