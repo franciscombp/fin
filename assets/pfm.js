@@ -1131,7 +1131,8 @@
         [0, .5, 1].map(function (f) { return '<span class="pfm-chart__g" style="bottom:' + f * 100 + '%"><em>' + money0(top * f).replace(/,\d+$/, '') + '</em></span>'; }).join('') +
         (plan ? '<span class="pfm-chart__plan" style="bottom:' + y(plan) + '"><em>' + T('Presupuesto') + '</em></span>' : '') +
         '<div class="pfm-chart__bars' + (b.length > 12 ? ' is-thin' : '') + '">' + b.map(function (x, i) {
-          return x.v == null ? '<span class="pfm-chart__bar is-empty"></span>' : '<button class="pfm-chart__bar' + (sel === x ? ' is-on' : '') + '" data-pfm="bar:' + i + '" aria-label="' + esc(x.t + ': ' + money(x.v)) + '"><i style="height:' + y(x.v) + '"></i></button>';
+          // En la semana, cada barra lleva su cifra: así se leen los días chicos aunque uno concentre el gasto
+          return x.v == null ? '<span class="pfm-chart__bar is-empty"></span>' : '<button class="pfm-chart__bar' + (sel === x ? ' is-on' : '') + '" data-pfm="bar:' + i + '" aria-label="' + esc(x.t + ': ' + money(x.v)) + '">' + (ST.per === 'sem' ? '<em style="bottom:' + y(x.v) + '">' + (x.v ? money0(x.v).replace(/,\d+$/, '').replace('$ ', '') : '0') + '</em>' : '') + '<i style="height:' + y(x.v) + '"></i></button>';
         }).join('') + '</div></div>' +
       '<div class="pfm-chart__x' + (ST.per === 'sem' ? ' is-days' : '') + '">' + b.map(function (x) { return '<span' + (sel === x ? ' class="is-on"' : '') + '>' + x.x + '</span>'; }).join('') + '</div></div>' +
       (meses ? '' : sel && sel.f ? diaHTML(sel) : '<p class="pfm-chart__hint">' + T('Toca un día para ver en qué gastaste.') + '</p>');

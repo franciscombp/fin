@@ -7,7 +7,7 @@
    ===================================================================== */
 
 /* Arriba solo queda Notificaciones: buscar, ayuda y finanzas viven en Uku */
-.app-uku .top-bar__actions > :not([data-action="Notificaciones"]) { display: none !important; }
+.app-uku .top-bar__actions > :not([data-action="Notificaciones"]):not([data-eye]) { display: none !important; }
 /* En su pantalla, el título grande va en la sección (como en las demás), no en la barra */
 .app-uku.uk-idle .top-bar__title { opacity: 0 !important; }
 
@@ -19,7 +19,6 @@
 .app-uku .view--finanzas:not(.uk-fin):not(.uk-ayuda) .uk-panel { display: none; }
 .app-uku .view--finanzas.uk-fin .uk > :not(.uk-head):not(.uk-panel), .app-uku .view--finanzas.uk-ayuda .uk > :not(.uk-head):not(.uk-panel) { display: none; }
 .app-uku .view--finanzas.uk-fin .uk-panel, .app-uku .view--finanzas.uk-ayuda .uk-panel { display: flex; }
-.app-uku .view--finanzas.uk-fin .uk-menu-btn, .app-uku .view--finanzas.uk-ayuda .uk-menu-btn { display: none; }
 .app-uku .view--finanzas.uk-fin .uk-back-btn, .app-uku .view--finanzas.uk-ayuda .uk-back-btn { display: grid; }
 html.uk-idle, html.uk-idle body { overflow: hidden; overscroll-behavior: none; }
 
@@ -254,7 +253,7 @@ html.uk-chatting .uk { top: 0 !important; bottom: 0 !important; }
    la respuesta, los datos si los hay y lo que puedes hacer: filas que llevan a navegar y
    chips para responder. Su mundo sigue nítido detrás: la tarjeta es parte de la escena. */
 /* Las tarjetas dejan abajo a la izquierda el lugar de Uku, que asoma entre la tarjeta y la barra */
-.uk.is-cards .uk-chat { top: auto; bottom: 196px; max-height: calc(100% - 244px); padding: 14px 0 0; overflow: visible; -webkit-mask-image: none; mask-image: none; justify-content: flex-end; }
+.uk.is-cards .uk-chat { top: auto; bottom: 176px; max-height: calc(100% - 224px); padding: 14px 0 0; overflow: visible; -webkit-mask-image: none; mask-image: none; justify-content: flex-end; }
 .uk.is-cards .uk-chat > :first-child { margin-top: 0; }
 .uk.is-cards.is-chat .uk-scene { filter: none; }
 .uk-card { position: relative; display: flex; flex-direction: column; max-height: 100%; min-height: 0; border-radius: 16px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 10px 30px rgba(15, 38, 92, .16); animation: ukCard .4s cubic-bezier(.2, 1.1, .4, 1) both; }
@@ -291,7 +290,6 @@ html.uk-chatting .uk { top: 0 !important; bottom: 0 !important; }
 .uk-card.is-typing .uk-dots { margin: 8px 16px 16px; align-self: flex-start; background: var(--bp-interaction-secondary-bg); border: 0; border-radius: 16px 16px 16px 4px; }
 /* En Mis finanzas o Ayuda, el encabezado se ve aunque haya una conversación esperando detrás */
 .app-uku .view--finanzas.uk-fin .uk.is-chat .uk-head, .app-uku .view--finanzas.uk-ayuda .uk.is-chat .uk-head { opacity: 1; transform: none; pointer-events: auto; }
-.uk-eye { margin-left: auto; }
 
 /* ---------- Jerarquía: que se entienda qué estás haciendo ----------
    En su mundo no hay título: Uku y su saludo son la voz principal; el menú queda solo, arriba.
@@ -351,3 +349,11 @@ html.uk-chatting .uk { padding-top: calc(8px + env(safe-area-inset-top, 0px)); p
 .uk-barra span { font: var(--cx-sub); color: var(--bp-theme-color-text-primary); }
 .uk-barra b { font: var(--ui-body-sm-semibold); font-variant-numeric: tabular-nums; }
 .uk-barra i { grid-column: 1 / -1; display: block; height: 6px; border-radius: 3px; background: var(--bp-interaction-tertiary-fg); opacity: .75; }
+/* Conversando, Uku va por delante de las tarjetas (el canvas solo lo dibuja a él) y deja pasar los toques */
+.uk.is-chat .uk-scene { z-index: 4; pointer-events: none; }
+/* Sin menú: en su mundo el encabezado no ocupa espacio */
+.app-uku .view--finanzas:not(.uk-fin):not(.uk-ayuda) .uk-head { display: none; }
+/* Sin encabezado, el saludo necesita aire respecto a la barra de arriba */
+.app-uku .view--finanzas:not(.uk-fin):not(.uk-ayuda) .uk-globo { margin-top: 12px; }
+/* Dentro de Asistente, Mis finanzas se desplaza en su propio contenedor: las pestañas se pegan a su borde, no bajo la zona segura */
+.app-uku .uk-panel .pfm-tabs { top: 0; }
