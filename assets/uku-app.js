@@ -479,6 +479,31 @@
       if (s.dir === 'x' && dx > 80) { fx('tap'); return atras(); }
     }
     host.addEventListener('pointerup', fin); host.addEventListener('pointercancel', fin);
+    /* Con el dedo: si el contenido de la tarjeta está arriba del todo y tiras hacia abajo, la tarjeta
+       baja contigo y se cierra (como una hoja). Si el contenido puede desplazarse, se desplaza. */
+    var tg = null;
+    host.addEventListener('touchstart', function (e) {
+      if (e.touches.length > 1) { tg = null; return; }
+      var card = tarjeta(e.target); if (!card) { tg = null; return; }
+      var sc = e.target.closest('.pf-host, .uk-sec__body, .sp-body, .uk-card__body');
+      tg = { y: e.touches[0].clientY, x: e.touches[0].clientX, el: card, top: !sc || sc.scrollTop <= 0, on: false, dir: null };
+    }, { passive: true });
+    host.addEventListener('touchmove', function (e) {
+      if (!tg) return;
+      var dy = e.touches[0].clientY - tg.y, dx = e.touches[0].clientX - tg.x;
+      if (!tg.dir) { if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return; tg.dir = Math.abs(dy) > Math.abs(dx) ? 'y' : 'x'; if (tg.dir !== 'y' || !tg.top) { tg = null; return; } }
+      if (dy <= 0 && !tg.on) { tg = null; return; }
+      tg.on = true; e.preventDefault();
+      tg.el.classList.add('is-drag'); tg.el.style.transform = 'translateY(' + Math.max(0, dy) + 'px)';
+    }, { passive: false });
+    function finT(e) {
+      if (!tg) return;
+      var dy = (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientY : tg.y) - tg.y, s = tg; tg = null;
+      if (!s.on) return;
+      s.el.classList.remove('is-drag'); s.el.style.transform = '';
+      if (dy > 90) cerrar();
+    }
+    host.addEventListener('touchend', finT); host.addEventListener('touchcancel', finT);
   }
   /* ---------- Salir a hacer algo y volver ----------
      Antes de ir a una acción, Uku recuerda qué fuiste a hacer. Cuando
@@ -559,8 +584,8 @@
   function abrirSol() {
     if (!solSec) {
       solSec = document.createElement('section'); solSec.className = 'uk-sec'; solSec.hidden = true; solSec.setAttribute('aria-label', 'Solicitudes');
-      solSec.innerHTML = '<div class="uk-sec__top"><button class="uk-sec__back" data-s="back" aria-label="Volver">' + ic('arrow_back') + '</button><p class="uk-sec__t">Solicitudes</p>' +
-        '<button class="uk-sec__back uk-sec__find" data-s="buscar" aria-label="Buscar">' + ic('search') + '</button></div>' +
+      // Solo el título: la tarjeta se baja con la flecha de arriba o arrastrándola, y el buscador ya está abajo
+      solSec.innerHTML = '<div class="uk-sec__top"><p class="uk-sec__t">Solicitudes</p></div>' +
         '<div class="uk-sec__body"></div>';
       host.appendChild(solSec);
       solSec.addEventListener('click', function (e) {
