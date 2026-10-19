@@ -133,7 +133,7 @@
       a: 'Un reclamo nacional se resuelve en hasta 15 días hábiles, según el caso. Te avisamos por correo y lo sigues en Solicitudes.',
       acts: [['Ver mis solicitudes', 'sol']] },
     { icon: 'manage_search', cat: 'reclamos', t: 'No encuentro mi reclamo', k: 'no encuentro reclamo seguimiento estado donde veo mi reclamo',
-      a: 'En Solicitudes ves los reclamos que registraste desde la app. Si lo pusiste por teléfono o en agencia, dale el número de caso a un asesor y te dirá cómo va.',
+      a: 'En Solicitudes ves los reclamos que registraste desde la app. Si lo registraste por teléfono o en una agencia, indícale el número de caso a un asesor y te dirá cómo va.',
       acts: [['Ver mis solicitudes', 'sol'], ['Hablar con una persona', 'handoff']] },
     { icon: 'receipt_long', cat: 'cuentas', t: '¿Cómo descargo mi estado de cuenta?', k: 'estado de cuenta descargar pdf mensual cuenta',
       a: 'Entra a tu cuenta › Estados de cuenta y descarga el mes que necesites en PDF. Los tienes de los últimos 12 meses, sin costo.',
@@ -343,7 +343,7 @@
   }
   function topicChips(n) { return FAQ.slice(0, n).map(function (f) { return [f.t, 'faq:' + FAQ.indexOf(f)]; }); }
   function handoff() {
-    say('Te paso con una persona del banco. Le cuento lo que ya hablamos para que no tengas que repetirlo. ¿Cómo prefieres?',
+    say('Te comunico con una persona del banco. Le paso un resumen de lo que hablamos para que no tengas que repetirlo. ¿Cómo prefieres?',
       CONTACT.map(function (c) { return [c[1], c[3]]; }));
   }
   function summary() {
@@ -374,7 +374,7 @@
     var q = norm(t);
     if (COMPLEX.test(q)) {
       topic = t;
-      return say('Eso no se puede hacer en la app, así que lo ve un asesor. Le paso tu caso con un resumen para que no repitas nada. ¿Cómo prefieres?', CONTACT.map(function (c) { return [c[1], c[3]]; }));
+      return say('Eso no se puede hacer desde la app: lo atiende un asesor. Le paso tu caso con un resumen para que no tengas que repetir nada. ¿Cómo prefieres?', CONTACT.map(function (c) { return [c[1], c[3]]; }));
     }
     if (/(persona|asesor|humano|agente|llamar|llamen|call)/.test(q)) {
       return say('Casi todo lo puedes resolver aquí mismo, y es más rápido. ¿De qué se trata?', topicChips(3).concat([['Es un trámite que no está en la app', 'handoff']]));

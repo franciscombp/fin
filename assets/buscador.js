@@ -40,7 +40,7 @@
   var FEATURED = ['Transferir', 'Pagar con QR', 'Pagar servicios', 'Mis finanzas', 'Recargar celular', 'Retirar sin tarjeta', 'Pagar tarjeta', 'Mis tarjetas'];
   /* Preguntas típicas: las responde Uku con reglas (sin IA). */
   var ASKS = [
-    { q: '¿En qué se me va la plata?', k: 'gasto gastos gaste plata dinero se me va en que' },
+    { q: '¿En qué gasto más?', k: 'gasto gastos gaste plata dinero se me va en que' },
     { q: '¿Cuánto tengo en total?', k: 'cuanto tengo saldo total plata dinero cuentas' },
     { q: '¿Cuánto debo en mi tarjeta?', k: 'debo deuda tarjeta credito cupo' },
     { q: '¿Cuánto más puedo ahorrar?', k: 'ahorrar ahorro guardar sobra alcanza' },
