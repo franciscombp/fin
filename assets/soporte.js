@@ -151,6 +151,49 @@
       a: 'Aquí mismo con Uku las 24 horas; con una persona por chat, por teléfono al ' + PHONE + ' o pidiendo que te llamen. Para lo que no se puede hacer en la app, en cualquier agencia.',
       acts: [['Hablar con una persona', 'handoff']] }
   ];
+  /* Temas que no son «cómo hago» sino «por qué» o «qué es»: cargos, impuestos y términos que la gente
+     pregunta con sus palabras. Uku explica en corto y enlaza a dónde leer más. Si no está aquí, busca
+     en el centro de ayuda y en el blog del banco antes de pasar con una persona. */
+  var AYUDA_URL = 'https://soporte.pichincha.com/hc/es-419', BLOG_URL = 'https://www.pichincha.com/blog';
+  var TEMAS = [
+    { t: 'Impuesto a la salida de divisas (ISD)', k: 'isd salida de divisas impuesto salida divisas cobro exterior compra en el exterior dolares afuera por que me cobraron impuesto',
+      a: 'Es un impuesto del Estado ecuatoriano, no del banco: se cobra sobre lo que pagas o envías al exterior (compras en sitios de afuera, suscripciones internacionales, transferencias a otros países). El banco lo retiene y lo entrega al SRI. En tu estado de cuenta aparece como una línea aparte junto al consumo.',
+      mas: 'Parte de ese ISD se puede usar como crédito tributario en tu declaración de impuesto a la renta.', acts: [['Ver mis movimientos', 'do:Cuenta PRINCIPAL']], links: [['Qué es el ISD (SRI)', 'https://www.sri.gob.ec/impuesto-a-la-salida-de-divisas'], ['Centro de ayuda', AYUDA_URL]] },
+    { t: 'Comisiones y cargos de la cuenta', k: 'comision comisiones cargo cargos cobro mantenimiento costo por que me descontaron me descontaron debito raro cobro del banco',
+      a: 'Las cuentas básicas no tienen costo de mantenimiento. Lo que sí tiene costo son algunos servicios: transferencias a otros bancos, retiros en cajeros de otras redes, estados de cuenta en papel o chequeras. Cada cargo aparece en tus movimientos con su nombre.',
+      acts: [['Ver mis movimientos', 'do:Cuenta PRINCIPAL']], links: [['Tarifario de servicios', AYUDA_URL]] },
+    { t: 'Intereses de la tarjeta', k: 'interes intereses tarjeta por que me cobraron intereses financiamiento rotativo',
+      a: 'Te cobran intereses solo cuando pagas menos que el total de tu estado de cuenta: el saldo que queda se financia. Si pagas el total hasta la fecha máxima, no hay intereses. Los diferidos con interés también los generan, mes a mes.',
+      acts: [['Pagar tarjeta', 'do:Pagar tarjeta']], links: [['Centro de ayuda: tarjetas', AYUDA_URL + '/sections/32377446948379-Bloqueos-y-Seguridad']] },
+    { t: 'Cargo por mora', k: 'mora atraso recargo pague tarde interes de mora penalidad',
+      a: 'Si pagas después de la fecha máxima, se cobra un interés de mora por los días de atraso y puede afectar tu historial crediticio. Programar el pago evita el atraso.',
+      acts: [['Programar el pago', 'do:Pagar tarjeta']] },
+    { t: 'Retención y pagos a empresas', k: 'retencion retenciones iva renta factura empresa negocio comprobante',
+      a: 'Cuando una empresa te paga, puede retener una parte de impuestos (renta o IVA) y entregarla al SRI; te llega el valor neto y un comprobante de retención. El banco no interviene: lo decide quien te paga.',
+      links: [['SRI: retenciones', 'https://www.sri.gob.ec/retenciones-en-la-fuente']] },
+    { t: 'Transferencias al exterior', k: 'exterior otro pais swift envio internacional recibir del exterior remesa cuanto tarda costo',
+      a: 'Enviar dinero a otro país tiene un costo del banco, el ISD y, a veces, comisiones del banco receptor. Tarda de 1 a 3 días hábiles. Recibir desde el exterior no tiene ISD; sí puede tener costo del banco intermediario.',
+      acts: [['Transferir', 'do:Transferir dinero']], links: [['Centro de ayuda', AYUDA_URL]] },
+    { t: 'Sobregiro', k: 'sobregiro saldo negativo en rojo me quede sin saldo debito sin fondos',
+      a: 'Un sobregiro es cuando un débito deja tu cuenta en negativo. Las cuentas básicas no lo permiten: el pago se rechaza. Si tienes cupo de sobregiro contratado, el banco cubre el pago y cobra interés por los días en negativo.',
+      acts: [['Ver mi cuenta', 'do:Cuenta PRINCIPAL']] },
+    { t: 'Tasa de interés de un préstamo', k: 'tasa interes prestamo credito cuanto me cobran tasa anual efectiva',
+      a: 'La tasa es el costo anual del dinero que te prestan; la efectiva incluye el efecto de pagar cada mes. En tu préstamo ves la tasa, la cuota y cuánto va a capital y a intereses.',
+      acts: [['Ver mi préstamo', 'tab:Prestamos']] },
+    { t: 'Garantía de depósitos', k: 'cosede garantia depositos seguro de depositos si quiebra el banco',
+      a: 'Tus depósitos están cubiertos por la COSEDE hasta el monto que fija la ley, por persona y por entidad. Es una protección del sistema, no del banco.',
+      links: [['COSEDE', 'https://www.cosede.gob.ec']] },
+    { t: 'Historial crediticio (buró)', k: 'buro historial crediticio score crediticio central de riesgos calificacion',
+      a: 'Tu historial resume cómo has pagado tus créditos y tarjetas. Pagar a tiempo lo mejora; los atrasos lo afectan por un tiempo. Puedes consultarlo gratis en el buró.',
+      links: [['Consultar mi historial', 'https://www.equifax.com.ec']] }
+  ];
+  function tema(q, n) {
+    var ws = norm(q).replace(/[¿?¡!.,]/g, ' ').split(/\s+/).filter(function (w) { return w.length > 3; });
+    if (!ws.length) return [];
+    return TEMAS.map(function (x, i) { var k = ' ' + norm(x.t + ' ' + x.k) + ' ', sc = 0; ws.forEach(function (w) { var r = w.replace(/(es|s)$/, ''); if (k.indexOf(' ' + w) >= 0) sc += 3; else if (r.length > 3 && k.indexOf(r) >= 0) sc += 1; }); return { i: i, sc: sc, t: x.t }; })
+      .filter(function (x) { return x.sc >= 3; }).sort(function (a, b) { return b.sc - a.sc; }).slice(0, n || 3);
+  }
+  function buscarURL(q) { return AYUDA_URL + '/search?query=' + encodeURIComponent(q); }
   /* Inconvenientes guiados: Uku pregunta lo justo para llevarte a la solución.
      Cada paso tiene una pregunta y opciones; cada opción lleva a otro paso,
      a una ayuda (faq) o a una acción de la app. */
@@ -584,6 +627,7 @@
     // Para que Uku responda la ayuda dentro de su conversación (versión asistente)
     faq: function (i) { var f = FAQ[i]; return f && { t: f.t, icon: f.icon, cat: f.cat, a: typeof f.a === 'function' ? f.a() : f.a, acts: f.acts || [] }; },
     faqIndex: function (t) { for (var i = 0; i < FAQ.length; i++) if (FAQ[i].t === t) return i; return -1; },
+    tema: tema, temaDe: function (i) { var x = TEMAS[i]; return x && { t: x.t, a: x.a, mas: x.mas, acts: x.acts || [], links: x.links || [] }; }, buscarURL: buscarURL, blogURL: BLOG_URL,
     flows: function () { return FLOWS.map(function (f, i) { return { i: i, id: f.id, icon: f.icon, t: f.t }; }); },
     flow: function (i) { var f = FLOWS[i]; return f && { i: i, id: f.id, icon: f.icon, t: f.t, s: f.s }; },
     cats: function () { return CATS.map(function (c) { return { id: c[0], icon: c[1], t: c[2] }; }); },

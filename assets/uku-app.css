@@ -466,3 +466,15 @@ html.uk-chatting .pf-toast { top: calc(64px + env(safe-area-inset-top, 0px)); bo
 /* Dentro de la tarjeta de Mis finanzas, las pestañas son parte de la tarjeta: fondo blanco, al ancho del contenido */
 .app-uku .uk-panel .pfm-tabs { background: var(--bp-theme-color-surface-container-default); padding: 4px 20px 8px; margin: 0; }
 .app-uku .uk-panel .pf-sec__head { margin-bottom: 4px; }
+
+/* Para leer más: enlaces a artículos del centro de ayuda o el blog */
+.uk-links { display: flex; flex-direction: column; gap: 6px; }
+.uk-links small { font: var(--cx-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
+.uk-link { display: flex; align-items: center; gap: 8px; min-height: 40px; font: var(--ui-body-sm-medium); color: var(--bp-interaction-tertiary-fg); text-decoration: none; }
+.uk-link .material-symbols-rounded { font-size: 18px; }
+/* ¿Te sirvió?: pulgares discretos al pie de la respuesta */
+.uk-voto { display: flex; align-items: center; gap: 4px; margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); font: var(--cx-sub); color: var(--cx-muted); }
+.uk-voto span { flex: 1; }
+.uk-voto button { width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-tertiary-fg); cursor: pointer; }
+.uk-voto button .material-symbols-rounded { font-size: 20px; }
+.uk-voto.is-up span { color: var(--bp-theme-color-status-success-text); }
