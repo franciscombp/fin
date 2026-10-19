@@ -57,10 +57,9 @@
       // Al conversar, su mundo se desvanece detrás de un fondo limpio y arriba queda la cabecera del chat
       '<div class="uk-chatbg" aria-hidden="true"></div>' +
       '<header class="uk-chathead"><button class="icon-button uk-chathead__x" data-k="cerrar" aria-label="Volver a su mundo">' + ic('expand_more') + '</button></header>' +
-      '<div class="uk-head"><button type="button" class="icon-button uk-menu-btn" data-k="secciones" aria-label="Secciones de Asistente">' + ic('menu') + '</button>' +
-        '<button type="button" class="icon-button uk-back-btn" data-k="atras" aria-label="Volver">' + ic('arrow_back') + '</button>' +
-        '<p class="uk-head__t" role="heading" aria-level="1">Tu asistente</p>' +
-        '<button type="button" class="icon-button uk-eye" data-eye aria-label="Ocultar saldos" aria-pressed="false">' + ic('visibility') + '</button></div>' +
+      // Sin menú: a Mis finanzas y Ayuda se llega por los accesos y las tarjetas; en las secciones hay flecha y título
+      '<div class="uk-head"><button type="button" class="icon-button uk-back-btn" data-k="atras" aria-label="Volver">' + ic('arrow_back') + '</button>' +
+        '<p class="uk-head__t" role="heading" aria-level="1">Tu asistente</p></div>' +
       '<div class="uk-globo" aria-live="polite"></div>' +
       '<div class="uk-props" hidden></div>' +
       '<div class="uk-chat" aria-live="polite"></div>' +
@@ -506,26 +505,6 @@
     solSec.querySelector('.uk-sec__body').innerHTML = solRows();
     solSec.hidden = false; host.classList.add('uk-in-sec'); fx('open');
   }
-  /* ---------- Secciones: menú de la cabecera ---------- */
-  var SECCIONES = [['uku', 'Tu asistente', 'Su mundo y los consejos que te da', 'support_agent'], ['fin', 'Mis finanzas', 'Tus gastos y tu presupuesto', 'monitoring'], ['ayuda', 'Ayuda y soporte', 'Preguntas y contacto', 'help']];
-  // Hoja de la app (as-sheet), como las de Mis finanzas: fuera de la vista para cubrir la pantalla
-  function abrirSecciones() {
-    if (!sheet) {
-      sheet = { back: document.createElement('div'), el: document.createElement('div') };
-      sheet.back.className = 'as-sheet-back';
-      sheet.el.className = 'as-sheet'; sheet.el.setAttribute('role', 'dialog'); sheet.el.setAttribute('aria-label', 'Secciones');
-      sheet.el.innerHTML = '<div class="as-sheet__handle"></div>' +
-        SECCIONES.map(function (x) { return '<button class="as-row as-row--btn" data-k="seccion:' + x[0] + '"><span class="uk-sec__ic">' + ic(x[3]) + '</span><span class="uk-sec__txt"><b>' + esc(x[1]) + '</b><small>' + esc(x[2]) + '</small></span></button>'; }).join('');
-      document.body.appendChild(sheet.back); document.body.appendChild(sheet.el);
-      sheet.back.addEventListener('click', cerrarSecciones);
-      // La hoja está fuera de la vista: sus opciones se atienden aquí
-      sheet.el.addEventListener('click', function (e) { var t = e.target.closest('[data-k^="seccion:"]'); if (t) { cerrarSecciones(); seccion(t.dataset.k.slice(8)); } });
-    }
-    sheet.back.classList.add('open'); sheet.el.classList.add('open');
-    fx('open');
-  }
-  function cerrarSecciones() { if (sheet) { sheet.back.classList.remove('open'); sheet.el.classList.remove('open'); } }
-
   /* ---------- Factura o estado de cuenta: Uku lo lee y propone el pago ---------- */
   function escanear(file) {
     uku('Leo tu documento…'); pintarChat();
@@ -573,11 +552,9 @@
       case 'fin': fx('select'); return seccion('fin');
       case 'gastos': fx('select'); seccion('fin'); if (window.PFM) PFM.key('gastos'); return;
       case 'voz': fx('tap'); if (window.Buscador) Buscador.voice(); return;
-      case 'secciones': fx('tap'); return abrirSecciones();
-      case 'seccion': cerrarSecciones(); return seccion(v);
       // Volver: en el detalle de gastos, a la lista de Mis finanzas; si no, a Tu asistente
       case 'atras': { var pb = view.querySelector('.pf-back'); return pb ? pb.click() : seccion('uku'); }
-      case 'escanear': fx('tap'); cerrarSecciones(); return fileIn.click();
+      case 'escanear': fx('tap'); return fileIn.click();
       case 'pago': return pago(v);
       // Ayuda es su sección: se abre el centro de ayuda; el chat empieza cuando hay algo que resolver
       case 'ayuda': fx('tap'); return ayudaCard();
@@ -631,7 +608,12 @@
     }
     // Arriba, un solo acceso: Uku en lugar de la lupa y los audífonos
     var noti = document.querySelector('.top-bar__actions [data-action="Notificaciones"]');
-    if (noti) noti.dataset.in = '0 1 2 4';
+    if (noti) {
+      noti.dataset.in = '0 1 2 4';
+      // El ojo de privacidad va en la barra de arriba, junto a la campana (no en la pantalla de Uku)
+      var eye = document.createElement('button'); eye.type = 'button'; eye.className = 'icon-button uk-eye'; eye.setAttribute('data-eye', ''); eye.setAttribute('aria-label', 'Ocultar saldos'); eye.setAttribute('aria-pressed', 'false'); eye.dataset.in = noti.dataset.in; eye.innerHTML = ic('visibility');
+      noti.parentNode.insertBefore(eye, noti);
+    }
     // Lo que abre Mis finanzas desde otros lugares lleva al PFM completo, dentro de Uku
     if (window.PFM) { var o = PFM.open; PFM.open = function () { finOn(true); o(); }; }
     // La pantalla de Uku cabe entre la barra de arriba y la de abajo: sin scroll
