@@ -418,3 +418,9 @@ html:not(.theme-y2k) .uk-globo__acts .uk-globo__go.btn { margin: 0 !important; }
 .uk-card__row > .material-symbols-rounded:first-child { flex: 0 0 32px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font-size: 20px; }
 /* En el teléfono, mantener el dedo sobre un botón no selecciona su texto */
 .uk button, .uk .uk-card, .uk-globo, .uk-pill { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+
+/* La flecha de la tarjeta solo cuando hay a dónde volver dentro (Tus gastos, una categoría de Ayuda); en la raíz basta el botón de bajar */
+.uk.is-chat .uk-panel .uk-back-btn { display: none; }
+.uk.is-chat .uk-panel:has(.pf-back) .uk-back-btn, .uk.is-chat .uk-panel:has(.sp.is-page) .uk-back-btn { display: grid; }
+.uk-sec__top { justify-content: center; }
+.uk-sec__t { flex: 0 1 auto; text-align: center; }
