@@ -883,6 +883,17 @@
     var navBar = document.querySelector('.nav-bar');
     function medir() { if (navBar) root.style.setProperty('--uk-nav', navBar.getBoundingClientRect().height + 'px'); }
     medir(); window.addEventListener('resize', medir); window.addEventListener('resize', reencuadrar);
+    // Teclado (iOS/Android): el alto que tapa se mide con visualViewport y la barra se apoya justo encima
+    var vv = window.visualViewport;
+    function teclado() {
+      if (!vv) return;
+      var kb = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+      root.style.setProperty('--uk-kb', kb + 'px'); host.classList.toggle('is-kb', kb > 80);
+      if (kb > 80) window.scrollTo(0, 0);
+      reencuadrar();
+    }
+    if (vv) { vv.addEventListener('resize', teclado); vv.addEventListener('scroll', teclado); }
+    input.addEventListener('blur', function () { setTimeout(teclado, 80); });
     var tt = document.querySelector('.top-bar__title');
     function titulo() { if (!tt) return; var t = view.classList.contains('active') ? (view.classList.contains('uk-ayuda') ? 'Ayuda' : view.classList.contains('uk-fin') ? 'Mis finanzas' : 'Uku') : null; if (t && tt.textContent !== t) tt.textContent = t; }
     new MutationObserver(function () {
