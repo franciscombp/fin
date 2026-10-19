@@ -407,3 +407,9 @@ html:not(.theme-y2k) .uk-globo__acts .uk-globo__go.btn { margin: 0 !important; }
 .uk-globo__dots i { width: 5px; height: 5px; border-radius: 3px; background: var(--cx-line, #c9ced8); transition: width .2s ease, background .2s ease; }
 .uk-globo__dots i.is-on { width: 14px; background: var(--bp-interaction-tertiary-fg); }
 .uk-props { display: none !important; }
+
+/* Sugerencias al escribir: una tarjeta compacta sobre la barra, en el mismo lenguaje que las demás */
+.uk-results { left: 12px; right: 12px; bottom: 76px; padding: 4px 16px 6px; border-radius: 16px; box-shadow: 0 10px 30px rgba(15, 38, 92, .16); z-index: 6; }
+.uk-row { min-height: 48px; padding: 6px 0; gap: 10px; }
+.uk-row__t b { font: var(--ui-body-md-medium); }
+.uk-results__l { margin-top: 8px !important; }
