@@ -203,7 +203,7 @@
      Cada mensaje de Uku trae sus botones; solo los del último se pueden
      tocar, así la conversación avanza y no quedan preguntas viejas abiertas. */
   function me(t) { msgs.push({ me: t }); }
-  function uku(t, btns, extra, o) { msgs.push({ uku: t, btns: btns || [], extra: extra || '', nuevo: true, title: o && o.title, rows: o && o.rows, flow: o && o.flow }); ultimo = Date.now(); if (b3d) b3d.play('talk'); }
+  function uku(t, btns, extra, o) { o = o || {}; msgs.push({ uku: t, btns: btns || [], extra: extra || '', nuevo: true, title: o.title, rows: o.rows, flow: o.flow, num: o.num, meter: o.meter, stats: o.stats, bars: o.bars, pregunta: o.pregunta }); ultimo = Date.now(); if (b3d) b3d.play('talk'); }
   function b(k, t, icon, cls) { return { k: k, t: t, ic: icon, cls: cls }; }
   function mostrar() { input.value = ''; modo(); pintarChat(); pintarResultados(); }
   // Lo que escribes: tu plata, la ayuda o una acción de la app
@@ -228,7 +228,7 @@
     var fl = H.filter(function (h) { return h.kind === 'flow'; })[0];
     if (fl && !fin && !/^(que es|que significa|cuanto tarda|donde veo)/.test(n)) return flujo(fl.i, 'ini');
     H = H.filter(function (h) { return h.kind !== 'flow'; });
-    if (fin) uku(fin.t, (fin.acts || []).map(function (a) { return b('pfm:' + a[1], a[0], 'arrow_forward'); }).concat((fin.s || []).slice(0, 2).map(function (c) { return b('ask:' + c, c, null, 'is-ask'); })));
+    if (fin) uku(fin.t, (fin.acts || []).map(function (a) { return b('pfm:' + a[1], a[0], 'arrow_forward'); }).concat((fin.s || []).slice(0, 2).map(function (c) { return b('ask:' + c, c, null, 'is-ask'); })), '', { title: fin.title || q, num: fin.num, bars: fin.bars, meter: fin.meter });
     // Si preguntas cómo, cuánto o qué, primero la ayuda; si pides hacer algo, primero la acción
     else if (H.length && (!acts.length || PREG.test(norm(q)))) return ayudaEn(H[0], H.slice(1), acts);
     else if (acts.length) uku(acts.length === 1 ? 'Te llevo a ' + acts[0].label.toLowerCase() + '. ¿Lo hacemos?' : 'Puedo llevarte a hacerlo:', acts.map(function (a) { return b('act:' + a.label, a.label, a.icon); }).concat(H.slice(0, 1).map(function (h) { return b(h.kind + ':' + h.i, h.t, 'help', 'is-ask'); }))
@@ -241,22 +241,23 @@
     var W = PFM.world(), s = resumen(), pend = s && s.n;
     // Lo que pide algo va en la frase; el estado de cada cosa, en filas
     var pide = W.filter(function (x) { return /warn|over|pensativo/.test(x.cls || ''); })[0];
-    uku(esc(pide ? pide.d : 'Todo mi mundo está bien, y es porque tus finanzas lo están.') + ' Todo lo que ves aquí lo cuidas tú con tus finanzas.',
+    uku(esc(pide ? pide.d : 'Todo mi mundo está bien porque tus finanzas lo están. Lo que ves aquí lo cuidas tú.'),
       (pend ? [b('pfm:game', 'Clasificar conmigo', 'category')] : []).concat([b('pfm:world', 'Qué significa cada cosa', null, 'is-ask'), b('ok', 'Qué lindo, gracias', 'thumb_up', 'is-ask')]), '',
-      { title: 'Mi mundo', rows: W.map(function (x) { return [x.l.replace(/^Su /, 'Mi ').replace(/^Sus /, 'Mis '), String(x.v)]; }) });
+      { title: 'Mi mundo', stats: W.map(function (x, i) { var m = String(x.v).match(/\d+/);
+        return { ic: x.ic, l: x.l.replace(/^Su /, 'Mi ').replace(/^Sus /, 'Mis '), v: i === 0 ? (s && s.n ? s.n + ' por ordenar' : 'Contento') : i === 1 ? (m ? m[0] + (m[0] === '1' ? ' mes' : ' meses') : 'Menos de 1 mes') : String(x.v), cls: /warn|over|pensativo/.test(x.cls || '') ? 'warn' : 'ok' }; }) });
     if (b3d) b3d.play('happy');
   }
   // Cómo va tu dinero: lo que responde a la primera pregunta de todos, con lo que puedes hacer después
   function dinero() {
     var s = resumen(), A = consejos(), x = A[0], pres = s.pres && !(window.PFM.advice().some(function (c) { return c.id === 'pres' && !c.done; }));
     var nivel = s.score >= 85 ? 'Vas bien' : s.score >= 55 ? 'Con cuidado' : 'Por encima del plan';
-    var rows = [['Disponible', money0(s.saldo)], ['Gastaste en ' + s.mes, money0(s.gast) + (pres ? ' de ' + money0(s.pres) : '')], ['Tu salud financiera', nivel]];
-    if (s.n) rows.push(['Por ordenar', s.n + (s.n === 1 ? ' consumo' : ' consumos')]);
+    var stats = [{ ic: 'account_balance_wallet', l: 'Disponible', v: money0(s.saldo) }, { ic: 'favorite', l: 'Tu salud', v: nivel, cls: s.score >= 85 ? 'ok' : 'warn' }, { ic: 'category', l: 'Por ordenar', v: s.n ? String(s.n) : 'Nada', cls: s.n ? 'warn' : 'ok' }];
     var t = pres ? (s.score >= 85 ? 'Vas bien con tu presupuesto.' : s.score >= 55 ? 'Vas un poco rápido con tu presupuesto: con cuidado llegas.' : 'Vas por encima de tu presupuesto: revisemos en qué.') : 'Todavía no tienes presupuesto. Con lo que recibes y lo que gastas, te ayudo a armarlo.';
     if (x && x.id !== 'pres' && x.kind === 'warn') t += ' ' + (x.di || x.t);
     uku(esc(t), [b('gastos', 'Ver mis gastos', 'account_balance_wallet'), pres ? b('pfm:budgets', 'Ajustar mi presupuesto', 'speed') : b('pfm:pres', 'Armar mi presupuesto', 'speed')]
       .concat(x && x.act && x.id !== 'pres' ? [b('pfm:' + x.act, x.actl, null, 'is-ask')] : [])
-      .concat([b('ask:¿En qué se me va la plata?', '¿En qué se me va la plata?', null, 'is-ask')]), '', { title: 'Así vas en ' + s.mes, rows: rows });
+      .concat([b('ask:¿En qué se me va la plata?', '¿En qué se me va la plata?', null, 'is-ask')]), '',
+      { title: 'Así vas en ' + s.mes, num: { v: money0(s.gast), l: 'gastaste en ' + s.mes }, meter: pres ? { v: s.gast, max: s.pres, l: money0(s.gast) + ' de ' + money0(s.pres) + ' de presupuesto', cls: s.score >= 85 ? 'ok' : s.score >= 55 ? 'warn' : 'over' } : null, stats: stats });
     if (b3d) b3d.play(s.score >= 85 ? 'happy' : 'talk');
   }
   // Una propuesta, en su momento: Uku la cuenta, con su acción y la siguiente a un toque
@@ -264,7 +265,7 @@
     var A = consejos(), x = A.filter(function (c) { return c.id === id; })[0] || A[0]; if (!x) return;
     var i = A.indexOf(x), sig = A[(i + 1) % A.length];
     uku(esc(x.di || (x.t + (x.s ? '. ' + x.s : ''))), (x.act ? [b('pfm:' + x.act, x.actl, 'arrow_forward')] : [])
-      .concat([b('pfm:luego:' + x.id, 'Ahora no', null, 'is-ask')]).concat(sig && sig !== x ? [b('prop:' + sig.id, 'Siguiente propuesta', null, 'is-ask')] : []), '', { title: x.tag, rows: x.cmp ? x.cmp.map(function (c) { return [c.l, money0(c.v)]; }) : null });
+      .concat([b('pfm:luego:' + x.id, 'Ahora no', null, 'is-ask')]).concat(sig && sig !== x ? [b('prop:' + sig.id, 'Siguiente propuesta', null, 'is-ask')] : []), '', { title: x.tag, bars: x.cmp ? x.cmp.map(function (c) { return { l: c.l, v: c.v }; }) : null });
     if (b3d) b3d.play(x.kind === 'warn' ? 'worried' : 'talk');
     mostrar();
   }
@@ -313,7 +314,11 @@
       '<header class="uk-card__top">' + (n > 1 ? '<button class="uk-card__back" data-k="atras-card" aria-label="Volver a la tarjeta anterior">' + ic('arrow_back') + '</button>' : '<span class="uk-card__face" aria-hidden="true">' + face() + '</span>') +
         '<span class="uk-card__q">' + esc(m.title || q || 'Uku') + '</span>' + (n > 1 ? '<small class="uk-card__n">' + i + ' de ' + n + '</small>' : '') + '</header>' +
       (typing ? '<p class="uk-msg__b uk-dots" aria-label="Uku está escribiendo"><i></i><i></i><i></i></p>' :
-        '<div class="uk-card__body"><p class="uk-card__t">' + m.uku + '</p>' +
+        '<div class="uk-card__body">' + (m.num ? '<p class="uk-num"><b>' + esc(m.num.v) + '</b><small>' + esc(m.num.l) + '</small></p>' : '') +
+        (m.meter ? '<div class="uk-meter' + (m.meter.cls ? ' is-' + m.meter.cls : '') + '"><i style="width:' + Math.max(2, Math.min(100, m.meter.v / (m.meter.max || 1) * 100)).toFixed(1) + '%"></i></div><p class="uk-meter__l">' + esc(m.meter.l) + '</p>' : '') +
+        '<p class="uk-card__t">' + m.uku + '</p>' +
+        (m.stats ? '<div class="uk-stats">' + m.stats.map(function (x) { return '<div class="uk-stat' + (x.cls ? ' is-' + x.cls : '') + '">' + ic(x.ic || 'info') + '<b>' + esc(x.v) + '</b><small>' + esc(x.l) + '</small></div>'; }).join('') + '</div>' : '') +
+        (m.bars ? '<div class="uk-barras">' + (function () { var mx = Math.max.apply(null, m.bars.map(function (b) { return b.v; }).concat([1])); return m.bars.map(function (b) { return '<div class="uk-barra"><span>' + esc(b.l) + '</span><b>' + money0(b.v) + '</b><i style="width:' + Math.max(3, b.v / mx * 100).toFixed(1) + '%"></i></div>'; }).join(''); })() + '</div>' : '') +
         (m.rows ? '<dl class="uk-card__data">' + m.rows.map(function (r) { return '<div><dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('') + '</dl>' : '') + m.extra +
         (nav.length ? '<div class="uk-card__nav">' + nav.map(function (x, j) { return '<button class="uk-card__row" style="--d:' + j * 40 + 'ms" data-k="' + esc(x.k) + '" data-l="' + esc(x.t) + '"><span>' + esc(x.t) + '</span>' + ic('chevron_right') + '</button>'; }).join('') + '</div>' : '') +
         (ask.length ? (m.pregunta ? '<p class="uk-msg__q">' + esc(m.pregunta) + '</p>' : '') + '<div class="uk-msg__acts">' + ask.map(function (x, j) { return '<button class="uk-chip is-ask" style="--d:' + (nav.length + j) * 40 + 'ms" data-k="' + esc(x.k) + '" data-l="' + esc(x.t) + '">' + (x.ic ? ic(x.ic) : '') + esc(x.t) + '</button>'; }).join('') + '</div>' : '') + '</div>') + '</section>';
