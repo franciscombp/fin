@@ -458,3 +458,11 @@ html.uk-chatting .pf-toast { top: calc(64px + env(safe-area-inset-top, 0px)); bo
 .uk-sec__top { padding: 18px 16px 8px; }
 .uk-sec__body { padding: 0 20px 20px; }
 .uk-sec__row { padding: 14px 0; }
+
+/* ---------- Uku recortado en la barra, y las secciones integradas ----------
+   Como en la referencia: el cuerpo de Uku termina en la barra de escribir, no sigue por debajo.
+   El canvas acaba justo encima de la barra. */
+.uk.is-chat .uk-scene { bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
+/* Dentro de la tarjeta de Mis finanzas, las pestañas son parte de la tarjeta: fondo blanco, al ancho del contenido */
+.app-uku .uk-panel .pfm-tabs { background: var(--bp-theme-color-surface-container-default); padding: 4px 20px 8px; margin: 0; }
+.app-uku .uk-panel .pf-sec__head { margin-bottom: 4px; }
