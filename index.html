@@ -564,10 +564,6 @@
             transition: opacity 0.18s ease, filter 0.22s ease;
         }
 
-        .amount.is-masking {
-            opacity: 0;
-            filter: blur(8px);
-        }
 
         .icon-switch {
             width: 32px;
@@ -1013,13 +1009,6 @@
         .section__eye:active { transform: scale(0.9); background: var(--bp-status-info-bg-subtle); }
         .section__eye .material-symbols-rounded { font-size: 22px; }
 
-        /* Los montos se difuminan cuando la sección está en modo privado */
-        .section.is-private .product-row__amount,
-        .section.is-private .card__footer-value,
-        .section.is-private .goal-row__amount {
-            filter: blur(7px);
-            transition: filter 0.22s ease;
-        }
         .product-row__amount,
         .card__footer-value,
         .goal-row__amount { transition: filter 0.22s ease; }
@@ -4110,8 +4099,8 @@
 
                 <div class="amount-row">
                     <span class="amount" id="balance">$ 1.906,04</span>
-                    <button class="icon-switch" id="balance-toggle" aria-label="Ocultar saldo" aria-pressed="false">
-                        <span class="material-symbols-rounded" id="balance-toggle-icon">visibility</span>
+                    <button class="icon-switch" id="balance-toggle" data-eye aria-label="Ocultar saldos" aria-pressed="false">
+                        <span class="material-symbols-rounded">visibility</span>
                     </button>
                 </div>
 
@@ -4417,7 +4406,7 @@
             <section class="section">
                 <div class="section__title">
                     <h2>Mis préstamos</h2>
-                    <button class="section__eye" data-eye aria-label="Ocultar montos de préstamos" aria-pressed="false">
+                    <button class="section__eye" data-eye aria-label="Ocultar saldos" aria-pressed="false">
                         <span class="material-symbols-rounded">visibility</span>
                     </button>
                 </div>
@@ -4488,7 +4477,7 @@
             <section class="section">
                 <div class="section__title">
                     <h2>Mis inversiones</h2>
-                    <button class="section__eye" data-eye aria-label="Ocultar montos de inversiones" aria-pressed="false">
+                    <button class="section__eye" data-eye aria-label="Ocultar saldos" aria-pressed="false">
                         <span class="material-symbols-rounded">visibility</span>
                     </button>
                 </div>
@@ -6553,57 +6542,6 @@
             syncTopBar();
         };
 
-        // ---------- Ocultar / mostrar saldo ----------
-        const balance = document.getElementById('balance');
-        const balanceToggle = document.getElementById('balance-toggle');
-        const balanceIcon = document.getElementById('balance-toggle-icon');
-        let balanceValue = balance.textContent;
-        const balanceMasked = '$ ****,**';
-        let hidden = false;
-        // Cuenta de 0 al valor final ("$ 1.906,04") con easing; respeta el formato
-        function countUp(el, finalText, ms = 650) {
-            const m = finalText.match(/[\d.]+,\d+/);
-            if (!m || matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = finalText; return; }
-            const target = parseFloat(m[0].replace(/\./g, '').replace(',', '.'));
-            const t0 = performance.now();
-            const step = now => {
-                const k = Math.min(1, (now - t0) / ms);
-                const v = target * (1 - Math.pow(1 - k, 3));
-                const [ent, dec] = v.toFixed(2).split('.');
-                el.textContent = finalText.replace(m[0], ent.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + dec);
-                if (k < 1) requestAnimationFrame(step); else el.textContent = finalText;
-            };
-            requestAnimationFrame(step);
-        }
-
-        balanceToggle.addEventListener('click', () => {
-            hidden = !hidden;
-            // Anima el cambio: desenfoca/desvanece, cambia el texto y reaparece
-            balance.classList.add('is-masking');
-            setTimeout(() => {
-                balance.classList.remove('is-masking');
-                if (hidden) balance.textContent = balanceMasked;
-                else countUp(balance, balanceValue);
-            }, 180);
-            balanceIcon.textContent = hidden ? 'visibility_off' : 'visibility';
-            balanceToggle.setAttribute('aria-label', hidden ? 'Mostrar saldo' : 'Ocultar saldo');
-            balanceToggle.setAttribute('aria-pressed', String(hidden));
-            showToast(hidden ? 'Saldo oculto' : 'Saldo visible');
-        });
-
-        // ---------- Ojos de sección: difuminan los montos de esa sección ----------
-        document.querySelectorAll('[data-eye]').forEach(eye => {
-            eye.addEventListener('click', (e) => {
-                e.stopPropagation(); // no dispares el swipe ni acciones de fila
-                const section = eye.closest('.section');
-                if (!section) return;
-                const isPrivate = section.classList.toggle('is-private');
-                eye.querySelector('.material-symbols-rounded').textContent =
-                    isPrivate ? 'visibility_off' : 'visibility';
-                eye.setAttribute('aria-pressed', String(isPrivate));
-            });
-        });
-
         // ---------- Resplandor reactivo: giroscopio + mouse ----------
         const card = document.getElementById('debit-card');
         const modal = document.getElementById('gyro-modal');
@@ -7069,11 +7007,7 @@
             document.getElementById('account-title').textContent = acc.title;
             document.getElementById('account-number').textContent = acc.number;
             accountCard.setAttribute('aria-label', `Ver detalle de cuenta ${acc.title}`);
-            // Sincroniza con el ojo de ocultar saldo: si está oculto, el
-            // enmascarado sigue viéndose; el valor real que se restaura al
-            // volver a mostrarlo pasa a ser el de la cuenta recién elegida.
-            balanceValue = acc.balance;
-            if (!hidden) balance.textContent = acc.balance;
+            balance.textContent = acc.balance; // si los saldos están ocultos, Privacidad.js lo enmascara
             document.getElementById('debit-card').classList.toggle('is-hidden', usingAltAccount);
             document.getElementById('debit-card-disabled').classList.toggle('is-hidden', !usingAltAccount);
             showToast(`Cuenta ${acc.title}`);
@@ -7184,6 +7118,7 @@
     <script src="./assets/sheets.js"></script>
     <script src="./assets/clima.js"></script>
     <script src="./assets/persona.js"></script>
+    <script src="./assets/privacidad.js"></script>
     <script src="./assets/productos.js"></script>
     <script src="./assets/pfm.js"></script>
     <script src="./assets/asistente.js"></script>

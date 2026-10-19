@@ -59,7 +59,8 @@
       '<header class="uk-chathead"><button class="icon-button uk-chathead__x" data-k="cerrar" aria-label="Volver a su mundo">' + ic('expand_more') + '</button></header>' +
       '<div class="uk-head"><button type="button" class="icon-button uk-menu-btn" data-k="secciones" aria-label="Secciones de Asistente">' + ic('menu') + '</button>' +
         '<button type="button" class="icon-button uk-back-btn" data-k="atras" aria-label="Volver">' + ic('arrow_back') + '</button>' +
-        '<p class="uk-head__t" role="heading" aria-level="1">Tu asistente</p></div>' +
+        '<p class="uk-head__t" role="heading" aria-level="1">Tu asistente</p>' +
+        '<button type="button" class="icon-button uk-eye" data-eye aria-label="Ocultar saldos" aria-pressed="false">' + ic('visibility') + '</button></div>' +
       '<div class="uk-globo" aria-live="polite"></div>' +
       '<div class="uk-props" hidden></div>' +
       '<div class="uk-chat" aria-live="polite"></div>' +

@@ -292,3 +292,4 @@ html.uk-chatting .uk { top: 0 !important; bottom: 0 !important; }
 .uk-card.is-typing .uk-dots { margin: 8px 16px 16px; align-self: flex-start; background: var(--bp-interaction-secondary-bg); border: 0; border-radius: 16px 16px 16px 4px; }
 /* En Mis finanzas o Ayuda, el encabezado se ve aunque haya una conversación esperando detrás */
 .app-uku .view--finanzas.uk-fin .uk.is-chat .uk-head, .app-uku .view--finanzas.uk-ayuda .uk.is-chat .uk-head { opacity: 1; transform: none; pointer-events: auto; }
+.uk-eye { margin-left: auto; }
