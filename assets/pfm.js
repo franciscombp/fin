@@ -1586,7 +1586,7 @@
     if (/gast|plata|en qu|cuánto|cuanto|queda|presupuesto/.test(s0)) {
       var ks = Object.keys(s.grupos).sort(function (a, b) { return s.grupos[b] - s.grupos[a]; }).slice(0, 3);
       var pa = pres();
-      return { title: T('En qué se te va la plata'), num: { v: money0(s.gast), l: T('gastaste en {mes}', { mes: mesName(m) }) },
+      return { title: T('En qué gastas más'), num: { v: money0(s.gast), l: T('gastaste en {mes}', { mes: mesName(m) }) },
         meter: pa.auto ? null : { v: s.gast, max: pa.general, l: T('{g} de {p} de presupuesto', { g: money0(s.gast), p: money0(pa.general) }), cls: s.gast > pa.general ? 'over' : s.gast > pa.general * .85 ? 'warn' : 'ok' },
         t: ks.length ? T('Lo que más pesó fue {k}.', { k: ks[0].toLowerCase() }) + (pa.auto ? ' ' + T('Todavía no tienes presupuesto.') : '') : T('Este mes casi no has gastado.'),
         bars: ks.map(function (k) { return { l: k, v: s.grupos[k] }; }), s: ['¿Cómo cierro el mes?', '¿Qué tengo por revisar?'], acts: [[T('Ver mis gastos'), 'gastos']].concat(pa.auto ? [[T('Armar mi presupuesto'), 'pres']] : []) };
