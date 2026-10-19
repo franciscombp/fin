@@ -54,7 +54,8 @@
       faq: function (i) { seccion('uku'); me(Soporte.faq(i).t); ayudaEn({ kind: 'faq', i: i }); },
       tut: function (i) { seccion('uku'); me(Soporte.tut(i).t); ayudaEn({ kind: 'tut', i: i }); },
       preguntar: function (q) { seccion('uku'); preguntar(q); },
-      escribir: function () { seccion('uku'); setTimeout(function () { input.focus(); }, 350); } };
+      escribir: function () { seccion('uku'); setTimeout(function () { input.focus(); }, 350); },
+      abrir: abrirAsistente, libre: mundoLibre };
     // Ayuda, dentro de esta pantalla: al volver desde su flecha, regresa a Uku
     document.addEventListener('soporte:cerrar', function () { seccion('uku'); });
     host.innerHTML =
@@ -110,7 +111,7 @@
     host.classList.toggle('is-typing', !!input.value.trim());
     host.classList.toggle('is-chat', es);
     // Sin barra superior ni inferior: la tarjeta ocupa la pantalla y se baja con la flecha de arriba
-    document.documentElement.classList.toggle('uk-chatting', es && view.classList.contains('active'));
+    document.documentElement.classList.toggle('uk-chatting', view.classList.contains('active'));
     // Al conversar, Uku sale de su mundo (que queda como foto borrosa detrás), se acerca y baja a la
     // esquina junto a la barra (como Tolan): deja el espacio a las tarjetas sin irse
     if (b3d && era !== es) {
@@ -425,7 +426,7 @@
     if (b3d) b3d.setShift(0, 0);
     fx('success'); if (b3d) b3d.play('happy');
     setTimeout(reencuadrar, 300);
-    nota = 'Listo. Pregúntame cómo va tu dinero cuando quieras.'; pintarGlobo(); setTimeout(function () { nota = null; if (!msgs.length) pintarGlobo(); }, 6000);
+    setTimeout(bienvenida, 320);
   }
   // Una pregunta frecuente o un tutorial, respondido por Uku aquí mismo
   function ayudaEn(h, otras, acts) {
@@ -560,14 +561,40 @@
 
   // Bajar la tarjeta: primero se va (animación corta) y después se limpia; así no desaparece de golpe
   var cerrando = false;
+  var volverA = 0; // la pestaña desde la que abriste el asistente
+  /* El asistente se abre desde arriba y Uku entra directo en modo asistente: cerca, mirándote, con
+     una tarjeta de bienvenida (su saludo, lo que propone y los accesos). Su mundo es un lugar al
+     que puedes ir («Ver mi mundo»), no la pantalla de llegada. */
+  function abrirAsistente() {
+    var act = document.querySelector('.nav-item.active'); volverA = act && act.dataset.view != null ? +act.dataset.view : 0; if (volverA === 1) volverA = 0;
+    fx('select'); if (window.__goView) __goView(1);
+    var visto = false; try { visto = localStorage.getItem(ONB) === '1'; } catch (e) {}
+    if (visto && !msgs.length) setTimeout(bienvenida, 60);
+  }
+  function bienvenida() {
+    if (msgs.length) return;
+    var sal = saludo(), P = propuestas(), s = resumen();
+    var btns = [b(sal.k, sal.l, null)];
+    P.slice(0, 2).forEach(function (x) { if (x.k !== sal.k) btns.push(b(x.k, x.l, null, 'is-ask')); });
+    btns.push(b('gastos', 'Mis gastos', 'account_balance_wallet'), b('ayuda', 'Ayuda', 'support_agent'), b('sol', 'Solicitudes', 'assignment'), b('libre', 'Ver mi mundo', 'park'));
+    saludado = true;
+    uku(esc(sal.t), btns, '', { title: 'Tu asistente' });
+    mostrar();
+    if (b3d) b3d.play('wave');
+  }
+  // Sin conversación ni sección, Uku vuelve a su mundo (globo, propuestas, cámara libre)
+  function mundoLibre() { msgs = []; pend = null; agente = null; if (solSec && !solSec.hidden) { solSec.hidden = true; host.classList.remove('uk-in-sec'); } seccion('uku'); pintar(); saludado = true; globoOff = false; pintarGlobo(); }
+  // El chevron de arriba baja el asistente: se cierra lo abierto y vuelves a la pestaña anterior
   function cerrar() {
-    if (cerrando) return; cerrando = true; fx('tap');
+    if (cerrando) return;
+    cerrando = true; fx('tap');
     host.classList.add('is-out');
     setTimeout(function () {
       host.classList.remove('is-out'); cerrando = false;
       msgs = []; pend = null; agente = null;
       if (solSec && !solSec.hidden) { solSec.hidden = true; host.classList.remove('uk-in-sec'); }
       seccion('uku'); pintar();
+      if (window.__goView) __goView(volverA);
     }, RM ? 0 : 220);
   }
   // Volver un paso: en la conversación, a la tarjeta anterior; en una sección, su flecha
@@ -673,7 +700,9 @@
       if (s) { m3.setBloom(s.bloom); m3.setMood(s.mood); }
       m3.attach(el, { score: s ? s.score : 60, onReady: function () { var k = host.querySelector('.uk-skel'); if (k) { k.classList.add('is-off'); setTimeout(function () { k.remove(); }, 400); } reencuadrar(); setTimeout(encuadrar, 1500); }, onTap: tocado });
       el.classList.add('is-3d');
-      if (!escena.hola) { escena.hola = 1; m3.setAmbient('walk'); pintarGlobo(); }
+      // Si la escena llega con una conversación ya abierta (modo asistente), Uku entra directo en foco
+      if (host.classList.contains('is-chat')) { m3.setFocus(true); m3.setShift(-.3, -.47); if (b3d.setFront) b3d.setFront(true); }
+      if (!escena.hola) { escena.hola = 1; m3.setAmbient('walk'); if (!msgs.length) pintarGlobo(); }
     }).catch(function () {});
   }
 
@@ -871,6 +900,7 @@
       case 'globo': fx('tap'); saludado = true; nota = null; return ocultarGlobo();
       case 'prop': return propuesta(v);
       case 'mundo': mundo(); return mostrar();
+      case 'libre': return mundoLibre();
       case 'ayudatoda': fx('select'); return seccion('ayuda');
       case 'hum': return humano(v);
       case 'tel': location.href = 'tel:' + v; return;
@@ -909,15 +939,18 @@
     if (nav) {
       nav.querySelector('.nav-item__label').textContent = 'Asistente';
       nav.querySelector('.nav-item__wrap').innerHTML = ic('leaf_spark');
+      nav.hidden = true; // el asistente se abre desde arriba, no desde la barra de abajo
       nav.addEventListener('click', function () { seccion('uku'); });
     }
     // Arriba, un solo acceso: Uku en lugar de la lupa y los audífonos
     var noti = document.querySelector('.top-bar__actions [data-action="Notificaciones"]');
     if (noti) {
       noti.dataset.in = '0 1 2 4';
-      // El ojo de privacidad va en la barra de arriba, junto a la campana (no en la pantalla de Uku)
-      var eye = document.createElement('button'); eye.type = 'button'; eye.className = 'icon-button uk-eye'; eye.setAttribute('data-eye', ''); eye.setAttribute('aria-label', 'Ocultar saldos'); eye.setAttribute('aria-pressed', 'false'); eye.dataset.in = noti.dataset.in; eye.innerHTML = ic('visibility');
-      noti.parentNode.insertBefore(eye, noti);
+      // Arriba, junto a la campana: el asistente (la lupa con el brillo de la IA). Se abre a pantalla completa.
+      var top = document.createElement('button'); top.type = 'button'; top.className = 'icon-button uk-top'; top.setAttribute('aria-label', 'Asistente'); top.dataset.in = noti.dataset.in;
+      top.innerHTML = '<svg class="uk-top__svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M11 3.5A7.5 7.5 0 1 0 18.5 11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M16.6 16.6 21 21" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M17.5 1.6c.55 2.1 1.3 2.85 3.4 3.4-2.1.55-2.85 1.3-3.4 3.4-.55-2.1-1.3-2.85-3.4-3.4 2.1-.55 2.85-1.3 3.4-3.4z" fill="currentColor"/></svg>';
+      top.addEventListener('click', abrirAsistente);
+      noti.parentNode.insertBefore(top, noti);
     }
     // Lo que abre Mis finanzas desde otros lugares lleva al PFM completo, dentro de Uku
     if (window.PFM) { var o = PFM.open; PFM.open = function () { finOn(true); o(); }; }
@@ -939,7 +972,7 @@
     var tt = document.querySelector('.top-bar__title');
     function titulo() { if (!tt) return; var t = view.classList.contains('active') ? (view.classList.contains('uk-ayuda') ? 'Ayuda' : view.classList.contains('uk-fin') ? 'Mis finanzas' : 'Uku') : null; if (t && tt.textContent !== t) tt.textContent = t; }
     new MutationObserver(function () {
-      root.classList.toggle('uk-here', view.classList.contains('active')); libre(); titulo();
+      root.classList.toggle('uk-here', view.classList.contains('active')); libre(); titulo(); modo(); reencuadrar();
       if (view.classList.contains('active') && !view.classList.contains('uk-fin') && !view.classList.contains('uk-ayuda')) {
         window.scrollTo(0, 0); setTimeout(escena, 120); // después del PFM, que también usa la escena
         // Una conversación vieja sin nada pendiente no se queda colgada

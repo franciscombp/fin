@@ -7,7 +7,7 @@
    ===================================================================== */
 
 /* Arriba solo queda Notificaciones: buscar, ayuda y finanzas viven en Uku */
-.app-uku .top-bar__actions > :not([data-action="Notificaciones"]):not([data-eye]) { display: none !important; }
+.app-uku .top-bar__actions > :not([data-action="Notificaciones"]):not(.uk-top) { display: none !important; }
 /* En su pantalla, el título grande va en la sección (como en las demás), no en la barra */
 .app-uku.uk-idle .top-bar__title { opacity: 0 !important; }
 
@@ -694,3 +694,17 @@ html.uk-chatting .uk.is-kb .uk-results, .uk.is-kb .uk-results { bottom: 80px; }
 .uk-card__face { display: none; }
 .uk-msg:not(.is-agent) .uk-msg__face, .uk-msg__face.is-gap { display: none; }
 .uk-card .uk-dots { margin-left: var(--uk-inset); }
+
+/* ---------- El asistente se abre desde arriba, a pantalla completa ----------
+   La lupa con el brillo de la IA va junto a la campana; la pestaña de abajo y el ojo desaparecen.
+   Con el asistente abierto no hay barra de arriba ni de abajo: el chevron de arriba lo baja. */
+.app-uku .top-bar__actions > :not([data-action="Notificaciones"]):not(.uk-top) { display: none !important; }
+.app-uku .nav-item[data-view="1"] { display: none !important; }
+.uk-top__ic { position: relative; display: inline-grid; place-items: center; }
+.uk-top__spark { position: absolute; top: -5px; right: -7px; font-size: 13px !important; font-variation-settings: 'FILL' 1, 'wght' 500; color: var(--bp-interaction-tertiary-fg); }
+/* En su mundo también se ve el chevron para bajar el asistente */
+.app-uku .uk .uk-chathead { opacity: 1; pointer-events: none; }
+.app-uku .uk .uk-chathead__x { pointer-events: auto; }
+.app-uku .uk:not(.is-chat) .uk-chathead { opacity: 1; pointer-events: none; }
+html.uk-chatting .uk:not(.is-chat) { padding-top: calc(60px + env(safe-area-inset-top, 0px)); } /* a pantalla completa, el chevron de arriba tiene su fila */
+.uk-top__svg { width: 24px; height: 24px; display: block; }
