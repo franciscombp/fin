@@ -115,7 +115,7 @@
       if (!es) setTimeout(function () { if (!msgs.length) bg.style.backgroundImage = ''; }, 500);
     }
     if (era !== es) {
-      input.placeholder = es ? 'Escríbele a Uku' : 'Habla con Uku o busca algo';
+      input.placeholder = es ? 'Escríbele a Uku' : 'Pregunta o pide algo';
       if (!es && b3d) setTimeout(function () { b3d.play('wave'); setTimeout(function () { if (!msgs.length) b3d.play('walk'); }, 2200); }, 350); // vuelve a su mundo, saluda y camina
       if (es && b3d) b3d.play(null); // en la conversación se queda quieto
     }
@@ -168,8 +168,10 @@
     globoEl.innerHTML = (x ? '<p class="uk-globo__tag">' + esc(x.tag) + '</p>' : '') + '<p class="uk-globo__t">' + esc(t) + '</p>' +
       '<div class="uk-globo__acts">' + (go ? '<button class="btn btn--tertiary uk-globo__go" data-k="' + esc(go.k) + '" data-l="' + esc(go.l) + '">' + esc(go.l) + '</button>' : '') +
       (x && x.luego ? '<button class="uk-globo__skip" data-k="' + esc(x.luego) + '" data-l="Ahora no">Ahora no</button>' : '') +
-      ((hola && n) || (x && n > 1) ? '<button class="uk-globo__skip" data-k="siguiente" data-l="Siguiente">' + (hola ? 'Qué me propones' : 'Siguiente') + '</button>' : '') + '</div>' +
-      (!hola && n > 1 ? '<div class="uk-globo__dots">' + P.map(function (_, i) { return '<i' + (i === gi % n ? ' class="is-on"' : '') + '></i>'; }).join('') + '</div>' : '');
+      (hola && n ? '<button class="uk-globo__skip" data-k="siguiente" data-l="Qué me propones">Qué me propones</button>' : '') + '</div>' +
+      // Al pie: por dónde vas y la siguiente propuesta, separadas de la acción principal
+      (!hola && n > 1 ? '<div class="uk-globo__foot"><div class="uk-globo__dots">' + P.map(function (_, i) { return '<i' + (i === gi % n ? ' class="is-on"' : '') + '></i>'; }).join('') + '</div>' +
+        '<button class="uk-globo__next" data-k="siguiente" data-l="Siguiente">Siguiente' + ic('chevron_right') + '</button></div>' : '');
     globoEl.classList.remove('is-new'); void globoEl.offsetWidth; globoEl.classList.add('is-new');
     // Uku hace lo que dice: saluda, habla, se preocupa o celebra según el mensaje
     if (b3d) b3d.play(hola ? 'wave' : nota ? 'happy' : !x ? 'happy' : x.kind === 'warn' ? 'worried' : 'talk');
