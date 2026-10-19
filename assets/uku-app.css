@@ -236,3 +236,5 @@ html.uk-chatting .uk { top: 0 !important; bottom: 0 !important; }
 
 /* Títulos de bloque de las subsecciones de Asistente: uno solo (el de Mis finanzas), igual en Ayuda y en sus detalles */
 .uk-panel h2 { margin: 0 0 var(--bp-semantic-spacing-micro-md, 8px) !important; font: var(--cx-headline) !important; letter-spacing: -.2px !important; color: var(--bp-theme-color-text-primary) !important; }
+/* En el detalle, el título está en el encabezado: su «‹ Mis finanzas» se va */
+.uk-panel .pf-back { display: none; }

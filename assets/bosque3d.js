@@ -53,7 +53,7 @@ function palette() {
   };
   // Paleta onírica: tonos lavados, casi blancos, para que el oso (que
   // conserva sus colores) sea lo único nítido de la escena.
-  // Ilustración: solo azules, grises y amarillo (los colores de Uku)
+  // Ilustración: grises y blancos; el amarillo queda para lo nuevo (flores de ahorro, logros)
   return dark ? {
     bg: '#1f1f1f', ground: '#2b2d33', dry: '#2f3036', trunk: '#4a4f5c', pine: ['#3c4659', '#434d61', '#4a5468'],
     round: ['#465066', '#4e586e'], rock: '#3a3c43', grass: '#434b5c', flower: '#f2d64b', dust: '#ffffff'
@@ -267,8 +267,8 @@ function buildDust() {
 const CLIP_OF = { wave: 'Waving', happy: 'Happy Idle', talk: 'Happy Idle', worried: 'Thoughtful Head Nod', nod: 'Thoughtful Head Nod', water: 'Watering', hold: 'Plant A Plant' };
 const IDLE = 'Happy Idle';
 function clipFor() { if (gesture === 'walk') return walkMoving ? 'Walking' : IDLE; return (gesture && CLIP_OF[gesture]) || IDLE; }
-const MOOD_TINT = { feliz: new THREE.Color('#fff1c2'), pensativo: new THREE.Color('#c4cfe4'), tranquilo: new THREE.Color('#ffffff') }, WHITE = new THREE.Color('#ffffff');
-const BEAR_S = .7, WALK_ANG = .035 / WORLD_S, WALK_CYCLE = 14, WALK_MOVE = 3.5; // Uku grande; se queda parado casi todo el tiempo y al caminar avanza despacio sobre el planeta
+const MOOD_TINT = { feliz: new THREE.Color('#ffffff'), pensativo: new THREE.Color('#c4cfe4'), tranquilo: new THREE.Color('#ffffff') }, WHITE = new THREE.Color('#ffffff');
+const BEAR_S = .5, WALK_ANG = .035 / WORLD_S, WALK_CYCLE = 14, WALK_MOVE = 3.5; // Uku grande; se queda parado casi todo el tiempo y al caminar avanza despacio sobre el planeta
 function holdObject(kind) {
   if (held) { held.parent && held.parent.remove(held); held = null; }
   if (!kind || !bones.hand_R || umb) return; // con el paraguas en la mano no sostiene otra cosa
