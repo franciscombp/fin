@@ -11,7 +11,11 @@
   function money0(v) { return money(v).replace(/,00$/, ''); }
   function fx(n) { try { window.Haptics && Haptics.fx && Haptics.fx(n); } catch (e) {} }
   function face() { return window.Asistente ? Asistente.faceIMG() : ''; }
-  function ic(n) { return '<span class="material-symbols-rounded" aria-hidden="true">' + n + '</span>'; }
+  // leaf_spark no existe en Material Symbols: hoja con estrellita, del mismo trazo que los demás íconos
+  var SVG = {
+    leaf_spark: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 19.5C4.5 12 8.5 8 15.5 7.5 15 14.5 11 19.5 4.5 19.5Z"/><path d="M4.5 19.5l6-6"/><path d="M19 2.5Q19.6 4.4 21.5 5Q19.6 5.6 19 7.5Q18.4 5.6 16.5 5Q18.4 4.4 19 2.5Z" fill="currentColor" stroke-width="1"/></svg>'
+  };
+  function ic(n) { return SVG[n] || '<span class="material-symbols-rounded" aria-hidden="true">' + n + '</span>'; }
   function acciones(q) { return window.Buscador && Buscador.rank ? Buscador.rank(q) : []; }
   function accion(label) { return window.Buscador && Buscador.actions ? Buscador.actions().filter(function (a) { return a.label === label; })[0] : null; }
   function ayuda(q, n) { return window.Soporte && Soporte.find ? Soporte.find(q, n || 3) : []; }
