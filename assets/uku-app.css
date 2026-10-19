@@ -233,3 +233,6 @@ html.uk-chatting .uk { top: 0 !important; bottom: 0 !important; }
 .uk-msg__b, .uk-me p { box-shadow: 0 4px 16px rgb(0 0 0 / .08); }
 .uk-me p { background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); }
 .uk.is-chat .uk-bar { margin-bottom: 0; }
+
+/* Títulos de bloque de las subsecciones de Asistente: uno solo (el de Mis finanzas), igual en Ayuda y en sus detalles */
+.uk-panel h2 { margin: 0 0 var(--bp-semantic-spacing-micro-md, 8px) !important; font: var(--cx-headline) !important; letter-spacing: -.2px !important; color: var(--bp-theme-color-text-primary) !important; }

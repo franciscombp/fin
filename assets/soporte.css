@@ -100,7 +100,6 @@
 /* ---------- Centro de ayuda: búsqueda, categorías y tutoriales ---------- */
 .sp.is-page .sp-hub, .sp.is-page .sp-log { display: none !important; }
 .sp.is-page .sp-composer { display: none; }
-.sp-sec h2 { font: var(--ui-body-md-medium, 500 16px/22px sans-serif) !important; color: var(--bp-theme-color-text-secondary) !important; margin-left: 4px !important; }
 .sp-list { padding: 4px 20px !important; border-radius: 24px !important; }
 .sp-row { min-height: 68px; padding: 14px 0 !important; }
 .sp-find { display: flex; align-items: center; gap: 10px; height: 52px; margin-top: 20px; padding: 0 16px; border-radius: 99px; background: var(--bp-theme-color-surface-container-default); }
