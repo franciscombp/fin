@@ -93,6 +93,8 @@
     // Dictado: el mismo del buscador, con la frase como búsqueda o pregunta
     if (window.SpeechRecognition || window.webkitSpeechRecognition) host.querySelector('.uk-bar__mic').hidden = false;
     view.addEventListener('click', onClick);
+    gestos();
+    host.classList.add('is-fresh'); setTimeout(function () { host.classList.remove('is-fresh'); }, 1500); // los accesos solo entran animados la primera vez
     document.addEventListener('pfm:change', function () { gi = 0; if (pend) pend.cambio = true; if (!msgs.length) pintar(); });
     pintar();
   }
@@ -411,6 +413,63 @@
     resuelto('Tu caso ' + (x ? x.id + ' ' : '') + 'queda en Solicitudes para que veas cómo va. ¿Algo más?');
   }
 
+  // Bajar la tarjeta: primero se va (animación corta) y después se limpia; así no desaparece de golpe
+  var cerrando = false;
+  function cerrar() {
+    if (cerrando) return; cerrando = true; fx('tap');
+    host.classList.add('is-out');
+    setTimeout(function () {
+      host.classList.remove('is-out'); cerrando = false;
+      msgs = []; pend = null; agente = null;
+      if (solSec && !solSec.hidden) { solSec.hidden = true; host.classList.remove('uk-in-sec'); }
+      seccion('uku'); pintar();
+    }, RM ? 0 : 220);
+  }
+  // Volver un paso: en la conversación, a la tarjeta anterior; en una sección, su flecha
+  function atras() {
+    var bb = view.querySelector('.uk-panel .uk-back-btn'), sb = solSec && !solSec.hidden && solSec.querySelector('[data-s="back"]');
+    if (view.classList.contains('uk-fin') || view.classList.contains('uk-ayuda')) return bb && bb.click();
+    if (sb) return sb.click();
+    if (msgs.filter(function (m) { return m.uku != null; }).length > 1) return onClick({ target: chat.querySelector('[data-k="atras-card"]') || chat });
+    cerrar();
+  }
+  /* ---------- Gestos ----------
+     Arrastrar la tarjeta hacia abajo la cierra; deslizar a la derecha vuelve un paso;
+     deslizar el globo hacia arriba abre «Así vas». Mientras arrastras, la tarjeta sigue al dedo. */
+  function gestos() {
+    var g = null;
+    function tarjeta(t) { return t.closest('.uk-card, .uk-panel, .uk-sec'); }
+    host.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      var card = tarjeta(e.target), globo = e.target.closest('.uk-globo');
+      if (!card && !globo) return;
+      // Dentro de una lista o un contenido que se desplaza, el dedo es para desplazar; el arrastre vale desde la cabecera
+      var cab = e.target.closest('.uk-card__top, .uk-panel .uk-head, .uk-sec__top');
+      g = { x: e.clientX, y: e.clientY, el: card || globo, cab: !!cab, globo: !!globo, on: false, dir: null };
+    });
+    host.addEventListener('pointermove', function (e) {
+      if (!g) return;
+      var dx = e.clientX - g.x, dy = e.clientY - g.y;
+      if (!g.dir) { if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return; g.dir = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y'; }
+      if (g.globo) return;
+      if (g.dir === 'y' && !g.cab) return; // el contenido se desplaza solo
+      if (g.dir === 'y' && dy < 0) return;
+      if (g.dir === 'x' && dx < 0) return;
+      g.on = true; g.el.classList.add('is-drag'); g.el.style.transform = g.dir === 'y' ? 'translateY(' + dy + 'px)' : 'translateX(' + dx * .6 + 'px)';
+      g.el.style.opacity = g.dir === 'x' ? String(Math.max(.4, 1 - dx / 300)) : '';
+      e.preventDefault();
+    }, { passive: false });
+    function fin(e) {
+      if (!g) return;
+      var dx = e.clientX - g.x, dy = e.clientY - g.y, s = g; g = null;
+      if (s.globo) { if (dy < -40 && Math.abs(dx) < 60) { fx('select'); dinero(); mostrar(); } return; }
+      s.el.classList.remove('is-drag'); s.el.style.transform = ''; s.el.style.opacity = '';
+      if (!s.on) return;
+      if (s.dir === 'y' && dy > 90) return cerrar();
+      if (s.dir === 'x' && dx > 80) { fx('tap'); return atras(); }
+    }
+    host.addEventListener('pointerup', fin); host.addEventListener('pointercancel', fin);
+  }
   /* ---------- Salir a hacer algo y volver ----------
      Antes de ir a una acción, Uku recuerda qué fuiste a hacer. Cuando
      vuelves a su pantalla (cerraste la hoja, el juego o regresaste desde
@@ -578,7 +637,7 @@
       case 'ok': return resuelto();
       case 'no': uku('Cuéntame con tus palabras qué necesitas, o te paso con una persona.', [b('persona', 'Hablar con una persona', 'support_agent')]); pintarChat(); return setTimeout(function () { input.focus(); }, 300);
       case 'consejo': { var A = consejos(); if (!A.length) return resuelto('Por ahora no tengo nada más. ¡Vas muy bien!'); var x = A[0]; uku(esc(x.di || x.t), x.act ? [b('pfm:' + x.act, x.actl, 'arrow_forward')] : []); return pintarChat(); }
-      case 'cerrar': msgs = []; pend = null; agente = null; fx('tap'); if (solSec && !solSec.hidden) { solSec.hidden = true; host.classList.remove('uk-in-sec'); } seccion('uku'); return pintar();
+      case 'cerrar': return cerrar();
     }
   }
   // Un solo punto de entrada: la lupa y la ayuda llevan a Uku (antes que el buscador y el soporte)
