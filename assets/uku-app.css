@@ -108,9 +108,6 @@ html:not(.theme-y2k) .uk-globo__go.btn { height: auto !important; min-height: 0 
    detrás de un fondo limpio) y baja la cabecera del chat con Uku. Al
    cerrar, todo vuelve con la transición inversa. */
 .uk-scene { transition: transform .5s cubic-bezier(.2, .8, .2, 1), filter .5s ease, opacity .5s ease; transform-origin: 60% 70%; }
-.uk.is-chat .uk-scene { transform: scale(1.08); filter: blur(10px); opacity: .5; }
-.uk-chatbg { position: absolute; inset: 0; z-index: 2; background: var(--bp-surface-page, #f5f5f5); opacity: 0; pointer-events: none; transition: opacity .45s ease; }
-.uk.is-chat .uk-chatbg { opacity: .92; }
 /* Secciones dentro del mundo de Uku (Solicitudes): se ven encima, con su propia cabecera */
 .uk-sec { position: absolute; inset: 0; z-index: 8; display: flex; flex-direction: column; gap: 12px; padding: calc(12px + env(safe-area-inset-top, 0px)) 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--bp-theme-color-surface-page-default, #f5f5f5); overflow: hidden; }
 .uk-sec[hidden] { display: none; }
@@ -146,17 +143,7 @@ html:not(.theme-y2k) .uk-prop__go.btn { height: auto !important; min-height: 0 !
 /* Chat a pantalla completa: sin barra superior ni de navegación */
 html.uk-chatting .header, html.uk-chatting .nav-bar { display: none !important; }
 html.uk-chatting .uk { top: 0 !important; bottom: 0 !important; }
-html.uk-chatting .uk-chathead { padding-top: calc(12px + env(safe-area-inset-top, 0px)); }
-html.uk-chatting .uk-bar { bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
-.uk-chathead { position: absolute; z-index: 6; left: 0; right: 0; top: 0; display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 16px; background: var(--bp-surface-page, #f5f5f5); border-bottom: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); transform: translateY(-100%); opacity: 0; pointer-events: none; transition: transform .4s cubic-bezier(.2, .8, .2, 1), opacity .3s ease; }
 .uk.is-chat .uk-chathead { transform: none; opacity: 1; pointer-events: auto; transition-delay: .1s; }
-.uk-chathead__face { flex: 0 0 40px; width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: var(--bp-interaction-primary-bg, #ffdd00); }
-.uk-chathead__face img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
-.uk-chathead__t { flex: 1; display: flex; flex-direction: column; }
-.uk-chathead__t b { font: var(--ui-body-md-semibold); color: var(--bp-interaction-tertiary-fg); }
-.uk-chathead__t small { display: flex; align-items: center; gap: 6px; font: var(--cx-caption); color: var(--cx-muted); }
-.uk-chathead__t small::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #4f8a64; }
-.uk-chathead__x { width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); cursor: pointer; }
 .uk.is-chat .uk-bar__x { display: none; }
 
 /* El globo y los accesos se van al empezar a conversar, y vuelven al cerrar */
@@ -230,3 +217,19 @@ html.uk-chatting .uk-bar { bottom: calc(12px + env(safe-area-inset-bottom, 0px))
 /* El encabezado de Asistente va arriba y la subsección debajo; Ayuda no repite su propio título */
 .uk-panel { order: 2; }
 .uk-ayuda-slot .sp-top { display: none; }
+
+/* Conversación con Uku (inspirada en Tolan): el mundo se ve borroso detrás, los mensajes flotan
+   sobre él, el botón de bajar va arriba al centro y la barra es una píldora abajo. */
+.uk.is-chat .uk-scene { transform: none; filter: blur(2px); opacity: 1; }
+.uk-chatbg { position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; background: linear-gradient(var(--bp-surface-page, #f5f5f5) 14%, rgb(245 245 245 / 0) 62%); transition: opacity .45s ease; }
+.uk.is-chat .uk-chatbg { opacity: 1; }
+.uk-chathead { position: absolute; z-index: 6; top: 8px; left: 0; right: 0; display: flex; justify-content: center; pointer-events: none; }
+.uk-chathead__x { pointer-events: auto; }
+.uk.is-chat .uk-chathead { transform: none; opacity: 1; pointer-events: none; }
+.uk.is-chat .uk-chathead__x { pointer-events: auto; }
+.uk-bar { padding: 6px; border-radius: 28px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 24px rgb(0 0 0 / .12); }
+.uk-bar input { height: 48px; background: transparent; box-shadow: none; border-radius: 22px; }
+.uk-bar__mic { width: 48px; height: 48px; flex-basis: 48px; background: transparent; box-shadow: none; }
+.uk-msg__b, .uk-me p { box-shadow: 0 4px 16px rgb(0 0 0 / .08); }
+.uk-me p { background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); }
+.uk.is-chat .uk-bar { margin-bottom: 0; }

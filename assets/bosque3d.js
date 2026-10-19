@@ -636,6 +636,7 @@ export function attach(el, opts) {
 }
 export function setScore(s) { if (!bear && target != null) { target = s; return; } if (s !== score) { score = s; if (renderer) buildForest(); } }
 export function setBloom(b) { b = b == null ? null : Math.max(0, Math.min(100, b)); waterOn = !!b; if (b !== bloom) { bloom = b; if (renderer) buildForest(); } }
+export function setShift(f) { if (!host) return; host.dataset.shift = f; resize(); }
 export function setMood(m) { mood = ['feliz', 'tranquilo', 'pensativo'].includes(m) ? m : null; }
 export function isReady() { return !!bear; }
 export function detach(el) { if (host === el) { host = null; } }
