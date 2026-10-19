@@ -99,7 +99,7 @@
     var era = host.classList.contains('is-chat'), es = msgs.length > 0;
     host.classList.toggle('is-typing', !!input.value.trim());
     host.classList.toggle('is-chat', es);
-    if (b3d && era !== es) b3d.setShift(es ? -.22 : 0, es ? .2 : 0); // con tarjetas, Uku sube y queda a la izquierda, asomado sobre ellas
+    if (b3d && era !== es) b3d.setShift(es ? -.3 : 0, es ? -.4 : 0); // en la conversación Uku baja a la esquina, junto a la barra (como Tolan): deja el espacio a las tarjetas sin irse
     // En la conversación no hay barra superior ni inferior: el chat ocupa la pantalla
     // En Mis finanzas o Ayuda vuelven la barra de arriba y la de abajo, aunque la conversación siga esperando
     var enSec = view.classList.contains('uk-fin') || view.classList.contains('uk-ayuda');
