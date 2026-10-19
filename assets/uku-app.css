@@ -428,7 +428,7 @@ html:not(.theme-y2k) .uk-globo__acts .uk-globo__go.btn { margin: 0 !important; }
 /* ---------- Más aire en las tarjetas ----------
    Márgenes de 20 px, cifra grande con su etiqueta debajo, fichas y filas más altas, chips
    cómodos y una separación clara entre la respuesta y lo que puedes hacer. */
-.uk-card { border-radius: 20px; }
+.uk-card { border-radius: var(--bp-semantic-radius-lg, 16px); }
 .uk-card__top { gap: 12px; padding: 20px 20px 0; }
 .uk-card__face { flex-basis: 32px; width: 32px; height: 32px; }
 .uk-card__q { font-size: 18px; line-height: 24px; }
@@ -453,7 +453,7 @@ html:not(.theme-y2k) .uk-globo__acts .uk-globo__go.btn { margin: 0 !important; }
 /* El aviso (toast) va arriba, bajo el botón de bajar: no tapa a Uku ni la barra */
 html.uk-chatting .pf-toast { top: calc(64px + env(safe-area-inset-top, 0px)); bottom: auto; }
 /* Las secciones, con el mismo margen */
-.uk.is-chat .uk-panel, .uk.is-chat .uk-sec { border-radius: 20px; }
+.uk.is-chat .uk-panel, .uk.is-chat .uk-sec { border-radius: var(--bp-semantic-radius-lg, 16px); }
 .uk.is-chat .uk-panel .uk-head { padding: 18px 16px 8px; }
 .uk-sec__top { padding: 18px 16px 8px; }
 .uk-sec__body { padding: 0 20px 20px; }
@@ -483,7 +483,7 @@ html.uk-chatting .pf-toast { top: calc(64px + env(safe-area-inset-top, 0px)); bo
    Pasos con puntos, un ícono grande, título, una frase y el botón principal. Uku, grande, saluda debajo. */
 .uk-onb { position: absolute; z-index: 7; left: 16px; right: 16px; top: calc(16px + env(safe-area-inset-top, 0px)); animation: ukCard .4s cubic-bezier(.2, 1.1, .4, 1) both; }
 .uk-onb.is-out { animation: ukCardOut .22s ease-in both; }
-.uk-onb__card { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 20px 20px 16px; border-radius: 20px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 12px 34px rgba(15, 38, 92, .18); animation: ukIn .35s ease both; }
+.uk-onb__card { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 20px 20px 16px; border-radius: var(--bp-semantic-radius-lg, 16px); background: var(--bp-theme-color-surface-container-default); box-shadow: 0 var(--bp-semantic-elevation-high-offset-y, 12px) var(--bp-semantic-elevation-high-blur, 24px) var(--bp-semantic-elevation-high-color, rgba(15, 38, 92, .16)); animation: ukIn .35s ease both; }
 .uk-onb__dots { display: flex; gap: 6px; margin: 0 0 4px !important; }
 .uk-onb__dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--cx-line, #c9ced8); transition: width .2s ease, background .2s ease; }
 .uk-onb__dots i.is-on { width: 18px; background: var(--bp-interaction-primary-bg, #ffdd00); }
@@ -510,3 +510,35 @@ html.uk-chatting .pf-toast { top: calc(64px + env(safe-area-inset-top, 0px)); bo
 .uk.is-chat .uk-ayuda-slot .sp-cat b, .uk.is-chat .uk-ayuda-slot .sp-tut b { flex: 1; font: var(--ui-body-md-medium); }
 .uk.is-chat .uk-ayuda-slot .sp-cat small, .uk.is-chat .uk-ayuda-slot .sp-tut small { font: var(--cx-caption); }
 .uk.is-chat .uk-ayuda-slot .sp-sec--people .sp-row__ic { display: none; }
+
+/* ---------- Alineación con el sistema (Solar) ----------
+   Tipografía, radios y elevación desde los tokens: nada de tamaños sueltos. Los íconos
+   mantienen sus 20/24 px del sistema. */
+.uk {
+  --uk-font: var(--sol-font, Roboto, sans-serif);
+  --uk-title: var(--bp-semantic-typography-brand-title-sm-font-weight, 600) var(--bp-semantic-typography-brand-title-sm-font-size, 18px)/var(--bp-semantic-typography-brand-title-sm-line-height, 24px) var(--uk-font);
+  --uk-title-md: var(--bp-semantic-typography-brand-title-md-font-weight, 700) var(--bp-semantic-typography-brand-title-md-font-size, 22px)/var(--bp-semantic-typography-brand-title-md-line-height, 28px) var(--uk-font);
+  --uk-body: var(--bp-semantic-typography-brand-body-md-regular-font-weight, 400) var(--bp-semantic-typography-brand-body-md-regular-font-size, 16px)/var(--bp-semantic-typography-brand-body-md-regular-line-height, 24px) var(--uk-font);
+  --uk-body-medium: var(--ui-body-md-medium);
+  --uk-body-semibold: var(--ui-body-md-semibold);
+  --uk-sm: var(--ui-body-sm-medium);
+  --uk-sm-semibold: var(--ui-body-sm-semibold);
+  --uk-caption: var(--cx-caption);
+  --uk-numeric: var(--bp-semantic-typography-brand-numeric-sm-font-weight, 700) var(--bp-semantic-typography-brand-numeric-sm-font-size, 32px)/var(--bp-semantic-typography-brand-numeric-sm-line-height, 40px) var(--uk-font);
+  --uk-elev-low: 0 var(--bp-semantic-elevation-low-offset-y, 4px) var(--bp-semantic-elevation-low-blur, 8px) var(--bp-semantic-elevation-low-color, rgba(15, 38, 92, .08));
+  --uk-elev-mid: 0 var(--bp-semantic-elevation-mid-offset-y, 8px) var(--bp-semantic-elevation-mid-blur, 16px) var(--bp-semantic-elevation-mid-color, rgba(15, 38, 92, .12));
+  --uk-elev-high: 0 var(--bp-semantic-elevation-high-offset-y, 12px) var(--bp-semantic-elevation-high-blur, 24px) var(--bp-semantic-elevation-high-color, rgba(15, 38, 92, .16));
+}
+.uk-globo, .uk-pill { box-shadow: var(--uk-elev-low); }
+.uk-bar, .uk-results { box-shadow: var(--uk-elev-mid); }
+.uk-card, .uk.is-chat .uk-panel, .uk.is-chat .uk-sec, .uk-onb__card, .uk-chathead__x { box-shadow: var(--uk-elev-high); }
+.uk-globo__t, .uk-prop__t, .uk-card__t, .uk-onb__s { font: var(--uk-body); font-size: unset; line-height: unset; }
+.uk-card__q, .uk-panel .uk-head__t, .uk-sec__t { font: var(--uk-title); font-size: unset; line-height: unset; letter-spacing: 0; }
+.uk-onb__t { font: var(--uk-title-md); font-size: unset; line-height: unset; letter-spacing: 0; }
+.uk-num b { font: var(--uk-numeric); font-size: unset; line-height: unset; letter-spacing: -.4px; }
+.uk-num small, .uk-meter__l, .uk-stat small, .uk-card__data dt { font: var(--uk-sm); font-size: unset; line-height: unset; }
+.uk-stat b, .uk-card__data dd { font: var(--uk-body-semibold); font-size: unset; line-height: unset; }
+.uk-card__row, .uk-row__t b { font: var(--uk-body-medium); font-size: unset; }
+.uk-card .uk-msg__acts .uk-chip, .uk-chip { font: var(--uk-sm-semibold); font-size: unset; }
+.uk-prop__tag, .uk-globo__tag, .uk-links small, .uk-results__l, .uk-sec__l { font: var(--uk-caption); font-size: unset; text-transform: uppercase; letter-spacing: .4px; }
+.uk-bar input { font: var(--uk-body-medium); font-size: 16px; } /* 16 px evita el zoom de iOS al enfocar */
