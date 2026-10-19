@@ -21,27 +21,28 @@ html.uk-idle, html.uk-idle body { overflow: hidden; overscroll-behavior: none; }
 /* ---------- La pantalla: el mundo de Uku de borde a borde ---------- */
 .uk { position: fixed; z-index: 1; left: 0; right: 0; top: calc(108px + env(safe-area-inset-top, 0px)); bottom: var(--uk-nav, 76px); max-width: 480px; margin: 0 auto; overflow: hidden; background: linear-gradient(#e9f1f7, #f4f4f2 70%); }
 .uk p { margin: 0; }
-.uk-scene { position: absolute; inset: 0; }
+.uk-scene { position: absolute; left: 0; right: 0; top: 196px; bottom: 236px; }
 .uk-scene .b3d { position: absolute; inset: 0; }
 .uk-scene canvas { display: block; width: 100% !important; height: 100% !important; }
 
 /* Su globo: lo más importante, con su botón */
 /* Su globo: como si Uku te lo contara, en una nube pequeña junto a él */
-.uk-globo { position: absolute; z-index: 3; top: 150px; left: 16px; width: min(72%, 280px); padding: 12px 14px; border-radius: 18px 18px 18px 4px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 18px rgba(15, 38, 92, .10); animation: ukIn .4s cubic-bezier(.2, 1.3, .4, 1) .2s both; transition: opacity .2s, transform .2s; }
+.uk-globo { position: absolute; z-index: 3; top: 52px; left: 16px; width: min(72%, 280px); padding: 12px 14px; border-radius: 18px 18px 18px 4px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 18px rgba(15, 38, 92, .10); animation: ukIn .4s cubic-bezier(.2, 1.3, .4, 1) .2s both; transition: opacity .2s, transform .2s; }
 .uk-globo::after { content: ''; position: absolute; left: 12px; bottom: -8px; border: 8px solid transparent; border-bottom: 0; border-top-color: var(--bp-theme-color-surface-container-default); }
 .uk-globo__t { margin: 0 !important; font: var(--ui-body-md-regular, 400 15px/21px sans-serif); font-size: 15px; line-height: 21px; color: var(--bp-theme-color-text-primary); }
 html:not(.theme-y2k) .uk-globo__go.btn { height: auto !important; min-height: 0 !important; margin: 4px 0 0 !important; padding: 0 !important; font-size: 14px !important; }
 @keyframes ukIn { from { opacity: 0; transform: translateY(8px) scale(.96); } }
 
 /* Los accesos: a la izquierda, sobre su mundo */
-.uk-pills { position: absolute; z-index: 3; left: 12px; right: 12px; bottom: 92px; display: flex; flex-direction: row; align-items: stretch; gap: 10px; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; padding: 4px 4px 8px; }
+.uk-pills { position: absolute; z-index: 3; left: 12px; right: 12px; bottom: 84px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 0; }
 .uk-pills::-webkit-scrollbar { display: none; }
 .uk-pill { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 16px 8px 12px; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); box-shadow: 0 2px 10px rgba(15, 38, 92, .08); text-align: left; cursor: pointer; animation: ukIn .35s ease both; }
 .uk-pill:nth-child(2) { animation-delay: .06s; } .uk-pill:nth-child(3) { animation-delay: .12s; } .uk-pill:nth-child(4) { animation-delay: .18s; }
 .uk-pill:active { transform: scale(.97); }
-.uk-pill { flex: 0 0 auto; width: 150px; min-height: 0; flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px; box-shadow: 0 6px 18px rgb(0 0 0 / .08); scroll-snap-align: start; }
+.uk-pill { flex: 0 0 auto; width: auto; min-width: 0; min-height: 0; flex-direction: column; align-items: flex-start; gap: 6px; padding: 10px; box-shadow: 0 6px 18px rgb(0 0 0 / .08); }
 .uk-pill small { white-space: normal; }
-.uk-pill > .material-symbols-rounded { flex: 0 0 32px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font-size: 20px; }
+.uk-pill b { white-space: normal; line-height: 1.2; }
+.uk-pill > .material-symbols-rounded { flex: 0 0 28px; width: 28px; height: 28px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font-size: 20px; }
 .uk-pill > span:last-child { display: flex; flex-direction: column; min-width: 0; }
 .uk-pill b { font: var(--ui-body-sm-semibold); }
 .uk-pill small { font: var(--cx-caption); color: var(--cx-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -53,6 +54,8 @@ html:not(.theme-y2k) .uk-globo__go.btn { height: auto !important; min-height: 0 
 .uk-bar input { width: 100%; height: 56px; padding: 0 16px 0 46px; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); box-shadow: 0 2px 12px rgba(15, 38, 92, .12); font: var(--ui-body-md-medium); font-size: 16px; }
 .uk-bar input:focus { outline: 2px solid var(--bp-interaction-tertiary-fg); outline-offset: -2px; }
 .uk-bar__x { flex: 0 0 56px; width: 56px; height: 56px; display: grid; place-items: center; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); box-shadow: 0 2px 12px rgba(15, 38, 92, .12); cursor: pointer; }
+.uk-bar__mic { flex: 0 0 56px; width: 56px; height: 56px; display: grid; place-items: center; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-tertiary-fg); box-shadow: 0 2px 12px rgba(15, 38, 92, .12); cursor: pointer; }
+.uk-bar__mic[hidden] { display: none; }
 .uk-bar__x { display: none; background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-tertiary-fg); }
 .uk.is-chat .uk-bar__x { display: grid; }
 
@@ -120,7 +123,7 @@ html:not(.theme-y2k) .uk-globo__go.btn { height: auto !important; min-height: 0 
 .uk-sec__row small { font: var(--cx-caption); color: var(--cx-muted); }
 
 /* Propuestas de Uku: carrusel arriba con puntos (como las tarjetas de la referencia) */
-.uk-props { position: absolute; z-index: 3; top: 150px; left: 16px; width: min(78%, 300px); transition: opacity .3s ease; }
+.uk-props { position: absolute; z-index: 3; top: 52px; left: 16px; width: min(78%, 300px); transition: opacity .3s ease; }
 .uk-props[hidden] { display: none; }
 .uk-props__track { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .uk-props__track::-webkit-scrollbar { display: none; }
@@ -188,13 +191,14 @@ html.uk-chatting .uk-bar { bottom: calc(12px + env(safe-area-inset-bottom, 0px))
 .uk-head__t { margin: 0; font: var(--cx-page); letter-spacing: -.6px; color: var(--bp-interaction-tertiary-fg); }
 .uk-head { flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 10px; }
 /* Las tres señales de su mundo: texto sobre la página, sin cajas */
-.uk-world { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: 100%; max-width: 420px; }
-.uk-world[hidden] { display: none; }
+.uk-estados { position: absolute; z-index: 3; left: 12px; right: 12px; bottom: 170px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.uk-estados[hidden] { display: none; }
 .uk-sig { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; padding: 0; border: 0; background: none; color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
-.uk-sig .material-symbols-rounded { margin-bottom: 2px; font-size: 22px; font-variation-settings: 'FILL' 1; color: var(--bp-interaction-tertiary-fg); }
+.uk-sig .material-symbols-rounded { font-size: 20px; font-variation-settings: 'FILL' 1; color: var(--bp-interaction-tertiary-fg); }
 .uk-sig.is-ok .material-symbols-rounded, .uk-sig.is-feliz .material-symbols-rounded { color: #4f8a64; }
-.uk-sig small { font: var(--cx-caption); color: var(--cx-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.uk-sig small { font: var(--cx-caption); color: var(--cx-muted); }
 .uk-sig b { font: var(--ui-body-sm-semibold); line-height: 1.25; }
+.uk-sig em { font-style: normal; font-size: 12px; line-height: 16px; color: var(--cx-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .uk.is-chat .uk-head, .uk.is-typing .uk-head { opacity: 0; transform: translateY(-12px); pointer-events: none; }
 .uk.is-chat::before { opacity: 0; }
 

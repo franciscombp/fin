@@ -53,7 +53,8 @@
       '<div class="uk-chatbg" aria-hidden="true"></div>' +
       '<header class="uk-chathead"><span class="uk-chathead__face" aria-hidden="true">' + face() + '</span><span class="uk-chathead__t"><b>Uku</b><small>Tu asesor · en línea</small></span>' +
         '<button class="uk-chathead__x" data-k="cerrar" aria-label="Terminar conversación">' + ic('close') + '</button></header>' +
-      '<div class="uk-head"><p class="uk-head__t" role="heading" aria-level="1">Uku</p><div class="uk-world" aria-label="El mundo de Uku"></div></div>' +
+      '<div class="uk-head"><p class="uk-head__t" role="heading" aria-level="1">Tu asistente</p></div>' +
+      '<div class="uk-estados" aria-label="El mundo de Uku"></div>' +
       '<div class="uk-globo" aria-live="polite"></div>' +
       '<div class="uk-props" hidden></div>' +
       '<div class="uk-chat" aria-live="polite"></div>' +
@@ -61,6 +62,7 @@
       '<div class="uk-results"></div>' +
       '<form class="uk-bar" role="search"><button type="button" class="uk-bar__x" data-k="cerrar" aria-label="Terminar conversación">' + ic('close') + '</button>' +
         '<label class="uk-bar__f">' + ic('search') + '<input type="text" enterkeyhint="send" autocomplete="off" placeholder="Pregunta o pide algo" aria-label="Pregunta o pide algo"></label>' +
+        '<button type="button" class="uk-bar__mic" data-k="voz" aria-label="Hablar" hidden>' + ic('mic') + '</button>' +
         '</form>' +
       '';
     props = host.querySelector('.uk-props'); globoEl = host.querySelector('.uk-globo'); pills = host.querySelector('.uk-pills'); results = host.querySelector('.uk-results'); chat = host.querySelector('.uk-chat'); input = host.querySelector('input');
@@ -69,6 +71,8 @@
     // En su mundo, el campo de abajo es el buscador (como deslizar desde arriba): responde o lleva a la acción.
     // En la conversación sigue siendo el campo para hablar con Uku.
     input.addEventListener('focus', function () { if (!msgs.length && window.Buscador) { input.blur(); Buscador.open(); } });
+    // Dictado: el mismo del buscador, con la frase como búsqueda o pregunta
+    if (window.SpeechRecognition || window.webkitSpeechRecognition) host.querySelector('.uk-bar__mic').hidden = false;
     view.addEventListener('click', onClick);
     document.addEventListener('pfm:change', function () { gi = 0; if (pend) pend.cambio = true; if (!msgs.length) pintar(); });
     pintar();
@@ -103,10 +107,10 @@
   }
   // Las tres señales de su mundo (consumos, ahorro, presupuesto): el ánimo se ve en el oso y en el color de su campo
   function pintarMundo() {
-    var w = host.querySelector('.uk-world'), S = window.PFM && PFM.world && resumen() ? PFM.world() : [];
+    var w = host.querySelector('.uk-estados'), S = window.PFM && PFM.world && resumen() ? PFM.world() : [];
     w.hidden = !S.length;
     w.innerHTML = S.map(function (x) {
-      return '<button class="uk-sig is-' + esc(x.cls) + '" data-k="pfm:world"><span class="material-symbols-rounded" aria-hidden="true">' + esc(x.ic) + '</span><small>' + esc(x.l) + '</small><b>' + esc(x.v) + '</b></button>';
+      return '<button class="uk-sig is-' + esc(x.cls) + '" data-k="pfm:world"><span class="material-symbols-rounded" aria-hidden="true">' + esc(x.ic) + '</span><small>' + esc(x.l) + '</small><b>' + esc(x.v) + '</b><em>' + esc(x.d) + '</em></button>';
     }).join('');
     // El ánimo y las flores de su campo siguen a tus finanzas
     var s = resumen(); if (b3d && s) { b3d.setBloom(s.bloom); b3d.setMood(s.mood); }
@@ -128,11 +132,10 @@
   // Los accesos: Mis finanzas, ordenar, consejos y ayuda, a un toque desde Uku
   function pintarAccesos() {
     var s = resumen(), A = consejos(), p = function (k, icon, t, sub) { return '<button class="uk-pill" data-k="' + k + '" data-l="' + esc(t) + '">' + ic(icon) + '<span><b>' + esc(t) + '</b>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span></button>'; };
-    pills.innerHTML = p('fin', 'monitoring', 'Mis finanzas', s ? 'Saldo ' + money0(s.saldo) : '') +
-      p('sol', 'assignment', 'Solicitudes', 'Revisar o pedir algo') +
-      (s && s.n ? p('pfm:game', 'category', 'Clasificar ' + Math.min(10, s.n), 'Uku está ' + s.moodL) : '') +
-      (A.length > 1 ? p('pfm:insights', 'lightbulb', 'Tus consejos', A.length + ' para ti') : '') +
-      p('ayuda', 'support_agent', 'Ayuda', 'Preguntas y contacto');
+    // Los accesos de Asistente: presupuesto, ayuda y solicitudes
+    pills.innerHTML = p('gastos', 'account_balance_wallet', 'Mis gastos', s ? money0(s.gast) + ' de ' + money0(s.pres) : 'Presupuesto') +
+      p('ayuda', 'support_agent', 'Ayuda y soporte', 'Preguntas y contacto') +
+      p('sol', 'assignment', 'Solicitudes', 'Revisar o pedir algo');
   }
 
   /* ---------- Escribiendo: resultados flotando sobre su mundo ---------- */
@@ -302,6 +305,8 @@
       case 'pfm': salir(l); if (window.PFM) PFM.key(v); return;
       // Mis finanzas se responde en la conversación; abrir la pantalla es una opción más
       case 'fin': fx('select'); return seccion('fin');
+      case 'gastos': fx('select'); seccion('fin'); if (window.PFM) PFM.key('gastos'); return;
+      case 'voz': fx('tap'); if (window.Buscador) Buscador.voice(); return;
       // Ayuda es su sección: se abre el centro de ayuda; el chat empieza cuando hay algo que resolver
       case 'ayuda': fx('tap'); salir('Ayuda'); return seccion('ayuda');
       case 'sol': return abrirSol();
