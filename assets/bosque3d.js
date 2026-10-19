@@ -665,7 +665,8 @@ export function setFocus(on) {
 }
 export function snapshot() {
   if (!renderer || !scene) return null;
-  try { renderer.render(scene, camera); return renderer.domElement.toDataURL('image/png'); } catch (e) { return null; }
+  // La foto es de su mundo, sin él: Uku queda delante, nítido, no repetido en el fondo
+  try { if (bear) bear.visible = false; renderer.render(scene, camera); const u = renderer.domElement.toDataURL('image/png'); if (bear) bear.visible = true; return u; } catch (e) { if (bear) bear.visible = true; return null; }
 }
 export function setShift(f, fy) { shiftTo = { x: +f || 0, y: +fy || 0 }; }
 export function setMood(m) { mood = ['feliz', 'tranquilo', 'pensativo'].includes(m) ? m : null; }
