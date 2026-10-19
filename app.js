@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Otro método de ingreso: usuario y contraseña (assets/ingreso.js)
   if (btnLoginOther) {
-    btnLoginOther.addEventListener('click', () => window.Ingreso.clave());
+    btnLoginOther.addEventListener('click', () => window.Ingreso.otro());
   }
 
   // Lo usa Ingreso al identificar a la persona: misma bienvenida que el login biométrico

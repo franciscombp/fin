@@ -1,24 +1,30 @@
 /* =====================================================================
    Ingreso cuando el celular no tiene biometría y clave digital.
-   - pin(): PIN del dispositivo (simulado). La primera vez se crea; tres
-     intentos fallidos llevan a usuario y contraseña.
-   - clave(): usuario y contraseña (demo: contraseña CLAVE_DEMO).
+   - pin(): PIN de 4 dígitos del dispositivo (simulado). La primera vez se
+     crea; tres intentos fallidos llevan a usuario y contraseña.
+   - otro(): "Otro método de ingreso": PIN de 6 dígitos. Tiene "Olvidé mi
+     PIN", que lleva a usuario y contraseña y borra el PIN de 6 para crear
+     uno nuevo al siguiente ingreso.
+   - clave(): usuario y contraseña (demo: contraseña CLAVE_DEMO, o la que
+     la persona haya cambiado). Desde ahí se recupera el usuario o se
+     cambia la contraseña con el correo registrado.
    - token(): clave digital, sóftoken TOTP (RFC 6238, 6 dígitos, cada 30 s).
    - etiqueta(): texto del botón principal según la biometría del equipo.
-   Todo es local (prototipo): el PIN y el secreto viven en localStorage.
+   Todo es local (prototipo): PIN, contraseñas y secreto viven en localStorage.
    Entrar lo hace window.BPLogin.entrar(usuario) (app.js).
    ===================================================================== */
 (function () {
   'use strict';
 
-  var PIN_KEY = 'pb_pin', TOTP_KEY = 'pb_totp';
-  var CLAVE_DEMO = 'pichibank', MAX_INTENTOS = 3, PASO = 30;
-  var USUARIO_DEMO = 'andres';
+  var PIN_KEY = 'pb_pin', PIN6_KEY = 'pb_pin6', TOTP_KEY = 'pb_totp';
+  var CLAVE_DEMO = 'pichibank', CLAVE_MIN = 8, MAX_INTENTOS = 3, PASO = 30;
+  var USUARIO_DEMO = 'andres', DOMINIO = '@ejemplo.ec';
   var BASE32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
   var overlay = null, limpiar = null;
 
   function leer(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function guardar(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function borrar(k) { try { localStorage.removeItem(k); } catch (e) {} }
 
   function h(tag, attrs, hijos) {
     var n = document.createElement(tag);
@@ -79,24 +85,28 @@
     if (window.BPLogin) window.BPLogin.entrar(usuario);
   }
 
-  // Huella del PIN: no se guarda el PIN en claro
-  async function resumen(texto) {
-    var bytes = new TextEncoder().encode('pichibank-pin:' + texto);
+  // Huella de un dato sensible (PIN o contraseña): nunca se guarda en claro
+  async function resumen(sal, texto) {
+    var bytes = new TextEncoder().encode(sal + ':' + texto);
     var d = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
     return Array.from(d, function (b) { return b.toString(16).padStart(2, '0'); }).join('');
   }
 
-  /* ---------- PIN del dispositivo ---------- */
-  function pin() {
-    var creando = !leer(PIN_KEY);
+  /* ---------- PIN del dispositivo (4 dígitos) y PIN de otro método (6) ---------- */
+  function pin(longitud, llave) {
+    longitud = longitud || 4;
+    llave = llave || PIN_KEY;
+    var seisDigitos = llave === PIN6_KEY;
+    var sufijo = longitud === 4 ? '' : ' de ' + longitud + ' dígitos';
+    var creando = !leer(llave);
     var primero = null, digitos = '', fallos = 0, ocupado = false;
     var ui = {};
 
     function pintarPuntos() {
       ui.puntos.querySelectorAll('span').forEach(function (s, i) { s.classList.toggle('on', i < digitos.length); });
     }
-
     function titulo(t) { document.getElementById('ing-titulo').textContent = t; }
+    function textoCrear() { return 'Elige ' + longitud + ' números. Los usarás para entrar en este celular.'; }
 
     async function completo() {
       var d = digitos;
@@ -104,7 +114,7 @@
       pintarPuntos();
       ocupado = true;
       try {
-        var r = await resumen(d);
+        var r = await resumen('pin', d);
         if (creando) {
           if (primero === null) {
             primero = r;
@@ -115,19 +125,19 @@
           }
           if (r !== primero) {
             primero = null;
-            titulo('Crea tu PIN');
-            ui.texto.textContent = 'Elige 4 números. Los usarás para entrar en este celular.';
+            titulo('Crea tu PIN' + sufijo);
+            ui.texto.textContent = textoCrear();
             ui.error.textContent = 'No coincide. Empieza de nuevo.';
             sacudir(ui.puntos);
             return;
           }
-          guardar(PIN_KEY, r);
+          guardar(llave, r);
           return entrarCon(activa());
         }
-        if (r === leer(PIN_KEY)) return entrarCon(activa());
+        if (r === leer(llave)) return entrarCon(activa());
         fallos++;
         sacudir(ui.puntos);
-        if (fallos >= MAX_INTENTOS) return clave('Tu PIN no coincide. Ingresa con tu usuario y contraseña.');
+        if (fallos >= MAX_INTENTOS) return clave('Tu PIN no coincide. Ingresa con tu usuario y contraseña.', seisDigitos ? borrarPin6 : null);
         var quedan = MAX_INTENTOS - fallos;
         ui.error.textContent = 'PIN incorrecto. ' + (quedan === 1 ? 'Te queda 1 intento.' : 'Te quedan ' + quedan + ' intentos.');
       } finally {
@@ -135,9 +145,9 @@
       }
     }
 
-    abrir(creando ? 'Crea tu PIN' : 'Ingresa tu PIN', function (cuerpo) {
-      ui.texto = h('p', { class: 'ing__texto', text: creando ? 'Elige 4 números. Los usarás para entrar en este celular.' : 'Escribe tu PIN de 4 números.' });
-      ui.puntos = h('div', { class: 'ing__puntos' }, [0, 1, 2, 3].map(function () { return h('span'); }));
+    abrir(creando ? 'Crea tu PIN' + sufijo : 'Ingresa tu PIN' + sufijo, function (cuerpo) {
+      ui.texto = h('p', { class: 'ing__texto', text: creando ? textoCrear() : 'Escribe tu PIN de ' + longitud + ' números.' });
+      ui.puntos = h('div', { class: 'ing__puntos' }, Array.from({ length: longitud }, function () { return h('span'); }));
       ui.error = h('p', { class: 'ing__error', role: 'alert' });
       ui.teclas = h('div', { class: 'ing__teclas' });
       ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '<'].forEach(function (k) {
@@ -150,18 +160,35 @@
         tecla.addEventListener('click', function () {
           if (ocupado) return;
           if (k === '<') digitos = digitos.slice(0, -1);
-          else if (digitos.length < 4) digitos += k;
+          else if (digitos.length < longitud) digitos += k;
           pintarPuntos();
-          if (digitos.length === 4) completo();
+          if (digitos.length === longitud) completo();
         });
         ui.teclas.appendChild(tecla);
       });
-      cuerpo.append(ui.texto, ui.puntos, ui.error, ui.teclas);
+      var nodos = [ui.texto, ui.puntos, ui.error, ui.teclas];
+      if (seisDigitos && !creando) {
+        var olvide = h('button', { class: 'ing__enlace', type: 'button', text: 'Olvidé mi PIN' });
+        olvide.addEventListener('click', function () { clave('', borrarPin6); });
+        nodos.push(olvide);
+      }
+      cuerpo.append.apply(cuerpo, nodos);
     });
   }
 
+  function borrarPin6() { borrar(PIN6_KEY); }
+
+  function otro() { pin(6, PIN6_KEY); }
+
   /* ---------- Usuario y contraseña ---------- */
-  function clave(aviso) {
+  // Con contraseña cambiada guardada, se valida contra esa; si no, contra la demo
+  async function validarClave(id, p) {
+    var guardada = leer('pb_clave_' + id);
+    if (!guardada) return p === CLAVE_DEMO;
+    return (await resumen('clave|' + id, p)) === guardada;
+  }
+
+  function clave(aviso, alEntrar) {
     abrir('Usuario y contraseña', function (cuerpo) {
       var usuario = h('input', { class: 'ing__campo', type: 'text', name: 'usuario', placeholder: 'Usuario', autocomplete: 'username', autocapitalize: 'none', spellcheck: 'false', 'aria-label': 'Usuario' });
       var contrasena = h('input', { class: 'ing__campo', type: 'password', name: 'clave', placeholder: 'Contraseña', autocomplete: 'current-password', 'aria-label': 'Contraseña' });
@@ -172,17 +199,92 @@
         error,
         h('button', { class: 'login-button login-button--primary', type: 'submit', text: 'Ingresar' })
       ]);
+      var recuperarBtn = h('button', { class: 'ing__enlace', type: 'button', text: 'Recuperar usuario y contraseña' });
+      recuperarBtn.addEventListener('click', function () { recuperar(alEntrar); });
       form.addEventListener('submit', async function (e) {
         e.preventDefault();
         var id = usuario.value.trim().toLowerCase();
         var existe = window.Persona && id ? await Persona.persona(id) : null;
-        if (existe && contrasena.value === CLAVE_DEMO) return entrarCon(id);
+        if (existe && await validarClave(id, contrasena.value)) {
+          if (alEntrar) alEntrar();
+          return entrarCon(id);
+        }
         error.textContent = 'Usuario o contraseña incorrectos.';
         sacudir(form);
       });
       cuerpo.append(
         h('p', { class: 'ing__texto', text: 'Demo: contraseña ' + CLAVE_DEMO + '. Usuarios: andres, rosa, daniela, jorge o luis.' }),
-        form
+        form,
+        recuperarBtn
+      );
+    });
+  }
+
+  /* ---------- Recuperar usuario y contraseña (con el correo registrado) ---------- */
+  async function buscarPorCorreo(correo) {
+    var c = correo.trim().toLowerCase();
+    if (!window.Persona || !c) return null;
+    var lista = await Persona.usuarios();
+    return lista.filter(function (u) { return u.usuario + DOMINIO === c; })[0] || null;
+  }
+
+  function recuperar(alEntrar) {
+    abrir('Recuperar acceso', function (cuerpo) {
+      var cuenta = null;
+      var correo = h('input', { class: 'ing__campo', type: 'email', name: 'correo', placeholder: 'Correo registrado', autocomplete: 'email', autocapitalize: 'none', spellcheck: 'false', 'aria-label': 'Correo registrado' });
+      var error = h('p', { class: 'ing__error', role: 'alert' });
+      var resultado = h('p', { class: 'ing__texto', role: 'status' });
+      var nueva = h('input', { class: 'ing__campo', type: 'password', placeholder: 'Nueva contraseña', autocomplete: 'new-password', 'aria-label': 'Nueva contraseña' });
+      var repite = h('input', { class: 'ing__campo', type: 'password', placeholder: 'Repite la nueva contraseña', autocomplete: 'new-password', 'aria-label': 'Repite la nueva contraseña' });
+      var cambio = h('form', { class: 'ing__form', novalidate: '', hidden: '' }, [
+        nueva,
+        repite,
+        h('button', { class: 'login-button login-button--primary', type: 'submit', text: 'Guardar contraseña' })
+      ]);
+      var buscar = h('form', { class: 'ing__form', novalidate: '' }, [
+        correo,
+        error,
+        h('button', { class: 'login-button login-button--primary', type: 'submit', text: 'Buscar mi cuenta' })
+      ]);
+      var soloUsuario = h('button', { class: 'login-button login-button--tertiary', type: 'button', text: 'Solo recuperar mi usuario' });
+
+      async function encontrar() {
+        cuenta = await buscarPorCorreo(correo.value);
+        if (!cuenta) { error.textContent = 'No encontramos una cuenta con ese correo.'; sacudir(buscar); return null; }
+        error.textContent = '';
+        resultado.textContent = 'Tu usuario es ' + cuenta.usuario + '.';
+        return cuenta;
+      }
+
+      buscar.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        if (await encontrar()) cambio.hidden = false;
+      });
+      soloUsuario.addEventListener('click', async function () {
+        if (await encontrar()) cambio.hidden = true;
+      });
+
+      cambio.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        if (!cuenta) return;
+        if (nueva.value.length < CLAVE_MIN) { error.textContent = 'La contraseña debe tener al menos ' + CLAVE_MIN + ' caracteres.'; sacudir(cambio); return; }
+        if (nueva.value !== repite.value) { error.textContent = 'Las contraseñas no coinciden.'; sacudir(cambio); return; }
+        guardar('pb_clave_' + cuenta.usuario, await resumen('clave|' + cuenta.usuario, nueva.value));
+        cambio.remove();
+        soloUsuario.remove();
+        buscar.remove();
+        error.textContent = '';
+        resultado.textContent = 'Listo. Tu nueva contraseña ya funciona para ' + cuenta.usuario + '.';
+        cuerpo.append(h('button', { class: 'login-button login-button--primary', type: 'button', text: 'Ir a ingresar', 'data-ing-ir': '' }));
+        cuerpo.querySelector('[data-ing-ir]').addEventListener('click', function () { clave('', alEntrar); });
+      });
+
+      cuerpo.append(
+        h('p', { class: 'ing__texto', text: 'Ingresa el correo con el que te registraste. Demo: usuario@ejemplo.ec, por ejemplo rosa@ejemplo.ec.' }),
+        buscar,
+        soloUsuario,
+        resultado,
+        cambio
       );
     });
   }
@@ -291,5 +393,8 @@
     return biometria ? 'Ingresar con ' + nombreBiometria() : 'Ingresar con PIN';
   }
 
-  window.Ingreso = { etiqueta: etiqueta, pin: pin, clave: clave, token: token, totp: totp, aBytes: aBytes, aBase32: aBase32 };
+  window.Ingreso = {
+    etiqueta: etiqueta, pin: pin, otro: otro, clave: clave, recuperar: recuperar,
+    token: token, totp: totp, aBytes: aBytes, aBase32: aBase32
+  };
 })();
