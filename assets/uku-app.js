@@ -221,7 +221,7 @@
     var nivel = s.score >= 85 ? 'Vas bien' : s.score >= 55 ? 'Con cuidado' : 'Por encima del plan';
     var rows = [['Disponible', money0(s.saldo)], ['Gastaste en ' + s.mes, money0(s.gast) + (pres ? ' de ' + money0(s.pres) : '')], ['Tu salud financiera', nivel]];
     if (s.n) rows.push(['Por ordenar', s.n + (s.n === 1 ? ' consumo' : ' consumos')]);
-    var t = pres ? (s.score >= 85 ? 'Vas bien con tu presupuesto.' : s.score >= 55 ? 'Vas un poco rápido con tu presupuesto: con cuidado llegas.' : 'Vas por encima de tu presupuesto: revisemos en qué.') : 'Todavía no tienes presupuesto. Con lo que te entra y lo que gastas, te ayudo a armarlo.';
+    var t = pres ? (s.score >= 85 ? 'Vas bien con tu presupuesto.' : s.score >= 55 ? 'Vas un poco rápido con tu presupuesto: con cuidado llegas.' : 'Vas por encima de tu presupuesto: revisemos en qué.') : 'Todavía no tienes presupuesto. Con lo que recibes y lo que gastas, te ayudo a armarlo.';
     if (x && x.id !== 'pres' && x.kind === 'warn') t += ' ' + (x.di || x.t);
     uku(esc(t), [b('gastos', 'Ver mis gastos', 'account_balance_wallet'), pres ? b('pfm:budgets', 'Ajustar mi presupuesto', 'speed') : b('pfm:pres', 'Armar mi presupuesto', 'speed')]
       .concat(x && x.act && x.id !== 'pres' ? [b('pfm:' + x.act, x.actl, null, 'is-ask')] : [])
@@ -244,7 +244,7 @@
   // Ayuda, sin salir de su mundo: los inconvenientes guiados y lo más consultado; todo el centro de ayuda a un toque
   function ayudaCard() {
     var F = Soporte.flows();
-    uku('¿Qué te pasa? Te doy la respuesta aquí y te llevo a donde lo resuelves tú. Si es otra cosa, escríbemela abajo.',
+    uku('¿Qué necesitas? Te doy la respuesta aquí y te llevo a donde lo resuelves tú. Si es otra cosa, escríbemela abajo.',
       F.slice(0, 4).map(function (f) { return b('flow:' + f.i, f.t, f.icon); })
         .concat([b('ayudatoda', 'Todas las preguntas frecuentes', 'help'), b('persona', 'Hablar con una persona', 'support_agent', 'is-ask')]), '', { title: 'Ayuda' });
     mostrar();
@@ -462,7 +462,7 @@
     solSec.hidden = false; host.classList.add('uk-in-sec'); fx('open');
   }
   /* ---------- Secciones: menú de la cabecera ---------- */
-  var SECCIONES = [['uku', 'Tu asistente', 'Su mundo, sus consejos y lo que te pasa', 'support_agent'], ['fin', 'Mis finanzas', 'Tus gastos y tu presupuesto', 'monitoring'], ['ayuda', 'Ayuda y soporte', 'Preguntas y contacto', 'help']];
+  var SECCIONES = [['uku', 'Tu asistente', 'Su mundo y los consejos que te da', 'support_agent'], ['fin', 'Mis finanzas', 'Tus gastos y tu presupuesto', 'monitoring'], ['ayuda', 'Ayuda y soporte', 'Preguntas y contacto', 'help']];
   // Hoja de la app (as-sheet), como las de Mis finanzas: fuera de la vista para cubrir la pantalla
   function abrirSecciones() {
     if (!sheet) {
