@@ -664,3 +664,11 @@ html.app-uku .uk-globo__acts .uk-globo__go.btn, html.app-uku .uk-globo__go.btn {
 .app-uku .uk-panel .pfm-resumen { padding-top: 4px; }
 .app-uku .uk-panel .pfm-foot { padding-top: 24px; }
 .app-uku .uk-panel .pfm-resumen__go { display: none; } /* en el asistente, «Tus gastos» ya está en las filas de abajo */
+
+/* ---------- Lo que encontré (análisis del mes dentro de la tarjeta) ---------- */
+.uk-finds { display: flex; flex-direction: column; }
+.uk-finds__l { margin: 0 0 4px !important; font: var(--uk-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
+.uk-find { margin: 0 !important; display: flex; flex-direction: column; gap: 2px; padding: 12px 0; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+.uk-find:first-of-type { border-top: 0; }
+.uk-find b { font: var(--uk-body-medium); color: var(--bp-theme-color-text-primary); }
+.uk-find small { font: var(--uk-sm); color: var(--cx-muted); }

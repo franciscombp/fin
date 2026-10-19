@@ -1556,7 +1556,8 @@
     }
   }
   function analyze(q) {
-    if (window.UkuAsistente && UkuAsistente.ia) { closeSheet(); return UkuAsistente.ia(q || T('¿Cómo voy este mes?')); }
+    // Con una pregunta concreta, Uku la responde en su tarjeta; sin pregunta, el análisis del mes (en el asistente, también como tarjeta)
+    if (q && window.UkuAsistente && UkuAsistente.ia) { closeSheet(); return UkuAsistente.ia(q); }
     if (!window.UkuAnalisis) return;
     closeSheet();
     UkuAnalisis.open({ view: curMes(), ask: q });
