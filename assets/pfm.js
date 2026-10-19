@@ -684,9 +684,12 @@
   function worldSignals() {
     var a = animo(), c = colchon(), pe = presEstado();
     return [
-      { ic: MOOD_IC[a.k], l: T('Tus consumos'), v: a.n ? T('{n} sin clasificar', { n: a.n }) : T('Al día'), cls: a.k },
-      { ic: 'local_florist', l: T('Tu ahorro'), v: c >= 1 ? T(Math.floor(c) === 1 ? 'Te alcanza 1 mes' : 'Te alcanza {n} meses', { n: Math.floor(c) }) : T('Menos de 1 mes'), cls: c >= 3 ? 'ok' : c >= 1 ? 'warn' : 'over' },
-      { ic: 'park', l: T('Tu presupuesto'), v: pe.l, cls: pe.k }
+      { ic: MOOD_IC[a.k], l: T('Su ánimo'), v: a.n ? T('{n} sin clasificar', { n: a.n }) : T('Todo en orden'), cls: a.k,
+        d: a.n ? T('Ordena tus gastos y vuelve a sonreír. Si no, se queda pensativo.') : T('Está contento: tus gastos están clasificados.') },
+      { ic: 'local_florist', l: T('Sus flores'), v: c >= 1 ? T(Math.floor(c) === 1 ? 'Te alcanza 1 mes' : 'Te alcanza {n} meses', { n: Math.floor(c) }) : T('Menos de 1 mes'), cls: c >= 3 ? 'ok' : c >= 1 ? 'warn' : 'over',
+        d: c >= 3 ? T('Su campo está lleno de flores: tienes ahorro de sobra.') : T('Con 3 meses de ahorro, su campo se llena de flores.') },
+      { ic: 'park', l: 'Su bosque', v: pe.l, cls: pe.k,
+        d: pe.k === 'over' ? T('Te pasaste del presupuesto y el bosque se seca.') : T('Mientras no te pases del presupuesto, el bosque sigue verde.') }
     ];
   }
   function worldSheet() {
