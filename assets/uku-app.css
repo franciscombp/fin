@@ -254,10 +254,9 @@ html.uk-chatting .uk { top: 0 !important; bottom: 0 !important; }
    la respuesta, los datos si los hay y lo que puedes hacer: filas que llevan a navegar y
    chips para responder. Su mundo sigue nítido detrás: la tarjeta es parte de la escena. */
 /* Las tarjetas dejan abajo a la izquierda el lugar de Uku, que asoma entre la tarjeta y la barra */
-.uk.is-cards .uk-chat { top: auto; bottom: 168px; max-height: calc(100% - 216px); padding: 14px 0 0; overflow: visible; -webkit-mask-image: none; mask-image: none; justify-content: flex-end; }
+.uk.is-cards .uk-chat { top: auto; bottom: 196px; max-height: calc(100% - 244px); padding: 14px 0 0; overflow: visible; -webkit-mask-image: none; mask-image: none; justify-content: flex-end; }
 .uk.is-cards .uk-chat > :first-child { margin-top: 0; }
 .uk.is-cards.is-chat .uk-scene { filter: none; }
-.uk.is-cards .uk-chatbg { background: linear-gradient(var(--bp-surface-page, #f5f5f5) 8%, rgb(245 245 245 / 0) 30%); }
 .uk-card { position: relative; display: flex; flex-direction: column; max-height: 100%; min-height: 0; border-radius: 16px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 10px 30px rgba(15, 38, 92, .16); animation: ukCard .4s cubic-bezier(.2, 1.1, .4, 1) both; }
 @keyframes ukCard { from { opacity: 0; transform: translateY(18px) scale(.98); } }
 /* Las de atrás: dos bordes que asoman, uno por tarjeta anterior (hasta dos) */
@@ -313,3 +312,17 @@ html.uk-chatting .uk { top: 0 !important; bottom: 0 !important; }
 .uk-prop { background: none; box-shadow: none; padding: 2px 4px; }
 .uk-prop::after { display: none; }
 .uk-props__dots { margin-top: 6px; }
+
+/* ---------- Conversación: Uku sale de su mundo ----------
+   Su mundo queda como una foto borrosa detrás; él, nítido, se acerca y te mira. La pantalla
+   respeta las zonas seguras del teléfono y el botón de bajar la conversación queda a la vista. */
+html.uk-chatting .uk { padding-top: calc(8px + env(safe-area-inset-top, 0px)); padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+.uk-chatbg { background-size: cover; background-position: center; filter: blur(14px) saturate(.9); transform: scale(1.06); }
+.uk-chatbg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(var(--bp-surface-page, #f5f5f5) 6%, rgb(245 245 245 / .55) 40%, rgb(245 245 245 / .35)); }
+.uk-chathead { top: calc(8px + env(safe-area-inset-top, 0px)); }
+.uk-chathead__x { width: 40px; height: 40px; border-radius: 50%; background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-tertiary-fg); box-shadow: 0 4px 14px rgba(15, 38, 92, .14); }
+/* Capas al conversar: la foto borrosa de su mundo abajo, Uku (el canvas) encima, y las tarjetas sobre él */
+.uk.is-chat .uk-chatbg { z-index: 1; }
+.uk.is-chat .uk-scene { z-index: 2; }
+/* Conversando, Uku se ve entero y nítido: sin el desvanecido del pie de su mundo */
+.uk.is-chat .uk-scene, .uk.is-chat .uk-scene .b3d, .uk.is-chat .uk-scene canvas { -webkit-mask-image: none !important; mask-image: none !important; }

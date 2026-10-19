@@ -27,7 +27,7 @@ const lerp = THREE.MathUtils.lerp;
 
 let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
 let bear = null, rig = null, bones = {}, forest, held = null, ground, stage = null, walkAng = 0, walkAmt = 0, walkMoving = false;
-let waterOn = false, waterT = 0, drops = [], ambient = null; // ambient: lo que Uku hace cuando no hay gesto (p. ej. caminar)
+let waterOn = false, waterT = 0, drops = [], ambient = null, focus = false; // focus: Uku sale del mundo y se acerca a conversar // ambient: lo que Uku hace cuando no hay gesto (p. ej. caminar)
 // Mundo: un planeta esférico de radio PLANET_R; su punto más alto está bajo los pies de Uku.
 // WORLD_S agranda el mundo (planeta, árboles, flores y el paso de Uku); el oso mide lo mismo.
 const WORLD_S = 2, PLANET_R = 1.5 * WORLD_S, PLANET_C = new THREE.Vector3(0, -PLANET_R, 0);
@@ -511,9 +511,11 @@ function frame(now) {
   yaw = RM ? yawTo : lerp(yaw, yawTo, Math.min(1, dt * (drag ? 14 : 2.5)));
   // La cámara va sujeta a Uku, siempre de frente: camina hacia ella
   const sway = RM || drag ? 0 : Math.sin(t * .15) * .12;
-  camera.position.copy(stage.localToWorld(_cam.set(Math.sin(yaw) * camDist + Math.cos(yaw) * sway, CAM_H, Math.cos(yaw) * camDist - Math.sin(yaw) * sway)));
+  // Conversando, la cámara se acerca y lo mira a la cara; su mundo queda apagado detrás
+  const cd = focus ? camDist * .7 : camDist, ch = focus ? CAM_H * .9 : CAM_H;
+  camera.position.copy(stage.localToWorld(_cam.set(Math.sin(yaw) * cd + Math.cos(yaw) * sway, ch, Math.cos(yaw) * cd - Math.sin(yaw) * sway)));
   camera.up.copy(_camUp.set(0, 1, 0).applyQuaternion(stage.quaternion));
-  camera.lookAt(stage.localToWorld(_look.set(0, .2, 0)));
+  camera.lookAt(stage.localToWorld(_look.set(0, focus ? .3 : .2, 0)));
   renderer.render(scene, camera);
 }
 
@@ -630,6 +632,8 @@ export function attach(el, opts) {
   }
   if (opts && opts.onTap) onTap = opts.onTap;
   resize();
+  attach._ro && attach._ro.disconnect();
+  attach._ro = new ResizeObserver(resize); attach._ro.observe(el); // el contenedor cambia de alto al conversar
   if ('IntersectionObserver' in window) {
     attach._io && attach._io.disconnect();
     attach._io = new IntersectionObserver(es => { visible = es[0].isIntersecting && document.visibilityState === 'visible'; });
@@ -638,6 +642,17 @@ export function attach(el, opts) {
 }
 export function setScore(s) { if (!bear && target != null) { target = s; return; } if (s !== score) { score = s; if (renderer) buildForest(); } }
 export function setBloom(b) { b = b == null ? null : Math.max(0, Math.min(100, b)); waterOn = !!b; if (b !== bloom) { bloom = b; if (renderer) buildForest(); } }
+/* Uku sale de su mundo para conversar: el bosque, el suelo y el polvo se apagan y queda él solo,
+   nítido, sobre una foto borrosa de su mundo (snapshot). Al volver, todo reaparece. */
+export function setFocus(on) {
+  focus = !!on;
+  [forest, ground, dust, rain, umb].forEach(o => { if (o) o.visible = focus ? false : (o === rain ? !!look.rain : true); });
+  if (scene) scene.fog.near = focus ? 1e4 : 2.4 * WORLD_S;
+}
+export function snapshot() {
+  if (!renderer || !scene) return null;
+  try { renderer.render(scene, camera); return renderer.domElement.toDataURL('image/png'); } catch (e) { return null; }
+}
 export function setShift(f, fy) { if (!host) return; host.dataset.shift = f; host.dataset.shiftY = fy || 0; resize(); }
 export function setMood(m) { mood = ['feliz', 'tranquilo', 'pensativo'].includes(m) ? m : null; }
 export function isReady() { return !!bear; }
