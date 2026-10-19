@@ -28,7 +28,7 @@ const lerp = THREE.MathUtils.lerp;
 let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
 let bear = null, readyFns = [], rig = null, bones = {}, forest, held = null, ground, stage = null, walkAng = 0, walkAmt = 0, walkMoving = false;
 let waterOn = false, waterT = 0, drops = [], ambient = null, focus = false, ambFocus = null;
-let focusAmt = 0, shiftTo = { x: 0, y: 0 }, shiftCur = { x: 0, y: 0 }, zoomTo = 1, zoomCur = 1; // la cámara se acerca y se corre suavemente, nunca de golpe // focus: Uku sale del mundo y se acerca a conversar // ambient: lo que Uku hace cuando no hay gesto (p. ej. caminar)
+let focusAmt = 0, shiftTo = { x: 0, y: 0 }, shiftCur = { x: 0, y: 0 }, zoomTo = 1, zoomCur = 1, front = false, frontAmt = 1; // la cámara se acerca y se corre suavemente, nunca de golpe // focus: Uku sale del mundo y se acerca a conversar // ambient: lo que Uku hace cuando no hay gesto (p. ej. caminar)
 // Mundo: un planeta esférico de radio PLANET_R; su punto más alto está bajo los pies de Uku.
 // WORLD_S agranda el mundo (planeta, árboles, flores y el paso de Uku); el oso mide lo mismo.
 const WORLD_S = 2, PLANET_R = 1.5 * WORLD_S, PLANET_C = new THREE.Vector3(0, -PLANET_R, 0);
@@ -445,7 +445,8 @@ function frame(now) {
   const dt = clock.getDelta(), t = clock.elapsedTime;
   if (gesture) { gestureT += dt; if (gesture !== 'walk' && gestureT > (gesture === 'hold' || gesture === 'water' ? 3.2 : 2)) { gesture = ambient; gestureT = 0; holdObject(null); } }
   // Caminar: avanza unos segundos y se detiene a mirar el paisaje
-  walkMoving = gesture === 'walk' && !RM && (gestureT % WALK_CYCLE) < WALK_MOVE;
+  // En libertad (sin mensaje) camina más seguido; en primer plano se queda contigo
+  walkMoving = gesture === 'walk' && !RM && frontAmt < .5 && (gestureT % (WALK_CYCLE - 3)) < (WALK_MOVE + 1);
   // Mientras Uku carga, el bosque aparece solo: el puntaje sube hasta el de la persona en 2.2 s
   if (!bear && target != null) {
     const s2 = Math.round(Math.min(1, (performance.now() - loadAt) / 2200) * target);
@@ -509,14 +510,18 @@ function frame(now) {
     a.needsUpdate = true;
   }
   // Giro: el dedo manda (con un pequeño rebote en los topes); a los 3 s vuelve de frente.
-  if (!drag) { if (focus || performance.now() - idleAt > 3000) yawTo = 0; else yawTo = Math.max(-1.13, Math.min(1.13, yawTo)); } // conversando siempre mira de frente
+  // Con un mensaje o conversando, siempre de frente; en libertad la cámara orbita despacio alrededor de él
+  if (!drag) { if (focus || performance.now() - idleAt > 3000) yawTo = focus ? 0 : (1 - frontAmt) * Math.sin(t * .07) * .45; else yawTo = Math.max(-1.13, Math.min(1.13, yawTo)); }
   yaw = RM ? yawTo : lerp(yaw, yawTo, Math.min(1, dt * (drag ? 14 : 2.5)));
   // La cámara va sujeta a Uku, siempre de frente: camina hacia ella
-  const sway = RM || drag || focus ? 0 : Math.sin(t * .15) * .12;
+  frontAmt = RM ? (front ? 1 : 0) : lerp(frontAmt, front ? 1 : 0, Math.min(1, dt * 1.6));
+  const sway = RM || drag || focus ? 0 : Math.sin(t * .15) * (.12 + .18 * (1 - frontAmt));
   // Conversando, la cámara se acerca y lo mira a la cara; su mundo queda apagado detrás
   focusAmt = RM ? (focus ? 1 : 0) : lerp(focusAmt, focus ? 1 : 0, Math.min(1, dt * 4));
   // De frente y cerca: la cámara baja casi a su altura; conversando se acerca un poco más
-  const cd = camDist * (.66 - .1 * focusAmt) * zoomCur, ch = CAM_H * (.6 - .04 * focusAmt);
+  // En libertad la cámara se aleja y sube un poco (se ve el horizonte del planeta); con un mensaje, Uku pasa a primer plano
+  const free = (1 - frontAmt) * (1 - focusAmt);
+  const cd = camDist * (.66 - .1 * focusAmt) * zoomCur * (1 + .4 * free), ch = CAM_H * (.6 - .04 * focusAmt + .14 * free);
   // El encuadre (corrimiento) también se mueve con suavidad
   const k = RM ? 1 : Math.min(1, dt * 5);
   if (Math.abs(shiftCur.x - shiftTo.x) > 1e-4 || Math.abs(shiftCur.y - shiftTo.y) > 1e-4) { shiftCur.x = lerp(shiftCur.x, shiftTo.x, k); shiftCur.y = lerp(shiftCur.y, shiftTo.y, k); applyShift(); }
@@ -675,6 +680,8 @@ export function snapshot() {
 export function setShift(f, fy) { shiftTo = { x: +f || 0, y: +fy || 0 }; }
 // La cámara se aleja (z > 1) o se acerca; sirve para que la cara de Uku quepa donde hay sitio
 export function setZoom(z) { zoomTo = Math.max(.8, Math.min(1.8, +z || 1)); }
+// Primer plano (true): Uku viene al frente, te mira y no camina; libre (false): pasea y la cámara orbita
+export function setFront(on) { front = !!on; if (front && gesture === 'walk') { gesture = null; gestureT = 0; } }
 // Dónde está su cara en pantalla (px del contenedor): centro, radio aproximado y el encuadre actual.
 // Con esto, la app calcula un corrimiento para que nada le tape la cara.
 const _h1 = new THREE.Vector3(), _h2 = new THREE.Vector3();

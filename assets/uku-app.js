@@ -175,7 +175,8 @@
     var go = hola ? sal : x ? { k: x.k, l: x.l } : null;
     // Sin nada que decir (o en silencio), el globo se va y Uku se queda tranquilo
     if (!hola && !nota && !x) { if (b3d) b3d.play('happy'); return ocultarGlobo(); }
-    globoEl.hidden = false; globoEl.classList.remove('is-off');
+    globoOff = false; globoEl.hidden = false; globoEl.classList.remove('is-off');
+    if (b3d && b3d.setFront) b3d.setFront(true); // con algo que decir, Uku viene a primer plano
     globoEl.innerHTML = '<button class="uk-globo__x" data-k="globo:cerrar" aria-label="Cerrar">' + ic('close') + '</button>' +
       (x ? '<p class="uk-globo__tag">' + esc(x.tag) + '</p>' : '') + '<p class="uk-globo__t">' + esc(t) + '</p>' +
       '<div class="uk-globo__acts">' + (go ? '<button class="btn btn--tertiary uk-globo__go" data-k="' + esc(go.k) + '" data-l="' + esc(go.l) + '">' + esc(go.l) + '</button>' : '') +
@@ -189,7 +190,24 @@
     // Uku hace lo que dice: saluda, habla, se preocupa o celebra según el mensaje
     if (b3d) b3d.play(hola ? 'wave' : nota ? 'happy' : !x ? 'happy' : x.kind === 'warn' ? 'worried' : 'talk');
   }
-  function ocultarGlobo() { globoOff = true; globoEl.classList.add('is-off'); setTimeout(function () { if (globoOff) globoEl.hidden = true; reencuadrar(); }, 260); }
+  function ocultarGlobo() { globoOff = true; globoEl.classList.add('is-off'); if (b3d && b3d.setFront) b3d.setFront(false); setTimeout(function () { if (globoOff) globoEl.hidden = true; reencuadrar(); }, 260); }
+  // Al tocarlo: una pose y algo que decir (la siguiente propuesta o una frase corta que se va sola)
+  var POSES = ['wave', 'happy', 'nod'];
+  function frase() {
+    var s = resumen(), L = ['Aquí estoy. Pregúntame lo que quieras.', 'Si quieres, te cuento cómo va tu dinero.', 'Puedo ayudarte con una duda o con un inconveniente de tu cuenta.'];
+    if (s) L.push('Llevas ' + money0(s.gast) + ' de gastos en ' + s.mes + '. ¿Vemos el detalle?');
+    if (s && s.n) L.push('Tienes ' + s.n + ' consumos por ordenar. ¿Los vemos juntos?');
+    return L[Math.floor(Math.random() * L.length)];
+  }
+  function tocado() {
+    fx('select'); if (b3d) b3d.play(POSES[Math.floor(Math.random() * POSES.length)]);
+    if (msgs.length) return;
+    var P = propuestas();
+    if (!saludado) { saludado = true; nota = null; return pintarGlobo(); }
+    if (P.length && (globoEl.hidden || Math.random() < .5)) { nota = null; gi++; return pintarGlobo(); }
+    nota = frase(); pintarGlobo();
+    clearTimeout(tocado.t); tocado.t = setTimeout(function () { if (nota) { nota = null; pintarGlobo(); } }, 6000);
+  }
   /* ---------- Encuadre: que nunca le tapen la cara ----------
      Se mide lo que hay en pantalla (globo, propuestas, onboarding arriba; accesos y barra abajo) y se
      corre la cámara para que la cara de Uku quede en la franja libre. Si la franja es más chica que
@@ -653,7 +671,7 @@
       if (!m3.supported()) return;
       b3d = m3; var c = window.Clima && Clima.last(); if (c) m3.setLook(c.look);
       if (s) { m3.setBloom(s.bloom); m3.setMood(s.mood); }
-      m3.attach(el, { score: s ? s.score : 60, onReady: function () { var k = host.querySelector('.uk-skel'); if (k) { k.classList.add('is-off'); setTimeout(function () { k.remove(); }, 400); } reencuadrar(); setTimeout(encuadrar, 1500); }, onTap: function () { fx('select'); m3.play('wave'); if (!msgs.length) { nota = null; if (saludado) gi++; saludado = true; pintarGlobo(); } } });
+      m3.attach(el, { score: s ? s.score : 60, onReady: function () { var k = host.querySelector('.uk-skel'); if (k) { k.classList.add('is-off'); setTimeout(function () { k.remove(); }, 400); } reencuadrar(); setTimeout(encuadrar, 1500); }, onTap: tocado });
       el.classList.add('is-3d');
       if (!escena.hola) { escena.hola = 1; m3.setAmbient('walk'); pintarGlobo(); }
     }).catch(function () {});
@@ -865,6 +883,17 @@
     var navBar = document.querySelector('.nav-bar');
     function medir() { if (navBar) root.style.setProperty('--uk-nav', navBar.getBoundingClientRect().height + 'px'); }
     medir(); window.addEventListener('resize', medir); window.addEventListener('resize', reencuadrar);
+    // Teclado (iOS/Android): el alto que tapa se mide con visualViewport y la barra se apoya justo encima
+    var vv = window.visualViewport;
+    function teclado() {
+      if (!vv) return;
+      var kb = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+      root.style.setProperty('--uk-kb', kb + 'px'); host.classList.toggle('is-kb', kb > 80);
+      if (kb > 80) window.scrollTo(0, 0);
+      reencuadrar();
+    }
+    if (vv) { vv.addEventListener('resize', teclado); vv.addEventListener('scroll', teclado); }
+    input.addEventListener('blur', function () { setTimeout(teclado, 80); });
     var tt = document.querySelector('.top-bar__title');
     function titulo() { if (!tt) return; var t = view.classList.contains('active') ? (view.classList.contains('uk-ayuda') ? 'Ayuda' : view.classList.contains('uk-fin') ? 'Mis finanzas' : 'Uku') : null; if (t && tt.textContent !== t) tt.textContent = t; }
     new MutationObserver(function () {

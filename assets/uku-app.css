@@ -672,3 +672,25 @@ html.app-uku .uk-globo__acts .uk-globo__go.btn, html.app-uku .uk-globo__go.btn {
 .uk-find:first-of-type { border-top: 0; }
 .uk-find b { font: var(--uk-body-medium); color: var(--bp-theme-color-text-primary); }
 .uk-find small { font: var(--uk-sm); color: var(--cx-muted); }
+
+/* ---------- Escribiendo y con el teclado abierto ----------
+   La barra se apoya justo sobre el teclado (medido con visualViewport), los resultados van pegados
+   encima de la barra y nunca la pisan, y lo demás se aparta mientras escribes. */
+html.uk-chatting .uk { bottom: var(--uk-kb, 0px) !important; }
+.app-uku .uk.is-kb { bottom: var(--uk-kb, 0px); padding-bottom: 12px; }
+.uk-results { bottom: calc(100% - 100% + 84px); max-height: calc(100% - 120px); }
+html.uk-chatting .uk-results { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+html.uk-chatting .uk.is-kb .uk-results, .uk.is-kb .uk-results { bottom: 80px; }
+.uk.is-kb.is-chat .uk-scene { bottom: 68px; }
+/* Mientras escribes, la conversación se aparta del todo (no queda un fantasma al 15 %) */
+.uk.is-typing .uk-chat { opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+/* Con el teclado abierto, Uku se asoma menos: deja sitio a los resultados */
+.uk.is-kb .uk-scene { opacity: .35; transition: opacity .25s ease; }
+.uk.is-chat.is-typing .uk-scene { opacity: 0; } /* escribiendo en conversación, Uku se aparta: los resultados mandan */
+
+/* ---------- Sin avatar de Uku en la conversación ----------
+   Uku ya está detrás de las tarjetas, en persona: su cara repetida en la cabecera y en los mensajes
+   sobra. La inicial del asesor sí se queda: identifica a otra persona. */
+.uk-card__face { display: none; }
+.uk-msg:not(.is-agent) .uk-msg__face, .uk-msg__face.is-gap { display: none; }
+.uk-card .uk-dots { margin-left: var(--uk-inset); }
