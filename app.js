@@ -49,12 +49,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // Vuelve siempre a la página Destacado/Inicio
     if (typeof window.__resetHomeView === 'function') window.__resetHomeView();
     loginScreen.classList.remove('active');
+    document.body.classList.remove('sin-sesion');
     homePage.classList.remove('hidden');
     if (welcomeSplash) welcomeSplash.classList.remove('show');
+    // Si tocó un acceso antes de entrar, ahora sí se abre (desde el inicio, no desde la pantalla de ingreso)
+    const pendiente = window.__pendingAction;
+    window.__pendingAction = null;
+    if (pendiente) setTimeout(() => {
+      const todos = [...document.querySelectorAll('[data-action]')].filter(e => e.dataset.action === pendiente);
+      const acceso = todos.find(e => homePage.contains(e)) || todos[0];
+      if (acceso) acceso.click();
+    }, 350);
   }
 
   function showLogin() {
     loginScreen.classList.add('active');
+    document.body.classList.add('sin-sesion');
     homePage.classList.add('hidden');
     if (welcomeSplash) welcomeSplash.classList.remove('show');
     AppScroll.to({ top: 0 });
@@ -62,6 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Home oculto hasta autenticarse
   if (homePage) homePage.classList.add('hidden');
+  // Sin sesión, la ayuda y los accesos públicos van por encima del inicio de sesión
+  if (loginScreen.classList.contains('active')) document.body.classList.add('sin-sesion');
 
   // Login biométrico real (WebAuthn) con fallback simulado.
   // iOS sólo muestra Face ID si navigator.credentials se llama enseguida

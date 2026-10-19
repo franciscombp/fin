@@ -2357,6 +2357,9 @@
             overflow: hidden; /* toda la pantalla visible sin scroll */
         }
 
+        /* Sin sesión: la ayuda y los accesos públicos se abren por encima del inicio de sesión */
+        html body.sin-sesion .sp,
+        html body.sin-sesion .push-page { z-index: 600; }
         .login-screen.active {
             display: flex;
         }
@@ -6075,8 +6078,18 @@
         // Cualquier elemento con data-action da feedback.
         // Las acciones rápidas, destacados y filas de producto abren una
         // página (push o resumen); el resto sólo confirma con un toast.
+        // Sin sesión: los accesos públicos responden; los que usan tu cuenta
+        // inician el ingreso al instante y se abren al entrar (window.__pendingAction).
+        const ACCESOS_PUBLICOS = ['Soporte', 'Ayuda', 'Verificar pago', 'Clave digital', 'Idioma'];
         document.querySelectorAll('[data-action]').forEach(el => {
             el.addEventListener('click', (e) => {
+                const sinSesion = document.getElementById('login-screen')?.classList.contains('active');
+                if (sinSesion && el.closest('#login-screen') && !ACCESOS_PUBLICOS.includes(el.dataset.action)) {
+                    e.preventDefault(); e.stopImmediatePropagation();
+                    window.__pendingAction = el.dataset.action;
+                    document.getElementById('btn-login-biometric')?.click();
+                    return;
+                }
                 if (el.dataset.action === 'Modo finanzas') {
                     openFinancePage();
                 } else if (el.dataset.action === 'Cambiar cuenta') {
@@ -6089,6 +6102,8 @@
                     openCardDetail(el.dataset.action);
                 } else if (el.matches('.quick-action, .login-feature, .product-row')) {
                     openPushPage(el.dataset.action, el); // crece desde el botón/fila
+                } else if (el.dataset.action === 'Clave digital' && window.Soporte) {
+                    Soporte.open(); // ayuda con tu clave
                 } else {
                     showToast(el.dataset.action);
                 }
