@@ -157,7 +157,7 @@
     return (SAL = sal());
     function sal() {
     if (pagos.length) return { t: hola + ' ' + (pagos.length === 1 ? 'Tienes un pago pendiente, ¿te ayudo con eso?' : 'Tienes ' + pagos.length + ' pagos pendientes, ¿te ayudo con eso?'), k: 'prop:' + pagos[0].id, l: 'Ver el pago' };
-    if (d === 1 || d === 0) return { t: hola + ' ¿Quieres ver cómo va tu semana?', k: 'gastos', l: 'Ver mi semana' };
+    if (d === 1 || d === 0) return { t: hola + ' ¿Quieres ver cómo va tu semana?', k: 'gastos:sem', l: 'Ver mi semana' };
     if (s && s.n >= 5) return { t: hola + ' Tengo ' + s.n + ' consumos por ordenar, ¿me ayudas un minuto?', k: 'pfm:game', l: 'Ordenar' };
     return { t: hola + ' ¿En qué te ayudo?', k: 'dinero', l: 'Ver cómo va mi dinero' };
     }
@@ -550,7 +550,7 @@
       case 'pfm': salir(l); if (window.PFM) PFM.key(v); return;
       // Mis finanzas se responde en la conversación; abrir la pantalla es una opción más
       case 'fin': fx('select'); return seccion('fin');
-      case 'gastos': fx('select'); seccion('fin'); if (window.PFM) PFM.key('gastos'); return;
+      case 'gastos': fx('select'); seccion('fin'); if (window.PFM) { PFM.key('gastos'); if (v) PFM.key('per:' + v); } return;
       case 'voz': fx('tap'); if (window.Buscador) Buscador.voice(); return;
       // Volver: en el detalle de gastos, a la lista de Mis finanzas; si no, a Tu asistente
       case 'atras': { var pb = view.querySelector('.pf-back'); return pb ? pb.click() : seccion('uku'); }

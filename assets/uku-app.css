@@ -355,3 +355,5 @@ html.uk-chatting .uk { padding-top: calc(8px + env(safe-area-inset-top, 0px)); p
 .app-uku .view--finanzas:not(.uk-fin):not(.uk-ayuda) .uk-head { display: none; }
 /* Sin encabezado, el saludo necesita aire respecto a la barra de arriba */
 .app-uku .view--finanzas:not(.uk-fin):not(.uk-ayuda) .uk-globo { margin-top: 12px; }
+/* Dentro de Asistente, Mis finanzas se desplaza en su propio contenedor: las pestañas se pegan a su borde, no bajo la zona segura */
+.app-uku .uk-panel .pfm-tabs { top: 0; }
