@@ -448,14 +448,25 @@
     el.querySelector('.sp-top__title small').textContent = '';
     input.placeholder = 'Pregúntame lo que necesites';
   }
+  // Dentro de Asistente, Ayuda vive en el mismo espacio que Uku: no bloquea la página ni se cierra como capa
+  var inline = false;
+  function into(node) {
+    if (!el) mount();
+    inline = true;
+    if (el.parentNode !== node) node.appendChild(el);
+    el.classList.add('sp--in');
+    open();
+  }
   function open() {
+    // Ayuda vive en Asistente: cualquier entrada (buscador, perfil, la campana de soporte) va a esa pantalla
+    if (!inline && window.UkuAsistente) return UkuAsistente.ayuda();
     if (!el) mount();
     if (!withAgent) reset(); // con un asesor conectado, la conversación sigue
     el.querySelector('.sp-hello').innerHTML = '<span class="sp-av">' + face() + '</span><p>Hola' + (firstName() ? ', ' + esc(firstName()) : '') + '. Soy ' + uku() +
       '. Pregúntame lo que necesites: te doy la respuesta con tus datos y te llevo a donde lo resuelves tú mismo.</p>';
     if (!withAgent) el.querySelector('.sp-body').scrollTop = 0;
-    el.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    // Dentro de Asistente no es una capa: no usa .open (que empuja la página de abajo)
+    if (inline) el.classList.add('sp--on'); else { el.classList.add('open'); document.body.style.overflow = 'hidden'; }
     fx('open');
   }
   // Volver: del chat al inicio de Ayuda; desde ahí, cerrar
@@ -465,6 +476,8 @@
     close();
   }
   function close() {
+    // En Asistente, cerrar Ayuda es volver a Uku (la pantalla no se quita)
+    if (inline) { document.dispatchEvent(new CustomEvent('soporte:cerrar')); return; }
     el.classList.remove('open');
     if (!document.querySelector('.as-page.open, .push-page.open, .card-detail.open')) document.body.style.overflow = '';
     fx('close');
@@ -480,7 +493,7 @@
     open();
   }, true);
 
-  window.Soporte = { open: open, review: function () { review(false); }, find: find,
+  window.Soporte = { open: open, into: into, review: function () { review(false); }, find: find,
     faqs: function (n) { return FAQ.slice(0, n || FAQ.length).map(function (f, i) { return { kind: 'faq', i: i, icon: f.icon, t: f.t }; }); },
     // Para que Uku responda la ayuda dentro de su conversación (versión asistente)
     faq: function (i) { var f = FAQ[i]; return f && { t: f.t, icon: f.icon, a: typeof f.a === 'function' ? f.a() : f.a, acts: f.acts || [] }; },

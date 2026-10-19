@@ -600,7 +600,8 @@
    "en_mvp": "Sí",
    "saldo": 56323.07,
    "cuota_mensual": 374.62,
-   "nota": "$60.000 a 4,99% fijo, 25 años desde ene 2024; cuota con seguros"
+   "nota": "$60.000 a 4,99% fijo, 25 años desde ene 2024; cuota con seguros",
+   "clase": "hipoteca"
   },
   {
    "usuario": "andres",
@@ -609,7 +610,8 @@
    "en_mvp": "Sí",
    "saldo": 118.6,
    "cuota_mensual": 0,
-   "nota": "Paga casi todo cada mes; queda un saldo pequeño"
+   "nota": "Paga casi todo cada mes; queda un saldo pequeño",
+   "clase": "tarjeta"
   },
   {
    "usuario": "andres",
@@ -618,7 +620,8 @@
    "en_mvp": "No (otro banco)",
    "saldo": 212.4,
    "cuota_mensual": 115.0,
-   "nota": "Incluye un diferido de Almacenes Japón que terminó en marzo"
+   "nota": "Incluye un diferido de Almacenes Japón que terminó en marzo",
+   "clase": "tarjeta"
   },
   {
    "usuario": "andres",
@@ -627,7 +630,8 @@
    "en_mvp": "No (otro banco)",
    "saldo": 684.3,
    "cuota_mensual": 45.0,
-   "nota": "Solo paga el mínimo; el saldo creció después de las compras de diciembre"
+   "nota": "Solo paga el mínimo; el saldo creció después de las compras de diciembre",
+   "clase": "tarjeta"
   },
   {
    "usuario": "andres",
@@ -636,7 +640,8 @@
    "en_mvp": "Por decidir",
    "saldo": 0,
    "cuota_mensual": 0,
-   "nota": "$1.500 en marzo, devueltos en seis cuotas de $250 hasta septiembre"
+   "nota": "$1.500 en marzo, devueltos en seis cuotas de $250 hasta septiembre",
+   "clase": "prestamo"
   },
   {
    "usuario": "andres",
@@ -645,7 +650,8 @@
    "en_mvp": "Por decidir",
    "saldo": -50.0,
    "cuota_mensual": 0,
-   "nota": "Prestó $300 en junio; le devolvieron $250"
+   "nota": "Prestó $300 en junio; le devolvieron $250",
+   "clase": "cobrar"
   },
   {
    "usuario": "rosa",
@@ -654,7 +660,8 @@
    "en_mvp": "No (otra entidad)",
    "saldo": 3120.0,
    "cuota_mensual": 186.3,
-   "nota": "Solo se ve la transferencia de la cuota"
+   "nota": "Solo se ve la transferencia de la cuota",
+   "clase": "prestamo"
   },
   {
    "usuario": "rosa",
@@ -663,7 +670,8 @@
    "en_mvp": "Por decidir",
    "saldo": -200.0,
    "cuota_mensual": 0,
-   "nota": "Le devuelve en efectivo; el banco no lo ve"
+   "nota": "Le devuelve en efectivo; el banco no lo ve",
+   "clase": "cobrar"
   },
   {
    "usuario": "daniela",
@@ -672,7 +680,8 @@
    "en_mvp": "Sí",
    "saldo": 96.4,
    "cuota_mensual": 0,
-   "nota": "Cupo de $600; en diciembre y enero pagó la mitad y pagó intereses"
+   "nota": "Cupo de $600; en diciembre y enero pagó la mitad y pagó intereses",
+   "clase": "tarjeta"
   },
   {
    "usuario": "jorge",
@@ -681,7 +690,8 @@
    "en_mvp": "No (descontada de la pensión)",
    "saldo": 14900.0,
    "cuota_mensual": 167.6,
-   "nota": "El IESS la descuenta antes de pagar la pensión"
+   "nota": "El IESS la descuenta antes de pagar la pensión",
+   "clase": "hipoteca"
   },
   {
    "usuario": "jorge",
@@ -690,7 +700,8 @@
    "en_mvp": "Sí",
    "saldo": 0,
    "cuota_mensual": 0,
-   "nota": "Paga el total cada mes"
+   "nota": "Paga el total cada mes",
+   "clase": "tarjeta"
   },
   {
    "usuario": "jorge",
@@ -699,7 +710,8 @@
    "en_mvp": "No (otro banco)",
    "saldo": 86.0,
    "cuota_mensual": 86.0,
-   "nota": "Paga el total cada mes desde la cuenta conjunta"
+   "nota": "Paga el total cada mes desde la cuenta conjunta",
+   "clase": "tarjeta"
   },
   {
    "usuario": "jorge",
@@ -708,7 +720,8 @@
    "en_mvp": "Por decidir",
    "saldo": -1200.0,
    "cuota_mensual": 0,
-   "nota": "Prestó $2.000 en enero; lleva $800 en abonos"
+   "nota": "Prestó $2.000 en enero; lleva $800 en abonos",
+   "clase": "cobrar"
   },
   {
    "usuario": "andres",
@@ -717,7 +730,8 @@
    "en_mvp": "No (casa comercial)",
    "saldo": 124.8,
    "cuota_mensual": 62.4,
-   "nota": "Compra de $650 en diciembre: $80 de entrada con la Mastercard y 12 cuotas; quedan 2. Reporta al sistema comercial del buró (SICOM) solo si la casa comercial comparte su información"
+   "nota": "Compra de $650 en diciembre: $80 de entrada con la Mastercard y 12 cuotas; quedan 2. Reporta al sistema comercial del buró (SICOM) solo si la casa comercial comparte su información",
+   "clase": "tarjeta"
   },
   {
    "usuario": "rosa",
@@ -726,7 +740,8 @@
    "en_mvp": "No (casa comercial)",
    "saldo": 916.8,
    "cuota_mensual": 57.3,
-   "nota": "24 cuotas desde febrero; paga casi siempre en efectivo en el almacén y solo a veces con Deuna. Reporta al sistema comercial del buró (SICOM) solo si la casa comercial comparte su información"
+   "nota": "24 cuotas desde febrero; paga casi siempre en efectivo en el almacén y solo a veces con Deuna. Reporta al sistema comercial del buró (SICOM) solo si la casa comercial comparte su información",
+   "clase": "prestamo"
   },
   {
    "usuario": "daniela",
@@ -735,7 +750,8 @@
    "en_mvp": "No (casa comercial)",
    "saldo": 0,
    "cuota_mensual": 0,
-   "nota": "Compra de $140 en noviembre; no pagó en febrero y en marzo pagó la cuota doble más el recargo. Reporta al sistema comercial del buró (SICOM) solo si la casa comercial comparte su información"
+   "nota": "Compra de $140 en noviembre; no pagó en febrero y en marzo pagó la cuota doble más el recargo. Reporta al sistema comercial del buró (SICOM) solo si la casa comercial comparte su información",
+   "clase": "tarjeta"
   },
   {
    "usuario": "jorge",
@@ -744,7 +760,8 @@
    "en_mvp": "No (casa comercial)",
    "saldo": 524.0,
    "cuota_mensual": 52.4,
-   "nota": "18 cuotas desde marzo; quedan 10. Reporta al sistema comercial del buró (SICOM) solo si la casa comercial comparte su información"
+   "nota": "18 cuotas desde marzo; quedan 10. Reporta al sistema comercial del buró (SICOM) solo si la casa comercial comparte su información",
+   "clase": "prestamo"
   },
   {
    "usuario": "luis",
@@ -753,7 +770,8 @@
    "en_mvp": "Sí",
    "saldo": 162.64,
    "cuota_mensual": 25,
-   "nota": "Cupo $400; a veces paga solo el mínimo"
+   "nota": "Cupo $400; a veces paga solo el mínimo",
+   "clase": "tarjeta"
   },
   {
    "usuario": "luis",
@@ -762,7 +780,8 @@
    "en_mvp": "No: casa comercial, la paga en efectivo",
    "saldo": 214.0,
    "cuota_mensual": 38.0,
-   "nota": "El banco no la ve"
+   "nota": "El banco no la ve",
+   "clase": "prestamo"
   }
  ],
  "escenarios": [

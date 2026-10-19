@@ -12,13 +12,14 @@
 .app-uku.uk-idle .top-bar__title { opacity: 0 !important; }
 
 /* Uku o el PFM completo (que se abre como una capa y se baja para volver) */
-.app-uku .view--finanzas:not(.uk-fin) .pf-host, .app-uku .view--finanzas:not(.uk-fin) .uk-back, .app-uku .view--finanzas.uk-fin .uk { display: none; }
-.uk-back { position: sticky; top: calc(64px + env(safe-area-inset-top, 0px)); z-index: 45; display: grid; place-items: center; width: 48px; height: 48px; margin: 8px auto -56px; border: 0; border-radius: 50%; background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-tertiary-fg); box-shadow: 0 2px 8px rgba(15, 38, 92, .12); cursor: pointer; }
-.uk-back .material-symbols-rounded { font-size: 28px; }
+/* Asistente: una sola pantalla. El selector de arriba cambia entre Uku, Mis finanzas y Ayuda */
+.app-uku .view--finanzas:not(.uk-fin) .pf-host, .app-uku .view--finanzas.uk-fin .uk, .app-uku .view--finanzas.uk-ayuda .uk { display: none; }
+.app-uku .view--finanzas.uk-fin .pf-host { padding-top: calc(108px + env(safe-area-inset-top, 0px)); }
+.app-uku .view--finanzas:not(.uk-ayuda) .uk-ayuda-host { display: none; }
 html.uk-idle, html.uk-idle body { overflow: hidden; overscroll-behavior: none; }
 
 /* ---------- La pantalla: el mundo de Uku de borde a borde ---------- */
-.uk { position: fixed; z-index: 1; left: 0; right: 0; top: calc(56px + env(safe-area-inset-top, 0px)); bottom: var(--uk-nav, 76px); max-width: 480px; margin: 0 auto; overflow: hidden; background: linear-gradient(#e9f1f7, #f4f4f2 70%); }
+.uk { position: fixed; z-index: 1; left: 0; right: 0; top: calc(108px + env(safe-area-inset-top, 0px)); bottom: var(--uk-nav, 76px); max-width: 480px; margin: 0 auto; overflow: hidden; background: linear-gradient(#e9f1f7, #f4f4f2 70%); }
 .uk p { margin: 0; }
 .uk-scene { position: absolute; inset: 0; }
 .uk-scene .b3d { position: absolute; inset: 0; }
@@ -196,3 +197,15 @@ html.uk-chatting .uk-bar { bottom: calc(12px + env(safe-area-inset-bottom, 0px))
 .uk-sig b { font: var(--ui-body-sm-semibold); line-height: 1.25; }
 .uk.is-chat .uk-head, .uk.is-typing .uk-head { opacity: 0; transform: translateY(-12px); pointer-events: none; }
 .uk.is-chat::before { opacity: 0; }
+
+/* ---------- Selector de sección (Uku · Mis finanzas · Ayuda) ---------- */
+.uk-seg { position: fixed; z-index: 4; left: 0; right: 0; top: calc(56px + env(safe-area-inset-top, 0px)); max-width: 480px; margin: 0 auto; padding: 4px var(--bp-layout-grid-margin, 16px) 0; box-sizing: border-box; }
+.uk-seg__track { display: flex; gap: 4px; padding: 4px; border-radius: 99px; background: var(--bp-theme-color-surface-container-default); }
+.uk-seg__track button { flex: 1; min-width: 0; height: 36px; padding: 0 8px; border: 0; border-radius: 99px; background: transparent; color: var(--bp-theme-color-text-helper); font: var(--ui-body-sm-semibold); cursor: pointer; white-space: nowrap; }
+.uk-seg__track button[aria-selected="true"] { background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); }
+/* Ayuda ocupa el espacio de Uku, entre el selector y la barra de abajo */
+.uk-ayuda-host { position: fixed; z-index: 1; left: 0; right: 0; top: calc(108px + env(safe-area-inset-top, 0px)); height: calc(100vh - 108px - var(--uk-nav, 76px) - env(safe-area-inset-top, 0px)); max-width: 480px; margin: 0 auto; overflow: hidden; background: var(--bp-surface-page, #f5f5f5); }
+
+/* El carrusel de Ayuda no empuja la pantalla de Asistente */
+.app-uku .view--finanzas.uk-ayuda { overflow: clip; }
+.uk-ayuda-host .sp { overflow: hidden; }

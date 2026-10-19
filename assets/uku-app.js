@@ -21,7 +21,7 @@
   var esc = U.esc, norm = U.norm, money = U.money, money0 = U.money0, fx = U.fx, face = U.face, ic = U.ic, acciones = U.acciones, accion = U.accion, ayuda = U.ayuda, finanzas = U.finanzas, resumen = U.resumen, consejos = U.consejos;
   var HACER = U.HACER, PLATA = U.PLATA, PREG = U.PREG;
 
-  var view, host, globoEl, props, pills, results, chat, input, b3d = null;
+  var view, host, seg, ayudaHost, globoEl, props, pills, results, chat, input, b3d = null;
   var msgs = [], gi = 0, nota = null, ultimo = 0, saludado = false;
   var pend = null; // lo que saliste a hacer: al volver, Uku pregunta cómo te fue
 
@@ -33,9 +33,20 @@
     if (!view || host) return;
     host = document.createElement('div'); host.className = 'uk';
     view.insertBefore(host, view.firstChild);
-    var back = document.createElement('button'); back.className = 'uk-back'; back.setAttribute('data-k', 'home'); back.setAttribute('aria-label', 'Volver a Uku');
-    back.innerHTML = ic('keyboard_arrow_down');
-    view.insertBefore(back, host.nextSibling);
+    // Una sola pantalla de Asistente: Uku, Mis finanzas y Ayuda se cambian arriba, con el mismo encabezado
+    seg = document.createElement('nav'); seg.className = 'uk-seg'; seg.setAttribute('aria-label', 'Asistente');
+    seg.innerHTML = '<div class="uk-seg__track" role="tablist">' +
+      '<button role="tab" data-seg="uku" aria-selected="true">Uku</button>' +
+      '<button role="tab" data-seg="fin" aria-selected="false">Mis finanzas</button>' +
+      '<button role="tab" data-seg="ayuda" aria-selected="false">Ayuda</button></div>';
+    view.insertBefore(seg, host);
+    ayudaHost = document.createElement('div'); ayudaHost.className = 'uk-ayuda-host';
+    view.appendChild(ayudaHost);
+    seg.addEventListener('click', function (e) { var b = e.target.closest('[data-seg]'); if (b) { fx('tap'); seccion(b.dataset.seg); } });
+    // Para el resto de la app: Ayuda se abre aquí, dentro de Asistente
+    window.UkuAsistente = { ayuda: function () { if (window.__goView) window.__goView(1); seccion('ayuda'); } };
+    // Ayuda, dentro de esta pantalla: al volver desde su flecha, regresa a Uku
+    document.addEventListener('soporte:cerrar', function () { seccion('uku'); });
     host.innerHTML =
       '<div class="uk-scene"><div class="b3d" data-shift=".3"></div></div>' +
       // Al conversar, su mundo se desvanece detrás de un fondo limpio y arriba queda la cabecera del chat
@@ -216,7 +227,7 @@
   /* ---------- Su mundo en 3D ---------- */
   function escena() {
     var el = host && host.querySelector('.uk-scene .b3d'), s = resumen();
-    if (!el || !view.classList.contains('active') || view.classList.contains('uk-fin')) return;
+    if (!el || !view.classList.contains('active') || view.classList.contains('uk-fin') || view.classList.contains('uk-ayuda')) return;
     import(ASSET + 'bosque3d.js').then(function (m3) {
       if (!m3.supported()) return;
       b3d = m3; var c = window.Clima && Clima.last(); if (c) m3.setLook(c.look);
@@ -228,11 +239,23 @@
   }
 
   /* ---------- Toques ---------- */
-  function libre() { root.classList.toggle('uk-idle', view.classList.contains('active') && !view.classList.contains('uk-fin')); }
+  function libre() { root.classList.toggle('uk-idle', view.classList.contains('active') && !view.classList.contains('uk-fin') && !view.classList.contains('uk-ayuda')); }
   function finOn(on) {
     view.classList.toggle('uk-fin', !!on); libre();
     if (window.AppScroll) AppScroll.to({ top: 0 }); else window.scrollTo(0, 0);
     if (on) { if (window.PFM) PFM.paint(); } else setTimeout(escena, 60);
+  }
+  // Las tres secciones de Asistente: Uku (su mundo y conversación), Mis finanzas y Ayuda
+  function seccion(n) {
+    var ayuda = n === 'ayuda';
+    view.classList.toggle('uk-ayuda', ayuda);
+    if (ayuda) {
+      if (view.classList.contains('uk-fin')) finOn(false);
+      if (window.Soporte) Soporte.into(ayudaHost);
+    } else if (n === 'fin') { if (window.PFM) PFM.open(); else finOn(true); }
+    else finOn(false);
+    seg.querySelectorAll('[data-seg]').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.seg === (ayuda ? 'ayuda' : n === 'fin' ? 'fin' : 'uku'))); });
+    libre();
   }
   /* ---------- Solicitudes dentro del mundo de Uku ----------
      Lo que se puede pedir o revisar, a un toque; la búsqueda es la universal (contexto: solicitudes). */
@@ -278,10 +301,9 @@
       case 'sp': salir(l, !/^(review|agent)$/.test(v)); if (window.Soporte) Soporte.run(v); return pintarChat();
       case 'pfm': salir(l); if (window.PFM) PFM.key(v); return;
       // Mis finanzas se responde en la conversación; abrir la pantalla es una opción más
-      case 'fin': fx('select'); return finOn(true);
-      case 'home': fx('tap'); finOn(false); return;
+      case 'fin': fx('select'); return seccion('fin');
       // Ayuda es su sección: se abre el centro de ayuda; el chat empieza cuando hay algo que resolver
-      case 'ayuda': fx('tap'); salir('Ayuda'); if (window.Soporte) Soporte.open(); return;
+      case 'ayuda': fx('tap'); salir('Ayuda'); return seccion('ayuda');
       case 'sol': return abrirSol();
       case 'persona': persona(); return pintarChat();
       case 'ok': return resuelto();
@@ -327,10 +349,10 @@
     function medir() { if (navBar) root.style.setProperty('--uk-nav', navBar.getBoundingClientRect().height + 'px'); }
     medir(); window.addEventListener('resize', medir);
     var tt = document.querySelector('.top-bar__title');
-    function titulo() { if (!tt) return; var t = view.classList.contains('active') ? (view.classList.contains('uk-fin') ? 'Mis finanzas' : 'Uku') : null; if (t && tt.textContent !== t) tt.textContent = t; }
+    function titulo() { if (!tt) return; var t = view.classList.contains('active') ? (view.classList.contains('uk-ayuda') ? 'Ayuda' : view.classList.contains('uk-fin') ? 'Mis finanzas' : 'Uku') : null; if (t && tt.textContent !== t) tt.textContent = t; }
     new MutationObserver(function () {
       root.classList.toggle('uk-here', view.classList.contains('active')); libre(); titulo();
-      if (view.classList.contains('active') && !view.classList.contains('uk-fin')) {
+      if (view.classList.contains('active') && !view.classList.contains('uk-fin') && !view.classList.contains('uk-ayuda')) {
         window.scrollTo(0, 0); setTimeout(escena, 120); // después del PFM, que también usa la escena
         // Una conversación vieja sin nada pendiente no se queda colgada
         if (msgs.length && !pend && Date.now() - ultimo > 3 * 60 * 1000) { msgs = []; pintar(); }
