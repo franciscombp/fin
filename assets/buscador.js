@@ -170,16 +170,12 @@
     el.innerHTML =
       '<div class="sx-back" data-sx="close"></div>' +
       '<div class="sx-panel">' +
-        '<div class="sx-top"><span class="sx-grab" aria-hidden="true"></span>' +
-          '<button class="sx-x" data-sx="close" aria-label="Cerrar"><span class="material-symbols-rounded">close</span></button>' +
-          '<h2 class="sx-title">Buscar o preguntar</h2>' +
-          '<p class="sx-sub">Te ayudamos a encontrar lo que necesitas, resolver tus dudas o recibir asesoría financiera.</p>' +
-        '</div>' +
         '<div class="sx-head"><form class="sx-field" role="search">' +
           '<span class="material-symbols-rounded" aria-hidden="true">search</span>' +
-          '<input type="search" enterkeyhint="search" autocomplete="off" placeholder="¿Qué necesitas hoy?" aria-label="Buscar o preguntar">' +
+          '<input type="search" enterkeyhint="search" autocomplete="off" placeholder="¿Qué necesitas?" aria-label="Buscar o preguntar">' +
           '<button type="button" class="sx-mic" data-sx="mic" aria-label="Dictar"><span class="material-symbols-rounded">mic</span></button>' +
-        '</form></div>' +
+          '<button type="button" class="sx-mic" data-sx="cam" aria-label="Escanear un QR con la cámara"><span class="material-symbols-rounded">photo_camera</span></button>' +
+        '</form><button class="sx-cancel" data-sx="close">Cancelar</button></div>' +
         '<div class="sx-results"></div>' +
       '</div>';
     document.body.appendChild(el);
@@ -199,11 +195,12 @@
       if (!b) return;
       if (b.dataset.sx === 'close') return close();
       if (b.dataset.sx === 'mic') return dictate();
+      if (b.dataset.sx === 'cam') return runAction(ACTIONS.filter(function (a) { return a.label === 'Pagar con QR'; })[0]);
       var i = b.dataset.sxI;
       // Lo que se escribió y llevó a algo queda en recientes
       if (i.indexOf('rc') !== 0) addRecent(input.value);
       if (i === 'rc-clear') { recent = []; saveRecent(); fx('toggle'); return render(); }
-      if (i.indexOf('sug:') === 0) { input.value = SUGERENCIAS[+i.slice(4)].t; fx('tap'); return render(); }
+      if (i.indexOf('sug:') === 0) { input.value = SUG_PLANA[+i.slice(4)].t; fx('tap'); return render(); }
       if (i.indexOf('rc:') === 0) { input.value = recent[+i.slice(3)] || ''; fx('tap'); return render(); }
       if (i === 'ask') { var q = input.value.trim(); close(true); setTimeout(function () { window.Asistente && Asistente.open({ ctx: ctxId, ask: q }); }, 280); return; }
       if (i === 'pfm') return runAction(ACTIONS[4]);
@@ -310,20 +307,20 @@
     if (n) rec_.name = n.value.trim();
     if (m) rec_.amount = parseFloat(String(m.value).replace(',', '.')) || 0;
   }
-  // Sugerencias antes de escribir: al tocar una, la búsqueda se llena con su texto
+  // Sugerencias antes de escribir, por lo que la persona quiere hacer. Tocar una llena la búsqueda con su texto.
   var SUGERENCIAS = [
-    { t: 'Ayúdame a mejorar mis finanzas', icon: 'bar_chart', hi: true },
-    { t: 'Necesito ayuda', icon: 'help' },
-    { t: 'Quiero ver mis últimos movimientos', icon: 'swap_horiz' },
-    { t: 'Cómo puedo solicitar una tarjeta de crédito', icon: 'credit_card' },
-    { t: 'Quiero conocer mis seguros', icon: 'shield' }
+    { h: 'Pagar y enviar', items: [['Transferir dinero', 'send_money'], ['Pagar servicios', 'bolt'], ['Pagar con QR', 'qr_code_scanner']] },
+    { h: 'Mi dinero', items: [['Ver mis movimientos', 'swap_horiz'], ['¿En qué gasto más?', 'insights'], ['Pedir un préstamo', 'request_quote']] },
+    { h: 'Ayuda y seguridad', items: [['Bloquear mi tarjeta', 'lock'], ['Cambiar mi clave', 'key'], ['Necesito ayuda', 'help']] }
   ];
+  var SUG_PLANA = [];
+  SUGERENCIAS.forEach(function (g) { g.items.forEach(function (it) { SUG_PLANA.push({ t: it[0], icon: it[1] }); }); });
   function sugerencias() {
-    return '<section class="sx-sugs"><h3>Sugerencias</h3><div class="sx-chips-col">' +
-      SUGERENCIAS.map(function (s, i) {
-        return '<button class="sx-sug' + (s.hi ? ' sx-sug--hi' : '') + '" data-sx-i="sug:' + i + '"><span class="material-symbols-rounded">' + s.icon + '</span>' + esc(s.t) +
-          (s.hi ? '<span class="material-symbols-rounded sx-sug__end">chevron_right</span>' : '') + '</button>';
-      }).join('') + '</div></section>';
+    return SUGERENCIAS.map(function (g) {
+      return '<section class="sx-card"><h3>' + g.h + '</h3>' + g.items.map(function (it) {
+        return row('sug:' + SUG_PLANA.findIndex(function (x) { return x.t === it[0]; }), it[1], esc(it[0]));
+      }).join('') + '</section>';
+    }).join('');
   }
 
   function chip(id, label, on) { return '<button class="sx-chip" data-sx-i="' + id + '" aria-pressed="' + !!on + '">' + esc(label) + '</button>'; }
