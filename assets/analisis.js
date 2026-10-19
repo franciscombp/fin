@@ -52,7 +52,7 @@
     if (late) plan.push({ t: T('Pasa {monto} más al mes a {meta}', { monto: money(late.need - late.monthly), meta: late.name }), s: T('Con eso llegas a tiempo a tu meta.') });
     if (rate >= .08) plan.push({ t: T('Mantén tu ahorro de {monto}', { monto: money(n.save) }), s: T('Vas bien: es más de lo que ahorra la mayoría.') });
     var qs = p.ins.map(function (x) { return x.ask; }).filter(Boolean);
-    ['¿En qué se me va la plata?', '¿Cuánto más puedo ahorrar?', '¿Cómo voy con mis metas?'].forEach(function (q) { if (qs.indexOf(q) < 0) qs.push(q); });
+    ['¿En qué gasto más?', '¿Cuánto más puedo ahorrar?', '¿Cómo voy con mis metas?'].forEach(function (q) { if (qs.indexOf(q) < 0) qs.push(q); });
     return { sum: sum, finds: finds, plan: plan.slice(0, 3), qs: qs.slice(0, 4) };
   }
 

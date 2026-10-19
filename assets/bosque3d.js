@@ -508,7 +508,7 @@ function frame(now) {
     a.needsUpdate = true;
   }
   // Giro: el dedo manda (con un pequeño rebote en los topes); a los 3 s vuelve de frente.
-  if (!drag) { if (performance.now() - idleAt > 3000) yawTo = 0; else yawTo = Math.max(-1.13, Math.min(1.13, yawTo)); }
+  if (!drag) { if (focus || performance.now() - idleAt > 3000) yawTo = 0; else yawTo = Math.max(-1.13, Math.min(1.13, yawTo)); } // conversando siempre mira de frente
   yaw = RM ? yawTo : lerp(yaw, yawTo, Math.min(1, dt * (drag ? 14 : 2.5)));
   // La cámara va sujeta a Uku, siempre de frente: camina hacia ella
   const sway = RM || drag || focus ? 0 : Math.sin(t * .15) * .12;

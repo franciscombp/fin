@@ -35,7 +35,7 @@
   var casos = []; try { casos = JSON.parse(localStorage.getItem('uk-casos') || '[]'); } catch (e) {}
 
   // Lo que más se pide, en el orden de los trabajos: mi dinero, una duda simple, un inconveniente
-  var PRUEBA = ['¿Cómo va mi dinero?', '¿En qué se me va la plata?', 'No reconozco un consumo', 'No puedo entrar a la app'];
+  var PRUEBA = ['¿Cómo va mi dinero?', '¿En qué gasto más?', 'No reconozco un consumo', 'No puedo entrar a la app'];
 
   /* ---------- La pantalla: Uku y su mundo ---------- */
   function mount() {
@@ -137,7 +137,7 @@
   function saludo() {
     if (SAL) return SAL;
     var s = resumen(), A = consejos(), nombre = s && s.nombre ? s.nombre.split(' ')[0] : '';
-    if (!s) return { t: '¡Hola! Soy Uku. ¿Vemos cómo vas hoy?', k: 'dinero', l: 'Ver cómo va mi dinero' }; // todavía sin tus datos: no se guarda
+    if (!s) return { t: 'Hola, soy Uku. ¿Vemos cómo vas hoy?', k: 'dinero', l: 'Ver cómo va mi dinero' }; // todavía sin tus datos: no se guarda
     var ahora = new Date(), h = ahora.getHours(), d = ahora.getDay(), antes = 0;
     try { antes = +localStorage.getItem(VISTO) || 0; localStorage.setItem(VISTO, String(ahora.getTime())); } catch (e) {}
     var hoy = antes && new Date(antes).toDateString() === ahora.toDateString(), hace = (ahora.getTime() - antes) / 36e5;
@@ -149,7 +149,7 @@
     function sal() {
     if (pagos.length) return { t: hola + ' ' + (pagos.length === 1 ? 'Tienes un pago pendiente, ¿te ayudo con eso?' : 'Tienes ' + pagos.length + ' pagos pendientes, ¿te ayudo con eso?'), k: 'prop:' + pagos[0].id, l: 'Ver el pago' };
     if (d === 1 || d === 0) return { t: hola + ' ¿Quieres ver cómo va tu semana?', k: 'gastos:sem', l: 'Ver mi semana' };
-    if (s && s.n >= 5) return { t: hola + ' Tengo ' + s.n + ' consumos por ordenar, ¿me ayudas un minuto?', k: 'pfm:game', l: 'Ordenar' };
+    if (s && s.n >= 5) return { t: hola + ' Tengo ' + s.n + ' consumos sin clasificar. ¿Los ordenamos? Toma un minuto.', k: 'pfm:game', l: 'Ordenar' };
     return { t: hola + ' ¿En qué te ayudo?', k: 'dinero', l: 'Ver cómo va mi dinero' };
     }
   }
@@ -163,7 +163,7 @@
   }
   function pintarGlobo() {
     var P = propuestas(), n = P.length, hola = !saludado && !nota, sal = hola ? saludo() : null, x = !hola && !nota && n ? P[gi % n] : null;
-    var t = nota || (hola ? sal.t : x ? x.t : '¡Todo va bien por ahora! ¿Hacemos algo hoy?');
+    var t = nota || (hola ? sal.t : x ? x.t : 'Todo está en orden por ahora. ¿Quieres hacer algo hoy?');
     var go = hola ? sal : x ? { k: x.k, l: x.l } : null;
     globoEl.innerHTML = (x ? '<p class="uk-globo__tag">' + esc(x.tag) + '</p>' : '') + '<p class="uk-globo__t">' + esc(t) + '</p>' +
       '<div class="uk-globo__acts">' + (go ? '<button class="btn btn--tertiary uk-globo__go" data-k="' + esc(go.k) + '" data-l="' + esc(go.l) + '">' + esc(go.l) + '</button>' : '') +
@@ -238,15 +238,15 @@
     else if (acts.length) uku(acts.length === 1 ? 'Te llevo a ' + acts[0].label.toLowerCase() + '. ¿Lo hacemos?' : 'Puedo llevarte a hacerlo:', acts.map(function (a) { return b('act:' + a.label, a.label, a.icon); }).concat(H.slice(0, 1).map(function (h) { return b(h.kind + ':' + h.i, h.t, 'help', 'is-ask'); }))
       // Si es un problema (un cobro, un reclamo), una persona también está a un toque
       .concat(/cobr|problema|reclam|reconozc|fraude|estaf|robo|rob/.test(norm(q)) ? [b('persona', 'Hablar con una persona', 'support_agent', 'is-ask')] : []));
-    else uku('Todavía no sé eso. Puedo contarte de tu plata, llevarte a hacer algo o pasarte con una persona del banco.', PRUEBA.slice(0, 2).map(function (c) { return b('ask:' + c, c, null, 'is-ask'); }).concat([b('persona', 'Hablar con una persona', 'support_agent')]));
+    else uku('Eso todavía no lo sé. Puedo contarte sobre tu dinero, llevarte a una acción de la app o comunicarte con una persona del banco.', PRUEBA.slice(0, 2).map(function (c) { return b('ask:' + c, c, null, 'is-ask'); }).concat([b('persona', 'Hablar con una persona', 'support_agent')]));
     mostrar();
   }
   function mundo() {
     var W = PFM.world(), s = resumen(), pend = s && s.n;
     // Lo que pide algo va en la frase; el estado de cada cosa, en filas
     var pide = W.filter(function (x) { return /warn|over|pensativo/.test(x.cls || ''); })[0];
-    uku(esc(pide ? pide.d : 'Todo mi mundo está bien porque tus finanzas lo están. Lo que ves aquí lo cuidas tú.'),
-      (pend ? [b('pfm:game', 'Clasificar conmigo', 'category')] : []).concat([b('pfm:world', 'Qué significa cada cosa', null, 'is-ask'), b('ok', 'Qué lindo, gracias', 'thumb_up', 'is-ask')]), '',
+    uku(esc(pide ? pide.d : 'Mi mundo está bien porque tus finanzas lo están. Lo que ves aquí lo cuidas tú.'),
+      (pend ? [b('pfm:game', 'Clasificar conmigo', 'category')] : []).concat([b('pfm:world', 'Qué significa cada cosa', null, 'is-ask'), b('ok', 'Gracias, Uku', 'thumb_up', 'is-ask')]), '',
       { title: 'Mi mundo', stats: W.map(function (x, i) { var m = String(x.v).match(/\d+/);
         return { ic: x.ic, l: x.l.replace(/^Su /, 'Mi ').replace(/^Sus /, 'Mis '), v: i === 0 ? (s && s.n ? s.n + ' por ordenar' : 'Contento') : i === 1 ? (m ? m[0] + (m[0] === '1' ? ' mes' : ' meses') : 'Menos de 1 mes') : String(x.v), cls: /warn|over|pensativo/.test(x.cls || '') ? 'warn' : 'ok' }; }) });
     if (b3d) b3d.play('happy');
@@ -260,7 +260,7 @@
     if (x && x.id !== 'pres' && x.kind === 'warn') t += ' ' + (x.di || x.t);
     uku(esc(t), [b('gastos', 'Ver mis gastos', 'account_balance_wallet'), pres ? b('pfm:budgets', 'Ajustar mi presupuesto', 'speed') : b('pfm:pres', 'Armar mi presupuesto', 'speed')]
       .concat(x && x.act && x.id !== 'pres' ? [b('pfm:' + x.act, x.actl, null, 'is-ask')] : [])
-      .concat([b('ask:¿En qué se me va la plata?', '¿En qué se me va la plata?', null, 'is-ask')]), '',
+      .concat([b('ask:¿En qué gasto más?', '¿En qué gasto más?', null, 'is-ask')]), '',
       { title: 'Así vas en ' + s.mes, num: { v: money0(s.gast), l: 'gastaste en ' + s.mes }, meter: pres ? { v: s.gast, max: s.pres, l: money0(s.gast) + ' de ' + money0(s.pres) + ' de presupuesto', cls: s.score >= 85 ? 'ok' : s.score >= 55 ? 'warn' : 'over' } : null, stats: stats });
     if (b3d) b3d.play(s.score >= 85 ? 'happy' : 'talk');
   }
@@ -289,7 +289,7 @@
   // Ayuda, sin salir de su mundo: los inconvenientes guiados y lo más consultado; todo el centro de ayuda a un toque
   function ayudaCard() {
     var F = Soporte.flows();
-    uku('¿Qué necesitas? Te doy la respuesta aquí y te llevo a donde lo resuelves tú. Si es otra cosa, escríbemela abajo.',
+    uku('¿En qué te ayudo? Elige un tema o escríbeme tu pregunta. Te respondo aquí y, si hace falta, te llevo a donde se resuelve.',
       F.slice(0, 4).map(function (f) { return b('flow:' + f.i, f.t, f.icon); })
         .concat([b('ayudatoda', 'Todas las preguntas frecuentes', 'help'), b('persona', 'Hablar con una persona', 'support_agent', 'is-ask')]), '', { title: 'Ayuda' });
     mostrar();
@@ -371,13 +371,13 @@
   }
   // Se resolvió: Uku lo celebra, cierra la conversación y vuelve a su mundo
   function resuelto(t) {
-    uku(t || '¡Qué bueno! Aquí estoy si necesitas algo más.'); pintarChat(); fx('success'); if (b3d) b3d.play('happy');
-    setTimeout(function () { msgs = []; nota = '¡Listo! ¿Te ayudo con algo más?'; pintar(); setTimeout(function () { nota = null; if (!msgs.length) pintarGlobo(); }, 6000); }, RM ? 1600 : 2300);
+    uku(t || 'Me alegra. Aquí estoy si necesitas algo más.'); pintarChat(); fx('success'); if (b3d) b3d.play('happy');
+    setTimeout(function () { msgs = []; nota = 'Listo. ¿Te ayudo con algo más?'; pintar(); setTimeout(function () { nota = null; if (!msgs.length) pintarGlobo(); }, 6000); }, RM ? 1600 : 2300);
   }
   // Pasar con una persona, sin salir de Uku
   function persona() {
     var c = Soporte.contact();
-    uku('Te paso con una persona del banco. Le cuento lo que ya hablamos para que no tengas que repetirlo. ¿Cómo prefieres?', c.opts.map(function (o) { return b('hum:' + o.k, o.t, o.icon); }));
+    uku('Te comunico con una persona del banco. Le paso un resumen de lo que hablamos para que no tengas que repetirlo. ¿Cómo prefieres?', c.opts.map(function (o) { return b('hum:' + o.k, o.t, o.icon); }));
   }
   function cara_(m) { return m.ag ? '<span class="uk-av">' + esc(agente ? agente.ini : 'AR') + '</span>' : face(); }
   // De qué se trata: lo último que preguntaste, para que la persona no te lo vuelva a pedir
@@ -513,7 +513,7 @@
   // Solo si ya estaban conversando: desde su mundo, el chat no se abre solo; Uku lo celebra en su globo
   function salir(label, decir) {
     pend = { l: label, fuera: false, cambio: false, t: Date.now(), chat: msgs.length > 0 };
-    if (decir && msgs.length) { uku('Te llevo a ' + esc(label.toLowerCase()) + '. Cuando vuelvas, me cuentas cómo te fue.'); pintarChat(); }
+    if (decir && msgs.length) { uku('Te llevo a ' + esc(label.toLowerCase()) + '. Cuando vuelvas, cuéntame cómo te fue.'); pintarChat(); }
   }
   function enUku() { return view.classList.contains('active') && !view.classList.contains('uk-fin') && !view.classList.contains('uk-ayuda') && !document.querySelector(CAPAS); }
   setInterval(function () {
@@ -521,8 +521,8 @@
     if (!enUku()) { pend.fuera = true; return; }
     if (!pend.fuera) { if (Date.now() - pend.t > 2500) pend = null; return; } // no se abrió nada
     var p = pend; pend = null;
-    if (!p.chat) { if (p.cambio) { nota = '¡Listo, ya quedó! ¿Te ayudo con algo más?'; pintarGlobo(); if (b3d) b3d.play('happy'); setTimeout(function () { nota = null; if (!msgs.length) pintarGlobo(); }, 6000); } return; }
-    if (p.cambio) { uku('¡Listo, ya quedó! ¿Te ayudo con algo más?', [b('ok', 'No, eso es todo', 'thumb_up', 'is-ask'), b('consejo', 'Qué más me propones', 'lightbulb', 'is-ask')]); if (b3d) b3d.play('happy'); }
+    if (!p.chat) { if (p.cambio) { nota = 'Listo, ya quedó. ¿Te ayudo con algo más?'; pintarGlobo(); if (b3d) b3d.play('happy'); setTimeout(function () { nota = null; if (!msgs.length) pintarGlobo(); }, 6000); } return; }
+    if (p.cambio) { uku('Listo, ya quedó. ¿Te ayudo con algo más?', [b('ok', 'No, eso es todo', 'thumb_up', 'is-ask'), b('consejo', 'Qué más me propones', 'lightbulb', 'is-ask')]); if (b3d) b3d.play('happy'); }
     else uku('¿Pudiste ' + esc(p.l.toLowerCase()) + '?', [b('ok', 'Sí, listo', 'thumb_up', 'is-ask'), b('no', 'No, ayúdame', null, 'is-ask')]);
     pintarChat(); fx('tap');
   }, 500);
@@ -697,7 +697,7 @@
       case 'cb': uku('Listo. Te llaman ' + esc(v) + ' al 099 *** 4521, con el resumen de tu caso. Lo ves en Solicitudes.', [b('ok', 'Gracias', 'thumb_up', 'is-ask')]); fx('success'); return pintarChat();
       case 'chau': return chau();
       case 'ok': return resuelto();
-      case 'no': uku('Cuéntame con tus palabras qué necesitas, o te paso con una persona.', [b('persona', 'Hablar con una persona', 'support_agent')]); pintarChat(); return setTimeout(function () { input.focus(); }, 300);
+      case 'no': uku('Cuéntame qué necesitas con tus palabras o, si prefieres, te comunico con una persona.', [b('persona', 'Hablar con una persona', 'support_agent')]); pintarChat(); return setTimeout(function () { input.focus(); }, 300);
       case 'consejo': { var A = consejos(); if (!A.length) return resuelto('Por ahora no tengo nada más. ¡Vas muy bien!'); var x = A[0]; uku(esc(x.di || x.t), x.act ? [b('pfm:' + x.act, x.actl, 'arrow_forward')] : []); return pintarChat(); }
       case 'cerrar': return cerrar();
     }
