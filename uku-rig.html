@@ -15,12 +15,10 @@ window.uku = uku;
 uku.start();
 log('--- verificación ---');
 log('clips disponibles: ' + uku.clips.map(c => c.name).join(' | '));
-log('playClip("saludar") -> ' + uku.playClip('saludar'));
-log('playClip("caminar") -> ' + uku.playClip('caminar'));
+log('playClip("Waving_dl") -> ' + uku.playClip('Waving_dl'));
+log('playClip("Walking") -> ' + uku.playClip('Walking'));
+log('playClip("Laying") -> ' + uku.playClip('Laying'));
 log('setBlink(1); setExpression("target_3", .8) -> ' + uku.setExpression('target_3', .8) + '; setExpression("target_99") -> ' + uku.setExpression('target_99', .5));
-log('IK brazo.L (-0.10 x, -0.10 y, +0.10 z; dentro del alcance): ' + JSON.stringify(uku.reach('brazo.L', new uku.root.position.constructor(-0.10, -0.10, 0.10))));
-log('IK brazo.L (+0.15 x; fuera de alcance, debe quedar cerca del límite): ' + JSON.stringify(uku.reach('brazo.L', new uku.root.position.constructor(0.15, 0, 0))));
-log('IK pierna.R (+0.05 en y): ' + JSON.stringify(uku.reach('pierna.R', new uku.root.position.constructor(0, 0.05, 0))));
 log('errores: ' + (uku.report.errors.length ? uku.report.errors.join('; ') : 'ninguno'));
 log('avisos: ' + (uku.report.warnings.length ? uku.report.warnings.join('; ') : 'ninguno'));
 </script></body></html>

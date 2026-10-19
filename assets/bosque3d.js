@@ -3,9 +3,10 @@
    finanzas o el chat).
 
    - Un único renderer WebGL que se "muda" al contenedor activo.
-   - Uku (assets/oso/uku-rig.glb, ver uku-rig.js) con sus clips: idle,
-     caminar, saludar, celebrar y preocupado. Puede sostener objetos en la
-     mano (hand.R) y los accesorios van en la cabeza (head_06).
+   - Uku (assets/oso/uku-rig.glb, ver uku-rig.js) con sus clips de Mixamo:
+     Walking, Waving_dl, Thinking y Laying (acostado). Puede sostener objetos
+     en la mano derecha (mixamorigRightHand) y los accesorios van en la
+     cabeza (mixamorigHead).
    - El oso nunca cambia; el bosque crece con la salud financiera
      (0–100): de troncos y tierra seca a un bosque tupido.
    - Paleta sobria: grises, verdes apagados; el amarillo solo en flores.
@@ -259,8 +260,9 @@ function buildDust() {
    El giro se reparte entre antebrazo y muñeca (como el radio y el cúbito),
    así la piel de la muñeca no se retuerce. Ninguna articulación pasa de ~70°. */
 // Clip de Uku según el gesto; caminar sólo se mueve mientras avanza
-const CLIP_OF = { wave: 'saludar', happy: 'celebrar', worried: 'preocupado' };
-function clipFor() { if (gesture === 'walk') return walkMoving ? 'caminar' : 'idle'; return (gesture && CLIP_OF[gesture]) || 'idle'; }
+// El modelo no trae clip de reposo: "Thinking" es la pose más quieta
+const CLIP_OF = { wave: 'Waving_dl', happy: 'Waving_dl', worried: 'Thinking' };
+function clipFor() { if (gesture === 'walk') return walkMoving ? 'Walking' : 'Thinking'; return (gesture && CLIP_OF[gesture]) || 'Thinking'; }
 const BEAR_S = .62, WALK_ANG = .13, WALK_CYCLE = 8, WALK_MOVE = 4.5; // Uku más pequeño para dejar lugar a las tarjetas; al caminar avanza sobre el planeta (rad/s)
 function holdObject(kind) {
   if (held) { held.parent && held.parent.remove(held); held = null; }
@@ -538,7 +540,7 @@ function init() {
     rig = ukuFrom(g);
     // El modelo va dentro de un pivote: el pivote es lo que camina, respira y salta.
     // Se escala a 0.9 m (la altura del oso anterior) y se centra en x y z.
-    const model = g.scene, box = rig.body.geometry.boundingBox, mid = box.getCenter(new THREE.Vector3());
+    const model = g.scene, box = rig.box, mid = box.getCenter(new THREE.Vector3());
     const k = .9 / box.getSize(new THREE.Vector3()).y;
     model.scale.setScalar(k);
     model.position.set(-mid.x * k, -.45 - box.min.y * k, -mid.z * k);
@@ -557,7 +559,7 @@ function init() {
     bear.scale.setScalar(BEAR_S);
     stage.add(bear);
     // Lo que se sostiene, se pone o se atacha usa estos huesos
-    bones.hand_R = rig.B('hand.R'); bones.head = rig.B('head_06');
+    bones.hand_R = rig.B('mixamorig:RightHand'); bones.head = rig.B('mixamorig:Head');
     dressBear();
     play('wave');
   });
