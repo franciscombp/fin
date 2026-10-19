@@ -46,7 +46,7 @@
       '<div class="uk-chatbg" aria-hidden="true"></div>' +
       '<header class="uk-chathead"><span class="uk-chathead__face" aria-hidden="true">' + face() + '</span><span class="uk-chathead__t"><b>Uku</b><small>Tu asesor · en línea</small></span>' +
         '<button class="uk-chathead__x" data-k="cerrar" aria-label="Terminar conversación">' + ic('close') + '</button></header>' +
-      '<div class="uk-head"><button type="button" class="uk-menu-btn" data-k="secciones" aria-label="Secciones de Asistente">' + ic('menu') + '</button>' +
+      '<div class="uk-head"><button type="button" class="icon-button" data-k="secciones" aria-label="Secciones de Asistente">' + ic('menu') + '</button>' +
         '<p class="uk-head__t" role="heading" aria-level="1">Tu asistente</p></div>' +
       '<div class="uk-globo" aria-live="polite"></div>' +
       '<div class="uk-props" hidden></div>' +
@@ -284,19 +284,23 @@
   }
   /* ---------- Secciones: menú de la cabecera ---------- */
   var SECCIONES = [['uku', 'Tu asistente', 'Su mundo, sus consejos y lo que te pasa', 'support_agent'], ['fin', 'Mis finanzas', 'Tus gastos y tu presupuesto', 'monitoring'], ['ayuda', 'Ayuda y soporte', 'Preguntas y contacto', 'help']];
+  // Hoja de la app (as-sheet), como las de Mis finanzas: fuera de la vista para cubrir la pantalla
   function abrirSecciones() {
     if (!sheet) {
-      sheet = document.createElement('div'); sheet.className = 'uk-sheet';
-      sheet.innerHTML = '<div class="uk-sheet__back"></div><div class="uk-sheet__panel" role="dialog" aria-label="Secciones"><div class="as-sheet__handle"></div>' +
-        SECCIONES.map(function (x) { return '<button class="uk-sheet__item" data-k="seccion:' + x[0] + '">' + ic(x[3]) + '<span><b>' + esc(x[1]) + '</b><small>' + esc(x[2]) + '</small></span></button>'; }).join('') + '</div>';
-      document.body.appendChild(sheet); // fuera de la pantalla: una capa fija dentro de la vista se encoge
-      sheet.querySelector('.uk-sheet__back').addEventListener('click', cerrarSecciones);
+      sheet = { back: document.createElement('div'), el: document.createElement('div') };
+      sheet.back.className = 'as-sheet-back';
+      sheet.el.className = 'as-sheet'; sheet.el.setAttribute('role', 'dialog'); sheet.el.setAttribute('aria-label', 'Secciones');
+      sheet.el.innerHTML = '<div class="as-sheet__handle"></div>' +
+        SECCIONES.map(function (x) { return '<button class="as-row as-row--btn" data-k="seccion:' + x[0] + '"><span class="uk-sec__ic">' + ic(x[3]) + '</span><span class="uk-sec__txt"><b>' + esc(x[1]) + '</b><small>' + esc(x[2]) + '</small></span></button>'; }).join('');
+      document.body.appendChild(sheet.back); document.body.appendChild(sheet.el);
+      sheet.back.addEventListener('click', cerrarSecciones);
       // La hoja está fuera de la vista: sus opciones se atienden aquí
-      sheet.addEventListener('click', function (e) { var t = e.target.closest('[data-k^="seccion:"]'); if (t) { cerrarSecciones(); seccion(t.dataset.k.slice(8)); } });
+      sheet.el.addEventListener('click', function (e) { var t = e.target.closest('[data-k^="seccion:"]'); if (t) { cerrarSecciones(); seccion(t.dataset.k.slice(8)); } });
     }
-    sheet.classList.add('open');
+    sheet.back.classList.add('open'); sheet.el.classList.add('open');
+    fx('open');
   }
-  function cerrarSecciones() { if (sheet) sheet.classList.remove('open'); }
+  function cerrarSecciones() { if (sheet) { sheet.back.classList.remove('open'); sheet.el.classList.remove('open'); } }
 
   /* ---------- Factura o estado de cuenta: Uku lo lee y propone el pago ---------- */
   function escanear(file) {
