@@ -532,15 +532,15 @@ html.uk-chatting .pf-toast { top: calc(64px + env(safe-area-inset-top, 0px)); bo
 .uk-globo, .uk-pill { box-shadow: var(--uk-elev-low); }
 .uk-bar, .uk-results { box-shadow: var(--uk-elev-mid); }
 .uk-card, .uk.is-chat .uk-panel, .uk.is-chat .uk-sec, .uk-onb__card, .uk-chathead__x { box-shadow: var(--uk-elev-high); }
-.uk-globo__t, .uk-prop__t, .uk-card__t, .uk-onb__s { font: var(--uk-body); font-size: unset; line-height: unset; }
-.uk-card__q, .uk-panel .uk-head__t, .uk-sec__t { font: var(--uk-title); font-size: unset; line-height: unset; letter-spacing: 0; }
-.uk-onb__t { font: var(--uk-title-md); font-size: unset; line-height: unset; letter-spacing: 0; }
-.uk-num b { font: var(--uk-numeric); font-size: unset; line-height: unset; letter-spacing: -.4px; }
-.uk-num small, .uk-meter__l, .uk-stat small, .uk-card__data dt { font: var(--uk-sm); font-size: unset; line-height: unset; }
-.uk-stat b, .uk-card__data dd { font: var(--uk-body-semibold); font-size: unset; line-height: unset; }
-.uk-card__row, .uk-row__t b { font: var(--uk-body-medium); font-size: unset; }
-.uk-card .uk-msg__acts .uk-chip, .uk-chip { font: var(--uk-sm-semibold); font-size: unset; }
-.uk-prop__tag, .uk-globo__tag, .uk-links small, .uk-results__l, .uk-sec__l { font: var(--uk-caption); font-size: unset; text-transform: uppercase; letter-spacing: .4px; }
+.uk-globo__t, .uk-prop__t, .uk-card__t, .uk-onb__s { font: var(--uk-body); }
+.uk-card__q, .uk-panel .uk-head__t, .uk-sec__t { font: var(--uk-title); letter-spacing: 0; }
+.uk-onb__t { font: var(--uk-title-md); letter-spacing: 0; }
+.uk-num b { font: var(--uk-numeric); letter-spacing: -.4px; }
+.uk-num small, .uk-meter__l, .uk-stat small, .uk-card__data dt { font: var(--uk-sm); }
+.uk-stat b, .uk-card__data dd { font: var(--uk-body-semibold); }
+.uk-card__row, .uk-row__t b { font: var(--uk-body-medium); }
+.uk-card .uk-msg__acts .uk-chip, .uk-chip { font: var(--uk-sm-semibold); }
+.uk-prop__tag, .uk-globo__tag, .uk-links small, .uk-results__l, .uk-sec__l { font: var(--uk-caption); text-transform: uppercase; letter-spacing: .4px; }
 .uk-bar input { font: var(--uk-body-medium); font-size: 16px; } /* 16 px evita el zoom de iOS al enfocar */
 
 /* ---------- Aire y color propio de Uku ----------
@@ -623,3 +623,21 @@ html.app-uku .uk-onb__go:disabled, html.app-uku .uk-panel .pf-cta:disabled, html
 .uk.is-chat .uk-skel__head { left: 32px; width: 126px; height: 116px; }
 .uk.is-chat .uk-skel__ear { width: 44px; height: 44px; left: 28px; } .uk.is-chat .uk-skel__ear + .uk-skel__ear { left: auto; right: 28px; }
 .uk.is-chat .uk-skel__body { left: 20px; top: 112px; width: 150px; height: 128px; }
+
+/* ---------- El globo de Uku: que se lea y se pueda tocar ----------
+   Más aire entre la etiqueta, el texto y las acciones. La acción principal es un botón de verdad
+   (acento azul, 44 px); «Ahora no» es un botón de texto del mismo alto; los puntos y «Siguiente»
+   van al pie, separados de la decisión. */
+.uk-globo { padding: 18px 20px 14px; max-width: min(340px, 100%); border-radius: 16px 16px 16px 4px; }
+.uk-globo__tag { margin: 0 0 6px !important; }
+.uk-globo__t { font: var(--uk-body); }
+.uk-globo__acts { gap: 8px 4px; margin-top: 14px; }
+html.app-uku .uk-globo__acts .uk-globo__go.btn, html.app-uku .uk-globo__go.btn { display: inline-flex !important; align-items: center !important; height: auto !important; min-height: 44px !important; margin: 0 !important; padding: 0 16px !important; border-radius: var(--bp-semantic-radius-sm, 8px) !important; background: var(--bp-interaction-accent-bg, #0f265c) !important; color: var(--bp-interaction-accent-fg, #fff) !important; font: var(--uk-sm-semibold) !important; font-size: 15px !important; text-decoration: none !important; }
+.uk-globo__skip { min-height: 44px; padding: 0 12px; border-radius: var(--bp-semantic-radius-sm, 8px); font: var(--uk-sm-semibold); font-size: 15px; color: var(--bp-interaction-tertiary-fg); }
+.uk-globo__skip:active { background: var(--bp-interaction-secondary-bg); }
+.uk-globo__foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+.uk-globo__dots { margin: 0; gap: 6px; }
+.uk-globo__dots i { width: 6px; height: 6px; }
+.uk-globo__dots i.is-on { width: 16px; }
+.uk-globo__next { display: inline-flex; align-items: center; gap: 2px; min-height: 40px; margin-right: -8px; padding: 0 4px 0 10px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: none; font: var(--uk-sm); font-size: 15px; color: var(--cx-muted); cursor: pointer; }
+.uk-globo__next .material-symbols-rounded { font-size: 20px; }
