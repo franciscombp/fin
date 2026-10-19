@@ -111,7 +111,7 @@
     if (b3d && era !== es) {
       var bg = host.querySelector('.uk-chatbg');
       if (es) { var foto = b3d.snapshot(); bg.style.backgroundImage = foto ? 'url(' + foto + ')' : ''; }
-      b3d.setFocus(es); b3d.setShift(es ? -.3 : 0, es ? -.36 : 0);
+      b3d.setFocus(es); b3d.setShift(es ? -.3 : 0, es ? -.47 : 0);
       if (!es) setTimeout(function () { if (!msgs.length) bg.style.backgroundImage = ''; }, 500);
     }
     if (era !== es) {
