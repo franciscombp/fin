@@ -685,12 +685,12 @@
   function worldSignals() {
     var a = animo(), c = colchon(), pe = presEstado();
     return [
-      { ic: MOOD_IC[a.k], l: T('Su ánimo'), v: a.n ? T('{n} sin clasificar', { n: a.n }) : T('Todo en orden'), cls: a.k,
-        d: a.n ? T('Ordena tus gastos y vuelve a sonreír. Si no, se queda pensativo.') : T('Está contento: tus gastos están clasificados.') },
-      { ic: 'local_florist', l: T('Sus flores'), v: c >= 1 ? T(Math.floor(c) === 1 ? 'Te alcanza 1 mes' : 'Te alcanza {n} meses', { n: Math.floor(c) }) : T('Menos de 1 mes'), cls: c >= 3 ? 'ok' : c >= 1 ? 'warn' : 'over',
-        d: c >= 3 ? T('Su campo está lleno de flores: tienes ahorro de sobra.') : T('Con 3 meses de ahorro, su campo se llena de flores.') },
-      { ic: 'park', l: 'Su bosque', v: pe.l, cls: pe.k,
-        d: pe.k === 'over' ? T('Excediste el presupuesto y el bosque se seca.') : T('Mientras no excedas el presupuesto, el bosque sigue verde.') }
+      { ic: MOOD_IC[a.k], l: T('Tus gastos por ordenar'), v: a.n ? T('{n} sin clasificar', { n: a.n }) : T('Todo en orden'), cls: a.k,
+        d: a.n ? T(a.n === 1 ? 'Tienes 1 consumo sin clasificar. Cuando lo ordenes, vuelvo a estar contento.' : 'Tienes {n} consumos sin clasificar. Cuando los ordenes, vuelvo a estar contento.', { n: a.n }) : T('Tus gastos están clasificados. Por eso me ves contento.') },
+      { ic: 'local_florist', l: T('Tu ahorro'), v: c >= 1 ? T(Math.floor(c) === 1 ? 'Te alcanza 1 mes' : 'Te alcanza {n} meses', { n: Math.floor(c) }) : T('Menos de 1 mes'), cls: c >= 3 ? 'ok' : c >= 1 ? 'warn' : 'over',
+        d: c >= 3 ? T('Lo que tienes cubre {n} meses de gastos. Por eso el campo está lleno de flores.', { n: Math.floor(c) }) : c >= 1 ? T(Math.floor(c) === 1 ? 'Lo que tienes cubre 1 mes de gastos. Las flores crecen cuando llega a 3 meses.' : 'Lo que tienes cubre {n} meses de gastos. Las flores crecen cuando llega a 3 meses.', { n: Math.floor(c) }) : T('Lo que tienes cubre menos de 1 mes de gastos. Las flores crecen cuando llega a 3 meses.') },
+      { ic: 'park', l: T('Tu presupuesto'), v: pe.l, cls: pe.k,
+        d: pe.k === 'over' ? T('Este mes gastaste más de tu presupuesto. Por eso el bosque se ve seco.') : T('Vas dentro de tu presupuesto este mes. Por eso el bosque está verde.') }
     ];
   }
   function worldSheet() {
@@ -1219,7 +1219,7 @@
     // Primero la salud financiera (Uku) y un resumen de gastos; al tocarlo, el detalle
     var body = vistaGastos === 'gastos'
       ? '<button class="pf-back" data-pfm="inicio"><span class="material-symbols-rounded" aria-hidden="true">chevron_left</span>' + T('Mis finanzas') + '</button>' + gastosHTML() + dineroHTML()
-      : resumenGastosHTML() + footHTML();
+      : resumenGastosHTML() + (document.documentElement.classList.contains('app-uku') ? navHTML() : '') + footHTML();
     scroll.innerHTML = '<header class="pf-head"><h1>' + (vistaGastos === 'gastos' ? T('Tus gastos') : 'Mis finanzas') + '</h1></header>' + body;
     window.scrollTo({ top: vistaGastos ? 0 : keep });
   }
@@ -1452,6 +1452,18 @@
   function onClick(e) { var b = e.target.closest('[data-pfm]'); if (b) key(b.dataset.pfm); }
   // Resumen de gastos del mes en el inicio: un toque lleva a gastos y sus gráficas
   var vistaGastos = null;
+  // En el asistente, lo que puedes hacer desde Mis finanzas, a un toque
+  function navHTML() {
+    var a = animo(), pr = pres();
+    var row = function (k, t, s) { return '<button class="pfm-nav__row" data-pfm="' + k + '"><span><b>' + t + '</b>' + (s ? '<small>' + s + '</small>' : '') + '</span><span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></button>'; };
+    return '<section class="pf-sec pfm-nav">' +
+      row('gastos', T('Tus gastos'), T('Por semana, mes o año, y en qué se fue')) +
+      row('alltx', T('Movimientos'), T('Todo lo que entró y salió')) +
+      row(pr.general ? 'pres' : 'pres', T('Presupuesto'), pr.general ? T('{m} al mes', { m: money0(pr.general) }) : T('Todavía no tienes uno')) +
+      (a.n ? row('game', T('Ordenar mis gastos'), T(a.n === 1 ? '1 consumo sin clasificar' : '{n} consumos sin clasificar', { n: a.n })) : '') +
+      row('who', T('El mundo de Uku'), T('Qué significa cada cosa')) +
+      '</section>';
+  }
   function resumenGastosHTML() {
     var s = month(curMes()), pr = pres(), g = s.gast, p = pr.general;
     var t = !p ? '' : g > p ? T('Excediste tu presupuesto por {m}', { m: money0(g - p) }) : T('Te quedan {m} de {p}', { m: money0(p - g), p: money0(p) });
@@ -1544,7 +1556,8 @@
     }
   }
   function analyze(q) {
-    if (window.UkuAsistente && UkuAsistente.ia) { closeSheet(); return UkuAsistente.ia(q || T('¿Cómo voy este mes?')); }
+    // Con una pregunta concreta, Uku la responde en su tarjeta; sin pregunta, el análisis del mes (en el asistente, también como tarjeta)
+    if (q && window.UkuAsistente && UkuAsistente.ia) { closeSheet(); return UkuAsistente.ia(q); }
     if (!window.UkuAnalisis) return;
     closeSheet();
     UkuAnalisis.open({ view: curMes(), ask: q });
@@ -1652,7 +1665,7 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 
-  window.PFM = { open: open, paint: paint, world: worldSignals,
+  window.PFM = { open: open, paint: paint, world: worldSignals, toast: toast,
     // Para la versión asistente: los consejos de Uku y un resumen de tu dinero
     advice: function () { return DB ? consejos() : []; },
     summary: function () { if (!DB) return null; var s = month(curMes()), a = animo(); return { nombre: nombre(), saldo: sumv(saldos(), function (x) { return x.v; }), gast: s.gast, pres: pres().general, mes: mesName(curMes()), n: a.n, mood: a.k, moodL: T(MOOD[a.k]), moodIc: MOOD_IC[a.k], score: salud(curMes()), bloom: flores() }; }, settings: function () { if (DB) whoSheet(); }, pack: pack, answer: answer, key: key, ready: function () { return !!DB; },
