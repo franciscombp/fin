@@ -42,8 +42,7 @@
       '<div class="uk-scene"><div class="b3d"></div></div>' +
       // Al conversar, su mundo se desvanece detrás de un fondo limpio y arriba queda la cabecera del chat
       '<div class="uk-chatbg" aria-hidden="true"></div>' +
-      '<header class="uk-chathead"><span class="uk-chathead__face" aria-hidden="true">' + face() + '</span><span class="uk-chathead__t"><b>Uku</b><small>Tu asesor · en línea</small></span>' +
-        '<button class="uk-chathead__x" data-k="cerrar" aria-label="Terminar conversación">' + ic('close') + '</button></header>' +
+      '<header class="uk-chathead"><button class="icon-button uk-chathead__x" data-k="cerrar" aria-label="Volver a su mundo">' + ic('expand_more') + '</button></header>' +
       '<div class="uk-head"><button type="button" class="icon-button uk-menu-btn" data-k="secciones" aria-label="Secciones de Asistente">' + ic('menu') + '</button>' +
         '<button type="button" class="icon-button uk-back-btn" data-k="seccion:uku" aria-label="Volver a Tu asistente">' + ic('arrow_back') + '</button>' +
         '<p class="uk-head__t" role="heading" aria-level="1">Tu asistente</p></div>' +
@@ -52,9 +51,9 @@
       '<div class="uk-chat" aria-live="polite"></div>' +
       '<div class="uk-pills"></div>' +
       '<div class="uk-results"></div>' +
-      '<form class="uk-bar" role="search"><button type="button" class="uk-bar__x" data-k="cerrar" aria-label="Terminar conversación">' + ic('close') + '</button>' +
+      '<form class="uk-bar" role="search">' +
         '<label class="uk-bar__f">' + ic('search') + '<input type="text" enterkeyhint="send" autocomplete="off" placeholder="Pregunta o pide algo" aria-label="Pregunta o pide algo"></label>' +
-        '<button type="button" class="uk-bar__mic" data-k="escanear" aria-label="Escanear una factura o estado de cuenta">' + ic('photo_camera') + '</button>' +
+        '<button type="button" class="uk-bar__mic uk-bar__add" data-k="escanear" aria-label="Adjuntar una factura o estado de cuenta">' + ic('add') + '</button>' +
         '<button type="button" class="uk-bar__mic" data-k="voz" aria-label="Hablar" hidden>' + ic('mic') + '</button>' +
         '</form>' +
       '<input type="file" accept="image/*" capture="environment" hidden>' +
@@ -84,6 +83,7 @@
     var era = host.classList.contains('is-chat'), es = msgs.length > 0;
     host.classList.toggle('is-typing', !!input.value.trim());
     host.classList.toggle('is-chat', es);
+    if (b3d && era !== es) b3d.setShift(es ? -.24 : 0); // en la conversación, Uku queda a la izquierda, como en Tolan
     // En la conversación no hay barra superior ni inferior: el chat ocupa la pantalla
     document.documentElement.classList.toggle('uk-chatting', es && view.classList.contains('active'));
     if (era !== es) {
