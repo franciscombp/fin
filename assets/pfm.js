@@ -656,11 +656,6 @@
     return out.filter(function (x) { return !oculto(x.id); }).map(function (x) { x.done = hecho(x.id) ? x.ok || T('Listo') : null; return x; })
       .sort(function (a, b) { return (a.done ? 1 : 0) - (b.done ? 1 : 0) || b.p - a.p; });
   }
-  // El globo dice el primer consejo pendiente; si no hay, Uku celebra
-  function globo(a) {
-    var x = consejos().filter(function (c) { return !c.done; })[0];
-    return x ? { t: x.di || x.t, k: x.p >= 100 ? 'urg' : '', go: x.act, gol: x.actl, id: x.id } : { t: ukuMsg(a) };
-  }
   function consejoHTML(x) {
     var mx = x.cmp ? Math.max.apply(null, x.cmp.map(function (c) { return c.v; }).concat([1])) : 1;
     return '<article class="pfm-tip is-' + (x.kind || 'info') + (x.done ? ' is-done' : '') + '">' +
@@ -684,30 +679,16 @@
       '<button class="pf-cta" data-pfm="hecho:' + esc(x.id) + '">' + T('Confirmar') + '</button><button class="pf-link pf-link--block" data-pfm="cerrar">' + T('Ahora no') + '</button>');
   }
   function consejo(id) { return consejos().filter(function (x) { return x.id === id; })[0]; }
-  function worldHTML(a) {
-    var c = colchon(), pe = presEstado();
-    var sig = function (ic, l, v, cls) { return '<button class="pfm-sig is-' + cls + '" data-pfm="world"><span class="material-symbols-rounded" aria-hidden="true">' + ic + '</span><small>' + l + '</small><b>' + v + '</b></button>'; };
-    return '<div class="pfm-world">' +
-      sig(MOOD_IC[a.k], T('Tus consumos'), a.n ? T('{n} sin clasificar', { n: a.n }) : T('Al día'), a.k) +
-      sig('local_florist', T('Tu ahorro'), c >= 1 ? T(Math.floor(c) === 1 ? 'Te alcanza 1 mes' : 'Te alcanza {n} meses', { n: Math.floor(c) }) : T('Menos de 1 mes'), c >= 3 ? 'ok' : c >= 1 ? 'warn' : 'over') +
-      sig('park', T('Tu presupuesto'), pe.l, pe.k) + '</div>';
-  }
-  function ukuHTML() {
-    var m = curMes(), a = animo(), L = consejos(), g = globo(a), pend = L.filter(function (x) { return !x.done; }).length;
-    return '<section class="pf-sec pfm-uku pf-mood--' + a.k + (tobe() ? ' is-tobe' : '') + '">' +
-      '<div class="pf-sec__head"><h2>' + T('Tu asistente') + '</h2></div>' +
-      '<div class="pf-hero pfm-hero"><div class="b3d" data-shift=".2" data-score="' + salud(m) + '" data-bloom="' + flores() + '" data-mood="' + a.k + '"><div class="b3d__fallback">' + (window.Asistente ? Asistente.petSVG() : '') + '</div></div>' +
-        // Uku habla desde su mundo: dice lo primero que te propone, y tocarlo lo hace
-        '<' + (g.go ? 'button data-pfm="' + esc(g.go) + '"' : 'p') + ' class="pfm-globo' + (g.k === 'urg' ? ' is-urg' : '') + '" aria-live="polite"><span>' + esc(g.t) + '</span></' + (g.go ? 'button' : 'p') + '></div>' +
-      '<p class="pfm-uku__mood"><span class="material-symbols-rounded" aria-hidden="true">' + MOOD_IC[a.k] + '</span>' + T('Uku está {animo}', { animo: T(MOOD[a.k]) }) +
-        (pend ? ' · ' + T(pend === 1 ? '1 cosa para ti' : '{n} cosas para ti', { n: pend }) : '') + '</p>' +
-      (g.go ? '<button class="pf-cta pfm-uku__go" data-pfm="' + esc(g.go) + '">' + esc(g.gol) + '</button>' : '') +
-      (tobe() ? '<div class="pfm-uku__acts"><button class="pf-link" data-pfm="analyze"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>' + T('Analizar con IA') + '</button>' +
-        '<button class="pf-link" data-pfm="ai:"><span class="material-symbols-rounded" aria-hidden="true">chat_bubble</span>' + T('Pregúntale') + '</button></div>' : '') +
-      worldHTML(a) +
-      '</section>';
-  }
   // Qué significa cada cosa del mundo de Uku
+  // Las tres señales del mundo de Uku (consumos, ahorro, presupuesto): Uku las muestra en su pantalla
+  function worldSignals() {
+    var a = animo(), c = colchon(), pe = presEstado();
+    return [
+      { ic: MOOD_IC[a.k], l: T('Tus consumos'), v: a.n ? T('{n} sin clasificar', { n: a.n }) : T('Al día'), cls: a.k },
+      { ic: 'local_florist', l: T('Tu ahorro'), v: c >= 1 ? T(Math.floor(c) === 1 ? 'Te alcanza 1 mes' : 'Te alcanza {n} meses', { n: Math.floor(c) }) : T('Menos de 1 mes'), cls: c >= 3 ? 'ok' : c >= 1 ? 'warn' : 'over' },
+      { ic: 'park', l: T('Tu presupuesto'), v: pe.l, cls: pe.k }
+    ];
+  }
   function worldSheet() {
     var a = animo(), c = colchon(), pe = presEstado(), p = pres().general;
     var row = function (ic, cls, t, s) { return '<div class="pfm-world__row is-' + cls + '"><span class="material-symbols-rounded" aria-hidden="true">' + ic + '</span><span><b>' + t + '</b><small>' + s + '</small></span></div>'; };
@@ -821,7 +802,7 @@
   var MESOPT = [['mesada', 'Sí, es una mesada', 'volunteer_activism'], ['pagoDeuda', 'Le estoy pagando un préstamo', 'handshake'], ['otra', 'Es otra cosa', 'more_horiz']];
   var ANIMO = ['¡Bien!', '¡Eso!', '¡Uno menos!', '¡Vas volando!', '¡Genial!', '¡Así se hace!', '¡Qué orden!'];
   var RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var G = null, gel = null, festejo = false; // festejo: Uku celebra al volver después de guardar
+  var G = null, gel = null;
   function gameOpen() {
     var all = items();
     G = { list: all.slice(0, TANDA), total: all.length, i: 0, ans: [], view: 'card', rules: {}, extra: [], pw: 0, antes: animo().k, hits: 0, tries: 0 };
@@ -1099,7 +1080,7 @@
         });
         G.extra.forEach(function (e) { C[e.r.i] = e.v; });
         Object.keys(G.rules).forEach(function (cp) { ((ST.rules || (ST.rules = {}))[ST.u] = ST.rules[ST.u] || {})[cp] = G.rules[cp]; });
-        persist(); cache = {}; fijoCache = {}; G.view = 'done'; festejo = true; return gameRender();
+        persist(); cache = {}; fijoCache = {}; G.view = 'done'; return gameRender();
       }
       case 'more': return gameOpen();
     }
@@ -1233,27 +1214,10 @@
     // Primero la salud financiera (Uku) y un resumen de gastos; al tocarlo, el detalle
     var body = vistaGastos === 'gastos'
       ? '<button class="pf-back" data-pfm="inicio"><span class="material-symbols-rounded" aria-hidden="true">chevron_left</span>' + T('Mis finanzas') + '</button>' + gastosHTML() + dineroHTML()
-      : ukuHTML() + resumenGastosHTML() + footHTML();
+      : resumenGastosHTML() + footHTML();
     scroll.innerHTML = '<header class="pf-head"><h1>' + (vistaGastos === 'gastos' ? T('Tus gastos') : 'Mis finanzas') + '</h1></header>' + body;
     window.scrollTo({ top: vistaGastos ? 0 : keep });
-    hero3D();
   }
-  // El oso en 3D con su mundo: ánimo (consumos), flores (ahorro) y bosque (presupuesto)
-  var b3d = null;
-  function hero3D() {
-    var el = scroll.querySelector('.pfm-hero .b3d');
-    if (!el || !pf.closest('.view.active')) return;
-    el.classList.add('is-loading');
-    import(ASSET + 'bosque3d.js').then(function (m3) {
-      if (!m3.supported() || !el.isConnected) return;
-      b3d = m3; var c = window.Clima && Clima.last(); if (c) m3.setLook(c.look);
-      m3.setBloom(+el.dataset.bloom); m3.setMood(el.dataset.mood);
-      m3.attach(el, { score: +el.dataset.score, onTap: function () { fx('select'); m3.play(el.dataset.mood === 'feliz' ? 'happy' : 'nod'); } });
-      el.classList.remove('is-loading'); el.classList.add('is-3d');
-      var g = festejo ? 'happy' : { feliz: 'happy', tranquilo: 'wave' }[el.dataset.mood]; festejo = false; if (g) m3.play(g);
-    }).catch(function () {});
-  }
-
   /* ---------- Hojas ---------- */
   var sheet, back;
   function showSheet(html) {
@@ -1457,8 +1421,8 @@
       case 'cerrar': return closeSheet();
       // Consejos del asesor: programar (con confirmación), aplicar, deshacer o dejar para después
       case 'pagar': case 'tarjeta': case 'ahorro': { var cx = consejo(k === 'tarjeta' || k === 'ahorro' ? k : 'pago:' + p.slice(1).join(':')); if (cx) confirmar(cx); return; }
-      case 'pres': { setPres(pres()); setHecho('pres', HOY); fx('success'); refresh(); if (b3d) b3d.play('happy'); return toast(T('Listo: ya tienes presupuesto. Lo puedes ajustar cuando quieras.'), 'deshacer:pres'); }
-      case 'hecho': { var hid = p.slice(1).join(':'), hx = consejo(hid); setHecho(hid, HOY); closeSheet(); fx('success'); refresh(); if (b3d) b3d.play('happy'); return toast(hx && hx.ok ? hx.ok : T('Listo.'), 'deshacer:' + hid); }
+      case 'pres': { setPres(pres()); setHecho('pres', HOY); fx('success'); refresh(); return toast(T('Listo: ya tienes presupuesto. Lo puedes ajustar cuando quieras.'), 'deshacer:pres'); }
+      case 'hecho': { var hid = p.slice(1).join(':'), hx = consejo(hid); setHecho(hid, HOY); closeSheet(); fx('success'); refresh(); return toast(hx && hx.ok ? hx.ok : T('Listo.'), 'deshacer:' + hid); }
       case 'deshacer': { var did = p.slice(1).join(':'); setHecho(did, null); if (did === 'pres' && ST.presG) { delete ST.presG[ST.u]; persist(); } fx('tap'); refresh(); if (sheetOpen()) insightsSheet(); return; }
       case 'luego': { var lid = p.slice(1).join(':'); ((ST.oculto || (ST.oculto = {}))[ST.u] = ST.oculto[ST.u] || {})[lid] = HOY; persist(); fx('tap'); refresh(); if (sheetOpen()) insightsSheet(); return toast(T('Lo dejo para después.'), 'verluego'); }
       case 'verluego': { if (ST.oculto) delete ST.oculto[ST.u]; persist(); refresh(); return insightsSheet(); }
@@ -1559,13 +1523,11 @@
     mount(); if (!pf) return;
     document.addEventListener('persona:change', function (e) { ST.u = e.detail; persist(); cache = {}; fijoCache = {}; paint(); });
     paint();
-    var fv = document.querySelector('.view[data-view="1"]');
-    new MutationObserver(function () { if (fv.classList.contains('active')) hero3D(); }).observe(fv, { attributes: true, attributeFilter: ['class'] });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && sheetOpen()) { e.stopImmediatePropagation(); closeSheet(); } }, true);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 
-  window.PFM = { open: open, paint: paint,
+  window.PFM = { open: open, paint: paint, world: worldSignals,
     // Para la versión asistente: los consejos de Uku y un resumen de tu dinero
     advice: function () { return DB ? consejos() : []; },
     summary: function () { if (!DB) return null; var s = month(curMes()), a = animo(); return { nombre: nombre(), saldo: sumv(saldos(), function (x) { return x.v; }), gast: s.gast, pres: pres().general, mes: mesName(curMes()), n: a.n, mood: a.k, moodL: T(MOOD[a.k]), moodIc: MOOD_IC[a.k], score: salud(curMes()), bloom: flores() }; }, settings: function () { if (DB) whoSheet(); }, pack: pack, answer: answer, key: key, ready: function () { return !!DB; },

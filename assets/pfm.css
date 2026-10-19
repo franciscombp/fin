@@ -38,35 +38,10 @@
 .pfm-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--bp-semantic-spacing-micro-md, 8px); margin-top: var(--bp-semantic-spacing-micro-md, 8px); }
 
 /* ---------- 2. Uku: su mundo y lo que notó ---------- */
-.pfm-uku { margin-top: var(--bp-semantic-spacing-macro-md, 40px) !important; }
-.pfm-uku .pfm-hero { height: 260px; margin: 0 0 var(--bp-semantic-spacing-micro-lg, 16px); border-radius: var(--bp-semantic-radius-md, 12px); overflow: hidden; }
-.pfm-uku p { margin: 0; }
-.pfm-uku__mood { display: flex; align-items: center; gap: 6px; font: var(--cx-sub); color: var(--cx-muted); }
-.pfm-uku__mood .material-symbols-rounded { font-size: 20px; font-variation-settings: 'FILL' 1; }
-.pfm-uku__mood .material-symbols-rounded { color: var(--bp-interaction-tertiary-fg); }
-.pfm-uku .pfm-hero { position: relative; }
-.pfm-globo { position: absolute; top: 20px; left: 16px; z-index: 2; max-width: 52%; margin: 0 !important; padding: 12px 16px; border-radius: 16px 16px 4px 16px; border: 0; background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-tertiary-fg); font: var(--ui-body-sm-semibold); text-align: left; animation: pfmGlobo .5s cubic-bezier(.2, 1.4, .4, 1) .3s both, pfHint 3s ease-in-out 1s infinite; transform-origin: 100% 100%; }
-.pfm-globo.is-urg { max-width: 58%; }
-.pfm-globo.is-urg > span::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: #e2a23b; vertical-align: 1px; }
-.pfm-globo::after { content: ''; position: absolute; right: -6px; bottom: 6px; border: 6px solid transparent; border-left-color: var(--bp-theme-color-surface-container-default); border-bottom-color: var(--bp-theme-color-surface-container-default); }
 @keyframes pfmGlobo { from { opacity: 0; transform: scale(.6) translateY(8px); } }
-@media (prefers-reduced-motion: reduce) { .pfm-globo { animation: none; } }
-.pfm-uku__go { width: 100%; margin-top: var(--bp-semantic-spacing-micro-lg, 16px); }
-.pfm-uku__more { display: block; margin: var(--bp-semantic-spacing-micro-md, 8px) auto 0; }
-.pfm-uku__ai { display: flex; gap: 8px; margin-top: var(--bp-semantic-spacing-macro-sm, 24px) !important; font: var(--cx-body); color: var(--bp-theme-color-text-primary); }
-.pfm-uku__ai .material-symbols-rounded, .pfm-budget__ai .material-symbols-rounded, .pfm-sug .material-symbols-rounded { font-size: 20px; color: var(--bp-interaction-tertiary-fg); }
-.pfm-uku__acts { display: flex; flex-wrap: wrap; align-items: center; gap: var(--bp-semantic-spacing-micro-md, 8px); margin-top: var(--bp-semantic-spacing-micro-lg, 16px); }
-.pfm-uku__acts .pf-link .material-symbols-rounded { font-size: 18px; }
 
 /* Las tres señales de su mundo: texto sobre la página, sin cajas */
-.pfm-world { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--bp-semantic-spacing-micro-lg, 16px); margin-top: var(--bp-semantic-spacing-macro-md, 32px); }
-.pfm-sig { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; padding: 0; border: 0; background: none; color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
-.pfm-sig > .material-symbols-rounded { margin-bottom: var(--bp-semantic-spacing-micro-sm, 4px); font-size: 24px; font-variation-settings: 'FILL' 1; }
-.pfm-sig small { font: var(--cx-caption); color: var(--cx-muted); }
-.pfm-sig b { font: var(--ui-body-sm-semibold); }
 /* Las señales de Uku no alarman: un solo tono, el estado lo dice el texto */
-.pfm-sig > .material-symbols-rounded, .pfm-world__row > .material-symbols-rounded { color: var(--bp-interaction-tertiary-fg); }
-.pfm-sig.is-ok > .material-symbols-rounded, .pfm-sig.is-feliz > .material-symbols-rounded { color: #4f8a64; }
 .pf-uku2__row.is-on { margin: 0 -12px; padding-left: 12px; padding-right: 12px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-secondary-bg); }
 
 /* El mundo de Uku explicado (hoja) */
@@ -353,7 +328,6 @@ button.pfm-tx { width: 100%; border-left: 0; border-right: 0; border-top: 0; bac
 /* ---------- Uku, tu asesor: una sola sección ----------
    Arriba Uku dice lo primero (globo + botón); debajo, sus otros consejos
    como tarjetas con su acción. Lo hecho queda en "Listo" con deshacer. */
-.pfm-uku > .pf-sec__head { margin-bottom: var(--bp-semantic-spacing-micro-lg, 16px); }
 .pfm-tips { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md, 8px); margin-top: var(--bp-semantic-spacing-macro-sm, 28px); }
 .pfm-tips__l { margin: 0 0 4px; font: var(--cx-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
 .pfm-tips.is-sheet { margin-top: 16px; }
@@ -372,7 +346,6 @@ button.pfm-tx { width: 100%; border-left: 0; border-right: 0; border-top: 0; bac
 .pfm-tip__acts .section__link { margin-left: auto; }
 .pfm-tip.is-done { padding-bottom: 8px; }
 .pfm-tip.is-done .pfm-tip__acts { margin-top: 0; }
-button.pfm-globo.is-urg > span::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: #e2a23b; vertical-align: 1px; }
 
 /* Barra inferior de Mis finanzas: Asistente (campo abajo) y buscar (arriba al abrir) */
 .pfm-dock { position: fixed; left: 0; right: 0; z-index: 55; display: none; align-items: center; gap: 8px; max-width: 480px; margin: 0 auto; padding: 0 16px; pointer-events: none; }
