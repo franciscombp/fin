@@ -63,6 +63,7 @@
     root.querySelector('#ing-titulo').textContent = titulo;
     var cuerpo = root.querySelector('.ing__body');
     cuerpo.textContent = '';
+    cuerpo.className = 'ing__body';
     pintar(cuerpo);
     root.classList.add('open');
   }
@@ -166,12 +167,14 @@
         });
         ui.teclas.appendChild(tecla);
       });
-      var nodos = [ui.texto, ui.puntos, ui.error, ui.teclas];
+      var nodos = [ui.texto, ui.puntos, ui.error];
       if (seisDigitos && !creando) {
         var olvide = h('button', { class: 'ing__enlace', type: 'button', text: 'Olvidé mi PIN' });
         olvide.addEventListener('click', function () { clave('', borrarPin6); });
         nodos.push(olvide);
       }
+      nodos.push(ui.teclas);
+      cuerpo.classList.add('ing__body--pin');
       cuerpo.append.apply(cuerpo, nodos);
     });
   }
