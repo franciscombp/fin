@@ -51,12 +51,57 @@
     return { qr: true, comercio: (d.split(/[\n|;]/)[0] || 'el comercio').replace(/[\d$.,]+/g, '').trim() || 'el comercio', monto: m ? numero(m[1].replace(/\.(?=\d{2}$)/, ',')) : null, ref: null, leido: !!d };
   }
   // Texto de la imagen, si el navegador sabe leerlo; si no, cadena vacía
+  // Leer el texto de una foto: el detector nativo si existe; si no, Tesseract (se carga solo cuando hace falta)
+  var TESS = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+  function tesseract() {
+    if (window.Tesseract) return Promise.resolve(window.Tesseract);
+    if (tesseract.p) return tesseract.p;
+    tesseract.p = new Promise(function (ok, no) { var s = document.createElement('script'); s.src = TESS; s.onload = function () { ok(window.Tesseract); }; s.onerror = function () { tesseract.p = null; no(new Error('ocr')); }; document.head.appendChild(s); });
+    return tesseract.p;
+  }
   function leer(file) {
-    if (!('TextDetector' in window) || !window.createImageBitmap) return Promise.resolve('');
-    return createImageBitmap(file)
-      .then(function (bm) { return new TextDetector().detect(bm); })
-      .then(function (bloques) { return bloques.map(function (b) { return b.rawValue; }).join('\n'); })
-      .catch(function () { return ''; });
+    var nativo = ('TextDetector' in window && window.createImageBitmap)
+      ? createImageBitmap(file).then(function (bm) { return new TextDetector().detect(bm); }).then(function (bloques) { return bloques.map(function (b) { return b.rawValue; }).join('\n'); }).catch(function () { return ''; })
+      : Promise.resolve('');
+    return nativo.then(function (t) {
+      if (t) return t;
+      return pixeles(file, 1400).then(function (c) { return tesseract().then(function (T) { return T.recognize(c, 'spa+eng'); }); })
+        .then(function (r) { return (r && r.data && r.data.text) || ''; }).catch(function () { return ''; });
+    });
+  }
+  /* Qué hay en el texto: empresas conocidas, números de cuenta, tarjetas y celulares, para buscar o
+     empezar una acción con eso (transferir a esa cuenta, pagar ese servicio, recargar ese número). */
+  var EMPRESAS = [
+    [/empresa el[eé]ctrica|\beeq\b|\bcnel\b|energ[ií]a el[eé]ctrica|planilla de luz/i, 'Empresa Eléctrica Quito', 'Pagar servicios', 'la luz', 'bolt'],
+    [/epmaps|agua potable|interagua|planilla de agua/i, 'EPMAPS', 'Pagar servicios', 'el agua', 'water_drop'],
+    [/\bcnt\b|corporaci[oó]n nacional de telecom/i, 'CNT', 'Pagar servicios', 'el internet', 'wifi'],
+    [/\bclaro\b|conecel/i, 'Claro', 'Recargar celular', 'Claro', 'smartphone'],
+    [/movistar|otecel/i, 'Movistar', 'Recargar celular', 'Movistar', 'smartphone'],
+    [/tuenti/i, 'Tuenti', 'Recargar celular', 'Tuenti', 'smartphone'],
+    [/netflix|spotify|disney|hbo|amazon prime|youtube premium/i, 'la suscripción', 'Pagar servicios', 'la suscripción', 'subscriptions'],
+    [/\bsri\b|servicio de rentas|impuesto a la renta|matr[ií]cula vehicular/i, 'SRI', 'Pagar servicios', 'el impuesto', 'account_balance'],
+    [/municipio|predial|patente municipal/i, 'Municipio', 'Pagar servicios', 'el predial', 'account_balance'],
+    [/\biess\b|aporte patronal|planilla iess/i, 'IESS', 'Pagar servicios', 'el aporte del IESS', 'account_balance'],
+    [/diners|\bvisa\b|mastercard|american express|estado de cuenta/i, 'la tarjeta', 'Pagar tarjeta', 'la tarjeta', 'credit_card']
+  ];
+  var BANCOS = /banco (pichincha|guayaquil|del pac[ií]fico|bolivariano|internacional|del austro)|produbanco|cooperativa [a-záéíóú ]+/i;
+  function entidades(texto) {
+    var s = String(texto || ''), out = { empresas: [], cuentas: [], tarjetas: [], celulares: [], banco: null, ruc: null, montos: [] };
+    EMPRESAS.forEach(function (e) { if (e[0].test(s) && !out.empresas.some(function (x) { return x.nombre === e[1]; })) out.empresas.push({ nombre: e[1], accion: e[2], que: e[3], icon: e[4] }); });
+    var b = BANCOS.exec(s); if (b) out.banco = b[0].replace(/\s+/g, ' ').trim();
+    // Números: se juntan los dígitos separados por espacio, punto o guion (como los imprimen los documentos)
+    var limpio = s.replace(/(\d)[ .\-](?=\d)/g, '$1'), re = /\d{8,19}/g, m;
+    while ((m = re.exec(limpio))) {
+      var n = m[0], antes = limpio.slice(Math.max(0, m.index - 16), m.index).toLowerCase();
+      if (/c\.?i\.?|c[eé]dula|identificaci[oó]n/.test(antes)) continue; // una cédula no es una cuenta
+      if (n.length === 16 && !out.tarjetas.some(function (x) { return x === n; })) out.tarjetas.push(n);
+      else if (n.length === 13 && /001$/.test(n)) out.ruc = out.ruc || n;
+      else if (n.length === 10 && /^09/.test(n) && out.celulares.indexOf(n) < 0) out.celulares.push(n);
+      else if ((n.length === 10 || n.length === 11) && out.cuentas.indexOf(n) < 0 && !/^0/.test(n)) out.cuentas.push(n);
+    }
+    var mr = /\$\s*(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})/g, mm; while ((mm = mr.exec(s))) out.montos.push(numero(mm[1]));
+    out.algo = !!(out.empresas.length || out.cuentas.length || out.tarjetas.length || out.celulares.length);
+    return out;
   }
 
   function interpretar(texto) {
@@ -104,5 +149,5 @@
     return todos[id];
   }
 
-  window.UkuPagos = { leerQR: leerQR, interpretarQR: interpretarQR, leer: leer, interpretar: interpretar, propuesta: propuesta, pagar: pagar, pagos: pagos };
+  window.UkuPagos = { leerQR: leerQR, interpretarQR: interpretarQR, leer: leer, interpretar: interpretar, entidades: entidades, propuesta: propuesta, pagar: pagar, pagos: pagos };
 })();

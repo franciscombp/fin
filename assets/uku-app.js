@@ -741,25 +741,57 @@
   /* Una foto: primero busca un QR (se paga al comercio), después texto de factura o estado de cuenta
      (donde el navegador sabe leerlo) y, si no pudo leer nada, pregunta el monto. */
   var fotoPend = null; // la foto que no se pudo leer: espera el monto escrito
+  // Lo que Uku reconoce en una foto (empresas, cuentas, tarjetas, celulares) como acciones a un toque
+  function chipsLeidos(E) {
+    var out = [];
+    E.empresas.forEach(function (e) { out.push(b('act:' + e.accion, (e.accion === 'Recargar celular' ? 'Recargar ' : 'Pagar ') + e.que, e.icon)); });
+    E.cuentas.slice(0, 2).forEach(function (c) { out.push(b('act:Transferir dinero', 'Transferir a la cuenta ' + c.replace(/^(\d{4})(?=\d)/, '$1 '), 'send_money')); });
+    E.celulares.slice(0, 2).forEach(function (c) { out.push(b('act:Recargar celular', 'Recargar el ' + c.replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3'), 'smartphone')); });
+    E.tarjetas.slice(0, 1).forEach(function (t) { out.push(b('act:Pagar tarjeta', 'Pagar la tarjeta •••• ' + t.slice(-4), 'credit_card')); });
+    E.empresas.slice(0, 1).forEach(function (e) { if (e.nombre !== 'la tarjeta' && e.nombre !== 'la suscripción') out.push(b('ask:' + e.nombre, 'Buscar ' + e.nombre, null, 'is-ask')); });
+    return out;
+  }
+  function leido(E) {
+    var L = [];
+    if (E.empresas.length) L.push(E.empresas.map(function (e) { return e.nombre; }).join(', '));
+    if (E.cuentas.length) L.push(E.cuentas.length === 1 ? 'una cuenta' + (E.banco ? ' de ' + E.banco : '') : E.cuentas.length + ' cuentas');
+    if (E.celulares.length) L.push(E.celulares.length === 1 ? 'un celular' : E.celulares.length + ' celulares');
+    if (E.tarjetas.length) L.push('una tarjeta');
+    return L.join(', ');
+  }
   function escanear(file) {
     uku('Miro tu foto…'); pintarChat();
+    var E = null;
     UkuPagos.leerQR(file).then(function (qr) {
       if (qr) return UkuPagos.propuesta(Persona.get(), UkuPagos.interpretarQR(qr));
-      // Sin texto legible no se adivina: se pregunta el monto
-      return UkuPagos.leer(file).then(function (texto) { return texto ? UkuPagos.propuesta(Persona.get(), UkuPagos.interpretar(texto)) : null; });
+      // Sin QR, el texto: un total a pagar arma el pago; empresas, cuentas o celulares, acciones a un toque
+      return UkuPagos.leer(file).then(function (texto) {
+        if (!texto) return null;
+        E = UkuPagos.entidades(texto);
+        var d = UkuPagos.interpretar(texto);
+        return d.monto ? UkuPagos.propuesta(Persona.get(), d) : null;
+      });
     }).then(function (p) {
+      if (!p && E && E.algo) {
+        uku('En tu foto reconocí ' + leido(E) + '. ¿Qué hacemos con eso?', chipsLeidos(E).concat([b('escanear', 'Tomar otra foto', 'photo_camera', 'is-ask')]), '', { title: 'Lo que leí' });
+        pintarChat(); return;
+      }
       if (!p) {
         fotoPend = file;
         uku('No pude leer un QR ni el texto de esta foto. Dime el monto y te preparo el pago.', [b('ask:Es una factura de luz', 'Es una factura', null, 'is-ask'), b('escanear', 'Tomar otra foto', 'photo_camera', 'is-ask')], '', { title: 'Tu foto' });
         pintarChat(); setTimeout(function () { input.focus(); }, 400); return;
       }
-      propuestaPago(p);
+      propuestaPago(p, E);
     });
   }
-  function propuestaPago(p) {
+  function propuestaPago(p, E) {
     var leido = p.qr ? 'Leí el QR. ' : p.manual ? 'Con el monto que me diste: ' : p.leido ? 'Lo leí en tu documento. ' : 'No puedo leer el texto de la imagen en este navegador, así que lo comparé con tus productos. ';
+    // Si además había una cuenta o un celular en la foto, también se ofrecen
+    var extra = E && E.algo ? chipsLeidos({ empresas: [], cuentas: E.cuentas, celulares: E.celulares, tarjetas: [] }) : [];
+    // Con la empresa reconocida, el pago se nombra por lo que es («la factura de la luz»)
+    if (E && E.empresas.length && !p.qr && /que le[ií]|tu factura/.test(p.para || '')) { p.titulo = E.empresas[0].accion === 'Pagar tarjeta' ? 'el estado de cuenta' : 'la factura'; p.para = E.empresas[0].que; }
     uku(leido + 'Es ' + p.titulo + ' de ' + p.para + (p.vence ? ', vence el ' + p.vence : '') + (p.ref ? ' (ref. ' + p.ref + ')' : '') + '. ¿Lo pago desde ' + p.desde + '?',
-      [b('pago:si:' + encodeURIComponent(JSON.stringify(p)), 'Pagar ' + money(p.monto), 'payments'), b('pago:no', 'Ahora no', null, 'is-ask')], '',
+      [b('pago:si:' + encodeURIComponent(JSON.stringify(p)), 'Pagar ' + money(p.monto), 'payments')].concat(extra).concat([b('pago:no', 'Ahora no', null, 'is-ask')]), '',
       { title: p.qr ? 'Pago con QR' : 'Pago de ' + p.titulo.replace(/^(el|la) /, ''), num: { v: money(p.monto), l: 'a ' + p.para } });
     pintarChat();
   }

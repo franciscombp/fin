@@ -68,6 +68,7 @@
   }
 
   function runAction(a) {
+    addRecent({ t: a.label, icon: a.icon, go: { a: a.label } });
     close(true);
     setTimeout(function () {
       if (a.run) return a.run();
@@ -96,19 +97,33 @@
   /* ---------- Búsquedas recientes: las últimas 5 que llevaron a algo ---------- */
   var RC_KEY = 'pb_busq_recientes_v1';
   var recent = [];
-  try { var rv = JSON.parse(localStorage.getItem(RC_KEY)); if (Array.isArray(rv)) recent = rv.filter(function (x) { return typeof x === 'string'; }).slice(0, 5); } catch (e) {}
+  try { var rv = JSON.parse(localStorage.getItem(RC_KEY)); if (Array.isArray(rv)) recent = rv.map(function (x) { return typeof x === 'string' ? { t: x, icon: 'history', go: { q: x } } : x; }).filter(function (x) { return x && x.t && x.go; }).slice(0, 5); } catch (e) {}
   function saveRecent() { try { localStorage.setItem(RC_KEY, JSON.stringify(recent)); } catch (e) {} }
-  function addRecent(raw) {
-    var t = String(raw || '').trim().slice(0, 60);
-    if (t.length < 2) return;
-    recent = [t].concat(recent.filter(function (x) { return norm(x) !== norm(t); })).slice(0, 5);
+  // Recientes: lo que de verdad abriste (una acción, un atajo, una pregunta), no lo que escribiste.
+  // Cada uno guarda a dónde va (go) para volver a abrirlo con un toque.
+  function addRecent(r) {
+    if (!r || !r.t) return;
+    var t = String(r.t).trim().slice(0, 60); if (t.length < 2) return;
+    recent = [{ t: t, icon: r.icon || 'history', go: r.go || { q: t } }].concat(recent.filter(function (x) { return norm(x.t) !== norm(t); })).slice(0, 5);
     saveRecent();
+  }
+  // A dónde va una sugerencia o un reciente
+  function irA(go) {
+    if (!go) return;
+    if (go.a) { var a = ACTIONS.filter(function (x) { return x.label === go.a; })[0]; return a ? runAction(a) : null; }
+    if (go.sc) return runShortcut(go.sc);
+    if (go.app) { var ap = appItems().filter(function (x) { return x.label === go.app; })[0]; return ap ? runApp(ap) : null; }
+    if (go.help) { close(true); return setTimeout(function () { if (window.UkuAsistente && UkuAsistente.ayuda) return UkuAsistente.ayuda(); window.Soporte && Soporte.open(); }, 280); }
+    if (go.faq != null) { close(true); return setTimeout(function () { window.Soporte && (go.kind === 'tut' ? Soporte.openTut(go.faq) : Soporte.openFaq(go.faq)); }, 280); }
+    if (go.ask) { close(true); return setTimeout(function () { if (window.UkuAsistente && UkuAsistente.preguntar) return UkuAsistente.preguntar(go.ask); window.Asistente && Asistente.open({ ctx: ctxId, ask: go.ask }); }, 280); }
+    if (go.q) { input.value = go.q; fx('tap'); return render(); }
   }
   function scSub(sc) {
     var a = SC_ACTS.filter(function (x) { return x[0] === sc.action; })[0];
     return [a ? a[2] : sc.action, sc.who || sc.biller || '', sc.amount ? money(sc.amount) : ''].filter(Boolean).join(' · ');
   }
   function runShortcut(sc) {
+    addRecent({ t: sc.name, icon: sc.icon || 'bolt', go: { sc: sc } });
     close(true);
     setTimeout(function () { if (window.__runShortcut) window.__runShortcut(sc); }, 280);
   }
@@ -145,6 +160,7 @@
   }
   var APP = [], HELP = [];
   function runApp(a) {
+    addRecent({ t: a.label, icon: a.icon, go: { app: a.label } });
     close(true);
     setTimeout(function () {
       if (a.view != null && window.__goView) window.__goView(a.view);
@@ -197,15 +213,13 @@
       if (b.dataset.sx === 'mic') return dictate();
       if (b.dataset.sx === 'cam') return runAction(ACTIONS.filter(function (a) { return a.label === 'Pagar con QR'; })[0]);
       var i = b.dataset.sxI;
-      // Lo que se escribió y llevó a algo queda en recientes
-      if (i.indexOf('rc') !== 0) addRecent(input.value);
       if (i === 'rc-clear') { recent = []; saveRecent(); fx('toggle'); return render(); }
-      if (i.indexOf('sug:') === 0) { input.value = SUG_PLANA[+i.slice(4)].t; fx('tap'); return render(); }
-      if (i.indexOf('rc:') === 0) { input.value = recent[+i.slice(3)] || ''; fx('tap'); return render(); }
-      if (i === 'ask') { var q = input.value.trim(); close(true); setTimeout(function () { window.Asistente && Asistente.open({ ctx: ctxId, ask: q }); }, 280); return; }
+      if (i.indexOf('sug:') === 0) { var sg = SUGS[+i.slice(4)]; fx('tap'); if (!sg.go.a && !sg.go.app) addRecent(sg); return irA(sg.go); } // las acciones ya se anotan al abrirse
+      if (i.indexOf('rc:') === 0) { var rc = recent[+i.slice(3)]; fx('tap'); return rc && irA(rc.go); }
+      if (i === 'ask') { var q = input.value.trim(); addRecent({ t: q, icon: 'forum', go: { ask: q } }); close(true); setTimeout(function () { if (window.UkuAsistente && UkuAsistente.preguntar) return UkuAsistente.preguntar(q); window.Asistente && Asistente.open({ ctx: ctxId, ask: q }); }, 280); return; }
       if (i === 'pfm') return runAction(ACTIONS[4]);
       if (i === 'help') { close(true); setTimeout(function () { window.Soporte && Soporte.open(); }, 280); return; }
-      if (i.indexOf('hp:') === 0) { var hp = HELP[+i.slice(3)]; close(true); setTimeout(function () { if (!window.Soporte) return; if (hp.kind === 'tut') Soporte.openTut(hp.i); else Soporte.openFaq(hp.i); }, 280); return; }
+      if (i.indexOf('hp:') === 0) { var hp = HELP[+i.slice(3)]; addRecent({ t: hp.t, icon: 'help', go: { faq: hp.i, kind: hp.kind } }); close(true); setTimeout(function () { if (!window.Soporte) return; if (hp.kind === 'tut') Soporte.openTut(hp.i); else Soporte.openFaq(hp.i); }, 280); return; }
       if (i === 'mo') { var mo = moment(); return mo.sc ? runShortcut(mo.sc) : runAction(mo.a); }
       if (i === 'it') return runShortcut(curIt);
       if (i === 'it-save') { shortcuts.push(Object.assign({}, curIt)); saveShortcuts(); fx('success'); input.value = ''; render(); return; }
@@ -226,7 +240,7 @@
         shortcuts.push(sc); saveShortcuts(); rec_ = null; fx('success'); render();
         return;
       }
-      if (i.indexOf('q:') === 0) { var aq = ASKS[+i.slice(2)].q; close(true); setTimeout(function () { window.Asistente && Asistente.ask(aq); }, 280); return; }
+      if (i.indexOf('q:') === 0) { var aq = ASKS[+i.slice(2)].q; addRecent({ t: aq, icon: 'forum', go: { ask: aq } }); close(true); setTimeout(function () { window.Asistente && Asistente.ask(aq); }, 280); return; }
       if (i.indexOf('a:') === 0) return runAction(ACTIONS[+i.slice(2)]);
     });
     // Al deslizar los resultados se esconde el teclado (como en iOS) y
@@ -307,25 +321,19 @@
     if (n) rec_.name = n.value.trim();
     if (m) rec_.amount = parseFloat(String(m.value).replace(',', '.')) || 0;
   }
-  // Sugerencias antes de escribir, por lo que la persona quiere hacer. Tocar una llena la búsqueda con su texto.
-  var SUGERENCIAS = [
-    { h: 'Pagar y enviar', items: [['Transferir dinero', 'send_money'], ['Pagar servicios', 'bolt'], ['Pagar con QR', 'qr_code_scanner']] },
-    { h: 'Mi dinero', items: [['Ver mis movimientos', 'swap_horiz'], ['¿En qué gasto más?', 'insights'], ['Pedir un préstamo', 'request_quote']] },
-    { h: 'Ayuda y seguridad', items: [['Bloquear mi tarjeta', 'lock'], ['Cambiar mi clave', 'key'], ['Necesito ayuda', 'help']] }
+  // Sugerencias antes de escribir: cada una abre algo concreto (no rellena el campo).
+  // Las acciones por sección (pagar, mi dinero, ayuda, seguridad) ya están a la vista en la app y aparecen al escribir.
+  var SUGS = [
+    { t: 'Mejorar mis finanzas', icon: 'insights', go: { a: 'Mis finanzas' } },
+    { t: 'Mis últimos movimientos', icon: 'swap_horiz', go: { a: 'Mis cuentas' } },
+    { t: 'Solicitar una tarjeta de crédito', icon: 'credit_card', go: { ask: 'Cómo solicito una tarjeta de crédito' } },
+    { t: 'Mis seguros', icon: 'shield', go: { a: 'Seguros' } },
+    { t: 'Necesito ayuda', icon: 'help', go: { help: true } }
   ];
-  // Frases frecuentes: van como chips arriba de las secciones
-  var SUG_CHIPS = ['Ayúdame a mejorar mis finanzas', 'Necesito ayuda', 'Quiero ver mis últimos movimientos', 'Cómo puedo solicitar una tarjeta de crédito', 'Quiero conocer mis seguros'];
-  var SUG_PLANA = SUG_CHIPS.map(function (t) { return { t: t }; });
-  SUGERENCIAS.forEach(function (g) { g.items.forEach(function (it) { SUG_PLANA.push({ t: it[0], icon: it[1] }); }); });
   function sugerencias() {
-    var chips = '<section class="sx-card"><div class="sx-chips">' + SUG_CHIPS.map(function (t, i) {
-      return '<button class="sx-chip" data-sx-i="sug:' + i + '">' + esc(t) + '</button>';
+    return '<section class="sx-card"><div class="sx-chips">' + SUGS.map(function (s, i) {
+      return '<button class="sx-chip" data-sx-i="sug:' + i + '">' + esc(s.t) + '</button>';
     }).join('') + '</div></section>';
-    return chips + SUGERENCIAS.map(function (g) {
-      return '<section class="sx-card"><h3>' + g.h + '</h3>' + g.items.map(function (it) {
-        return row('sug:' + SUG_PLANA.findIndex(function (x) { return x.t === it[0]; }), it[1], esc(it[0]));
-      }).join('') + '</section>';
-    }).join('');
   }
 
   function chip(id, label, on) { return '<button class="sx-chip" data-sx-i="' + id + '" aria-pressed="' + !!on + '">' + esc(label) + '</button>'; }
@@ -354,7 +362,7 @@
       var cx = window.Contexto ? Contexto.info(ctxId) : null;
       html += sugerencias();
       if (recent.length) html += '<section class="sx-card"><h3>Recientes <button class="sx-link" data-sx-i="rc-clear">Borrar</button></h3>' +
-        recent.map(function (t, i) { return row('rc:' + i, 'history', esc(t), ''); }).join('') + '</section>';
+        recent.map(function (r, i) { return row('rc:' + i, r.icon || 'history', esc(r.t), r.go.a ? 'Abrir' : r.go.sc ? 'Atajo' : r.go.ask ? 'Preguntarle a Uku' : r.go.faq != null ? 'Ayuda' : ''); }).join('') + '</section>';
       // Tus atajos grabados
       html += '<section class="sx-card"><h3>Tus atajos</h3>' +
         shortcuts.map(function (sc, i) { return row('sc:' + i, sc.icon || 'bolt', esc(sc.name), esc(scSub(sc)), '<span class="sx-del" data-sx-i="del:' + i + '" role="button" aria-label="Borrar atajo"><span class="material-symbols-rounded">close</span></span>'); }).join('') +
@@ -363,7 +371,6 @@
         var m = moment();
         html += '<section class="sx-card"><h3>' + m.title + '</h3>' + row('mo', m.icon, m.main, m.sub) + '</section>';
       }
-      html += '<section class="sx-card"><h3>Ayuda</h3>' + row('help', 'help', 'Centro de ayuda', 'Preguntas frecuentes, categorías y tutoriales') + '</section>';
     } else {
       var ws = words(input.value);
       // Frase completa → el flujo ya lleno, listo para confirmar
