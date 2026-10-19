@@ -528,8 +528,8 @@ function resize() {
   camDist = camera.aspect < .8 ? 3.4 : 3.6; // planeta: desde más lejos y más alto se ve el horizonte curvo
   // Escenario: data-shift corre el encuadre (fracción del ancho) para que Uku
   // no quede detrás del globo de texto.
-  const sh = parseFloat(host.dataset.shift || 0);
-  if (sh) camera.setViewOffset(w, h, -w * sh, 0, w, h); else camera.clearViewOffset();
+  const sh = parseFloat(host.dataset.shift || 0), sv = parseFloat(host.dataset.shiftY || 0);
+  if (sh || sv) camera.setViewOffset(w, h, -w * sh, h * sv, w, h); else camera.clearViewOffset();
   camera.updateProjectionMatrix();
 }
 
@@ -638,7 +638,7 @@ export function attach(el, opts) {
 }
 export function setScore(s) { if (!bear && target != null) { target = s; return; } if (s !== score) { score = s; if (renderer) buildForest(); } }
 export function setBloom(b) { b = b == null ? null : Math.max(0, Math.min(100, b)); waterOn = !!b; if (b !== bloom) { bloom = b; if (renderer) buildForest(); } }
-export function setShift(f) { if (!host) return; host.dataset.shift = f; resize(); }
+export function setShift(f, fy) { if (!host) return; host.dataset.shift = f; host.dataset.shiftY = fy || 0; resize(); }
 export function setMood(m) { mood = ['feliz', 'tranquilo', 'pensativo'].includes(m) ? m : null; }
 export function isReady() { return !!bear; }
 export function detach(el) { if (host === el) { host = null; } }

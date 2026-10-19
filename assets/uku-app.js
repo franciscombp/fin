@@ -34,7 +34,8 @@
   var agente = null; // con una persona del banco: lo que escribes le llega a ella
   var casos = []; try { casos = JSON.parse(localStorage.getItem('uk-casos') || '[]'); } catch (e) {}
 
-  var PRUEBA = ['¿En qué se me va la plata?', '¿Cuánto debo?', 'Bloquear mi tarjeta', 'Transferir'];
+  // Lo que más se pide, en el orden de los trabajos: mi dinero, una duda simple, un inconveniente
+  var PRUEBA = ['¿Cómo va mi dinero?', '¿En qué se me va la plata?', 'No reconozco un consumo', 'No puedo entrar a la app'];
 
   /* ---------- La pantalla: Uku y su mundo ---------- */
   function mount() {
@@ -44,7 +45,11 @@
     view.insertBefore(host, view.firstChild);
     // Mis finanzas y Ayuda se abren desde el menú de la cabecera, dentro de esta pantalla
     // Para el resto de la app: Ayuda se abre aquí, dentro de Asistente
-    window.UkuAsistente = { ayuda: function () { if (window.__goView) window.__goView(1); seccion('ayuda'); } };
+    window.UkuAsistente = { ayuda: function () { if (window.__goView) window.__goView(1); seccion('ayuda'); },
+      // Desde Ayuda y Soporte: un inconveniente guiado, Solicitudes o una persona, siempre en la conversación de Uku
+      flow: function (i) { seccion('uku'); flujo(i, 'ini', true); },
+      solicitudes: function () { seccion('uku'); abrirSol(); },
+      persona: function () { seccion('uku'); persona(); pintarChat(); } };
     // Ayuda, dentro de esta pantalla: al volver desde su flecha, regresa a Uku
     document.addEventListener('soporte:cerrar', function () { seccion('uku'); });
     host.innerHTML =
@@ -93,9 +98,11 @@
     var era = host.classList.contains('is-chat'), es = msgs.length > 0;
     host.classList.toggle('is-typing', !!input.value.trim());
     host.classList.toggle('is-chat', es);
-    if (b3d && era !== es) b3d.setShift(es ? -.24 : 0); // en la conversación, Uku queda a la izquierda, como en Tolan
+    if (b3d && era !== es) b3d.setShift(es ? -.22 : 0, es ? .2 : 0); // con tarjetas, Uku sube y queda a la izquierda, asomado sobre ellas
     // En la conversación no hay barra superior ni inferior: el chat ocupa la pantalla
-    document.documentElement.classList.toggle('uk-chatting', es && view.classList.contains('active'));
+    // En Mis finanzas o Ayuda vuelven la barra de arriba y la de abajo, aunque la conversación siga esperando
+    var enSec = view.classList.contains('uk-fin') || view.classList.contains('uk-ayuda');
+    document.documentElement.classList.toggle('uk-chatting', es && view.classList.contains('active') && !enSec);
     if (era !== es) {
       input.placeholder = es ? 'Escríbele a Uku' : 'Habla con Uku o busca algo';
       if (!es && b3d) setTimeout(function () { b3d.play('wave'); setTimeout(function () { if (!msgs.length) b3d.play('walk'); }, 2200); }, 350); // vuelve a su mundo, saluda y camina
@@ -166,19 +173,31 @@
      Cada mensaje de Uku trae sus botones; solo los del último se pueden
      tocar, así la conversación avanza y no quedan preguntas viejas abiertas. */
   function me(t) { msgs.push({ me: t }); }
-  function uku(t, btns, extra) { msgs.push({ uku: t, btns: btns || [], extra: extra || '', nuevo: true }); ultimo = Date.now(); if (b3d) b3d.play('talk'); }
+  function uku(t, btns, extra, o) { msgs.push({ uku: t, btns: btns || [], extra: extra || '', nuevo: true, title: o && o.title, rows: o && o.rows, flow: o && o.flow }); ultimo = Date.now(); if (b3d) b3d.play('talk'); }
   function b(k, t, icon, cls) { return { k: k, t: t, ic: icon, cls: cls }; }
   function mostrar() { input.value = ''; modo(); pintarChat(); pintarResultados(); }
   // Lo que escribes: tu plata, la ayuda o una acción de la app
+  /* Qué quieres, en el orden de los trabajos de la gente:
+     1. saber cómo va mi dinero (mi salud, mis gastos, mi presupuesto),
+     2. una respuesta simple (la ayuda), 3. un inconveniente con mi cuenta (guiado).
+     Lo que se resuelve con reglas se resuelve aquí; lo demás, con una persona. */
+  var DINERO = /como (va|voy|esta|estoy|ando)|salud financiera|mi dinero|mi plata|mis finanzas|resumen|como me fue|cuanto tengo/;
   function preguntar(q) {
     q = String(q || '').trim(); if (!q) return;
     me(q); input.blur(); fx('select'); if (b3d) b3d.play('nod');
+    var n = norm(q);
     if (agente) return responde();
     // Pedir una persona es pedir una persona: sin rodeos
-    if (/persona|humano|asesor|agente|ejecutiv/.test(norm(q))) { persona(); return mostrar(); }
+    if (/persona|humano|asesor|agente|ejecutiv/.test(n)) { persona(); return mostrar(); }
     // Su mundo: Uku te cuenta cómo está, en primera persona (sus flores, su bosque y su ánimo son tus finanzas)
-    if (/mundo|bosque|flores|como estas|tu animo|como te sientes|quien eres/.test(norm(q)) && window.PFM && PFM.world) { mundo(); return mostrar(); }
+    if (/mundo|bosque|flores|como estas|tu animo|como te sientes|quien eres/.test(n) && window.PFM && PFM.world) { mundo(); return mostrar(); }
+    // 1. Cómo va mi dinero
+    if (DINERO.test(n) && !HACER.test(n) && resumen()) { dinero(); return mostrar(); }
     var fin = finanzas(q), acts = acciones(q).slice(0, 2), H = ayuda(q, 3);
+    // 3. Un inconveniente: si lo que escribes se parece a uno, Uku lo guía paso a paso
+    var fl = H.filter(function (h) { return h.kind === 'flow'; })[0];
+    if (fl && !fin && !/^(que es|que significa|cuanto tarda|donde veo)/.test(n)) return flujo(fl.i, 'ini');
+    H = H.filter(function (h) { return h.kind !== 'flow'; });
     if (fin) uku(fin.t, (fin.acts || []).map(function (a) { return b('pfm:' + a[1], a[0], 'arrow_forward'); }).concat((fin.s || []).slice(0, 2).map(function (c) { return b('ask:' + c, c, null, 'is-ask'); })));
     // Si preguntas cómo, cuánto o qué, primero la ayuda; si pides hacer algo, primero la acción
     else if (H.length && (!acts.length || PREG.test(norm(q)))) return ayudaEn(H[0], H.slice(1), acts);
@@ -195,22 +214,82 @@
       (pend ? [b('pfm:game', 'Clasificar conmigo', 'category')] : []).concat([b('pfm:world', 'Qué significa cada cosa', 'park', 'is-ask'), b('ok', 'Qué lindo, gracias', 'thumb_up', 'is-ask')]));
     if (b3d) b3d.play('happy');
   }
+  // Cómo va tu dinero: lo que responde a la primera pregunta de todos, con lo que puedes hacer después
+  function dinero() {
+    var s = resumen(), A = consejos(), x = A[0], pres = s.pres && !(window.PFM.advice().some(function (c) { return c.id === 'pres' && !c.done; }));
+    var nivel = s.score >= 85 ? 'Vas bien' : s.score >= 55 ? 'Con cuidado' : 'Por encima del plan';
+    var rows = [['Disponible', money0(s.saldo)], ['Gastaste en ' + s.mes, money0(s.gast) + (pres ? ' de ' + money0(s.pres) : '')], ['Tu salud financiera', nivel]];
+    if (s.n) rows.push(['Por ordenar', s.n + (s.n === 1 ? ' consumo' : ' consumos')]);
+    var t = pres ? (s.score >= 85 ? 'Vas bien con tu presupuesto.' : s.score >= 55 ? 'Vas un poco rápido con tu presupuesto: con cuidado llegas.' : 'Vas por encima de tu presupuesto: revisemos en qué.') : 'Todavía no tienes presupuesto. Con lo que te entra y lo que gastas, te ayudo a armarlo.';
+    if (x && x.id !== 'pres' && x.kind === 'warn') t += ' ' + (x.di || x.t);
+    uku(esc(t), [b('gastos', 'Ver mis gastos', 'account_balance_wallet'), pres ? b('pfm:budgets', 'Ajustar mi presupuesto', 'speed') : b('pfm:pres', 'Armar mi presupuesto', 'speed')]
+      .concat(x && x.act && x.id !== 'pres' ? [b('pfm:' + x.act, x.actl, null, 'is-ask')] : [])
+      .concat([b('ask:¿En qué se me va la plata?', '¿En qué se me va la plata?', null, 'is-ask')]), '', { title: 'Así vas en ' + s.mes, rows: rows });
+    if (b3d) b3d.play(s.score >= 85 ? 'happy' : 'talk');
+  }
+  // Un inconveniente guiado (Soporte.flow): Uku pregunta lo justo y cada respuesta lleva al siguiente paso o a la solución
+  function flujo(i, paso, pedir) {
+    var f = Soporte.flow(i), st = f && f.s[paso]; if (!st) return;
+    if (pedir) me(f.t);
+    uku(esc(st.q), st.ops.map(function (o) {
+      var k = o[1], i2;
+      if (k.indexOf('go:') === 0) return b('fl:' + i + ':' + k.slice(3), o[0], null, 'is-ask');
+      if (k.indexOf('faq:') === 0) { i2 = Soporte.faqIndex(k.slice(4)); return b('faq:' + i2, o[0], null, 'is-ask'); }
+      if (k === 'persona') return b('persona', o[0], 'support_agent', 'is-ask');
+      return b('sp:' + k, o[0], 'arrow_forward');
+    }), '', { title: f.t, flow: f.id });
+    mostrar();
+  }
+  // Ayuda, sin salir de su mundo: los inconvenientes guiados y lo más consultado; todo el centro de ayuda a un toque
+  function ayudaCard() {
+    var F = Soporte.flows();
+    uku('¿Qué te pasa? Te doy la respuesta aquí y te llevo a donde lo resuelves tú. Si es otra cosa, escríbemela abajo.',
+      F.slice(0, 4).map(function (f) { return b('flow:' + f.i, f.t, f.icon); })
+        .concat([b('ayudatoda', 'Todas las preguntas frecuentes', 'help'), b('persona', 'Hablar con una persona', 'support_agent', 'is-ask')]), '', { title: 'Ayuda' });
+    mostrar();
+  }
   // Una pregunta frecuente o un tutorial, respondido por Uku aquí mismo
   function ayudaEn(h, otras, acts) {
     if (h.kind === 'tut') {
       var u = Soporte.tut(h.i);
       uku('Así se hace, en ' + (u.min || 1) + ' minuto' + ((u.min || 1) > 1 ? 's' : '') + ':', (u.act ? [b('sp:' + u.act[1], u.act[0], 'arrow_forward')] : []).concat([b('ok', 'Listo, gracias', 'thumb_up', 'is-ask'), b('no', 'No me sirvió', null, 'is-ask')]),
-        '<ol class="uk-steps">' + u.steps.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>');
+        '<ol class="uk-steps">' + u.steps.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>', { title: u.t });
     } else {
       var f = Soporte.faq(h.i);
       // La respuesta, lo que puedes hacer con ella y "¿Te sirvió?", en un solo mensaje
-      uku(esc(f.a) + '<span class="uk-msg__q">¿Te sirvió?</span>', f.acts.map(function (a) { return b('sp:' + a[1], a[0], 'arrow_forward'); })
-        .concat([b('ok', 'Sí, gracias', 'thumb_up', 'is-ask'), b('no', 'No, es otra cosa', null, 'is-ask'), b('persona', 'Hablar con una persona', 'support_agent', 'is-ask')]));
+      uku(esc(f.a), f.acts.map(function (a) { return b(a[1] === 'handoff' ? 'persona' : a[1] === 'sol' ? 'sol' : 'sp:' + a[1], a[0], a[1] === 'handoff' ? 'support_agent' : 'arrow_forward'); })
+        .concat([b('ok', 'Sí, gracias', 'thumb_up', 'is-ask'), b('no', 'No, es otra cosa', null, 'is-ask'), b('persona', 'Hablar con una persona', 'support_agent', 'is-ask')]), '', { title: f.t, pregunta: '¿Te sirvió?' });
     }
     mostrar();
   }
   var RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches, escribe = null;
+  /* Las respuestas de Uku son tarjetas sobre su mundo: la última es la que se usa y las
+     anteriores quedan apiladas detrás. Cada tarjeta trae lo que puedes hacer con ella y se
+     puede volver atrás; con una persona del banco, la conversación es un chat normal. */
+  function tarjetaHTML(m, q, n, i, typing) {
+    var nav = m.btns.filter(function (x) { return !/is-ask/.test(x.cls || ''); }), ask = m.btns.filter(function (x) { return /is-ask/.test(x.cls || ''); });
+    return '<section class="uk-card' + (typing ? ' is-typing' : '') + '" style="--n:' + Math.min(n - 1, 2) + '">' +
+      '<header class="uk-card__top">' + (n > 1 ? '<button class="uk-card__back" data-k="atras-card" aria-label="Volver a la tarjeta anterior">' + ic('arrow_back') + '</button>' : '<span class="uk-card__face" aria-hidden="true">' + face() + '</span>') +
+        '<span class="uk-card__q">' + esc(m.title || q || 'Uku') + '</span>' + (n > 1 ? '<small class="uk-card__n">' + i + ' de ' + n + '</small>' : '') + '</header>' +
+      (typing ? '<p class="uk-msg__b uk-dots" aria-label="Uku está escribiendo"><i></i><i></i><i></i></p>' :
+        '<div class="uk-card__body"><p class="uk-card__t">' + m.uku + '</p>' +
+        (m.rows ? '<dl class="uk-card__data">' + m.rows.map(function (r) { return '<div><dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('') + '</dl>' : '') + m.extra +
+        (nav.length ? '<div class="uk-card__nav">' + nav.map(function (x, j) { return '<button class="uk-card__row" style="--d:' + j * 40 + 'ms" data-k="' + esc(x.k) + '" data-l="' + esc(x.t) + '">' + (x.ic ? ic(x.ic) : '') + '<span>' + esc(x.t) + '</span>' + ic('chevron_right') + '</button>'; }).join('') + '</div>' : '') +
+        (ask.length ? (m.pregunta ? '<p class="uk-msg__q">' + esc(m.pregunta) + '</p>' : '') + '<div class="uk-msg__acts">' + ask.map(function (x, j) { return '<button class="uk-chip is-ask" style="--d:' + (nav.length + j) * 40 + 'ms" data-k="' + esc(x.k) + '" data-l="' + esc(x.t) + '">' + (x.ic ? ic(x.ic) : '') + esc(x.t) + '</button>'; }).join('') + '</div>' : '') + '</div>') + '</section>';
+  }
+  function pintarTarjetas() {
+    var nuevo = -1; msgs.forEach(function (m, i) { if (m.uku != null && m.nuevo && nuevo < 0) nuevo = i; });
+    if (nuevo >= 0 && !RM) { if (!escribe) escribe = setTimeout(function () { escribe = null; msgs.forEach(function (m) { m.nuevo = false; }); pintarChat(); if (b3d) b3d.play('nod'); }, 650); }
+    else { msgs.forEach(function (m) { m.nuevo = false; }); nuevo = -1; }
+    var U = [], q = null; msgs.forEach(function (m) { if (m.me) q = m.me; else if (m.uku != null) U.push({ m: m, q: q }); });
+    var last = U[U.length - 1];
+    chat.innerHTML = last ? tarjetaHTML(last.m, last.q, U.length, U.length, nuevo >= 0) : '';
+    host.classList.add('is-cards');
+    modo();
+  }
   function pintarChat() {
+    if (!agente && !msgs.some(function (m) { return m.ag; })) return pintarTarjetas();
+    host.classList.remove('is-cards');
     // Lo nuevo de Uku aparece después de un "escribiendo…" corto, como en una conversación de verdad
     var nuevo = -1; msgs.forEach(function (m, i) { if (m.uku != null && m.nuevo && nuevo < 0) nuevo = i; });
     if (nuevo >= 0 && !RM) {
@@ -345,7 +424,7 @@
     } else if (n === 'fin') { if (window.PFM) PFM.open(); else finOn(true); }
     else finOn(false);
     tituloDe(n);
-    libre();
+    libre(); modo();
   }
   /* ---------- Solicitudes dentro del mundo de Uku ----------
      Lo que se puede pedir o revisar, a un toque; la búsqueda es la universal (contexto: solicitudes). */
@@ -454,9 +533,14 @@
       case 'escanear': fx('tap'); cerrarSecciones(); return fileIn.click();
       case 'pago': return pago(v);
       // Ayuda es su sección: se abre el centro de ayuda; el chat empieza cuando hay algo que resolver
-      case 'ayuda': fx('tap'); salir('Ayuda'); return seccion('ayuda');
+      case 'ayuda': fx('tap'); return ayudaCard();
       case 'sol': return abrirSol();
       case 'persona': persona(); return pintarChat();
+      case 'atras-card': { var li = -1; msgs.forEach(function (m, j) { if (m.uku != null) li = j; }); if (li < 0) return; msgs.splice(li, 1); if (msgs.length && msgs[msgs.length - 1].me) msgs.pop(); fx('tap'); return pintarChat(); }
+      case 'fl': { var fp = v.split(':'); return flujo(+fp[0], fp[1]); }
+      case 'flow': return flujo(+v, 'ini', !enChat);
+      case 'dinero': dinero(); return mostrar();
+      case 'ayudatoda': fx('select'); return seccion('ayuda');
       case 'hum': return humano(v);
       case 'tel': location.href = 'tel:' + v; return;
       case 'cb': uku('Listo. Te llaman ' + esc(v) + ' al 099 *** 4521, con el resumen de tu caso. Lo ves en Solicitudes.', [b('ok', 'Gracias', 'thumb_up', 'is-ask')]); fx('success'); return pintarChat();
