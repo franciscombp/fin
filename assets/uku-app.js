@@ -769,9 +769,11 @@
         if (!texto) return null;
         E = UkuPagos.entidades(texto);
         var d = UkuPagos.interpretar(texto);
+        if (d.tipo === 'recibo') return { recibo: d };
         return d.monto ? UkuPagos.propuesta(Persona.get(), d) : null;
       });
     }).then(function (p) {
+      if (p && p.recibo) return recibo(p.recibo);
       if (!p && E && E.algo) {
         uku('En tu foto reconocí ' + leido(E) + '. ¿Qué hacemos con eso?', chipsLeidos(E).concat([b('escanear', 'Tomar otra foto', 'photo_camera', 'is-ask')]), '', { title: 'Lo que leí' });
         pintarChat(); return;
@@ -783,6 +785,14 @@
       }
       propuestaPago(p, E);
     });
+  }
+  // Un recibo ya pagado no se paga: es un consumo. Uku lo ubica en tus movimientos y lo relaciona con tus gastos
+  function recibo(d) {
+    var c = d.comercio || 'ese comercio', q = d.monto ? ' por ' + money(d.monto) : '';
+    uku('Es un recibo de ' + c + q + (d.fecha ? ' del ' + d.fecha : '') + (d.pago ? ', pagado con ' + d.pago : '') + '. No hay nada que pagar: ya está hecho. ¿Lo buscamos en tus movimientos?',
+      [b('gastos', 'Ver mis movimientos', 'account_balance_wallet'), b('ask:¿Cuánto gasto en ' + c + '?', 'Cuánto gasto en ' + c, null, 'is-ask'), b('escanear', 'Tomar otra foto', 'photo_camera', 'is-ask')], '',
+      { title: 'Tu recibo', num: d.monto ? { v: money(d.monto), l: 'en ' + c } : null });
+    pintarChat();
   }
   function propuestaPago(p, E) {
     var leido = p.qr ? 'Leí el QR. ' : p.manual ? 'Con el monto que me diste: ' : p.leido ? 'Lo leí en tu documento. ' : 'No puedo leer el texto de la imagen en este navegador, así que lo comparé con tus productos. ';
