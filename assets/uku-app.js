@@ -117,7 +117,7 @@
     // mundo entran solo cuando piden algo; el resto lo cuenta Uku al tocarlo.
     var S = window.PFM && PFM.world && resumen() ? PFM.world().filter(function (x) { return /warn|over|pensativo/.test(x.cls || ''); }).map(function (x) { return { icon: x.ic, tag: x.l, t: x.v, s: x.d, k: 'mundo' }; }) : [];
     var A = S.concat(consejos().slice(0, 4));
-    props.hidden = !A.length; globoEl.style.display = A.length ? 'none' : '';
+    props.hidden = !A.length; globoEl.style.display = '';
     if (!A.length) return;
     props.innerHTML = '<div class="uk-props__track">' + A.map(function (x) {
       return '<article class="uk-prop" data-k="' + esc(x.k || 'prop:' + x.id) + '" data-l="' + esc(x.t) + '"><p class="uk-prop__tag">' + ic(x.icon || 'lightbulb') + esc(x.tag || 'Te propongo') + '</p><p class="uk-prop__t">' + esc(x.t) + '</p>' +
@@ -134,15 +134,36 @@
     var s = resumen(); if (b3d && s) { b3d.setBloom(s.bloom); b3d.setMood(s.mood); }
   }
 
-  // Lo que dice Uku: una nota del momento o su consejo más importante (tocarlo a él pasa al siguiente)
+  /* El saludo depende del momento: la hora, si ya pasaste hoy, el día de la semana y lo que
+     tienes pendiente. Una frase y, si hay algo que hacer, su acción. */
+  var VISTO = 'uk-visto', SAL = null;
+  function saludo() {
+    if (SAL) return SAL;
+    var s = resumen(), A = consejos(), nombre = s && s.nombre ? s.nombre.split(' ')[0] : '';
+    if (!s) return { t: '¡Hola! Soy Uku. ¿Vemos cómo vas hoy?', k: 'dinero', l: 'Ver cómo va mi dinero' }; // todavía sin tus datos: no se guarda
+    var ahora = new Date(), h = ahora.getHours(), d = ahora.getDay(), antes = 0;
+    try { antes = +localStorage.getItem(VISTO) || 0; localStorage.setItem(VISTO, String(ahora.getTime())); } catch (e) {}
+    var hoy = antes && new Date(antes).toDateString() === ahora.toDateString(), hace = (ahora.getTime() - antes) / 36e5;
+    var n = nombre ? ', ' + nombre : '';
+    var hola = hoy && hace > 1 ? 'Qué bueno verte otra vez' + n + '.' : hoy ? 'Hola otra vez' + n + '.'
+      : h < 7 ? 'Hola' + n + '. ¿Madrugando?' : h < 12 ? 'Buenos días' + n + '.' : h < 19 ? 'Buenas tardes' + n + '.' : 'Buenas noches' + n + '.';
+    var pagos = A.filter(function (c) { return c.id.indexOf('pago:') === 0; });
+    return (SAL = sal());
+    function sal() {
+    if (pagos.length) return { t: hola + ' ' + (pagos.length === 1 ? 'Tienes un pago pendiente, ¿te ayudo con eso?' : 'Tienes ' + pagos.length + ' pagos pendientes, ¿te ayudo con eso?'), k: 'prop:' + pagos[0].id, l: 'Ver el pago' };
+    if (d === 1 || d === 0) return { t: hola + ' ¿Quieres ver cómo va tu semana?', k: 'gastos', l: 'Ver mi semana' };
+    if (s && s.n >= 5) return { t: hola + ' Tengo ' + s.n + ' consumos por ordenar, ¿me ayudas un minuto?', k: 'pfm:game', l: 'Ordenar' };
+    return { t: hola + ' ¿En qué te ayudo?', k: 'dinero', l: 'Ver cómo va mi dinero' };
+    }
+  }
+  // Lo que dice Uku: el saludo del momento, una nota o su consejo más importante (tocarlo a él pasa al siguiente)
   function pintarGlobo() {
-    var A = consejos(), x = A.length ? A[gi % A.length] : null, s = resumen(), hola = !saludado && !nota;
-    var nombre = s && s.nombre ? s.nombre.split(' ')[0] : '';
-    var t = nota || (hola ? (nombre ? '¡Hola, ' + nombre + '! Qué gusto verte. ¿Vemos cómo vas hoy?' : '¡Hola! Soy Uku. ¿Vemos cómo vas hoy?')
-      : x ? x.di || x.t : '¡Todo va bien por ahora! ¿Hacemos algo hoy?');
+    var A = consejos(), x = A.length ? A[gi % A.length] : null, hola = !saludado && !nota, sal = hola ? saludo() : null;
+    var t = nota || (hola ? sal.t : x ? x.di || x.t : '¡Todo va bien por ahora! ¿Hacemos algo hoy?');
     // Como si Uku te lo contara: sin encabezado; la acción es un enlace, no un botón principal
+    var go = hola ? sal : (!nota && x && x.act ? { k: 'pfm:' + x.act, l: x.actl } : null);
     globoEl.innerHTML = '<p class="uk-globo__t">' + esc(t) + '</p>' +
-      (!hola && !nota && x && x.act ? '<button class="btn btn--tertiary uk-globo__go" data-k="pfm:' + esc(x.act) + '" data-l="' + esc(x.actl) + '">' + esc(x.actl) + '</button>' : '');
+      (go ? '<button class="btn btn--tertiary uk-globo__go" data-k="' + esc(go.k) + '" data-l="' + esc(go.l) + '">' + esc(go.l) + '</button>' : '');
     globoEl.classList.remove('is-new'); void globoEl.offsetWidth; globoEl.classList.add('is-new');
     // Uku hace lo que dice: saluda, habla, se preocupa o celebra según el mensaje
     if (b3d) b3d.play(hola ? 'wave' : nota ? 'happy' : !x ? 'happy' : x.kind === 'warn' ? 'worried' : 'talk');
