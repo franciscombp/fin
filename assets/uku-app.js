@@ -267,7 +267,7 @@
   function propuesta(id) {
     var A = consejos(), x = A.filter(function (c) { return c.id === id; })[0] || A[0]; if (!x) return;
     var i = A.indexOf(x), sig = A[(i + 1) % A.length];
-    uku(esc(x.di || (x.t + (x.s ? '. ' + x.s : ''))), (x.act ? [b('pfm:' + x.act, x.actl, 'arrow_forward')] : [])
+    uku(esc(x.di || (x.t + (x.s ? '. ' + x.s : ''))), (x.act ? [b('pfm:' + x.act, x.actl, x.icon)] : [])
       .concat([b('pfm:luego:' + x.id, 'Ahora no', null, 'is-ask')]).concat(sig && sig !== x ? [b('prop:' + sig.id, 'Siguiente propuesta', null, 'is-ask')] : []), '', { title: x.tag, bars: x.cmp ? x.cmp.map(function (c) { return { l: c.l, v: c.v }; }) : null });
     if (b3d) b3d.play(x.kind === 'warn' ? 'worried' : 'talk');
     mostrar();
@@ -311,6 +311,15 @@
   /* Las respuestas de Uku son tarjetas sobre su mundo: la última es la que se usa y las
      anteriores quedan apiladas detrás. Cada tarjeta trae lo que puedes hacer con ella y se
      puede volver atrás; con una persona del banco, la conversación es un chat normal. */
+  /* El ícono de una fila solo cuando identifica una acción concreta de la app (programar un pago,
+     ver la tarjeta, transferir). Las listas de temas (inconvenientes, preguntas) van sin ícono. */
+  var ICONO = [[/^(sp:)?review$/, 'report'], [/card:|tab:Tarjetas|Mis tarjetas/, 'credit_card'], [/Pagar tarjeta/, 'credit_card'], [/Pagar servicios/, 'bolt'], [/Pagar con QR/, 'qr_code_scanner'], [/Transferir/, 'send_money'], [/Seguridad/, 'lock'], [/Datos personales/, 'badge'], [/Cuenta|Recibir dinero/, 'account_balance'], [/Prestamos|Simular/, 'request_quote'], [/Inversiones/, 'trending_up'], [/Seguro/, 'shield'], [/Recargar/, 'phone_android'], [/Certificado/, 'description'], [/Solicitar cuenta/, 'add_card'], [/meta/, 'flag'], [/Retirar/, 'atm'], [/^sp:search|^search/, 'search'], [/^sp:pfm|^gastos/, 'account_balance_wallet'], [/^pfm:pres|^pfm:budgets/, 'speed'], [/^pfm:game/, 'category'], [/^pfm:pagar|^pfm:tarjeta/, 'event'], [/^pfm:ahorro/, 'savings'], [/^pfm:/, 'lightbulb'], [/^hum:agent/, 'chat'], [/^hum:call/, 'call'], [/^hum:callback/, 'phone_callback'], [/^dinero/, 'account_balance_wallet']];
+  function iconoDe(x) {
+    if (/^(flow:|faq:|tut:|fl:|ayudatoda|sol$|caso:|ok$|no$|chau|consejo|siguiente)/.test(x.k)) return null;
+    if (x.ic && x.ic !== 'arrow_forward' && x.ic !== 'help') return x.ic;
+    for (var i = 0; i < ICONO.length; i++) if (ICONO[i][0].test(x.k)) return ICONO[i][1];
+    return null;
+  }
   function tarjetaHTML(m, q, n, i, typing) {
     var nav = m.btns.filter(function (x) { return !/is-ask/.test(x.cls || ''); }), ask = m.btns.filter(function (x) { return /is-ask/.test(x.cls || ''); });
     return '<section class="uk-card' + (typing ? ' is-typing' : '') + '" style="--n:' + Math.min(n - 1, 2) + '">' +
@@ -323,7 +332,7 @@
         (m.stats ? '<div class="uk-stats">' + m.stats.map(function (x) { return '<div class="uk-stat' + (x.cls ? ' is-' + x.cls : '') + '"' + (x.saldo ? ' data-saldo' : '') + '>' + ic(x.ic || 'info') + '<b>' + esc(x.v) + '</b><small>' + esc(x.l) + '</small></div>'; }).join('') + '</div>' : '') +
         (m.bars ? '<div class="uk-barras">' + (function () { var mx = Math.max.apply(null, m.bars.map(function (b) { return b.v; }).concat([1])); return m.bars.map(function (b) { return '<div class="uk-barra"><span>' + esc(b.l) + '</span><b>' + money0(b.v) + '</b><i style="width:' + Math.max(3, b.v / mx * 100).toFixed(1) + '%"></i></div>'; }).join(''); })() + '</div>' : '') +
         (m.rows ? '<dl class="uk-card__data">' + m.rows.map(function (r) { return '<div><dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('') + '</dl>' : '') + m.extra +
-        (nav.length ? '<div class="uk-card__nav">' + nav.map(function (x, j) { return '<button class="uk-card__row" style="--d:' + j * 40 + 'ms" data-k="' + esc(x.k) + '" data-l="' + esc(x.t) + '"><span>' + esc(x.t) + '</span>' + ic('chevron_right') + '</button>'; }).join('') + '</div>' : '') +
+        (nav.length ? '<div class="uk-card__nav">' + nav.map(function (x, j) { var ico = iconoDe(x); return '<button class="uk-card__row' + (ico ? ' has-ic' : '') + '" style="--d:' + j * 40 + 'ms" data-k="' + esc(x.k) + '" data-l="' + esc(x.t) + '">' + (ico ? ic(ico) : '') + '<span>' + esc(x.t) + '</span>' + ic('chevron_right') + '</button>'; }).join('') + '</div>' : '') +
         (ask.length ? (m.pregunta ? '<p class="uk-msg__q">' + esc(m.pregunta) + '</p>' : '') + '<div class="uk-msg__acts">' + ask.map(function (x, j) { return '<button class="uk-chip is-ask" style="--d:' + (nav.length + j) * 40 + 'ms" data-k="' + esc(x.k) + '" data-l="' + esc(x.t) + '">' + (x.ic ? ic(x.ic) : '') + esc(x.t) + '</button>'; }).join('') + '</div>' : '') + '</div>') + '</section>';
   }
   function pintarTarjetas() {
