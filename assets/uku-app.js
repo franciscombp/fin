@@ -53,7 +53,7 @@
     // Ayuda, dentro de esta pantalla: al volver desde su flecha, regresa a Uku
     document.addEventListener('soporte:cerrar', function () { seccion('uku'); });
     host.innerHTML =
-      '<div class="uk-scene"><div class="b3d"></div></div>' +
+      '<div class="uk-scene"><div class="b3d"></div><div class="uk-skel" aria-hidden="true"><i class="uk-skel__ear"></i><i class="uk-skel__ear"></i><i class="uk-skel__head"></i><i class="uk-skel__body"></i></div></div>' +
       // Al conversar, su mundo se desvanece detrás de un fondo limpio y arriba queda la cabecera del chat
       '<div class="uk-chatbg" aria-hidden="true"></div>' +
       '<header class="uk-chathead"><button class="icon-button uk-chathead__x" data-k="cerrar" aria-label="Volver a su mundo">' + ic('expand_more') + '</button></header>' +
@@ -243,7 +243,7 @@
     else if (tm.length) return temaCard(tm[0].i, q);
     else if (acts.length) uku(acts.length === 1 ? 'Te llevo a ' + acts[0].label.toLowerCase() + '. ¿Lo hacemos?' : 'Puedo llevarte a hacerlo:', acts.map(function (a) { return b('act:' + a.label, a.label, a.icon); }).concat(H.slice(0, 1).map(function (h) { return b(h.kind + ':' + h.i, h.t, 'help', 'is-ask'); }))
       // Si es un problema (un cobro, un reclamo), una persona también está a un toque
-      .concat(/cobr|problema|reclam|reconozc|fraude|estaf|robo|rob/.test(norm(q)) ? [b('persona', 'Hablar con una persona', 'support_agent', 'is-ask')] : []));
+      );
     else return iaCard(q); // lo que no está en reglas ni en la ayuda: Uku busca y, si no, lo mira con IA
     mostrar();
   }
@@ -297,7 +297,7 @@
     var F = Soporte.flows();
     uku('¿En qué te ayudo? Elige un tema o escríbeme tu pregunta. Te respondo aquí y, si hace falta, te llevo a donde se resuelve.',
       F.slice(0, 4).map(function (f) { return b('flow:' + f.i, f.t, f.icon); })
-        .concat([b('ayudatoda', 'Todas las preguntas frecuentes', 'help'), b('persona', 'Hablar con una persona', 'support_agent', 'is-ask')]), '', { title: 'Ayuda' });
+        .concat([b('ayudatoda', 'Todas las preguntas frecuentes', 'help')]), '', { title: 'Ayuda' });
     mostrar();
   }
   // Un tema de «por qué» o «qué es»: explicación corta, lo que puedes hacer y dónde leer más
@@ -332,16 +332,27 @@
     mostrar();
   }
   function ultimaPregunta() { for (var i = msgs.length - 1; i >= 0; i--) if (msgs[i].me) return msgs[i].me; return null; }
-  /* Onboarding: la primera vez, Uku se presenta en tres pasos (sus tarjetas): qué hace y cómo hablarle */
-  var ONB = 'uk-onboard', PASOS = [
-    { t: 'Hola, soy Uku', s: 'Tu asistente en Pichibank. Te cuento cómo va tu dinero, respondo tus dudas y te ayudo a resolver inconvenientes sin salir de aquí.' },
-    { t: 'Mi mundo eres tú', s: 'Las flores son tu ahorro, el bosque es tu presupuesto y mi ánimo depende de tus gastos ordenados. Tócame y te cuento cómo estoy.' },
-    { t: 'Háblame como quieras', s: 'Escribe, dicta o toma una foto de un QR o una factura. Si algo no lo sé, lo busco por ti y, solo si hace falta, te comunico con una persona.' }];
+  /* Onboarding: la primera vez, Uku se presenta en tres pasos. Es una tarjeta arriba, sobre su mundo
+     (sin conversación), con un botón principal claro; él, grande, te mira y saluda. */
+  var ONB = 'uk-onboard', onbEl = null, PASOS = [
+    { ic: 'waving_hand', t: 'Hola, soy Uku', s: 'Tu asistente en Pichibank. Te cuento cómo va tu dinero, respondo tus dudas y te ayudo a resolver inconvenientes sin salir de aquí.' },
+    { ic: 'park', t: 'Mi mundo eres tú', s: 'Las flores son tu ahorro, el bosque es tu presupuesto y mi ánimo depende de tus gastos ordenados. Tócame y te cuento cómo estoy.' },
+    { ic: 'forum', t: 'Háblame como quieras', s: 'Escribe, dicta o toma una foto de un QR o una factura. Si algo no lo sé, lo busco por ti y, solo si hace falta, te comunico con una persona.' }];
   function onboarding(i) {
     i = i || 0; var p = PASOS[i], fin = i === PASOS.length - 1;
-    if (i === 0) msgs = [];
-    uku(esc(p.s), [b(fin ? 'onb:fin' : 'onb:' + (i + 1), fin ? 'Empezar' : 'Siguiente', fin ? 'check' : 'arrow_forward')].concat(fin ? [] : [b('onb:fin', 'Saltar', null, 'is-ask')]), '', { title: p.t });
-    mostrar();
+    if (!onbEl) { onbEl = document.createElement('section'); onbEl.className = 'uk-onb'; onbEl.setAttribute('aria-label', 'Conoce a Uku'); host.appendChild(onbEl); host.classList.add('is-onb'); if (b3d) { b3d.play('wave'); b3d.setShift(0, -.16); } } // baja un poco para quedar entero bajo la tarjeta
+    onbEl.innerHTML = '<div class="uk-onb__card" style="--k:' + i + '"><p class="uk-onb__dots">' + PASOS.map(function (_, j) { return '<i' + (j === i ? ' class="is-on"' : '') + '></i>'; }).join('') + '</p>' +
+      '<p class="uk-onb__ic">' + ic(p.ic) + '</p><h2 class="uk-onb__t">' + esc(p.t) + '</h2><p class="uk-onb__s">' + esc(p.s) + '</p>' +
+      '<button class="pf-cta uk-onb__go" data-k="' + (fin ? 'onb:fin' : 'onb:' + (i + 1)) + '">' + (fin ? 'Empezar' : 'Siguiente') + '</button>' +
+      (fin ? '' : '<button class="uk-onb__skip" data-k="onb:fin">Saltar</button>') + '</div>';
+    fx('select');
+  }
+  function onboardingFin() {
+    try { localStorage.setItem(ONB, '1'); } catch (e) {}
+    if (onbEl) { onbEl.classList.add('is-out'); setTimeout(function () { onbEl.remove(); onbEl = null; host.classList.remove('is-onb'); }, 260); }
+    if (b3d) b3d.setShift(0, 0);
+    fx('success'); if (b3d) b3d.play('happy');
+    nota = 'Listo. Pregúntame cómo va tu dinero cuando quieras.'; pintarGlobo(); setTimeout(function () { nota = null; if (!msgs.length) pintarGlobo(); }, 6000);
   }
   // Una pregunta frecuente o un tutorial, respondido por Uku aquí mismo
   function ayudaEn(h, otras, acts) {
@@ -587,7 +598,7 @@
       if (!m3.supported()) return;
       b3d = m3; var c = window.Clima && Clima.last(); if (c) m3.setLook(c.look);
       if (s) { m3.setBloom(s.bloom); m3.setMood(s.mood); }
-      m3.attach(el, { score: s ? s.score : 60, onTap: function () { fx('select'); m3.play('wave'); if (!msgs.length) { nota = null; if (saludado) gi++; saludado = true; pintarGlobo(); } } });
+      m3.attach(el, { score: s ? s.score : 60, onReady: function () { var k = host.querySelector('.uk-skel'); if (k) { k.classList.add('is-off'); setTimeout(function () { k.remove(); }, 400); } }, onTap: function () { fx('select'); m3.play('wave'); if (!msgs.length) { nota = null; if (saludado) gi++; saludado = true; pintarGlobo(); } } });
       el.classList.add('is-3d');
       if (!escena.hola) { escena.hola = 1; m3.setAmbient('walk'); pintarGlobo(); }
     }).catch(function () {});
@@ -627,7 +638,6 @@
     var top = casos.length ? '<p class="uk-sec__l">Tus casos</p>' + casos.slice(0, 3).map(function (x) { return row('caso:' + x.id, 'pending_actions', 'Caso ' + x.id + ' · ' + x.t, x.como === 'agent' ? 'En revisión · respuesta en máximo 48 horas' : x.como === 'call' ? 'Abierto · llamaste al call center' : 'Te llamamos con el resumen'); }).join('') + '<p class="uk-sec__l">Lo que puedes pedir</p>' : '<p class="uk-sec__l">Lo que puedes pedir</p>';
     var rows = [top + row('rev', 'receipt_long', 'Revisar un consumo que no reconoces', 'Pedimos la revisión por ti')];
     ['Préstamos', 'Mis tarjetas', 'Seguridad'].forEach(function (l) { var a = accion(l); if (a) rows.push(row('act:' + l, a.icon, l, 'Pedir o revisar')); });
-    rows.push(row('persona', 'support_agent', 'Hablar con una persona', 'Le cuento a Uku lo que pasó'));
     return rows.join('');
   }
   // Las filas no llevan ícono: el texto ya dice qué es (el ícono queda para lo que identifica, como las categorías)
@@ -667,7 +677,7 @@
     }).then(function (p) {
       if (!p) {
         fotoPend = file;
-        uku('No pude leer un QR ni el texto de esta foto. Dime el monto y te preparo el pago.', [b('ask:Es una factura de luz', 'Es una factura', null, 'is-ask'), b('persona', 'Hablar con una persona', 'support_agent', 'is-ask')], '', { title: 'Tu foto' });
+        uku('No pude leer un QR ni el texto de esta foto. Dime el monto y te preparo el pago.', [b('ask:Es una factura de luz', 'Es una factura', null, 'is-ask'), b('escanear', 'Tomar otra foto', 'photo_camera', 'is-ask')], '', { title: 'Tu foto' });
         pintarChat(); setTimeout(function () { input.focus(); }, 400); return;
       }
       propuestaPago(p);
@@ -741,7 +751,7 @@
       case 'dinero': dinero(); return mostrar();
       case 'voto': return votar(v);
       case 'ia': if (!enChat) me('Que Uku IA lo revise'); uku('Lo reviso…'); pintarChat(); return setTimeout(function () { msgs.pop(); iaResponde(v); }, 1400);
-      case 'onb': if (v === 'fin') { try { localStorage.setItem(ONB, '1'); } catch (e) {} return resuelto('Listo. Cuando quieras, pregúntame cómo va tu dinero.'); } return onboarding(+v);
+      case 'onb': if (v === 'fin') return onboardingFin(); return onboarding(+v);
       case 'siguiente': fx('tap'); nota = null; if (saludado) gi++; saludado = true; return pintarGlobo();
       case 'prop': return propuesta(v);
       case 'mundo': mundo(); return mostrar();
@@ -813,6 +823,15 @@
     (function esperar(n) { if (window.PFM && PFM.ready()) { pintar(); var visto = false; try { visto = localStorage.getItem(ONB) === '1'; } catch (e) {} if (!visto && view.classList.contains('active')) setTimeout(function () { if (!msgs.length) onboarding(0); }, 900); return; } if (n < 60) setTimeout(function () { esperar(n + 1); }, 150); })(0);
     // La primera vez que entras a Asistente (si cargó antes de que vinieras), Uku se presenta
     nav && nav.addEventListener('click', function () { var visto = false; try { visto = localStorage.getItem(ONB) === '1'; } catch (e) {} if (!visto && !msgs.length) setTimeout(function () { onboarding(0); }, 500); });
+    // Desde Perfil: volver a empezar (el onboarding de Uku y el estado de Mis finanzas)
+    var rr = document.getElementById('onb-reset-row');
+    rr && rr.addEventListener('click', function () {
+      try { localStorage.removeItem(ONB); localStorage.removeItem(VISTO); localStorage.removeItem('uk-casos'); } catch (e) {}
+      casos = []; saludado = false; gi = 0; nota = null;
+      if (window.PFM) PFM.key('reset');
+      if (msgs.length) cerrar();
+      setTimeout(function () { nav ? nav.click() : onboarding(0); }, msgs.length ? 420 : 80);
+    });
     // Las preguntas con IA desde Mis finanzas se responden aquí, con el mismo estilo
     window.UkuAsistente.ia = function (q) { seccion('uku'); me(q); iaResponde(q); };
   }
