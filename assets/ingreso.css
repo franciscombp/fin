@@ -108,8 +108,14 @@
   gap: 12px;
 }
 .ing__teclas > span { display: block; }
-/* PIN: el teclado va pegado al fondo; el resto arriba */
-.ing__body--pin .ing__teclas { margin-top: auto; }
+/* PIN: todo centrado en una columna; el teclado va pegado al fondo */
+.ing__body--pin { align-items: center; text-align: center; }
+.ing__body--pin > * { width: 100%; }
+.ing__body--pin .ing__teclas {
+  width: 100%;
+  max-width: 300px;
+  margin-top: auto;
+}
 .ing__tecla {
   height: 64px;
   border: none;
