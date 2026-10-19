@@ -17,7 +17,8 @@
 .app-uku .view--finanzas:not(.uk-fin) .pf-host { display: none; }
 .app-uku .view--finanzas:not(.uk-ayuda) .uk-ayuda-slot { display: none; }
 .app-uku .view--finanzas:not(.uk-fin):not(.uk-ayuda) .uk-panel { display: none; }
-.app-uku .view--finanzas.uk-fin .uk > :not(.uk-head):not(.uk-panel), .app-uku .view--finanzas.uk-ayuda .uk > :not(.uk-head):not(.uk-panel) { display: none; }
+.app-uku .view--finanzas.uk-fin .uk > .uk-globo, .app-uku .view--finanzas.uk-fin .uk > .uk-props, .app-uku .view--finanzas.uk-fin .uk > .uk-pills, .app-uku .view--finanzas.uk-fin .uk > .uk-chat, .app-uku .view--finanzas.uk-fin .uk > .uk-results,
+.app-uku .view--finanzas.uk-ayuda .uk > .uk-globo, .app-uku .view--finanzas.uk-ayuda .uk > .uk-props, .app-uku .view--finanzas.uk-ayuda .uk > .uk-pills, .app-uku .view--finanzas.uk-ayuda .uk > .uk-chat, .app-uku .view--finanzas.uk-ayuda .uk > .uk-results { display: none; }
 .app-uku .view--finanzas.uk-fin .uk-panel, .app-uku .view--finanzas.uk-ayuda .uk-panel { display: flex; }
 .app-uku .view--finanzas.uk-fin .uk-back-btn, .app-uku .view--finanzas.uk-ayuda .uk-back-btn { display: grid; }
 html.uk-idle, html.uk-idle body { overflow: hidden; overscroll-behavior: none; }
@@ -110,7 +111,7 @@ html:not(.theme-y2k) .uk-globo__go.btn { height: auto !important; min-height: 0 
 /* Secciones dentro del mundo de Uku (Solicitudes): se ven encima, con su propia cabecera */
 .uk-sec { position: absolute; inset: 0; z-index: 8; display: flex; flex-direction: column; gap: 12px; padding: calc(12px + env(safe-area-inset-top, 0px)) 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--bp-theme-color-surface-page-default, #f5f5f5); overflow: hidden; }
 .uk-sec[hidden] { display: none; }
-.uk.uk-in-sec .uk-bar, .uk.uk-in-sec .uk-pills, .uk.uk-in-sec .uk-globo { display: none; }
+.uk.uk-in-sec .uk-pills, .uk.uk-in-sec .uk-globo, .uk.uk-in-sec .uk-props, .uk.uk-in-sec .uk-chat { display: none; }
 .uk-sec__top { display: flex; align-items: center; gap: 12px; }
 .uk-sec__back { width: 40px; height: 40px; flex: 0 0 40px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-tertiary-fg); cursor: pointer; }
 .uk-sec__find { margin-left: auto; }
@@ -315,7 +316,8 @@ html.uk-chatting .uk { top: 0 !important; bottom: 0 !important; }
    Su mundo queda como una foto borrosa detrás; él, nítido, se acerca y te mira. La pantalla
    respeta las zonas seguras del teléfono y el botón de bajar la conversación queda a la vista. */
 html.uk-chatting .uk { padding-top: calc(8px + env(safe-area-inset-top, 0px)); padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
-.uk-chatbg { background-size: cover; background-position: center; filter: blur(14px) saturate(.9); transform: scale(1.06); }
+.uk-chatbg { background-size: cover; background-position: center; filter: blur(0); transform: scale(1.02); transition: opacity .45s ease, filter .6s ease, transform .6s ease; }
+.uk.is-chat .uk-chatbg { filter: blur(14px) saturate(.9); transform: scale(1.06); }
 .uk-chatbg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(var(--bp-surface-page, #f5f5f5) 6%, rgb(245 245 245 / .55) 40%, rgb(245 245 245 / .35)); }
 .uk-chathead { top: calc(8px + env(safe-area-inset-top, 0px)); }
 .uk-chathead__x { width: 40px; height: 40px; border-radius: 50%; background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-tertiary-fg); box-shadow: 0 4px 14px rgba(15, 38, 92, .14); }
@@ -357,3 +359,110 @@ html.uk-chatting .uk { padding-top: calc(8px + env(safe-area-inset-top, 0px)); p
 .app-uku .view--finanzas:not(.uk-fin):not(.uk-ayuda) .uk-globo { margin-top: 12px; }
 /* Dentro de Asistente, Mis finanzas se desplaza en su propio contenedor: las pestañas se pegan a su borde, no bajo la zona segura */
 .app-uku .uk-panel .pfm-tabs { top: 0; }
+
+/* ---------- Las secciones son tarjetas sobre su mundo ----------
+   Mis finanzas, Ayuda y Solicitudes se ven como una respuesta más de Uku: una tarjeta grande
+   sobre su mundo borroso, con él delante y la barra abajo. Dentro, su cabecera (flecha y título)
+   y el contenido con su propio desplazamiento. La flecha de arriba baja la tarjeta. */
+.uk.is-chat .uk-panel, .uk.is-chat .uk-sec { position: absolute; z-index: 3; left: 12px; right: 12px; top: calc(58px + env(safe-area-inset-top, 0px)); bottom: 176px; margin: 0; padding: 0; display: flex; flex-direction: column; border-radius: 16px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 10px 30px rgba(15, 38, 92, .16); overflow: hidden; animation: ukCard .4s cubic-bezier(.2, 1.1, .4, 1) both; }
+.uk-sec[hidden] { display: none !important; }
+.uk.is-chat .uk-panel .uk-head { display: flex !important; opacity: 1; transform: none; pointer-events: auto; flex: 0 0 auto; gap: 6px; padding: 10px 12px 6px; }
+.uk-panel .uk-head__t { font: var(--ui-body-lg-semibold, 600 17px/22px sans-serif); font-size: 17px; line-height: 22px; letter-spacing: 0; color: var(--bp-theme-color-text-primary); }
+.uk-panel .uk-back-btn { width: 32px; height: 32px; border-radius: 50%; background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-tertiary-fg); }
+.uk-panel .pf-host, .uk-ayuda-slot { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; }
+.uk-panel .pf-host::-webkit-scrollbar { display: none; }
+.uk-sec__top { padding: 10px 12px 6px; }
+.uk-sec__t { font: var(--ui-body-lg-semibold, 600 17px/22px sans-serif); font-size: 17px; line-height: 22px; letter-spacing: 0; color: var(--bp-theme-color-text-primary); }
+.uk-sec__back { width: 32px; height: 32px; flex-basis: 32px; background: var(--bp-interaction-secondary-bg); }
+.uk-sec__body { padding: 0 16px 16px; }
+.uk-sec__row { padding: 12px 0; border-radius: 0; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); background: none; }
+/* La sección no deja el encabezado grande de la página ni el fondo de la página */
+.app-uku .view--finanzas.uk-fin .uk::before, .app-uku .view--finanzas.uk-ayuda .uk::before { opacity: 0; }
+.uk-panel .uk-head { order: -1; }
+/* Dentro de la tarjeta de Ayuda no hay cajas anidadas ni fondo de página: la tarjeta es el contenedor */
+.uk.is-chat .uk-ayuda-slot .sp, .uk.is-chat .uk-ayuda-slot .sp-body, .uk.is-chat .uk-ayuda-slot .sp-hub { background: transparent; }
+.uk.is-chat .uk-ayuda-slot .sp-list { padding: 0 !important; background: none; border-radius: 0 !important; }
+.uk.is-chat .uk-ayuda-slot .sp-sec:first-child { margin-top: 8px; }
+
+/* ---------- Detalles de animación y gestos ----------
+   Los accesos entran animados solo al abrir la pantalla (no en cada repintado). Al bajar una
+   tarjeta se va hacia abajo en 220 ms. Mientras la arrastras, sigue al dedo sin transición. */
+.uk:not(.is-fresh) .uk-pill { animation: none; }
+.uk-card, .uk.is-chat .uk-panel, .uk.is-chat .uk-sec { transition: transform .28s cubic-bezier(.2, .8, .2, 1), opacity .28s ease; }
+.uk-card.is-drag, .uk-panel.is-drag, .uk-sec.is-drag { transition: none !important; animation: none !important; }
+.uk.is-out .uk-card, .uk.is-out .uk-panel, .uk.is-out .uk-sec { animation: ukCardOut .22s ease-in both !important; }
+@keyframes ukCardOut { to { opacity: 0; transform: translateY(28px) scale(.98); } }
+.uk.is-out .uk-chatbg { opacity: 0; }
+.uk-card__top, .uk-panel .uk-head, .uk-sec__top { touch-action: pan-x; cursor: grab; }
+.uk-card__top::before, .uk-sec__top::before, .uk-panel .uk-head::before { content: ''; position: absolute; left: 50%; top: 6px; width: 36px; height: 4px; margin-left: -18px; border-radius: 2px; background: var(--cx-line, #c9ced8); }
+.uk-card__top, .uk-sec__top, .uk-panel .uk-head { position: relative; padding-top: 16px; }
+
+/* El globo con las propuestas dentro: etiqueta, frase, acción, «Ahora no» y «Siguiente», y los puntos */
+.uk-globo { max-width: 340px; }
+.uk-globo__tag { margin: 0 0 2px !important; font: var(--cx-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
+.uk-globo__acts { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 16px; margin-top: 6px; }
+html:not(.theme-y2k) .uk-globo__acts .uk-globo__go.btn { margin: 0 !important; }
+.uk-globo__skip { padding: 0; border: 0; background: none; font: var(--ui-body-sm-medium); color: var(--cx-muted); cursor: pointer; }
+.uk-globo__dots { display: flex; gap: 5px; margin-top: 8px; }
+.uk-globo__dots i { width: 5px; height: 5px; border-radius: 3px; background: var(--cx-line, #c9ced8); transition: width .2s ease, background .2s ease; }
+.uk-globo__dots i.is-on { width: 14px; background: var(--bp-interaction-tertiary-fg); }
+.uk-props { display: none !important; }
+
+/* Sugerencias al escribir: una tarjeta compacta sobre la barra, en el mismo lenguaje que las demás */
+.uk-results { left: 12px; right: 12px; bottom: 76px; padding: 4px 16px 6px; border-radius: 16px; box-shadow: 0 10px 30px rgba(15, 38, 92, .16); z-index: 6; }
+.uk-row { min-height: 48px; padding: 6px 0; gap: 10px; }
+.uk-row__t b { font: var(--ui-body-md-medium); }
+.uk-results__l { margin-top: 8px !important; }
+
+/* Ícono solo en las filas que llevan a una acción concreta */
+.uk-card__row > .material-symbols-rounded:first-child { flex: 0 0 32px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font-size: 20px; }
+/* En el teléfono, mantener el dedo sobre un botón no selecciona su texto */
+.uk button, .uk .uk-card, .uk-globo, .uk-pill { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+
+/* La flecha de la tarjeta solo cuando hay a dónde volver dentro (Tus gastos, una categoría de Ayuda); en la raíz basta el botón de bajar */
+.uk.is-chat .uk-panel .uk-back-btn { display: none; }
+.uk.is-chat .uk-panel:has(.pf-back) .uk-back-btn, .uk.is-chat .uk-panel:has(.sp.is-page) .uk-back-btn { display: grid; }
+.uk-sec__top { justify-content: center; }
+.uk-sec__t { flex: 0 1 auto; text-align: center; }
+
+/* ---------- Más aire en las tarjetas ----------
+   Márgenes de 20 px, cifra grande con su etiqueta debajo, fichas y filas más altas, chips
+   cómodos y una separación clara entre la respuesta y lo que puedes hacer. */
+.uk-card { border-radius: 20px; }
+.uk-card__top { gap: 12px; padding: 20px 20px 0; }
+.uk-card__face { flex-basis: 32px; width: 32px; height: 32px; }
+.uk-card__q { font-size: 18px; line-height: 24px; }
+.uk-card__body { gap: 16px; padding: 12px 20px 20px; }
+.uk-card__t { font-size: 16px; line-height: 24px; }
+.uk-num { flex-direction: column; align-items: flex-start; gap: 0; }
+.uk-num b { font-size: 36px; line-height: 42px; letter-spacing: -.8px; }
+.uk-num small { font-size: 14px; line-height: 20px; }
+.uk-meter { margin-top: 0; }
+.uk-meter__l { margin-top: -8px !important; }
+.uk-stats { gap: 10px; }
+.uk-stat { gap: 4px; padding: 14px 12px 12px; border-radius: 14px; }
+.uk-stat .material-symbols-rounded { font-size: 22px; margin-bottom: 6px; }
+.uk-stat b { font-size: 16px; line-height: 22px; }
+.uk-card__nav { margin: 4px -20px 0; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+.uk-card__row { min-height: 60px; padding: 8px 20px; gap: 14px; font-size: 16px; }
+.uk-card__row:first-child { border-top: 0; }
+.uk-card__row > .material-symbols-rounded:first-child { width: 36px; height: 36px; flex-basis: 36px; border-radius: 10px; }
+.uk-card .uk-msg__acts { gap: 8px; padding-top: 4px; }
+.uk-card .uk-msg__acts .uk-chip { min-height: 44px; padding: 10px 16px; border-radius: 12px; font-size: 15px; }
+.uk-card__data > div { padding: 10px 0; }
+/* El aviso (toast) va arriba, bajo el botón de bajar: no tapa a Uku ni la barra */
+html.uk-chatting .pf-toast { top: calc(64px + env(safe-area-inset-top, 0px)); bottom: auto; }
+/* Las secciones, con el mismo margen */
+.uk.is-chat .uk-panel, .uk.is-chat .uk-sec { border-radius: 20px; }
+.uk.is-chat .uk-panel .uk-head { padding: 18px 16px 8px; }
+.uk-sec__top { padding: 18px 16px 8px; }
+.uk-sec__body { padding: 0 20px 20px; }
+.uk-sec__row { padding: 14px 0; }
+
+/* ---------- Uku recortado en la barra, y las secciones integradas ----------
+   Como en la referencia: el cuerpo de Uku termina en la barra de escribir, no sigue por debajo.
+   El canvas acaba justo encima de la barra. */
+.uk.is-chat .uk-scene { bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
+/* Dentro de la tarjeta de Mis finanzas, las pestañas son parte de la tarjeta: fondo blanco, al ancho del contenido */
+.app-uku .uk-panel .pfm-tabs { background: var(--bp-theme-color-surface-container-default); padding: 4px 20px 8px; margin: 0; }
+.app-uku .uk-panel .pf-sec__head { margin-bottom: 4px; }

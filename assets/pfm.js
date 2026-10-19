@@ -152,7 +152,7 @@
     gasto:     { l: 'Es otro gasto', d: 'es otro gasto', k: 'gasto', cat: 'Otros' }
   };
   var TPL = {
-    'Aporte de pareja+':           { q: '¿Qué es la plata que te manda {n} cada mes?', o: ['hogar', 'prestRec', 'reemb'] },
+    'Aporte de pareja+':           { q: '¿Qué es el dinero que te envía {n} cada mes?', o: ['hogar', 'prestRec', 'reemb'] },
     'Préstamo a amigo+':           { q: '¿{n} te está devolviendo un préstamo?', o: ['cobro', 'ingreso', 'reemb'] },
     'Préstamo a familiar+':        { q: '¿{n} te está devolviendo un préstamo?', o: ['cobro', 'ingreso', 'reemb'] },
     'Préstamo a amigo-':           { q: '¿Qué fue lo que le enviaste a {n}?', o: ['preste', 'familia', 'gasto'] },
@@ -164,7 +164,7 @@
     'Cuenta dividida+':            { q: '¿{n} te devolvió parte de una cuenta?', o: ['reemb', 'ingreso', 'prestRec'] },
     'Ingresos freelance+':         { q: '¿Qué te pagó {n}?', o: ['trabajo', 'reemb', 'prestRec'] },
     'Negocio y personal mezclados-': { q: '¿Lo que le pagas a {n} es para tu negocio o para la casa?', o: ['tienda', 'casa', 'gasto'] },
-    '+': { q: '¿Qué es la plata que te llegó de {n}?', o: ['ingreso', 'reemb', 'prestRec'] },
+    '+': { q: '¿Qué es el dinero que recibiste de {n}?', o: ['ingreso', 'reemb', 'prestRec'] },
     '-': { q: '¿Qué fue lo que le enviaste a {n}?', o: ['gasto', 'familia', 'preste'] }
   };
   function gkey(r) { return r.cp + '|' + (r.m > 0 ? '+' : '-'); }
@@ -281,7 +281,7 @@
         out.push({ icon: d > 0 ? 'trending_up' : 'trending_down', kind: d > 0 ? 'warn' : 'good', g: ch && Math.abs(ch.d) >= 10 ? ch.k : null,
           cmp: [{ l: cur ? T('Este mes') : Mes(m), v: s.gast, on: 1 }, { l: Mes(prev) + (cur ? ' ' + T('al día {d}', { d: dd }) : ''), v: p.gast }],
           t: T(d > 0 ? 'Gastaste {pct} más que en {mes}' : 'Gastaste {pct} menos que en {mes}', { pct: pct(Math.abs(d) / p.gast), mes: mesName(prev) }) + (cur ? ' ' + T('a esta altura') : ''),
-          s: ch && Math.abs(ch.d) >= 10 ? T(ch.d > 0 ? 'Lo que más subió fue {cat}: {monto} más.' : 'Lo que más bajó fue {cat}: {monto} menos.', { cat: ch.k.toLowerCase(), monto: money(Math.abs(ch.d)) }) : T('Comparo hasta el mismo día del mes.'), ask: '¿En qué se me va la plata?' });
+          s: ch && Math.abs(ch.d) >= 10 ? T(ch.d > 0 ? 'Lo que más subió fue {cat}: {monto} más.' : 'Lo que más bajó fue {cat}: {monto} menos.', { cat: ch.k.toLowerCase(), monto: money(Math.abs(ch.d)) }) : T('Comparo hasta el mismo día del mes.'), ask: '¿En qué gasto más?' });
       }
     }
     var ms = antes(m, 3);
@@ -293,7 +293,7 @@
         .map(function (k) { return { k: k, r: s.grupos[k] / av.grupos[k] - 1, d: s.grupos[k] - av.grupos[k] }; })
         .filter(function (x) { return x.r >= .2 && x.d >= 20; }).sort(function (a, b) { return b.d - a.d; })[0];
       if (up && !cur) out.push({ icon: GRUPOS[up.k].ic, kind: 'warn', g: up.k, cmp: [{ l: Mes(m), v: s.grupos[up.k], on: 1 }, { l: T('Tu promedio'), v: av.grupos[up.k] }], t: T('Tus gastos de {cat} aumentaron {pct}', { cat: up.k.toLowerCase(), pct: pct(up.r) }),
-        s: T('Fueron {monto}; tu promedio de los últimos tres meses es {prom}.', { monto: money(s.grupos[up.k]), prom: money(av.grupos[up.k]) }), ask: '¿En qué se me va la plata?' });
+        s: T('Fueron {monto}; tu promedio de los últimos tres meses es {prom}.', { monto: money(s.grupos[up.k]), prom: money(av.grupos[up.k]) }), ask: '¿En qué gasto más?' });
       // El día de la semana que concentra el gasto
       var by = [0, 0, 0, 0, 0, 0, 0], tot = 0, desde = antes(m, 2).concat([m]);
       rows().forEach(function (r) { if (desde.indexOf(r.mes) < 0) return; var c = cls(r); if (c.k === 'gasto' && !GRIS[c.cat] && Math.abs(r.m) < 300) { by[wday(r.f)] += -r.m; tot -= r.m; } });
@@ -350,7 +350,7 @@
       out.push({ icon: 'speed', kind: proj > p.general ? 'warn' : 'good', t: T('A este ritmo cierras {mes} en {monto}', { mes: mesName(m), monto: money0(proj) }),
         s: proj > p.general ? T('Podrías excederte en {monto} de tu presupuesto. Cuenta los cobros fijos que todavía no llegan.', { monto: money0(proj - p.general) }) : T('Te sobrarían {monto} de tu presupuesto, contando los cobros fijos que faltan.', { monto: money0(p.general - proj) }), ask: '¿Cómo cierro el mes?' });
       var sem = falta.filter(function (x) { return x.dia <= d + 10; });
-      if (sem.length) out.push({ icon: 'event_upcoming', kind: 'info', t: T('En los próximos días te cobran {monto}', { monto: money(sem.reduce(function (a, x) { return a + x.monto; }, 0)) }),
+      if (sem.length) out.push({ icon: 'event_upcoming', kind: 'info', t: T('En los próximos días vencen pagos por {monto}', { monto: money(sem.reduce(function (a, x) { return a + x.monto; }, 0)) }),
         s: sem.slice(0, 3).map(function (x) { return (x.cp.length > 22 ? corto(x.cp) : x.cp) + ' (' + x.dia + ' ' + MES[+m.slice(5, 7) - 1].slice(0, 3) + ')'; }).join(', ') + '.' });
     }
     var ps = sugerido(m);
@@ -589,7 +589,7 @@
   function ukuMsg(a) {
     if (a.k === 'feliz') return T('¡Todo clasificado! Así da gusto ayudarte.');
     if (a.k === 'tranquilo') return T(a.n === 1 ? 'Tengo 1 consumo nuevo para ti. ¿Lo vemos?' : 'Tengo {n} consumos nuevos para ti. ¿Los vemos?', { n: a.n });
-    return T(a.n === 1 ? 'Me quedó 1 consumo por ordenar, de hace {d} días. ¿Me ayudas con él?' : 'Me quedaron {n} consumos por ordenar, algunos de hace {d} días. ¿Me ayudas?', { n: a.n, d: a.dias });
+    return T(a.n === 1 ? 'Tienes 1 consumo sin clasificar, de hace {d} días. ¿Lo ordenamos?' : 'Tienes {n} consumos sin clasificar, algunos de hace {d} días. ¿Los ordenamos?', { n: a.n, d: a.dias });
   }
   /* ---------- Uku, tu asesor ----------
      Una sola lista de lo que Uku descubre y te propone, ordenada por lo que
@@ -614,15 +614,15 @@
     facturas().filter(function (x) { return diasA(x.f) <= 7; }).slice(0, 2).forEach(function (x) {
       var falta = saldo < x.monto, d = diasA(x.f);
       out.push({ id: 'pago:' + x.n, p: d <= 3 ? 100 : 80, icon: 'event', tag: T('Pago cercano'), kind: falta ? 'warn' : 'info',
-        t: T('{c} te cobran {m} de {n}', { c: cuandoTxt(x.f), m: money0(x.monto), n: x.n }),
-        s: falta ? T('Hoy tienes {s}: te faltan {f}. Si lo programas, te aviso un día antes para que llegues.', { s: money0(saldo), f: money0(x.monto - saldo) }) : T('Te alcanza con lo que tienes. Prográmalo y olvídate de la fecha.'),
-        di: T('{c} te cobran {m} de {n}.', { c: cuandoTxt(x.f), m: money0(x.monto), n: x.n }) + ' ' + (falta ? T('Te faltan {f}. ¿Lo programamos y te aviso?', { f: money0(x.monto - saldo) }) : T('Te alcanza. ¿Lo programamos?')),
+        t: T('{c} vence el pago de {n}: {m}', { c: cuandoTxt(x.f), m: money0(x.monto), n: x.n }),
+        s: falta ? T('Hoy tienes {s}: te faltan {f}. Si lo programas, te aviso un día antes para que llegues.', { s: money0(saldo), f: money0(x.monto - saldo) }) : T('Te alcanza con lo que tienes. Si lo programas, no tienes que estar pendiente de la fecha.'),
+        di: T('{c} vence el pago de {n}: {m}.', { c: cuandoTxt(x.f), m: money0(x.monto), n: x.n }) + ' ' + (falta ? T('Te faltan {f}. ¿Lo programamos y te aviso?', { f: money0(x.monto - saldo) }) : T('Te alcanza con lo que tienes. ¿Lo programamos?')),
         act: 'pagar:' + x.n, actl: T('Programar el pago'), ok: T('Programado: se paga solo el {f}.', { f: dshort(x.f) }), conf: { para: x.n, monto: x.monto, cuando: dshort(x.f) } });
     });
     // 2. Consumos por ordenar
     if (a.n) out.push({ id: 'ordenar', p: a.k === 'pensativo' ? 90 : 70, icon: 'category', tag: T('Por ordenar'), kind: 'info',
       t: T(a.n === 1 ? 'Tienes 1 consumo sin clasificar' : 'Tienes {n} consumos sin clasificar', { n: a.n }),
-      s: T('Con eso tu presupuesto y lo que te digo son más reales. Toma menos de un minuto.'), di: ukuMsg(a), act: 'game', actl: T('Clasificar {n}', { n: Math.min(TANDA, a.n) }) });
+      s: T('Así tu presupuesto y mis consejos reflejan mejor tus gastos. Toma menos de un minuto.'), di: ukuMsg(a), act: 'game', actl: T('Clasificar {n}', { n: Math.min(TANDA, a.n) }) });
     // 3. Tarjeta: pagaste solo el mínimo
     var min = minimoTarjeta();
     if (min) out.push({ id: 'tarjeta', p: 75, icon: 'credit_card', tag: T('Tarjeta'), kind: 'warn', t: T('Pagaste solo el mínimo de tu tarjeta'),
@@ -651,7 +651,7 @@
       if (x.icon === 'tune' || x.icon === 'credit_card' && min) return; // ya están como consejo con acción
       out.push({ id: 'h:' + x.t, p: x.kind === 'warn' ? 45 : x.kind === 'good' ? 30 : 20, icon: x.g ? GRUPOS[x.g].ic : x.icon, tag: x.g ? T(x.g) : T('Descubrí'), kind: x.kind,
         t: x.t, s: x.s, cmp: x.cmp, ask: x.ask, act: x.go, actl: x.gol,
-        di: x.kind === 'good' ? T('Una buena noticia: {t}.', { t: x.t.charAt(0).toLowerCase() + x.t.slice(1) }) : x.kind === 'warn' ? T('Ojo: {t}.', { t: x.t.charAt(0).toLowerCase() + x.t.slice(1) }) : x.t + '.' });
+        di: x.kind === 'good' ? T('Una buena noticia: {t}.', { t: x.t.charAt(0).toLowerCase() + x.t.slice(1) }) : x.kind === 'warn' ? T('Atención: {t}.', { t: x.t.charAt(0).toLowerCase() + x.t.slice(1) }) : x.t + '.' });
     });
     return out.filter(function (x) { return !oculto(x.id); }).map(function (x) { x.done = hecho(x.id) ? x.ok || T('Listo') : null; return x; })
       .sort(function (a, b) { return (a.done ? 1 : 0) - (b.done ? 1 : 0) || b.p - a.p; });
@@ -865,7 +865,7 @@
   function choicesHTML(it) {
     if (it.t === 'm') return '<p class="pfm-game__ask">' + T('¿Es una mesada para {n}?', { n: corto(it.m.cp).split(' ')[0] }) + '<small>' + T('Si lo es, la clasifico toda de una vez y te ayudo a programarla.') + '</small></p>' +
       '<div class="pfm-choices is-list">' + MESOPT.map(function (o, i) { return choice('mes:' + o[0], o[2], T(o[1]), i === 0, i); }).join('') + '</div>';
-    if (it.t === 'q') return '<p class="pfm-game__ask">' + T(it.q.sign === '+' ? '¿Qué es esta plata?' : '¿Qué le enviaste?') + '</p><div class="pfm-choices is-list">' +
+    if (it.t === 'q') return '<p class="pfm-game__ask">' + T(it.q.sign === '+' ? '¿Qué es este dinero?' : '¿Qué le enviaste?') + '</p><div class="pfm-choices is-list">' +
       it.q.tpl.o.map(function (id, i) { return choice('opt:' + id, '', OPT[id].l, i === 0, i); }).join('') + '</div>';
     // Siete grupos a un toque; "Ver todas" abre el listado completo de categorías
     var sg = it.sug && it.sug.cat, ops = OPCATS.filter(function (c) { return c[0] !== 'Otros'; });
@@ -1174,7 +1174,7 @@
     var m = curMes(), s = month(m), ks = Object.keys(s.inc).sort(function (a, b) { return s.inc[b] - s.inc[a]; }), mx = Math.max.apply(null, ks.map(function (k) { return s.inc[k]; }).concat([1]));
     showSheet('<h3>' + T('Tus ingresos') + '</h3><div class="pfm-tx__amt">' + money(s.ing) + '</div><p>' + T('Recibiste dinero en {mes}.', { mes: mesName(m) }) + '</p>' +
       '<div class="pf-mcard pfm-list">' + ks.map(function (k) { return meter('', ING_IC[k] || 'south_west', k, money(s.inc[k]), s.inc[k] / mx, 'in', T('{pct} de lo que entró', { pct: pct(s.inc[k] / (s.ing || 1)) })); }).join('') +
-      (s.rin ? meter('game', 'help', T('Por revisar'), money(s.rin), s.rin / mx, 'gris', T('Plata de personas: ¿qué fue? Ordénala')) : '') +
+      (s.rin ? meter('game', 'help', T('Por revisar'), money(s.rin), s.rin / mx, 'gris', T('Dinero de personas: ¿qué fue? Ordénalo')) : '') +
       (!ks.length && !s.rin ? '<p class="pf-note">' + T('No recibiste dinero este mes.') + '</p>' : '') + '</div>');
   }
   // Fila de grupo: ícono como los productos de Inicio, nombre y monto, barra y una línea de contexto
@@ -1564,7 +1564,7 @@
     var s0 = q.toLowerCase(), m = curMes(), s = month(m);
     if (/revis|pregunt|no sabes/.test(s0)) {
       var qs = preguntas(m);
-      return { t: qs.length ? T('Tengo {n} preguntas: {l}.', { n: qs.length, l: qs.slice(0, 3).map(function (x) { return corto(x.cp); }).join(', ') }) : T('No tengo nada por revisar.'), s: ['¿En qué se me va la plata?'] };
+      return { t: qs.length ? T('Tengo {n} preguntas: {l}.', { n: qs.length, l: qs.slice(0, 3).map(function (x) { return corto(x.cp); }).join(', ') }) : T('No tengo nada por revisar.'), s: ['¿En qué gasto más?'] };
     }
     if (/deb|deuda|tarjeta|hipoteca/.test(s0)) {
       var d = deudas();
@@ -1572,7 +1572,7 @@
     }
     if (/cierr|ritmo|termino|termina/.test(s0)) {
       var a = anticipa(m)[0];
-      return { t: a && isCur(m) ? a.t + '. ' + a.s : T('En {mes} gastaste {monto}.', { mes: mesName(m), monto: money(s.gast) }), s: ['¿En qué se me va la plata?'] };
+      return { t: a && isCur(m) ? a.t + '. ' + a.s : T('En {mes} gastaste {monto}.', { mes: mesName(m), monto: money(s.gast) }), s: ['¿En qué gasto más?'] };
     }
     if (/ingres|gan|sueldo|pensi|remesa/.test(s0)) {
       return { t: T('En {mes} recibiste {monto} confirmados', { mes: mesName(m), monto: money(s.ing) }) + (s.rin ? T(', y {monto} de otras personas o cuentas.', { monto: money(s.rin) }) : '.'), s: ['¿Qué tengo por revisar?'] };
@@ -1581,12 +1581,12 @@
       var pz = pres(), dz = diasMes(m) - +HOY.slice(8, 10) + 1, qz = pz.general - s.gast;
       if (pz.auto) return { title: T('Tu presupuesto'), t: T('Todavía no tienes presupuesto. Te propongo cuánto gastar y cómo repartirlo, y tú decides.'), bars: [{ l: T('Recibes al mes'), v: Math.round(ingresoMes()) }, { l: T('Gastas en promedio'), v: Math.round((prom(m, 3) || s).gast) }], s: [], acts: [[T('Armar mi presupuesto'), 'pres']] };
       return { title: T('Tu presupuesto'), num: { v: money0(pz.general), l: T('al mes') }, meter: { v: s.gast, max: pz.general, l: T('llevas {g}', { g: money0(s.gast) }), cls: qz < 0 ? 'over' : qz < pz.general * .15 ? 'warn' : 'ok' },
-        t: qz > 0 ? T('Te quedan {q}: unos {d} al día hasta fin de mes.', { q: money0(qz), d: money0(qz / dz) }) : T('Excediste tu presupuesto por {q}. ¿Lo revisamos?', { q: money0(-qz) }), s: ['¿En qué se me va la plata?'], acts: [[T('Ajustar mi presupuesto'), 'budgets']] };
+        t: qz > 0 ? T('Te quedan {q}: unos {d} al día hasta fin de mes.', { q: money0(qz), d: money0(qz / dz) }) : T('Superaste tu presupuesto por {q}. ¿Lo revisamos?', { q: money0(-qz) }), s: ['¿En qué gasto más?'], acts: [[T('Ajustar mi presupuesto'), 'budgets']] };
     }
     if (/gast|plata|en qu|cuánto|cuanto|queda|presupuesto/.test(s0)) {
       var ks = Object.keys(s.grupos).sort(function (a, b) { return s.grupos[b] - s.grupos[a]; }).slice(0, 3);
       var pa = pres();
-      return { title: T('En qué se te va la plata'), num: { v: money0(s.gast), l: T('gastaste en {mes}', { mes: mesName(m) }) },
+      return { title: T('En qué gastas más'), num: { v: money0(s.gast), l: T('gastaste en {mes}', { mes: mesName(m) }) },
         meter: pa.auto ? null : { v: s.gast, max: pa.general, l: T('{g} de {p} de presupuesto', { g: money0(s.gast), p: money0(pa.general) }), cls: s.gast > pa.general ? 'over' : s.gast > pa.general * .85 ? 'warn' : 'ok' },
         t: ks.length ? T('Lo que más pesó fue {k}.', { k: ks[0].toLowerCase() }) + (pa.auto ? ' ' + T('Todavía no tienes presupuesto.') : '') : T('Este mes casi no has gastado.'),
         bars: ks.map(function (k) { return { l: k, v: s.grupos[k] }; }), s: ['¿Cómo cierro el mes?', '¿Qué tengo por revisar?'], acts: [[T('Ver mis gastos'), 'gastos']].concat(pa.auto ? [[T('Armar mi presupuesto'), 'pres']] : []) };

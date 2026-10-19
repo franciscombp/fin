@@ -219,7 +219,7 @@
     var cx = window.Contexto && Contexto.answer(s);
     if (cx) return cx;
     if (/^(hola|buenas|buenos|hey|que tal)\b/.test(s)) return { t: T('Hola, ¿qué tal? Cuéntame qué quieres revisar. Te puedo decir en qué se te está yendo la plata, cómo vas con tus metas o en qué excediste tu presupuesto.'),
-      s: ['¿En qué se me va la plata?', '¿Cómo voy con mis metas?', '¿En qué me pasé?'] };
+      s: ['¿En qué gasto más?', '¿Cómo voy con mis metas?', '¿En qué me pasé?'] };
     if (OLD.test(s)) return reports(s);
     if (/tarde|atras|recargo|vencid/.test(s)) {
       return { t: D.lateN ? T('En septiembre pagaste el agua 5 días tarde y te cobraron {monto} de recargo. Si activas el pago automático, se paga solito el día que vence y no te vuelve a pasar.', { monto: money(1.5) })
@@ -254,7 +254,7 @@
       return { t: T('En septiembre fueron <b>{n} cafés y antojitos</b>, {monto} en total. Así, de a poquito, no se siente, pero en un año son {anual}.', { n: n, monto: money(v), anual: money(year) }) + ' ' +
         (v > CATS.cafe.budget ? T('Si los bajas a la mitad, te ahorras {monto} al año. Es como {n} meses de supermercado.', { monto: money(year / 2), n: Math.max(1, Math.round(year / 2 / sep.super)) }) : T('Igual vas bien: estás dentro de lo que te propusiste.')),
         h: '<div class="as-stats">' + stat(T('Septiembre'), money(v)) + stat(T('Octubre, hasta hoy'), money(oct.cafe)) + '</div>',
-        s: ['¿En qué se me va la plata?', 'Mis suscripciones'] };
+        s: ['¿En qué gasto más?', 'Mis suscripciones'] };
     }
     if (/suscrip|netflix|spotify|recurrent|fijo/.test(s) && !/servicio/.test(s)) {
       return { t: T('Pagas <b>{monto} al mes</b> en {n} suscripciones con tu Visa Débito. La más cara es Gympass: si fuiste menos de 8 veces en septiembre, cada ida te salió en más de {ida}.', { monto: money(sep.subs), n: CATS.subs.fixed.length, ida: money(39.99 / 8) }),
@@ -284,7 +284,7 @@
       var lst = rows.map(function (r) { return catLow(r.k) + ' (' + (r.d > 0 ? '+' : '') + money(r.d) + ')'; }).join(', ');
       return { t: (d > 0 ? T('En septiembre gastaste <b>{monto} más</b> que en agosto.', { monto: money(d) }) : T('En septiembre gastaste <b>{monto} menos</b> que en agosto.', { monto: money(-d) })) + ' ' + T('Lo que más cambió: {lista}.', { lista: lst }),
         h: '<div class="as-stats">' + stat(T('Agosto'), money(ago._spend)) + stat(T('Septiembre'), money(sep._spend), d > 0 ? 'up' : 'down') + '</div>',
-        s: ['¿En qué se me va la plata?', '¿En qué me pasé?'] };
+        s: ['¿En qué gasto más?', '¿En qué me pasé?'] };
     }
     if (/presupuesto|pase|exced|limite|tope/.test(s)) {
       return { t: D.overCats.length ? T('Excediste el presupuesto en <b>{cats}</b>. En lo demás vas bien.', { cats: list(D.overCats.map(catLow)) }) : T('En septiembre no excediste el presupuesto en nada. ¡Todo dentro del presupuesto!'),
@@ -311,7 +311,7 @@
     if (/resumen|como voy|como estoy|general|paisaje|bosque|crecer|estado|mejorar/.test(s) || s.length < 3) return summary();
     // Aquí entraría la IA: sólo para preguntas libres que las reglas no entienden.
     return { t: T('Mmm, eso todavía no lo sé responder. Te puedo ayudar con tus gastos, tu presupuesto, tus metas, el ahorro o tus suscripciones de los últimos 3 meses. ¿Es sobre algo de esto?'),
-      s: ['¿En qué se me va la plata?', '¿Cómo voy con mis metas?', '¿Cuánto más puedo ahorrar?'] };
+      s: ['¿En qué gasto más?', '¿Cómo voy con mis metas?', '¿Cuánto más puedo ahorrar?'] };
   }
   // Palabras en kichwa que apuntan a una intención (se suman al texto)
   var KW = { imanalla: 'hola', kullki: 'plata', llukshik: 'gastos', tukuchi: 'gastos', pakta: 'meta', waakaychi: 'ahorr', manu: 'debo', mañachi: 'credito', tantalla: 'total', hormiga: 'hormiga', kamachi: 'presupuesto' };
@@ -440,14 +440,14 @@
   function currentIns() {
     var o = D.by[2], day = MONTHS[2].days, proj = o._spend / day * 31, prev = D.by[1]._spend, out = [];
     out.push({ kind: 'info', icon: 'speed', title: T('Si sigues así, cerrarías octubre en {monto}', { monto: money(proj) }),
-      sub: proj > prev ? T('Eso es {monto} más que en septiembre.', { monto: money(proj - prev) }) : T('Eso es {monto} menos que en septiembre.', { monto: money(prev - proj) }), ask: '¿En qué se me va la plata?' });
+      sub: proj > prev ? T('Eso es {monto} más que en septiembre.', { monto: money(proj - prev) }) : T('Eso es {monto} menos que en septiembre.', { monto: money(prev - proj) }), ask: '¿En qué gasto más?' });
     var hot = Object.keys(CATS).filter(function (k) { return !CATS[k].fixed && o[k] / CATS[k].budget > day / 31 + .15; })
       .sort(function (a, b) { return o[b] / CATS[b].budget - o[a] / CATS[a].budget; })[0];
     if (hot) out.push({ kind: 'warn', icon: 'pie_chart', title: T('Ya usaste el {pct} de tu presupuesto de {cat}', { pct: pct(o[hot] / CATS[hot].budget), cat: catLow(hot) }),
       sub: T('Y apenas vamos por el {pct} del mes.', { pct: pct(day / 31) }), det: 'cat:' + hot + ':2' });
     var next = [];
     ['servicios', 'subs'].forEach(function (k) { CATS[k].fixed.forEach(function (p, i) { var d = 3 + i * 4; if (d > day && d <= day + 7) next.push({ who: p[0], amt: p[1], d: d }); }); });
-    if (next.length) out.push({ kind: 'info', icon: 'event', title: T('Esta semana te cobran {monto}', { monto: money(next.reduce(function (s, n) { return s + n.amt; }, 0)) }),
+    if (next.length) out.push({ kind: 'info', icon: 'event', title: T('Esta semana vencen pagos por {monto}', { monto: money(next.reduce(function (s, n) { return s + n.amt; }, 0)) }),
       sub: next.map(function (n) { return T(n.who) + ' (' + n.d + ' ' + T('oct') + ')'; }).join(', ') + '.' });
     return out;
   }

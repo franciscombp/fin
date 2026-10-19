@@ -46,8 +46,8 @@
     finanzas: ['Mis finanzas', 'Pagar servicios', 'Transferir']
   };
   var PREGUNTAS = {
-    inicio: ['¿En qué se me va la plata?', '¿Cómo voy con mis metas?', '¿Cuánto más puedo ahorrar?'],
-    cuentas: ['¿Cuánto tengo en total?', '¿Me conviene un Ahorro Flexible?', '¿En qué se me va la plata?'],
+    inicio: ['¿En qué gasto más?', '¿Cómo voy con mis metas?', '¿Cuánto más puedo ahorrar?'],
+    cuentas: ['¿Cuánto tengo en total?', '¿Me conviene un Ahorro Flexible?', '¿En qué gasto más?'],
     tarjetas: ['¿Cuándo pago mi Mastercard?', 'Mis suscripciones', '¿Para cuántos viajes me alcanza la Movilidad?'],
     prestamos: ['¿Cuánto me falta del préstamo?', '¿Y si abono $ 500 extra?', '¿Me conviene el crédito preaprobado?'],
     inversiones: ['¿Qué hago cuando venza mi depósito?', '¿Cuánto ganaría si invierto $ 1.000?'],
@@ -75,7 +75,7 @@
     } else if (id === 'cuentas') {
       if (d) r.push({ icon: 'account_balance', t: T('Tienes {total} entre tus cuentas', { total: money(d.assets) }), s: T('El {pct} está en la corriente, que no gana intereses.', { pct: Math.round(CORRIENTE / d.assets * 100) + '%' }), q: '¿Me conviene un Ahorro Flexible?', c: T('Tienes {total} entre tus cuentas, pero el {pct} está en la corriente y no te genera nada. ¿Vemos cómo ponerlo a ganar?', { total: money(d.assets), pct: Math.round(CORRIENTE / d.assets * 100) + '%' }) });
       if (d) { var s = d.by[1], tc = Object.keys(s).filter(function (k) { return k[0] !== '_'; }).sort(function (a, b) { return s[b] - s[a]; })[0];
-        r.push({ icon: 'insights', t: T('En septiembre gastaste {monto}', { monto: money(s._spend) }), s: T('Lo que más se lleva es {cat}.', { cat: T(catName(tc)).toLowerCase() }), q: '¿En qué se me va la plata?', c: T('Este mes gastaste {monto} y lo que más se lleva es {cat}. ¿Quieres que lo revisemos juntos?', { monto: money(s._spend), cat: T(catName(tc)).toLowerCase() }) }); }
+        r.push({ icon: 'insights', t: T('En septiembre gastaste {monto}', { monto: money(s._spend) }), s: T('Lo que más se lleva es {cat}.', { cat: T(catName(tc)).toLowerCase() }), q: '¿En qué gasto más?', c: T('Este mes gastaste {monto} y lo que más se lleva es {cat}. ¿Quieres que lo revisemos juntos?', { monto: money(s._spend), cat: T(catName(tc)).toLowerCase() }) }); }
     } else if (id === 'prestamos') {
       if (!on('prest1')) return r;
       r.push({ icon: 'event', t: T('Tu próxima cuota es de {cuota}', { cuota: money(LOAN.cuota) }), s: T('Vence el 15 de octubre. Llevas {n} de {de} cuotas.', { n: LOAN.n, de: LOAN.de }), q: '¿Cuánto me falta del préstamo?', c: T('Te recuerdo que tu próxima cuota es de {cuota} y vence el 15 de octubre. Ya llevas {n} de {de}, ¡vas muy bien!', { cuota: money(LOAN.cuota), n: LOAN.n, de: LOAN.de }) });
