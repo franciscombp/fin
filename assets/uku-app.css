@@ -641,3 +641,26 @@ html.app-uku .uk-globo__acts .uk-globo__go.btn, html.app-uku .uk-globo__go.btn {
 .uk-globo__dots i.is-on { width: 16px; }
 .uk-globo__next { display: inline-flex; align-items: center; gap: 2px; min-height: 40px; margin-right: -8px; padding: 0 4px 0 10px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: none; font: var(--uk-sm); font-size: 15px; color: var(--cx-muted); cursor: pointer; }
 .uk-globo__next .material-symbols-rounded { font-size: 20px; }
+
+/* ---------- Cerrar el globo y Uku en silencio ----------
+   Una X discreta arriba a la derecha; al cerrarlo (o sin nada que decir), el globo se va y Uku queda tranquilo. */
+.uk-globo { padding-right: 44px; }
+.uk-globo__x { position: absolute; top: 8px; right: 8px; width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 50%; background: none; color: var(--cx-muted); cursor: pointer; }
+.uk-globo__x:active { background: var(--bp-interaction-secondary-bg); }
+.uk-globo__x .material-symbols-rounded { font-size: 20px; }
+.uk-globo.is-off { opacity: 0; transform: translateY(-6px); pointer-events: none; }
+.uk-globo[hidden] { display: none; }
+
+/* ---------- Mis finanzas en el asistente: a dónde puedes ir ----------
+   Filas con chevron bajo el resumen, al estilo de las tarjetas: el texto dice qué es. */
+.app-uku .uk-panel .pfm-nav { padding: 8px 20px 0; display: flex; flex-direction: column; }
+.app-uku .uk-panel .pfm-nav__row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 10px 0; border: 0; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); background: none; color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; }
+.app-uku .uk-panel .pfm-nav__row > span:first-child { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.app-uku .uk-panel .pfm-nav__row b { font: var(--uk-body-medium); }
+.app-uku .uk-panel .pfm-nav__row small { font: var(--uk-caption); color: var(--cx-muted); }
+.app-uku .uk-panel .pfm-nav__row > .material-symbols-rounded { color: var(--cx-muted); }
+.app-uku .uk-panel .pfm-nav__row:active { background: var(--bp-interaction-secondary-bg); }
+/* El resumen y la nota, con el mismo margen que las filas */
+.app-uku .uk-panel .pfm-resumen { padding-top: 4px; }
+.app-uku .uk-panel .pfm-foot { padding-top: 24px; }
+.app-uku .uk-panel .pfm-resumen__go { display: none; } /* en el asistente, «Tus gastos» ya está en las filas de abajo */
