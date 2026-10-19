@@ -21,7 +21,7 @@
   var esc = U.esc, norm = U.norm, money = U.money, money0 = U.money0, fx = U.fx, face = U.face, ic = U.ic, acciones = U.acciones, accion = U.accion, ayuda = U.ayuda, finanzas = U.finanzas, resumen = U.resumen, consejos = U.consejos;
   var HACER = U.HACER, PLATA = U.PLATA, PREG = U.PREG;
 
-  var view, host, seg, ayudaHost, globoEl, props, pills, results, chat, input, b3d = null;
+  var view, host, ayudaHost, fileIn, sheet, globoEl, props, pills, results, chat, input, b3d = null;
   var msgs = [], gi = 0, nota = null, ultimo = 0, saludado = false;
   var pend = null; // lo que saliste a hacer: al volver, Uku pregunta cómo te fue
 
@@ -33,16 +33,9 @@
     if (!view || host) return;
     host = document.createElement('div'); host.className = 'uk';
     view.insertBefore(host, view.firstChild);
-    // Una sola pantalla de Asistente: Uku, Mis finanzas y Ayuda se cambian arriba, con el mismo encabezado
-    seg = document.createElement('nav'); seg.className = 'uk-seg'; seg.setAttribute('aria-label', 'Asistente');
-    seg.innerHTML = '<div class="uk-seg__track" role="tablist">' +
-      '<button role="tab" data-seg="uku" aria-selected="true">Uku</button>' +
-      '<button role="tab" data-seg="fin" aria-selected="false">Mis finanzas</button>' +
-      '<button role="tab" data-seg="ayuda" aria-selected="false">Ayuda</button></div>';
-    view.insertBefore(seg, host);
+    // Mis finanzas y Ayuda se abren desde el menú de la cabecera, dentro de esta pantalla
     ayudaHost = document.createElement('div'); ayudaHost.className = 'uk-ayuda-host';
     view.appendChild(ayudaHost);
-    seg.addEventListener('click', function (e) { var b = e.target.closest('[data-seg]'); if (b) { fx('tap'); seccion(b.dataset.seg); } });
     // Para el resto de la app: Ayuda se abre aquí, dentro de Asistente
     window.UkuAsistente = { ayuda: function () { if (window.__goView) window.__goView(1); seccion('ayuda'); } };
     // Ayuda, dentro de esta pantalla: al volver desde su flecha, regresa a Uku
@@ -53,8 +46,8 @@
       '<div class="uk-chatbg" aria-hidden="true"></div>' +
       '<header class="uk-chathead"><span class="uk-chathead__face" aria-hidden="true">' + face() + '</span><span class="uk-chathead__t"><b>Uku</b><small>Tu asesor · en línea</small></span>' +
         '<button class="uk-chathead__x" data-k="cerrar" aria-label="Terminar conversación">' + ic('close') + '</button></header>' +
-      '<div class="uk-head"><p class="uk-head__t" role="heading" aria-level="1">Tu asistente</p></div>' +
-      '<div class="uk-estados" aria-label="El mundo de Uku"></div>' +
+      '<div class="uk-head"><button type="button" class="uk-menu-btn" data-k="secciones" aria-label="Secciones de Asistente">' + ic('menu') + '</button>' +
+        '<p class="uk-head__t" role="heading" aria-level="1">Tu asistente</p></div>' +
       '<div class="uk-globo" aria-live="polite"></div>' +
       '<div class="uk-props" hidden></div>' +
       '<div class="uk-chat" aria-live="polite"></div>' +
@@ -62,11 +55,15 @@
       '<div class="uk-results"></div>' +
       '<form class="uk-bar" role="search"><button type="button" class="uk-bar__x" data-k="cerrar" aria-label="Terminar conversación">' + ic('close') + '</button>' +
         '<label class="uk-bar__f">' + ic('search') + '<input type="text" enterkeyhint="send" autocomplete="off" placeholder="Pregunta o pide algo" aria-label="Pregunta o pide algo"></label>' +
+        '<button type="button" class="uk-bar__mic" data-k="escanear" aria-label="Escanear una factura o estado de cuenta">' + ic('photo_camera') + '</button>' +
         '<button type="button" class="uk-bar__mic" data-k="voz" aria-label="Hablar" hidden>' + ic('mic') + '</button>' +
         '</form>' +
+      '<input type="file" accept="image/*" capture="environment" hidden>' +
       '';
     props = host.querySelector('.uk-props'); globoEl = host.querySelector('.uk-globo'); pills = host.querySelector('.uk-pills'); results = host.querySelector('.uk-results'); chat = host.querySelector('.uk-chat'); input = host.querySelector('input');
     host.querySelector('form').addEventListener('submit', function (e) { e.preventDefault(); preguntar(input.value); });
+    fileIn = host.querySelector('input[type=file]');
+    fileIn.addEventListener('change', function () { if (fileIn.files[0]) escanear(fileIn.files[0]); fileIn.value = ''; });
     input.addEventListener('input', function () { modo(); pintarResultados(); });
     // En su mundo, el campo de abajo es el buscador (como deslizar desde arriba): responde o lleva a la acción.
     // En la conversación sigue siendo el campo para hablar con Uku.
@@ -92,11 +89,13 @@
   function pintar() { modo(); pintarMundo(); pintarPropuestas(); pintarGlobo(); pintarAccesos(); pintarChat(); pintarResultados(); }
   // Lo que Uku te propone (antes en Mis finanzas): un carrusel arriba, con puntos y una acción por tarjeta
   function pintarPropuestas() {
-    var A = consejos().slice(0, 6);
+    var S = window.PFM && PFM.world && resumen() ? PFM.world().map(function (x) { return { icon: x.ic, tag: x.l, t: x.v, s: x.d }; }) : [];
+    var A = S.concat(consejos().slice(0, 6));
     props.hidden = !A.length; globoEl.style.display = A.length ? 'none' : '';
     if (!A.length) return;
     props.innerHTML = '<div class="uk-props__track">' + A.map(function (x) {
       return '<article class="uk-prop"><p class="uk-prop__tag">' + ic(x.icon || 'lightbulb') + esc(x.tag || 'Te propongo') + '</p><p class="uk-prop__t">' + esc(x.t) + '</p>' +
+        (x.s ? '<p class="uk-prop__s">' + esc(x.s) + '</p>' : '') +
         (x.act ? '<button class="btn btn--tertiary uk-prop__go" data-k="pfm:' + esc(x.act) + '" data-l="' + esc(x.actl || x.t) + '">' + esc(x.actl || 'Ver') + '</button>' : '') + '</article>';
     }).join('') + '</div><div class="uk-props__dots">' + A.map(function (_, i) { return '<i' + (i ? '' : ' class="is-on"') + '></i>'; }).join('') + '</div>';
     var tr = props.querySelector('.uk-props__track'), dots = props.querySelectorAll('.uk-props__dots i');
@@ -105,14 +104,8 @@
       dots.forEach(function (d, i) { d.classList.toggle('is-on', i === n); });
     }, { passive: true });
   }
-  // Las tres señales de su mundo (consumos, ahorro, presupuesto): el ánimo se ve en el oso y en el color de su campo
+  // El ánimo y las flores de su campo siguen a tus finanzas (las señales van en los insights)
   function pintarMundo() {
-    var w = host.querySelector('.uk-estados'), S = window.PFM && PFM.world && resumen() ? PFM.world() : [];
-    w.hidden = !S.length;
-    w.innerHTML = S.map(function (x) {
-      return '<button class="uk-sig is-' + esc(x.cls) + '" data-k="pfm:world"><span class="material-symbols-rounded" aria-hidden="true">' + esc(x.ic) + '</span><small>' + esc(x.l) + '</small><b>' + esc(x.v) + '</b><em>' + esc(x.d) + '</em></button>';
-    }).join('');
-    // El ánimo y las flores de su campo siguen a tus finanzas
     var s = resumen(); if (b3d && s) { b3d.setBloom(s.bloom); b3d.setMood(s.mood); }
   }
 
@@ -257,7 +250,6 @@
       if (window.Soporte) Soporte.into(ayudaHost);
     } else if (n === 'fin') { if (window.PFM) PFM.open(); else finOn(true); }
     else finOn(false);
-    seg.querySelectorAll('[data-seg]').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.seg === (ayuda ? 'ayuda' : n === 'fin' ? 'fin' : 'uku'))); });
     libre();
   }
   /* ---------- Solicitudes dentro del mundo de Uku ----------
@@ -290,6 +282,52 @@
     }
     solSec.hidden = false; host.classList.add('uk-in-sec'); fx('open');
   }
+  /* ---------- Secciones: menú de la cabecera ---------- */
+  var SECCIONES = [['uku', 'Tu asistente', 'Su mundo, sus consejos y lo que te pasa', 'support_agent'], ['fin', 'Mis finanzas', 'Tus gastos y tu presupuesto', 'monitoring'], ['ayuda', 'Ayuda y soporte', 'Preguntas y contacto', 'help']];
+  function abrirSecciones() {
+    if (!sheet) {
+      sheet = document.createElement('div'); sheet.className = 'uk-sheet';
+      sheet.innerHTML = '<div class="uk-sheet__back"></div><div class="uk-sheet__panel" role="dialog" aria-label="Secciones"><div class="as-sheet__handle"></div>' +
+        SECCIONES.map(function (x) { return '<button class="uk-sheet__item" data-k="seccion:' + x[0] + '">' + ic(x[3]) + '<span><b>' + esc(x[1]) + '</b><small>' + esc(x[2]) + '</small></span></button>'; }).join('') + '</div>';
+      document.body.appendChild(sheet); // fuera de la pantalla: una capa fija dentro de la vista se encoge
+      sheet.querySelector('.uk-sheet__back').addEventListener('click', cerrarSecciones);
+      // La hoja está fuera de la vista: sus opciones se atienden aquí
+      sheet.addEventListener('click', function (e) { var t = e.target.closest('[data-k^="seccion:"]'); if (t) { cerrarSecciones(); seccion(t.dataset.k.slice(8)); } });
+    }
+    sheet.classList.add('open');
+  }
+  function cerrarSecciones() { if (sheet) sheet.classList.remove('open'); }
+
+  /* ---------- Factura o estado de cuenta: Uku lo lee y propone el pago ---------- */
+  function escanear(file) {
+    uku('Leo tu documento…'); pintarChat();
+    UkuPagos.leer(file).then(function (texto) {
+      return UkuPagos.propuesta(Persona.get(), UkuPagos.interpretar(texto));
+    }).then(function (p) {
+      if (!p) { uku('No encontré en tu documento un monto que pueda pagar. ¿Me cuentas qué es?', [b('persona', 'Hablar con una persona', 'support_agent')]); return pintarChat(); }
+      var leido = p.leido ? 'Lo leí en tu documento. ' : 'No puedo leer el texto de la imagen en este navegador, así que lo comparé con tus productos. ';
+      uku(leido + 'Es ' + p.titulo + ' de ' + p.para + ' por ' + money(p.monto) + (p.vence ? ', vence el ' + p.vence : '') + '. ¿Lo pago desde ' + p.desde + '?',
+        [b('pago:si:' + encodeURIComponent(JSON.stringify(p)), 'Pagar ' + money(p.monto), 'payments'), b('pago:no', 'Ahora no', 'schedule')]);
+      pintarChat();
+    });
+  }
+  // El pago pide confirmación antes de registrarse
+  function pago(v) {
+    var k = v.split(':'), p = null;
+    if (k[0] === 'no') { uku('Listo, lo dejo para después.'); return pintarChat(); }
+    if (k[0] === 'si') {
+      p = JSON.parse(decodeURIComponent(v.slice(3)));
+      uku('¿Confirmas el pago de ' + money(p.monto) + ' a ' + p.para + ' desde ' + p.desde + '?', [b('pago:ok:' + encodeURIComponent(JSON.stringify(p)), 'Confirmar pago', 'check'), b('pago:no', 'Cancelar', 'close')]);
+      return pintarChat();
+    }
+    if (k[0] === 'ok') {
+      p = JSON.parse(decodeURIComponent(v.slice(3)));
+      UkuPagos.pagar(Persona.get(), p);
+      uku('Pago registrado. Esta es una demostración: no se movió dinero real.');
+      if (window.showToast) showToast('Pago de ' + money(p.monto) + ' registrado');
+      fx('success'); pintarChat();
+    }
+  }
   function onClick(e) {
     var el = e.target.closest('[data-k]');
     if (!el || !view.contains(el)) return;
@@ -307,6 +345,10 @@
       case 'fin': fx('select'); return seccion('fin');
       case 'gastos': fx('select'); seccion('fin'); if (window.PFM) PFM.key('gastos'); return;
       case 'voz': fx('tap'); if (window.Buscador) Buscador.voice(); return;
+      case 'secciones': fx('tap'); return abrirSecciones();
+      case 'seccion': cerrarSecciones(); return seccion(v);
+      case 'escanear': fx('tap'); cerrarSecciones(); return fileIn.click();
+      case 'pago': return pago(v);
       // Ayuda es su sección: se abre el centro de ayuda; el chat empieza cuando hay algo que resolver
       case 'ayuda': fx('tap'); salir('Ayuda'); return seccion('ayuda');
       case 'sol': return abrirSol();
