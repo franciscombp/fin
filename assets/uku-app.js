@@ -600,6 +600,8 @@
   window.addEventListener('click', function (e) {
     var t = e.target.closest('[data-action="Buscar"], [data-action="Soporte"], [data-action="Ayuda"]');
     if (!t || (host && host.contains(t)) || t.closest('.sp, .sp-page, .as-sheet')) return;
+    // Sin sesión, Asistente está detrás del inicio de sesión: Ayuda se abre en su propia pantalla
+    if (document.getElementById('login-screen')?.classList.contains('active')) return;
     // En Mis finanzas, la lupa abre el buscador con su contexto, sin salir de la sección
     if (t.dataset.action === 'Buscar' && view.classList.contains('uk-fin')) { e.stopImmediatePropagation(); e.preventDefault(); fx('open'); if (window.Buscador) Buscador.open('finanzas'); return; }
     e.stopImmediatePropagation(); e.preventDefault(); fx('open');

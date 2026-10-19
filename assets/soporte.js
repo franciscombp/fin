@@ -546,7 +546,8 @@
   }
   function open() {
     // Ayuda vive en Asistente: cualquier entrada (buscador, perfil, la campana de soporte) va a esa pantalla
-    if (!inline && window.UkuAsistente) return UkuAsistente.ayuda();
+    const sinSesion = document.getElementById('login-screen')?.classList.contains('active');
+    if (!inline && window.UkuAsistente && !sinSesion) return UkuAsistente.ayuda();
     if (!el) mount();
     if (!withAgent) reset(); // con un asesor conectado, la conversación sigue
     if (!withAgent) el.querySelector('.sp-body').scrollTop = 0;
