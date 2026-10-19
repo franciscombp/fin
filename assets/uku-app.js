@@ -99,11 +99,18 @@
     var era = host.classList.contains('is-chat'), es = msgs.length > 0;
     host.classList.toggle('is-typing', !!input.value.trim());
     host.classList.toggle('is-chat', es);
-    if (b3d && era !== es) b3d.setShift(es ? -.3 : 0, es ? -.4 : 0); // en la conversación Uku baja a la esquina, junto a la barra (como Tolan): deja el espacio a las tarjetas sin irse
-    // En la conversación no hay barra superior ni inferior: el chat ocupa la pantalla
-    // En Mis finanzas o Ayuda vuelven la barra de arriba y la de abajo, aunque la conversación siga esperando
+    // En la conversación no hay barra superior ni inferior: el chat ocupa la pantalla.
+    // En Mis finanzas o Ayuda vuelven las barras, aunque la conversación siga esperando
     var enSec = view.classList.contains('uk-fin') || view.classList.contains('uk-ayuda');
     document.documentElement.classList.toggle('uk-chatting', es && view.classList.contains('active') && !enSec);
+    // Al conversar, Uku sale de su mundo (que queda como foto borrosa detrás), se acerca y baja a la
+    // esquina junto a la barra (como Tolan): deja el espacio a las tarjetas sin irse
+    if (b3d && era !== es) {
+      var bg = host.querySelector('.uk-chatbg');
+      if (es) { var foto = b3d.snapshot(); bg.style.backgroundImage = foto ? 'url(' + foto + ')' : ''; }
+      b3d.setFocus(es); b3d.setShift(es ? -.3 : 0, es ? -.36 : 0);
+      if (!es) setTimeout(function () { if (!msgs.length) bg.style.backgroundImage = ''; }, 500);
+    }
     if (era !== es) {
       input.placeholder = es ? 'Escríbele a Uku' : 'Habla con Uku o busca algo';
       if (!es && b3d) setTimeout(function () { b3d.play('wave'); setTimeout(function () { if (!msgs.length) b3d.play('walk'); }, 2200); }, 350); // vuelve a su mundo, saluda y camina
