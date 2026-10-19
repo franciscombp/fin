@@ -607,3 +607,19 @@ html.app-uku .uk-onb__go:disabled, html.app-uku .uk-panel .pf-cta:disabled, html
 .uk-stat:first-child:nth-last-child(3) { flex-direction: row; align-items: center; gap: 14px; padding: 14px 16px; }
 .uk-stat:first-child:nth-last-child(3) .material-symbols-rounded { margin: 0; }
 .uk-stat:first-child:nth-last-child(3) b { margin-right: auto; }
+
+/* ---------- Esqueleto mientras carga el modelo de Uku ----------
+   Una silueta suave en el lugar donde va a aparecer; se desvanece cuando el modelo está listo. */
+.uk-skel { position: absolute; left: 50%; bottom: 33%; width: 180px; height: 230px; transform: translateX(-50%); pointer-events: none; transition: opacity .35s ease; }
+.uk-skel.is-off { opacity: 0; }
+.uk-skel i { position: absolute; display: block; background: var(--bp-base-color-neutral-200, #e4e6eb); background-image: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / .55) 50%, transparent 70%); background-size: 240% 100%; animation: ukSkel 1.6s ease-in-out infinite; }
+.uk-skel__head { left: 30px; top: 12px; width: 120px; height: 110px; border-radius: 50%; }
+.uk-skel__ear { top: 0; width: 42px; height: 42px; border-radius: 50%; left: 26px; }
+.uk-skel__ear + .uk-skel__ear { left: auto; right: 26px; }
+.uk-skel__body { left: 18px; top: 108px; width: 144px; height: 122px; border-radius: 56px 56px 22px 22px; }
+@keyframes ukSkel { 0% { background-position: 120% 0; } 100% { background-position: -120% 0; } }
+/* Conversando, Uku se acerca y la silueta sube con él */
+.uk.is-chat .uk-skel { bottom: 10%; width: 190px; height: 240px; }
+.uk.is-chat .uk-skel__head { left: 32px; width: 126px; height: 116px; }
+.uk.is-chat .uk-skel__ear { width: 44px; height: 44px; left: 28px; } .uk.is-chat .uk-skel__ear + .uk-skel__ear { left: auto; right: 28px; }
+.uk.is-chat .uk-skel__body { left: 20px; top: 112px; width: 150px; height: 128px; }
