@@ -126,6 +126,7 @@
 
     <!-- Biometría real (WebAuthn). Debe cargar antes del script inline y app.js. -->
     <script src="./webauthn.js"></script>
+    <script src="./assets/ingreso.js"></script>
 
     <title>Pichibank app</title>
     <style>
@@ -3921,6 +3922,7 @@
     <link rel="stylesheet" href="./assets/pfm.css">
     <!-- Versión asistente, la principal (la anterior: ?app=clasica; ver assets/uku-app.js) -->
     <link rel="stylesheet" href="./assets/uku-app.css">
+    <link rel="stylesheet" href="./assets/ingreso.css">
     <link rel="stylesheet" href="./assets/analisis.css">
     <link rel="stylesheet" href="./assets/soporte.css">
     <link rel="stylesheet" href="./assets/componentes.css">
@@ -6102,8 +6104,8 @@
                     openCardDetail(el.dataset.action);
                 } else if (el.matches('.quick-action, .login-feature, .product-row')) {
                     openPushPage(el.dataset.action, el); // crece desde el botón/fila
-                } else if (el.dataset.action === 'Clave digital' && window.Soporte) {
-                    Soporte.open(); // ayuda con tu clave
+                } else if (el.dataset.action === 'Clave digital' && window.Ingreso) {
+                    Ingreso.token(); // sóftoken de 30 segundos
                 } else {
                     showToast(el.dataset.action);
                 }
