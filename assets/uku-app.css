@@ -378,3 +378,7 @@ html.uk-chatting .uk { padding-top: calc(8px + env(safe-area-inset-top, 0px)); p
 /* La sección no deja el encabezado grande de la página ni el fondo de la página */
 .app-uku .view--finanzas.uk-fin .uk::before, .app-uku .view--finanzas.uk-ayuda .uk::before { opacity: 0; }
 .uk-panel .uk-head { order: -1; }
+/* Dentro de la tarjeta de Ayuda no hay cajas anidadas ni fondo de página: la tarjeta es el contenedor */
+.uk.is-chat .uk-ayuda-slot .sp, .uk.is-chat .uk-ayuda-slot .sp-body, .uk.is-chat .uk-ayuda-slot .sp-hub { background: transparent; }
+.uk.is-chat .uk-ayuda-slot .sp-list { padding: 0 !important; background: none; border-radius: 0 !important; }
+.uk.is-chat .uk-ayuda-slot .sp-sec:first-child { margin-top: 8px; }
