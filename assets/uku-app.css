@@ -478,3 +478,35 @@ html.uk-chatting .pf-toast { top: calc(64px + env(safe-area-inset-top, 0px)); bo
 .uk-voto button { width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-tertiary-fg); cursor: pointer; }
 .uk-voto button .material-symbols-rounded { font-size: 20px; }
 .uk-voto.is-up span { color: var(--bp-theme-color-status-success-text); }
+
+/* ---------- Onboarding: una tarjeta arriba, sobre su mundo ----------
+   Pasos con puntos, un ícono grande, título, una frase y el botón principal. Uku, grande, saluda debajo. */
+.uk-onb { position: absolute; z-index: 7; left: 16px; right: 16px; top: calc(16px + env(safe-area-inset-top, 0px)); animation: ukCard .4s cubic-bezier(.2, 1.1, .4, 1) both; }
+.uk-onb.is-out { animation: ukCardOut .22s ease-in both; }
+.uk-onb__card { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 20px 20px 16px; border-radius: 20px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 12px 34px rgba(15, 38, 92, .18); animation: ukIn .35s ease both; }
+.uk-onb__dots { display: flex; gap: 6px; margin: 0 0 4px !important; }
+.uk-onb__dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--cx-line, #c9ced8); transition: width .2s ease, background .2s ease; }
+.uk-onb__dots i.is-on { width: 18px; background: var(--bp-interaction-primary-bg, #ffdd00); }
+.uk-onb__ic { margin: 0 !important; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 14px; background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); }
+.uk-onb__ic .material-symbols-rounded { font-size: 26px; }
+.uk-onb__t { margin: 6px 0 0 !important; font: var(--cx-page); font-size: 24px; line-height: 30px; letter-spacing: -.4px; color: var(--bp-theme-color-text-primary); }
+.uk-onb__s { margin: 0 !important; font: var(--cx-body); font-size: 16px; line-height: 24px; color: var(--bp-theme-color-text-primary); }
+.uk-onb__go { margin-top: 12px; width: 100%; }
+.uk-onb__skip { align-self: center; padding: 10px; border: 0; background: none; font: var(--ui-body-sm-medium); color: var(--cx-muted); cursor: pointer; }
+.uk.is-onb .uk-globo, .uk.is-onb .uk-pills, .uk.is-onb .uk-bar, .uk.is-onb .uk-props { opacity: 0; pointer-events: none; }
+
+/* ---------- Un solo lenguaje para Ayuda dentro de la tarjeta ----------
+   Etiquetas de sección en mayúsculas pequeñas, filas con chevron, sin cajas ni mosaicos; el buscador es el de abajo. */
+.uk.is-chat .uk-ayuda-slot .sp-find, .uk.is-chat .uk-ayuda-slot .sp-composer { display: none !important; }
+.uk.is-chat .uk-ayuda-slot .sp-body { padding: 0 20px 20px !important; }
+.uk.is-chat .uk-ayuda-slot .sp-sec { margin-top: 20px; }
+.uk.is-chat .uk-ayuda-slot .sp-sec h2 { margin: 0 0 4px !important; font: var(--cx-caption) !important; text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted) !important; }
+.uk.is-chat .uk-ayuda-slot .sp-sec__sub { margin: 0 0 4px; font: var(--cx-caption); }
+.uk.is-chat .uk-ayuda-slot .sp-row { min-height: 56px; padding: 10px 0 !important; border-bottom: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+.uk.is-chat .uk-ayuda-slot .sp-row__main b { font: var(--ui-body-md-medium); }
+.uk.is-chat .uk-ayuda-slot .sp-cats, .uk.is-chat .uk-ayuda-slot .sp-tuts { display: flex; flex-direction: column; gap: 0; }
+.uk.is-chat .uk-ayuda-slot .sp-cat, .uk.is-chat .uk-ayuda-slot .sp-tut { flex-direction: row; align-items: center; gap: 12px; padding: 10px 0; border-radius: 0; border-bottom: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); background: none; }
+.uk.is-chat .uk-ayuda-slot .sp-cat .sp-row__ic, .uk.is-chat .uk-ayuda-slot .sp-tut .sp-row__ic { margin: 0; width: 32px; height: 32px; flex-basis: 32px; border-radius: 8px; font-size: 20px; }
+.uk.is-chat .uk-ayuda-slot .sp-cat b, .uk.is-chat .uk-ayuda-slot .sp-tut b { flex: 1; font: var(--ui-body-md-medium); }
+.uk.is-chat .uk-ayuda-slot .sp-cat small, .uk.is-chat .uk-ayuda-slot .sp-tut small { font: var(--cx-caption); }
+.uk.is-chat .uk-ayuda-slot .sp-sec--people .sp-row__ic { display: none; }

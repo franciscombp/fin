@@ -267,7 +267,8 @@ function buildDust() {
 // Clips del modelo: cada gesto tiene el suyo; sin gesto, Uku está en su idle
 const CLIP_OF = { wave: 'Waving', happy: 'Happy Idle', talk: 'Happy Idle', worried: 'Thoughtful Head Nod', nod: 'Thoughtful Head Nod', water: 'Watering', hold: 'Plant A Plant' };
 const IDLE = 'Happy Idle';
-function clipFor() { if (gesture === 'walk') return walkMoving ? 'Walking' : IDLE; return (gesture && CLIP_OF[gesture]) || IDLE; }
+// Conversando solo saluda o se queda en reposo: los gestos que lo agachan (asentir, regar, plantar) quedan para su mundo
+function clipFor() { if (focus) return gesture === 'wave' ? 'Waving' : IDLE; if (gesture === 'walk') return walkMoving ? 'Walking' : IDLE; return (gesture && CLIP_OF[gesture]) || IDLE; }
 const MOOD_TINT = { feliz: new THREE.Color('#ffffff'), pensativo: new THREE.Color('#c4cfe4'), tranquilo: new THREE.Color('#ffffff') }, WHITE = new THREE.Color('#ffffff');
 const BEAR_S = .5, WALK_ANG = .035 / WORLD_S, WALK_CYCLE = 14, WALK_MOVE = 3.5; // Uku grande; se queda parado casi todo el tiempo y al caminar avanza despacio sobre el planeta
 function holdObject(kind) {
@@ -515,13 +516,13 @@ function frame(now) {
   // Conversando, la cámara se acerca y lo mira a la cara; su mundo queda apagado detrás
   focusAmt = RM ? (focus ? 1 : 0) : lerp(focusAmt, focus ? 1 : 0, Math.min(1, dt * 4));
   // De frente y cerca: la cámara baja casi a su altura; conversando se acerca un poco más
-  const cd = camDist * (.8 - .22 * focusAmt), ch = CAM_H * (.72 - .08 * focusAmt);
+  const cd = camDist * (.66 - .1 * focusAmt), ch = CAM_H * (.6 - .04 * focusAmt);
   // El encuadre (corrimiento) también se mueve con suavidad
   const k = RM ? 1 : Math.min(1, dt * 5);
   if (Math.abs(shiftCur.x - shiftTo.x) > 1e-4 || Math.abs(shiftCur.y - shiftTo.y) > 1e-4) { shiftCur.x = lerp(shiftCur.x, shiftTo.x, k); shiftCur.y = lerp(shiftCur.y, shiftTo.y, k); applyShift(); }
   camera.position.copy(stage.localToWorld(_cam.set(Math.sin(yaw) * cd + Math.cos(yaw) * sway, ch, Math.cos(yaw) * cd - Math.sin(yaw) * sway)));
   camera.up.copy(_camUp.set(0, 1, 0).applyQuaternion(stage.quaternion));
-  camera.lookAt(stage.localToWorld(_look.set(0, .26 + .06 * focusAmt, 0)));
+  camera.lookAt(stage.localToWorld(_look.set(0, .32 + .04 * focusAmt, 0)));
   renderer.render(scene, camera);
 }
 
