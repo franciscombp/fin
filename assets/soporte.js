@@ -498,7 +498,7 @@
     // Para que Uku responda la ayuda dentro de su conversación (versión asistente)
     faq: function (i) { var f = FAQ[i]; return f && { t: f.t, icon: f.icon, a: typeof f.a === 'function' ? f.a() : f.a, acts: f.acts || [] }; },
     tut: function (i) { var u = TUT[i]; return u && { t: u.t, icon: u.icon, min: u.min, steps: u.steps, act: u.act }; },
-    contact: function () { return { phone: PHONE, caso: CASE, opts: CONTACT.map(function (c) { return { icon: c[0], t: c[1], s: c[2], k: c[3] }; }) }; },
+    contact: function () { return { phone: PHONE, caso: CASE, agente: AGENT, respuestas: AGENT_REPLIES, opts: CONTACT.map(function (c) { return { icon: c[0], t: c[1], s: c[2], k: c[3] }; }) }; },
     // Ejecuta una acción de la ayuda (ir a un flujo, a una tarjeta, pedir revisión o pasar con un asesor)
     run: function (k) {
       if (k === 'review') return review(true);
