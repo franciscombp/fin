@@ -229,7 +229,7 @@
     if (/interes/.test(s)) {
       var i1 = cardInterest(0), i2 = cardInterest(1);
       return { t: (i1 + i2) ? T('Entre agosto y septiembre pagaste {monto} de intereses en tu Mastercard Black, porque solo pagaste el mínimo. Si pagas el total antes de la fecha de corte, no te cobran intereses.', { monto: money(i1 + i2) })
-        : T('Nada. Estos meses no pagaste intereses en tus tarjetas. ¡Bien ahí!'),
+        : T('Nada. Estos meses no pagaste intereses en tus tarjetas. ¡Muy bien!'),
         s: ['¿Cuánto debo en mi tarjeta?', '¿Cuánto más puedo ahorrar?'] };
     }
     if (/cuenta|banco|saldo|tengo|patrimonio|total/.test(s)) {

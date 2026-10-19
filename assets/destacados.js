@@ -38,7 +38,7 @@
     return '<span class="dw-ring"><svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="22"/><circle cx="26" cy="26" r="22" class="dw-ring__v" stroke-dasharray="' + (C * v).toFixed(1) + ' ' + C.toFixed(1) + '"/></svg><b>' + label + '</b></span>';
   }
 
-  var PAYS = [['Luz de la casa', 24.8, '16 oct', 'Pagar Luz de la casa'], ['Casa de la abue', 18.35, '20 oct', 'Pagar Casa de la abue'], ['Internet', 32.5, '22 oct', ''], ['Celular', 20, '25 oct', '']];
+  var PAYS = [['Luz de la casa', 24.8, '16 oct', 'Pagar Luz de la casa'], ['Casa de la abuela', 18.35, '20 oct', 'Pagar Casa de la abuela'], ['Internet', 32.5, '22 oct', ''], ['Celular', 20, '25 oct', '']];
 
   /* ---------- Catálogo: una familia, un widget ----------
      sizes: tamaños permitidos (M horizontal por defecto; S cuadrado se

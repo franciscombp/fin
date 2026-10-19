@@ -356,7 +356,7 @@
     var ps = sugerido(m);
     if (ps && p.auto !== true && Math.abs(ps.general - p.general) / p.general > .1) out.push({ icon: 'tune', kind: 'info', t: T('Te sugiero un presupuesto de {monto}', { monto: money0(ps.general) }), s: T('Es tu promedio de los últimos tres meses, con un margen de 5%.'), act: 'budgets' });
     var deb = DB.deudas.filter(function (x) { return x.usuario === ST.u && /mínimo/.test(x.nota); })[0];
-    if (deb) out.push({ icon: 'credit_card', kind: 'warn', t: T('Tu {t} sigue creciendo', { t: deb.producto.replace(/ ···\d+/, '') + (deb.producto.indexOf(deb.institucion) < 0 ? ' ' + deb.institucion : '') }), s: T('Debes {monto} y solo pagas el mínimo. Si le pasas lo que sobra cada quincena, la cierras antes.', { monto: money(deb.saldo) }) });
+    if (deb) out.push({ icon: 'credit_card', kind: 'warn', t: T('Tu {t} sigue creciendo', { t: deb.producto.replace(/ ···\d+/, '') + (deb.producto.indexOf(deb.institucion) < 0 ? ' ' + deb.institucion : '') }), s: T('Debes {monto} y solo pagas el mínimo. Si destinas lo que te sobra cada quincena, la cierras antes.', { monto: money(deb.saldo) }) });
     return out;
   }
 
@@ -376,7 +376,7 @@
       pago_otro_banco: T('No lo cuento: ya conté lo que compraste con esa tarjeta, que conectaste.'),
       negocio: T('Es de tu negocio: lo saco de tus gastos de la casa.')
     }[c.why] || T('No lo cuento en tu resumen.');
-    if (c.k === 'rin' || c.k === 'rout') return T('Es de una persona o empresa, así que no sé qué fue. Lo cuento marcado hasta que me cuentes.');
+    if (c.k === 'rin' || c.k === 'rout') return T('No sé qué fue: es de una persona o empresa. Lo cuento marcado hasta que me digas.');
     if (c.k === 'ingreso') return T('Cuenta como ingreso de {mes} ({cat}).', { mes: mes, cat: c.cat.toLowerCase() });
     if (c.k === 'reembolso') return T('Te devolvieron parte de un gasto: lo resto de {cat}. No es un ingreso.', { cat: c.cat });
     if (r.c === 'Tarjetas de otros bancos (sin detalle)') return T('Es el pago de una tarjeta de otro banco. Lo cuento como gasto porque no veo en qué la usaste.');
@@ -978,7 +978,7 @@
     var x = G.list[G.i].m;
     gel.innerHTML = topHTML(T('{a} de {b}', { a: Math.min(hechos(), G.list.length), b: G.list.length }), T('Resultado')) + barHTML() +
       '<div class="pfm-game__panel"><span class="pfm-game__big is-ok material-symbols-rounded" aria-hidden="true">event_available</span>' +
-      '<h2>' + T('¿La programamos?') + '</h2><p>' + T('Pichibank le envía {m} a {n} cada día {d}, sin que te acuerdes. Uku te avisa un día antes si no te alcanza.', { m: money0(x.monto), n: corto(x.cp).split(' ')[0], d: x.dia }) + '</p>' +
+      '<h2>' + T('¿La programamos?') + '</h2><p>' + T('Pichibank le envía {m} a {n} cada día {d}, sin que tengas que acordarte. Uku te avisa un día antes si no te alcanza.', { m: money0(x.monto), n: corto(x.cp).split(' ')[0], d: x.dia }) + '</p>' +
       '<div class="pfm-game__foot"><button class="pf-cta" data-g="prog:si">' + T('Programar cada día {d}', { d: x.dia }) + '</button><button class="section__link" data-g="prog:no">' + T('Ahora no') + '</button></div></div>';
     moverBarra();
   }
@@ -1349,7 +1349,7 @@
       '<span class="pfm-dcard__cmp pfm-mes__cmp">' + x.porMes.map(function (c, i) { return '<span class="pfm-dcard__row' + (i === x.porMes.length - 1 ? ' is-on' : '') + '"><small>' + esc(c.l) + '</small><b>' + (c.v ? money0(c.v) : '—') + '</b><i style="width:' + Math.max(2, c.v / mx * 100).toFixed(1) + '%"></i></span>'; }).join('') + '</span>' +
       (st.v !== 'mesada' ? '<p class="pf-note">' + T('Si es una mesada, la pongo en Familia, con todos los envíos de antes.') + '</p><button class="pf-cta" ' + a + 'ok:' + esc(cp) + '">' + T('Sí, es una mesada') + '</button><button class="pf-link pf-link--block" ' + a + 'no:' + esc(cp) + '">' + T('Es otra cosa') + '</button>'
         : st.prog ? '<p class="pfm-prog"><span class="material-symbols-rounded" aria-hidden="true">event_available</span>' + T('Programada: {m} cada día {d} desde tu {src}.', { m: money0(st.prog.monto), d: st.prog.dia, src: x.src }) + '</p><button class="pf-link pf-link--block" ' + a + 'unprog:' + esc(cp) + '">' + T('Dejar de programarla') + '</button>'
-        : '<p class="as-sheet__label">' + T('Programarla') + '</p><p>' + T('Pichibank le envía {m} a {n} cada día {d}, sin que te acuerdes. Uku te avisa un día antes si no te alcanza.', { m: money0(x.monto), n: n, d: x.dia }) + '</p>' +
+        : '<p class="as-sheet__label">' + T('Programarla') + '</p><p>' + T('Pichibank le envía {m} a {n} cada día {d}, sin que tengas que acordarte. Uku te avisa un día antes si no te alcanza.', { m: money0(x.monto), n: n, d: x.dia }) + '</p>' +
           '<button class="pf-cta" ' + a + 'ask:' + esc(cp) + '">' + T('Programar cada día {d}', { d: x.dia }) + '</button>'));
   }
   // Pagos repetidos a la misma tienda o persona: un toque los ordena todos y queda la regla
