@@ -64,7 +64,7 @@ export function ukuFrom(gltf, { onLog = () => {} } = {}) {
   const actions = {};
   clips.forEach(c => { actions[c.name] = mixer.clipAction(c); });
   let current = null;
-  function playClip(name, fade = .4) {
+  function playClip(name, fade = .7) {
     const next = actions[name];
     if (!next) { report.errors.push('clip inexistente: ' + name); return false; }
     if (current === next) return true;

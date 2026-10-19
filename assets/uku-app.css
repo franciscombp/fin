@@ -22,12 +22,11 @@ html.uk-idle, html.uk-idle body { overflow: hidden; overscroll-behavior: none; }
 .uk p { margin: 0; }
 .uk-scene { position: absolute; inset: 0; }
 .uk-scene .b3d { position: absolute; inset: 0; }
-.uk-scene .b3d__fallback { position: absolute; right: 8%; bottom: 22%; width: 46%; }
 .uk-scene canvas { display: block; width: 100% !important; height: 100% !important; }
 
 /* Su globo: lo más importante, con su botón */
 /* Su globo: como si Uku te lo contara, en una nube pequeña junto a él */
-.uk-globo { position: absolute; z-index: 3; top: 64px; left: 16px; width: min(72%, 280px); padding: 12px 14px; border-radius: 18px 18px 18px 4px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 18px rgba(15, 38, 92, .10); animation: ukIn .4s cubic-bezier(.2, 1.3, .4, 1) .2s both; transition: opacity .2s, transform .2s; }
+.uk-globo { position: absolute; z-index: 3; top: 150px; left: 16px; width: min(72%, 280px); padding: 12px 14px; border-radius: 18px 18px 18px 4px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 18px rgba(15, 38, 92, .10); animation: ukIn .4s cubic-bezier(.2, 1.3, .4, 1) .2s both; transition: opacity .2s, transform .2s; }
 .uk-globo::after { content: ''; position: absolute; left: 12px; bottom: -8px; border: 8px solid transparent; border-bottom: 0; border-top-color: var(--bp-theme-color-surface-container-default); }
 .uk-globo__t { margin: 0 !important; font: var(--ui-body-md-regular, 400 15px/21px sans-serif); font-size: 15px; line-height: 21px; color: var(--bp-theme-color-text-primary); }
 html:not(.theme-y2k) .uk-globo__go.btn { height: auto !important; min-height: 0 !important; margin: 4px 0 0 !important; padding: 0 !important; font-size: 14px !important; }
@@ -120,7 +119,7 @@ html:not(.theme-y2k) .uk-globo__go.btn { height: auto !important; min-height: 0 
 .uk-sec__row small { font: var(--cx-caption); color: var(--cx-muted); }
 
 /* Propuestas de Uku: carrusel arriba con puntos (como las tarjetas de la referencia) */
-.uk-props { position: absolute; z-index: 3; top: 64px; left: 16px; width: min(78%, 300px); transition: opacity .3s ease; }
+.uk-props { position: absolute; z-index: 3; top: 150px; left: 16px; width: min(78%, 300px); transition: opacity .3s ease; }
 .uk-props[hidden] { display: none; }
 .uk-props__track { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .uk-props__track::-webkit-scrollbar { display: none; }
@@ -186,13 +185,14 @@ html.uk-chatting .uk-bar { bottom: calc(12px + env(safe-area-inset-bottom, 0px))
 .uk::before { content: ''; position: absolute; z-index: 2; left: 0; right: 0; top: 0; height: 132px; background: linear-gradient(var(--bp-surface-page, #f5f5f5) 30%, transparent); pointer-events: none; transition: opacity .3s ease; }
 .uk-head { position: absolute; z-index: 3; top: 4px; left: var(--bp-layout-grid-margin, 24px); right: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; transition: opacity .3s ease, transform .35s cubic-bezier(.2, .8, .2, 1); }
 .uk-head__t { margin: 0; font: var(--cx-page); letter-spacing: -.6px; color: var(--bp-interaction-tertiary-fg); }
-.uk-head__mood { display: inline-flex; align-items: center; gap: 6px; height: var(--bp-action-button-size, 40px); padding: 0 12px 0 10px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font: var(--ui-label-md); cursor: pointer; }
-.uk-head__mood .material-symbols-rounded { font-size: 20px; font-variation-settings: 'FILL' 1; }
-.uk-head__acts { position: relative; display: flex; align-items: center; gap: 8px; }
-.uk-head__set { width: 40px; height: 40px; flex: 0 0 40px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-tertiary-fg); cursor: pointer; }
-.uk-menu { position: absolute; right: 0; top: 48px; z-index: 6; min-width: 200px; display: flex; flex-direction: column; padding: 6px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); box-shadow: 0 10px 30px rgb(0 0 0 / .12); }
-.uk-menu[hidden] { display: none; }
-.uk-menu button { padding: 12px 14px; border: 0; border-radius: 8px; background: none; text-align: left; font: var(--ui-body-sm-semibold); color: var(--bp-theme-color-text-primary); cursor: pointer; }
-.uk-menu button:active { background: var(--bp-interaction-selectable-bg); }
+.uk-head { flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 10px; }
+/* Las tres señales de su mundo: texto sobre la página, sin cajas */
+.uk-world { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: 100%; max-width: 420px; }
+.uk-world[hidden] { display: none; }
+.uk-sig { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; padding: 0; border: 0; background: none; color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
+.uk-sig .material-symbols-rounded { margin-bottom: 2px; font-size: 22px; font-variation-settings: 'FILL' 1; color: var(--bp-interaction-tertiary-fg); }
+.uk-sig.is-ok .material-symbols-rounded, .uk-sig.is-feliz .material-symbols-rounded { color: #4f8a64; }
+.uk-sig small { font: var(--cx-caption); color: var(--cx-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.uk-sig b { font: var(--ui-body-sm-semibold); line-height: 1.25; }
 .uk.is-chat .uk-head, .uk.is-typing .uk-head { opacity: 0; transform: translateY(-12px); pointer-events: none; }
 .uk.is-chat::before { opacity: 0; }

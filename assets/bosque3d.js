@@ -27,9 +27,11 @@ const lerp = THREE.MathUtils.lerp;
 let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
 let bear = null, rig = null, bones = {}, forest, held = null, ground, stage = null, walkAng = 0, walkAmt = 0, walkMoving = false;
 let waterOn = false, waterT = 0, drops = [], ambient = null; // ambient: lo que Uku hace cuando no hay gesto (p. ej. caminar)
-// Mundo pequeño: un planeta esférico de radio PLANET_R; su punto más alto está bajo los pies de Uku.
-const PLANET_R = 1.5, PLANET_C = new THREE.Vector3(0, -PLANET_R, 0);
+// Mundo: un planeta esférico de radio PLANET_R; su punto más alto está bajo los pies de Uku.
+// WORLD_S agranda el mundo (planeta, árboles, flores y el paso de Uku); el oso mide lo mismo.
+const WORLD_S = 2, PLANET_R = 1.5 * WORLD_S, PLANET_C = new THREE.Vector3(0, -PLANET_R, 0);
 let score = 50, shown = 0; // shown: puntaje con el que está dibujado el bosque
+let target = null, loadAt = 0, ambLight = null, moodTint = new THREE.Color('#ffffff'); // mientras carga, el bosque crece hasta target; mood tiñe la luz
 // bloom: flores amarillas del campo (0–100, ahorro); null = como antes (salen con el bosque)
 // mood: ánimo que se queda (feliz, tranquilo, pensativo); null = solo los gestos
 let bloom = null, mood = null;
@@ -72,7 +74,7 @@ function rng(s) { return () => (s = (s * 16807) % 2147483647) / 2147483647; }
    flor o pasto. El mismo mundo sale siempre. Los umbrales t siguen a los insights
    (salud financiera para árboles y pasto, ahorro para las flores). */
 // Celdas de CELL_U metros sobre la esfera: la densidad no cambia aunque el planeta crezca
-const CELL_U = .35, CELL = CELL_U / PLANET_R, LOOP_N = Math.round(2 * Math.PI / CELL), LAT_MAX = 1.4, LAT_N = Math.round(2 * LAT_MAX / CELL);
+const CELL_U = .35 * WORLD_S, CELL = CELL_U / PLANET_R, LOOP_N = Math.round(2 * Math.PI / CELL), LAT_MAX = 1.4, LAT_N = Math.round(2 * LAT_MAX / CELL);
 function cellRng(k, m, salt) {
   const s = (Math.imul(k + 101, 73856093) ^ Math.imul(m + 211, 19349663) ^ Math.imul(salt, 83492791)) >>> 0;
   return rng(s % 2147483646 + 1);
@@ -84,14 +86,14 @@ function procedural(salt, chance, mk) {
     const r = cellRng(k, m, salt);
     if (r() > chance) continue;
     const az = (k + r()) * CELL - Math.PI, ax = -LAT_MAX + (m + r()) * CELL;
-    if (Math.abs(ax) * PLANET_R < .4) continue; // carril libre por donde camina Uku
+    if (Math.abs(ax) * PLANET_R < .4 * WORLD_S) continue; // carril libre por donde camina Uku
     out.push(mk(r, az, ax));
   }
   return out;
 }
 // Los árboles no se plantan junto al oso: queda un claro de 0.8 m alrededor
 const SPOTS = procedural(11, .5, (r, az, ax) => ({ az, ax, s: .7 + r() * .7, t: r() * 100, kind: r() < .62 ? 'pine' : 'round', rot: r() * 6.28 }))
-  .filter(p => Math.hypot(p.az, p.ax) * PLANET_R > .8).sort((a, b) => a.t - b.t);
+  .filter(p => Math.hypot(p.az, p.ax) * PLANET_R > .8 * WORLD_S).sort((a, b) => a.t - b.t);
 const DECOR = procedural(29, .2, (r, az, ax) => ({ az, ax, t: r() * 100, kind: r() < .45 ? 'grass' : r() < .7 ? 'rock' : 'flower', s: .6 + r() * .8 }));
 const MEADOW = procedural(71, .3, (r, az, ax) => ({ az, ax, t: r() * 100, s: .8 + r() * .5, rot: r() * 6.28 }));
 
@@ -100,7 +102,7 @@ function makeFlower(p, pal) {
   const st = new THREE.Mesh(new THREE.CylinderGeometry(.006, .007, .12, 4), stem); st.position.y = .06; g.add(st);
   for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2, m = new THREE.Mesh(new THREE.SphereGeometry(.018, 6, 4), petal); m.position.set(Math.cos(a) * .022, .125, Math.sin(a) * .022); m.scale.y = .5; g.add(m); }
   const c = new THREE.Mesh(new THREE.SphereGeometry(.012, 6, 4), new THREE.MeshLambertMaterial({ color: pal.trunk })); c.position.y = .13; g.add(c);
-  placeOnPlanet(g, p); g.userData.base = p.s; return g;
+  placeOnPlanet(g, p); g.userData.base = p.s * WORLD_S; return g;
 }
 
 // Palmera: tronco curvo en segmentos y hojas largas que caen
@@ -122,7 +124,7 @@ function makePalm(p, pal) {
   }
   const coco = new THREE.MeshLambertMaterial({ color: pal.trunk });
   [[.03, 0], [-.025, .02], [0, -.03]].forEach(([dx, dz]) => { const m = new THREE.Mesh(new THREE.SphereGeometry(.025, 6, 5), coco); m.position.set(x + dx, y - .03, dz); g.add(m); });
-  placeOnPlanet(g, p); g.userData.base = p.s;
+  placeOnPlanet(g, p); g.userData.base = p.s * WORLD_S;
   return g;
 }
 function makeTree(p, pal) {
@@ -142,13 +144,13 @@ function makeTree(p, pal) {
     const top = new THREE.Mesh(new THREE.IcosahedronGeometry(.3, 0), new THREE.MeshLambertMaterial({ color: c, flatShading: true }));
     top.position.y = .62; top.scale.y = 1.1; g.add(top);
   }
-  placeOnPlanet(g, p); g.userData.base = p.s;
+  placeOnPlanet(g, p); g.userData.base = p.s * WORLD_S;
   return g;
 }
 function makeStump(p, pal) {
   const g = new THREE.Group();
   const m = new THREE.Mesh(new THREE.CylinderGeometry(.05, .07, .14, 6), new THREE.MeshLambertMaterial({ color: pal.trunk }));
-  m.position.y = .07; g.add(m); placeOnPlanet(g, p); g.userData.base = p.s;
+  m.position.y = .07; g.add(m); placeOnPlanet(g, p); g.userData.base = p.s * WORLD_S;
   return g;
 }
 function makeDecor(p, pal) {
@@ -160,7 +162,7 @@ function makeDecor(p, pal) {
     const st = new THREE.Mesh(new THREE.CylinderGeometry(.006, .006, .1, 4), new THREE.MeshLambertMaterial({ color: pal.grass })); st.position.y = .05; m.add(st);
     const fl = new THREE.Mesh(new THREE.SphereGeometry(.025, 6, 4), new THREE.MeshLambertMaterial({ color: pal.flower })); fl.position.y = .1; m.add(fl);
   }
-  const g = new THREE.Group(); g.add(m); placeOnPlanet(g, p); g.userData.base = p.s; return g;
+  const g = new THREE.Group(); g.add(m); placeOnPlanet(g, p); g.userData.base = p.s * WORLD_S; return g;
 }
 
 const _dir = new THREE.Vector3(), _tan = new THREE.Vector3(), _X = new THREE.Vector3(), _Mb = new THREE.Matrix4();
@@ -263,7 +265,8 @@ function buildDust() {
 // El modelo no trae clip de reposo: "Thinking" es la pose más quieta
 const CLIP_OF = { wave: 'Waving_dl', happy: 'Waving_dl', worried: 'Thinking' };
 function clipFor() { if (gesture === 'walk') return walkMoving ? 'Walking' : 'Thinking'; return (gesture && CLIP_OF[gesture]) || 'Thinking'; }
-const BEAR_S = .62, WALK_ANG = .13, WALK_CYCLE = 8, WALK_MOVE = 4.5; // Uku más pequeño para dejar lugar a las tarjetas; al caminar avanza sobre el planeta (rad/s)
+const MOOD_TINT = { feliz: new THREE.Color('#fff1c2'), pensativo: new THREE.Color('#c4cfe4'), tranquilo: new THREE.Color('#ffffff') }, WHITE = new THREE.Color('#ffffff');
+const BEAR_S = .62, WALK_ANG = .13 / WORLD_S, WALK_CYCLE = 8, WALK_MOVE = 4.5; // Uku más pequeño para dejar lugar a las tarjetas; al caminar avanza sobre el planeta (rad/s)
 function holdObject(kind) {
   if (held) { held.parent && held.parent.remove(held); held = null; }
   if (!kind || !bones.hand_R || umb) return; // con el paraguas en la mano no sostiene otra cosa
@@ -439,7 +442,15 @@ function frame(now) {
   if (gesture) { gestureT += dt; if (gesture !== 'walk' && gestureT > (gesture === 'hold' || gesture === 'water' ? 3.2 : 2)) { gesture = ambient; gestureT = 0; holdObject(null); } }
   // Caminar: avanza unos segundos y se detiene a mirar el paisaje
   walkMoving = gesture === 'walk' && !RM && (gestureT % WALK_CYCLE) < WALK_MOVE;
+  // Mientras Uku carga, el bosque aparece solo: el puntaje sube hasta el de la persona en 2.2 s
+  if (!bear && target != null) {
+    const s2 = Math.round(Math.min(1, (performance.now() - loadAt) / 2200) * target);
+    if (s2 !== score) { score = s2; buildForest(); }
+  }
+  moodTint.lerp(MOOD_TINT[mood] || WHITE, Math.min(1, dt * 2));
+  if (ambLight) ambLight.color.copy(moodTint);
   if (bear) {
+    if (bear.userData.grow < 1) { bear.userData.grow = Math.min(1, bear.userData.grow + dt * 1.2); bear.scale.setScalar(Math.max(.001, BEAR_S * (1 - Math.pow(1 - bear.userData.grow, 3)))); }
     rig.playClip(clipFor());
     rig.update(dt);
     if (umb) { bear.updateMatrixWorld(true); placeUmbrella(); }
@@ -527,11 +538,11 @@ function init() {
   scene = new THREE.Scene();
   const pal = palette();
   scene.background = null; // transparente: la máscara del contenedor funde la escena con la página
-  scene.fog = new THREE.Fog(pal.bg, 2.4, 7.5); // el bosque se aclara con la distancia, como en una ilustración
+  scene.fog = new THREE.Fog(pal.bg, 2.4 * WORLD_S, 7.5 * WORLD_S); // el bosque se aclara con la distancia, como en una ilustración
   camera = new THREE.PerspectiveCamera(30, 1, .05, 20);
   camera.position.set(0, .75, 2.6);
   // Ilustración: solo luz ambiente, colores planos sin sombreado
-  scene.add(new THREE.AmbientLight('#ffffff', Math.PI));
+  ambLight = new THREE.AmbientLight('#ffffff', Math.PI); scene.add(ambLight);
   ground = new THREE.Mesh(new THREE.SphereGeometry(PLANET_R, 64, 32), new THREE.MeshLambertMaterial({ color: pal.ground }));
   ground.position.copy(PLANET_C); scene.add(ground);
   stage = new THREE.Group(); scene.add(stage); placeStage();
@@ -544,7 +555,7 @@ function init() {
     const k = .9 / box.getSize(new THREE.Vector3()).y;
     model.scale.setScalar(k);
     model.position.set(-mid.x * k, -.45 - box.min.y * k, -mid.z * k);
-    bear = new THREE.Group(); bear.add(model);
+    bear = new THREE.Group(); bear.add(model); bear.userData.grow = 0; bear.scale.setScalar(.001);
     bear.traverse(o => {
       if (o.isMesh) {
         o.frustumCulled = false;
@@ -556,8 +567,8 @@ function init() {
       }
     });
     bear.position.y = .45 * BEAR_S; // pies sobre el suelo (el cuerpo va de -0.45 a 0.45)
-    bear.scale.setScalar(BEAR_S);
     stage.add(bear);
+    if (target != null) { score = target; target = null; buildForest(); }
     // Lo que se sostiene, se pone o se atacha usa estos huesos
     bones.hand_R = rig.B('mixamorig:RightHand'); bones.head = rig.B('mixamorig:Head');
     dressBear();
@@ -608,7 +619,11 @@ export function attach(el, opts) {
   if (!renderer) init();
   host = el;
   el.appendChild(renderer.domElement);
-  if (opts && typeof opts.score === 'number' && opts.score !== score) { score = opts.score; buildForest(); }
+  if (opts && typeof opts.score === 'number') {
+    // Antes de que Uku cargue, el bosque crece en vez de aparecer de golpe
+    if (!bear) { target = opts.score; loadAt = performance.now(); score = 0; buildForest(); }
+    else if (opts.score !== score) { score = opts.score; buildForest(); }
+  }
   if (opts && opts.onTap) onTap = opts.onTap;
   resize();
   if ('IntersectionObserver' in window) {
@@ -617,9 +632,10 @@ export function attach(el, opts) {
     attach._io.observe(el);
   }
 }
-export function setScore(s) { if (s !== score) { score = s; if (renderer) buildForest(); } }
+export function setScore(s) { if (!bear && target != null) { target = s; return; } if (s !== score) { score = s; if (renderer) buildForest(); } }
 export function setBloom(b) { b = b == null ? null : Math.max(0, Math.min(100, b)); waterOn = !!b; if (b !== bloom) { bloom = b; if (renderer) buildForest(); } }
 export function setMood(m) { mood = ['feliz', 'tranquilo', 'pensativo'].includes(m) ? m : null; }
+export function isReady() { return !!bear; }
 export function detach(el) { if (host === el) { host = null; } }
 export function supported() {
   try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; }
