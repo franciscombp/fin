@@ -15,10 +15,10 @@ window.uku = uku;
 uku.start();
 log('--- verificación ---');
 log('clips disponibles: ' + uku.clips.map(c => c.name).join(' | '));
-log('playClip("Waving_dl") -> ' + uku.playClip('Waving_dl'));
+log('playClip("Waving") -> ' + uku.playClip('Waving'));
 log('playClip("Walking") -> ' + uku.playClip('Walking'));
-log('playClip("Laying") -> ' + uku.playClip('Laying'));
-log('setBlink(1); setExpression("target_3", .8) -> ' + uku.setExpression('target_3', .8) + '; setExpression("target_99") -> ' + uku.setExpression('target_99', .5));
+log('playClip("Watering") -> ' + uku.playClip('Watering'));
+log('playClip("Female Laying Pose") -> ' + uku.playClip('Female Laying Pose'));
 log('errores: ' + (uku.report.errors.length ? uku.report.errors.join('; ') : 'ninguno'));
 log('avisos: ' + (uku.report.warnings.length ? uku.report.warnings.join('; ') : 'ninguno'));
 </script></body></html>

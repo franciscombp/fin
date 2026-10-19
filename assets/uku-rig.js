@@ -2,8 +2,8 @@
    Uku: el modelo con esqueleto Mixamo (assets/oso/uku-rig.glb). Este módulo
    sólo carga y controla el personaje; la escena (bosque, flores, planeta) la
    arma bosque3d.js, que lo usa como su único oso.
-   - ukuFrom(gltf): huesos, piezas, clips (crossfade), parpadeo (morph "blink")
-     y expresiones (target_0…19).
+   - ukuFrom(gltf): huesos, piezas y clips (crossfade). El modelo trae sus
+     animaciones; no tiene morph targets.
    - Las clips traen el desplazamiento del torso al caminar; el planeta mueve
      al oso, así que x y z del torso se fijan en su pose de reposo.
    - loadUkuRig(container): visor independiente para verificar el modelo.
@@ -26,24 +26,21 @@ export function loadUkuGltf() {
 export function ukuFrom(gltf, { onLog = () => {} } = {}) {
   const root = gltf.scene;
   const report = { errors: [], warnings: [] };
-  const skinned = []; const meshes = []; const bones = {}; const nodes = {};
+  const skinned = []; const bones = {}; const nodes = {};
   root.traverse(o => {
     if (o.isSkinnedMesh) skinned.push(o);
-    if (o.isMesh) meshes.push(o);
     if (o.isBone) bones[o.name] = o;
     nodes[o.name] = nodes[o.name] || o;
   });
   NEEDED.forEach(n => { if (!bones[n] && !nodes[n]) report.errors.push('hueso inexistente: ' + n); });
 
-  // El cuerpo es la pieza más alta; la cara (morph targets) puede ser otra malla del mismo esqueleto
-  // Caja de la pose base: computeBoundingBox incluiría los morph targets (la cara abierta, etc.)
+  // El cuerpo es la pieza más alta (la caja de la pose base, sin morph targets)
+  // Caja de la pose base (la del archivo, no la de una pose)
   const boxOf = (m) => new THREE.Box3().setFromBufferAttribute(m.geometry.attributes.position);
   const hOf = (m) => { const b = boxOf(m); return b.max.y - b.min.y; };
   const body = skinned.reduce((a, m) => (hOf(m) > hOf(a) ? m : a), skinned[0]);
-  const box = boxOf(body);
-  const morphMesh = meshes.find(m => m.morphTargetDictionary && Object.keys(m.morphTargetDictionary).length) || null;
-  const morphs = morphMesh ? Object.keys(morphMesh.morphTargetDictionary) : [];
-  if (!morphs.length) report.warnings.push('ningún morph target en el archivo');
+  // Altura del personaje: la caja que envuelve todas sus piezas (la ropa no siempre llega a los pies)
+  const box = skinned.map(boxOf).reduce((u, b) => u.union(b));
   onLog('Piezas: ' + skinned.map(m => m.name + ' ' + hOf(m).toFixed(3) + ' m').join(', '));
 
   // Desplazamiento del torso: x y z vuelven a su pose de reposo; la altura (y) conserva el vaivén al caminar
@@ -74,22 +71,9 @@ export function ukuFrom(gltf, { onLog = () => {} } = {}) {
     return true;
   }
 
-  // Parpadeo: morph "blink" de la cara
-  const blinkIdx = morphMesh ? morphMesh.morphTargetDictionary.blink : undefined;
-  if (blinkIdx === undefined) report.warnings.push('sin morph "blink": no hay parpadeo');
-  function setBlink(v) { if (blinkIdx !== undefined) morphMesh.morphTargetInfluences[blinkIdx] = THREE.MathUtils.clamp(v, 0, 1); }
-
-  // Expresiones: influencia de un morph target de la cara (target_0 … target_19)
-  function setExpression(name, v) {
-    const idx = morphMesh && morphMesh.morphTargetDictionary[name];
-    if (idx === undefined) { report.warnings.push('expresión inexistente: ' + name); return false; }
-    morphMesh.morphTargetInfluences[idx] = THREE.MathUtils.clamp(v, 0, 1);
-    return true;
-  }
-
   function update(dt) { mixer.update(dt); }
 
-  return { root, body, box, skinned, bones, nodes, clips, morphs, playClip, setBlink, setExpression, update, report, B: n => bones[key(n)], N: n => nodes[key(n)] };
+  return { root, body, box, skinned, bones, nodes, clips, playClip, update, report, B: n => bones[key(n)], N: n => nodes[key(n)] };
 }
 
 /* Visor independiente (uku-rig.html): cámara, luz, suelo y Uku con la clip que se pida. */

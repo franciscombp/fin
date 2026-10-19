@@ -4,7 +4,8 @@
 
    - Un único renderer WebGL que se "muda" al contenedor activo.
    - Uku (assets/oso/uku-rig.glb, ver uku-rig.js) con sus clips de Mixamo:
-     Walking, Waving_dl, Thinking y Laying (acostado). Puede sostener objetos
+     Walking, Waving, Happy Idle, Thoughtful Head Nod, Watering, Plant A Plant
+     y las poses acostado. Puede sostener objetos
      en la mano derecha (mixamorigRightHand) y los accesorios van en la
      cabeza (mixamorigHead).
    - El oso nunca cambia; el bosque crece con la salud financiera
@@ -262,9 +263,10 @@ function buildDust() {
    El giro se reparte entre antebrazo y muñeca (como el radio y el cúbito),
    así la piel de la muñeca no se retuerce. Ninguna articulación pasa de ~70°. */
 // Clip de Uku según el gesto; caminar sólo se mueve mientras avanza
-// El modelo no trae clip de reposo: "Thinking" es la pose más quieta
-const CLIP_OF = { wave: 'Waving_dl', happy: 'Waving_dl', worried: 'Thinking' };
-function clipFor() { if (gesture === 'walk') return walkMoving ? 'Walking' : 'Thinking'; return (gesture && CLIP_OF[gesture]) || 'Thinking'; }
+// Clips del modelo: cada gesto tiene el suyo; sin gesto, Uku está en su idle
+const CLIP_OF = { wave: 'Waving', happy: 'Happy Idle', talk: 'Happy Idle', worried: 'Thoughtful Head Nod', nod: 'Thoughtful Head Nod', water: 'Watering', hold: 'Plant A Plant' };
+const IDLE = 'Happy Idle';
+function clipFor() { if (gesture === 'walk') return walkMoving ? 'Walking' : IDLE; return (gesture && CLIP_OF[gesture]) || IDLE; }
 const MOOD_TINT = { feliz: new THREE.Color('#fff1c2'), pensativo: new THREE.Color('#c4cfe4'), tranquilo: new THREE.Color('#ffffff') }, WHITE = new THREE.Color('#ffffff');
 const BEAR_S = .7, WALK_ANG = .035 / WORLD_S, WALK_CYCLE = 14, WALK_MOVE = 3.5; // Uku grande; se queda parado casi todo el tiempo y al caminar avanza despacio sobre el planeta
 function holdObject(kind) {
