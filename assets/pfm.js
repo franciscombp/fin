@@ -1578,14 +1578,17 @@
     }
     if (/presupuesto|limite|límite|tope/.test(s0) && isCur(m)) {
       var pz = pres(), dz = diasMes(m) - +HOY.slice(8, 10) + 1, qz = pz.general - s.gast;
-      if (pz.auto) return { t: T('Todavía no tienes presupuesto. Recibes unos {i} al mes y gastas en promedio {g}.', { i: money0(Math.round(ingresoMes())), g: money0(Math.round((prom(m, 3) || s).gast)) }) + '<br><br>' + T('Te propongo cuánto gastar y cómo repartirlo, y tú decides.'), s: [], acts: [[T('Armar mi presupuesto'), 'pres']] };
-      return { t: T('Tu presupuesto es {p} al mes y llevas {g}.', { p: money0(pz.general), g: money0(s.gast) }) + ' ' + (qz > 0 ? T('Te quedan {q}: unos {d} al día hasta fin de mes.', { q: money0(qz), d: money0(qz / dz) }) : T('Excediste tu presupuesto por {q}. ¿Lo revisamos?', { q: money0(-qz) })), s: ['¿En qué se me va la plata?'], acts: [[T('Ajustar mi presupuesto'), 'budgets']] };
+      if (pz.auto) return { title: T('Tu presupuesto'), t: T('Todavía no tienes presupuesto. Te propongo cuánto gastar y cómo repartirlo, y tú decides.'), bars: [{ l: T('Recibes al mes'), v: Math.round(ingresoMes()) }, { l: T('Gastas en promedio'), v: Math.round((prom(m, 3) || s).gast) }], s: [], acts: [[T('Armar mi presupuesto'), 'pres']] };
+      return { title: T('Tu presupuesto'), num: { v: money0(pz.general), l: T('al mes') }, meter: { v: s.gast, max: pz.general, l: T('llevas {g}', { g: money0(s.gast) }), cls: qz < 0 ? 'over' : qz < pz.general * .15 ? 'warn' : 'ok' },
+        t: qz > 0 ? T('Te quedan {q}: unos {d} al día hasta fin de mes.', { q: money0(qz), d: money0(qz / dz) }) : T('Excediste tu presupuesto por {q}. ¿Lo revisamos?', { q: money0(-qz) }), s: ['¿En qué se me va la plata?'], acts: [[T('Ajustar mi presupuesto'), 'budgets']] };
     }
     if (/gast|plata|en qu|cuánto|cuanto|queda|presupuesto/.test(s0)) {
       var ks = Object.keys(s.grupos).sort(function (a, b) { return s.grupos[b] - s.grupos[a]; }).slice(0, 3);
       var pa = pres();
-      return { t: (pa.auto ? T('En {mes} gastaste {monto}; todavía no tienes presupuesto.', { mes: mesName(m), monto: money(s.gast) }) : T('En {mes} gastaste {monto} de tu presupuesto de {p}.', { mes: mesName(m), monto: money(s.gast), p: money0(pa.general) })) + '<br><br>' +
-        T('Lo que más pesó: {l}.', { l: ks.map(function (k) { return k.toLowerCase() + ' (' + money(s.grupos[k]) + ')'; }).join(', ') }), s: ['¿Cómo cierro el mes?', '¿Qué tengo por revisar?'], acts: [[T('Ver mis gastos'), 'gastos']].concat(pa.auto ? [[T('Armar mi presupuesto'), 'pres']] : []) };
+      return { title: T('En qué se te va la plata'), num: { v: money0(s.gast), l: T('gastaste en {mes}', { mes: mesName(m) }) },
+        meter: pa.auto ? null : { v: s.gast, max: pa.general, l: T('{g} de {p} de presupuesto', { g: money0(s.gast), p: money0(pa.general) }), cls: s.gast > pa.general ? 'over' : s.gast > pa.general * .85 ? 'warn' : 'ok' },
+        t: ks.length ? T('Lo que más pesó fue {k}.', { k: ks[0].toLowerCase() }) + (pa.auto ? ' ' + T('Todavía no tienes presupuesto.') : '') : T('Este mes casi no has gastado.'),
+        bars: ks.map(function (k) { return { l: k, v: s.grupos[k] }; }), s: ['¿Cómo cierro el mes?', '¿Qué tengo por revisar?'], acts: [[T('Ver mis gastos'), 'gastos']].concat(pa.auto ? [[T('Armar mi presupuesto'), 'pres']] : []) };
     }
     return null;
   }

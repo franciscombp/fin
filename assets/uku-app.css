@@ -326,3 +326,28 @@ html.uk-chatting .uk { padding-top: calc(8px + env(safe-area-inset-top, 0px)); p
 .uk.is-chat .uk-scene { z-index: 2; }
 /* Conversando, Uku se ve entero y nítido: sin el desvanecido del pie de su mundo */
 .uk.is-chat .uk-scene, .uk.is-chat .uk-scene .b3d, .uk.is-chat .uk-scene canvas { -webkit-mask-image: none !important; mask-image: none !important; }
+
+/* ---------- Artefactos de las tarjetas ----------
+   Para que se vea sin leer: una cifra grande, una barra de progreso con su color de estado,
+   fichas de estado (ícono, valor, etiqueta) y barras por grupo. El texto es una sola frase. */
+.uk-num { margin: 0 !important; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.uk-num b { font: var(--ui-numeric-lg, 700 32px/38px sans-serif); font-size: 32px; line-height: 38px; letter-spacing: -.6px; color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
+.uk-num small { font: var(--cx-sub); color: var(--cx-muted); }
+.uk-meter { position: relative; height: 8px; border-radius: 4px; background: var(--bp-interaction-secondary-bg); overflow: hidden; margin-top: -4px; }
+.uk-meter i { display: block; height: 100%; border-radius: 4px; background: var(--bp-interaction-tertiary-fg); transition: width .5s cubic-bezier(.2, .8, .2, 1); }
+.uk-meter.is-ok i { background: var(--bp-theme-color-status-success-text); }
+.uk-meter.is-warn i { background: var(--bp-theme-color-status-warning-text); }
+.uk-meter.is-over i { background: var(--bp-theme-color-status-error-text); }
+.uk-meter__l { margin: -6px 0 0 !important; font: var(--cx-caption); color: var(--cx-muted); }
+.uk-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.uk-stat { display: flex; flex-direction: column; gap: 2px; padding: 10px 10px 8px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-secondary-bg); min-width: 0; }
+.uk-stat .material-symbols-rounded { font-size: 20px; color: var(--bp-interaction-tertiary-fg); margin-bottom: 4px; }
+.uk-stat.is-ok .material-symbols-rounded { color: var(--bp-theme-color-status-success-text); }
+.uk-stat.is-warn .material-symbols-rounded { color: var(--bp-theme-color-status-warning-text); }
+.uk-stat b { font: var(--ui-body-md-semibold); font-variant-numeric: tabular-nums; line-height: 20px; }
+.uk-stat small { font: var(--cx-caption); color: var(--cx-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uk-barras { display: flex; flex-direction: column; gap: 10px; }
+.uk-barra { display: grid; grid-template-columns: 1fr auto; row-gap: 4px; align-items: baseline; }
+.uk-barra span { font: var(--cx-sub); color: var(--bp-theme-color-text-primary); }
+.uk-barra b { font: var(--ui-body-sm-semibold); font-variant-numeric: tabular-nums; }
+.uk-barra i { grid-column: 1 / -1; display: block; height: 6px; border-radius: 3px; background: var(--bp-interaction-tertiary-fg); opacity: .75; }
