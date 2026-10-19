@@ -32,7 +32,7 @@ html.uk-idle, html.uk-idle body { overflow: hidden; overscroll-behavior: none; }
 
 /* Su globo: lo más importante, con su botón */
 /* Su globo: como si Uku te lo contara, en una nube pequeña junto a él */
-.uk-globo { position: relative; z-index: 3; align-self: flex-start; max-width: 320px; padding: 12px 14px; border-radius: 18px 18px 18px 4px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 18px rgba(15, 38, 92, .10); animation: ukIn .4s cubic-bezier(.2, 1.3, .4, 1) .2s both; transition: opacity .2s, transform .2s; }
+.uk-globo { position: relative; z-index: 3; align-self: flex-start; max-width: 320px; padding: 12px 14px; border-radius: 16px 16px 16px 4px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 18px rgba(15, 38, 92, .10); animation: ukIn .4s cubic-bezier(.2, 1.3, .4, 1) .2s both; transition: opacity .2s, transform .2s; }
 .uk-globo::after { content: ''; position: absolute; left: 12px; bottom: -8px; border: 8px solid transparent; border-bottom: 0; border-top-color: var(--bp-theme-color-surface-container-default); }
 .uk-globo__t { margin: 0 !important; font: var(--ui-body-md-regular, 400 15px/21px sans-serif); font-size: 15px; line-height: 21px; color: var(--bp-theme-color-text-primary); }
 html:not(.theme-y2k) .uk-globo__go.btn { height: auto !important; min-height: 0 !important; margin: 4px 0 0 !important; padding: 0 !important; font-size: 14px !important; }
@@ -129,7 +129,7 @@ html:not(.theme-y2k) .uk-globo__go.btn { height: auto !important; min-height: 0 
 .uk-props[hidden] { display: none; }
 .uk-props__track { display: flex; align-items: flex-start; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .uk-props__track::-webkit-scrollbar { display: none; }
-.uk-prop { position: relative; flex: 0 0 100%; scroll-snap-align: start; box-sizing: border-box; padding: 12px 14px; border-radius: 18px 18px 18px 4px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 18px rgba(15, 38, 92, .10); display: flex; flex-direction: column; gap: 4px; }
+.uk-prop { position: relative; flex: 0 0 100%; scroll-snap-align: start; box-sizing: border-box; padding: 12px 14px; border-radius: 16px 16px 16px 4px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 18px rgba(15, 38, 92, .10); display: flex; flex-direction: column; gap: 4px; }
 .uk-prop::after { content: ''; position: absolute; left: 12px; bottom: -8px; border: 8px solid transparent; border-bottom: 0; border-top-color: var(--bp-theme-color-surface-container-default); }
 .uk-prop__tag { margin: 0 !important; display: flex; align-items: center; gap: 4px; font: var(--cx-caption); color: var(--cx-muted); }
 .uk-prop__tag .material-symbols-rounded { font-size: 16px; }
@@ -227,7 +227,7 @@ html.uk-chatting .uk { top: 0 !important; bottom: 0 !important; }
 .uk-chathead__x { pointer-events: auto; }
 .uk.is-chat .uk-chathead { transform: none; opacity: 1; pointer-events: none; }
 .uk.is-chat .uk-chathead__x { pointer-events: auto; }
-.uk-bar { padding: 6px; border-radius: 28px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 24px rgb(0 0 0 / .12); }
+.uk-bar { padding: 6px; border-radius: 16px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 24px rgb(0 0 0 / .12); }
 .uk-bar input { height: 48px; background: transparent; box-shadow: none; border-radius: 16px; }
 .uk-bar__mic { width: 48px; height: 48px; flex-basis: 48px; background: transparent; box-shadow: none; }
 .uk-msg__b, .uk-me p { box-shadow: 0 4px 16px rgb(0 0 0 / .08); }
@@ -238,3 +238,11 @@ html.uk-chatting .uk { top: 0 !important; bottom: 0 !important; }
 .uk-panel h2 { margin: 0 0 var(--bp-semantic-spacing-micro-md, 8px) !important; font: var(--cx-headline) !important; letter-spacing: -.2px !important; color: var(--bp-theme-color-text-primary) !important; }
 /* En el detalle, el título está en el encabezado: su «‹ Mis finanzas» se va */
 .uk-panel .pf-back { display: none; }
+
+/* Una persona del banco en la misma conversación: su inicial, su nombre y un aviso de quién responde */
+.uk-msg.is-agent .uk-msg__face { background: var(--bp-theme-color-surface-container-default); display: grid; place-items: center; }
+.uk-av { font: var(--cx-caption); font-weight: 700; color: var(--bp-theme-color-text-primary); }
+.uk-msg__who { display: block; margin: 0 0 4px 4px; font: var(--cx-caption); color: var(--cx-muted); }
+.uk-sys { margin: 4px 0; text-align: center; font: var(--cx-caption); color: var(--cx-muted); }
+.uk-case { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; padding: 12px 16px; border-radius: var(--bp-semantic-radius-md, 12px); border: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); font: var(--cx-sub); color: var(--bp-theme-color-text-primary); }
+.uk-case b { font: var(--ui-body-md-semibold); }

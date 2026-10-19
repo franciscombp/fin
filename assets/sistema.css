@@ -14,16 +14,12 @@
   --cx-amount: 700 40px/46px var(--sol-font, Roboto, sans-serif);
   --cx-amount-sm: 700 28px/34px var(--sol-font, Roboto, sans-serif);
 }
-
 /* Transiciones: ver "TRANSICIONES UNIFICADAS (iOS)" más abajo. */
-.as-hub, .as-chat, .as-land-wrap { transition: opacity var(--cx-dur) ease, transform var(--cx-dur) var(--cx-ease); }
-.dw:active, .as-tile:active, .pf-navrow:active, .as-hist__row:active, .pv-acts button:active, .as-topic:active, .sx-app:active .sx-app__ic { transform: scale(.97); }
-.dw, .as-tile, .as-hist__row { transition: transform .15s ease; }
+.dw:active, .pv-acts button:active, .sx-app:active .sx-app__ic { transform: scale(.97); }
+.dw { transition: transform .15s ease; }
 
 /* ---------- Títulos de página ---------- */
-.pf-head h1, .as-hub__hi { font: var(--cx-page); letter-spacing: -.6px; }
-.as-hub__hi { color: var(--cx-muted); }
-.as-hub__sub { font: var(--cx-body); margin: 6px 0 24px; }
+.pf-head h1 { font: var(--cx-page); letter-spacing: -.6px; }
 
 /* ---------- Cifras ---------- */
 .pv-value { font: var(--cx-amount); font-size: 40px; line-height: 46px; letter-spacing: -1px; }
@@ -32,60 +28,16 @@
 .pv-sub { font: var(--cx-sub); color: var(--cx-muted); }
 
 /* ---------- Encabezados de sección (iguales en todas las pantallas) ---------- */
-.pf-sec h2, .as-hub__head h2, .pv-sec h2, .dw-section .section__title h2 { font: var(--ui-label-sm); font-size: 14px; letter-spacing: 0; margin: 0; color: var(--bp-theme-color-text-helper); }
+.pf-sec h2, .pv-sec h2, .dw-section .section__title h2 { font: var(--ui-label-sm); font-size: 14px; letter-spacing: 0; margin: 0; color: var(--bp-theme-color-text-helper); }
 .pf-sec h2 { margin-bottom: 4px; }
 .pv-sec h2 { margin-bottom: 8px; }
-.pf-sec, .as-hub__sec { padding-top: 0; margin-top: 40px; }
+.pf-sec { padding-top: 0; margin-top: 40px; }
 .pf-sec { padding-left: var(--bp-layout-grid-margin, 24px); padding-right: var(--bp-layout-grid-margin, 24px); }
 
 /* ---------- Tarjetas: un solo radio, un solo relleno ---------- */
-.dw, .as-tile { border-radius: var(--bp-semantic-radius-md); }
-
-.as-tile { padding: 16px; }
-.as-tile__t { font: var(--cx-headline); }
-.as-tile--portal .as-tile__t { font: var(--cx-headline); font-size: 22px; line-height: 28px; }
-
-.as-top { padding-left: 16px; padding-right: 16px; }
-.as-top .as-level, .pf-hero__badge { font: var(--cx-caption); color: var(--cx-muted); border-color: var(--cx-line); height: 36px; }
-.as-level i { display: none; }
-
-/* ---------- Chat con Uku: corto, con aire y sin nada detrás del texto ----------
-   Uku responde en burbujas cortas (una idea cada una), con su cara y nombre
-   arriba. Las respuestas sugeridas van a la derecha, del lado de quien
-   pregunta, con la forma de tus propias burbujas. */
-.as-page.is-chat .as-land-wrap { display: none; }
-.as-chat { bottom: calc(var(--comp) + 12px); gap: 24px; padding: 24px 20px 32px; }
-.as-msg--uku { flex-direction: column; align-items: flex-start; gap: 6px; }
-.as-msg__who { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; font: var(--cx-caption); color: var(--cx-muted); }
-.as-msg__av { width: 28px; height: 28px; flex: 0 0 28px; border-radius: 50%; overflow: hidden; background: var(--cx-fill); box-shadow: none; }
-.as-msg__av img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
-.as-msg__bubble { font: 400 17px/25px var(--sol-font, Roboto, sans-serif); color: var(--cx-ink); animation: asIn .28s var(--cx-ease); }
-.as-msg--uku .as-msg__bubble { max-width: 86%; padding: 12px 16px; border-radius: 6px 22px 22px 22px; border: 0; background: color-mix(in srgb, var(--cx-ink) 7%, transparent); }
-.as-msg--uku .as-msg__bubble + .as-msg__bubble { border-radius: 22px; }
-.as-msg--uku .as-msg__bubble b { font-weight: 700; }
-.as-msg--uku .as-msg__card { width: 86%; padding: 16px; background: var(--cx-surface); border: 1px solid var(--cx-line); }
-.as-msg__bubble p + * { margin-top: 12px; }
-.as-msg--me .as-msg__bubble { max-width: 78%; padding: 12px 16px; border-radius: 22px 22px 6px 22px; border: 0; background: var(--cx-ink); color: var(--cx-surface); font-weight: 500; }
-.as-msg--uku .as-bars { gap: 12px; }
-.as-msg--uku .as-bar { font: var(--cx-sub); }
-.as-msg--uku .as-bar:nth-child(n+4) { display: none; } /* en el chat, solo lo principal */
-.as-msg--uku .as-stat { padding: 10px 12px; border-radius: 14px; background: var(--cx-fill); }
-.as-msg--uku .as-stat small { font: var(--cx-caption); font-weight: 500; color: var(--cx-muted); }
-.as-msg--uku .as-stat b { font: 600 17px/24px var(--sol-font, Roboto, sans-serif); }
-.as-msg--uku .as-report__row { font: var(--cx-sub); padding: 10px 0; border-color: var(--cx-line); }
-.as-msg--uku .as-note { font: 400 13px/18px var(--sol-font, Roboto, sans-serif); color: var(--cx-muted); }
-.as-replies { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; margin-top: -8px; animation: asIn .3s var(--cx-ease) .1s both; }
-.as-reply {
-  max-width: 78%; min-height: 44px; padding: 10px 16px; border-radius: 22px 22px 6px 22px;
-  border: 1.5px solid color-mix(in srgb, var(--cx-ink) 22%, transparent); background: transparent;
-  color: var(--cx-ink); font: 500 16px/22px var(--sol-font, Roboto, sans-serif); text-align: right; cursor: pointer; -webkit-tap-highlight-color: transparent;
-  transition: transform .15s ease, background-color .15s ease;
-}
-.as-reply:active { transform: scale(.97); background: var(--cx-fill); }
+.dw { border-radius: var(--bp-semantic-radius-md); }
 .sx-row__ic--uku { overflow: hidden; padding: 0; background: var(--cx-fill); }
 .sx-row__ic--uku img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
-.as-top .as-level { max-width: 100%; min-width: 0; white-space: nowrap; overflow: hidden; }
-.as-top .as-level span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; }
 
 /* Uñero: zona de agarre amplia para arrastrar y cerrar la hoja */
 .as-sheet__handle { position: relative !important; cursor: grab; touch-action: none; }
@@ -96,16 +48,7 @@
    fijos a la izquierda mientras el detalle hace scroll a la derecha. */
 @media (min-width: 960px) {
   .pf-page { max-width: none; }
-  
   .pf-scroll { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 0 56px; align-items: start; max-width: 1160px; width: 100%; margin: 0 auto; padding: 0 32px 64px; box-sizing: border-box; }
-  
-  
-  
-  
-  
-  
-  /* El asistente y las hojas se abren como panel centrado sobre un velo */
-  .as-page.open { box-shadow: 0 0 0 100vmax rgb(0 0 0 / .32); }
 }
 
 /* ---------- Montos en listas: legibles, no gritan ----------
@@ -243,7 +186,7 @@ html:not(.theme-y2k) .login-button:disabled, html:not(.theme-y2k) .sheet__cta:di
 
 /* ---- bp-action-button (acciones dentro de componentes) ----
    secondary: relleno gris · tertiary (label-only): link subrayado. */
-.pf-btn, .dw-cta, .pf-link, html:not(.theme-y2k) .home-banner__cta, html:not(.theme-y2k) .grow-cta__btn {
+.dw-cta, .pf-link, html:not(.theme-y2k) .home-banner__cta, html:not(.theme-y2k) .grow-cta__btn {
   height: var(--bp-action-button-size) !important; padding: 0 var(--bp-action-button-padding-x) !important;
   border: 0 !important; border-radius: var(--bp-semantic-radius-sm) !important;
   background: var(--bp-interaction-secondary-bg) !important; color: var(--bp-interaction-secondary-fg) !important;
@@ -251,24 +194,11 @@ html:not(.theme-y2k) .login-button:disabled, html:not(.theme-y2k) .sheet__cta:di
   font: var(--ui-label-md) !important; text-decoration: none !important;
   display: inline-flex; align-items: center; justify-content: center; gap: var(--bp-semantic-spacing-micro-sm) !important;
 }
-.pf-btn:hover, .dw-cta:hover, .pf-link:hover, html:not(.theme-y2k) .home-banner__cta:hover, html:not(.theme-y2k) .grow-cta__btn:hover { background: var(--bp-interaction-secondary-bg--hover) !important; }
-.pf-btn:active, .dw-cta:active, .pf-link:active, html:not(.theme-y2k) .home-banner__cta:active, html:not(.theme-y2k) .grow-cta__btn:active { background: var(--bp-interaction-secondary-bg--active) !important; }
+.dw-cta:hover, .pf-link:hover, html:not(.theme-y2k) .home-banner__cta:hover, html:not(.theme-y2k) .grow-cta__btn:hover { background: var(--bp-interaction-secondary-bg--hover) !important; }
+.dw-cta:active, .pf-link:active, html:not(.theme-y2k) .home-banner__cta:active, html:not(.theme-y2k) .grow-cta__btn:active { background: var(--bp-interaction-secondary-bg--active) !important; }
 html:not(.theme-y2k) .home-banner__cta .material-symbols-rounded, html:not(.theme-y2k) .grow-cta__btn .material-symbols-rounded, .dw-cta .material-symbols-rounded { font-size: var(--bp-action-button-icon-size) !important; }
 html:not(.theme-y2k) .home-banner__cta:has(.material-symbols-rounded:last-child), .dw-cta:has(.material-symbols-rounded:last-child) { padding-right: var(--bp-action-button-padding-x-icon) !important; }
-
-/* Insignias navegables (Salud financiera, nivel de Uku) → bp-action-button icon-right */
-.pf-hero__badge, .as-top .as-level, .as-level {
-  height: var(--bp-action-button-size) !important; padding: 0 var(--bp-action-button-padding-x-icon) 0 var(--bp-action-button-padding-x) !important;
-  gap: var(--bp-semantic-spacing-micro-sm) !important; border: 0 !important; border-radius: var(--bp-semantic-radius-sm) !important;
-  background: var(--bp-interaction-secondary-bg) !important; color: var(--bp-interaction-secondary-fg) !important;
-  font: var(--ui-label-md) !important;
-}
-.pf-hero__badge:hover, .as-level:hover { background: var(--bp-interaction-secondary-bg--hover) !important; }
-.pf-hero__badge:active, .as-level:active { background: var(--bp-interaction-secondary-bg--active) !important; }
-.pf-hero__badge .material-symbols-rounded, .as-level .material-symbols-rounded { font-size: var(--bp-action-button-icon-size) !important; color: inherit !important; }
-
-.pf-btn { margin-left: 54px; }
-html:not(.theme-y2k) .section__link, .cta-dashed__link, .debit-card-disabled__link, .sx-cancel, .as-entry__cta {
+html:not(.theme-y2k) .section__link, .cta-dashed__link, .debit-card-disabled__link, .sx-cancel {
   background: var(--bp-interaction-tertiary-bg) !important; color: var(--bp-interaction-tertiary-fg) !important;
   font: var(--ui-link-md) !important; text-decoration: underline !important; text-underline-offset: 3px;
   border-radius: var(--bp-semantic-radius-sm) !important;
@@ -322,7 +252,7 @@ html:not(.theme-y2k) .tab.active:hover { background: var(--bp-interaction-select
 html:not(.theme-y2k) .tab.active:active { background: var(--bp-interaction-selectable-selected-bg--active); }
 
 /* ---- bp-filter-item (chips: filtros, montos, meses, sugerencias) ---- */
-.as-chip, .push-chip, .pf-catchip, .sx-chip {
+.push-chip, .pf-catchip, .sx-chip {
   flex: 0 0 auto; height: var(--bp-semantic-size-interactive-xs) !important; min-width: 0 !important;
   padding: 0 var(--bp-semantic-spacing-micro-lg) !important; gap: var(--bp-semantic-spacing-micro-sm);
   border: 0 !important; border-radius: var(--bp-semantic-radius-sm) !important;
@@ -330,23 +260,23 @@ html:not(.theme-y2k) .tab.active:active { background: var(--bp-interaction-selec
   font: var(--ui-body-sm-semibold) !important; white-space: nowrap;
   display: inline-flex; align-items: center; justify-content: center;
 }
-.as-chip:hover, .push-chip:hover, .pf-catchip:hover, .sx-chip:hover { background: var(--bp-interaction-selectable-bg--hover) !important; }
-.as-chip:active, .push-chip:active, .pf-catchip:active, .sx-chip:active { background: var(--bp-interaction-selectable-bg--active) !important; }
-.as-chip[aria-pressed="true"], .push-chip.is-selected, .pf-chips .as-chip[aria-pressed="true"], .pf-catchip[aria-pressed="true"], .sx-chip[aria-pressed="true"] {
+.push-chip:hover, .pf-catchip:hover, .sx-chip:hover { background: var(--bp-interaction-selectable-bg--hover) !important; }
+.push-chip:active, .pf-catchip:active, .sx-chip:active { background: var(--bp-interaction-selectable-bg--active) !important; }
+.push-chip.is-selected, .pf-catchip[aria-pressed="true"], .sx-chip[aria-pressed="true"] {
   background: var(--bp-interaction-selectable-selected-bg) !important; color: var(--bp-interaction-selectable-selected-fg) !important; border-color: transparent !important;
 }
-.as-chip:disabled, .push-chip:disabled { background: var(--bp-theme-color-interaction-selection-bg-disabled) !important; color: var(--bp-theme-color-interaction-selection-fg-disabled) !important; }
-.as-chip[aria-pressed="true"], .as-radio { --sel: 1; }
+.push-chip:disabled { background: var(--bp-theme-color-interaction-selection-bg-disabled) !important; color: var(--bp-theme-color-interaction-selection-fg-disabled) !important; }
+.as-radio { --sel: 1; }
 
 /* ---- bp-navigation-button (botones de ícono de la barra superior) ---- */
-.pf-round, .as-icon-btn, .as-icon-btn.pf-round {
+.pf-round {
   display: grid; place-items: center;
   width: var(--bp-semantic-size-interactive-sm) !important; height: var(--bp-semantic-size-interactive-sm) !important;
   border: 0 !important; border-radius: var(--bp-semantic-radius-sm) !important;
   background: var(--bp-interaction-tertiary-bg) !important; color: var(--bp-interaction-tertiary-fg) !important;
 }
-.pf-round:hover, .as-icon-btn:hover { background: var(--bp-interaction-tertiary-bg--hover) !important; }
-.pf-round:active, .as-icon-btn:active { background: var(--bp-interaction-tertiary-bg--active) !important; }
+.pf-round:hover { background: var(--bp-interaction-tertiary-bg--hover) !important; }
+.pf-round:active { background: var(--bp-interaction-tertiary-bg--active) !important; }
 
 /* ---- Escala tipográfica común → tipografía semántica de Figma ----
    Las variables --cx-* (Destacados, Mis finanzas, Uku, buscador) apuntan a
@@ -394,26 +324,26 @@ html:not(.theme-y2k) .section--bleed > .section__title { padding: 0 var(--bp-lay
 /* Dentro de páginas que ya aplican grid/margin, la sección no lo suma otra vez */
 html:not(.theme-y2k) .push-page__inner .section, html:not(.theme-y2k) .cd-inner .section { padding-left: 0 !important; padding-right: 0 !important; }
 html:not(.theme-y2k) .section__title { height: var(--bp-semantic-size-interactive-xs); gap: var(--bp-semantic-spacing-micro-lg); }
-.pf-sec h2, .as-hub__head h2, .pv-sec h2, .dw-section .section__title h2, html:not(.theme-y2k) .cd-subtitle {
+.pf-sec h2, .pv-sec h2, .dw-section .section__title h2, html:not(.theme-y2k) .cd-subtitle {
   font: var(--ui-label-sm) !important; font-size: 14px !important; letter-spacing: 0 !important; color: var(--bp-theme-color-text-helper) !important;
 }
-.pf-head h1, .as-hub__hi { font: var(--cx-page) !important; letter-spacing: 0 !important; }
+.pf-head h1 { font: var(--cx-page) !important; letter-spacing: 0 !important; }
 .pv-value { font: var(--cx-amount) !important; letter-spacing: 0 !important; }
 .dw-value { font: var(--cx-amount-sm) !important; letter-spacing: 0 !important; }
 
 /* ---- bp-avatar (Display=icon): círculo avatar/bg + avatar/fg ----
    40 en transacciones y resultados; 48 (md) en productos. */
-html:not(.theme-y2k) .avatar-lg, html:not(.theme-y2k) .avatar-cat, .sx-row__ic, .as-row__icon {
+html:not(.theme-y2k) .avatar-lg, html:not(.theme-y2k) .avatar-cat, .sx-row__ic {
   width: var(--ui-ic) !important; height: var(--ui-ic) !important; flex: 0 0 var(--ui-ic) !important; border-radius: var(--bp-semantic-radius-full) !important;
   display: grid !important; place-items: center; background: var(--bp-theme-color-avatar-bg) !important; color: var(--bp-theme-color-avatar-fg) !important;
 }
 html:not(.theme-y2k) .product-row .avatar-lg, html:not(.theme-y2k) .product-row .avatar-cat {
   width: var(--bp-semantic-size-avatar-md) !important; height: var(--bp-semantic-size-avatar-md) !important; flex-basis: var(--bp-semantic-size-avatar-md) !important;
 }
-html:not(.theme-y2k) .avatar-lg .material-symbols-rounded, html:not(.theme-y2k) .avatar-cat .material-symbols-rounded, .sx-row__ic.material-symbols-rounded, .as-row__icon { font-size: var(--bp-semantic-size-icon-md) !important; }
+html:not(.theme-y2k) .avatar-lg .material-symbols-rounded, html:not(.theme-y2k) .avatar-cat .material-symbols-rounded, .sx-row__ic.material-symbols-rounded { font-size: var(--bp-semantic-size-icon-md) !important; }
 
 /* ---- bp-widget / tarjetas: radius/md (12), container/default, sin borde ---- */
-html:not(.theme-y2k) .card, .dw, .sx-card, .pf-card, .as-tile { border-radius: var(--bp-semantic-radius-md) !important; border: 0 !important; box-shadow: none !important; }
+html:not(.theme-y2k) .card, .dw, .sx-card { border-radius: var(--bp-semantic-radius-md) !important; border: 0 !important; box-shadow: none !important; }
 html:not(.theme-y2k) .card { background: var(--bp-theme-color-surface-container-default); overflow: hidden; }
 .dw { padding: var(--bp-semantic-spacing-micro-lg) 20px var(--bp-semantic-spacing-macro-sm) !important; }
 .dw-label { font: var(--ui-body-md-semibold) !important; color: var(--bp-theme-color-text-primary) !important; }
@@ -464,15 +394,12 @@ html:not(.theme-y2k) .nav-item.active, html:not(.theme-y2k) .nav-item[aria-curre
    Uku conversa: sus recomendaciones son mensajes (burbuja como la del
    chat) con una respuesta sugerida que continúa la charla en el asistente.
    ===================================================================== */
-.as-ctx__list { display: flex; flex-direction: column; gap: 12px; }
 .uku-say { display: flex; align-items: flex-start; gap: 8px; }
 .uku-say__face { flex: 0 0 32px; width: 32px; height: 32px; border-radius: 50%; overflow: hidden; }
 .uku-say__face:not(:empty) { background: var(--cx-fill); }
 .uku-say__face img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
 .uku-say__body { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
 .uku-say__bubble { margin: 0; padding: 12px 16px; border-radius: 4px 16px 16px 16px; background: var(--cx-fill); color: var(--cx-ink); font: var(--bp-semantic-typography-brand-body-md-regular-font-weight) var(--bp-semantic-typography-brand-body-md-regular-font-size)/var(--bp-semantic-typography-brand-body-md-regular-line-height) var(--sol-font, Roboto, sans-serif); }
-.uku-say__reply { display: inline-flex; align-items: center; min-height: 32px; padding: 6px 14px; border: 1px solid var(--bp-theme-color-border-primary, var(--cx-line)); border-radius: 999px; background: var(--cx-surface); color: var(--bp-interaction-selection-subtle-fg, var(--cx-ink)); font: var(--ui-body-sm-medium); text-align: left; cursor: pointer; }
-.uku-say__reply:active { transform: scale(.97); }
 
 /* =====================================================================
    HUBS (Cuentas · Tarjetas · Préstamos · Inversiones · Seguros)
@@ -483,9 +410,6 @@ html:not(.theme-y2k) .nav-item.active, html:not(.theme-y2k) .nav-item[aria-curre
 html:not(.theme-y2k) .section { padding-top: var(--bp-semantic-spacing-micro-md) !important; padding-bottom: var(--bp-semantic-spacing-macro-sm) !important; }
 html:not(.theme-y2k) .tab-panel .section > * + * { margin-top: var(--bp-semantic-spacing-macro-sm); }
 html:not(.theme-y2k) .tab-panel .section > .section__title + * { margin-top: var(--bp-semantic-spacing-micro-md); }
-
-/* Contexto en el hub de Uku y en el buscador: filas iguales al resto */
-.as-ctx__list { display: flex; flex-direction: column; border-radius: var(--ui-r-card); background: var(--cx-surface); overflow: hidden; }
 
 /* Acción terciaria (login: "Otro método de ingreso"): sin relleno, texto en tinta.
    Sigue la misma regla que los enlaces de acción de la app. */
@@ -640,7 +564,7 @@ html:not(.theme-y2k) .hub-section .quick-actions--hub { margin-top: 0 !important
 .pf-page--inline .pf-head h1 { margin: 0; color: var(--bp-interaction-tertiary-fg); }
 .pf-page--inline .pf-head .pf-round { flex: 0 0 auto; }
 
-.pf-page--inline .pf-sec, .pf-page--inline .pf-foot { padding-top: 0; margin-top: var(--bp-semantic-spacing-macro-md, 32px); }
+.pf-page--inline .pf-sec { padding-top: 0; margin-top: var(--bp-semantic-spacing-macro-md, 32px); }
 
 .pf-sec__head { display: flex; align-items: center; justify-content: space-between; gap: var(--bp-semantic-spacing-micro-md); }
 .pf-sec__sub { margin: 4px 0 0; font: var(--cx-sub); color: var(--cx-muted); }
@@ -649,27 +573,11 @@ html:not(.theme-y2k) .hub-section .quick-actions--hub { margin-top: 0 !important
 .uku-say__replies { display: flex; flex-wrap: wrap; gap: var(--bp-semantic-spacing-micro-md); }
 .uku-say__bubble .pf-spinner { display: inline-block; width: 14px; height: 14px; vertical-align: -2px; margin-right: 6px; }
 
-.pf-recs { margin-top: var(--bp-semantic-spacing-micro-lg); padding: 0 var(--bp-semantic-spacing-micro-lg); border-radius: var(--ui-r-card); background: var(--bp-theme-color-surface-container-default); }
-
-.pf-recs .pf-tx:last-child { border-bottom: 0; }
-
-.pf-recs .pf-tx { border-bottom-color: var(--cx-line); }
-.pf-add {
-  display: flex; align-items: center; justify-content: center; gap: var(--bp-semantic-spacing-micro-md); width: 100%;
-  min-height: var(--bp-semantic-size-interactive-md, 48px); margin-top: var(--bp-semantic-spacing-micro-lg);
-  border: 1px dashed var(--bp-theme-color-border-primary, var(--cx-line)); border-radius: var(--ui-r-card); background: transparent;
-  color: var(--bp-interaction-tertiary-fg); font: var(--ui-label-md); cursor: pointer;
-}
-
 /* Hojas: ajustar presupuestos y registrar un gasto */
 .pf-steps { display: flex; flex-direction: column; margin-top: 8px; }
 .pf-step { display: grid; grid-template-columns: 1fr auto 76px auto; align-items: center; gap: var(--bp-semantic-spacing-micro-md); padding: 10px 0; border-bottom: 1px solid var(--cx-line); font: var(--ui-body-md-medium); }
 .pf-step b { text-align: center; font-variant-numeric: tabular-nums; }
 .pf-step__btn { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: var(--bp-semantic-radius-sm); background: var(--bp-interaction-tertiary-bg); color: var(--bp-interaction-tertiary-fg); cursor: pointer; }
-.pf-field { display: flex; flex-direction: column; gap: 6px; margin-top: var(--bp-semantic-spacing-micro-lg); font: var(--ui-body-sm-medium); color: var(--cx-muted); }
-.pf-field input { height: 56px; padding: 0 var(--bp-semantic-spacing-micro-lg); border: 1px solid var(--bp-theme-color-field-border); border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-field-bg); color: var(--bp-theme-color-text-primary); font: var(--ui-body-md-medium); font-size: 16px; }
-.pf-field input:focus { outline: 2px solid var(--bp-interaction-selection-bg); outline-offset: -1px; }
-.pf-field input.is-error { border-color: var(--bp-theme-color-field-border-error); }
 .pf-catchips { display: flex; flex-wrap: wrap; gap: var(--bp-semantic-spacing-micro-md); }
 
 /* Beneficios: aún no hay contenido → estado "Próximamente" en vez de skeleton */
@@ -697,26 +605,6 @@ html:not(.theme-y2k) .placeholder-view h1 { margin: 0; font: var(--cx-page) !imp
 .sx-rec__acts { display: flex; gap: var(--bp-semantic-spacing-micro-md); margin-top: 20px; }
 .sx-btn { flex: 1; height: var(--bp-semantic-size-interactive-md, 48px); border: 0; border-radius: var(--bp-semantic-radius-sm); background: var(--bp-interaction-primary-bg); color: var(--bp-interaction-primary-fg); font: var(--ui-label-md); cursor: pointer; }
 .sx-btn--ghost { background: var(--bp-interaction-tertiary-bg); color: var(--bp-interaction-tertiary-fg); }
-
-/* Mis finanzas · el osito y su entorno arriba, sobre el mismo fondo de la página */
-.pf-page--inline .pf-hero { height: auto; margin: 0; background: transparent; display: flex; flex-direction: column; align-items: center; overflow: visible; }
-.pf-page--inline .pf-hero .b3d { position: relative; inset: auto; width: 100%; height: 260px; }
-.pf-page--inline .pf-hero__badge { position: relative; left: auto; right: auto; top: auto; bottom: auto; margin-top: -4px; white-space: nowrap; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); }
-.pf-page--inline .pf-hero__badge i { display: block; }
-
-/* Hoy: cuentas, tarjetas, inversiones y préstamos */
-.pf-prods { margin-top: var(--bp-semantic-spacing-micro-lg); padding: 0 var(--bp-semantic-spacing-micro-lg); border-radius: var(--ui-r-card); background: var(--bp-theme-color-surface-container-default); }
-.pf-prod { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 72px; padding: 12px 0; border: 0; border-bottom: 1px solid var(--cx-line); background: none; color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; }
-.pf-prod:last-child { border-bottom: 0; }
-.pf-prod .pf-av { width: 40px; height: 40px; flex-basis: 40px; font-size: 12px; }
-.pf-av--ic { background: var(--bp-interaction-tertiary-bg); color: var(--bp-interaction-tertiary-fg); }
-.pf-av--ic .material-symbols-rounded { font-size: 22px; }
-.pf-cardthumb { flex: 0 0 40px; width: 40px; height: 26px; border-radius: 4px; background: linear-gradient(135deg, #2b2b2b, #0d0d0d); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .08); }
-.pf-prod__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.pf-prod__main b { font: var(--ui-body-md-medium); }
-.pf-prod__main small, .pf-prod__val small { font: var(--cx-sub); color: var(--cx-muted); }
-.pf-prod__val { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; white-space: nowrap; }
-.pf-prod__val b { font: var(--ui-body-md-semibold); font-variant-numeric: tabular-nums; }
 
 /* ---------- Hojas inferiores (gestos en assets/sheets.js) ---------- */
 .as-sheet { overscroll-behavior: contain; touch-action: pan-y; }
@@ -767,44 +655,22 @@ html:not(.theme-y2k) .home-banner__slide--photo .home-banner__cta.bp-action-butt
 /* Hojas */
 .sheet, .as-sheet, .gyro-modal__content, .i18n-sheet { border-radius: var(--ui-r-sheet) var(--ui-r-sheet) 0 0 !important; }
 /* Contenedores */
-.card, .dw, .pf-card, .sx-card, .as-tile, .as-ctx__list, .as-stat, .as-report, .as-msg__bubble, .as-msg__card, .cta-dashed, .debit-card-disabled, .debit-card, .home-banner__slide, .promo, .pf-hero, .pf-navrow, .pf-linking, .as-hist__row, .pf-tx, .pf-row, .dw-item, .sub-item, .sx-row, .as-row, .pf-donut-wrap, .pf-legend__row, .as-report__row, .pf-health, .pf-pillar, .pf-consent, .as-msg--me .as-msg__bubble, .as-msg--uku .as-msg__bubble, .as-msg--uku .as-msg__bubble + .as-msg__bubble, .as-msg--uku .as-msg__card, .as-replies .as-reply {
+.card, .dw, .sx-card, .as-stat, .as-report, .cta-dashed, .debit-card-disabled, .debit-card, .home-banner__slide, .promo, .pf-linking, .pf-tx, .dw-item, .sub-item, .sx-row, .as-row, .as-report__row {
   border-radius: var(--ui-r-card) !important;
 }
 /* Botones, campos y controles */
-.login-button, .sheet__cta, .pf-cta, .pf-btn, .pf-link, .dw-cta, .home-banner__cta, .grow-cta__btn, .as-chip, .as-reply, .as-topic, .tab, .icon-button, .pf-round, .as-icon-btn, .as-level, .as-send, .as-hub__all, .sx-link, .sx-app, .sx-field, .sx-mic, .sx-cancel, .as-input input, .as-input, .as-row--btn, .pv-acts button {
+.login-button, .sheet__cta, .pf-cta, .pf-link, .dw-cta, .home-banner__cta, .grow-cta__btn, .tab, .icon-button, .pf-round, .sx-link, .sx-app, .sx-field, .sx-mic, .sx-cancel, .as-row--btn, .pv-acts button {
   border-radius: var(--ui-r-btn) !important;
 }
-.as-input input, .sx-field { border-radius: var(--ui-r-btn) !important; }
-.as-input, .as-send { border-radius: var(--ui-r-btn) !important; }
+.sx-field { border-radius: var(--ui-r-btn) !important; }
 .skeleton, .skeleton-card { border-radius: var(--ui-r-card) !important; }
 .nav-item, .nav-item__wrap { border-radius: var(--ui-r-btn) !important; }
-.pf-prods, .pf-health__card, .pf-sum2, .pf-mcard, .pf-say__hint, .pf-say, .pf-pillar { border-radius: var(--ui-r-card) !important; }
-.pf-page--inline .pf-prods, .pf-page--inline .pf-recs, .ai-think, .ai-blur, .ai-composer, .ai-page .ai-card { border-radius: var(--ui-r-card) !important; }
+.pf-mcard { border-radius: var(--ui-r-card) !important; }
+.ai-think, .ai-blur, .ai-composer, .ai-page .ai-card { border-radius: var(--ui-r-card) !important; }
 .ai-composer input, .ai-composer textarea { border-radius: var(--ui-r-btn) !important; }
-html .pf-page--inline .pf-prods, html .pf-page--inline .pf-recs { border-radius: var(--ui-r-card) !important; }
-
-/* Cuentas conectadas: interruptor de "se analiza" por cuenta o producto */
-.pf-row--incl { width: 100%; text-align: left; border: 0; background: transparent; color: inherit; cursor: pointer; }
-.pf-row--incl.is-off { opacity: .55; }
-.pf-row--incl .pf-row__val { display: flex; flex-direction: row; align-items: center; gap: 12px; }
-.pf-row--incl .pf-row__val > b { order: 0; }
-.pf-switch { position: relative; width: 44px; height: 26px; border-radius: 99px; background: var(--cx-ink); flex: 0 0 44px; transition: background-color .2s ease; }
-.pf-switch::after { content: ''; position: absolute; top: 3px; left: 21px; width: 20px; height: 20px; border-radius: 50%; background: var(--cx-surface); transition: left .2s var(--cx-ease); }
-.pf-row--incl.is-off .pf-switch { background: color-mix(in srgb, var(--cx-ink) 22%, transparent); }
-.pf-row--incl.is-off .pf-switch::after { left: 3px; }
 
 /* Aviso de Uku: es una IA y puede equivocarse; sus sugerencias no son recomendaciones */
 .uku-disc { margin: 8px 0 0; font: 400 12px/16px var(--sol-font, Roboto, sans-serif); color: var(--cx-muted); text-align: center; }
-.as-composer .uku-disc { padding: 0 24px; }
-.pf-row--incl .pf-switch { display: inline-block !important; width: 44px !important; height: 26px !important; min-width: 44px; border-radius: 99px !important; padding: 0 !important; margin: 0 0 0 0 !important; }
-.pf-row--incl .pf-switch::after { width: 20px !important; height: 20px !important; top: 3px !important; border-radius: 50% !important; }
-
-/* =====================================================================
-   MIS FINANZAS: las pestañas de meses son el componente de Inicio
-   (.tabs > .tabs__scroll > .tab), con su misma posición fija y su mismo
-   cambio de contenido. Título, pestañas y oso no se mueven.
-   ===================================================================== */
-.pf-page--inline .pf-tabs { margin: 0; width: 100%; box-sizing: border-box; }
 .pf-page--inline .pf-scroll.is-switch > :not(.pf-head):not(.pf-tabs):not(.pf-hero) { animation: fxRise .5s cubic-bezier(.22, 1, .36, 1) both; }
 .pf-page--inline .pf-scroll.is-switch > :nth-child(4) { animation-delay: .05s; }
 .pf-page--inline .pf-scroll.is-switch > :nth-child(5) { animation-delay: .1s; }
@@ -812,17 +678,11 @@ html .pf-page--inline .pf-prods, html .pf-page--inline .pf-recs { border-radius:
 .pf-page--inline .pf-scroll.is-switch > :nth-child(n+7) { animation-delay: .2s; }
 @media (prefers-reduced-motion: reduce) { .pf-page--inline .pf-scroll.is-switch > * { animation: none !important; } }
 
-/* Clima de Uku: detalle en el fondo del héroe, sin peso visual */
-.pf-wx { position: absolute; left: var(--bp-layout-grid-margin, 24px); bottom: 12px; margin: 0; z-index: 1; display: inline-flex; align-items: center; gap: 4px; font: 500 13px/18px var(--sol-font, Roboto, sans-serif); color: var(--cx-muted); opacity: .8; pointer-events: none; }
-.pf-wx .material-symbols-rounded { font-size: 18px; }
-
 /* =====================================================================
    SIN SOMBRAS: la app no usa sombras (ni el globo de Uku). Se conserva
    el anillo de foco para teclado.
    ===================================================================== */
 html:not(.theme-y2k) *:not(:focus-visible) { box-shadow: none !important; }
-/* Excepción de marca: los elementos de IA llevan un brillo de color (especular, sin profundidad) */
-html:not(.theme-y2k) .pf-say__bubble, html:not(.theme-y2k) .pf-say__hint { box-shadow: none !important; }
 
 /* =====================================================================
    TRANSICIONES UNIFICADAS (iOS)
@@ -836,11 +696,11 @@ html:not(.theme-y2k) .pf-say__bubble, html:not(.theme-y2k) .pf-say__hint { box-s
 /* Todas las pantallas completas se empujan desde la derecha (también Uku,
    el análisis, la ayuda y el detalle de tarjeta). La de abajo se corre y se
    oscurece desde assets/navegacion.js, que además maneja el gesto de regreso. */
-html .push-page, html .as-page, html .ai-page, html .sp {
+html .push-page, html .ai-page, html .sp {
   transform: translate3d(100vw, 0, 0); visibility: hidden;
   transition: transform var(--ux-push) var(--ux-curve), visibility 0s linear var(--ux-push) !important;
 }
-html .push-page.open, html .as-page.open, html .ai-page.open, html .sp.open {
+html .push-page.open, html .ai-page.open, html .sp.open {
   transform: none; visibility: visible; opacity: 1;
   transition: transform var(--ux-push) var(--ux-curve), visibility 0s !important;
 }
@@ -853,7 +713,7 @@ html .card-detail.closing { animation: uxPushOut var(--ux-push) var(--ux-curve) 
 html[data-theme="dark"] .ux-scrim { background: rgb(0 0 0 / .4); }
 html.ux-dragging, html.ux-dragging * { user-select: none; -webkit-user-select: none; }
 @media (prefers-reduced-motion: reduce) {
-  html .push-page, html .as-page, html .ai-page, html .sp { transition-duration: 1ms !important; }
+  html .push-page, html .ai-page, html .sp { transition-duration: 1ms !important; }
   html .card-detail.entering, html .card-detail.closing { animation-duration: 1ms !important; }
 }
 .sheet, .as-sheet { transition: transform var(--ux-sheet) var(--ux-curve) !important; }
@@ -867,13 +727,13 @@ html:not(.theme-y2k) .tab-panel.is-active > .grow-cta { animation: uxFade .3s va
 /* Análisis de Uku: trazos neutros (sin degradados ni sombras), como el resto de la app */
 .ai-page .uku-disc { margin: 12px 24px calc(env(safe-area-inset-bottom, 0px) + 20px); font: 400 12px/16px var(--sol-font, Roboto, sans-serif); color: var(--cx-muted); text-align: center; }
 .ai-page .ai-composer { margin-bottom: 0 !important; }
-.ai-page .ai-chip, .ai-page .uku-say__reply--ai { border-color: var(--cx-line) !important; }
+.ai-page .ai-chip { border-color: var(--cx-line) !important; }
 
 /* =====================================================================
    IA: trazo degradado azul → amarillo con brillo de color (sin sombra de
    profundidad). El borde es de 1 px; el halo es un resplandor suave.
    ===================================================================== */
-html:not(.theme-y2k) .ai-page .ai-composer, html:not(.theme-y2k) .ai-page .ai-sum, html:not(.theme-y2k) .ai-page .ai-wall, html:not(.theme-y2k) .ai-page .uku-say__reply--ai {
+html:not(.theme-y2k) .ai-page .ai-composer, html:not(.theme-y2k) .ai-page .ai-sum, html:not(.theme-y2k) .ai-page .ai-wall {
   border: 1px solid transparent !important;
   background: linear-gradient(var(--bp-theme-color-surface-container-default), var(--bp-theme-color-surface-container-default)) padding-box, var(--ai-grad) border-box !important;
   box-shadow: 0 0 18px -4px color-mix(in srgb, var(--ai-b) 38%, transparent), 0 0 6px -2px color-mix(in srgb, var(--ai-c) 30%, transparent) !important;
@@ -882,12 +742,6 @@ html:not(.theme-y2k) .ai-page .ai-badge {
   background: var(--ai-grad) !important; color: #fff !important;
   box-shadow: 0 0 10px -2px color-mix(in srgb, var(--ai-b) 55%, transparent) !important;
 }
-
-/* Escenario de Uku: el oso se corre a la derecha (data-shift en el lienzo 3D)
-   para que el globo de texto, a la izquierda, no lo tape. */
-.pf-page--inline .pf-hero .b3d[data-shift] .b3d__fallback { transform: translateX(17%); }
-.pf-page--inline .pf-say__hint { max-width: min(160px, 42%); }
-.pf-page--inline .pf-say.is-open .pf-say__bubble::after { left: 67%; }
 
 /* =====================================================================
    WIDGETS: sin botones primarios. Las acciones (Pagar, Agregar) son

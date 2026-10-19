@@ -355,3 +355,8 @@ button.pfm-tx { width: 100%; border-left: 0; border-right: 0; border-top: 0; bac
 .pfm-dock__ask > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pfm-dock__ask .material-symbols-rounded { color: var(--bp-interaction-tertiary-fg); }
 .pf-host .pfm .pf-scroll { padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px)); }
+
+/* Arma tu presupuesto: planes recomendados y reparto por grupo */
+.pfm-planes { margin-top: var(--bp-semantic-spacing-micro-lg, 16px); text-align: left; }
+.pfm-rec { display: inline-block; margin-right: 4px; padding: 0 8px; border-radius: 999px; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: var(--cx-caption); font-weight: 600; }
+.pf-step > span small { display: block; font: var(--cx-caption); color: var(--cx-muted); }

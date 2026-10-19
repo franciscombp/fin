@@ -11,7 +11,14 @@
    ===================================================================== */
 (function () {
   'use strict';
-  if (new URLSearchParams(location.search).get('app') === 'clasica') return;
+  // La versión clásica: la pestaña vuelve a ser Mis finanzas
+  if (new URLSearchParams(location.search).get('app') === 'clasica') {
+    document.addEventListener('DOMContentLoaded', function () {
+      var n = document.querySelector('.nav-item[data-view="1"]'); if (!n) return;
+      n.querySelector('.nav-item__label').textContent = 'Mis finanzas'; n.querySelector('.nav-item__wrap').innerHTML = '<span class="material-symbols-rounded">monitoring</span>';
+    });
+    return;
+  }
   var root = document.documentElement;
   root.classList.add('app-uku');
   var ASSET = (document.currentScript && document.currentScript.src || location.href).replace(/[^/]*$/, '');
@@ -24,6 +31,8 @@
   var view, host, panel, ayudaSlot, headT, fileIn, sheet, globoEl, props, pills, results, chat, input, b3d = null;
   var msgs = [], gi = 0, nota = null, ultimo = 0, saludado = false;
   var pend = null; // lo que saliste a hacer: al volver, Uku pregunta cómo te fue
+  var agente = null; // con una persona del banco: lo que escribes le llega a ella
+  var casos = []; try { casos = JSON.parse(localStorage.getItem('uk-casos') || '[]'); } catch (e) {}
 
   var PRUEBA = ['¿En qué se me va la plata?', '¿Cuánto debo?', 'Bloquear mi tarjeta', 'Transferir'];
 
@@ -164,13 +173,27 @@
   function preguntar(q) {
     q = String(q || '').trim(); if (!q) return;
     me(q); input.blur(); fx('select'); if (b3d) b3d.play('nod');
+    if (agente) return responde();
+    // Pedir una persona es pedir una persona: sin rodeos
+    if (/persona|humano|asesor|agente|ejecutiv/.test(norm(q))) { persona(); return mostrar(); }
+    // Su mundo: Uku te cuenta cómo está, en primera persona (sus flores, su bosque y su ánimo son tus finanzas)
+    if (/mundo|bosque|flores|como estas|tu animo|como te sientes|quien eres/.test(norm(q)) && window.PFM && PFM.world) { mundo(); return mostrar(); }
     var fin = finanzas(q), acts = acciones(q).slice(0, 2), H = ayuda(q, 3);
-    if (fin) uku(fin.t, (fin.s || []).slice(0, 2).map(function (c) { return b('ask:' + c, c, null, 'is-ask'); }));
+    if (fin) uku(fin.t, (fin.acts || []).map(function (a) { return b('pfm:' + a[1], a[0], 'arrow_forward'); }).concat((fin.s || []).slice(0, 2).map(function (c) { return b('ask:' + c, c, null, 'is-ask'); })));
     // Si preguntas cómo, cuánto o qué, primero la ayuda; si pides hacer algo, primero la acción
     else if (H.length && (!acts.length || PREG.test(norm(q)))) return ayudaEn(H[0], H.slice(1), acts);
-    else if (acts.length) uku(acts.length === 1 ? 'Te llevo a ' + acts[0].label.toLowerCase() + '. ¿Lo hacemos?' : 'Puedo llevarte a hacerlo:', acts.map(function (a) { return b('act:' + a.label, a.label, a.icon); }).concat(H.slice(0, 1).map(function (h) { return b(h.kind + ':' + h.i, h.t, 'help', 'is-ask'); })));
+    else if (acts.length) uku(acts.length === 1 ? 'Te llevo a ' + acts[0].label.toLowerCase() + '. ¿Lo hacemos?' : 'Puedo llevarte a hacerlo:', acts.map(function (a) { return b('act:' + a.label, a.label, a.icon); }).concat(H.slice(0, 1).map(function (h) { return b(h.kind + ':' + h.i, h.t, 'help', 'is-ask'); }))
+      // Si es un problema (un cobro, un reclamo), una persona también está a un toque
+      .concat(/cobr|problema|reclam|reconozc|fraude|estaf|robo|rob/.test(norm(q)) ? [b('persona', 'Hablar con una persona', 'support_agent', 'is-ask')] : []));
     else uku('Todavía no sé eso. Puedo contarte de tu plata, llevarte a hacer algo o pasarte con una persona del banco.', PRUEBA.slice(0, 2).map(function (c) { return b('ask:' + c, c, null, 'is-ask'); }).concat([b('persona', 'Hablar con una persona', 'support_agent')]));
     mostrar();
+  }
+  function mundo() {
+    var W = PFM.world(), s = resumen(), pend = s && s.n;
+    uku('Te cuento cómo está mi mundo: ' + W.map(function (x) { return '<span class="uk-msg__q">' + esc(x.l.replace(/^Su /, 'Mi ').replace(/^Sus /, 'Mis ')) + ': ' + esc(String(x.v).toLowerCase()) + '</span>' + esc(x.d); }).join('') +
+      '<span class="uk-msg__q">Todo lo que ves aquí lo cuidas tú con tus finanzas.</span>',
+      (pend ? [b('pfm:game', 'Clasificar conmigo', 'category')] : []).concat([b('pfm:world', 'Qué significa cada cosa', 'park', 'is-ask'), b('ok', 'Qué lindo, gracias', 'thumb_up', 'is-ask')]));
+    if (b3d) b3d.play('happy');
   }
   // Una pregunta frecuente o un tutorial, respondido por Uku aquí mismo
   function ayudaEn(h, otras, acts) {
@@ -191,18 +214,19 @@
     // Lo nuevo de Uku aparece después de un "escribiendo…" corto, como en una conversación de verdad
     var nuevo = -1; msgs.forEach(function (m, i) { if (m.uku != null && m.nuevo && nuevo < 0) nuevo = i; });
     if (nuevo >= 0 && !RM) {
-      if (!escribe) escribe = setTimeout(function () { escribe = null; msgs.forEach(function (m) { m.nuevo = false; }); pintarChat(); if (b3d) b3d.play('nod'); }, 650);
+      if (!escribe) escribe = setTimeout(function () { escribe = null; msgs.forEach(function (m) { m.nuevo = false; }); pintarChat(); if (b3d) b3d.play('nod'); }, msgs[nuevo].ag ? 1500 : 650);
     } else { msgs.forEach(function (m) { m.nuevo = false; }); nuevo = -1; }
     var vis = nuevo >= 0 ? msgs.slice(0, nuevo) : msgs, last = -1;
     vis.forEach(function (m, i) { if (m.uku != null) last = i; });
     chat.innerHTML = vis.map(function (m, i) {
       if (m.me) return '<div class="uk-me' + (m.visto ? ' is-seen' : '') + '"><p>' + esc(m.me) + '</p></div>';
-      var on = i === last, cara = i === 0 || vis[i - 1].uku == null;
-      return '<div class="uk-msg' + (on ? '' : ' is-old') + (m.visto ? ' is-seen' : '') + '">' + (cara ? '<span class="uk-msg__face" aria-hidden="true">' + face() + '</span>' : '<span class="uk-msg__face is-gap"></span>') +
-        '<div class="uk-msg__body"><p class="uk-msg__b">' + m.uku + '</p>' + m.extra +
+      if (m.sys) return '<p class="uk-sys' + (m.visto ? ' is-seen' : '') + '">' + esc(m.sys) + '</p>';
+      var on = i === last, cara = i === 0 || vis[i - 1].uku == null || !vis[i - 1].ag !== !m.ag;
+      return '<div class="uk-msg' + (m.ag ? ' is-agent' : '') + (on ? '' : ' is-old') + (m.visto ? ' is-seen' : '') + '">' + (cara ? '<span class="uk-msg__face" aria-hidden="true">' + cara_(m) + '</span>' : '<span class="uk-msg__face is-gap"></span>') +
+        '<div class="uk-msg__body">' + (cara && m.ag ? '<small class="uk-msg__who">' + esc(agente ? agente.n : 'Asesora') + ' · Pichibank</small>' : '') + '<p class="uk-msg__b">' + m.uku + '</p>' + m.extra +
         (on && m.btns.length && nuevo < 0 ? '<div class="uk-msg__acts">' + m.btns.map(function (x, j) { return '<button class="uk-chip ' + (x.cls || '') + '" style="--d:' + j * 50 + 'ms" data-k="' + esc(x.k) + '" data-l="' + esc(x.t) + '">' + (x.ic ? ic(x.ic) : '') + esc(x.t) + '</button>'; }).join('') + '</div>' : '') + '</div></div>';
     }).join('') +
-      (nuevo >= 0 ? '<div class="uk-msg is-typing"><span class="uk-msg__face" aria-hidden="true">' + face() + '</span><div class="uk-msg__body"><p class="uk-msg__b uk-dots" aria-label="Uku está escribiendo"><i></i><i></i><i></i></p></div></div>' : '');
+      (nuevo >= 0 ? '<div class="uk-msg is-typing' + (msgs[nuevo].ag ? ' is-agent' : '') + '"><span class="uk-msg__face" aria-hidden="true">' + cara_(msgs[nuevo]) + '</span><div class="uk-msg__body"><p class="uk-msg__b uk-dots" aria-label="' + (msgs[nuevo].ag ? 'Está escribiendo' : 'Uku está escribiendo') + '"><i></i><i></i><i></i></p></div></div>' : '');
     msgs.forEach(function (m, i) { if (i < vis.length) m.visto = true; }); // lo ya visto no vuelve a animarse
     modo();
     requestAnimationFrame(function () { chat.scrollTo({ top: chat.scrollHeight, behavior: RM ? 'auto' : 'smooth' }); });
@@ -215,7 +239,50 @@
   // Pasar con una persona, sin salir de Uku
   function persona() {
     var c = Soporte.contact();
-    uku('Te paso con una persona del banco. Le cuento lo que ya hablamos para que no tengas que repetirlo. ¿Cómo prefieres?', c.opts.map(function (o) { return b(o.k, o.t, o.icon); }));
+    uku('Te paso con una persona del banco. Le cuento lo que ya hablamos para que no tengas que repetirlo. ¿Cómo prefieres?', c.opts.map(function (o) { return b('hum:' + o.k, o.t, o.icon); }));
+  }
+  function cara_(m) { return m.ag ? '<span class="uk-av">' + esc(agente ? agente.ini : 'AR') + '</span>' : face(); }
+  // De qué se trata: lo último que preguntaste, para que la persona no te lo vuelva a pedir
+  function tema() { for (var i = msgs.length - 1; i >= 0; i--) if (msgs[i].me && !/persona|asesor|llam/i.test(msgs[i].me)) return msgs[i].me; return 'Consulta desde Uku'; }
+  function nuevoCaso(t, como) {
+    var c = Soporte.contact(), x = { id: c.caso, t: t, como: como, f: new Date().toISOString().slice(0, 10) };
+    casos = casos.filter(function (y) { return y.id !== x.id; }); casos.unshift(x);
+    try { localStorage.setItem('uk-casos', JSON.stringify(casos)); } catch (e) {}
+    return x;
+  }
+  function resumenCaso(x) {
+    var s = resumen();
+    return '<span class="uk-case"><b>Lo que le paso · caso ' + esc(x.id) + '</b><span>Tema: ' + esc(x.t) + '</span><span>Cliente verificado en la app' + (s && s.nombre ? ' (' + esc(s.nombre.split(' ')[0]) + ')' : '') + '</span><span>Ya revisó la ayuda de Uku</span></span>';
+  }
+  // Una persona del banco, en esta misma conversación
+  function humano(k) {
+    var c = Soporte.contact(), x = nuevoCaso(tema(), k);
+    if (k === 'agent') {
+      uku('Listo, te conecto con una persona. Esto es lo que le paso:', [], resumenCaso(x)); pintarChat();
+      setTimeout(function () { msgs.push({ sys: 'Buscando un asesor disponible…' }); pintarChat(); }, 1400);
+      setTimeout(function () {
+        agente = { n: c.agente.name, ini: c.agente.ini, i: 0, R: c.respuestas };
+        msgs.push({ sys: c.agente.name + ' se unió. Desde aquí te responde una persona, no Uku.' });
+        var s = resumen(), nom = s && s.nombre ? ', ' + s.nombre.split(' ')[0] : '';
+        msgs.push({ uku: esc('Hola' + nom + '. Soy ' + c.agente.name.split(' ')[0] + '. Ya vi tu caso sobre «' + x.t + '». ¿Me cuentas un poco más para revisarlo?'), btns: [], extra: '', nuevo: true, ag: true });
+        input.placeholder = 'Escríbele a ' + c.agente.name.split(' ')[0]; fx('success'); pintarChat();
+      }, 3200);
+      return;
+    }
+    if (k === 'call') { uku('Llama al <b>' + esc(c.phone) + '</b>, las 24 horas. Dale este código y ya sabrán de qué se trata: <b>' + esc(x.id) + '</b>.', [b('tel:' + c.phone.replace(/\s/g, ''), 'Llamar ahora', 'call'), b('ok', 'Listo, gracias', 'thumb_up', 'is-ask')]); return pintarChat(); }
+    uku('¿Cuándo te llamamos? Ya tendrán el resumen de tu caso ' + esc(x.id) + '.', [b('cb:en unos minutos', 'Ahora', 'call'), b('cb:en 30 minutos', 'En 30 minutos', 'schedule'), b('cb:mañana entre 9:00 y 11:00', 'Mañana en la mañana', 'wb_sunny')]);
+    pintarChat();
+  }
+  function responde() {
+    var a = agente, t = a.R[Math.min(a.i++, a.R.length - 1)], fin = a.i >= a.R.length;
+    msgs.push({ uku: esc(t), btns: fin ? [b('chau', 'No, eso es todo', 'thumb_up', 'is-ask')] : [], extra: '', nuevo: true, ag: true });
+    mostrar();
+  }
+  // Termina la conversación con la persona y vuelve Uku
+  function chau() {
+    var x = casos[0]; msgs.push({ sys: (agente ? agente.n : 'La asesora') + ' cerró el chat' + (x ? ' · caso ' + x.id : '') });
+    agente = null; input.placeholder = 'Escríbele a Uku';
+    resuelto('Tu caso ' + (x ? x.id + ' ' : '') + 'queda en Solicitudes para que veas cómo va. ¿Algo más?');
   }
 
   /* ---------- Salir a hacer algo y volver ----------
@@ -223,8 +290,22 @@
      vuelves a su pantalla (cerraste la hoja, el juego o regresaste desde
      otra sección), te confirma lo que cambió o te pregunta si lo lograste. */
   var CAPAS = '.sp.open, .pfm-game.open, .as-sheet.open, .push-page.open, .as-page.open, .card-detail.open, .sx.open, .ai-page.open';
-  function salir() {}
-  function enUku() { return view.classList.contains('active') && !view.classList.contains('uk-fin') && !document.querySelector(CAPAS); }
+  // Solo si ya estaban conversando: desde su mundo, el chat no se abre solo; Uku lo celebra en su globo
+  function salir(label, decir) {
+    pend = { l: label, fuera: false, cambio: false, t: Date.now(), chat: msgs.length > 0 };
+    if (decir && msgs.length) { uku('Te llevo a ' + esc(label.toLowerCase()) + '. Cuando vuelvas, me cuentas cómo te fue.'); pintarChat(); }
+  }
+  function enUku() { return view.classList.contains('active') && !view.classList.contains('uk-fin') && !view.classList.contains('uk-ayuda') && !document.querySelector(CAPAS); }
+  setInterval(function () {
+    if (!pend || !host) return;
+    if (!enUku()) { pend.fuera = true; return; }
+    if (!pend.fuera) { if (Date.now() - pend.t > 2500) pend = null; return; } // no se abrió nada
+    var p = pend; pend = null;
+    if (!p.chat) { if (p.cambio) { nota = '¡Listo, ya quedó! ¿Te ayudo con algo más?'; pintarGlobo(); if (b3d) b3d.play('happy'); setTimeout(function () { nota = null; if (!msgs.length) pintarGlobo(); }, 6000); } return; }
+    if (p.cambio) { uku('¡Listo, ya quedó! ¿Te ayudo con algo más?', [b('ok', 'No, eso es todo', 'thumb_up', 'is-ask'), b('consejo', 'Qué más me propones', 'lightbulb', 'is-ask')]); if (b3d) b3d.play('happy'); }
+    else uku('¿Pudiste ' + esc(p.l.toLowerCase()) + '?', [b('ok', 'Sí, listo', 'thumb_up', 'is-ask'), b('no', 'No, ayúdame', null, 'is-ask')]);
+    pintarChat(); fx('tap');
+  }, 500);
 
 
   /* ---------- Su mundo en 3D ---------- */
@@ -270,7 +351,8 @@
      Lo que se puede pedir o revisar, a un toque; la búsqueda es la universal (contexto: solicitudes). */
   var solSec = null;
   function solRows() {
-    var rows = [row('rev', 'receipt_long', 'Revisar un consumo que no reconoces', 'Pedimos la revisión por ti')];
+    var top = casos.length ? '<p class="uk-sec__l">Tus casos</p>' + casos.slice(0, 3).map(function (x) { return row('caso:' + x.id, 'pending_actions', 'Caso ' + x.id + ' · ' + x.t, x.como === 'agent' ? 'En revisión · respuesta en máximo 48 horas' : x.como === 'call' ? 'Abierto · llamaste al call center' : 'Te llamamos con el resumen'); }).join('') + '<p class="uk-sec__l">Lo que puedes pedir</p>' : '<p class="uk-sec__l">Lo que puedes pedir</p>';
+    var rows = [top + row('rev', 'receipt_long', 'Revisar un consumo que no reconoces', 'Pedimos la revisión por ti')];
     ['Préstamos', 'Mis tarjetas', 'Seguridad'].forEach(function (l) { var a = accion(l); if (a) rows.push(row('act:' + l, a.icon, l, 'Pedir o revisar')); });
     rows.push(row('persona', 'support_agent', 'Hablar con una persona', 'Le cuento a Uku lo que pasó'));
     return rows.join('');
@@ -281,7 +363,7 @@
       solSec = document.createElement('section'); solSec.className = 'uk-sec'; solSec.hidden = true; solSec.setAttribute('aria-label', 'Solicitudes');
       solSec.innerHTML = '<div class="uk-sec__top"><button class="uk-sec__back" data-s="back" aria-label="Volver">' + ic('arrow_back') + '</button><p class="uk-sec__t">Solicitudes</p>' +
         '<button class="uk-sec__back uk-sec__find" data-s="buscar" aria-label="Buscar">' + ic('search') + '</button></div>' +
-        '<div class="uk-sec__body">' + '<p class="uk-sec__l">Lo que puedes pedir</p>' + solRows() + '</div>';
+        '<div class="uk-sec__body"></div>';
       host.appendChild(solSec);
       solSec.addEventListener('click', function (e) {
         var b = e.target.closest('[data-s]'); if (!b) return;
@@ -290,10 +372,12 @@
         if (k === 'back') { solSec.hidden = true; host.classList.remove('uk-in-sec'); return; }
         if (k === 'buscar') return window.Buscador && Buscador.open('solicitudes');
         if (k === 'rev') return window.Soporte && Soporte.review();
+        if (k === 'caso') { var cx = casos.filter(function (y) { return y.id === x; })[0]; solSec.hidden = true; host.classList.remove('uk-in-sec'); if (cx) { me('¿Cómo va mi caso ' + cx.id + '?'); uku('Tu caso ' + esc(cx.id) + ' sobre «' + esc(cx.t) + '» está en revisión. Te llega un correo con la respuesta en máximo 48 horas.', [{ k: 'hum:agent', t: 'Escribirle a un asesor', ic: 'support_agent', cls: 'is-ask' }, { k: 'ok', t: 'Gracias', ic: 'thumb_up', cls: 'is-ask' }]); } return pintarChat(); }
         if (k === 'persona') { solSec.hidden = true; host.classList.remove('uk-in-sec'); persona(); return pintarChat(); }
         if (k === 'act') { var a = accion(x); if (a && window.Buscador) { solSec.hidden = true; host.classList.remove('uk-in-sec'); Buscador.run(a); } }
       });
     }
+    solSec.querySelector('.uk-sec__body').innerHTML = solRows();
     solSec.hidden = false; host.classList.add('uk-in-sec'); fx('open');
   }
   /* ---------- Secciones: menú de la cabecera ---------- */
@@ -373,10 +457,14 @@
       case 'ayuda': fx('tap'); salir('Ayuda'); return seccion('ayuda');
       case 'sol': return abrirSol();
       case 'persona': persona(); return pintarChat();
+      case 'hum': return humano(v);
+      case 'tel': location.href = 'tel:' + v; return;
+      case 'cb': uku('Listo. Te llaman ' + esc(v) + ' al 099 *** 4521, con el resumen de tu caso. Lo ves en Solicitudes.', [b('ok', 'Gracias', 'thumb_up', 'is-ask')]); fx('success'); return pintarChat();
+      case 'chau': return chau();
       case 'ok': return resuelto();
       case 'no': uku('Cuéntame con tus palabras qué necesitas, o te paso con una persona.', [b('persona', 'Hablar con una persona', 'support_agent')]); pintarChat(); return setTimeout(function () { input.focus(); }, 300);
       case 'consejo': { var A = consejos(); if (!A.length) return resuelto('Por ahora no tengo nada más. ¡Vas muy bien!'); var x = A[0]; uku(esc(x.di || x.t), x.act ? [b('pfm:' + x.act, x.actl, 'arrow_forward')] : []); return pintarChat(); }
-      case 'cerrar': msgs = []; pend = null; fx('tap'); return pintar();
+      case 'cerrar': msgs = []; pend = null; agente = null; fx('tap'); return pintar();
     }
   }
   // Un solo punto de entrada: la lupa y la ayuda llevan a Uku (antes que el buscador y el soporte)
@@ -422,7 +510,7 @@
       if (view.classList.contains('active') && !view.classList.contains('uk-fin') && !view.classList.contains('uk-ayuda')) {
         window.scrollTo(0, 0); setTimeout(escena, 120); // después del PFM, que también usa la escena
         // Una conversación vieja sin nada pendiente no se queda colgada
-        if (msgs.length && !pend && Date.now() - ultimo > 3 * 60 * 1000) { msgs = []; pintar(); }
+        if (msgs.length && !pend && !agente && Date.now() - ultimo > 3 * 60 * 1000) { msgs = []; pintar(); }
       }
     }).observe(view, { attributes: true, attributeFilter: ['class'] });
     if (tt) new MutationObserver(titulo).observe(tt, { childList: true, characterData: true, subtree: true });
