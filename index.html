@@ -6257,6 +6257,7 @@
                 // la posición real en pantalla sin ese problema, y de ahí
                 // se calcula su lugar dentro del scroll del track.
                 const el = slides[pos];
+                if (!el) return; // el autoplay sigue en otras vistas: sin slide, no hay a dónde ir
                 const elLeftInTrack = el.getBoundingClientRect().left - bannerTrack.getBoundingClientRect().left + bannerTrack.scrollLeft;
                 // El padding del track es el grid/margin del DS (lo fija el CSS).
                 const target = elLeftInTrack - (parseFloat(getComputedStyle(bannerTrack).paddingLeft) || 0);
