@@ -130,7 +130,7 @@ html:not(.theme-y2k) .uk-globo__go.btn { height: auto !important; min-height: 0 
 .uk-props[hidden] { display: none; }
 .uk-props__track { display: flex; align-items: flex-start; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .uk-props__track::-webkit-scrollbar { display: none; }
-.uk-prop { position: relative; flex: 0 0 100%; scroll-snap-align: start; box-sizing: border-box; padding: 12px 14px; border-radius: 16px 16px 16px 4px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 18px rgba(15, 38, 92, .10); display: flex; flex-direction: column; gap: 4px; }
+.uk-prop { cursor: pointer; position: relative; flex: 0 0 100%; scroll-snap-align: start; box-sizing: border-box; padding: 12px 14px; border-radius: 16px 16px 16px 4px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 18px rgba(15, 38, 92, .10); display: flex; flex-direction: column; gap: 4px; }
 .uk-prop::after { content: ''; position: absolute; left: 12px; bottom: -8px; border: 8px solid transparent; border-bottom: 0; border-top-color: var(--bp-theme-color-surface-container-default); }
 .uk-prop__tag { margin: 0 !important; display: flex; align-items: center; gap: 4px; font: var(--cx-caption); color: var(--cx-muted); }
 .uk-prop__tag .material-symbols-rounded { font-size: 16px; }
@@ -293,3 +293,23 @@ html.uk-chatting .uk { top: 0 !important; bottom: 0 !important; }
 /* En Mis finanzas o Ayuda, el encabezado se ve aunque haya una conversación esperando detrás */
 .app-uku .view--finanzas.uk-fin .uk.is-chat .uk-head, .app-uku .view--finanzas.uk-ayuda .uk.is-chat .uk-head { opacity: 1; transform: none; pointer-events: auto; }
 .uk-eye { margin-left: auto; }
+
+/* ---------- Jerarquía: que se entienda qué estás haciendo ----------
+   En su mundo no hay título: Uku y su saludo son la voz principal; el menú queda solo, arriba.
+   En Mis finanzas y Ayuda sí hay título grande, porque son secciones. */
+.app-uku .view--finanzas:not(.uk-fin):not(.uk-ayuda) .uk-head__t { display: none; }
+.uk::before { height: 96px; }
+.uk-globo__t { font: var(--ui-body-lg-regular, 400 17px/24px sans-serif); font-size: 17px; line-height: 24px; }
+/* Las propuestas: la etiqueta dice de qué trata (categoría) y la frase es lo importante */
+.uk-prop__tag { text-transform: uppercase; letter-spacing: .4px; font-size: 11px; }
+/* La tarjeta: su título dice de qué va; la pregunta que la originó, debajo y pequeña */
+.uk-card__q { font: var(--ui-body-lg-semibold, 600 17px/22px sans-serif); font-size: 17px; line-height: 22px; white-space: normal; }
+/* Orden en su mundo: el menú, su saludo (su voz) y, debajo, lo que trae (las propuestas) */
+.uk-globo { order: 2; max-width: 300px; }
+.uk-props { order: 3; }
+/* El botón de bajar la conversación solo existe en la conversación */
+.uk:not(.is-chat) .uk-chathead { opacity: 0; pointer-events: none; }
+/* Las propuestas van como texto sobre su mundo, sin caja: la única burbuja es la voz de Uku */
+.uk-prop { background: none; box-shadow: none; padding: 2px 4px; }
+.uk-prop::after { display: none; }
+.uk-props__dots { margin-top: 6px; }
