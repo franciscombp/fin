@@ -299,7 +299,7 @@
       secreto = aBase32(crypto.getRandomValues(new Uint8Array(20)));
       guardar(TOTP_KEY, secreto);
     }
-    abrir('Clave digital', function (cuerpo) {
+    hoja('Clave digital', function (cuerpo) {
       var codigo = h('p', { class: 'ing__codigo', text: '··· ···' });
       var barra = h('div', { class: 'ing__barra' }, [h('i')]);
       var cuenta = h('p', { class: 'ing__texto' });
@@ -427,6 +427,94 @@
     if (typeof showToast === 'function') showToast('Sin internet: esta función necesita conexión');
   }, true);
   setInterval(sonda, 30000);
+
+  /* ---------- Bottom sheets del login (no piden ingreso) ---------- */
+  var hojaEl = null, hojaBk = null;
+  function hoja(titulo, pintar) {
+    if (!hojaEl) {
+      hojaBk = h('div', { class: 'as-sheet-back' });
+      hojaEl = h('div', { class: 'as-sheet ing-hoja', role: 'dialog', 'aria-labelledby': 'ing-hoja-titulo' }, [
+        h('div', { class: 'as-sheet__handle' }),
+        h('h3', { class: 'ing-hoja__titulo', id: 'ing-hoja-titulo' }),
+        h('div', { class: 'ing-hoja__body' })
+      ]);
+      hojaBk.addEventListener('click', cerrarHoja);
+      document.body.appendChild(hojaBk);
+      document.body.appendChild(hojaEl);
+    }
+    if (limpiar) { limpiar(); limpiar = null; }
+    hojaEl.querySelector('#ing-hoja-titulo').textContent = titulo;
+    var cuerpo = hojaEl.querySelector('.ing-hoja__body');
+    cuerpo.textContent = '';
+    pintar(cuerpo);
+    hojaBk.classList.add('open');
+    hojaEl.classList.add('open');
+  }
+  function cerrarHoja() {
+    if (limpiar) { limpiar(); limpiar = null; }
+    if (hojaEl) { hojaEl.classList.remove('open'); hojaBk.classList.remove('open'); }
+  }
+
+  // El QR de demostración lo arma index.html (FAKE_QR_SVG); si no está, no se muestra nada
+  function mostrarQR(cuerpo) {
+    cuerpo.append(
+      h('div', { class: 'ing-qr' }),
+      h('p', { class: 'ing__texto', text: 'Muéstralo para que te paguen desde cualquier banco.' })
+    );
+    cuerpo.querySelector('.ing-qr').innerHTML = typeof FAKE_QR_SVG === 'string' ? FAKE_QR_SVG : '';
+  }
+
+  // Tickets de transporte ya comprados: se muestran sin internet (demo local)
+  var TICKETS_DEMO = [
+    { nombre: 'Metro de Quito', detalle: 'Pase de 5 viajes · 3 disponibles' },
+    { nombre: 'Bus urbano', detalle: 'Viaje sencillo · usado' }
+  ];
+  function mostrarTickets(cuerpo) {
+    var tickets = JSON.parse(leer('pb_tickets') || 'null') || TICKETS_DEMO;
+    if (!tickets.length) { cuerpo.append(h('p', { class: 'ing__texto', text: 'Aún no tienes tickets comprados.' })); return; }
+    tickets.forEach(function (t) {
+      cuerpo.append(h('div', { class: 'ing-ticket' }, [
+        h('span', { class: 'material-symbols-rounded', text: 'directions_transit', 'aria-hidden': 'true' }),
+        h('div', { class: 'ing-ticket__texto' }, [
+          h('p', { class: 'ing-ticket__nombre', text: t.nombre }),
+          h('p', { class: 'ing__texto', text: t.detalle })
+        ])
+      ]));
+    });
+  }
+
+  // Ayuda: los temas frecuentes; al tocar uno se abre su respuesta
+  function mostrarAyuda(cuerpo) {
+    var temas = window.Soporte && Soporte.faqs ? Soporte.faqs(5) : [];
+    temas.forEach(function (t) {
+      var fila = h('button', { class: 'ing-ayuda__fila', type: 'button' }, [
+        h('span', { class: 'material-symbols-rounded', text: t.icon || 'help', 'aria-hidden': 'true' }),
+        h('span', { text: t.t })
+      ]);
+      fila.addEventListener('click', function () { cerrarHoja(); if (window.Soporte) Soporte.openFaq(t.i); });
+      cuerpo.append(fila);
+    });
+    var centro = h('button', { class: 'login-button login-button--tertiary', type: 'button', text: 'Centro de ayuda' });
+    centro.addEventListener('click', function () { cerrarHoja(); if (window.Soporte) Soporte.open(); });
+    cuerpo.append(centro);
+  }
+
+  // Accesos del login que se abren como bottom sheet (no piden ingreso)
+  var HOJAS_LOGIN = {
+    'Cobrar con QR': function () { hoja('Mostrar mi QR', mostrarQR); },
+    'Clave digital': function () { token(); },
+    'Soporte': function () { hoja('Ayuda', mostrarAyuda); },
+    'Pagar transporte': function () { hoja('Tickets transporte', mostrarTickets); }
+  };
+  document.addEventListener('click', function (e) {
+    var enLogin = document.getElementById('login-screen');
+    if (!enLogin || !enLogin.classList.contains('active')) return;
+    var el = e.target.closest && e.target.closest('[data-action]');
+    if (!el || !HOJAS_LOGIN[el.dataset.action]) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    HOJAS_LOGIN[el.dataset.action]();
+  }, true);
 
   /* ---------- Texto del botón principal ---------- */
   function nombreBiometria() {
