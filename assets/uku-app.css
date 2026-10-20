@@ -965,6 +965,7 @@ html.app-uku .uk.is-home .uk-globo__go.btn { min-height: 40px !important; paddin
 .uk.is-fin .uk-panel .uk-head { touch-action: none; }
 /* Lo que Uku ya recomienda en su globo no se repite como fila del hub */
 .uk.is-fin[data-rec="game"] .pfm-hub .pfm-hub__task { display: none; }
+.uk.is-fin[data-rec="game"] .pfm-hub .pfm-hub__card:has(> .pfm-hub__task:only-child) { display: none; }
 /* El botón del globo late cuando cambia su número (Clasificar 6 → 5) */
 @keyframes ukTick { 0% { transform: scale(1) } 40% { transform: scale(1.06) } 100% { transform: scale(1) } }
 .uk-globo__go.is-tick { animation: ukTick .36s ease; }
@@ -1093,3 +1094,52 @@ html.app-uku .uk.is-home .uk-globo__go.btn { min-height: 40px !important; paddin
 .uk-ay__chip { min-height: 36px; padding: 0 14px; border: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); border-radius: var(--bp-semantic-radius-full, 999px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: var(--uk-sm); cursor: pointer; }
 .uk-ay__chip:active { transform: scale(.97); }
 .uk.is-chat .uk-ayuda-slot .sp-found { margin-top: 8px; }
+
+/* =====================================================================
+   Patrón de pantalla de la app (el de Perfil), con tokens del DS, en las hojas del asistente:
+   fondo de página gris (surface-page-alt), etiqueta de sección en gris (body-sm-medium, text-helper, 40 px),
+   tarjeta blanca (surface-container-default, radio md 12, sin borde ni sombra), filas de 64 px
+   (padding macro-md 24 × 16, gap micro-lg 12, divisor fino), icono en círculo de 40 (avatar-bg, icono md 24),
+   título body-md-semibold, línea secundaria body-sm text-helper, chevron icon-sm icon-secondary.
+   ===================================================================== */
+.uk {
+  --uk-pat-row: var(--ui-row, 64px); --uk-pat-ic: var(--ui-ic, 40px);
+  --uk-pat-label: var(--ui-body-sm-medium, 500 14px/20px sans-serif); --uk-pat-title: var(--ui-body-md-semibold, 600 16px/24px sans-serif); --uk-pat-sub: var(--ui-body-sm-regular, 400 14px/20px sans-serif);
+}
+.app-uku .view--finanzas.uk-ayuda .uk.is-chat .uk-panel, .app-uku .view--finanzas.uk-fin .uk.is-chat .uk-panel { background: var(--bp-theme-color-surface-page-alt, #f5f5f5); }
+.uk.is-chat .uk-panel .uk-head .uk-head__x { background: var(--bp-theme-color-surface-container-default); }
+.uk.is-chat .uk-panel > .uk-cta { background: var(--bp-theme-color-surface-page-alt, #f5f5f5); box-shadow: none; }
+
+/* Etiqueta de sección + tarjeta: iguales en Soporte (.uk-ay) y Mis finanzas (.pfm-hub) */
+.uk-ay__sec { margin: 0; padding: var(--bp-semantic-spacing-micro-md, 8px) 0 var(--bp-semantic-spacing-macro-sm, 16px); }
+.uk.is-chat .uk-ayuda-slot .sp-hub > .uk-ay__sec:first-of-type { margin-top: 0; }
+.uk-ay__label, .app-uku .uk-panel .pfm-hub__label { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--bp-semantic-spacing-micro-lg, 12px); min-height: var(--bp-semantic-size-interactive-xs, 40px); padding: 0 0 var(--bp-semantic-spacing-micro-md, 8px); }
+.uk-ay__label h2, .app-uku .uk-panel .pfm-hub__label h3 { margin: 0 !important; font: var(--uk-pat-label) !important; letter-spacing: 0 !important; text-transform: none !important; color: var(--bp-theme-color-text-helper, var(--cx-muted)) !important; }
+.uk-ay__label p, .app-uku .uk-panel .pfm-hub__label p { margin: 2px 0 0 !important; font: var(--uk-pat-sub); color: var(--bp-theme-color-text-helper, var(--cx-muted)); }
+.app-uku .uk-panel .pfm-hub__label { margin: var(--bp-semantic-spacing-macro-sm, 16px) 0 0; }
+.app-uku .uk-panel .pfm-hub__link { flex: 0 0 auto; padding: 0; border: 0; background: none; font: var(--uk-pat-label); color: var(--bp-theme-color-text-interactive, var(--bp-interaction-tertiary-fg)); cursor: pointer; }
+.uk-ay__card, .app-uku .uk-panel .pfm-hub__card { display: flex; flex-direction: column; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); overflow: hidden; }
+.uk-ay__row, .app-uku .uk-panel .pfm-hub__row { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-lg, 12px); width: 100%; min-height: var(--uk-pat-row); margin: 0; padding: var(--bp-semantic-spacing-macro-md, 24px) var(--bp-layout-card-padding, 16px); border: 0; border-bottom: var(--bp-semantic-border-thin, 1px) solid var(--bp-theme-color-border-divider); border-radius: 0; background: var(--bp-interaction-row-bg, var(--bp-theme-color-row-bg)); color: var(--bp-theme-color-text-primary); text-align: left; font: inherit; cursor: pointer; }
+.uk-ay__card > :last-child, .app-uku .uk-panel .pfm-hub__card > :last-child { border-bottom: 0; }
+.uk-ay__row:active, .app-uku .uk-panel .pfm-hub__row:active { background: var(--bp-interaction-row-bg--active, var(--bp-theme-color-row-bg-active)); opacity: 1; }
+.uk-ay__ic, .app-uku .uk-panel .pfm-hub__ic { display: grid; place-items: center; flex: 0 0 var(--uk-pat-ic); width: var(--uk-pat-ic); height: var(--uk-pat-ic); border-radius: var(--bp-semantic-radius-full, 999px); background: var(--bp-theme-color-avatar-bg); color: var(--bp-theme-color-avatar-fg, var(--bp-interaction-tertiary-fg)); }
+.uk-ay__ic .material-symbols-rounded, .app-uku .uk-panel .pfm-hub__ic .material-symbols-rounded { font-size: var(--bp-semantic-size-icon-md, 24px); }
+.app-uku .uk-panel .pfm-hub__ic.is-accent { background: var(--bp-interaction-accent-bg, #0f265c); color: var(--bp-interaction-accent-fg, #fff); }
+.uk-ay__main, .app-uku .uk-panel .pfm-hub__pl { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.uk-ay__main b, .app-uku .uk-panel .pfm-hub__pl b { font: var(--uk-pat-title); color: var(--bp-theme-color-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uk-ay__main small, .app-uku .uk-panel .pfm-hub__pl small { font: var(--uk-pat-sub); color: var(--bp-theme-color-text-helper, var(--cx-muted)); }
+.uk-ay__row > .material-symbols-rounded:last-child, .app-uku .uk-panel .pfm-hub__chev { flex: 0 0 auto; font-size: var(--bp-semantic-size-icon-sm, 20px); color: var(--bp-theme-color-icon-secondary, var(--cx-muted)); }
+.app-uku .uk-panel .pfm-hub__row em { flex: 0 0 auto; font: var(--uk-pat-title); font-style: normal; color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
+.app-uku .uk-panel .pfm-hub__row em.is-in { color: var(--bp-theme-color-status-success-text, #1b8a3a); }
+.app-uku .uk-panel .pfm-hub__gbar { display: block; height: 3px; margin-top: 6px; border-radius: 2px; background: var(--bp-theme-color-border-divider, var(--cx-line)); overflow: hidden; }
+.app-uku .uk-panel .pfm-hub__gbar u { display: block; height: 100%; border-radius: 2px; background: var(--bp-interaction-tertiary-fg); }
+/* Héroe y acciones de Mis finanzas sobre el fondo de página */
+.app-uku .uk-panel .pfm-hub { padding: 0 var(--bp-layout-grid-margin, 16px) var(--bp-semantic-spacing-macro-md, 24px); }
+.app-uku .uk-panel .pfm-hub__acts { margin: var(--bp-semantic-spacing-macro-md, 24px) 0 var(--bp-semantic-spacing-macro-sm, 16px); gap: var(--bp-semantic-spacing-micro-lg, 12px); }
+.app-uku .uk-panel .pfm-hub__btn { background: var(--bp-theme-color-surface-container-default); }
+.app-uku .uk-panel .pfm-hub__card + .pfm-hub__label { margin-top: var(--bp-semantic-spacing-macro-sm, 16px); }
+.app-uku .uk-panel .pfm-hub__head, .app-uku .uk-panel .pfm-hub__h, .app-uku .uk-panel .pfm-hub__sub, .app-uku .uk-panel .pfm-hub__list, .uk-ay__head, .uk-ay__tiles, .uk-ay__chips { display: none; }
+.uk.is-chat .uk-ayuda-slot .sp-hub { padding: 0; }
+.uk.is-chat .uk-ayuda-slot .sp-body { padding: 0 var(--bp-layout-grid-margin, 16px) var(--bp-semantic-spacing-macro-md, 24px) !important; }
+/* Mismo título de hoja en Mis finanzas y Soporte */
+.uk.is-fin .uk-panel .uk-head__t { font: var(--uk-title); color: var(--bp-theme-color-text-primary); }
