@@ -369,7 +369,7 @@ html:not(.theme-y2k) .tab.active:active { background: var(--bp-interaction-selec
   --cx-body: var(--ui-body-md-medium);
   --cx-sub: var(--ui-body-sm-medium);
   --cx-caption: var(--bp-semantic-typography-brand-body-xs-semibold-font-weight) var(--bp-semantic-typography-brand-body-xs-semibold-font-size)/var(--bp-semantic-typography-brand-body-xs-semibold-line-height) var(--sol-font, Roboto, sans-serif);
-  --cx-page: var(--bp-semantic-typography-brand-headline-sm-font-weight) var(--bp-semantic-typography-brand-headline-sm-font-size)/var(--bp-semantic-typography-brand-headline-sm-line-height) var(--sol-font, Roboto, sans-serif);
+  --cx-page: var(--bp-semantic-typography-brand-title-lg-font-weight) var(--bp-semantic-typography-brand-title-lg-font-size)/var(--bp-semantic-typography-brand-title-lg-line-height) var(--sol-font, Roboto, sans-serif); /* bp-page-header: brand/title/lg */
   --cx-amount: var(--bp-semantic-typography-brand-numeric-md-font-weight) var(--bp-semantic-typography-brand-numeric-md-font-size)/var(--bp-semantic-typography-brand-numeric-md-line-height) var(--sol-font, Roboto, sans-serif);
   --cx-amount-sm: var(--bp-semantic-typography-brand-numeric-xs-font-weight) var(--bp-semantic-typography-brand-numeric-xs-font-size)/var(--bp-semantic-typography-brand-numeric-xs-line-height) var(--sol-font, Roboto, sans-serif);
   --cx-line: var(--bp-theme-color-border-divider);
@@ -648,7 +648,7 @@ html:not(.theme-y2k) .hub-section .quick-actions--hub { margin-top: 0 !important
 .pf-sum { margin: var(--bp-semantic-spacing-macro-sm, 20px) var(--bp-layout-grid-margin) 0; padding: var(--bp-semantic-spacing-macro-sm, 20px); border-radius: var(--ui-r-card); background: var(--bp-theme-color-surface-container-default); }
 .pf-sum p { margin: 0; }
 .pf-sum__label { font: var(--cx-sub); color: var(--cx-muted); }
-.pf-sum__value { margin-top: 4px !important; font: var(--cx-amount); font-size: 36px; line-height: 44px; letter-spacing: -1px; font-variant-numeric: tabular-nums; color: var(--bp-theme-color-text-primary); }
+.pf-sum__value { margin-top: 4px !important; font: var(--cx-amount); letter-spacing: 0; font-variant-numeric: tabular-nums; color: var(--bp-theme-color-text-primary); } /* bp-amount md */
 .pf-sum__stats { display: flex; gap: var(--bp-semantic-spacing-macro-sm, 24px); margin-top: var(--bp-semantic-spacing-micro-lg); }
 .pf-sum__stats div { display: flex; flex-direction: column; gap: 2px; }
 .pf-sum__stats small { font: var(--cx-sub); color: var(--cx-muted); }

@@ -4200,7 +4200,7 @@
         <!-- Header -->
         <div class="login-screen__header">
             <div class="login-screen__header-logo">
-                <img src="./assets/pichibank-logo.svg" alt="Pichibank" class="login-logo">
+                <img src="./assets/pichibank-logo.svg" alt="Pichibank" class="login-logo bp-logo">
             </div>
             <div class="login-screen__header-actions">
                 <button class="icon-button login-lang" aria-label="Idioma" data-i18n-picker>
@@ -5114,6 +5114,13 @@
                     </div>
                 </div>
 
+                <div class="bp-tips-security" style="margin-bottom: 12px;" role="note">
+                    <div class="bp-tips-security__content">
+                        <p class="bp-tips-security__title">Nunca compartas tus claves</p>
+                        <p class="bp-tips-security__body">Pichibank no te pide claves ni códigos por llamada, SMS o correo. Si alguien lo hace, repórtalo desde Seguridad.</p>
+                    </div>
+                    <div class="bp-tips-security__art" aria-hidden="true"><span class="material-symbols-rounded">shield_locked</span></div>
+                </div>
                 <div class="card">
                     <button class="list-item" data-action="Datos personales">
                         <span class="avatar-cat"><span class="material-symbols-rounded">person</span></span>
@@ -7030,7 +7037,7 @@
         const balanceToggle = document.getElementById('balance-toggle');
         const balanceIcon = document.getElementById('balance-toggle-icon');
         let balanceValue = balance.textContent;
-        const balanceMasked = '$ ****,**';
+        const balanceMasked = '$ **,**';
         let hidden = false;
         // Cuenta de 0 al valor final ("$ 1.906,04") con easing; respeta el formato
         function countUp(el, finalText, ms = 650) {
