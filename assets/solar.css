@@ -732,3 +732,59 @@ html { background: var(--bp-theme-color-surface-page-alt); }
 }
 .push-input::placeholder { color: var(--bp-theme-color-text-placeholder); opacity: 1; }
 .push-input[aria-invalid="true"] { border-color: var(--bp-theme-color-field-border-error); color: var(--bp-theme-color-status-error-text); }
+
+/* =====================================================================
+   Components 4 [Beta] · página "Contenido" (sync 2026-10-20)
+   bp-amount · bp-section · bp-section-title · bp-page-header ·
+   bp-tips-security · bp-logo
+   ===================================================================== */
+
+/* ---- bp-amount: monto con ojo (numeric sm/md/lg + bp-action-button secondary) ----
+   Display=hidden muestra "$ **,**" (variante Blind), no desvanece el texto. */
+.bp-amount { display: inline-flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md); }
+.bp-amount__value {
+  display: inline-flex; align-items: center; gap: var(--bp-semantic-spacing-micro-sm);
+  color: var(--bp-theme-color-text-primary); white-space: nowrap; font-variant-numeric: tabular-nums; letter-spacing: 0;
+  font: var(--bp-semantic-typography-brand-numeric-sm-font-weight) var(--bp-semantic-typography-brand-numeric-sm-font-size)/var(--bp-semantic-typography-brand-numeric-sm-line-height) var(--sol-font);
+}
+.bp-amount--md .bp-amount__value { font: var(--bp-semantic-typography-brand-numeric-md-font-weight) var(--bp-semantic-typography-brand-numeric-md-font-size)/var(--bp-semantic-typography-brand-numeric-md-line-height) var(--sol-font); }
+.bp-amount--lg .bp-amount__value { font: var(--bp-semantic-typography-brand-numeric-lg-font-weight) var(--bp-semantic-typography-brand-numeric-lg-font-size)/var(--bp-semantic-typography-brand-numeric-lg-line-height) var(--sol-font); }
+.bp-amount__toggle {
+  display: inline-grid; place-items: center; flex: 0 0 auto;
+  width: var(--bp-action-button-size); height: var(--bp-action-button-size); padding: 0; border: 0;
+  border-radius: var(--bp-semantic-radius-sm);
+  background: var(--bp-theme-color-interaction-secondary-bg); color: var(--bp-theme-color-interaction-secondary-fg);
+  cursor: pointer; transition: background-color .15s var(--sol-ease);
+}
+.bp-amount--lg .bp-amount__toggle { width: 40px; height: 40px; }
+.bp-amount__toggle .material-symbols-rounded { font-size: var(--bp-action-button-icon-size); }
+.bp-amount__toggle:hover { background: var(--bp-theme-color-interaction-secondary-bg-hover); }
+.bp-amount__toggle:active { background: var(--bp-theme-color-interaction-secondary-bg-pressed); }
+.bp-amount__toggle:focus-visible { outline: none; box-shadow: var(--sol-focus); }
+/* El saldo del Inicio es un bp-amount sm: oculto = "$ **,**", sin desvanecer */
+.amount.is-masking { opacity: 1; filter: none; }
+
+/* ---- bp-section: título (40) + contenido; 8 arriba, 16 abajo, margen de grilla a los lados ---- */
+.bp-section { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md); padding: var(--bp-semantic-spacing-micro-md) var(--bp-layout-grid-margin) var(--bp-semantic-spacing-macro-sm); }
+.bp-section-title__action { height: 32px; padding: 0 var(--bp-action-button-padding-x); } /* bp-action-button tertiary/link */
+
+/* ---- bp-page-header: encabezado expandido (title/lg + body/md/medium), align left|center ---- */
+.bp-page-header { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md); padding: var(--bp-semantic-spacing-xl) var(--bp-layout-grid-margin); }
+.bp-page-header--center { text-align: center; align-items: center; }
+.bp-page-header__title { margin: 0; color: var(--bp-theme-color-interaction-tertiary-fg); font: var(--bp-semantic-typography-brand-title-lg-font-weight) var(--bp-semantic-typography-brand-title-lg-font-size)/var(--bp-semantic-typography-brand-title-lg-line-height) var(--sol-font); letter-spacing: 0; }
+.bp-page-header__subtitle { margin: 0; color: var(--bp-theme-color-text-secondary); font: var(--bp-semantic-typography-brand-body-md-medium-font-weight) var(--bp-semantic-typography-brand-body-md-medium-font-size)/var(--bp-semantic-typography-brand-body-md-medium-line-height) var(--sol-font); }
+
+/* ---- bp-tips-security: tarjeta de tip con ilustración (status/info/bg-subtle, radius/md) ---- */
+.bp-tips-security {
+  display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md);
+  padding: var(--bp-semantic-spacing-macro-sm); border-radius: var(--bp-semantic-radius-md);
+  background: var(--bp-theme-color-status-info-bg-subtle); color: var(--bp-theme-color-text-primary);
+}
+.bp-tips-security__content { flex: 1 0 0; min-width: 0; display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md); }
+.bp-tips-security__title { margin: 0; font: var(--bp-semantic-typography-brand-body-md-semibold-font-weight) var(--bp-semantic-typography-brand-body-md-semibold-font-size)/var(--bp-semantic-typography-brand-body-md-semibold-line-height) var(--sol-font); }
+.bp-tips-security__body { margin: 0; font: var(--bp-semantic-typography-brand-body-sm-regular-font-weight) var(--bp-semantic-typography-brand-body-sm-regular-font-size)/var(--bp-semantic-typography-brand-body-sm-regular-line-height) var(--sol-font); }
+.bp-tips-security__art { flex: 0 0 96px; width: 96px; align-self: stretch; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm); }
+.bp-tips-security__art .material-symbols-rounded { font-size: 48px; color: var(--bp-theme-color-icon-primary); font-variation-settings: 'FILL' 0, 'opsz' 48; }
+
+/* ---- bp-logo: logotipo en contextos UI (size/logo/sm = 28) ---- */
+.bp-logo { display: block; height: var(--bp-semantic-size-logo-sm); width: auto; }

@@ -288,7 +288,7 @@ html:not(.theme-y2k) .tab.active:active { background: var(--bp-interaction-selec
   --cx-body: var(--ui-body-md-medium);
   --cx-sub: var(--ui-body-sm-medium);
   --cx-caption: var(--bp-semantic-typography-brand-body-xs-semibold-font-weight) var(--bp-semantic-typography-brand-body-xs-semibold-font-size)/var(--bp-semantic-typography-brand-body-xs-semibold-line-height) var(--sol-font, Roboto, sans-serif);
-  --cx-page: var(--bp-semantic-typography-brand-headline-sm-font-weight) var(--bp-semantic-typography-brand-headline-sm-font-size)/var(--bp-semantic-typography-brand-headline-sm-line-height) var(--sol-font, Roboto, sans-serif);
+  --cx-page: var(--bp-semantic-typography-brand-title-lg-font-weight) var(--bp-semantic-typography-brand-title-lg-font-size)/var(--bp-semantic-typography-brand-title-lg-line-height) var(--sol-font, Roboto, sans-serif); /* bp-page-header: brand/title/lg */
   --cx-amount: var(--bp-semantic-typography-brand-numeric-md-font-weight) var(--bp-semantic-typography-brand-numeric-md-font-size)/var(--bp-semantic-typography-brand-numeric-md-line-height) var(--sol-font, Roboto, sans-serif);
   --cx-amount-sm: var(--bp-semantic-typography-brand-numeric-xs-font-weight) var(--bp-semantic-typography-brand-numeric-xs-font-size)/var(--bp-semantic-typography-brand-numeric-xs-line-height) var(--sol-font, Roboto, sans-serif);
   --cx-line: var(--bp-theme-color-border-divider);

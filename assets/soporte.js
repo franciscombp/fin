@@ -282,7 +282,10 @@
     var c = CATS.filter(function (x) { return x[0] === id; })[0];
     var fs = FAQ.map(function (f, i) { return f.cat === id ? i : -1; }).filter(function (i) { return i >= 0; });
     var ts = TUT.map(function (u, i) { return u.cat === id ? i : -1; }).filter(function (i) { return i >= 0; });
-    showPage('<section class="sp-sec"><h2>Preguntas frecuentes</h2><div class="sp-list">' + fs.map(faqRow).join('') + '</div></section>' +
+    var tip = id === 'seguridad' ? '<div class="bp-tips-security" style="margin-top:16px" role="note"><div class="bp-tips-security__content"><p class="bp-tips-security__title">Nunca compartas tus claves</p>' +
+      '<p class="bp-tips-security__body">Pichibank no te pide claves ni códigos por llamada, SMS o correo. Si alguien lo hace, repórtalo desde Seguridad.</p></div>' +
+      '<div class="bp-tips-security__art" aria-hidden="true"><span class="material-symbols-rounded">shield_locked</span></div></div>' : '';
+    showPage(tip + '<section class="sp-sec"><h2>Preguntas frecuentes</h2><div class="sp-list">' + fs.map(faqRow).join('') + '</div></section>' +
       (ts.length ? '<section class="sp-sec"><h2>Tutoriales</h2><div class="sp-list">' + ts.map(tutRow).join('') + '</div></section>' : ''), c[2]);
   }
   function tutPage(i) {
