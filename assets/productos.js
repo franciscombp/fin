@@ -117,7 +117,7 @@
         var cob = ds.filter(function (d) { return d.clase === 'cobrar'; });
         return { grupos: [
             { titulo: 'Hipotecas', filas: hip.map(fila2) },
-            { titulo: 'Préstamos', filas: pre.map(fila2) },
+            { titulo: 'Personales', filas: pre.map(fila2) },
             { titulo: 'Por cobrar', filas: cob.map(function (d) { return { nombre: d.producto, sub: d.institucion, monto: money(d.saldo), label: 'Te deben', ic: ICO.cobrar }; }) }],
           total: { l: 'Saldo pendiente', v: suma(hip.concat(pre)), tras: 1 },
           hero: { ic: 'payments', t: 'Sin préstamos', s: 'Si necesitas dinero, Uku te muestra opciones según tu perfil.' } };
