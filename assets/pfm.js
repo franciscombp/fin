@@ -1456,10 +1456,10 @@
   function navHTML() {
     var a = animo(), pr = pres();
     var row = function (k, t, s) { return '<button class="pfm-nav__row" data-pfm="' + k + '"><span><b>' + t + '</b>' + (s ? '<small>' + s + '</small>' : '') + '</span><span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></button>'; };
+    var tile = function (k, ic, t, s) { return '<button class="pfm-tile" data-pfm="' + k + '"><span class="material-symbols-rounded" aria-hidden="true">' + ic + '</span><b>' + t + '</b><small>' + s + '</small></button>'; };
     return '<section class="pf-sec pfm-nav">' +
-      row('gastos', T('Tus gastos'), T('Por semana, mes o año, y en qué se fue')) +
+      '<div class="pfm-tiles">' + tile('gastos', 'bar_chart', T('Gastos'), T('Por semana, mes o año')) + tile('pres', 'speed', T('Presupuesto'), pr.general ? T('{m} al mes', { m: money0(pr.general) }) : T('Todavía no tienes uno')) + '</div>' +
       row('alltx', T('Movimientos'), T('Todo lo que entró y salió')) +
-      row(pr.general ? 'pres' : 'pres', T('Presupuesto'), pr.general ? T('{m} al mes', { m: money0(pr.general) }) : T('Todavía no tienes uno')) +
       (a.n ? row('game', T('Ordenar mis gastos'), T(a.n === 1 ? '1 consumo sin clasificar' : '{n} consumos sin clasificar', { n: a.n })) : '') +
       row('who', T('El mundo de Uku'), T('Qué significa cada cosa')) +
       '</section>';
