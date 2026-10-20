@@ -126,6 +126,7 @@
     if (es) host.classList.remove('is-buscar');
     // Sin barra superior ni inferior: la tarjeta ocupa la pantalla y se baja con la flecha de arriba
     document.documentElement.classList.toggle('uk-chatting', view.classList.contains('active'));
+    document.documentElement.classList.toggle('uk-fin', view.classList.contains('active') && view.classList.contains('uk-fin'));
     // Al conversar, Uku sale de su mundo (que queda como foto borrosa detrás), se acerca y baja a la
     // esquina junto a la barra (como Tolan): deja el espacio a las tarjetas sin irse
     if (b3d && era !== es) {
@@ -220,6 +221,8 @@
           '<button class="uk-globo__next" data-k="siguiente" data-l="Siguiente">Siguiente' + ic('chevron_right') + '</button></div>' : '');
     }
     globoEl.classList.remove('is-new'); void globoEl.offsetWidth; globoEl.classList.add('is-new');
+    // Lo que Uku ya recomienda no se repite como fila en la hoja (p. ej. «Ordenar mis gastos»)
+    host.setAttribute('data-rec', fin && x && /^pfm:/.test(x.k) ? x.k.slice(4) : '');
     reencuadrar();
     // Uku hace lo que dice: saluda, habla, se preocupa o celebra según el mensaje
     if (b3d) b3d.play(hola ? 'wave' : nota ? 'happy' : !x ? 'happy' : x.kind === 'warn' ? 'worried' : 'talk');
@@ -956,6 +959,12 @@
   document.addEventListener('uku:clasificado', function (e) {
     if (!b3d) return; var s = resumen(), restan = e.detail && e.detail.restan;
     floresExtra++; if (s) b3d.setBloom(Math.min(100, (s.bloom || 0) + floresExtra * 2));
+    // El globo cuenta contigo: «Clasificar 6» pasa a «Clasificar 5» con un pequeño latido
+    var go = globoEl.querySelector('.uk-globo__go[data-k="pfm:game"]'), tt = globoEl.querySelector('.uk-globo__t');
+    if (go && restan > 0) {
+      go.textContent = 'Clasificar ' + Math.min(10, restan); go.classList.remove('is-tick'); void go.offsetWidth; go.classList.add('is-tick');
+      if (tt) tt.textContent = restan === 1 ? 'Tienes 1 consumo sin clasificar' : 'Tienes ' + restan + ' consumos sin clasificar';
+    }
     if (restan === 0) { b3d.setMood('feliz'); b3d.play('happy'); nota = 'Ordenaste todo. Ya estoy contento otra vez.'; pintarGlobo(); setTimeout(function () { nota = null; pintarGlobo(); }, 5000); }
   });
   document.addEventListener('uku:ahorro', function () {
