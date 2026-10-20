@@ -2364,6 +2364,9 @@
         /* Sin sesión: la ayuda y los accesos públicos se abren por encima del inicio de sesión */
         html body.sin-sesion .sp,
         html body.sin-sesion .push-page { z-index: 600; }
+        /* Sin internet: solo entra con Face ID o huella y se ven los accesos que funcionan sin red */
+        html body.sin-red [data-online-only], html body.sin-red #btn-login-other { display: none !important; }
+        .login-offline { margin: 0 0 8px; text-align: center; font-size: 14px; color: var(--bp-theme-color-text-secondary); }
         /* El selector de idioma también se abre desde el login */
         html body.sin-sesion .as-sheet-back { z-index: 650; }
         html body.sin-sesion .as-sheet { z-index: 651; }
@@ -3973,21 +3976,21 @@
         <div class="login-screen__panel">
             <!-- Acciones rápidas (mismo estilo que Destacado) -->
             <div class="login-qa">
-                <button class="quick-action" data-action="Pagar con QR">
+                <button class="quick-action" data-action="Pagar con QR" data-online-only>
                     <span class="quick-action__icon"><span class="material-symbols-rounded">qr_code_scanner</span></span>
                     <span class="quick-action__label">Pagar a un QR</span>
                 </button>
-                <button class="quick-action" data-action="Retirar sin tarjeta">
+                <button class="quick-action" data-action="Retirar sin tarjeta" data-online-only>
                     <span class="quick-action__icon"><span class="material-symbols-rounded">payments</span></span>
                     <span class="quick-action__label">Retirar sin tarjeta</span>
                 </button>
                 <button class="quick-action" data-action="Pagar transporte">
                     <span class="quick-action__icon"><span class="material-symbols-rounded">directions_transit</span></span>
-                    <span class="quick-action__label">Pagar transporte</span>
+                    <span class="quick-action__label">Tickets transporte</span>
                 </button>
                 <button class="quick-action" data-action="Cobrar con QR">
                     <span class="quick-action__icon"><span class="material-symbols-rounded">qr_code_2</span></span>
-                    <span class="quick-action__label">Mostrar como QR</span>
+                    <span class="quick-action__label">Mostrar mi QR</span>
                 </button>
             </div>
 
@@ -3997,6 +4000,7 @@
                     Ingresar
                 </button>
                 <div class="loading-spinner" id="loading-spinner" style="display: none;"></div>
+                <p class="login-offline" id="login-offline" hidden>Sin internet: solo puedes ingresar con Face ID o huella.</p>
                 <button class="login-button login-button--tertiary" id="btn-login-other">
                     Otro método de ingreso
                 </button>
@@ -5226,7 +5230,7 @@
             'Recibir dinero': 'control_point_duplicate', 'Pagar servicios': 'emoji_objects',
             'Pagar tarjeta': 'credit_card', 'Retirar sin tarjeta': 'payments', 'Más transacciones': 'apps',
             'Recargar celular': 'smartphone', 'Más transacciones': 'apps',
-            'Pagar transporte': 'directions_transit', 'Mostrar como QR': 'qr_code_2',
+            'Pagar transporte': 'directions_transit', 'Tickets transporte': 'directions_transit', 'Mostrar mi QR': 'qr_code_2',
             'Cuenta PRINCIPAL': 'account_balance_wallet'
         };
 
@@ -6112,7 +6116,7 @@
         // página (push o resumen); el resto sólo confirma con un toast.
         // Sin sesión: los accesos públicos responden; los que usan tu cuenta
         // inician el ingreso al instante y se abren al entrar (window.__pendingAction).
-        const ACCESOS_PUBLICOS = ['Soporte', 'Ayuda', 'Clave digital', 'Idioma'];
+        const ACCESOS_PUBLICOS = ['Soporte', 'Ayuda', 'Clave digital', 'Idioma', 'Cobrar con QR'];
         document.querySelectorAll('[data-action]').forEach(el => {
             el.addEventListener('click', (e) => {
                 const sinSesion = document.getElementById('login-screen')?.classList.contains('active');

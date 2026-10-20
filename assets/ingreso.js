@@ -385,6 +385,17 @@
     return out;
   }
 
+  /* ---------- Sin internet: el ingreso queda con Face ID o huella (CSS en index.html) ---------- */
+  function pintarRed() {
+    var sin = !navigator.onLine;
+    document.body.classList.toggle('sin-red', sin);
+    var aviso = document.getElementById('login-offline');
+    if (aviso) aviso.hidden = !sin;
+  }
+  window.addEventListener('online', pintarRed);
+  window.addEventListener('offline', pintarRed);
+  document.addEventListener('DOMContentLoaded', pintarRed);
+
   /* ---------- Texto del botón principal ---------- */
   function nombreBiometria() {
     var ua = navigator.userAgent || '';
