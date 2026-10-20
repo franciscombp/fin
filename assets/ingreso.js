@@ -169,7 +169,7 @@
       });
       var nodos = [ui.texto, ui.puntos, ui.error];
       if (seisDigitos && !creando) {
-        var olvide = h('button', { class: 'ing__enlace', type: 'button', text: 'Olvidé mi PIN' });
+        var olvide = h('button', { class: 'login-button login-button--tertiary', type: 'button', text: 'Olvidé mi PIN' });
         olvide.addEventListener('click', function () { clave('', borrarPin6); });
         nodos.push(olvide);
       }
@@ -202,7 +202,7 @@
         error,
         h('button', { class: 'login-button login-button--primary', type: 'submit', text: 'Ingresar' })
       ]);
-      var recuperarBtn = h('button', { class: 'ing__enlace', type: 'button', text: 'Recuperar usuario y contraseña' });
+      var recuperarBtn = h('button', { class: 'login-button login-button--tertiary', type: 'button', text: 'Recuperar usuario y contraseña' });
       recuperarBtn.addEventListener('click', function () { recuperar(alEntrar); });
       form.addEventListener('submit', async function (e) {
         e.preventDefault();
