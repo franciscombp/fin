@@ -3,12 +3,12 @@
    primitiva; las pantallas no la repiten. Se carga al final.
    ===================================================================== */
 
-/* Título de sección = bp-section-title (Figma Components 4): brand/title/sm 18/24, texto primario.
-   (Antes: etiqueta label/sm 14px en gris; se alinea a la librería.) */
+/* Título de sección = bp-section-title (Figma Components 4, 2026-10-20):
+   brand/body/sm/medium 14/20 en text/helper; acción bp-action-button tertiary/link. */
 html:not(.theme-y2k) .section__title h2 {
-  font: var(--bp-semantic-typography-brand-title-sm-font-weight) var(--bp-semantic-typography-brand-title-sm-font-size)/var(--bp-semantic-typography-brand-title-sm-line-height) var(--sol-font, Roboto, sans-serif);
+  font: var(--bp-semantic-typography-brand-body-sm-medium-font-weight) var(--bp-semantic-typography-brand-body-sm-medium-font-size)/var(--bp-semantic-typography-brand-body-sm-medium-line-height) var(--sol-font, Roboto, sans-serif);
   letter-spacing: 0;
-  color: var(--bp-theme-color-text-primary);
+  color: var(--bp-theme-color-text-helper);
 }
 
 /* Tarjeta: padding interno con el token de layout (16px en teléfono, 24px desde tablet).

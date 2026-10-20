@@ -239,8 +239,8 @@
 /* ---- bp-section-title (título de sección + acción) ---- */
 .bp-section-title { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-lg); height: 40px; }
 .bp-section-title__text {
-  flex: 1; min-width: 0; margin: 0; color: var(--bp-theme-color-text-primary);
-  font: var(--bp-semantic-typography-brand-title-sm-font-weight) var(--bp-semantic-typography-brand-title-sm-font-size)/var(--bp-semantic-typography-brand-title-sm-line-height) var(--sol-font);
+  flex: 1; min-width: 0; margin: 0; color: var(--bp-theme-color-text-helper);
+  font: var(--bp-semantic-typography-brand-body-sm-medium-font-weight) var(--bp-semantic-typography-brand-body-sm-medium-font-size)/var(--bp-semantic-typography-brand-body-sm-medium-line-height) var(--sol-font);
 }
 
 /* ---- bp-widget (tarjeta contenedora de Destacado) ---- */
@@ -432,9 +432,9 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 .tab.active { background: var(--bp-interaction-selectable-selected-bg); color: var(--bp-interaction-selectable-selected-fg); }
 .tab.active:active { background: var(--bp-interaction-selectable-selected-bg--active); }
 
-/* Títulos de sección → bp-section-title (title/sm) + acción link */
+/* Títulos de sección → bp-section-title (body/sm/medium, text/helper) + acción link */
 .section__title { height: 40px; gap: var(--bp-semantic-spacing-micro-lg); }
-.section__title h2 { color: var(--bp-theme-color-text-primary); font: var(--bp-semantic-typography-brand-title-sm-font-weight) var(--bp-semantic-typography-brand-title-sm-font-size)/var(--bp-semantic-typography-brand-title-sm-line-height) var(--sol-font); }
+.section__title h2 { color: var(--bp-theme-color-text-helper); font: var(--bp-semantic-typography-brand-body-sm-medium-font-weight) var(--bp-semantic-typography-brand-body-sm-medium-font-size)/var(--bp-semantic-typography-brand-body-sm-medium-line-height) var(--sol-font); }
 .section__link { color: var(--bp-theme-color-interaction-tertiary-fg); font: var(--bp-semantic-typography-brand-link-md-font-weight) var(--bp-semantic-typography-brand-link-md-font-size)/var(--bp-semantic-typography-brand-link-md-line-height) var(--sol-font); border-radius: var(--bp-semantic-radius-sm); }
 
 /* Tarjetas/widgets */
