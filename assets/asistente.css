@@ -101,7 +101,7 @@
    ===================================================================== */
 .pf-head { padding: 4px 24px 0; }
 .pf-head h1 { font: var(--cx-title); font-size: 32px; line-height: 38px; letter-spacing: -.6px; margin-bottom: 12px; }
-.pf-sec { padding: 40px 24px 0; }
+.pf-sec { padding: 40px var(--bp-layout-grid-margin) 0; }
 .pf-sec h2 { font: var(--cx-headline); margin: 0 0 4px; letter-spacing: -.2px; }
 
 .pf-link { height: 36px; padding: 0 14px; border-radius: 99px; background: var(--cx-surface); color: var(--cx-ink); text-decoration: none; font: 600 14px/1 var(--sol-font, Roboto, sans-serif); }

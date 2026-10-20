@@ -429,7 +429,7 @@ html:not(.theme-y2k) .uk-globo__acts .uk-globo__go.btn { margin: 0 !important; }
    Márgenes de 20 px, cifra grande con su etiqueta debajo, fichas y filas más altas, chips
    cómodos y una separación clara entre la respuesta y lo que puedes hacer. */
 .uk-card { border-radius: var(--bp-semantic-radius-lg, 16px); }
-.uk-card__top { gap: 12px; padding: 20px 20px 0; }
+.uk-card__top { gap: 12px; padding: var(--bp-layout-card-padding) var(--bp-layout-card-padding) 0; }
 .uk-card__face { flex-basis: 32px; width: 32px; height: 32px; }
 .uk-card__q { font-size: 18px; line-height: 24px; }
 .uk-card__body { gap: 16px; padding: 12px 20px 20px; }
@@ -459,7 +459,7 @@ html.uk-chatting.uk-fin .pf-toast { top: auto !important; bottom: calc(24px + en
 .uk.is-chat .uk-panel, .uk.is-chat .uk-sec { border-radius: var(--bp-semantic-radius-lg, 16px); }
 .uk.is-chat .uk-panel .uk-head { padding: 18px 16px 8px; }
 .uk-sec__top { padding: 18px 16px 8px; }
-.uk-sec__body { padding: 0 20px 20px; }
+.uk-sec__body { padding: 0 var(--bp-layout-card-padding) var(--bp-layout-card-padding); }
 .uk-sec__row { padding: 14px 0; }
 
 /* ---------- Uku recortado en la barra, y las secciones integradas ----------
@@ -486,7 +486,7 @@ html.uk-chatting.uk-fin .pf-toast { top: auto !important; bottom: calc(24px + en
    Pasos con puntos, un ícono grande, título, una frase y el botón principal. Uku, grande, saluda debajo. */
 .uk-onb { position: absolute; z-index: 7; left: 16px; right: 16px; top: calc(16px + env(safe-area-inset-top, 0px)); animation: ukCard .4s cubic-bezier(.2, 1.1, .4, 1) both; }
 .uk-onb.is-out { animation: ukCardOut .22s ease-in both; }
-.uk-onb__card { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 20px 20px 16px; border-radius: var(--bp-semantic-radius-lg, 16px); background: var(--bp-theme-color-surface-container-default); box-shadow: 0 var(--bp-semantic-elevation-high-offset-y, 12px) var(--bp-semantic-elevation-high-blur, 24px) var(--bp-semantic-elevation-high-color, rgba(15, 38, 92, .16)); animation: ukIn .35s ease both; }
+.uk-onb__card { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: var(--bp-layout-card-padding); border-radius: var(--bp-semantic-radius-lg, 16px); background: var(--bp-theme-color-surface-container-default); box-shadow: 0 var(--bp-semantic-elevation-high-offset-y, 12px) var(--bp-semantic-elevation-high-blur, 24px) var(--bp-semantic-elevation-high-color, rgba(15, 38, 92, .16)); animation: ukIn .35s ease both; }
 .uk-onb__dots { display: flex; gap: 6px; margin: 0 0 4px !important; }
 .uk-onb__dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--cx-line, #c9ced8); transition: width .2s ease, background .2s ease; }
 .uk-onb__dots i.is-on { width: 18px; background: var(--bp-interaction-primary-bg, #ffdd00); }
@@ -501,7 +501,7 @@ html.uk-chatting.uk-fin .pf-toast { top: auto !important; bottom: calc(24px + en
 /* ---------- Un solo lenguaje para Ayuda dentro de la tarjeta ----------
    Etiquetas de sección en mayúsculas pequeñas, filas con chevron, sin cajas ni mosaicos; el buscador es el de abajo. */
 .uk.is-chat .uk-ayuda-slot .sp-find, .uk.is-chat .uk-ayuda-slot .sp-composer { display: none !important; }
-.uk.is-chat .uk-ayuda-slot .sp-body { padding: 0 20px 20px !important; }
+.uk.is-chat .uk-ayuda-slot .sp-body { padding: 0 var(--bp-layout-card-padding) var(--bp-layout-card-padding) !important; }
 .uk.is-chat .uk-ayuda-slot .sp-sec { margin-top: 20px; }
 .uk.is-chat .uk-ayuda-slot .sp-sec h2 { margin: 0 0 4px !important; font: var(--cx-caption) !important; text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted) !important; }
 .uk.is-chat .uk-ayuda-slot .sp-sec__sub { margin: 0 0 4px; font: var(--cx-caption); }
@@ -582,17 +582,17 @@ html.uk-chatting.uk-fin .pf-toast { top: auto !important; bottom: calc(24px + en
 .uk-meter__l { margin-top: -4px !important; }
 .uk-card.is-typing .uk-dots { margin: 12px var(--uk-inset) var(--uk-inset); }
 /* Onboarding */
-.uk-onb__card { gap: 10px; padding: 24px 24px 20px; }
+.uk-onb__card { gap: 10px; padding: var(--bp-layout-card-padding); }
 .uk-onb__t { margin-top: 10px !important; }
 .uk-onb__go { margin-top: 16px; }
 .uk-onb__skip { margin-top: 2px; }
 /* Secciones (Mis finanzas, Ayuda) */
 .uk.is-chat .uk-panel .uk-head { padding: 20px var(--uk-inset) 12px; }
 .uk-sec__top { padding: 20px var(--uk-inset) 12px; }
-.uk-sec__body { padding: 0 24px 24px; gap: 10px; }
+.uk-sec__body { padding: 0 var(--bp-layout-card-padding) var(--bp-layout-card-padding); gap: 10px; }
 .uk-sec__row { padding: 16px 0; }
 .app-uku .uk-panel .pfm-tabs { padding: 6px 24px 12px; }
-.uk.is-chat .uk-ayuda-slot .sp-body { padding: 0 24px 24px !important; }
+.uk.is-chat .uk-ayuda-slot .sp-body { padding: 0 var(--bp-layout-card-padding) var(--bp-layout-card-padding) !important; }
 .uk.is-chat .uk-ayuda-slot .sp-sec { margin-top: 24px; }
 .uk.is-chat .uk-ayuda-slot .sp-sec h2 { margin-bottom: 6px !important; }
 .uk.is-chat .uk-ayuda-slot .sp-row, .uk.is-chat .uk-ayuda-slot .sp-cat, .uk.is-chat .uk-ayuda-slot .sp-tut { min-height: 60px; padding: 12px 0 !important; }
