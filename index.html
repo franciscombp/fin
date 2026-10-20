@@ -44,7 +44,7 @@
     <meta name="apple-mobile-web-app-title" content="Pichibank">
 
     <link rel="manifest" href="./manifest.json">
-    <link rel="icon" type="image/svg+xml" href="./assets/pichibank-icono.svg">
+    <link rel="icon" type="image/svg+xml" href="./assets/pichibank-avatar.svg">
     <link rel="icon" type="image/png" sizes="32x32" href="./assets/icons/favicon-32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png">
 
@@ -2363,7 +2363,16 @@
 
         /* Sin sesión: la ayuda y los accesos públicos se abren por encima del inicio de sesión */
         html body.sin-sesion .sp,
-        html body.sin-sesion .push-page { z-index: 600; }
+        html body.sin-sesion .push-page, html body.sin-sesion #push-page { z-index: 600; }
+        html body.sin-sesion .pf-toast { z-index: 690; }
+        /* Sin internet: solo entra con Face ID o huella y se ven los accesos que funcionan sin red */
+        html body.sin-red #btn-login-other { display: none !important; }
+        html body.sin-red .quick-action[data-online-only]:disabled { opacity: .4; }
+        #btn-login-other { margin-top: var(--bp-semantic-spacing-xl); }
+        #login-offline[hidden] { display: none; }
+        /* El selector de idioma también se abre desde el login */
+        html body.sin-sesion .as-sheet-back { z-index: 650; }
+        html body.sin-sesion .as-sheet { z-index: 651; }
         .login-screen.active {
             display: flex;
         }
@@ -2409,8 +2418,9 @@
         }
 
         .login-screen__title {
-            font-size: 22px;
-            font-weight: 700;
+            margin: 0;
+            font-size: 16px;
+            font-weight: 500;
             text-align: center;
             color: var(--bp-text-primary);
             line-height: 1.3;
@@ -3937,7 +3947,7 @@
         <!-- Header -->
         <div class="login-screen__header">
             <div class="login-screen__header-logo">
-                <img src="./assets/pichibank-icono.svg" alt="Pichibank" class="login-logo">
+                <img src="./assets/pichibank-logo.svg" alt="Pichibank" class="login-logo">
             </div>
             <div class="login-screen__header-actions">
                 <button class="icon-button login-lang" aria-label="Idioma" data-i18n-picker>
@@ -3954,10 +3964,10 @@
 
         <!-- Parte superior: título + ilustración (fondo gris) -->
         <div class="login-screen__top">
-            <h1 class="login-screen__title">¡Vive la alegría del Mundial con La Tri!</h1>
             <div class="login-screen__illustration">
                 <img class="login-illustration__img" src="./assets/login-illustration.svg" alt="Ilustración de bienvenida">
             </div>
+            <p class="login-screen__title">¡Vive la alegría del fútbol con La Tri!</p>
             <!-- Festejo de independencia: pirotecnia + contador global -->
             <button class="fiesta-btn" id="fiesta-btn" aria-label="Festejar la independencia de Ecuador">
                 <span class="fiesta-btn__flag" aria-hidden="true"></span>
@@ -3968,40 +3978,37 @@
 
         <!-- Parte inferior: acciones + botones (fondo blanco) -->
         <div class="login-screen__panel">
-            <!-- Destacados: etiqueta arriba, ícono abajo -->
-            <div class="login-features">
-                <button class="login-feature" data-action="Cobrar con QR">
-                    <span class="login-feature__label">Cobrar con QR</span>
-                    <span class="login-feature__icon"><span class="material-symbols-rounded">qr_code_2</span></span>
-                </button>
-                <button class="login-feature" data-action="Pagar con QR">
-                    <span class="login-feature__label">Pagar con QR</span>
-                    <span class="login-feature__icon"><span class="material-symbols-rounded">qr_code_scanner</span></span>
-                </button>
-            </div>
-
             <!-- Acciones rápidas (mismo estilo que Destacado) -->
             <div class="login-qa">
-                <button class="quick-action" data-action="Transferir dinero">
-                    <span class="quick-action__icon"><span class="material-symbols-rounded">send_money</span></span>
-                    <span class="quick-action__label">Transferir dinero</span>
+                <button class="quick-action" data-action="Pagar con QR" data-online-only>
+                    <span class="quick-action__icon"><span class="material-symbols-rounded">qr_code_scanner</span></span>
+                    <span class="quick-action__label">Pagar a un QR</span>
                 </button>
-                <button class="quick-action" data-action="Retirar sin tarjeta">
+                <button class="quick-action" data-action="Retirar sin tarjeta" data-online-only>
                     <span class="quick-action__icon"><span class="material-symbols-rounded">payments</span></span>
                     <span class="quick-action__label">Retirar sin tarjeta</span>
                 </button>
                 <button class="quick-action" data-action="Pagar transporte">
                     <span class="quick-action__icon"><span class="material-symbols-rounded">directions_transit</span></span>
-                    <span class="quick-action__label">Pagar transporte</span>
+                    <span class="quick-action__label">Tickets transporte</span>
                 </button>
-                <button class="quick-action" data-action="Verificar pago">
-                    <span class="quick-action__icon"><span class="badge-new">Nuevo</span><span class="material-symbols-rounded">verified_user</span></span>
-                    <span class="quick-action__label">Verificar pago</span>
+                <button class="quick-action" data-action="Cobrar con QR">
+                    <span class="quick-action__icon"><span class="material-symbols-rounded">qr_code_2</span></span>
+                    <span class="quick-action__label">Mostrar mi QR</span>
                 </button>
             </div>
 
             <!-- Botones -->
             <div class="login-screen__buttons">
+                <div class="bp-alert bp-alert--warning" id="login-offline" role="status" hidden>
+                    <div class="bp-alert__content">
+                        <span class="bp-alert__icon material-symbols-rounded" aria-hidden="true">wifi_off</span>
+                        <div class="bp-alert__text">
+                            <p class="bp-alert__title">Sin internet</p>
+                            <p class="bp-alert__body">Conéctate a una red Wi-Fi o datos para usar todas las funciones.</p>
+                        </div>
+                    </div>
+                </div>
                 <button class="login-button login-button--primary" id="btn-login-biometric">
                     Ingresar
                 </button>
@@ -4015,7 +4022,7 @@
 
     <!-- Splash de bienvenida (amarillo) mientras autentica -->
     <div class="welcome-splash" id="welcome-splash" aria-hidden="true">
-        <img src="./assets/pichibank-icono.svg" alt="Pichibank" class="welcome-splash__logo">
+        <img src="./assets/pichibank-logo--splash.svg" alt="Pichibank" class="welcome-splash__logo">
         <h1 class="welcome-splash__title">¡Bienvenido de nuevo<span id="welcome-name"></span>!</h1>
         <p class="welcome-splash__subtitle">Preparando tu cuenta…</p>
     </div>
@@ -4025,7 +4032,7 @@
         <header class="header">
             <div class="top-bar">
                 <button class="profile-story" aria-label="Perfil">
-                    <span class="profile-story__inner"><img class="profile-story__logo" src="./assets/pichibank-icono.svg" alt="" width="28" height="28"></span>
+                    <span class="profile-story__inner"><img class="profile-story__logo" src="./assets/pichibank-avatar.svg" alt="" width="28" height="28"></span>
                 </button>
                 <!-- Título pequeño de la sección: aparece cuando el título grande
                      sube detrás de la barra (patrón de títulos grandes de iOS) -->
@@ -5109,7 +5116,7 @@
     <div class="story-viewer" id="story-viewer" role="dialog" aria-modal="true" aria-label="Stories">
         <div class="story-progress" id="story-progress"></div>
         <div class="story-header">
-            <span class="story-header__avatar"><img src="./assets/pichibank-icono.svg" alt="" width="28" height="28"></span>
+            <span class="story-header__avatar"><img src="./assets/pichibank-avatar.svg" alt="" width="28" height="28"></span>
             <span class="story-header__name">Pichibank</span>
             <button class="story-close" id="story-close" aria-label="Cerrar stories">
                 <span class="material-symbols-rounded">close</span>
@@ -5235,7 +5242,7 @@
             'Recibir dinero': 'control_point_duplicate', 'Pagar servicios': 'emoji_objects',
             'Pagar tarjeta': 'credit_card', 'Retirar sin tarjeta': 'payments', 'Más transacciones': 'apps',
             'Recargar celular': 'smartphone', 'Más transacciones': 'apps',
-            'Pagar transporte': 'directions_transit', 'Verificar pago': 'verified_user',
+            'Pagar transporte': 'directions_transit', 'Tickets transporte': 'directions_transit', 'Mostrar mi QR': 'qr_code_2',
             'Cuenta PRINCIPAL': 'account_balance_wallet'
         };
 
@@ -6121,7 +6128,7 @@
         // página (push o resumen); el resto sólo confirma con un toast.
         // Sin sesión: los accesos públicos responden; los que usan tu cuenta
         // inician el ingreso al instante y se abren al entrar (window.__pendingAction).
-        const ACCESOS_PUBLICOS = ['Soporte', 'Ayuda', 'Verificar pago', 'Clave digital', 'Idioma'];
+        const ACCESOS_PUBLICOS = ['Soporte', 'Ayuda', 'Clave digital', 'Idioma', 'Cobrar con QR'];
         document.querySelectorAll('[data-action]').forEach(el => {
             el.addEventListener('click', (e) => {
                 const sinSesion = document.getElementById('login-screen')?.classList.contains('active');

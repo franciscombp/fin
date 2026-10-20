@@ -169,7 +169,7 @@
       });
       var nodos = [ui.texto, ui.puntos, ui.error];
       if (seisDigitos && !creando) {
-        var olvide = h('button', { class: 'ing__enlace', type: 'button', text: 'Olvidé mi PIN' });
+        var olvide = h('button', { class: 'login-button login-button--tertiary', type: 'button', text: 'Olvidé mi PIN' });
         olvide.addEventListener('click', function () { clave('', borrarPin6); });
         nodos.push(olvide);
       }
@@ -202,7 +202,7 @@
         error,
         h('button', { class: 'login-button login-button--primary', type: 'submit', text: 'Ingresar' })
       ]);
-      var recuperarBtn = h('button', { class: 'ing__enlace', type: 'button', text: 'Recuperar usuario y contraseña' });
+      var recuperarBtn = h('button', { class: 'login-button login-button--tertiary', type: 'button', text: 'Recuperar usuario y contraseña' });
       recuperarBtn.addEventListener('click', function () { recuperar(alEntrar); });
       form.addEventListener('submit', async function (e) {
         e.preventDefault();
@@ -385,6 +385,35 @@
     return out;
   }
 
+  /* ---------- Conexión real: una petición que sale a la red, no navigator.onLine ----------
+     El service worker responde desde caché a los archivos de la app si no hay red, así que la
+     sonda es un archivo que no está en caché: si no hay red falla; si hay, responde (aunque sea 404). */
+  var SONDA = './assets/sonda.txt';
+  var en = navigator.onLine !== false;
+  function enLinea() { return en; }
+  function pintarRed(conectado) {
+    var cambio = conectado !== en;
+    en = conectado;
+    document.body.classList.toggle('sin-red', !en);
+    // Los accesos que necesitan internet quedan visibles pero deshabilitados
+    document.querySelectorAll('[data-online-only]').forEach(function (el) { el.disabled = !en; });
+    var aviso = document.getElementById('login-offline');
+    if (aviso) aviso.hidden = en;
+    if (cambio) document.dispatchEvent(new CustomEvent('red:cambio', { detail: en }));
+  }
+  function sonda() {
+    if (!navigator.onLine) return pintarRed(false);
+    var ctl = new AbortController();
+    var t = setTimeout(function () { ctl.abort(); }, 4000);
+    fetch(SONDA + '?t=' + Date.now(), { cache: 'no-store', signal: ctl.signal })
+      .then(function () { clearTimeout(t); pintarRed(true); }, function () { clearTimeout(t); pintarRed(false); });
+  }
+  window.addEventListener('online', sonda);
+  window.addEventListener('offline', function () { pintarRed(false); });
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') sonda(); });
+  document.addEventListener('DOMContentLoaded', function () { pintarRed(en); sonda(); });
+  setInterval(sonda, 30000);
+
   /* ---------- Texto del botón principal ---------- */
   function nombreBiometria() {
     var ua = navigator.userAgent || '';
@@ -397,7 +426,7 @@
   }
 
   window.Ingreso = {
-    etiqueta: etiqueta, pin: pin, otro: otro, clave: clave, recuperar: recuperar,
+    enLinea: enLinea, etiqueta: etiqueta, pin: pin, otro: otro, clave: clave, recuperar: recuperar,
     token: token, totp: totp, aBytes: aBytes, aBase32: aBase32
   };
 })();

@@ -81,9 +81,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const auth = window.BPAuth;
   let platformOk = !!(auth && auth.supported); // optimista mientras responde
   // La etiqueta dice Face ID, huella o PIN según lo que tenga el celular
+  // Sin internet solo entra con Face ID o huella: sin ellas, el botón principal se apaga
   const pintarEtiqueta = () => {
-    if (btnLoginBiometric && !btnLoginBiometric.disabled) btnLoginBiometric.textContent = window.Ingreso.etiqueta(platformOk);
+    if (!btnLoginBiometric || window.__authBusy) return;
+    btnLoginBiometric.disabled = !window.Ingreso.enLinea() && !platformOk;
+    btnLoginBiometric.textContent = btnLoginBiometric.disabled ? 'Sin internet' : window.Ingreso.etiqueta(platformOk);
   };
+  document.addEventListener('red:cambio', pintarEtiqueta);
   if (auth && auth.supported) auth.platformAvailable().then(ok => { platformOk = ok; pintarEtiqueta(); });
   pintarEtiqueta();
 
