@@ -1,0 +1,118 @@
+/* CSS de transiciones reemplazadas por la navegación unificada.
+   Venían del <style> de index.html. */
+
+        /* El home "recede" (encoge y se oscurece un poco) mientras el detalle
+           de tarjeta está abierto/animando, como si esa pantalla se hubiera
+           levantado del stack — se asoma un instante detrás de la wallet
+           durante el fade de apertura/cierre y refuerza la sensación de
+           profundidad, en vez de que el home simplemente desaparezca tapado. */
+        #home-page {
+            transition: scale 0.42s cubic-bezier(0.32, 0.72, 0, 1), filter 0.42s ease;
+        }
+
+        body.card-detail-active #home-page {
+            scale: 0.97;
+            filter: brightness(0.94) saturate(0.96);
+        }
+
+
+        /*
+         * La pantalla completa "nace" desde la tarjeta destacada, como una
+         * wallet que se abre: crece y sube desde el origen --cd-origin-x/y
+         * (fijado por JS a la posición real de la tarjeta) en vez de un fade
+         * plano sin relación con el elemento que la abrió. Duración y curva
+         * calzan exactamente con el morph "reveal" de la tarjeta compartida
+         * (ver morphMetrics en el script) para que todo —panel, tarjeta y
+         * contenido— llegue a su lugar al mismo tiempo.
+         *
+         * Anima `scale`/`translate` (propiedades individuales, no el
+         * shorthand `transform`) a propósito: deja `transform` libre para
+         * quien lo necesite sin pisar esta animación de entrada.
+         * Cuando SÍ hay tarjeta para hacer morph (el caso normal), el panel
+         * sólo se desvanece (opacity) — el propio #cd-card ya hace su
+         * translate/clip-path hacia el origen (ver openCardDetail). Antes el
+         * panel completo TAMBIÉN escalaba/trasladaba (cdGrowIn/cdShrinkOut)
+         * al mismo tiempo que la tarjeta hacía su propio movimiento: dos
+         * animaciones de transform compitiendo con curvas de easing
+         * distintas, sobre todo notorio al cerrar (se sentía doble/tosco).
+         * cdGrowIn/cdShrinkOut (con scale+translate) quedan sólo para
+         * .no-morph: el respaldo cuando no hay tarjeta visible que animar.
+         */
+        .card-detail.entering {
+            transform-origin: var(--cd-origin-x, 50%) var(--cd-origin-y, 15%);
+            animation: cdFadeIn 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+        .card-detail.entering.no-morph {
+            animation: cdGrowIn 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+
+        @keyframes cdFadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+        @keyframes cdGrowIn {
+            from { opacity: 0; scale: 0.94; translate: 0 10px; }
+            to   { opacity: 1; scale: 1; translate: 0 0; }
+        }
+
+        .card-detail.closing {
+            transform-origin: var(--cd-origin-x, 50%) var(--cd-origin-y, 15%);
+            animation: cdFadeOut 0.42s cubic-bezier(0.4, 0, 1, 1) forwards;
+        }
+        .card-detail.closing.no-morph {
+            animation: cdShrinkOut 0.42s cubic-bezier(0.4, 0, 1, 1) forwards;
+        }
+
+        @keyframes cdFadeOut {
+            from { opacity: 1; }
+            to   { opacity: 0; }
+        }
+        @keyframes cdShrinkOut {
+            from { opacity: 1; scale: 1; translate: 0 0; }
+            to   { opacity: 0; scale: 0.94; translate: 0 10px; }
+        }
+
+
+        /* Apertura/cierre por "extrapolación": la tarjeta se anima con JS
+           (reveal) desde/hacia la tarjeta de Destacados (ver cdCard más
+           abajo). El título (arriba de la tarjeta) y la barra colapsable no
+           sólo se desvanecen: suben un poco al aparecer, para sentirse parte
+           del mismo movimiento que trae la tarjeta y no un fade suelto. */
+        .cd-title,
+        .card-detail .detail-topbar {
+            transition: opacity 0.32s ease, transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .card-detail.morphing .cd-title,
+        .card-detail.morphing .detail-topbar {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        /* .cd-content va DEBAJO de la tarjeta en el flujo normal: mientras
+           cdCard anima su alto real (ver JS), el layout ya lo empuja hacia
+           abajo de forma natural — sumarle además un translateY propio aquí
+           duplicaría el movimiento. Sólo se desvanece. */
+
+        .cd-content {
+            transition: opacity 0.32s ease;
+        }
+
+
+        .card-detail.morphing .cd-content {
+            opacity: 0;
+        }
+
+        /* Apertura "creciendo" desde el botón (quick actions) */
+        .push-page.grow {
+            transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                        opacity 0.28s ease,
+                        visibility 0s;
+        }
+
+        .push-page.grow.closing-grow {
+            transition: transform 0.32s cubic-bezier(0.4, 0, 1, 1),
+                        opacity 0.26s ease,
+                        visibility 0s linear 0.32s;
+        }
+

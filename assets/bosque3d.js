@@ -3,30 +3,43 @@
    finanzas o el chat).
 
    - Un único renderer WebGL que se "muda" al contenedor activo.
-   - El oso (assets/oso/oso.glb) tiene un esqueleto de 20 huesos hecho
-     a medida (ver respaldo/oso-fuente/rig.py): se anima por código,
-     sin clips: respira, mira, saluda, asiente, piensa, habla, celebra
-     y puede sostener objetos en la mano (hand_R).
+   - Uku (assets/oso/uku-rig.glb, ver uku-rig.js) con sus clips de Mixamo:
+     Walking, Waving, Happy Idle, Thoughtful Head Nod, Watering, Plant A Plant
+     y las poses acostado. Puede sostener objetos
+     en la mano derecha (mixamorigRightHand) y los accesorios van en la
+     cabeza (mixamorigHead).
    - El oso nunca cambia; el bosque crece con la salud financiera
      (0–100): de troncos y tierra seca a un bosque tupido.
    - Paleta sobria: grises, verdes apagados; el amarillo solo en flores.
+   - setBloom() llena su campo de flores amarillas (ahorro) y setMood()
+     le da un ánimo que se queda, como Duo: contento, tranquilo o pensativo.
    - Pausa el render cuando no se ve y respeta prefers-reduced-motion.
    - setLook() viste a Uku según el clima (assets/clima.js): en la costa
      palmeras y guayabera; sombrero de paja toquilla, gafas de sol, gorro
      de lana o paraguas (con lluvia).
    ===================================================================== */
 import * as THREE from './vendor/three/three.module.min.js';
-import { GLTFLoader } from './vendor/three/jsm/loaders/GLTFLoader.js';
+import { loadUkuGltf, ukuFrom } from './uku-rig.js';
 
 const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const D = THREE.MathUtils.degToRad;
 const lerp = THREE.MathUtils.lerp;
 
 let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
-let bear = null, bones = {}, forest, held = null, ground;
+let bear = null, readyFns = [], rig = null, bones = {}, forest, held = null, ground, stage = null, walkAng = 0, walkAmt = 0, walkMoving = false;
+let waterOn = false, waterT = 0, drops = [], ambient = null, focus = false, ambFocus = null;
+let focusAmt = 0, shiftTo = { x: 0, y: 0 }, shiftCur = { x: 0, y: 0 }, zoomTo = 1, zoomCur = 1, front = false, frontAmt = 1; // la cámara se acerca y se corre suavemente, nunca de golpe // focus: Uku sale del mundo y se acerca a conversar // ambient: lo que Uku hace cuando no hay gesto (p. ej. caminar)
+// Mundo: un planeta esférico de radio PLANET_R; su punto más alto está bajo los pies de Uku.
+// WORLD_S agranda el mundo (planeta, árboles, flores y el paso de Uku); el oso mide lo mismo.
+const WORLD_S = 2, PLANET_R = 1.5 * WORLD_S, PLANET_C = new THREE.Vector3(0, -PLANET_R, 0);
 let score = 50, shown = 0; // shown: puntaje con el que está dibujado el bosque
+let target = null, loadAt = 0, ambLight = null, moodTint = new THREE.Color('#ffffff'); // mientras carga, el bosque crece hasta target; mood tiñe la luz
+// bloom: flores amarillas del campo (0–100, ahorro); null = como antes (salen con el bosque)
+// mood: ánimo que se queda (feliz, tranquilo, pensativo); null = solo los gestos
+let bloom = null, mood = null;
 let gesture = null, gestureT = 0, onTap = null;
-let yaw = 0, yawTo = 0, camDist = 2.6, drag = null, idleAt = 0; // giro con el dedo
+let yaw = 0, yawTo = 0, camDist = 3.6, drag = null, idleAt = 0; // giro con el dedo
+const CAM_H = 1.3; // altura de la cámara sobre los pies de Uku
 
 /* ---------- Colores (claro / oscuro) ---------- */
 let look = { region: 'sierra', shirt: 'sueter', hat: null, shades: false, rain: false };
@@ -41,7 +54,7 @@ function palette() {
   };
   // Paleta onírica: tonos lavados, casi blancos, para que el oso (que
   // conserva sus colores) sea lo único nítido de la escena.
-  // Ilustración: solo azules, grises y amarillo (los colores de Uku)
+  // Ilustración: grises y blancos; el amarillo queda para lo nuevo (flores de ahorro, logros)
   return dark ? {
     bg: '#1f1f1f', ground: '#2b2d33', dry: '#2f3036', trunk: '#4a4f5c', pine: ['#3c4659', '#434d61', '#4a5468'],
     round: ['#465066', '#4e586e'], rock: '#3a3c43', grass: '#434b5c', flower: '#f2d64b', dust: '#ffffff'
@@ -57,23 +70,42 @@ function palette() {
 /* ---------- Bosque procedural ---------- */
 // Posiciones fijas (semilla) para que el bosque no "salte" entre visitas.
 function rng(s) { return () => (s = (s * 16807) % 2147483647) / 2147483647; }
-const SPOTS = (() => {
-  const r = rng(11), out = [];
-  for (let i = 0; i < 46; i++) {
-    const a = r() * Math.PI * 2, d = 1.1 + r() * 3.4;
-    const x = Math.cos(a) * d, z = -Math.abs(Math.sin(a) * d) - .25 - r() * .8; // detrás del oso
-    out.push({ x, z, s: .7 + r() * .7, t: r() * 100, kind: r() < .62 ? 'pine' : 'round', rot: r() * 6.28 });
-  }
-  return out.sort((a, b) => a.t - b.t);
-})();
-const DECOR = (() => {
-  const r = rng(29), out = [];
-  for (let i = 0; i < 40; i++) {
-    const a = r() * Math.PI * 2, d = .45 + r() * 2.2;
-    out.push({ x: Math.cos(a) * d, z: Math.sin(a) * d * .7 - .2, t: r() * 100, kind: r() < .45 ? 'grass' : r() < .7 ? 'rock' : 'flower', s: .6 + r() * .8 });
+/* ---------- Mundo procedural ----------
+   Nada se guarda en el archivo: cada celda de la esfera (ángulo a lo largo del
+   camino y ángulo de lado) decide con una semilla fija si tiene un árbol, roca,
+   flor o pasto. El mismo mundo sale siempre. Los umbrales t siguen a los insights
+   (salud financiera para árboles y pasto, ahorro para las flores). */
+// Celdas de CELL_U metros sobre la esfera: la densidad no cambia aunque el planeta crezca
+const CELL_U = .35 * WORLD_S, CELL = CELL_U / PLANET_R, LOOP_N = Math.round(2 * Math.PI / CELL), LAT_MAX = 1.4, LAT_N = Math.round(2 * LAT_MAX / CELL);
+function cellRng(k, m, salt) {
+  const s = (Math.imul(k + 101, 73856093) ^ Math.imul(m + 211, 19349663) ^ Math.imul(salt, 83492791)) >>> 0;
+  return rng(s % 2147483646 + 1);
+}
+// Recorre las celdas del planeta; mk(r, az, ax) crea el objeto de una celda ocupada
+function procedural(salt, chance, mk) {
+  const out = [];
+  for (let k = 0; k < LOOP_N; k++) for (let m = 0; m < LAT_N; m++) {
+    const r = cellRng(k, m, salt);
+    if (r() > chance) continue;
+    const az = (k + r()) * CELL - Math.PI, ax = -LAT_MAX + (m + r()) * CELL;
+    if (Math.abs(ax) * PLANET_R < .4 * WORLD_S) continue; // carril libre por donde camina Uku
+    out.push(mk(r, az, ax));
   }
   return out;
-})();
+}
+// Los árboles no se plantan junto al oso: queda un claro de 0.8 m alrededor
+const SPOTS = procedural(11, .5, (r, az, ax) => ({ az, ax, s: .7 + r() * .7, t: r() * 100, kind: r() < .62 ? 'pine' : 'round', rot: r() * 6.28 }))
+  .filter(p => Math.hypot(p.az, p.ax) * PLANET_R > .8 * WORLD_S).sort((a, b) => a.t - b.t);
+const DECOR = procedural(29, .2, (r, az, ax) => ({ az, ax, t: r() * 100, kind: r() < .45 ? 'grass' : r() < .7 ? 'rock' : 'flower', s: .6 + r() * .8 }));
+const MEADOW = procedural(71, .3, (r, az, ax) => ({ az, ax, t: r() * 100, s: .8 + r() * .5, rot: r() * 6.28 }));
+
+function makeFlower(p, pal) {
+  const g = new THREE.Group(), petal = new THREE.MeshLambertMaterial({ color: pal.flower }), stem = new THREE.MeshLambertMaterial({ color: pal.grass });
+  const st = new THREE.Mesh(new THREE.CylinderGeometry(.006, .007, .12, 4), stem); st.position.y = .06; g.add(st);
+  for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2, m = new THREE.Mesh(new THREE.SphereGeometry(.018, 6, 4), petal); m.position.set(Math.cos(a) * .022, .125, Math.sin(a) * .022); m.scale.y = .5; g.add(m); }
+  const c = new THREE.Mesh(new THREE.SphereGeometry(.012, 6, 4), new THREE.MeshLambertMaterial({ color: pal.trunk })); c.position.y = .13; g.add(c);
+  placeOnPlanet(g, p); g.userData.base = p.s * WORLD_S; return g;
+}
 
 // Palmera: tronco curvo en segmentos y hojas largas que caen
 function makePalm(p, pal) {
@@ -94,7 +126,7 @@ function makePalm(p, pal) {
   }
   const coco = new THREE.MeshLambertMaterial({ color: pal.trunk });
   [[.03, 0], [-.025, .02], [0, -.03]].forEach(([dx, dz]) => { const m = new THREE.Mesh(new THREE.SphereGeometry(.025, 6, 5), coco); m.position.set(x + dx, y - .03, dz); g.add(m); });
-  g.position.set(p.x, 0, p.z); g.rotation.y = p.rot; g.userData.base = p.s;
+  placeOnPlanet(g, p); g.userData.base = p.s * WORLD_S;
   return g;
 }
 function makeTree(p, pal) {
@@ -114,13 +146,13 @@ function makeTree(p, pal) {
     const top = new THREE.Mesh(new THREE.IcosahedronGeometry(.3, 0), new THREE.MeshLambertMaterial({ color: c, flatShading: true }));
     top.position.y = .62; top.scale.y = 1.1; g.add(top);
   }
-  g.position.set(p.x, 0, p.z); g.rotation.y = p.rot; g.userData.base = p.s;
+  placeOnPlanet(g, p); g.userData.base = p.s * WORLD_S;
   return g;
 }
 function makeStump(p, pal) {
   const g = new THREE.Group();
   const m = new THREE.Mesh(new THREE.CylinderGeometry(.05, .07, .14, 6), new THREE.MeshLambertMaterial({ color: pal.trunk }));
-  m.position.y = .07; g.add(m); g.position.set(p.x, 0, p.z); g.userData.base = p.s;
+  m.position.y = .07; g.add(m); placeOnPlanet(g, p); g.userData.base = p.s * WORLD_S;
   return g;
 }
 function makeDecor(p, pal) {
@@ -132,7 +164,27 @@ function makeDecor(p, pal) {
     const st = new THREE.Mesh(new THREE.CylinderGeometry(.006, .006, .1, 4), new THREE.MeshLambertMaterial({ color: pal.grass })); st.position.y = .05; m.add(st);
     const fl = new THREE.Mesh(new THREE.SphereGeometry(.025, 6, 4), new THREE.MeshLambertMaterial({ color: pal.flower })); fl.position.y = .1; m.add(fl);
   }
-  const g = new THREE.Group(); g.add(m); g.position.set(p.x, 0, p.z); g.userData.base = p.s; return g;
+  const g = new THREE.Group(); g.add(m); placeOnPlanet(g, p); g.userData.base = p.s * WORLD_S; return g;
+}
+
+const _dir = new THREE.Vector3(), _tan = new THREE.Vector3(), _X = new THREE.Vector3(), _Mb = new THREE.Matrix4();
+const _cam = new THREE.Vector3(), _look = new THREE.Vector3(), _camUp = new THREE.Vector3();
+// Uku sobre la superficie: su eje vertical es la normal del planeta y su frente, la tangente
+function placeStage() {
+  const c = Math.cos(walkAng), s = Math.sin(walkAng);
+  _dir.set(0, c, s); _tan.set(0, -s, c);
+  _X.crossVectors(_dir, _tan);
+  stage.quaternion.setFromRotationMatrix(_Mb.makeBasis(_X, _dir, _tan));
+  stage.position.copy(PLANET_C).addScaledVector(_dir, PLANET_R);
+  stage.updateMatrixWorld(true);
+}
+// Pone un objeto sobre la esfera en (az, ax) y lo alinea con su normal; p.rot lo gira alrededor de ella
+const _sp = new THREE.Vector3(), _nrm = new THREE.Vector3(0, 1, 0), _yaw = new THREE.Quaternion();
+function placeOnPlanet(g, p) {
+  _sp.set(Math.sin(p.ax), Math.cos(p.ax) * Math.cos(p.az), Math.cos(p.ax) * Math.sin(p.az));
+  g.position.copy(PLANET_C).addScaledVector(_sp, PLANET_R);
+  g.quaternion.setFromUnitVectors(_nrm, _sp);
+  if (p.rot) g.quaternion.multiply(_yaw.setFromAxisAngle(_nrm, p.rot));
 }
 
 /* El bosque se actualiza por diferencia: al cambiar el puntaje sólo crecen
@@ -156,19 +208,22 @@ function buildForest(full) {
     else if (i < nTrees + 6 && score < 60) want['S' + i] = () => makeStump(p, pal);
   });
   // En la costa, dos palmeras cerca de Uku para que se lean a primera vista
-  if (look.region === 'costa') [{ x: -.58, z: -.5, s: 1.05, t: 3, rot: .4 }, { x: .64, z: -.62, s: .95, t: 8, rot: 2.6 }]
+  if (look.region === 'costa') [{ az: -.5, ax: -.6, s: 1.05, t: 3, rot: .4 }, { az: -.62, ax: .64, s: .95, t: 8, rot: 2.6 }]
     .forEach((p, i) => { want['P' + i] = () => makePalm(p, pal); });
   DECOR.forEach((p, i) => {
+    if (p.kind === 'flower' && bloom != null) { if (p.t <= bloom) want['D' + i] = () => makeDecor(p, pal); return; }
     const need = p.kind === 'flower' ? 70 : p.kind === 'grass' ? 30 : 0;
     if (score >= need && p.t <= score + 10) want['D' + i] = () => makeDecor(p, pal);
   });
+  // Con ahorro, el campo de Uku se llena de flores amarillas
+  if (bloom != null) MEADOW.forEach((p, i) => { if (p.t < bloom - 8) want['F' + i] = () => makeFlower(p, pal); });
   const have = {};
   forest.children.forEach(o => { have[o.userData.key] = o; });
   Object.keys(have).forEach(k => { have[k].userData.dir = want[k] ? 1 : -1; });
   Object.keys(want).forEach(k => {
     if (have[k]) return;
     const o = want[k](); o.userData.key = k; o.userData.dir = 1;
-    o.userData.grow = full ? 1 : 0; o.scale.setScalar(o.userData.base * (full ? 1 : .001));
+      o.userData.grow = full ? 1 : 0; o.scale.setScalar(o.userData.base * (full ? 1 : .001));
     forest.add(o);
   });
   shown = score;
@@ -208,45 +263,14 @@ function buildDust() {
    · sostener→ giro − grande: la palma mira arriba
    El giro se reparte entre antebrazo y muñeca (como el radio y el cúbito),
    así la piel de la muñeca no se retuerce. Ninguna articulación pasa de ~70°. */
-function mirror(v) { return [v[0], -v[1], -v[2]]; }
-// El hombro también baja (16°): así la manga cae redonda desde el hombro y no
-// forma un ángulo recto; el brazo queda un poco separado de la panza.
-const REST_R = { upperarm: [0, 6, 56], forearm: [14, 18, 8], hand: [12, 8, 4], shoulder: [0, 0, 16] };
-const REST = {};
-Object.keys(REST_R).forEach(k => { REST[k + '_R'] = REST_R[k]; REST[k + '_L'] = mirror(REST_R[k]); });
-const POSES = {
-  // brazo derecho (el izquierdo se refleja si el gesto lo pide)
-  wave:  t => ({ upperarm_R: [0, 22, -42], forearm_R: [-34, 12, -52 + Math.sin(t * 7) * 8], hand_R: [-29, 0, -6 + Math.sin(t * 9) * 14], head: [0, -6, 6] }),
-  nod:   t => ({ head: [12 + Math.sin(t * 7) * 9, 0, 0] }),
-  talk:  t => ({ upperarm_R: [0, 38, 38], forearm_R: [-48, 34, -18 + Math.sin(t * 4) * 10], hand_R: [-36, 6, -10 + Math.sin(t * 5) * 6],
-                 upperarm_L: mirror([0, 20, 48]), forearm_L: mirror([10, 28, 8]), hand_L: mirror([10, 6, 4]),
-                 head: [Math.sin(t * 5) * 3, Math.sin(t * 1.7) * 6, Math.sin(t * 2.3) * 3] }),
-  think: t => ({ upperarm_R: [0, 52, 34], forearm_R: [-30, 42, -64], hand_R: [-24, 10, -18], head: [8, -7, -8] }),
-  hold:  t => ({ upperarm_R: [0, 46, 38], forearm_R: [-62, 34, -36], hand_R: [-48, 4, -14], head: [14, -12, 0] }),
-  // preocupado: manos juntas delante de la panza, cabeza gacha y ladeada
-  worried: t => ({ upperarm_R: [0, 34, 36], forearm_R: [-46, 44, -26], hand_R: [-22, 8, -6],
-                   upperarm_L: mirror([0, 34, 36]), forearm_L: mirror([-46, 44, -26]), hand_L: mirror([-22, 8, -6]),
-                   head: [16, 0, 9 + Math.sin(t * 1.6) * 3] }),
-  happy: t => ({ upperarm_R: [0, 14, 6 - Math.sin(t * 8) * 6], forearm_R: [-30, 10, -28], hand_R: [-24, 0, -10],
-                 upperarm_L: mirror([0, 14, 6 - Math.sin(t * 8) * 6]), forearm_L: mirror([-30, 10, -28]), hand_L: mirror([-24, 0, -10]),
-                 head: [-6, 0, Math.sin(t * 6) * 7] })
-};
-const UMB_POSE = { upperarm_R: [0, 36, 12], forearm_R: [-100, 26, -30], hand_R: [-40, 4, -10] };
-function target(name, t) {
-  let r = REST[name] ? REST[name].slice() : [0, 0, 0];
-  // vida en reposo: respiración, mirada y un balanceo leve de brazos
-  if (name === 'chest') r[0] += Math.sin(t * 1.6) * 1.2;
-  if (name === 'head') { r[1] += Math.sin(t * .35) * 9; r[0] += Math.sin(t * .5) * 2; }
-  if (name === 'spine') r[2] += Math.sin(t * .8) * 1.2;
-  if (name === 'upperarm_R' || name === 'upperarm_L') r[1] += Math.sin(t * .9 + (name === 'upperarm_L' ? 1.5 : 0)) * 3;
-  // Con paraguas, el brazo derecho lo sostiene siempre (los gestos usan la cabeza y el otro brazo)
-  if (look.hat === 'paraguas' && UMB_POSE[name]) { const u = UMB_POSE[name].slice(); u[2] += Math.sin(t * .9) * 2; return u; }
-  if (!gesture || !POSES[gesture]) return r;
-  const g = POSES[gesture](gestureT)[name];
-  return g || r;
-}
-const BONES = ['hips', 'spine', 'chest', 'neck', 'head', 'shoulder_L', 'shoulder_R', 'upperarm_L', 'upperarm_R', 'forearm_L', 'forearm_R', 'hand_L', 'hand_R', 'thigh_L', 'thigh_R'];
-
+// Clip de Uku según el gesto; caminar sólo se mueve mientras avanza
+// Clips del modelo: cada gesto tiene el suyo; sin gesto, Uku está en su idle
+const CLIP_OF = { wave: 'Waving', happy: 'Happy Idle', talk: 'Happy Idle', worried: 'Thoughtful Head Nod', nod: 'Thoughtful Head Nod', water: 'Watering', hold: 'Plant A Plant' };
+const IDLE = 'Happy Idle';
+// Conversando solo saluda o se queda en reposo: los gestos que lo agachan (asentir, regar, plantar) quedan para su mundo
+function clipFor() { if (focus) return gesture === 'wave' ? 'Waving' : IDLE; if (gesture === 'walk') return walkMoving ? 'Walking' : IDLE; return (gesture && CLIP_OF[gesture]) || IDLE; }
+const MOOD_TINT = { feliz: new THREE.Color('#ffffff'), pensativo: new THREE.Color('#c4cfe4'), tranquilo: new THREE.Color('#ffffff') }, WHITE = new THREE.Color('#ffffff');
+const BEAR_S = .58, WALK_ANG = .035 / WORLD_S, WALK_CYCLE = 14, WALK_MOVE = 3.5; // Uku grande; se queda parado casi todo el tiempo y al caminar avanza despacio sobre el planeta
 function holdObject(kind) {
   if (held) { held.parent && held.parent.remove(held); held = null; }
   if (!kind || !bones.hand_R || umb) return; // con el paraguas en la mano no sostiene otra cosa
@@ -254,11 +278,30 @@ function holdObject(kind) {
     held = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, .014, 28), new THREE.MeshLambertMaterial({ color: '#ffd200' }));
     // sobre la palma: en reposo la palma mira a (0, -0.89, 0.45) en el espacio del hueso
     held.rotation.x = -.46; held.position.set(-.03, -.052, .026);
+  } else if (kind === 'can') {
+    // Regadera: cuerpo, boquilla y asa
+    held = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(.05, .045, .07, 20), new THREE.MeshLambertMaterial({ color: '#7fa6c9' }));
+    const spout = new THREE.Mesh(new THREE.CylinderGeometry(.008, .014, .08, 10), new THREE.MeshLambertMaterial({ color: '#7fa6c9' }));
+    spout.position.set(.06, .05, 0); spout.rotation.z = -.9;
+    const handle = new THREE.Mesh(new THREE.TorusGeometry(.04, .006, 6, 16, Math.PI), new THREE.MeshLambertMaterial({ color: '#4c6a8a' }));
+    handle.position.set(-.03, .03, 0); handle.rotation.z = Math.PI / 2;
+    held.add(body, spout, handle);
+    held.position.set(-.03, -.05, .03); held.rotation.set(-.2, 0, 0);
   } else if (kind === 'leaf') {
     held = new THREE.Mesh(new THREE.ConeGeometry(.035, .1, 4), new THREE.MeshLambertMaterial({ color: palette().pine[0], flatShading: true }));
     held.position.set(-.03, -.06, .03); held.rotation.set(-.46 + Math.PI, 0, -.4); // el tallo sale de la palma
   }
   held && bones.hand_R.add(held);
+}
+// Gotas que caen de la boquilla mientras Uku riega
+const _dropG = new THREE.SphereGeometry(.012, 6, 4), _dropM = new THREE.MeshBasicMaterial({ color: '#8ec5ef' });
+const _spout = new THREE.Vector3(), _spoutLocal = new THREE.Vector3(.1, .1, 0);
+function spawnDrop() {
+  if (!held || !bones.hand_R || drops.length > 14) return;
+  const d = new THREE.Mesh(_dropG, _dropM);
+  held.localToWorld(_spout.copy(_spoutLocal)); d.position.copy(_spout); scene.add(d);
+  drops.push({ m: d, v: new THREE.Vector3(.05, -.2, 0), life: 0 });
 }
 
 
@@ -279,7 +322,7 @@ function hatPaja() {
   return g;
 }
 function hatLana() {
-  const g = new THREE.Group(), wool = mat('#b8443f'), cuff = mat('#efe9df');
+  const g = new THREE.Group(), wool = mat('#2c4f9e'), cuff = mat('#efe9df'); // colores de marca: azul con blanco (nunca rojo)
   const cap = new THREE.Mesh(new THREE.SphereGeometry(.125, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2), wool); cap.scale.y = .95;
   const rim = new THREE.Mesh(new THREE.CylinderGeometry(.128, .13, .04, 24), cuff); rim.position.y = .01;
   const pom = new THREE.Mesh(new THREE.IcosahedronGeometry(.038, 1), cuff); pom.position.y = .125;
@@ -400,20 +443,43 @@ function frame(now) {
   if (now - last < 32) return; // ~30 fps: suficiente y cuida batería
   last = now;
   const dt = clock.getDelta(), t = clock.elapsedTime;
-  if (gesture) { gestureT += dt; if (gestureT > (gesture === 'hold' ? 3.2 : 2)) { gesture = null; holdObject(null); } }
-  if (bear) {
-    const a = RM ? 1 : Math.min(1, dt * 4.5); // suavizado: entra y sale de cada gesto sin golpes
-    BONES.forEach(n => {
-      const b = bones[n]; if (!b) return;
-      const g = target(n, RM ? 0 : t);
-      b.rotation.x = lerp(b.rotation.x, D(g[0]), a);
-      b.rotation.y = lerp(b.rotation.y, D(g[1]), a);
-      b.rotation.z = lerp(b.rotation.z, D(g[2]), a);
-    });
-    if (umb) { bear.updateMatrixWorld(true); placeUmbrella(); }
-    const hop = gesture === 'happy' ? Math.abs(Math.sin(gestureT * 6)) * .05 : 0;
-    bear.position.y = lerp(bear.position.y, .45 + hop, Math.min(1, dt * 10));
+  if (gesture) { gestureT += dt; if (gesture !== 'walk' && gestureT > (gesture === 'hold' || gesture === 'water' ? 3.2 : 2)) { gesture = ambient; gestureT = 0; holdObject(null); } }
+  // Caminar: avanza unos segundos y se detiene a mirar el paisaje
+  // En libertad (sin mensaje) camina más seguido; en primer plano se queda contigo
+  walkMoving = gesture === 'walk' && !RM && frontAmt < .5 && (gestureT % (WALK_CYCLE - 3)) < (WALK_MOVE + 1);
+  // Mientras Uku carga, el bosque aparece solo: el puntaje sube hasta el de la persona en 2.2 s
+  if (!bear && target != null) {
+    const s2 = Math.round(Math.min(1, (performance.now() - loadAt) / 2200) * target);
+    if (s2 !== score) { score = s2; buildForest(); }
   }
+  moodTint.lerp(MOOD_TINT[mood] || WHITE, Math.min(1, dt * 2));
+  if (ambLight) ambLight.color.copy(moodTint);
+  if (bear) {
+    if (bear.userData.grow < 1) { bear.userData.grow = Math.min(1, bear.userData.grow + dt * 1.2); bear.scale.setScalar(Math.max(.001, BEAR_S * (1 - Math.pow(1 - bear.userData.grow, 3)))); }
+    rig.playClip(clipFor());
+    rig.update(dt);
+    if (umb) { bear.updateMatrixWorld(true); placeUmbrella(); }
+    const hop = mood === 'feliz' && !gesture && !RM && !focus ? Math.abs(Math.sin(t * 2.4)) * .018 : 0;
+    // Respira y se mece un poco mientras está quieto
+    const breath = RM || walkMoving ? 0 : Math.sin(t * 1.7) * .006;
+    bear.position.y = lerp(bear.position.y, .45 * BEAR_S + hop + breath, Math.min(1, dt * 10));
+    bear.position.x = lerp(bear.position.x, 0, Math.min(1, dt * 3));
+    // Caminando, Uku mira hacia donde avanza; quieto, mira a la cámara
+    bear.rotation.y = lerp(bear.rotation.y, walkMoving || RM ? 0 : Math.sin(t * .5) * (focus ? .025 : .09), Math.min(1, dt * 3)); // conversando se queda quieto, mirándote
+  }
+  // Mundo pequeño: al caminar, Uku recorre la superficie del planeta y el bosque
+  // pasa bajo él; sin fin mientras camine, y todo se queda quieto al parar.
+  walkAmt = lerp(walkAmt, walkMoving ? 1 : 0, Math.min(1, dt * 2));
+  walkAng = (walkAng + WALK_ANG * walkAmt * dt) % (2 * Math.PI);
+  placeStage();
+  // Regar: si hay ahorro, Uku riega las flores cada cierto tiempo
+  if (waterOn && !gesture && !RM) { waterT += dt; if (waterT > 9) { waterT = 0; play('water', { hold: 'can' }); } }
+  if (gesture === 'water' && gestureT > .6 && gestureT < 2.8) { if (Math.floor(gestureT * 12) !== Math.floor((gestureT - dt) * 12)) spawnDrop(); }
+  drops = drops.filter(d => {
+    d.life += dt; d.v.y -= 1.6 * dt; d.m.position.addScaledVector(d.v, dt);
+    if (d.life > .9 || d.m.position.y < 0) { scene.remove(d.m); return false; }
+    return true;
+  });
   if (forest) forest.children.slice().forEach(o => {
     const u = o.userData;
     if ((u.dir > 0 && u.grow < 1) || (u.dir < 0 && u.grow > 0)) {
@@ -444,11 +510,25 @@ function frame(now) {
     a.needsUpdate = true;
   }
   // Giro: el dedo manda (con un pequeño rebote en los topes); a los 3 s vuelve de frente.
-  if (!drag) { if (performance.now() - idleAt > 3000) yawTo = 0; else yawTo = Math.max(-1.13, Math.min(1.13, yawTo)); }
+  // Con un mensaje o conversando, siempre de frente; en libertad la cámara orbita despacio alrededor de él
+  if (!drag) { if (focus || performance.now() - idleAt > 3000) yawTo = focus ? 0 : (1 - frontAmt) * Math.sin(t * .07) * .45; else yawTo = Math.max(-1.13, Math.min(1.13, yawTo)); }
   yaw = RM ? yawTo : lerp(yaw, yawTo, Math.min(1, dt * (drag ? 14 : 2.5)));
-  const sway = RM || drag ? 0 : Math.sin(t * .15) * .12;
-  camera.position.set(Math.sin(yaw) * camDist + Math.cos(yaw) * sway, .75, Math.cos(yaw) * camDist - Math.sin(yaw) * sway);
-  camera.lookAt(0, .55, 0);
+  // La cámara va sujeta a Uku, siempre de frente: camina hacia ella
+  frontAmt = RM ? (front ? 1 : 0) : lerp(frontAmt, front ? 1 : 0, Math.min(1, dt * 1.6));
+  const sway = RM || drag || focus ? 0 : Math.sin(t * .15) * (.12 + .18 * (1 - frontAmt));
+  // Conversando, la cámara se acerca y lo mira a la cara; su mundo queda apagado detrás
+  focusAmt = RM ? (focus ? 1 : 0) : lerp(focusAmt, focus ? 1 : 0, Math.min(1, dt * 4));
+  // De frente y cerca: la cámara baja casi a su altura; conversando se acerca un poco más
+  // En libertad la cámara se aleja y sube un poco (se ve el horizonte del planeta); con un mensaje, Uku pasa a primer plano
+  const free = (1 - frontAmt) * (1 - focusAmt);
+  const cd = camDist * (.66 - .1 * focusAmt) * zoomCur * (1 + .4 * free), ch = CAM_H * (.6 - .04 * focusAmt + .14 * free);
+  // El encuadre (corrimiento) también se mueve con suavidad
+  const k = RM ? 1 : Math.min(1, dt * 5);
+  if (Math.abs(shiftCur.x - shiftTo.x) > 1e-4 || Math.abs(shiftCur.y - shiftTo.y) > 1e-4) { shiftCur.x = lerp(shiftCur.x, shiftTo.x, k); shiftCur.y = lerp(shiftCur.y, shiftTo.y, k); applyShift(); }
+  if (Math.abs(zoomCur - zoomTo) > 1e-3) zoomCur = lerp(zoomCur, zoomTo, k);
+  camera.position.copy(stage.localToWorld(_cam.set(Math.sin(yaw) * cd + Math.cos(yaw) * sway, ch, Math.cos(yaw) * cd - Math.sin(yaw) * sway)));
+  camera.up.copy(_camUp.set(0, 1, 0).applyQuaternion(stage.quaternion));
+  camera.lookAt(stage.localToWorld(_look.set(0, .32 + .04 * focusAmt, 0)));
   renderer.render(scene, camera);
 }
 
@@ -460,7 +540,16 @@ function resize() {
   camera.aspect = w / h;
   // Encuadre: el oso siempre entra completo, más cerca en pantallas altas.
   camera.fov = camera.aspect < .8 ? 38 : 30;
-  camDist = camera.aspect < .8 ? 3.1 : 2.6;
+  camDist = camera.aspect < .8 ? 3.4 : 3.6; // planeta: desde más lejos y más alto se ve el horizonte curvo
+  // Escenario: data-shift corre el encuadre (fracción del ancho) para que Uku
+  // no quede detrás del globo de texto.
+  applyShift();
+}
+function applyShift() {
+  if (!host) return;
+  const w = host.clientWidth, h = host.clientHeight, sh = shiftCur.x, sv = shiftCur.y;
+  if (!w || !h) return;
+  if (Math.abs(sh) > 1e-4 || Math.abs(sv) > 1e-4) camera.setViewOffset(w, h, -w * sh, h * sv, w, h); else camera.clearViewOffset();
   camera.updateProjectionMatrix();
 }
 
@@ -473,31 +562,42 @@ function init() {
   scene = new THREE.Scene();
   const pal = palette();
   scene.background = null; // transparente: la máscara del contenedor funde la escena con la página
-  scene.fog = new THREE.Fog(pal.bg, 2.4, 7.5); // el bosque se aclara con la distancia, como en una ilustración
+  scene.fog = new THREE.Fog(pal.bg, 2.4 * WORLD_S, 7.5 * WORLD_S); // el bosque se aclara con la distancia, como en una ilustración
   camera = new THREE.PerspectiveCamera(30, 1, .05, 20);
   camera.position.set(0, .75, 2.6);
   // Ilustración: solo luz ambiente, colores planos sin sombreado
-  scene.add(new THREE.AmbientLight('#ffffff', Math.PI));
-  ground = new THREE.Mesh(new THREE.CircleGeometry(7, 48), new THREE.MeshLambertMaterial({ color: pal.ground }));
-  ground.rotation.x = -Math.PI / 2; scene.add(ground);
+  ambLight = new THREE.AmbientLight('#ffffff', Math.PI); scene.add(ambLight);
+  ground = new THREE.Mesh(new THREE.SphereGeometry(PLANET_R, 64, 32), new THREE.MeshLambertMaterial({ color: pal.ground }));
+  ground.position.copy(PLANET_C); scene.add(ground);
+  stage = new THREE.Group(); scene.add(stage); placeStage();
   clock = new THREE.Clock();
-  new GLTFLoader().load(new URL('./oso/oso.glb', import.meta.url).href, g => {
-    bear = g.scene;
+  loadUkuGltf().then(g => {
+    rig = ukuFrom(g);
+    // El modelo va dentro de un pivote: el pivote es lo que camina, respira y salta.
+    // Se escala a 0.9 m (la altura del oso anterior) y se centra en x y z.
+    const model = g.scene, box = rig.box, mid = box.getCenter(new THREE.Vector3());
+    const k = .9 / box.getSize(new THREE.Vector3()).y;
+    model.scale.setScalar(k);
+    model.position.set(-mid.x * k, -.45 - box.min.y * k, -mid.z * k);
+    bear = new THREE.Group(); bear.add(model); bear.userData.grow = 0; bear.scale.setScalar(.001);
     bear.traverse(o => {
-      if (o.isBone) { bones[o.name] = o; if (/^(upperarm|forearm|hand)_/.test(o.name)) o.rotation.order = 'YZX'; }
       if (o.isMesh) {
         o.frustumCulled = false;
-        // Color plano: la textura tal cual, sin luz ni sombras
+        // Color plano: la textura y los colores de vértice tal cual, sin luz ni sombras
         const src = o.material, flat = new THREE.MeshBasicMaterial({ map: src.map || null, color: src.map ? 0xffffff : (src.color || 0xffffff), transparent: !!src.transparent, opacity: src.opacity, fog: false });
+        if (o.geometry.attributes.color) flat.vertexColors = true;
         o.material = flat; src.dispose && src.dispose();
         if (flat.map) { bearMat = flat; baseMap = flat.map; }
       }
     });
-    bear.position.y = .45; // pies sobre el suelo (el modelo va de -0.45 a 0.45)
-    bear.scale.setScalar(1);
-    scene.add(bear);
+    bear.position.y = .45 * BEAR_S; // pies sobre el suelo (el cuerpo va de -0.45 a 0.45)
+    stage.add(bear);
+    if (target != null) { score = target; target = null; buildForest(); }
+    // Lo que se sostiene, se pone o se atacha usa estos huesos
+    bones.hand_R = rig.B('mixamorig:RightHand'); bones.head = rig.B('mixamorig:Head'); bones.headTop = rig.B('mixamorig:HeadTop_End');
     dressBear();
     play('wave');
+    readyFns.splice(0).forEach(f => { try { f(); } catch (e) {} });
   });
   const cv = renderer.domElement;
   cv.style.touchAction = 'pan-y'; // el scroll vertical de la página sigue funcionando
@@ -530,10 +630,12 @@ function init() {
   buildForest();
   buildDust();
   buildRain();
+  
   rain.visible = !!look.rain;
   raf = requestAnimationFrame(frame);
 }
 
+export function setAmbient(name) { ambient = name || null; if (!gesture && ambient) { gesture = ambient; gestureT = 0; } }
 export function play(name, opts) {
   gesture = name; gestureT = 0;
   holdObject(opts && opts.hold);
@@ -542,16 +644,59 @@ export function attach(el, opts) {
   if (!renderer) init();
   host = el;
   el.appendChild(renderer.domElement);
-  if (opts && typeof opts.score === 'number' && opts.score !== score) { score = opts.score; buildForest(); }
+  if (opts && typeof opts.score === 'number') {
+    // Antes de que Uku cargue, el bosque crece en vez de aparecer de golpe
+    if (!bear) { target = opts.score; loadAt = performance.now(); score = 0; buildForest(); }
+    else if (opts.score !== score) { score = opts.score; buildForest(); }
+  }
   if (opts && opts.onTap) onTap = opts.onTap;
+  if (opts && opts.onReady) { if (bear) opts.onReady(); else readyFns.push(opts.onReady); }
   resize();
+  attach._ro && attach._ro.disconnect();
+  attach._ro = new ResizeObserver(resize); attach._ro.observe(el); // el contenedor cambia de alto al conversar
   if ('IntersectionObserver' in window) {
     attach._io && attach._io.disconnect();
     attach._io = new IntersectionObserver(es => { visible = es[0].isIntersecting && document.visibilityState === 'visible'; });
     attach._io.observe(el);
   }
 }
-export function setScore(s) { if (s !== score) { score = s; if (renderer) buildForest(); } }
+export function setScore(s) { if (!bear && target != null) { target = s; return; } if (s !== score) { score = s; if (renderer) buildForest(); } }
+export function setBloom(b) { b = b == null ? null : Math.max(0, Math.min(100, b)); waterOn = !!b; if (b !== bloom) { bloom = b; if (renderer) buildForest(); } }
+/* Uku sale de su mundo para conversar: el bosque, el suelo y el polvo se apagan y queda él solo,
+   nítido, sobre una foto borrosa de su mundo (snapshot). Al volver, todo reaparece. */
+export function setFocus(on) {
+  if (!!on === focus) return;
+  focus = !!on;
+  // Conversando no camina ni pasea: se queda contigo. Al volver a su mundo retoma lo que hacía.
+  if (focus) { ambFocus = ambient; ambient = null; if (gesture === 'walk') gesture = null; } else { ambient = ambFocus; if (ambient && !gesture) { gesture = ambient; gestureT = 0; } }
+  [forest, ground, dust, rain, umb].forEach(o => { if (o) o.visible = focus ? false : (o === rain ? !!look.rain : true); });
+  if (scene) scene.fog.near = focus ? 1e4 : 2.4 * WORLD_S;
+}
+export function snapshot() {
+  if (!renderer || !scene) return null;
+  // La foto es de su mundo, sin él: Uku queda delante, nítido, no repetido en el fondo
+  try { if (bear) bear.visible = false; renderer.render(scene, camera); const u = renderer.domElement.toDataURL('image/png'); if (bear) bear.visible = true; return u; } catch (e) { if (bear) bear.visible = true; return null; }
+}
+export function setShift(f, fy) { shiftTo = { x: +f || 0, y: +fy || 0 }; }
+// La cámara se aleja (z > 1) o se acerca; sirve para que la cara de Uku quepa donde hay sitio
+export function setZoom(z) { zoomTo = Math.max(.8, Math.min(1.8, +z || 1)); }
+// Primer plano (true): Uku viene al frente, te mira y no camina; libre (false): pasea y la cámara orbita
+export function setFront(on) { front = !!on; if (front && gesture === 'walk') { gesture = null; gestureT = 0; } }
+// Dónde está su cara en pantalla (px del contenedor): centro, radio aproximado y el encuadre actual.
+// Con esto, la app calcula un corrimiento para que nada le tape la cara.
+const _h1 = new THREE.Vector3(), _h2 = new THREE.Vector3();
+export function head() {
+  if (!bear || !bones.head || !host || !camera) return null;
+  const w = host.clientWidth, h = host.clientHeight; if (!w || !h) return null;
+  bones.head.getWorldPosition(_h1);
+  const top = bones.headTop; if (top) top.getWorldPosition(_h2); else _h2.copy(_h1).add(_camUp.set(0, 1, 0).applyQuaternion(stage.quaternion).multiplyScalar(.2 * BEAR_S));
+  _h1.project(camera); _h2.project(camera);
+  const x1 = (_h1.x + 1) / 2 * w, y1 = (1 - _h1.y) / 2 * h, x2 = (_h2.x + 1) / 2 * w, y2 = (1 - _h2.y) / 2 * h;
+  const r = Math.hypot(x2 - x1, y2 - y1) * .62; // la mitad de cuello a coronilla, con margen para las orejas
+  return { x: (x1 + x2) / 2, y: (y1 + y2) / 2, r, shiftX: shiftCur.x, shiftY: shiftCur.y, zoom: zoomCur };
+}
+export function setMood(m) { mood = ['feliz', 'tranquilo', 'pensativo'].includes(m) ? m : null; }
+export function isReady() { return !!bear; }
 export function detach(el) { if (host === el) { host = null; } }
 export function supported() {
   try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; }

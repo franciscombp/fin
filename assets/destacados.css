@@ -51,46 +51,28 @@
 .dw-grid .dw-sub { font: var(--ui-body-sm-medium, 500 13px/18px sans-serif); color: var(--cx-muted); margin-top: 2px !important; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .dw-sub--ink { color: var(--cx-ink) !important; font-weight: 600 !important; }
 .dw-grid .dw-1 { -webkit-line-clamp: 1; }
-.dw-cats--fill { flex: 1; justify-content: space-evenly; gap: 2px; }
+
 .dw-bar { display: block; height: 6px; margin: 8px 0 2px; border-radius: 99px; background: var(--cx-fill); text-decoration: none; overflow: hidden; }
 .dw-bar i { display: block; height: 100%; border-radius: inherit; background: var(--bp-interaction-tertiary-fg); }
-.dw-bar--ink i { background: var(--cx-ink); opacity: .75; }
-.dw-bar--warn i { background: var(--bp-theme-color-status-error-icon, #c20505); }
-.dw-rows { display: flex; flex-direction: column; gap: 6px; justify-content: center; }
-.dw-rows > span, .dw-tx, .dw-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; font: var(--ui-body-sm-medium, 500 14px/20px sans-serif); }
-.dw-rows > span > span, .dw-tx > span, .dw-item > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dw-rows b, .dw-tx b, .dw-item b { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.dw-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; font: var(--ui-body-sm-medium, 500 14px/20px sans-serif); }
+.dw-item > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dw-item b { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .dw-list-in { display: flex; flex-direction: column; flex: 1; justify-content: space-evenly; }
-.dw-tx, .dw-item { padding: 6px 0; border: 0; border-top: 1px solid var(--cx-line); background: none; color: inherit; text-align: left; cursor: pointer; width: 100%; }
+.dw-item { padding: 6px 0; border: 0; border-top: 1px solid var(--cx-line); background: none; color: inherit; text-align: left; cursor: pointer; width: 100%; }
 .dw-list-in > :first-child { border-top: 0; }
-.dw-tx small, .dw-item small { display: block; font: var(--cx-caption); color: var(--cx-muted); font-weight: 500; }
+.dw-item small { display: block; font: var(--cx-caption); color: var(--cx-muted); font-weight: 500; }
 .dw-split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; flex: 1; min-height: 0; }
 .dw-split > div { min-width: 0; display: flex; flex-direction: column; }
 .dw-split__r { justify-content: center; }
-.dw-btn { align-self: flex-start; margin-top: 8px; height: 36px; padding: 0 16px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-primary-bg); color: var(--bp-interaction-primary-fg); font: var(--ui-label-md, 600 14px/1 sans-serif); cursor: pointer; }
-.dw-cats { display: flex; flex-direction: column; gap: 6px; justify-content: center; }
-.dw-cats--l { margin-top: 12px; gap: 10px; }
-.dw-cat { display: grid; grid-template-columns: 1fr auto; align-items: baseline; column-gap: 8px; font: var(--ui-body-sm-medium, 500 13px/18px sans-serif); }
-.dw-cat > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dw-cat b { font-weight: 600; font-variant-numeric: tabular-nums; }
-.dw-cat .dw-bar { grid-column: 1 / 3; margin: 3px 0 0; height: 5px; }
-.dw-cat small { grid-column: 1 / 3; font: var(--cx-caption); font-weight: 500; color: var(--cx-muted); }
-.dw-more { margin-top: auto; font: var(--ui-label-md, 600 14px/20px sans-serif); color: var(--bp-interaction-tertiary-fg); }
+.dw-btn { align-self: flex-start; margin-top: 8px; height: 36px; padding: 0 16px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); font: var(--ui-label-md, 600 14px/1 sans-serif); cursor: pointer; } /* secundario: el estilo lo da bp-action-button */
+
 .dw-ring { position: relative; width: 56px; height: 56px; margin-bottom: 6px; }
 .dw-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 .dw-ring circle { fill: none; stroke: var(--cx-fill); stroke-width: 6; }
 .dw-ring .dw-ring__v { stroke: var(--bp-interaction-tertiary-fg); stroke-linecap: round; }
 .dw-ring b { position: absolute; inset: 0; display: grid; place-items: center; font: 700 13px/1 var(--sol-font, Roboto, sans-serif); }
-.dw-score { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.dw-face { width: 52px; height: 52px; flex: 0 0 52px; border-radius: 50%; overflow: hidden; background: var(--cx-fill); }
-.dw-face img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
-.dw-tip { padding: 10px 12px; border-radius: 12px; background: var(--cx-fill); font: var(--ui-body-sm-medium, 500 13px/18px sans-serif); overflow: hidden; }
-.dw-tip p { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
-.dw-ic { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; margin: auto 0 8px; background: var(--bp-interaction-tertiary-bg); color: var(--bp-interaction-tertiary-fg); font-size: 24px; }
-.dw-short { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; flex: 1; align-items: center; }
-.dw-short button { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 0; border: 0; background: transparent; color: inherit; font: 500 12px/15px var(--sol-font, Roboto, sans-serif); cursor: pointer; min-width: 0; }
-.dw-short button > span:last-child { max-width: 100%; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-align: center; }
-.dw-grid .dw-short .material-symbols-rounded { width: 44px !important; height: 44px !important; min-height: 0 !important; border-radius: 50% !important; display: grid; place-items: center; background: var(--bp-interaction-tertiary-bg); color: var(--bp-interaction-tertiary-fg); font-size: 22px; }
+
 .dw-grid .dw-promo { font: 600 17px/23px var(--sol-font, Roboto, sans-serif); letter-spacing: -.2px; }
 .dw--s .dw-promo { font-size: 15px; line-height: 20px; }
 .dw-grid .dw-cta { margin-top: auto !important; align-self: flex-start; pointer-events: none; }
@@ -98,7 +80,6 @@
 .dw-limit { margin: 4px 0 0; font: var(--ui-body-sm-medium, 500 13px/18px sans-serif); color: var(--cx-muted); text-align: center; }
 .dw-limit[hidden] { display: none; }
 .dw--offer { background: linear-gradient(160deg, var(--cx-surface) 55%, color-mix(in srgb, var(--bp-interaction-primary-bg, #ffdd00) 22%, var(--cx-surface))); }
-.dw-empty { grid-column: 1 / 3; font: var(--cx-sub); color: var(--cx-muted); }
 
 /* ---------- Edición: quitar, cambiar tamaño, arrastrar ---------- */
 .dw-x, .dw-size { display: none; }
@@ -128,7 +109,7 @@
 .dw-gal__t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .dw-gal__t b { font: var(--ui-body-md-semibold, 600 16px/22px sans-serif); }
 .dw-gal__t small { font: var(--ui-body-sm-medium, 500 13px/18px sans-serif); color: var(--cx-muted); }
-.dw-gal__add { height: 36px; padding: 0 14px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-primary-bg); color: var(--bp-interaction-primary-fg); font: var(--ui-label-md, 600 14px/1 sans-serif); cursor: pointer; white-space: nowrap; }
+.dw-gal__add { height: 36px; padding: 0 14px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); font: var(--ui-label-md, 600 14px/1 sans-serif); cursor: pointer; white-space: nowrap; } /* secundario: el estilo lo da bp-action-button */
 .dw-gal__add:disabled { background: var(--bp-interaction-tertiary-bg); color: var(--cx-muted); cursor: default; }
 .dw-gal__sizes { display: flex; gap: 8px; margin-top: 12px; }
 .dw-gal__prev { margin-top: 12px; padding: 12px; border-radius: 16px; background: var(--cx-fill); container-type: inline-size; pointer-events: none; }
@@ -149,47 +130,14 @@ html.pb-masked .dw-s__m { display: inline; }
 .dw-grid .dw { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 
 /* ---------- Mini gráficos ---------- */
-.dw-spark { position: relative; display: block; width: 100%; height: 100%; min-height: 44px; }
-.dw-spark svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.dw-spark__line { fill: none; stroke: var(--bp-interaction-tertiary-fg); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
-.dw-spark__area { fill: color-mix(in srgb, var(--bp-interaction-tertiary-fg) 10%, transparent); stroke: none; }
-.dw-spark i { position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: var(--bp-interaction-tertiary-fg); box-shadow: 0 0 0 2px var(--cx-surface); }
-.dw-split__r > .dw-spark { height: 72px; flex: 0 0 auto; }
-.dw-chart { flex: 1; min-height: 0; display: flex; margin: 8px 0 4px; }
-.dw-chart > .dw-spark { flex: 1; }
-.dw-chart--bars { flex: 0 0 96px; }
-.dw-wbars { display: flex; align-items: stretch; gap: 6px; width: 100%; }
-.dw-wbar { flex: 1; min-width: 0; display: grid; grid-template-rows: 1fr auto; position: relative; }
-.dw-wbar__track { position: relative; display: flex; align-items: flex-end; }
-.dw-wbar__track i { display: block; width: 100%; border-radius: 4px 4px 0 0; background: color-mix(in srgb, var(--bp-interaction-tertiary-fg) 35%, var(--cx-fill)); }
-.dw-wbar.is-hi .dw-wbar__track i { background: var(--bp-interaction-tertiary-fg); }
-.dw-wbar b { position: absolute; left: 50%; top: -2px; transform: translate(-50%, -100%); font: 600 11px/14px var(--sol-font, Roboto, sans-serif); white-space: nowrap; color: var(--cx-ink); }
-.dw-wbar small { margin-top: 4px; text-align: center; font: 500 11px/14px var(--sol-font, Roboto, sans-serif); color: var(--cx-muted); }
-.dw-grid .is-out { color: var(--bp-theme-color-status-error-text, #c20505); }
-.dw-grid .is-in, .dw-grid .is-out { font-weight: 600; }
-.dw-rows--l { margin-top: 4px; }
-.dw-split--top { flex: 0 0 auto; }
-.dw-grid .dw-label--sec { margin-top: 10px !important; }
+
+.dw-grid .is-in { font-weight: 600; }
 
 /* ---------- Pila (Lo importante hoy): se desliza entre páginas ---------- */
 .dw-stack { display: flex; flex: 1; min-height: 0; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; margin: 0 -16px; }
 .dw-stack::-webkit-scrollbar { display: none; }
-.dw-stack__page { flex: 0 0 100%; scroll-snap-align: start; display: flex; align-items: center; gap: 14px; padding: 0 16px; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; min-width: 0; }
-.dw-stack__ic { flex: 0 0 48px; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: var(--bp-interaction-tertiary-bg); color: var(--bp-interaction-tertiary-fg); font-size: 26px; }
-.dw-stack__t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.dw-dots { display: flex; justify-content: center; gap: 6px; padding-top: 6px; }
-.dw-dots i { width: 6px; height: 6px; border-radius: 50%; background: color-mix(in srgb, var(--cx-ink) 20%, transparent); transition: background .2s ease, width .2s ease; }
-.dw-dots i.on { width: 16px; border-radius: 3px; background: var(--bp-interaction-tertiary-fg); }
 
 /* ---------- Uku hoy ---------- */
-.dw-uku { display: flex; flex-direction: column; justify-content: space-between; flex: 1; min-height: 0; gap: 6px; }
-.dw-face--lg { width: 64px; height: 64px; flex: 0 0 64px; }
-.dw-temp { display: flex; align-items: baseline; gap: 6px; font: 700 26px/30px var(--sol-font, Roboto, sans-serif); }
-.dw-temp .material-symbols-rounded { font-size: 22px; align-self: center; color: var(--bp-interaction-tertiary-fg); }
-.dw-temp small { font: 500 13px/18px var(--sol-font, Roboto, sans-serif); color: var(--cx-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dw-spark { width: calc(100% - 5px); }
-.dw--l .dw-rows--l { gap: 2px; }
-.dw--l .dw-chart > .dw-spark { min-height: 0; }
 
 /* Huecos con sugerencias: el espacio de Destacados nunca desaparece */
 .is-editing .dw--sug { animation: none; cursor: default; box-shadow: 0 0 0 1px var(--cx-line); }

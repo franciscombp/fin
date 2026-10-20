@@ -1,0 +1,367 @@
+/* =====================================================================
+   Mis finanzas sobre la Base de datos PFM (assets/pfm.js)
+   Usa los componentes del sistema (sistema.css): pf-cta (primario),
+   pf-link (acción secundaria), section__link (terciario), tab, pf-catchip,
+   pf-round y pf-mcard. La jerarquía la dan el tamaño y el espacio: las
+   cifras y los textos van sobre el fondo de la página y solo las listas
+   se agrupan en una tarjeta.
+   ===================================================================== */
+
+/* ---------- Comunes ---------- */
+.pfm .pf-sec__head { margin-bottom: var(--bp-semantic-spacing-micro-lg, 16px); }
+.pfm .pf-sec__head h2, .pfm .pf-sec > h2 { margin: 0 !important; font: var(--cx-headline) !important; letter-spacing: -.2px !important; color: var(--cx-ink, var(--bp-theme-color-text-primary)) !important; }
+.pfm-av { flex: 0 0 32px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: var(--bp-theme-color-avatar-bg, var(--bp-interaction-secondary-bg)); color: var(--bp-theme-color-avatar-fg, var(--bp-interaction-secondary-fg)); font: var(--ui-label-md); }
+.as-row .pfm-av { flex-basis: 40px; width: 40px; height: 40px; }
+.pfm-ic { margin-right: 8px; font-size: 20px; vertical-align: -4px; color: var(--cx-muted); }
+.pfm-block { width: 100%; margin-top: var(--bp-semantic-spacing-macro-sm, 24px); }
+/* El ícono de una fila: como el avatar de producto de Inicio (40, radius sm, secondary) */
+.pfm-row__ic, .pfm-note__ic, .pfm-sum__ic, .pfm-debt > .pfm-ic, .pfm-world__row > .material-symbols-rounded {
+  flex: 0 0 var(--bp-semantic-size-avatar-xs, 40px); width: var(--bp-semantic-size-avatar-xs, 40px); height: var(--bp-semantic-size-avatar-xs, 40px);
+  display: grid; place-items: center; margin: 0; border-radius: var(--bp-semantic-radius-sm, 8px);
+  background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font-size: var(--bp-semantic-size-icon-md, 24px); vertical-align: 0;
+}
+
+/* ---------- 1. Tu dinero: cada cifra en su tarjeta ---------- */
+.pfm-money { margin-top: var(--bp-semantic-spacing-macro-md, 40px) !important; }
+.pfm-saldo, .pfm-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; min-width: 0; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
+.pfm-saldo { padding: 20px; }
+.pfm-tile { padding: 16px; }
+.pfm-saldo { cursor: default; }
+.pfm-tile:active { background: var(--bp-interaction-tertiary-bg--active, var(--bp-interaction-secondary-bg)); }
+.pfm-tile__l { font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-saldo > b { margin-top: 4px; font: var(--cx-amount); letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.pfm-tile b { margin-top: 8px; font: var(--ui-title-md, 600 20px/26px sans-serif); font-weight: 600; letter-spacing: -.3px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pfm-saldo > small, .pfm-tile small { max-width: 100%; font: var(--cx-caption); color: var(--cx-muted); }
+.pfm-net { display: inline-flex; align-items: center; gap: 4px; margin-top: 12px; padding: 0; border: 0; background: none; color: var(--cx-muted); font: var(--cx-caption); cursor: pointer; }
+.pfm-net b { font: var(--ui-body-sm-semibold); color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
+.pfm-net .material-symbols-rounded { font-size: 16px; }
+.pfm-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--bp-semantic-spacing-micro-md, 8px); margin-top: var(--bp-semantic-spacing-micro-md, 8px); }
+
+/* ---------- 2. Uku: su mundo y lo que notó ---------- */
+@keyframes pfmGlobo { from { opacity: 0; transform: scale(.6) translateY(8px); } }
+
+/* Las tres señales de su mundo: texto sobre la página, sin cajas */
+/* Las señales de Uku no alarman: un solo tono, el estado lo dice el texto */
+.pf-uku2__row.is-on { margin: 0 -12px; padding-left: 12px; padding-right: 12px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-secondary-bg); }
+
+/* El mundo de Uku explicado (hoja) */
+.pfm-world__row { display: flex; gap: var(--bp-semantic-spacing-micro-lg, 16px); padding: var(--bp-semantic-spacing-micro-lg, 16px) 0; border-bottom: var(--bp-semantic-border-thin, 1px) solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+.pfm-world__row > .material-symbols-rounded { font-variation-settings: 'FILL' 1; }
+.pfm-world__row > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+.pfm-world__row small { font: var(--cx-sub); color: var(--cx-muted); }
+
+/* ---------- El juego de ordenar (pantalla completa) ----------
+   Que dé gusto: la tarjeta entra con un rebote, el botón elegido late y
+   suelta un +1, la tarjeta sale volando, Uku avanza por la barra y te
+   anima; al guardar, confeti. Sin movimiento si así lo pide el sistema. */
+.pfm-game { position: fixed; inset: 0; z-index: 1200; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; padding: calc(var(--bp-semantic-spacing-micro-md, 8px) + env(safe-area-inset-top, 0px)) var(--bp-layout-grid-margin, 24px) calc(var(--bp-semantic-spacing-macro-sm, 24px) + env(safe-area-inset-bottom, 0px)); background: var(--bp-theme-color-surface-page-default, #f5f5f5); color: var(--bp-theme-color-text-primary); transform: translateY(100%); visibility: hidden; transition: transform .32s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .32s; overflow-x: hidden; overflow-y: auto; }
+.pfm-game.open { transform: none; visibility: visible; transition: transform .32s cubic-bezier(.2, .8, .2, 1); }
+.pfm-game__top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; min-height: 56px; margin: 0 -8px; }
+.pfm-game__top > :last-child { justify-self: end; }
+.pfm-game__count { font: var(--ui-body-sm-semibold); color: var(--cx-muted); font-variant-numeric: tabular-nums; }
+
+/* Uku en la barra de avance */
+.pfm-play { position: relative; margin: 14px 18px 0 0; }
+.pfm-play__bar { height: 8px; border-radius: 99px; overflow: hidden; background: var(--bp-interaction-selectable-bg); }
+.pfm-play__bar i { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--bp-interaction-primary-bg, #ffdd00); transition: width .55s cubic-bezier(.3, 1.4, .5, 1); }
+.pfm-play__uku { position: absolute; top: 50%; left: 0; width: 36px; height: 36px; margin: -18px 0 0 -6px; border: 3px solid var(--bp-theme-color-surface-page-default, #f5f5f5); border-radius: 50%; overflow: hidden; background: var(--bp-theme-color-surface-container-default); transition: left .55s cubic-bezier(.3, 1.4, .5, 1); }
+.pfm-play__uku img { width: 100%; height: 100%; object-fit: cover; }
+.pfm-play__uku.is-hop { animation: pfmHop .5s ease .15s; }
+.pfm-play__cheer { position: absolute; right: -10px; top: 18px; padding: 4px 10px; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-selectable-selected-bg); color: var(--bp-interaction-selectable-selected-fg); font: var(--ui-body-sm-semibold); white-space: nowrap; animation: pfmCheer 1.6s ease both; pointer-events: none; }
+@keyframes pfmHop { 40% { transform: translateY(-10px) rotate(-8deg); } 70% { transform: translateY(0) rotate(4deg); } }
+@keyframes pfmCheer { 0% { opacity: 0; transform: translateY(6px) scale(.6); } 15% { opacity: 1; transform: translateY(0) scale(1.08); } 25% { transform: scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-6px); } }
+
+/* La tarjeta: entra con rebote, sale volando */
+.pfm-game__stage { display: flex; flex-direction: column; }
+.pfm-card { display: flex; flex-direction: column; align-items: center; margin-top: var(--bp-semantic-spacing-macro-md, 36px); text-align: center; animation: pfmIn .45s cubic-bezier(.2, 1.3, .4, 1) both; transform-origin: 50% 80%; }
+.pfm-card.is-gone { animation: pfmOut .3s cubic-bezier(.5, 0, .9, .4) forwards; }
+@keyframes pfmIn { from { opacity: 0; transform: translateX(48px) rotate(5deg) scale(.94); } }
+@keyframes pfmOut { to { opacity: 0; transform: translate(-36px, -70px) rotate(-10deg) scale(.7); } }
+.pfm-card p { margin: 0; }
+.pfm-card__av { position: relative; width: 64px; height: 64px; display: grid; place-items: center; border-radius: 50%; background: var(--bp-theme-color-avatar-bg, var(--bp-interaction-secondary-bg)); color: var(--bp-theme-color-avatar-fg, var(--bp-interaction-secondary-fg)); font: var(--ui-title-md, 600 20px/26px sans-serif); animation: pfmPop .5s cubic-bezier(.2, 1.5, .4, 1) .08s both; }
+.pfm-card__av > .material-symbols-rounded { font-size: 30px; }
+.pfm-card__av.is-mes { background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); }
+.pfm-card__av em { position: absolute; right: -4px; bottom: -4px; width: 26px; height: 26px; display: grid; place-items: center; border: 2px solid var(--bp-theme-color-surface-page-default, #f5f5f5); border-radius: 50%; background: var(--bp-theme-color-surface-container-default); font-size: 16px; font-style: normal; color: var(--bp-interaction-tertiary-fg); }
+.pfm-card__amt { margin-top: var(--bp-semantic-spacing-micro-lg, 16px) !important; font: 700 48px/56px var(--sol-font, Roboto, sans-serif); letter-spacing: -1.5px; font-variant-numeric: tabular-nums; }
+.pfm-card__amt.is-pos { color: var(--bp-theme-color-status-success-text, #13703b); }
+.pfm-card__who { margin-top: 4px !important; font: var(--cx-headline); letter-spacing: -.2px; color: var(--bp-interaction-tertiary-fg); }
+.pfm-card__meta { max-width: 300px; margin-top: 6px !important; font: var(--cx-caption); color: var(--cx-muted); }
+.pfm-card__months { display: flex; align-items: flex-end; gap: 8px; height: 56px; margin-top: var(--bp-semantic-spacing-micro-lg, 16px); }
+.pfm-card__months span { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; width: 22px; height: 100%; }
+.pfm-card__months i { width: 100%; height: var(--h); border-radius: 4px 4px 0 0; background: var(--bp-interaction-tertiary-fg); transform-origin: bottom; animation: pfmGrow .5s cubic-bezier(.2, 1.3, .4, 1) both; animation-delay: calc(.2s + var(--d)); }
+.pfm-card__months small { font: var(--cx-caption); color: var(--cx-muted); }
+@keyframes pfmGrow { from { transform: scaleY(0); } }
+
+/* La pregunta y las opciones: chips del sistema que entran en cascada */
+.pfm-game__ask { display: flex; flex-direction: column; gap: 8px; margin: var(--bp-semantic-spacing-macro-md, 36px) 0 var(--bp-semantic-spacing-macro-sm, 24px); font: var(--cx-headline); font-size: 22px; line-height: 28px; letter-spacing: -.3px; color: var(--bp-theme-color-text-primary); text-align: center; }
+.pfm-game__ask small { max-width: 300px; margin: 0 auto; font: var(--cx-caption); line-height: 20px; letter-spacing: 0; color: var(--cx-muted); }
+.pfm-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.pfm-choices.is-list { grid-template-columns: 1fr; }
+.pfm-choice { position: relative; display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md, 8px); min-height: var(--bp-semantic-size-interactive-md, 48px); padding: 0 var(--bp-semantic-spacing-micro-lg, 16px) 0 12px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-selectable-bg); color: var(--bp-interaction-selectable-fg); font: var(--ui-body-sm-semibold); text-align: left; cursor: pointer; animation: pfmUp .35s cubic-bezier(.2, 1.2, .4, 1) both; animation-delay: calc(.12s + var(--d, 0ms)); transition: transform .15s ease, opacity .2s ease, background .15s ease; }
+.pfm-choices.is-list .pfm-choice { padding-left: var(--bp-semantic-spacing-micro-lg, 16px); }
+.pfm-choice .material-symbols-rounded { font-size: var(--bp-semantic-size-icon-sm, 20px); }
+.pfm-choice:hover { background: var(--bp-interaction-selectable-bg--hover); }
+.pfm-choice:active { transform: scale(.96); }
+.pfm-choice.is-sug { background: var(--bp-interaction-selectable-selected-bg); color: var(--bp-interaction-selectable-selected-fg); }
+.pfm-choice em { margin-left: auto; font-size: 18px; font-style: normal; }
+.pfm-choice.is-more { background: transparent; box-shadow: inset 0 0 0 1px var(--bp-theme-color-border-divider, var(--cx-line)); }
+.pfm-game__all { animation: pfmUp .35s ease both; }
+.pfm-allcats { display: flex; flex-direction: column; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); overflow: hidden; }
+.pfm-allcat { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border: 0; border-bottom: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); background: none; color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; animation: pfmUp .3s ease both; animation-delay: var(--d); }
+.pfm-allcat:last-child { border-bottom: 0; }
+.pfm-allcat:active, .pfm-allcat.is-picked { background: var(--bp-interaction-primary-bg, #ffdd00); }
+.pfm-allcat > .material-symbols-rounded { flex: 0 0 40px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); }
+.pfm-allcat > span:last-child { display: flex; flex-direction: column; }
+.pfm-allcat b { font: var(--ui-body-md-semibold); }
+.pfm-allcat small { font: var(--cx-caption); color: var(--cx-muted); }
+.pfm-choice.is-picked { z-index: 1; background: var(--bp-interaction-primary-bg, #ffdd00) !important; color: var(--bp-interaction-primary-fg, #0f265c) !important; animation: pfmBeat .35s ease both; }
+.pfm-choice.is-out { opacity: .25; transform: scale(.97); }
+.pfm-plus { position: absolute; right: 12px; top: 0; font: var(--ui-label-md); color: var(--bp-interaction-tertiary-fg); animation: pfmPlus .6s ease both; pointer-events: none; }
+@keyframes pfmUp { from { opacity: 0; transform: translateY(14px); } }
+@keyframes pfmBeat { 40% { transform: scale(1.06); } 100% { transform: scale(1); } }
+@keyframes pfmPlus { from { opacity: 0; transform: translateY(6px); } 30% { opacity: 1; } to { opacity: 0; transform: translateY(-28px); } }
+.pfm-game__acts { display: flex; justify-content: center; gap: var(--bp-semantic-spacing-micro-md, 8px); margin-top: auto; padding-top: var(--bp-semantic-spacing-macro-sm, 24px); padding-bottom: 8px; }
+
+/* Confirmar una programación: monto, para, cuándo y desde */
+.pfm-confirm { width: 100%; max-width: 320px; margin-top: var(--bp-semantic-spacing-macro-sm, 24px); border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); text-align: left; overflow: hidden; }
+.pfm-confirm > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+.pfm-confirm > div:last-child { border-bottom: 0; }
+.pfm-confirm small { font: var(--cx-caption); color: var(--cx-muted); }
+.pfm-confirm b { font: var(--ui-body-sm-semibold); color: var(--bp-theme-color-text-primary); text-align: right; }
+
+/* Reglas y programar: un panel que sube */
+.pfm-game__panel { flex: 1; display: flex; flex-direction: column; align-items: center; padding-top: var(--bp-semantic-spacing-macro-md, 40px); text-align: center; animation: pfmUp .4s cubic-bezier(.2, 1.2, .4, 1) both; }
+.pfm-game__panel h2 { margin: var(--bp-semantic-spacing-micro-lg, 16px) 0 var(--bp-semantic-spacing-micro-md, 8px); font: var(--cx-headline); font-size: 24px; line-height: 30px; color: var(--bp-interaction-tertiary-fg); }
+.pfm-game__panel > p { margin: 0; font: var(--cx-body); color: var(--cx-muted); }
+.pfm-game__big { width: 72px; height: 72px; display: grid; place-items: center; border-radius: 50%; background: var(--bp-interaction-selectable-selected-bg); color: var(--bp-interaction-selectable-selected-fg); font-size: 36px; animation: pfmPop .5s cubic-bezier(.2, 1.5, .4, 1) both; }
+.pfm-game__big.is-ok { background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); }
+.pfm-game__stack { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md, 8px); width: 100%; max-width: 320px; margin-top: var(--bp-semantic-spacing-macro-sm, 24px); }
+.pfm-game__stack span { display: flex; justify-content: space-between; padding: 14px 16px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); font: var(--cx-sub); color: var(--cx-muted); animation: pfmUp .4s cubic-bezier(.2, 1.2, .4, 1) both; animation-delay: calc(.15s + var(--i) * 80ms); }
+.pfm-game__stack b { color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
+
+/* Resultado y fin */
+.pfm-game__result, .pfm-game__end { flex: 1; display: flex; flex-direction: column; padding-top: var(--bp-semantic-spacing-macro-sm, 24px); }
+.pfm-game__end { align-items: center; text-align: center; }
+.pfm-game__result h2, .pfm-game__end h2 { margin: 0 0 var(--bp-semantic-spacing-micro-md, 8px); font: var(--cx-page); letter-spacing: -.6px; color: var(--bp-interaction-tertiary-fg); }
+.pfm-game__end h2 { margin-top: var(--bp-semantic-spacing-macro-sm, 24px); }
+.pfm-game__result > p, .pfm-game__end > p { margin: 0; font: var(--cx-body); color: var(--cx-muted); }
+.pfm-game__check { width: 56px; height: 56px; display: grid; place-items: center; margin-bottom: var(--bp-semantic-spacing-micro-lg, 16px); border-radius: 50%; background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); font-size: 28px; animation: pfmPop .5s cubic-bezier(.2, 1.5, .4, 1) both; }
+.pfm-sum { margin-top: var(--bp-semantic-spacing-macro-sm, 24px); }
+.pfm-sum__row { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-lg, 16px); padding: 12px 0; border-bottom: var(--bp-semantic-border-thin, 1px) solid var(--bp-theme-color-border-divider, var(--cx-line)); animation: pfmUp .35s ease both; animation-delay: var(--d, 0ms); }
+.pfm-sum__row:last-child { border-bottom: 0; }
+.pfm-sum__row span:nth-child(2) { flex: 1; display: flex; flex-direction: column; font: var(--ui-body-md-semibold); }
+.pfm-sum__row span:nth-child(2) small { font: var(--cx-caption); color: var(--cx-muted); }
+.pfm-sum__row b { font: var(--cx-sub); color: var(--cx-muted); font-variant-numeric: tabular-nums; }
+.pfm-game__result .pf-note { margin: var(--bp-semantic-spacing-micro-lg, 16px) 0 0; }
+.pfm-game__foot { display: flex; flex-direction: column; align-items: center; gap: var(--bp-semantic-spacing-micro-md, 8px); width: 100%; margin-top: auto; padding-top: var(--bp-semantic-spacing-macro-sm, 24px); }
+.pfm-game__foot .pf-cta { width: 100%; margin: 0; }
+.pfm-game__foot .section__link { min-height: var(--bp-semantic-size-interactive-sm, 48px); }
+.pfm-game__mood { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 0 0 var(--bp-semantic-spacing-micro-md, 8px) !important; font: var(--ui-body-md-semibold) !important; color: var(--bp-theme-color-text-primary) !important; }
+.pfm-game__mood .material-symbols-rounded { font-size: 24px; font-variation-settings: 'FILL' 1; color: var(--bp-interaction-tertiary-fg); }
+.pfm-game__burst { width: 120px; height: 120px; margin-top: var(--bp-semantic-spacing-macro-md, 40px); border-radius: 50%; overflow: hidden; background: var(--bp-theme-color-surface-container-default); animation: pfmPop .6s cubic-bezier(.2, 1.5, .4, 1) both, pfmHop .7s ease .6s 2; }
+.pfm-game__burst img { width: 100%; height: 100%; object-fit: cover; }
+@keyframes pfmPop { from { transform: scale(.3); opacity: 0; } }
+.pfm-confeti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 2; }
+.pfm-confeti i { position: absolute; top: -12px; width: 8px; height: 12px; border-radius: 2px; animation: pfmFall 1.4s cubic-bezier(.3, .6, .6, 1) both; }
+@keyframes pfmFall { to { transform: translate(var(--x), 105vh) rotate(var(--r)); opacity: .9; } }
+.pfm-prog { display: flex; gap: 8px; margin-top: 16px !important; padding: 14px 16px; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); font: var(--cx-body); }
+.pfm-prog .material-symbols-rounded { color: var(--bp-interaction-tertiary-fg); }
+.pfm-mes__cmp { margin-top: 16px; }
+@media (prefers-reduced-motion: reduce) {
+  .pfm-game, .pfm-game *, .pfm-game__burst { transition: none !important; animation: none !important; }
+}
+
+/* ---------- 3. Tus gastos, como Salud de Apple ---------- */
+.pfm-flow { margin-top: var(--bp-semantic-spacing-macro-md, 40px) !important; }
+.pfm-flow .pf-sec__head { margin-bottom: 0; }
+/* Fijo justo debajo de la barra de Mis finanzas (que también es fija), como
+   las pestañas de Inicio: mismo offset con el safe-area y el mismo fondo */
+.pfm-tabs { position: sticky; top: calc(56px + env(safe-area-inset-top, 0px)); z-index: 49; display: flex; gap: var(--bp-semantic-spacing-micro-md, 8px); padding: var(--bp-semantic-spacing-micro-md, 8px) var(--bp-layout-grid-margin, 24px); background: var(--bp-surface-page); }
+.pfm-flow__body { margin-top: 0 !important; }
+.pfm-tabs .tab { flex: 1 1 0; justify-content: center; }
+.pfm-chart__head { margin-top: var(--bp-semantic-spacing-macro-sm, 24px); }
+.pfm-chart__head p { margin: 0; }
+.pfm-chart__l { font: var(--cx-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
+.pfm-chart__v { margin-top: 2px !important; font: var(--cx-amount); letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.pfm-chart__r { font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-chart { margin-top: var(--bp-semantic-spacing-micro-lg, 16px); }
+.pfm-chart__plot { position: relative; height: 200px; margin-right: 44px; }
+.pfm-chart__g { position: absolute; left: 0; right: -44px; height: 0; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+.pfm-chart__g em, .pfm-chart__plan em { position: absolute; right: 0; top: 2px; font: var(--cx-caption); font-style: normal; color: var(--cx-muted); font-variant-numeric: tabular-nums; }
+.pfm-chart__g:first-child { border-top-color: var(--cx-muted); opacity: .6; }
+.pfm-chart__plan { position: absolute; left: 0; right: 0; z-index: 1; height: 0; border-top: 1.5px dashed var(--bp-interaction-tertiary-fg); opacity: .55; pointer-events: none; }
+.pfm-chart__plan em { right: auto; left: 0; top: -20px; }
+.pfm-chart__bars { position: absolute; inset: 0; display: flex; align-items: flex-end; gap: 8px; }
+.pfm-chart__bars.is-thin { gap: 3px; }
+.pfm-chart__bar { flex: 1 1 0; min-width: 0; height: 100%; display: flex; align-items: flex-end; padding: 0; border: 0; background: none; cursor: pointer; }
+.pfm-chart__bar i { display: block; width: 100%; min-height: 2px; border-radius: 4px 4px 0 0; background: var(--bp-interaction-tertiary-fg); transition: height .4s ease, opacity .2s ease; }
+.pfm-chart__bars.is-thin .pfm-chart__bar i { border-radius: 2px 2px 0 0; }
+.pfm-chart.has-sel .pfm-chart__bar:not(.is-on) i { opacity: .3; }
+.pfm-chart__x { display: flex; gap: 8px; margin: 6px 44px 0 0; }
+.pfm-chart__bars.is-thin ~ .pfm-chart__x { gap: 3px; }
+.pfm-chart__x span { flex: 1 1 0; min-width: 0; overflow: visible; white-space: nowrap; font: var(--cx-caption); color: var(--cx-muted); }
+.pfm-chart__plot:has(.is-thin) + .pfm-chart__x { gap: 3px; }
+.pfm-chart__x.is-days span { display: flex; flex-direction: column; align-items: center; gap: 0; text-transform: capitalize; }
+.pfm-chart__x.is-days b { font: var(--ui-body-sm-semibold); color: var(--bp-theme-color-text-primary); }
+.pfm-chart__x.is-days small { font: var(--cx-caption); color: var(--cx-muted); }
+.pfm-chart__x span.is-on b, .pfm-chart__x span.is-on { color: var(--bp-interaction-tertiary-fg); }
+.pfm-chart__x.is-days span.is-on { border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-selectable-selected-bg); }
+.pfm-chart__x.is-days span.is-on b, .pfm-chart__x.is-days span.is-on small { color: var(--bp-interaction-selectable-selected-fg); }
+.pfm-chart__hint { margin: 12px 0 0; font: var(--cx-caption); color: var(--cx-muted); text-align: center; }
+.pfm-dia { margin-top: 16px; padding: 4px 16px !important; animation: pfmUp .3s ease both; }
+.pfm-dia__t { display: flex; justify-content: space-between; align-items: baseline; margin: 12px 0 4px; font: var(--ui-body-md-semibold); }
+.pfm-dia__t span { font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-dia .pfm-tx:last-child { border-bottom: 0; }
+.pfm-budget { margin-top: var(--bp-semantic-spacing-micro-lg, 16px); }
+.pfm-bar { position: relative; display: flex; height: 8px; border-radius: 99px; background: color-mix(in srgb, var(--bp-interaction-tertiary-fg) 12%, transparent); }
+.pfm-bar i { display: block; height: 100%; border-radius: 99px; transition: width .4s ease; }
+.pfm-bar i.is-gast { background: var(--bp-interaction-tertiary-fg); }
+.pfm-bar i.is-gast.is-over { background: var(--bp-theme-color-status-caution-text, #d39b3a); }
+.pfm-bar em { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--bp-theme-color-text-primary); opacity: .4; }
+.pfm-budget__t { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: var(--bp-semantic-spacing-micro-md, 8px) 0 0 !important; font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-budget__t b { color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
+.pfm-budget__t .section__link { flex: 0 0 auto; margin-right: -8px; }
+.pfm-budget__ai { display: flex; gap: 6px; margin: 8px 0 0 !important; font: var(--cx-sub); color: var(--bp-theme-color-text-primary); }
+
+/* Lo destacado: tarjetas con una frase y su comparación */
+.pfm-dest { margin-top: var(--bp-semantic-spacing-macro-sm, 24px) !important; }
+.pfm-find__main { display: block; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.pfm-find__ask { margin-top: var(--bp-semantic-spacing-micro-md, 8px); }
+.pfm-dest .pf-sec__head { margin-bottom: 0; }
+.pfm-dest .pf-sec__sub { margin: 4px 0 8px !important; }
+.pfm-dcard { display: flex; flex-direction: column; align-items: stretch; gap: var(--bp-semantic-spacing-micro-md, 8px); width: 100%; margin-top: var(--bp-semantic-spacing-micro-md, 8px); padding: 20px !important; border: 0; color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
+.pfm-dcard__tag { display: flex; align-items: center; gap: 6px; font: var(--ui-body-sm-semibold); color: var(--bp-interaction-tertiary-fg); }
+.pfm-dcard__tag .material-symbols-rounded { font-size: 18px; }
+.pfm-dcard__t { font: var(--cx-headline); letter-spacing: -.2px; }
+.pfm-dcard__cmp { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+.pfm-dcard__row { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; align-items: baseline; }
+.pfm-dcard__row small { font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-dcard__row b { font: var(--ui-body-md-semibold); font-variant-numeric: tabular-nums; }
+.pfm-dcard__row i { grid-column: 1 / -1; height: 20px; border-radius: 4px; background: color-mix(in srgb, var(--bp-interaction-tertiary-fg) 28%, transparent); }
+.pfm-dcard__row.is-on i { background: var(--bp-interaction-tertiary-fg); }
+.pfm-dcard__go { margin-top: 4px; font: var(--ui-link-md, var(--ui-label-md)); color: var(--bp-theme-color-text-interactive); text-decoration: underline; text-underline-offset: 3px; }
+.pfm-groups { margin-top: var(--bp-semantic-spacing-macro-md, 40px) !important; }
+.pfm-groups .pf-sec__head { margin-bottom: 0; }
+
+/* La lista de grupos: la única tarjeta de la sección (filas como los productos de Inicio) */
+.pfm-list { margin-top: var(--bp-semantic-spacing-macro-sm, 24px); padding: 0 var(--bp-semantic-spacing-micro-lg, 16px) !important; }
+.pfm-row { --tone: var(--bp-interaction-tertiary-fg); display: flex; align-items: flex-start; gap: var(--bp-semantic-spacing-micro-lg, 16px); width: 100%; padding: var(--bp-semantic-spacing-micro-lg, 16px) 0; border: 0; border-bottom: var(--bp-semantic-border-thin, 1px) solid var(--bp-theme-color-border-divider, var(--cx-line)); background: none; color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; }
+button.pfm-row { cursor: pointer; }
+.pfm-row:last-child { border-bottom: 0; }
+.pfm-row__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md, 8px); padding-top: 2px; }
+.pfm-row__top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.pfm-row__top b { min-width: 0; font: var(--ui-body-md-semibold); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pfm-row__top span { flex: 0 0 auto; font: var(--ui-body-md-semibold); font-variant-numeric: tabular-nums; }
+.pfm-row__bar { display: block; height: 6px; border-radius: 99px; background: color-mix(in srgb, var(--tone) 18%, transparent); }
+.pfm-row__bar i { display: block; height: 100%; border-radius: inherit; background: var(--tone); transition: width .4s ease; }
+.pfm-row small { font: var(--cx-sub); color: var(--cx-muted); font-variant-numeric: tabular-nums; }
+.pfm-row.pf-meter--ok { --tone: var(--bp-theme-color-status-info-icon, #3f7be0); }
+.pfm-row.pf-meter--warn { --tone: var(--bp-theme-color-status-caution-icon, #e2bb5c); }
+.pfm-row.pf-meter--over { --tone: var(--bp-theme-color-status-caution-text, #d39b3a); }
+.pfm-row.pf-meter--in { --tone: var(--bp-theme-color-status-success-icon, #1a8a4a); }
+.pfm-row.pf-meter--gris { --tone: var(--bp-theme-color-status-neutral-icon, #9aa1ad); }
+.pfm-row.pf-meter--gris b { color: var(--cx-muted); }
+.pfm-list .pf-note { margin: 16px 0; }
+
+/* Pie: qué ve Uku, sin caja */
+.pfm-foot { margin-top: var(--bp-semantic-spacing-macro-md, 40px) !important; padding-bottom: var(--bp-semantic-spacing-macro-md, 40px); }
+.pfm-foot .pf-note { margin: 0 0 var(--bp-semantic-spacing-micro-md, 8px); }
+.pfm-scope { display: flex; gap: 10px; }
+.pfm-scope .material-symbols-rounded { font-size: 20px; color: var(--cx-muted); }
+
+/* ---------- Hojas: deudas, por pagar, score, productos, movimientos ---------- */
+.pfm-sheet .pf-mcard { padding: 0; border-radius: 0 !important; background: none; }
+.pfm-debt { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-lg, 16px); padding: var(--bp-semantic-spacing-micro-lg, 16px) 0; border-bottom: var(--bp-semantic-border-thin, 1px) solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+.pfm-debt:last-child { border-bottom: 0; }
+.pfm-debt__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.pfm-debt__main b { font: var(--ui-body-md-semibold); }
+.pfm-debt__main small, .pfm-debt__val small { font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-debt__val { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-variant-numeric: tabular-nums; }
+.pfm-score { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; }
+.pfm-score b { font: var(--cx-amount); letter-spacing: 0; }
+.pfm-score span { font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-score__bar { position: relative; height: 8px; margin-top: 16px; border-radius: 99px; background: linear-gradient(90deg, #e6c3a5, #ecd79a 45%, #a9cfb3); }
+.pfm-score__bar i { position: absolute; top: -6px; width: 20px; height: 20px; margin-left: -10px; border: 3px solid var(--bp-theme-color-surface-container-default); border-radius: 50%; background: var(--bp-theme-color-text-primary); }
+.pfm-score__scale { display: flex; justify-content: space-between; margin-top: 8px; font: var(--cx-caption); color: var(--cx-muted); }
+.pfm-inc { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: var(--bp-semantic-border-thin, 1px) solid var(--bp-theme-color-border-divider, var(--cx-line)); font: var(--cx-body); }
+.pfm-inc:last-child { border-bottom: 0; }
+.pfm-inc span:nth-child(2) { flex: 1; }
+.pfm-inc b { font-variant-numeric: tabular-nums; }
+.pfm-det .material-symbols-rounded { font-size: 20px; color: var(--cx-muted); }
+.pfm-q { padding: 16px 0; }
+.pfm-q p { margin: 0; }
+.pfm-q__t { font: var(--ui-body-md-semibold); }
+.pfm-q__ctx { margin-top: 6px !important; font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-q .uku-say__replies { margin-top: 12px; }
+.pfm-q .uku-say__reply { cursor: pointer; }
+.pfm-q .uku-say__reply.is-sug { background: var(--bp-interaction-selectable-selected-bg); color: var(--bp-interaction-selectable-selected-fg); border-color: transparent; }
+button.pfm-tx { width: 100%; border-left: 0; border-right: 0; border-top: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.pfm-tx.is-no .pf-tx__amt { color: var(--cx-muted); text-decoration: line-through; text-decoration-thickness: 1px; }
+.pfm-pill { align-self: flex-start; margin-top: 2px; padding: 1px 8px; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--cx-muted); font: var(--cx-caption); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.pfm-pill.is-ingreso, .pfm-pill.is-reembolso { background: color-mix(in srgb, var(--bp-theme-color-status-success-icon, #1a8a4a) 14%, transparent); color: var(--bp-theme-color-status-success-text, #13703b); }
+.pfm-pill.is-rin, .pfm-pill.is-rout { background: color-mix(in srgb, #e8a530 20%, transparent); color: var(--bp-theme-color-status-caution-text, #8a5a00); }
+.pfm-sheet .pf-sheet-list .pfm-tx:last-child { border-bottom: 0; }
+.pfm-tx__amt { margin: 8px 0 4px; font: var(--cx-amount); letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.pfm-tx__amt.is-pos { color: var(--bp-theme-color-status-success-text, #13703b); }
+.pfm-sheet .uku-say { margin: 16px 0 4px; }
+.pfm-dev { padding: 12px 16px; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); font-size: 13px !important; }
+.pfm-sug { display: flex; gap: 12px; width: 100%; margin-top: 16px; padding: 16px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
+.pfm-sug > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+.pfm-sug small { font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-block.pf-cta, .pfm-sheet .pf-cta { width: 100%; }
+.pfm-undo { margin-left: 8px; padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
+
+/* Deslizar la tarjeta: a la derecha, lo que cree Uku; a la izquierda, más tarde */
+.pfm-card.is-drag { position: relative; touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none; --si: 0; --no: 0; }
+.pfm-card.is-drag:active { cursor: grabbing; }
+.pfm-stamp { position: absolute; top: 4px; display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: var(--bp-semantic-radius-sm, 8px); font: var(--ui-label-md); pointer-events: none; transition: opacity .1s; }
+.pfm-stamp .material-symbols-rounded { font-size: 18px; }
+.pfm-stamp.is-si { left: 0; background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); opacity: var(--si); transform: rotate(-8deg) scale(calc(.8 + var(--si) * .2)); }
+.pfm-stamp.is-no { right: 0; background: var(--bp-interaction-selectable-selected-bg); color: var(--bp-interaction-selectable-selected-fg); opacity: var(--no); transform: rotate(8deg) scale(calc(.8 + var(--no) * .2)); }
+.pfm-game__swipe { margin: 8px 0 0; font: var(--cx-caption); color: var(--cx-muted); text-align: center; animation: pfmUp .4s ease .6s both; }
+
+/* Cuánto acertó Uku */
+.pfm-game__iq { display: flex; align-items: center; gap: 12px; margin-top: var(--bp-semantic-spacing-micro-lg, 16px) !important; padding: 12px 16px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); font: var(--cx-sub); color: var(--bp-theme-color-text-primary) !important; animation: pfmUp .4s ease .2s both; }
+.pfm-game__iqface { flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: var(--bp-interaction-primary-bg, #ffdd00); }
+.pfm-game__iqface img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ---------- Uku, tu asesor: una sola sección ----------
+   Arriba Uku dice lo primero (globo + botón); debajo, sus otros consejos
+   como tarjetas con su acción. Lo hecho queda en "Listo" con deshacer. */
+.pfm-tips { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md, 8px); margin-top: var(--bp-semantic-spacing-macro-sm, 28px); }
+.pfm-tips__l { margin: 0 0 4px; font: var(--cx-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
+.pfm-tips.is-sheet { margin-top: 16px; }
+.pfm-tips.is-sheet .pfm-tip { background: var(--bp-interaction-secondary-bg); }
+.pfm-tip { display: flex; flex-direction: column; gap: 6px; padding: 16px 16px 12px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); animation: pfmUp .35s ease both; }
+.pfm-tip p { margin: 0; }
+.pfm-tip__tag { display: flex; align-items: center; gap: 6px; font: var(--ui-body-sm-semibold); color: var(--bp-interaction-tertiary-fg); }
+.pfm-tip__tag .material-symbols-rounded { font-size: 18px; }
+.pfm-tip.is-warn .pfm-tip__tag .material-symbols-rounded { color: var(--bp-theme-color-status-caution-text, #c98a12); }
+.pfm-tip__t { display: flex; align-items: flex-start; gap: 6px; font: var(--ui-body-md-semibold); color: var(--bp-theme-color-text-primary); }
+.pfm-tip__t .material-symbols-rounded { font-size: 22px; color: var(--bp-theme-color-status-success-icon, #4f8a64); font-variation-settings: 'FILL' 1; }
+.pfm-tip__s { font: var(--cx-sub); color: var(--cx-muted); }
+.pfm-tip .pfm-dcard__cmp { margin-top: 6px; padding-top: 12px; }
+.pfm-tip__acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; }
+.pfm-tip__acts .pf-link .material-symbols-rounded { font-size: 18px; }
+.pfm-tip__acts .section__link { margin-left: auto; }
+.pfm-tip.is-done { padding-bottom: 8px; }
+.pfm-tip.is-done .pfm-tip__acts { margin-top: 0; }
+
+/* Barra inferior de Mis finanzas: Asistente (campo abajo) y buscar (arriba al abrir) */
+.pfm-dock { position: fixed; left: 0; right: 0; z-index: 55; display: none; align-items: center; gap: 8px; max-width: 480px; margin: 0 auto; padding: 0 16px; pointer-events: none; }
+.pfm-dock.is-on { display: flex; }
+.pfm-dock > button { pointer-events: auto; border: 0; cursor: pointer; color: var(--bp-theme-color-text-primary); background: color-mix(in srgb, var(--bp-theme-color-surface-container-default, #fff) 88%, transparent); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgb(0 0 0 / .1); }
+.pfm-dock__ask { flex: 1 1 auto; min-width: 0; height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 18px; border-radius: 99px; font: var(--ui-body-sm-semibold); text-align: left; }
+.pfm-dock__ask > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pfm-dock__ask .material-symbols-rounded { color: var(--bp-interaction-tertiary-fg); }
+.pf-host .pfm .pf-scroll { padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px)); }
+
+/* Arma tu presupuesto: planes recomendados y reparto por grupo */
+.pfm-planes { margin-top: var(--bp-semantic-spacing-micro-lg, 16px); text-align: left; }
+.pfm-rec { display: inline-block; margin-right: 4px; padding: 0 8px; border-radius: 999px; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: var(--cx-caption); font-weight: 600; }
+.pf-step > span small { display: block; font: var(--cx-caption); color: var(--cx-muted); }
+
+/* Semana: la cifra de cada día sobre su barra */
+.pfm-chart__bar { position: relative; }
+.pfm-chart__bar em { position: absolute; left: 0; right: 0; margin-bottom: 4px; font: var(--cx-caption); font-style: normal; font-variant-numeric: tabular-nums; text-align: center; color: var(--cx-muted); white-space: nowrap; }
+.pfm-chart__bar.is-on em { color: var(--bp-theme-color-text-primary); font-weight: 600; }

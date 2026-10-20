@@ -1,0 +1,180 @@
+/* Ingreso sin biometría: PIN, usuario y contraseña, y clave digital (ingreso.js) */
+.ing {
+  position: fixed;
+  inset: 0;
+  z-index: 700;
+  display: none;
+  flex-direction: column;
+  background: var(--bp-surface-page);
+  padding: env(safe-area-inset-top, 0px) 16px calc(24px + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+}
+.ing.open { display: flex; }
+
+.ing__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+}
+.ing__titulo {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--bp-theme-color-text-primary);
+}
+
+.ing__body {
+  flex: 1;
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.ing__texto {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--bp-theme-color-text-primary);
+  opacity: .75;
+}
+.ing__form[hidden] { display: none; }
+.ing__enlace {
+  align-self: center;
+  padding: 8px;
+  border: none;
+  background: none;
+  color: var(--bp-theme-color-text-primary);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.ing__error {
+  margin: 0;
+  min-height: 20px;
+  font-size: 14px;
+  color: #c62828;
+}
+.ing__form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ing__campo {
+  width: 100%;
+  height: 52px;
+  box-sizing: border-box;
+  padding: 0 16px;
+  border: 1px solid rgba(0, 0, 0, .15);
+  border-radius: 12px;
+  background: var(--bp-surface-container, #fff);
+  color: var(--bp-theme-color-text-primary);
+  font: inherit;
+  font-size: 16px; /* 16px evita el zoom automático de iOS */
+}
+.ing__campo:focus {
+  outline: 2px solid var(--bp-theme-color-brand-support, #2b6cb0);
+  outline-offset: 1px;
+}
+
+/* PIN */
+.ing__puntos {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  padding: 16px 0;
+  color: var(--bp-theme-color-text-primary);
+}
+.ing__puntos span {
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  opacity: .35;
+}
+.ing__puntos span.on {
+  background: currentColor;
+  opacity: 1;
+}
+.ing__teclas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.ing__teclas > span { display: block; }
+/* PIN: todo centrado en una columna; el teclado va pegado al fondo */
+.ing__body--pin { align-items: center; text-align: center; }
+.ing__body--pin > * { width: 100%; }
+.ing__body--pin .ing__teclas {
+  width: 100%;
+  max-width: 300px;
+  margin-top: auto;
+}
+.ing__tecla {
+  height: 64px;
+  border: none;
+  border-radius: 16px;
+  background: var(--bp-surface-container, rgba(0, 0, 0, .05));
+  color: var(--bp-theme-color-text-primary);
+  font: inherit;
+  font-size: 24px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.ing__tecla:active { transform: scale(.96); }
+
+/* Clave digital */
+.ing__codigo {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 44px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  font-variant-numeric: tabular-nums;
+  color: var(--bp-theme-color-text-primary);
+}
+.ing__barra {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, .08);
+  overflow: hidden;
+}
+.ing__barra i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--bp-theme-color-brand-main, #f5c400);
+  transition: width .25s linear;
+}
+.ing__detalle {
+  font-size: 14px;
+  color: var(--bp-theme-color-text-primary);
+}
+.ing__detalle summary {
+  padding: 8px 0;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ing__secreto {
+  display: block;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, .05);
+  word-break: break-all;
+  font-size: 14px;
+}
+
+@keyframes ing-sacudir {
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+.ing .sacudir { animation: ing-sacudir .36s ease; }

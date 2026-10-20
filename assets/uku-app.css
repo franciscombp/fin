@@ -1,0 +1,715 @@
+/* =====================================================================
+   Versión asistente (assets/uku-app.js). Solo aplica con html.app-uku.
+   Uku es la pantalla: su mundo ocupa todo el espacio entre la barra de
+   arriba y la de abajo, sin scroll. Encima flotan su globo, los accesos,
+   los resultados, la conversación y la barra para hablarle.
+   Componentes del sistema: pf-cta, radius sm/md, tipografía cx-*.
+   ===================================================================== */
+
+/* Arriba solo queda Notificaciones: buscar, ayuda y finanzas viven en Uku */
+.app-uku .top-bar__actions > :not([data-action="Notificaciones"]):not(.uk-top) { display: none !important; }
+/* En su pantalla, el título grande va en la sección (como en las demás), no en la barra */
+.app-uku.uk-idle .top-bar__title { opacity: 0 !important; }
+
+/* Uku o el PFM completo (que se abre como una capa y se baja para volver) */
+/* Asistente: una sola pantalla. El selector de arriba cambia entre Uku, Mis finanzas y Ayuda */
+/* Asistente: Uku y sus subsecciones son una sola pantalla; la subsección ocupa el contenedor de Uku */
+.app-uku .view--finanzas:not(.uk-fin) .pf-host { display: none; }
+.app-uku .view--finanzas:not(.uk-ayuda) .uk-ayuda-slot { display: none; }
+.app-uku .view--finanzas:not(.uk-fin):not(.uk-ayuda) .uk-panel { display: none; }
+.app-uku .view--finanzas.uk-fin .uk > .uk-globo, .app-uku .view--finanzas.uk-fin .uk > .uk-props, .app-uku .view--finanzas.uk-fin .uk > .uk-pills, .app-uku .view--finanzas.uk-fin .uk > .uk-chat, .app-uku .view--finanzas.uk-fin .uk > .uk-results,
+.app-uku .view--finanzas.uk-ayuda .uk > .uk-globo, .app-uku .view--finanzas.uk-ayuda .uk > .uk-props, .app-uku .view--finanzas.uk-ayuda .uk > .uk-pills, .app-uku .view--finanzas.uk-ayuda .uk > .uk-chat, .app-uku .view--finanzas.uk-ayuda .uk > .uk-results { display: none; }
+.app-uku .view--finanzas.uk-fin .uk-panel, .app-uku .view--finanzas.uk-ayuda .uk-panel { display: flex; }
+.app-uku .view--finanzas.uk-fin .uk-back-btn, .app-uku .view--finanzas.uk-ayuda .uk-back-btn { display: grid; }
+html.uk-idle, html.uk-idle body { overflow: hidden; overscroll-behavior: none; }
+
+/* ---------- La pantalla: el mundo de Uku de borde a borde ---------- */
+.uk { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md, 12px); padding: var(--bp-semantic-spacing-micro-md, 8px) var(--bp-layout-grid-margin, 16px) var(--bp-semantic-spacing-micro-lg, 16px); box-sizing: border-box; position: fixed; z-index: 1; left: 0; right: 0; top: calc(56px + env(safe-area-inset-top, 0px)); bottom: var(--uk-nav, 76px); max-width: 480px; margin: 0 auto; overflow: hidden; background: linear-gradient(#e9f1f7, #f4f4f2 70%); }
+.uk p { margin: 0; }
+.uk-scene { position: absolute; inset: 0; z-index: 0; }
+.uk-scene .b3d { position: absolute; inset: 0; }
+.uk-scene canvas { display: block; width: 100% !important; height: 100% !important; }
+
+/* Su globo: lo más importante, con su botón */
+/* Su globo: como si Uku te lo contara, en una nube pequeña junto a él */
+.uk-globo { position: relative; z-index: 3; align-self: flex-start; max-width: 320px; padding: 12px 14px; border-radius: 16px 16px 16px 4px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 18px rgba(15, 38, 92, .10); animation: ukIn .4s cubic-bezier(.2, 1.3, .4, 1) .2s both; transition: opacity .2s, transform .2s; }
+.uk-globo::after { content: ''; position: absolute; left: 12px; bottom: -8px; border: 8px solid transparent; border-bottom: 0; border-top-color: var(--bp-theme-color-surface-container-default); }
+.uk-globo__t { margin: 0 !important; font: var(--ui-body-md-regular, 400 15px/21px sans-serif); font-size: 15px; line-height: 21px; color: var(--bp-theme-color-text-primary); }
+html:not(.theme-y2k) .uk-globo__go.btn { height: auto !important; min-height: 0 !important; margin: 4px 0 0 !important; padding: 0 !important; font-size: 14px !important; }
+@keyframes ukIn { from { opacity: 0; transform: translateY(8px) scale(.96); } }
+
+/* Los accesos: a la izquierda, sobre su mundo */
+.uk-pills { position: relative; z-index: 3; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 0; }
+.uk-pills::-webkit-scrollbar { display: none; }
+.uk-pill { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 16px 8px 12px; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); box-shadow: 0 2px 10px rgba(15, 38, 92, .08); text-align: left; cursor: pointer; animation: ukIn .35s ease both; }
+.uk-pill:nth-child(2) { animation-delay: .06s; } .uk-pill:nth-child(3) { animation-delay: .12s; } .uk-pill:nth-child(4) { animation-delay: .18s; }
+.uk-pill:active { transform: scale(.97); }
+.uk-pill { flex: 0 0 auto; width: auto; min-width: 0; min-height: 0; flex-direction: column; align-items: flex-start; gap: 6px; padding: 10px; box-shadow: 0 2px 10px rgb(15 38 92 / .06); }
+.uk-pill small { white-space: normal; }
+.uk-pill b { white-space: normal; line-height: 1.2; }
+.uk-pill > .material-symbols-rounded { flex: 0 0 28px; width: 28px; height: 28px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font-size: 20px; }
+.uk-pill > span:last-child { display: flex; flex-direction: column; min-width: 0; }
+.uk-pill b { font: var(--ui-body-sm-semibold); }
+.uk-pill small { font: var(--cx-caption); color: var(--cx-muted); }
+
+/* La barra para hablarle o buscar */
+.uk-bar { position: relative; z-index: 5; display: flex; align-items: center; gap: 8px; margin: 0; }
+.uk-bar__f { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; }
+.uk-bar__f > .material-symbols-rounded { position: absolute; left: 14px; color: var(--cx-muted); font-size: 22px; pointer-events: none; }
+.uk-bar input { width: 100%; height: 56px; padding: 0 16px 0 46px; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); box-shadow: 0 2px 12px rgba(15, 38, 92, .12); font: var(--ui-body-md-medium); font-size: 16px; }
+.uk-bar input:focus { outline: 2px solid var(--bp-interaction-tertiary-fg); outline-offset: -2px; }
+.uk-bar__x { flex: 0 0 56px; width: 56px; height: 56px; display: grid; place-items: center; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); box-shadow: 0 2px 12px rgba(15, 38, 92, .12); cursor: pointer; }
+.uk-bar__mic { flex: 0 0 56px; width: 56px; height: 56px; display: grid; place-items: center; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-tertiary-fg); box-shadow: 0 2px 12px rgba(15, 38, 92, .12); cursor: pointer; }
+.uk-bar__mic[hidden] { display: none; }
+.uk-bar__x { display: none; background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-tertiary-fg); }
+.uk.is-chat .uk-bar__x { display: grid; }
+
+/* Escribiendo: los resultados suben sobre su mundo */
+.uk-results { position: absolute; z-index: 4; left: 12px; right: 12px; bottom: 80px; max-height: calc(100% - 100px); padding: 4px 16px 8px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); box-shadow: 0 4px 20px rgba(15, 38, 92, .14); overflow-y: auto; animation: ukIn .25s ease both; }
+.uk:not(.is-typing) .uk-results { display: none; }
+.uk.is-typing .uk-props, .uk.is-chat .uk-props, .uk.is-typing .uk-pills, .uk.is-typing .uk-globo, .uk.is-chat .uk-pills, .uk.is-chat .uk-globo { opacity: 0; pointer-events: none; transform: translateY(-6px); }
+.uk.is-typing .uk-chat { opacity: .15; }
+.uk-results__l { margin: 12px 0 0 !important; font: var(--cx-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
+.uk-row { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 56px; padding: 8px 0; border: 0; border-bottom: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); background: none; color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; }
+.uk-row:last-child { border-bottom: 0; }
+.uk-row__ic { flex: 0 0 36px; width: 36px; height: 36px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); }
+.uk-row__t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.uk-row__t b { font: var(--ui-body-sm-semibold); }
+.uk-row__t small { font: var(--cx-caption); color: var(--cx-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uk-row > .material-symbols-rounded:last-child { color: var(--cx-muted); }
+.uk-ans { display: block; width: 100%; margin-top: 6px; padding: 12px 14px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-theme-color-text-primary); font: var(--cx-sub); text-align: left; cursor: pointer; }
+
+/* La conversación: arriba, sobre su mundo; Uku a la izquierda, tú a la derecha */
+.uk-chat { position: absolute; z-index: 3; left: 12px; right: 12px; top: 12px; bottom: 80px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(transparent, #000 24px); mask-image: linear-gradient(transparent, #000 24px); padding-top: 16px; }
+.uk-chat::-webkit-scrollbar { display: none; }
+.uk:not(.is-chat) .uk-chat { display: none; }
+.uk-chat > :first-child { margin-top: auto; }
+.uk-me { display: flex; justify-content: flex-end; animation: ukIn .25s ease both; }
+.uk-me p { max-width: 78%; padding: 12px 16px; border-radius: 16px 16px 4px 16px; background: var(--bp-interaction-selectable-selected-bg); color: var(--bp-interaction-selectable-selected-fg); font: var(--ui-body-md-medium); }
+.uk-msg { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; max-width: 88%; animation: ukIn .35s ease .1s both; }
+.uk-msg__b { padding: 12px 16px; border-radius: 16px 16px 16px 4px; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); box-shadow: 0 2px 10px rgba(15, 38, 92, .08); font: var(--cx-body); }
+.uk-msg__acts { display: flex; flex-wrap: wrap; gap: 6px; }
+.uk-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 8px 12px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-tertiary-fg); box-shadow: 0 1px 6px rgba(15, 38, 92, .08); font: var(--ui-body-sm-semibold); text-align: left; cursor: pointer; }
+.uk-chip .material-symbols-rounded { font-size: 18px; }
+.uk-chip.is-ask { background: var(--bp-interaction-secondary-bg); box-shadow: none; }
+
+@media (prefers-reduced-motion: reduce) { .uk *, .uk { animation: none !important; transition: none !important; } }
+
+/* Conversación: solo el último mensaje de Uku se puede tocar; los anteriores quedan atrás */
+.uk-msg.is-old .uk-msg__b, .uk-me.is-old p { box-shadow: none; }
+.uk-msg.is-old .uk-msg__b { color: var(--cx-muted); }
+.uk-msg__q { display: block; margin-top: 10px; font: var(--ui-body-md-semibold); color: var(--bp-theme-color-text-primary); }
+.uk-steps { margin: 0; padding: 12px 16px 12px 36px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); font: var(--cx-sub); color: var(--bp-theme-color-text-primary); box-shadow: 0 2px 10px rgba(15, 38, 92, .08); }
+.uk-steps li + li { margin-top: 6px; }
+.uk-globo.is-new { animation: ukIn .35s cubic-bezier(.2, 1.3, .4, 1) both; }
+
+/* ---------- Modo chat ----------
+   Al empezar a conversar, su mundo se aleja (se difumina y se desvanece
+   detrás de un fondo limpio) y baja la cabecera del chat con Uku. Al
+   cerrar, todo vuelve con la transición inversa. */
+.uk-scene { transition: transform .5s cubic-bezier(.2, .8, .2, 1), filter .5s ease, opacity .5s ease; transform-origin: 60% 70%; }
+/* Secciones dentro del mundo de Uku (Solicitudes): se ven encima, con su propia cabecera */
+.uk-sec { position: absolute; inset: 0; z-index: 8; display: flex; flex-direction: column; gap: 12px; padding: calc(12px + env(safe-area-inset-top, 0px)) 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--bp-theme-color-surface-page-default, #f5f5f5); overflow: hidden; }
+.uk-sec[hidden] { display: none; }
+.uk.uk-in-sec .uk-pills, .uk.uk-in-sec .uk-globo, .uk.uk-in-sec .uk-props, .uk.uk-in-sec .uk-chat { display: none; }
+.uk-sec__top { display: flex; align-items: center; gap: 12px; }
+.uk-sec__back { width: 40px; height: 40px; flex: 0 0 40px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-tertiary-fg); cursor: pointer; }
+.uk-sec__find { margin-left: auto; }
+.uk-sec__t { margin: 0 !important; flex: 1; font: var(--cx-page); letter-spacing: -.6px; color: var(--bp-interaction-tertiary-fg); }
+.uk-sec__body { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 8px; }
+.uk-sec__l { margin: 8px 0 0 !important; font: var(--cx-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
+.uk-sec__row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; }
+.uk-sec__row > .material-symbols-rounded { color: var(--cx-muted); }
+.uk-sec__row > span:first-child { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.uk-sec__row > span:last-child { display: flex; flex-direction: column; min-width: 0; }
+.uk-sec__row b { font: var(--ui-body-sm-semibold); }
+.uk-sec__row small { font: var(--cx-caption); color: var(--cx-muted); }
+
+/* Propuestas de Uku: carrusel arriba con puntos (como las tarjetas de la referencia) */
+.uk-props { position: relative; z-index: 3; width: 100%; transition: opacity .3s ease; }
+.uk-props[hidden] { display: none; }
+.uk-props__track { display: flex; align-items: flex-start; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.uk-props__track::-webkit-scrollbar { display: none; }
+.uk-prop { cursor: pointer; position: relative; flex: 0 0 100%; scroll-snap-align: start; box-sizing: border-box; padding: 12px 14px; border-radius: 16px 16px 16px 4px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 18px rgba(15, 38, 92, .10); display: flex; flex-direction: column; gap: 4px; }
+.uk-prop::after { content: ''; position: absolute; left: 12px; bottom: -8px; border: 8px solid transparent; border-bottom: 0; border-top-color: var(--bp-theme-color-surface-container-default); }
+.uk-prop__tag { margin: 0 !important; display: flex; align-items: center; gap: 4px; font: var(--cx-caption); color: var(--cx-muted); }
+.uk-prop__tag .material-symbols-rounded { font-size: 16px; }
+.uk-prop__t { margin: 0 !important; font-size: 15px; line-height: 21px; font-weight: 400; color: var(--bp-theme-color-text-primary); }
+.uk-prop__go { align-self: flex-start; margin-top: 2px !important; }
+html:not(.theme-y2k) .uk-prop__go.btn { height: auto !important; min-height: 0 !important; padding: 0 !important; font-size: 14px !important; }
+.uk-props__dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+.uk-props__dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--cx-line, #c9ced8); transition: width .2s ease, background .2s ease; }
+.uk-props__dots i.is-on { width: 18px; background: var(--bp-interaction-tertiary-fg); }
+
+/* Chat a pantalla completa: sin barra superior ni de navegación */
+html.uk-chatting .header, html.uk-chatting .nav-bar { display: none !important; }
+html.uk-chatting .uk { top: 0 !important; bottom: 0 !important; }
+.uk.is-chat .uk-chathead { transform: none; opacity: 1; pointer-events: auto; transition-delay: .1s; }
+.uk.is-chat .uk-bar__x { display: none; }
+
+/* El globo y los accesos se van al empezar a conversar, y vuelven al cerrar */
+.uk-globo, .uk-pills { transition: opacity .3s ease, transform .35s cubic-bezier(.2, .8, .2, 1); }
+.uk.is-chat .uk-globo { transform: translateY(-16px) scale(.96); }
+.uk.is-chat .uk-pills { transform: translateX(-24px); }
+
+/* La conversación: limpia, debajo de la cabecera */
+.uk-chat { top: 64px; padding: 16px 0 8px; gap: 12px; -webkit-mask-image: linear-gradient(transparent, #000 16px); mask-image: linear-gradient(transparent, #000 16px); }
+.uk.is-chat .uk-chat { animation: ukChatIn .45s ease .15s both; }
+@keyframes ukChatIn { from { opacity: 0; transform: translateY(12px); } }
+.uk-msg { flex-direction: row; align-items: flex-start; gap: 8px; max-width: 92%; animation: none; }
+.uk-msg:not(.is-seen) { animation: ukIn .35s cubic-bezier(.2, 1.2, .4, 1) both; }
+.uk-me { animation: none; }
+.uk-me:not(.is-seen) { animation: ukMe .3s cubic-bezier(.2, 1.2, .4, 1) both; }
+@keyframes ukMe { from { opacity: 0; transform: translateX(16px) scale(.96); } }
+.uk-msg__face { flex: 0 0 28px; width: 28px; height: 28px; border-radius: 50%; overflow: hidden; background: var(--bp-interaction-primary-bg, #ffdd00); }
+.uk-msg__face.is-gap { background: none; }
+.uk-msg__face img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+.uk-msg__body { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.uk-msg__b { box-shadow: none; border: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+.uk-msg__acts .uk-chip { box-shadow: none; border: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); animation: ukIn .3s ease both; animation-delay: var(--d, 0ms); }
+.uk-msg__acts .uk-chip.is-ask { border-color: transparent; }
+.uk-steps { box-shadow: none; border: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+
+/* Uku está escribiendo… */
+.uk-dots { display: inline-flex; gap: 4px; padding: 14px 16px !important; }
+.uk-dots i { width: 7px; height: 7px; border-radius: 16px; background: var(--cx-muted); animation: ukDot 1s ease-in-out infinite; }
+.uk-dots i:nth-child(2) { animation-delay: .15s; } .uk-dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes ukDot { 0%, 60%, 100% { transform: translateY(0); opacity: .4; } 30% { transform: translateY(-4px); opacity: 1; } }
+
+/* ---------- Cabecera de la sección, integrada con la barra de arriba ----------
+   El fondo de la página baja suave sobre su mundo (sin corte con la barra)
+   y el título grande va como en Mis finanzas o Perfil, con el ánimo de Uku. */
+.uk::before { content: ''; position: absolute; z-index: 2; left: 0; right: 0; top: 0; height: 132px; background: linear-gradient(var(--bp-surface-page, #f5f5f5) 30%, transparent); pointer-events: none; transition: opacity .3s ease; }
+.uk-head { position: relative; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 12px; transition: opacity .3s ease, transform .35s cubic-bezier(.2, .8, .2, 1); }
+.uk-head__t { margin: 0; font: var(--cx-page); letter-spacing: -.6px; color: var(--bp-interaction-tertiary-fg); }
+.uk-head { flex-direction: row; align-items: center; justify-content: flex-start; gap: 12px; }
+/* Las tres señales de su mundo: texto sobre la página, sin cajas */
+.uk.is-chat .uk-head, .uk.is-typing .uk-head { opacity: 0; transform: translateY(-12px); pointer-events: none; }
+.uk.is-chat .uk-props, .uk.is-chat .uk-globo, .uk.is-chat .uk-pills { display: none; }
+.uk.is-chat::before { opacity: 0; }
+
+/* ---------- Selector de sección (Uku · Mis finanzas · Ayuda) ---------- */
+/* Ayuda ocupa el espacio de Uku, entre el selector y la barra de abajo */
+
+/* El carrusel de Ayuda no empuja la pantalla de Asistente */
+
+/* Orden del flujo: título, insights, el mundo (fondo), estados, accesos y buscador */
+.uk-head { order: 1; }
+.uk-props, .uk-globo { order: 2; }
+.uk-pills { order: 5; }
+.uk-bar { order: 6; }
+
+/* Insight de la propuesta y ícono de cada sección en la hoja */
+.uk-prop__s { margin: 0 !important; font: var(--ui-body-sm-regular, 400 13px/18px sans-serif); color: var(--cx-muted); }
+/* La pantalla se ordena de arriba abajo: el mundo queda en medio y los accesos y el buscador, al pie */
+.uk-pills { margin-top: auto; }
+.uk.is-chat .uk-bar, .uk.is-typing .uk-bar { margin-top: auto; }
+.uk-sec__ic { flex: 0 0 40px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); }
+.uk-sec__txt { display: flex; flex-direction: column; min-width: 0; }
+.uk-sec__txt b { font: var(--ui-body-md-semibold); }
+.uk-sec__txt small { font: var(--cx-caption); color: var(--cx-muted); }
+
+/* Contenedor de las subsecciones: ocupa lo que dejan el encabezado y, dentro de Asistente */
+.uk-back-btn { display: none; }
+.uk-panel { flex: 1 1 auto; min-height: 0; flex-direction: column; margin: 0 -16px -16px; }
+.uk-panel .pf-host { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+.uk-panel .pf-head { display: none; }
+.uk-ayuda-slot { position: relative; flex: 1 1 auto; min-height: 0; }
+/* El encabezado de Asistente va arriba y la subsección debajo; Ayuda no repite su propio título */
+.uk-panel { order: 2; }
+.uk-ayuda-slot .sp-top { display: none; }
+
+/* Conversación con Uku (inspirada en Tolan): el mundo se ve borroso detrás, los mensajes flotan
+   sobre él, el botón de bajar va arriba al centro y la barra es una píldora abajo. */
+.uk.is-chat .uk-scene { transform: none; filter: blur(2px); opacity: 1; }
+.uk-chatbg { position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; background: linear-gradient(var(--bp-surface-page, #f5f5f5) 14%, rgb(245 245 245 / 0) 62%); transition: opacity .45s ease; }
+.uk.is-chat .uk-chatbg { opacity: 1; }
+.uk-chathead { position: absolute; z-index: 6; top: 8px; left: 0; right: 0; display: flex; justify-content: center; pointer-events: none; }
+.uk-chathead__x { pointer-events: auto; }
+.uk.is-chat .uk-chathead { transform: none; opacity: 1; pointer-events: none; }
+.uk.is-chat .uk-chathead__x { pointer-events: auto; }
+.uk-bar { padding: 6px; border-radius: 16px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 6px 24px rgb(0 0 0 / .12); }
+.uk-bar input { height: 48px; background: transparent; box-shadow: none; border-radius: 16px; }
+.uk-bar__mic { width: 48px; height: 48px; flex-basis: 48px; background: transparent; box-shadow: none; }
+.uk-msg__b, .uk-me p { box-shadow: 0 4px 16px rgb(0 0 0 / .08); }
+/* Lo tuyo va en el color de selección del sistema: el amarillo de marca se reserva para la acción principal */
+.uk.is-chat .uk-bar { margin-bottom: 0; }
+
+/* Títulos de bloque de las subsecciones de Asistente: uno solo (el de Mis finanzas), igual en Ayuda y en sus detalles */
+.uk-panel h2 { margin: 0 0 var(--bp-semantic-spacing-micro-md, 8px) !important; font: var(--cx-headline) !important; letter-spacing: -.2px !important; color: var(--bp-theme-color-text-primary) !important; }
+/* En el detalle, el título está en el encabezado: su «‹ Mis finanzas» se va */
+.uk-panel .pf-back { display: none; }
+
+/* Una persona del banco en la misma conversación: su inicial, su nombre y un aviso de quién responde */
+.uk-msg.is-agent .uk-msg__face { background: var(--bp-theme-color-surface-container-default); display: grid; place-items: center; }
+.uk-av { font: var(--cx-caption); font-weight: 700; color: var(--bp-theme-color-text-primary); }
+.uk-msg__who { display: block; margin: 0 0 4px 4px; font: var(--cx-caption); color: var(--cx-muted); }
+.uk-sys { margin: 4px 0; text-align: center; font: var(--cx-caption); color: var(--cx-muted); }
+.uk-case { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; padding: 12px 16px; border-radius: var(--bp-semantic-radius-md, 12px); border: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); font: var(--cx-sub); color: var(--bp-theme-color-text-primary); }
+.uk-case b { font: var(--ui-body-md-semibold); }
+
+/* ---------- Tarjetas sobre su mundo ----------
+   Uku responde con una tarjeta que flota sobre su mundo, apoyada en la barra. Las anteriores
+   asoman detrás (apiladas) y se vuelve a ellas con la flecha. Cada tarjeta trae su pregunta,
+   la respuesta, los datos si los hay y lo que puedes hacer: filas que llevan a navegar y
+   chips para responder. Su mundo sigue nítido detrás: la tarjeta es parte de la escena. */
+/* Las tarjetas dejan abajo a la izquierda el lugar de Uku: su cabeza queda libre y no tapa botones ni texto */
+.uk.is-cards .uk-chat { top: auto; bottom: 210px; max-height: calc(100% - 258px); padding: 14px 0 0; overflow: visible; -webkit-mask-image: none; mask-image: none; justify-content: flex-end; }
+.uk.is-cards .uk-chat > :first-child { margin-top: 0; }
+.uk.is-cards.is-chat .uk-scene { filter: none; }
+.uk-card { position: relative; display: flex; flex-direction: column; max-height: 100%; min-height: 0; border-radius: 16px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 10px 30px rgba(15, 38, 92, .16); animation: ukCard .4s cubic-bezier(.2, 1.1, .4, 1) both; }
+@keyframes ukCard { from { opacity: 0; transform: translateY(18px) scale(.98); } }
+/* Las de atrás: dos bordes que asoman, uno por tarjeta anterior (hasta dos) */
+.uk-card::before, .uk-card::after { content: ''; position: absolute; z-index: -1; left: 10px; right: 10px; top: -7px; height: 20px; border-radius: 16px 16px 0 0; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 -2px 10px rgba(15, 38, 92, .06); opacity: min(var(--n, 0), 1); }
+.uk-card::after { left: 20px; right: 20px; top: -13px; opacity: clamp(0, var(--n, 0) - 1, 1); }
+.uk-card__top { display: flex; align-items: center; gap: 10px; padding: 12px 16px 0; }
+.uk-card__face { flex: 0 0 28px; width: 28px; height: 28px; border-radius: 50%; overflow: hidden; background: var(--bp-interaction-primary-bg, #ffdd00); }
+.uk-card__face img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+.uk-card__back { flex: 0 0 32px; width: 32px; height: 32px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-tertiary-fg); cursor: pointer; }
+.uk-card__back .material-symbols-rounded { font-size: 20px; }
+.uk-card__q { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: var(--ui-body-sm-semibold); color: var(--bp-theme-color-text-primary); }
+.uk-card__n { font: var(--cx-caption); color: var(--cx-muted); }
+.uk-card__body { min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-gap-item, 12px); padding: 8px 16px 16px; }
+.uk-card__body::-webkit-scrollbar { display: none; }
+.uk-card__t { margin: 0 !important; font: var(--cx-body); color: var(--bp-theme-color-text-primary); }
+.uk-card .uk-msg__q { margin-top: 0; }
+.uk-card .uk-steps { box-shadow: none; border: 0; background: var(--bp-interaction-secondary-bg); }
+/* Datos de la tarjeta: una fila por dato, sin caja */
+.uk-card__data { margin: 0; display: flex; flex-direction: column; }
+.uk-card__data > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 8px 0; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+.uk-card__data dt { font: var(--cx-sub); color: var(--cx-muted); }
+.uk-card__data dd { margin: 0; font: var(--ui-body-md-semibold); color: var(--bp-theme-color-text-primary); text-align: right; font-variant-numeric: tabular-nums; }
+/* Lo que puedes hacer: filas que llevan a navegar */
+.uk-card__nav { display: flex; flex-direction: column; margin: 0 -16px; }
+.uk-card__row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 6px 16px; border: 0; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); background: none; color: var(--bp-theme-color-text-primary); font: var(--ui-body-md-medium); text-align: left; cursor: pointer; animation: ukIn .3s ease both; animation-delay: var(--d, 0ms); }
+.uk-card__row:active { background: var(--bp-interaction-secondary-bg); }
+.uk-card__row > .material-symbols-rounded:first-child { flex: 0 0 32px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font-size: 20px; }
+.uk-card__row > span:not(.material-symbols-rounded) { flex: 1; min-width: 0; }
+.uk-card__row > .material-symbols-rounded:last-child { color: var(--cx-muted); }
+.uk-card .uk-msg__acts { padding-top: 2px; }
+.uk-card .uk-msg__acts .uk-chip { border: 0; }
+.uk-card.is-typing .uk-dots { margin: 8px 16px 16px; align-self: flex-start; background: var(--bp-interaction-secondary-bg); border: 0; border-radius: 16px 16px 16px 4px; }
+/* En Mis finanzas o Ayuda, el encabezado se ve aunque haya una conversación esperando detrás */
+.app-uku .view--finanzas.uk-fin .uk.is-chat .uk-head, .app-uku .view--finanzas.uk-ayuda .uk.is-chat .uk-head { opacity: 1; transform: none; pointer-events: auto; }
+
+/* ---------- Jerarquía: que se entienda qué estás haciendo ----------
+   En su mundo no hay título: Uku y su saludo son la voz principal; el menú queda solo, arriba.
+   En Mis finanzas y Ayuda sí hay título grande, porque son secciones. */
+.app-uku .view--finanzas:not(.uk-fin):not(.uk-ayuda) .uk-head__t { display: none; }
+.uk::before { height: 96px; }
+.uk-globo__t { font: var(--ui-body-lg-regular, 400 17px/24px sans-serif); font-size: 17px; line-height: 24px; }
+/* Las propuestas: la etiqueta dice de qué trata (categoría) y la frase es lo importante */
+.uk-prop__tag { text-transform: uppercase; letter-spacing: .4px; font-size: 11px; }
+/* La tarjeta: su título dice de qué va; la pregunta que la originó, debajo y pequeña */
+.uk-card__q { font: var(--ui-body-lg-semibold, 600 17px/22px sans-serif); font-size: 17px; line-height: 22px; white-space: normal; }
+/* Orden en su mundo: el menú, su saludo (su voz) y, debajo, lo que trae (las propuestas) */
+.uk-globo { order: 2; max-width: 300px; }
+.uk-props { order: 3; }
+/* El botón de bajar la conversación solo existe en la conversación */
+.uk:not(.is-chat) .uk-chathead { opacity: 0; pointer-events: none; }
+/* Las propuestas van como texto sobre su mundo, sin caja: la única burbuja es la voz de Uku */
+.uk-prop { background: none; box-shadow: none; padding: 2px 4px; }
+.uk-prop::after { display: none; }
+.uk-props__dots { margin-top: 6px; }
+
+/* ---------- Conversación: Uku sale de su mundo ----------
+   Su mundo queda como una foto borrosa detrás; él, nítido, se acerca y te mira. La pantalla
+   respeta las zonas seguras del teléfono y el botón de bajar la conversación queda a la vista. */
+html.uk-chatting .uk { padding-top: calc(8px + env(safe-area-inset-top, 0px)); padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+.uk-chatbg { background-size: cover; background-position: center; filter: blur(0); transform: scale(1.02); transition: opacity .45s ease, filter .6s ease, transform .6s ease; }
+.uk.is-chat .uk-chatbg { filter: blur(14px) saturate(.9); transform: scale(1.06); }
+.uk-chatbg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(var(--bp-surface-page, #f5f5f5) 6%, rgb(245 245 245 / .55) 40%, rgb(245 245 245 / .35)); }
+.uk-chathead { top: calc(8px + env(safe-area-inset-top, 0px)); }
+.uk-chathead__x { width: 40px; height: 40px; border-radius: 50%; background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-tertiary-fg); box-shadow: 0 4px 14px rgba(15, 38, 92, .14); }
+/* Capas al conversar: la foto borrosa de su mundo abajo, Uku (el canvas) encima, y las tarjetas sobre él */
+.uk.is-chat .uk-chatbg { z-index: 1; }
+.uk.is-chat .uk-scene { z-index: 2; }
+/* Conversando, Uku se ve entero y nítido: sin el desvanecido del pie de su mundo */
+.uk.is-chat .uk-scene, .uk.is-chat .uk-scene .b3d, .uk.is-chat .uk-scene canvas { -webkit-mask-image: none !important; mask-image: none !important; }
+
+/* ---------- Artefactos de las tarjetas ----------
+   Para que se vea sin leer: una cifra grande, una barra de progreso con su color de estado,
+   fichas de estado (ícono, valor, etiqueta) y barras por grupo. El texto es una sola frase. */
+.uk-num { margin: 0 !important; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.uk-num b { font: var(--ui-numeric-lg, 700 32px/38px sans-serif); font-size: 32px; line-height: 38px; letter-spacing: -.6px; color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
+.uk-num small { font: var(--cx-sub); color: var(--cx-muted); }
+.uk-meter { position: relative; height: 8px; border-radius: 4px; background: var(--bp-interaction-secondary-bg); overflow: hidden; margin-top: -4px; }
+.uk-meter i { display: block; height: 100%; border-radius: 4px; background: var(--bp-interaction-tertiary-fg); transition: width .5s cubic-bezier(.2, .8, .2, 1); }
+.uk-meter.is-ok i { background: var(--bp-theme-color-status-success-text); }
+.uk-meter.is-warn i { background: var(--bp-theme-color-status-warning-text); }
+.uk-meter.is-over i { background: var(--bp-theme-color-status-error-text); }
+.uk-meter__l { margin: -6px 0 0 !important; font: var(--cx-caption); color: var(--cx-muted); }
+.uk-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.uk-stat { display: flex; flex-direction: column; gap: 2px; padding: 10px 10px 8px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-secondary-bg); min-width: 0; }
+.uk-stat .material-symbols-rounded { font-size: 20px; color: var(--bp-interaction-tertiary-fg); margin-bottom: 4px; }
+.uk-stat.is-ok .material-symbols-rounded { color: var(--bp-theme-color-status-success-text); }
+.uk-stat.is-warn .material-symbols-rounded { color: var(--bp-theme-color-status-warning-text); }
+.uk-stat b { font: var(--ui-body-md-semibold); font-variant-numeric: tabular-nums; line-height: 20px; }
+.uk-stat small { font: var(--cx-caption); color: var(--cx-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uk-barras { display: flex; flex-direction: column; gap: 10px; }
+.uk-barra { display: grid; grid-template-columns: 1fr auto; row-gap: 4px; align-items: baseline; }
+.uk-barra span { font: var(--cx-sub); color: var(--bp-theme-color-text-primary); }
+.uk-barra b { font: var(--ui-body-sm-semibold); font-variant-numeric: tabular-nums; }
+.uk-barra i { grid-column: 1 / -1; display: block; height: 6px; border-radius: 3px; background: var(--bp-interaction-tertiary-fg); opacity: .75; }
+/* Conversando, Uku va por delante de las tarjetas (el canvas solo lo dibuja a él) y deja pasar los toques */
+.uk.is-chat .uk-scene { z-index: 4; pointer-events: none; }
+/* Sin menú: en su mundo el encabezado no ocupa espacio */
+.app-uku .view--finanzas:not(.uk-fin):not(.uk-ayuda) .uk-head { display: none; }
+/* Sin encabezado, el saludo necesita aire respecto a la barra de arriba */
+.app-uku .view--finanzas:not(.uk-fin):not(.uk-ayuda) .uk-globo { margin-top: 12px; }
+/* Dentro de Asistente, Mis finanzas se desplaza en su propio contenedor: las pestañas se pegan a su borde, no bajo la zona segura */
+.app-uku .uk-panel .pfm-tabs { top: 0; }
+
+/* ---------- Las secciones son tarjetas sobre su mundo ----------
+   Mis finanzas, Ayuda y Solicitudes se ven como una respuesta más de Uku: una tarjeta grande
+   sobre su mundo borroso, con él delante y la barra abajo. Dentro, su cabecera (flecha y título)
+   y el contenido con su propio desplazamiento. La flecha de arriba baja la tarjeta. */
+.uk.is-chat .uk-panel, .uk.is-chat .uk-sec { position: absolute; z-index: 3; left: 12px; right: 12px; top: calc(58px + env(safe-area-inset-top, 0px)); bottom: 176px; margin: 0; padding: 0; display: flex; flex-direction: column; border-radius: 16px; background: var(--bp-theme-color-surface-container-default); box-shadow: 0 10px 30px rgba(15, 38, 92, .16); overflow: hidden; animation: ukCard .4s cubic-bezier(.2, 1.1, .4, 1) both; }
+.uk-sec[hidden] { display: none !important; }
+.uk.is-chat .uk-panel .uk-head { display: flex !important; opacity: 1; transform: none; pointer-events: auto; flex: 0 0 auto; gap: 6px; padding: 10px 12px 6px; }
+.uk-panel .uk-head__t { font: var(--ui-body-lg-semibold, 600 17px/22px sans-serif); font-size: 17px; line-height: 22px; letter-spacing: 0; color: var(--bp-theme-color-text-primary); }
+.uk-panel .uk-back-btn { width: 32px; height: 32px; border-radius: 50%; background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-tertiary-fg); }
+.uk-panel .pf-host, .uk-ayuda-slot { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; }
+.uk-panel .pf-host::-webkit-scrollbar { display: none; }
+.uk-sec__top { padding: 10px 12px 6px; }
+.uk-sec__t { font: var(--ui-body-lg-semibold, 600 17px/22px sans-serif); font-size: 17px; line-height: 22px; letter-spacing: 0; color: var(--bp-theme-color-text-primary); }
+.uk-sec__back { width: 32px; height: 32px; flex-basis: 32px; background: var(--bp-interaction-secondary-bg); }
+.uk-sec__body { padding: 0 16px 16px; }
+.uk-sec__row { padding: 12px 0; border-radius: 0; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); background: none; }
+/* La sección no deja el encabezado grande de la página ni el fondo de la página */
+.app-uku .view--finanzas.uk-fin .uk::before, .app-uku .view--finanzas.uk-ayuda .uk::before { opacity: 0; }
+.uk-panel .uk-head { order: -1; }
+/* Dentro de la tarjeta de Ayuda no hay cajas anidadas ni fondo de página: la tarjeta es el contenedor */
+.uk.is-chat .uk-ayuda-slot .sp, .uk.is-chat .uk-ayuda-slot .sp-body, .uk.is-chat .uk-ayuda-slot .sp-hub { background: transparent; }
+.uk.is-chat .uk-ayuda-slot .sp-list { padding: 0 !important; background: none; border-radius: 0 !important; }
+.uk.is-chat .uk-ayuda-slot .sp-sec:first-child { margin-top: 8px; }
+
+/* ---------- Detalles de animación y gestos ----------
+   Los accesos entran animados solo al abrir la pantalla (no en cada repintado). Al bajar una
+   tarjeta se va hacia abajo en 220 ms. Mientras la arrastras, sigue al dedo sin transición. */
+.uk:not(.is-fresh) .uk-pill { animation: none; }
+.uk-card, .uk.is-chat .uk-panel, .uk.is-chat .uk-sec { transition: transform .28s cubic-bezier(.2, .8, .2, 1), opacity .28s ease; }
+.uk-card.is-drag, .uk-panel.is-drag, .uk-sec.is-drag { transition: none !important; animation: none !important; }
+.uk.is-out .uk-card, .uk.is-out .uk-panel, .uk.is-out .uk-sec { animation: ukCardOut .22s ease-in both !important; }
+@keyframes ukCardOut { to { opacity: 0; transform: translateY(28px) scale(.98); } }
+.uk.is-out .uk-chatbg { opacity: 0; }
+.uk-card__top, .uk-panel .uk-head, .uk-sec__top { touch-action: pan-x; cursor: grab; }
+.uk-card__top::before, .uk-sec__top::before, .uk-panel .uk-head::before { content: ''; position: absolute; left: 50%; top: 6px; width: 36px; height: 4px; margin-left: -18px; border-radius: 2px; background: var(--cx-line, #c9ced8); }
+.uk-card__top, .uk-sec__top, .uk-panel .uk-head { position: relative; padding-top: 16px; }
+
+/* El globo con las propuestas dentro: etiqueta, frase, acción, «Ahora no» y «Siguiente», y los puntos */
+.uk-globo { max-width: 340px; }
+.uk-globo__tag { margin: 0 0 2px !important; font: var(--cx-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
+.uk-globo__acts { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 16px; margin-top: 6px; }
+html:not(.theme-y2k) .uk-globo__acts .uk-globo__go.btn { margin: 0 !important; }
+.uk-globo__skip { padding: 0; border: 0; background: none; font: var(--ui-body-sm-medium); color: var(--cx-muted); cursor: pointer; }
+.uk-globo__dots { display: flex; gap: 5px; margin-top: 8px; }
+.uk-globo__dots i { width: 5px; height: 5px; border-radius: 3px; background: var(--cx-line, #c9ced8); transition: width .2s ease, background .2s ease; }
+.uk-globo__dots i.is-on { width: 14px; background: var(--bp-interaction-tertiary-fg); }
+.uk-props { display: none !important; }
+
+/* Sugerencias al escribir: una tarjeta compacta sobre la barra, en el mismo lenguaje que las demás */
+.uk-results { left: 12px; right: 12px; bottom: 76px; padding: 4px 16px 6px; border-radius: 16px; box-shadow: 0 10px 30px rgba(15, 38, 92, .16); z-index: 6; }
+.uk-row { min-height: 48px; padding: 6px 0; gap: 10px; }
+.uk-row__t b { font: var(--ui-body-md-medium); }
+.uk-results__l { margin-top: 8px !important; }
+
+/* Ícono solo en las filas que llevan a una acción concreta */
+.uk-card__row > .material-symbols-rounded:first-child { flex: 0 0 32px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font-size: 20px; }
+/* En el teléfono, mantener el dedo sobre un botón no selecciona su texto */
+.uk button, .uk .uk-card, .uk-globo, .uk-pill { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+
+/* La flecha de la tarjeta solo cuando hay a dónde volver dentro (Tus gastos, una categoría de Ayuda); en la raíz basta el botón de bajar */
+.uk.is-chat .uk-panel .uk-back-btn { display: none; }
+.uk.is-chat .uk-panel:has(.pf-back) .uk-back-btn, .uk.is-chat .uk-panel:has(.sp.is-page) .uk-back-btn { display: grid; }
+.uk-sec__top { justify-content: center; }
+.uk-sec__t { flex: 0 1 auto; text-align: center; }
+
+/* ---------- Más aire en las tarjetas ----------
+   Márgenes de 20 px, cifra grande con su etiqueta debajo, fichas y filas más altas, chips
+   cómodos y una separación clara entre la respuesta y lo que puedes hacer. */
+.uk-card { border-radius: var(--bp-semantic-radius-lg, 16px); }
+.uk-card__top { gap: 12px; padding: 20px 20px 0; }
+.uk-card__face { flex-basis: 32px; width: 32px; height: 32px; }
+.uk-card__q { font-size: 18px; line-height: 24px; }
+.uk-card__body { gap: 16px; padding: 12px 20px 20px; }
+.uk-card__t { font-size: 16px; line-height: 24px; }
+.uk-num { flex-direction: column; align-items: flex-start; gap: 0; }
+.uk-num b { font-size: 36px; line-height: 42px; letter-spacing: -.8px; }
+.uk-num small { font-size: 14px; line-height: 20px; }
+.uk-meter { margin-top: 0; }
+.uk-meter__l { margin-top: -8px !important; }
+.uk-stats { gap: 10px; }
+.uk-stat { gap: 4px; padding: 14px 12px 12px; border-radius: 14px; }
+.uk-stat .material-symbols-rounded { font-size: 22px; margin-bottom: 6px; }
+.uk-stat b { font-size: 16px; line-height: 22px; }
+.uk-card__nav { margin: 4px -20px 0; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+.uk-card__row { min-height: 60px; padding: 8px 20px; gap: 14px; font-size: 16px; }
+.uk-card__row:first-child { border-top: 0; }
+.uk-card__row > .material-symbols-rounded:first-child { width: 36px; height: 36px; flex-basis: 36px; border-radius: 10px; }
+.uk-card .uk-msg__acts { gap: 8px; padding-top: 4px; }
+.uk-card .uk-msg__acts .uk-chip { min-height: 44px; padding: 10px 16px; border-radius: 12px; font-size: 15px; }
+.uk-card__data > div { padding: 10px 0; }
+/* El aviso (toast) va arriba, bajo el botón de bajar: no tapa a Uku ni la barra */
+html.uk-chatting .pf-toast { top: calc(64px + env(safe-area-inset-top, 0px)); bottom: auto; }
+/* Las secciones, con el mismo margen */
+.uk.is-chat .uk-panel, .uk.is-chat .uk-sec { border-radius: var(--bp-semantic-radius-lg, 16px); }
+.uk.is-chat .uk-panel .uk-head { padding: 18px 16px 8px; }
+.uk-sec__top { padding: 18px 16px 8px; }
+.uk-sec__body { padding: 0 20px 20px; }
+.uk-sec__row { padding: 14px 0; }
+
+/* ---------- Uku recortado en la barra, y las secciones integradas ----------
+   Como en la referencia: el cuerpo de Uku termina en la barra de escribir, no sigue por debajo.
+   El canvas acaba justo encima de la barra. */
+.uk.is-chat .uk-scene { bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
+/* Dentro de la tarjeta de Mis finanzas, las pestañas son parte de la tarjeta: fondo blanco, al ancho del contenido */
+.app-uku .uk-panel .pfm-tabs { background: var(--bp-theme-color-surface-container-default); padding: 4px 20px 8px; margin: 0; }
+.app-uku .uk-panel .pf-sec__head { margin-bottom: 4px; }
+
+/* Para leer más: enlaces a artículos del centro de ayuda o el blog */
+.uk-links { display: flex; flex-direction: column; gap: 6px; }
+.uk-links small { font: var(--cx-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
+.uk-link { display: flex; align-items: center; gap: 8px; min-height: 40px; font: var(--ui-body-sm-medium); color: var(--bp-interaction-tertiary-fg); text-decoration: none; }
+.uk-link .material-symbols-rounded { font-size: 18px; }
+/* ¿Te sirvió?: pulgares discretos al pie de la respuesta */
+.uk-voto { display: flex; align-items: center; gap: 4px; margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); font: var(--cx-sub); color: var(--cx-muted); }
+.uk-voto span { flex: 1; }
+.uk-voto button { width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-tertiary-fg); cursor: pointer; }
+.uk-voto button .material-symbols-rounded { font-size: 20px; }
+.uk-voto.is-up span { color: var(--bp-theme-color-status-success-text); }
+
+/* ---------- Onboarding: una tarjeta arriba, sobre su mundo ----------
+   Pasos con puntos, un ícono grande, título, una frase y el botón principal. Uku, grande, saluda debajo. */
+.uk-onb { position: absolute; z-index: 7; left: 16px; right: 16px; top: calc(16px + env(safe-area-inset-top, 0px)); animation: ukCard .4s cubic-bezier(.2, 1.1, .4, 1) both; }
+.uk-onb.is-out { animation: ukCardOut .22s ease-in both; }
+.uk-onb__card { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 20px 20px 16px; border-radius: var(--bp-semantic-radius-lg, 16px); background: var(--bp-theme-color-surface-container-default); box-shadow: 0 var(--bp-semantic-elevation-high-offset-y, 12px) var(--bp-semantic-elevation-high-blur, 24px) var(--bp-semantic-elevation-high-color, rgba(15, 38, 92, .16)); animation: ukIn .35s ease both; }
+.uk-onb__dots { display: flex; gap: 6px; margin: 0 0 4px !important; }
+.uk-onb__dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--cx-line, #c9ced8); transition: width .2s ease, background .2s ease; }
+.uk-onb__dots i.is-on { width: 18px; background: var(--bp-interaction-primary-bg, #ffdd00); }
+.uk-onb__ic { margin: 0 !important; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 14px; background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); }
+.uk-onb__ic .material-symbols-rounded { font-size: 26px; }
+.uk-onb__t { margin: 6px 0 0 !important; font: var(--cx-page); font-size: 24px; line-height: 30px; letter-spacing: -.4px; color: var(--bp-theme-color-text-primary); }
+.uk-onb__s { margin: 0 !important; font: var(--cx-body); font-size: 16px; line-height: 24px; color: var(--bp-theme-color-text-primary); }
+.uk-onb__go { margin-top: 12px; width: 100%; }
+.uk-onb__skip { align-self: center; padding: 10px; border: 0; background: none; font: var(--ui-body-sm-medium); color: var(--cx-muted); cursor: pointer; }
+.uk.is-onb .uk-globo, .uk.is-onb .uk-pills, .uk.is-onb .uk-bar, .uk.is-onb .uk-props { opacity: 0; pointer-events: none; }
+
+/* ---------- Un solo lenguaje para Ayuda dentro de la tarjeta ----------
+   Etiquetas de sección en mayúsculas pequeñas, filas con chevron, sin cajas ni mosaicos; el buscador es el de abajo. */
+.uk.is-chat .uk-ayuda-slot .sp-find, .uk.is-chat .uk-ayuda-slot .sp-composer { display: none !important; }
+.uk.is-chat .uk-ayuda-slot .sp-body { padding: 0 20px 20px !important; }
+.uk.is-chat .uk-ayuda-slot .sp-sec { margin-top: 20px; }
+.uk.is-chat .uk-ayuda-slot .sp-sec h2 { margin: 0 0 4px !important; font: var(--cx-caption) !important; text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted) !important; }
+.uk.is-chat .uk-ayuda-slot .sp-sec__sub { margin: 0 0 4px; font: var(--cx-caption); }
+.uk.is-chat .uk-ayuda-slot .sp-row { min-height: 56px; padding: 10px 0 !important; border-bottom: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+.uk.is-chat .uk-ayuda-slot .sp-row__main b { font: var(--ui-body-md-medium); }
+.uk.is-chat .uk-ayuda-slot .sp-cats, .uk.is-chat .uk-ayuda-slot .sp-tuts { display: flex; flex-direction: column; gap: 0; }
+.uk.is-chat .uk-ayuda-slot .sp-cat, .uk.is-chat .uk-ayuda-slot .sp-tut { flex-direction: row; align-items: center; gap: 12px; padding: 10px 0; border-radius: 0; border-bottom: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); background: none; }
+.uk.is-chat .uk-ayuda-slot .sp-cat .sp-row__ic, .uk.is-chat .uk-ayuda-slot .sp-tut .sp-row__ic { margin: 0; width: 32px; height: 32px; flex-basis: 32px; border-radius: 8px; font-size: 20px; }
+.uk.is-chat .uk-ayuda-slot .sp-cat b, .uk.is-chat .uk-ayuda-slot .sp-tut b { flex: 1; font: var(--ui-body-md-medium); }
+.uk.is-chat .uk-ayuda-slot .sp-cat small, .uk.is-chat .uk-ayuda-slot .sp-tut small { font: var(--cx-caption); }
+.uk.is-chat .uk-ayuda-slot .sp-sec--people .sp-row__ic { display: none; }
+
+/* ---------- Alineación con el sistema (Solar) ----------
+   Tipografía, radios y elevación desde los tokens: nada de tamaños sueltos. Los íconos
+   mantienen sus 20/24 px del sistema. */
+.uk {
+  --uk-font: var(--sol-font, Roboto, sans-serif);
+  --uk-title: var(--bp-semantic-typography-brand-title-sm-font-weight, 600) var(--bp-semantic-typography-brand-title-sm-font-size, 18px)/var(--bp-semantic-typography-brand-title-sm-line-height, 24px) var(--uk-font);
+  --uk-title-md: var(--bp-semantic-typography-brand-title-md-font-weight, 700) var(--bp-semantic-typography-brand-title-md-font-size, 22px)/var(--bp-semantic-typography-brand-title-md-line-height, 28px) var(--uk-font);
+  --uk-body: var(--bp-semantic-typography-brand-body-md-regular-font-weight, 400) var(--bp-semantic-typography-brand-body-md-regular-font-size, 16px)/var(--bp-semantic-typography-brand-body-md-regular-line-height, 24px) var(--uk-font);
+  --uk-body-medium: var(--ui-body-md-medium);
+  --uk-body-semibold: var(--ui-body-md-semibold);
+  --uk-sm: var(--ui-body-sm-medium);
+  --uk-sm-semibold: var(--ui-body-sm-semibold);
+  --uk-caption: var(--cx-caption);
+  --uk-numeric: var(--bp-semantic-typography-brand-numeric-sm-font-weight, 700) var(--bp-semantic-typography-brand-numeric-sm-font-size, 32px)/var(--bp-semantic-typography-brand-numeric-sm-line-height, 40px) var(--uk-font);
+  --uk-elev-low: 0 var(--bp-semantic-elevation-low-offset-y, 4px) var(--bp-semantic-elevation-low-blur, 8px) var(--bp-semantic-elevation-low-color, rgba(15, 38, 92, .08));
+  --uk-elev-mid: 0 var(--bp-semantic-elevation-mid-offset-y, 8px) var(--bp-semantic-elevation-mid-blur, 16px) var(--bp-semantic-elevation-mid-color, rgba(15, 38, 92, .12));
+  --uk-elev-high: 0 var(--bp-semantic-elevation-high-offset-y, 12px) var(--bp-semantic-elevation-high-blur, 24px) var(--bp-semantic-elevation-high-color, rgba(15, 38, 92, .16));
+}
+.uk-globo, .uk-pill { box-shadow: var(--uk-elev-low); }
+.uk-bar, .uk-results { box-shadow: var(--uk-elev-mid); }
+.uk-card, .uk.is-chat .uk-panel, .uk.is-chat .uk-sec, .uk-onb__card, .uk-chathead__x { box-shadow: var(--uk-elev-high); }
+.uk-globo__t, .uk-prop__t, .uk-card__t, .uk-onb__s { font: var(--uk-body); }
+.uk-card__q, .uk-panel .uk-head__t, .uk-sec__t { font: var(--uk-title); letter-spacing: 0; }
+.uk-onb__t { font: var(--uk-title-md); letter-spacing: 0; }
+.uk-num b { font: var(--uk-numeric); letter-spacing: -.4px; }
+.uk-num small, .uk-meter__l, .uk-stat small, .uk-card__data dt { font: var(--uk-sm); }
+.uk-stat b, .uk-card__data dd { font: var(--uk-body-semibold); }
+.uk-card__row, .uk-row__t b { font: var(--uk-body-medium); }
+.uk-card .uk-msg__acts .uk-chip, .uk-chip { font: var(--uk-sm-semibold); }
+.uk-prop__tag, .uk-globo__tag, .uk-links small, .uk-results__l, .uk-sec__l { font: var(--uk-caption); text-transform: uppercase; letter-spacing: .4px; }
+.uk-bar input { font: var(--uk-body-medium); font-size: 16px; } /* 16 px evita el zoom de iOS al enfocar */
+
+/* ---------- Aire y color propio de Uku ----------
+   Más espacio entre elementos (gap-content y gap-item del sistema) y el amarillo de marca
+   queda fuera de lo que hace Uku: sus acciones usan el acento azul del sistema y sus
+   detalles (caras, ícono del onboarding, puntos) el azul claro secundario. */
+.uk { --uk-gap: var(--bp-semantic-spacing-gap-content, 16px); --uk-gap-item: var(--bp-semantic-spacing-gap-item, 12px); --uk-inset: 20px; }
+/* Color: nada amarillo en lo de Uku */
+.uk-onb__go, .uk-bar__x { background: var(--bp-interaction-accent-bg, #0f265c); color: var(--bp-interaction-accent-fg, #fff); box-shadow: none; }
+.uk-onb__go:hover, .uk-bar__x:hover { background: var(--bp-theme-color-interaction-accent-bg-hover, #0f265c); }
+.uk-onb__go:active, .uk-bar__x:active { background: var(--bp-theme-color-interaction-accent-bg-pressed, #0f265c); }
+.uk-onb__dots i.is-on { background: var(--bp-interaction-tertiary-fg, #0f265c); }
+.uk-onb__ic, .uk-card__face, .uk-msg__face { background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); }
+.app-uku .pfm-choice.is-picked, .app-uku .pfm-allcat:active, .app-uku .pfm-allcat.is-picked, .app-uku .pfm-game__big.is-ok { background: var(--bp-interaction-accent-bg, #0f265c) !important; color: var(--bp-interaction-accent-fg, #fff) !important; }
+.app-uku .pfm-play__bar i, .app-uku .pfm-card__av.is-mes { background: var(--bp-interaction-accent-bg, #0f265c); color: var(--bp-interaction-accent-fg, #fff); }
+/* Su voz y sus propuestas */
+.uk-globo { padding: 16px 18px; max-width: 310px; }
+.uk-prop { padding: 4px 6px; gap: 6px; }
+.uk-props__dots { margin-top: 10px; }
+.uk-pills { gap: 10px; }
+/* Tarjetas */
+.uk-card__top { gap: 12px; padding: 18px var(--uk-inset) 0; }
+.uk-card__body { gap: var(--uk-gap); padding: 12px var(--uk-inset) var(--uk-inset); }
+.uk-card__data > div { padding: 12px 0; }
+.uk-stats { gap: var(--uk-gap-item); }
+.uk-stat { gap: 6px; padding: 16px 14px 14px; }
+.uk-stat .material-symbols-rounded { margin-bottom: 8px; }
+.uk-stat small { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.3; }
+.uk-card__nav { margin: 4px calc(var(--uk-inset) * -1) 0; }
+.uk-card__row { min-height: 64px; padding: 10px var(--uk-inset); gap: 16px; }
+.uk-card .uk-msg__acts { gap: 10px; padding-top: 6px; }
+.uk-card .uk-msg__acts .uk-chip { min-height: 48px; padding: 12px 18px; }
+.uk-links { gap: 8px; }
+.uk-link { min-height: 44px; }
+.uk-voto { margin-top: 6px; padding-top: 16px; }
+.uk-meter__l { margin-top: -4px !important; }
+.uk-card.is-typing .uk-dots { margin: 12px var(--uk-inset) var(--uk-inset); }
+/* Onboarding */
+.uk-onb__card { gap: 10px; padding: 24px 24px 20px; }
+.uk-onb__t { margin-top: 10px !important; }
+.uk-onb__go { margin-top: 16px; }
+.uk-onb__skip { margin-top: 2px; }
+/* Secciones (Mis finanzas, Ayuda) */
+.uk.is-chat .uk-panel .uk-head { padding: 20px var(--uk-inset) 12px; }
+.uk-sec__top { padding: 20px var(--uk-inset) 12px; }
+.uk-sec__body { padding: 0 24px 24px; gap: 10px; }
+.uk-sec__row { padding: 16px 0; }
+.app-uku .uk-panel .pfm-tabs { padding: 6px 24px 12px; }
+.uk.is-chat .uk-ayuda-slot .sp-body { padding: 0 24px 24px !important; }
+.uk.is-chat .uk-ayuda-slot .sp-sec { margin-top: 24px; }
+.uk.is-chat .uk-ayuda-slot .sp-sec h2 { margin-bottom: 6px !important; }
+.uk.is-chat .uk-ayuda-slot .sp-row, .uk.is-chat .uk-ayuda-slot .sp-cat, .uk.is-chat .uk-ayuda-slot .sp-tut { min-height: 60px; padding: 12px 0 !important; }
+/* Las acciones de Uku (onboarding, flujos del PFM, hojas del asistente) van en acento azul, con la
+   especificidad necesaria para ganarle al estilo primario amarillo del sistema */
+html.app-uku .uk-onb__go, html.app-uku .uk-panel .pf-cta, html.app-uku .uk-card .pf-cta, html.app-uku .pfm-game .pf-cta, html.app-uku .pfm-sheet .pf-cta, html.app-uku .as-sheet .pf-cta { background: var(--bp-interaction-accent-bg, #0f265c) !important; color: var(--bp-interaction-accent-fg, #fff) !important; }
+html.app-uku .uk-onb__go:hover, html.app-uku .uk-panel .pf-cta:hover, html.app-uku .uk-card .pf-cta:hover, html.app-uku .pfm-game .pf-cta:hover, html.app-uku .pfm-sheet .pf-cta:hover, html.app-uku .as-sheet .pf-cta:hover { background: var(--bp-theme-color-interaction-accent-bg-hover, #0f265c) !important; }
+html.app-uku .uk-onb__go:active, html.app-uku .uk-panel .pf-cta:active, html.app-uku .uk-card .pf-cta:active, html.app-uku .pfm-game .pf-cta:active, html.app-uku .pfm-sheet .pf-cta:active, html.app-uku .as-sheet .pf-cta:active { background: var(--bp-theme-color-interaction-accent-bg-pressed, #0f265c) !important; }
+html.app-uku .uk-onb__go:disabled, html.app-uku .uk-panel .pf-cta:disabled, html.app-uku .pfm-sheet .pf-cta:disabled, html.app-uku .as-sheet .pf-cta:disabled { background: var(--bp-theme-color-interaction-accent-bg-disabled, #cfd6e6) !important; color: var(--bp-theme-color-interaction-accent-fg-disabled, #fff) !important; }
+/* Estadísticas: con tres datos, el primero (el principal) ocupa el ancho; las cifras no se parten */
+.uk-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.uk-stat:first-child:nth-last-child(3) { grid-column: 1 / -1; }
+.uk-stat b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* El dato principal, a lo ancho, va en fila: ícono, cifra y etiqueta, sin gastar alto */
+.uk-stat:first-child:nth-last-child(3) { flex-direction: row; align-items: center; gap: 14px; padding: 14px 16px; }
+.uk-stat:first-child:nth-last-child(3) .material-symbols-rounded { margin: 0; }
+.uk-stat:first-child:nth-last-child(3) b { margin-right: auto; }
+
+/* ---------- Esqueleto mientras carga el modelo de Uku ----------
+   Una silueta suave en el lugar donde va a aparecer; se desvanece cuando el modelo está listo. */
+.uk-skel { position: absolute; left: 50%; bottom: 33%; width: 180px; height: 230px; transform: translateX(-50%); pointer-events: none; transition: opacity .35s ease; }
+.uk-skel.is-off { opacity: 0; }
+.uk-skel i { position: absolute; display: block; background: var(--bp-base-color-neutral-200, #e4e6eb); background-image: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / .55) 50%, transparent 70%); background-size: 240% 100%; animation: ukSkel 1.6s ease-in-out infinite; }
+.uk-skel__head { left: 30px; top: 12px; width: 120px; height: 110px; border-radius: 50%; }
+.uk-skel__ear { top: 0; width: 42px; height: 42px; border-radius: 50%; left: 26px; }
+.uk-skel__ear + .uk-skel__ear { left: auto; right: 26px; }
+.uk-skel__body { left: 18px; top: 108px; width: 144px; height: 122px; border-radius: 56px 56px 22px 22px; }
+@keyframes ukSkel { 0% { background-position: 120% 0; } 100% { background-position: -120% 0; } }
+/* Conversando, Uku se acerca y la silueta sube con él */
+.uk.is-chat .uk-skel { bottom: 10%; width: 190px; height: 240px; }
+.uk.is-chat .uk-skel__head { left: 32px; width: 126px; height: 116px; }
+.uk.is-chat .uk-skel__ear { width: 44px; height: 44px; left: 28px; } .uk.is-chat .uk-skel__ear + .uk-skel__ear { left: auto; right: 28px; }
+.uk.is-chat .uk-skel__body { left: 20px; top: 112px; width: 150px; height: 128px; }
+
+/* ---------- El globo de Uku: que se lea y se pueda tocar ----------
+   Más aire entre la etiqueta, el texto y las acciones. La acción principal es un botón de verdad
+   (acento azul, 44 px); «Ahora no» es un botón de texto del mismo alto; los puntos y «Siguiente»
+   van al pie, separados de la decisión. */
+.uk-globo { padding: 18px 20px 14px; max-width: min(340px, 100%); border-radius: 16px 16px 16px 4px; }
+.uk-globo__tag { margin: 0 0 6px !important; }
+.uk-globo__t { font: var(--uk-body); }
+.uk-globo__acts { gap: 8px 4px; margin-top: 14px; }
+html.app-uku .uk-globo__acts .uk-globo__go.btn, html.app-uku .uk-globo__go.btn { display: inline-flex !important; align-items: center !important; height: auto !important; min-height: 44px !important; margin: 0 !important; padding: 0 16px !important; border-radius: var(--bp-semantic-radius-sm, 8px) !important; background: var(--bp-interaction-accent-bg, #0f265c) !important; color: var(--bp-interaction-accent-fg, #fff) !important; font: var(--uk-sm-semibold) !important; font-size: 15px !important; text-decoration: none !important; }
+.uk-globo__skip { min-height: 44px; padding: 0 12px; border-radius: var(--bp-semantic-radius-sm, 8px); font: var(--uk-sm-semibold); font-size: 15px; color: var(--bp-interaction-tertiary-fg); }
+.uk-globo__skip:active { background: var(--bp-interaction-secondary-bg); }
+.uk-globo__foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+.uk-globo__dots { margin: 0; gap: 6px; }
+.uk-globo__dots i { width: 6px; height: 6px; }
+.uk-globo__dots i.is-on { width: 16px; }
+.uk-globo__next { display: inline-flex; align-items: center; gap: 2px; min-height: 40px; margin-right: -8px; padding: 0 4px 0 10px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: none; font: var(--uk-sm); font-size: 15px; color: var(--cx-muted); cursor: pointer; }
+.uk-globo__next .material-symbols-rounded { font-size: 20px; }
+
+/* ---------- Cerrar el globo y Uku en silencio ----------
+   Una X discreta arriba a la derecha; al cerrarlo (o sin nada que decir), el globo se va y Uku queda tranquilo. */
+.uk-globo { padding-right: 44px; }
+.uk-globo__x { position: absolute; top: 8px; right: 8px; width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 50%; background: none; color: var(--cx-muted); cursor: pointer; }
+.uk-globo__x:active { background: var(--bp-interaction-secondary-bg); }
+.uk-globo__x .material-symbols-rounded { font-size: 20px; }
+.uk-globo.is-off { opacity: 0; transform: translateY(-6px); pointer-events: none; }
+.uk-globo[hidden] { display: none; }
+
+/* ---------- Mis finanzas en el asistente: a dónde puedes ir ----------
+   Filas con chevron bajo el resumen, al estilo de las tarjetas: el texto dice qué es. */
+.app-uku .uk-panel .pfm-nav { padding: 8px 20px 0; display: flex; flex-direction: column; }
+.app-uku .uk-panel .pfm-nav__row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 10px 0; border: 0; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); background: none; color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; }
+.app-uku .uk-panel .pfm-nav__row > span:first-child { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.app-uku .uk-panel .pfm-nav__row b { font: var(--uk-body-medium); }
+.app-uku .uk-panel .pfm-nav__row small { font: var(--uk-caption); color: var(--cx-muted); }
+.app-uku .uk-panel .pfm-nav__row > .material-symbols-rounded { color: var(--cx-muted); }
+.app-uku .uk-panel .pfm-nav__row:active { background: var(--bp-interaction-secondary-bg); }
+/* El resumen y la nota, con el mismo margen que las filas */
+.app-uku .uk-panel .pfm-resumen { padding-top: 4px; }
+.app-uku .uk-panel .pfm-foot { padding-top: 24px; }
+.app-uku .uk-panel .pfm-resumen__go { display: none; } /* en el asistente, «Tus gastos» ya está en las filas de abajo */
+
+/* ---------- Lo que encontré (análisis del mes dentro de la tarjeta) ---------- */
+.uk-finds { display: flex; flex-direction: column; }
+.uk-finds__l { margin: 0 0 4px !important; font: var(--uk-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
+.uk-find { margin: 0 !important; display: flex; flex-direction: column; gap: 2px; padding: 12px 0; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+.uk-find:first-of-type { border-top: 0; }
+.uk-find b { font: var(--uk-body-medium); color: var(--bp-theme-color-text-primary); }
+.uk-find small { font: var(--uk-sm); color: var(--cx-muted); }
+
+/* ---------- Escribiendo y con el teclado abierto ----------
+   La barra se apoya justo sobre el teclado (medido con visualViewport), los resultados van pegados
+   encima de la barra y nunca la pisan, y lo demás se aparta mientras escribes. */
+html.uk-chatting .uk { bottom: var(--uk-kb, 0px) !important; }
+.app-uku .uk.is-kb { bottom: var(--uk-kb, 0px); padding-bottom: 12px; }
+.uk-results { bottom: calc(100% - 100% + 84px); max-height: calc(100% - 120px); }
+html.uk-chatting .uk-results { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+html.uk-chatting .uk.is-kb .uk-results, .uk.is-kb .uk-results { bottom: 80px; }
+.uk.is-kb.is-chat .uk-scene { bottom: 68px; }
+/* Mientras escribes, la conversación se aparta del todo (no queda un fantasma al 15 %) */
+.uk.is-typing .uk-chat { opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+/* Con el teclado abierto, Uku se asoma menos: deja sitio a los resultados */
+.uk.is-kb .uk-scene { opacity: .35; transition: opacity .25s ease; }
+.uk.is-chat.is-typing .uk-scene { opacity: 0; } /* escribiendo en conversación, Uku se aparta: los resultados mandan */
+
+/* ---------- Sin avatar de Uku en la conversación ----------
+   Uku ya está detrás de las tarjetas, en persona: su cara repetida en la cabecera y en los mensajes
+   sobra. La inicial del asesor sí se queda: identifica a otra persona. */
+.uk-card__face { display: none; }
+.uk-msg:not(.is-agent) .uk-msg__face, .uk-msg__face.is-gap { display: none; }
+.uk-card .uk-dots { margin-left: var(--uk-inset); }
+
+/* ---------- El asistente se abre desde arriba, a pantalla completa ----------
+   La lupa con el brillo de la IA va junto a la campana; la pestaña de abajo y el ojo desaparecen.
+   Con el asistente abierto no hay barra de arriba ni de abajo: el chevron de arriba lo baja. */
+.app-uku .top-bar__actions > :not([data-action="Notificaciones"]):not(.uk-top) { display: none !important; }
+.app-uku .nav-item[data-view="1"] { display: none !important; }
+.uk-top__ic { position: relative; display: inline-grid; place-items: center; }
+.uk-top__spark { position: absolute; top: -5px; right: -7px; font-size: 13px !important; font-variation-settings: 'FILL' 1, 'wght' 500; color: var(--bp-interaction-tertiary-fg); }
+/* En su mundo también se ve el chevron para bajar el asistente */
+.app-uku .uk .uk-chathead { opacity: 1; pointer-events: none; }
+.app-uku .uk .uk-chathead__x { pointer-events: auto; }
+.app-uku .uk:not(.is-chat) .uk-chathead { opacity: 1; pointer-events: none; }
+html.uk-chatting .uk:not(.is-chat) { padding-top: calc(60px + env(safe-area-inset-top, 0px)); } /* a pantalla completa, el chevron de arriba tiene su fila */
+.uk-top__svg { width: 24px; height: 24px; display: block; }
+
+/* ---------- Búsqueda universal: montos a la derecha, íconos solo en lo que es una acción ---------- */
+.uk-row__r { flex: 0 0 auto; font: var(--uk-body-semibold); font-variant-numeric: tabular-nums; color: var(--bp-theme-color-text-primary); }
+.uk-row__ic { flex: 0 0 32px; width: 32px; height: 32px; border-radius: var(--bp-semantic-radius-sm, 8px); }
+.uk-row__ic .material-symbols-rounded { font-size: 20px; }

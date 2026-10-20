@@ -40,7 +40,7 @@
   var FEATURED = ['Transferir', 'Pagar con QR', 'Pagar servicios', 'Mis finanzas', 'Recargar celular', 'Retirar sin tarjeta', 'Pagar tarjeta', 'Mis tarjetas'];
   /* Preguntas típicas: las responde Uku con reglas (sin IA). */
   var ASKS = [
-    { q: '¿En qué se me va la plata?', k: 'gasto gastos gaste plata dinero se me va en que' },
+    { q: '¿En qué gasto más?', k: 'gasto gastos gaste plata dinero se me va en que' },
     { q: '¿Cuánto tengo en total?', k: 'cuanto tengo saldo total plata dinero cuentas' },
     { q: '¿Cuánto debo en mi tarjeta?', k: 'debo deuda tarjeta credito cupo' },
     { q: '¿Cuánto más puedo ahorrar?', k: 'ahorrar ahorro guardar sobra alcanza' },
@@ -68,6 +68,7 @@
   }
 
   function runAction(a) {
+    addRecent({ t: a.label, icon: a.icon, go: { a: a.label } });
     close(true);
     setTimeout(function () {
       if (a.run) return a.run();
@@ -93,11 +94,36 @@
   ];
   try { var sv = JSON.parse(localStorage.getItem(SC_KEY)); if (Array.isArray(sv)) shortcuts = sv; } catch (e) {}
   function saveShortcuts() { try { localStorage.setItem(SC_KEY, JSON.stringify(shortcuts)); } catch (e) {} }
+  /* ---------- Búsquedas recientes: las últimas 5 que llevaron a algo ---------- */
+  var RC_KEY = 'pb_busq_recientes_v1';
+  var recent = [];
+  try { var rv = JSON.parse(localStorage.getItem(RC_KEY)); if (Array.isArray(rv)) recent = rv.map(function (x) { return typeof x === 'string' ? { t: x, icon: 'history', go: { q: x } } : x; }).filter(function (x) { return x && x.t && x.go; }).slice(0, 5); } catch (e) {}
+  function saveRecent() { try { localStorage.setItem(RC_KEY, JSON.stringify(recent)); } catch (e) {} }
+  // Recientes: lo que de verdad abriste (una acción, un atajo, una pregunta), no lo que escribiste.
+  // Cada uno guarda a dónde va (go) para volver a abrirlo con un toque.
+  function addRecent(r) {
+    if (!r || !r.t) return;
+    var t = String(r.t).trim().slice(0, 60); if (t.length < 2) return;
+    recent = [{ t: t, icon: r.icon || 'history', go: r.go || { q: t } }].concat(recent.filter(function (x) { return norm(x.t) !== norm(t); })).slice(0, 5);
+    saveRecent();
+  }
+  // A dónde va una sugerencia o un reciente
+  function irA(go) {
+    if (!go) return;
+    if (go.a) { var a = ACTIONS.filter(function (x) { return x.label === go.a; })[0]; return a ? runAction(a) : null; }
+    if (go.sc) return runShortcut(go.sc);
+    if (go.app) { var ap = appItems().filter(function (x) { return x.label === go.app; })[0]; return ap ? runApp(ap) : null; }
+    if (go.help) { close(true); return setTimeout(function () { if (window.UkuAsistente && UkuAsistente.ayuda) return UkuAsistente.ayuda(); window.Soporte && Soporte.open(); }, 280); }
+    if (go.faq != null) { close(true); return setTimeout(function () { window.Soporte && (go.kind === 'tut' ? Soporte.openTut(go.faq) : Soporte.openFaq(go.faq)); }, 280); }
+    if (go.ask) { close(true); return setTimeout(function () { if (window.UkuAsistente && UkuAsistente.preguntar) return UkuAsistente.preguntar(go.ask); window.Asistente && Asistente.open({ ctx: ctxId, ask: go.ask }); }, 280); }
+    if (go.q) { input.value = go.q; fx('tap'); return render(); }
+  }
   function scSub(sc) {
     var a = SC_ACTS.filter(function (x) { return x[0] === sc.action; })[0];
     return [a ? a[2] : sc.action, sc.who || sc.biller || '', sc.amount ? money(sc.amount) : ''].filter(Boolean).join(' · ');
   }
   function runShortcut(sc) {
+    addRecent({ t: sc.name, icon: sc.icon || 'bolt', go: { sc: sc } });
     close(true);
     setTimeout(function () { if (window.__runShortcut) window.__runShortcut(sc); }, 280);
   }
@@ -134,6 +160,7 @@
   }
   var APP = [], HELP = [];
   function runApp(a) {
+    addRecent({ t: a.label, icon: a.icon, go: { app: a.label } });
     close(true);
     setTimeout(function () {
       if (a.view != null && window.__goView) window.__goView(a.view);
@@ -161,8 +188,9 @@
       '<div class="sx-panel">' +
         '<div class="sx-head"><form class="sx-field" role="search">' +
           '<span class="material-symbols-rounded" aria-hidden="true">search</span>' +
-          '<input type="search" enterkeyhint="search" autocomplete="off" placeholder="Busca o pregunta" aria-label="Busca o pregunta">' +
+          '<input type="search" enterkeyhint="search" autocomplete="off" placeholder="¿Qué necesitas?" aria-label="Buscar o preguntar">' +
           '<button type="button" class="sx-mic" data-sx="mic" aria-label="Dictar"><span class="material-symbols-rounded">mic</span></button>' +
+          '<button type="button" class="sx-mic" data-sx="cam" aria-label="Escanear un QR con la cámara"><span class="material-symbols-rounded">photo_camera</span></button>' +
         '</form><button class="sx-cancel" data-sx="close">Cancelar</button></div>' +
         '<div class="sx-results"></div>' +
       '</div>';
@@ -172,6 +200,7 @@
     input.addEventListener('input', render);
     el.querySelector('form').addEventListener('submit', function (e) {
       e.preventDefault();
+      addRecent(input.value);
       var first = results.querySelector('[data-sx-i]');
       if (first) first.click();
     });
@@ -182,11 +211,15 @@
       if (!b) return;
       if (b.dataset.sx === 'close') return close();
       if (b.dataset.sx === 'mic') return dictate();
+      if (b.dataset.sx === 'cam') return runAction(ACTIONS.filter(function (a) { return a.label === 'Pagar con QR'; })[0]);
       var i = b.dataset.sxI;
-      if (i === 'ask') { var q = input.value.trim(); close(true); setTimeout(function () { window.Asistente && Asistente.open({ ctx: ctxId, ask: q }); }, 280); return; }
+      if (i === 'rc-clear') { recent = []; saveRecent(); fx('toggle'); return render(); }
+      if (i.indexOf('sug:') === 0) { var sg = SUGS[+i.slice(4)]; fx('tap'); if (!sg.go.a && !sg.go.app) addRecent(sg); return irA(sg.go); } // las acciones ya se anotan al abrirse
+      if (i.indexOf('rc:') === 0) { var rc = recent[+i.slice(3)]; fx('tap'); return rc && irA(rc.go); }
+      if (i === 'ask') { var q = input.value.trim(); addRecent({ t: q, icon: 'forum', go: { ask: q } }); close(true); setTimeout(function () { if (window.UkuAsistente && UkuAsistente.preguntar) return UkuAsistente.preguntar(q); window.Asistente && Asistente.open({ ctx: ctxId, ask: q }); }, 280); return; }
       if (i === 'pfm') return runAction(ACTIONS[4]);
       if (i === 'help') { close(true); setTimeout(function () { window.Soporte && Soporte.open(); }, 280); return; }
-      if (i.indexOf('hp:') === 0) { var hp = HELP[+i.slice(3)]; close(true); setTimeout(function () { if (!window.Soporte) return; if (hp.kind === 'tut') Soporte.openTut(hp.i); else Soporte.openFaq(hp.i); }, 280); return; }
+      if (i.indexOf('hp:') === 0) { var hp = HELP[+i.slice(3)]; addRecent({ t: hp.t, icon: 'help', go: { faq: hp.i, kind: hp.kind } }); close(true); setTimeout(function () { if (!window.Soporte) return; if (hp.kind === 'tut') Soporte.openTut(hp.i); else Soporte.openFaq(hp.i); }, 280); return; }
       if (i === 'mo') { var mo = moment(); return mo.sc ? runShortcut(mo.sc) : runAction(mo.a); }
       if (i === 'it') return runShortcut(curIt);
       if (i === 'it-save') { shortcuts.push(Object.assign({}, curIt)); saveShortcuts(); fx('success'); input.value = ''; render(); return; }
@@ -207,7 +240,7 @@
         shortcuts.push(sc); saveShortcuts(); rec_ = null; fx('success'); render();
         return;
       }
-      if (i.indexOf('q:') === 0) { var aq = ASKS[+i.slice(2)].q; close(true); setTimeout(function () { window.Asistente && Asistente.ask(aq); }, 280); return; }
+      if (i.indexOf('q:') === 0) { var aq = ASKS[+i.slice(2)].q; addRecent({ t: aq, icon: 'forum', go: { ask: aq } }); close(true); setTimeout(function () { window.Asistente && Asistente.ask(aq); }, 280); return; }
       if (i.indexOf('a:') === 0) return runAction(ACTIONS[+i.slice(2)]);
     });
     // Al deslizar los resultados se esconde el teclado (como en iOS) y
@@ -231,17 +264,18 @@
       if (!sw) return;
       var t = e.touches[0], dy = t.clientY - sw.y0, dx = t.clientX - sw.x0;
       if (!sw.on) {
-        if (dy < -10 && Math.abs(dy) > Math.abs(dx) && (sw.head || sw.end)) {
-          sw.on = true; sw.y0 = t.clientY; dy = 0; input.blur();
+        // Hacia arriba (Spotlight) desde el campo o el final de la lista; hacia abajo desde el campo (como una hoja)
+        if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx) && ((dy < 0 && (sw.head || sw.end)) || (dy > 0 && sw.head))) {
+          sw.on = true; sw.down = dy > 0; sw.y0 = t.clientY; dy = 0; input.blur();
           panel.style.transition = 'none'; back.style.transition = 'none';
         } else if (Math.abs(dy) > 10 || Math.abs(dx) > 10) { sw = null; return; }
         else return;
       }
       e.preventDefault();
-      sw.dy = Math.min(0, dy);
+      sw.dy = sw.down ? Math.max(0, dy) : Math.min(0, dy);
       panel.style.transform = 'translateY(' + (sw.dy * .8) + 'px)';
-      panel.style.opacity = String(Math.max(.2, 1 + sw.dy / 360));
-      back.style.opacity = String(Math.max(0, 1 + sw.dy / 300));
+      panel.style.opacity = String(Math.max(.2, 1 - Math.abs(sw.dy) / 360));
+      back.style.opacity = String(Math.max(0, 1 - Math.abs(sw.dy) / 300));
       sw.s.push([t.clientY, performance.now()]); if (sw.s.length > 5) sw.s.shift();
     }, { passive: false });
     var swEnd = function () {
@@ -250,7 +284,7 @@
       if (!g.on) return;
       var a = g.s[0], b = g.s[g.s.length - 1], v = (b[0] - a[0]) / Math.max(1, b[1] - a[1]);
       panel.style.transition = ''; back.style.transition = '';
-      if (g.dy < -90 || (v < -.5 && g.dy < -24)) close();
+      if (Math.abs(g.dy) > 90 || (Math.abs(v) > .5 && Math.abs(g.dy) > 24)) close();
       panel.style.transform = ''; panel.style.opacity = ''; back.style.opacity = '';
     };
     panel.addEventListener('touchend', swEnd);
@@ -281,12 +315,27 @@
     return '<button class="sx-row" data-sx-i="' + id + '">' + ic + '<span class="sx-row__main"><b>' + main + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (right ? '<span class="sx-row__r">' + right + '</span>' : '') + '</button>';
   }
   function T(x, v) { return window.I18n ? I18n.t(x, v) : x; }
-  function ukuName() { return (window.Asistente && Asistente.name && Asistente.name()) || 'Uku'; }
+  function ukuName() { return 'Asistente'; }
   function readRec() {
     var n = results.querySelector('[data-rec="name"]'), m = results.querySelector('[data-rec="amt"]');
     if (n) rec_.name = n.value.trim();
     if (m) rec_.amount = parseFloat(String(m.value).replace(',', '.')) || 0;
   }
+  // Sugerencias antes de escribir: cada una abre algo concreto (no rellena el campo).
+  // Las acciones por sección (pagar, mi dinero, ayuda, seguridad) ya están a la vista en la app y aparecen al escribir.
+  var SUGS = [
+    { t: 'Mejorar mis finanzas', icon: 'insights', go: { a: 'Mis finanzas' } },
+    { t: 'Mis últimos movimientos', icon: 'swap_horiz', go: { a: 'Mis cuentas' } },
+    { t: 'Solicitar una tarjeta de crédito', icon: 'credit_card', go: { ask: 'Cómo solicito una tarjeta de crédito' } },
+    { t: 'Mis seguros', icon: 'shield', go: { a: 'Seguros' } },
+    { t: 'Necesito ayuda', icon: 'help', go: { help: true } }
+  ];
+  function sugerencias() {
+    return '<section class="sx-card"><div class="sx-chips">' + SUGS.map(function (s, i) {
+      return '<button class="sx-chip" data-sx-i="sug:' + i + '">' + esc(s.t) + '</button>';
+    }).join('') + '</div></section>';
+  }
+
   function chip(id, label, on) { return '<button class="sx-chip" data-sx-i="' + id + '" aria-pressed="' + !!on + '">' + esc(label) + '</button>'; }
   function recHTML() {
     var r = rec_, isT = r.action === 'Transferir dinero', isS = r.action === 'Pagar servicios';
@@ -300,15 +349,20 @@
       '<div class="sx-rec__acts"><button class="sx-btn sx-btn--ghost" data-sx-i="rec-cancel">Cancelar</button><button class="sx-btn" data-sx-i="rec-save">Guardar atajo</button></div></section>';
   }
   function render() {
-    var q = norm(input.value.trim()), html = '';
+    var q = norm(input.value.trim()), html = '', ayudaCtx = ctxId === 'ayuda';
     if (rec_) { results.innerHTML = recHTML(); return; }
     APP = appItems();
+    if (!q && ayudaCtx) {
+      HELP = window.Soporte ? Soporte.faqs(6) : [];
+      results.innerHTML = '<section class="sx-card"><h3>Temas de ayuda</h3>' + HELP.map(function (h, i) { return row('hp:' + i, h.icon, esc(h.t), 'Pregunta frecuente'); }).join('') + '</section>';
+      return;
+    }
     if (!q) {
-      // Primero las acciones (contextuales a la sección desde donde se abrió)
+      // Antes de escribir: lo reciente, tus atajos y la ayuda. Las acciones aparecen al buscar
       var cx = window.Contexto ? Contexto.info(ctxId) : null;
-      var feat = cx ? cx.acciones.concat(FEATURED.filter(function (l) { return cx.acciones.indexOf(l) < 0; })).slice(0, 8) : FEATURED;
-      html += '<section class="sx-card"><h3>Acciones</h3><div class="sx-grid">' +
-        feat.map(function (l) { return ACTIONS.filter(function (a) { return a.label === l; })[0]; }).filter(Boolean).map(tile).join('') + '</div></section>';
+      html += sugerencias();
+      if (recent.length) html += '<section class="sx-card"><h3>Recientes <button class="sx-link" data-sx-i="rc-clear">Borrar</button></h3>' +
+        recent.map(function (r, i) { return row('rc:' + i, r.icon || 'history', esc(r.t), r.go.a ? 'Abrir' : r.go.sc ? 'Atajo' : r.go.ask ? 'Preguntarle a Uku' : r.go.faq != null ? 'Ayuda' : ''); }).join('') + '</section>';
       // Tus atajos grabados
       html += '<section class="sx-card"><h3>Tus atajos</h3>' +
         shortcuts.map(function (sc, i) { return row('sc:' + i, sc.icon || 'bolt', esc(sc.name), esc(scSub(sc)), '<span class="sx-del" data-sx-i="del:' + i + '" role="button" aria-label="Borrar atajo"><span class="material-symbols-rounded">close</span></span>'); }).join('') +
@@ -317,7 +371,6 @@
         var m = moment();
         html += '<section class="sx-card"><h3>' + m.title + '</h3>' + row('mo', m.icon, m.main, m.sub) + '</section>';
       }
-      html += '<section class="sx-card"><h3>Ayuda</h3>' + row('help', 'help', 'Centro de ayuda', 'Preguntas frecuentes, categorías y tutoriales') + '</section>';
     } else {
       var ws = words(input.value);
       // Frase completa → el flujo ya lleno, listo para confirmar
@@ -343,14 +396,19 @@
         }).join('') + '</section>';
       }
       // Ayuda: preguntas frecuentes y tutoriales del centro de ayuda
-      HELP = window.Soporte && Soporte.find ? Soporte.find(input.value, 3) : [];
-      if (HELP.length) html += '<section class="sx-card"><h3>Ayuda</h3>' + HELP.map(function (h, i) { return row('hp:' + i, h.icon, esc(h.t), h.kind === 'tut' ? 'Tutorial' : 'Pregunta frecuente'); }).join('') + '</section>';
+      HELP = window.Soporte && Soporte.find ? Soporte.find(input.value, ayudaCtx ? 6 : 3) : [];
+      if (HELP.length && !ayudaCtx) html += '<section class="sx-card"><h3>Ayuda</h3>' + HELP.map(function (h, i) { return row('hp:' + i, h.icon, esc(h.t), h.kind === 'tut' ? 'Tutorial' : 'Pregunta frecuente'); }).join('') + '</section>';
       // Al final, el análisis con IA de Uku (se marca como IA)
       var asks = rank(ASKS, ws, function (a) { return a.q + ' ' + a.k + ' ' + T(a.q); }).slice(0, 2);
       if (asks.length) html += '<section class="sx-card"><h3>Analizar con ' + ukuName() + ' <span class="ai-badge">IA</span></h3>' + asks.map(function (a) { return row('q:' + ASKS.indexOf(a), 'ai', a.q); }).join('') + '</section>';
-      if (!html) html += '<section class="sx-card sx-empty"><p>No encontramos «' + esc(input.value.trim()) + '» en la app.</p>' +
-        row('help', 'help', 'Buscar en la ayuda', 'Preguntas frecuentes y tutoriales') +
-        row('ask', 'ai', 'Analizar con ' + ukuName(), 'Pregúntale sobre tus finanzas · IA') + '</section>';
+      // En Ayuda, los temas de ayuda van primero
+      if (ayudaCtx && HELP.length) html = '<section class="sx-card"><h3>Ayuda</h3>' + HELP.map(function (h, i) { return row('hp:' + i, h.icon, esc(h.t), h.kind === 'tut' ? 'Tutorial' : 'Pregunta frecuente'); }).join('') + '</section>' + html;
+      // Lo que no se resuelve aquí (o es una pregunta) va al Asistente, con la misma frase
+      var hadResults = !!html, esPregunta = /[?¿]|^(cu[aá]nto|c[oó]mo|qu[eé]|por qu[eé]|d[oó]nde|cu[aá]ndo|cu[aá]l|en qu[eé]|me |debo|puedo)/i.test(input.value.trim());
+      if (!hadResults) html += '<section class="sx-card sx-empty"><p>No encontramos «' + esc(input.value.trim()) + '» en la app.</p>' +
+        row('help', 'help', 'Buscar en la ayuda', 'Preguntas frecuentes y tutoriales') + '</section>';
+      var askRow = '<section class="sx-card sx-ask">' + row('ask', 'ai', esc(input.value.trim()), 'Pregúntale a ' + ukuName() + ' · IA') + '</section>';
+      html = (esPregunta || !hadResults) ? askRow + html : html + askRow;
     }
     results.innerHTML = html;
   }
@@ -378,22 +436,22 @@
     r.onerror = stop;
     r.onend = function () {
       clearTimeout(quiet); clearTimeout(cap); rec = null;
-      el.classList.remove('is-listening'); input.placeholder = 'Busca o pregunta';
+      el.classList.remove('is-listening'); input.placeholder = '¿Qué necesitas hoy?';
       if (got.trim()) {
         var ic = el.querySelector('.sx-mic span');
         el.classList.add('is-heard'); ic.textContent = 'check'; fx('success');
         setTimeout(function () { el.classList.remove('is-heard'); ic.textContent = 'mic'; }, 1400);
       }
     };
-    try { r.start(); } catch (e) { rec = null; el.classList.remove('is-listening'); input.placeholder = 'Busca o pregunta'; }
+    try { r.start(); } catch (e) { rec = null; el.classList.remove('is-listening'); input.placeholder = '¿Qué necesitas hoy?'; }
   }
 
-  function open() {
+  function open(c) {
     if (!el) mount();
     if (open_) return;
     open_ = true;
     rec_ = null;
-    ctxId = window.Contexto ? Contexto.get() : null; // la sección desde donde se abre
+    ctxId = c || (window.Contexto ? Contexto.get() : null); // la sección desde donde se abre (o 'ayuda')
     input.value = '';
     render();
     el.classList.add('open');
@@ -417,7 +475,8 @@
   /* ---------- Gesto: deslizar hacia abajo desde el tope de Inicio ---------- */
   function homeVisible() {
     var h = document.getElementById('home-page');
-    return h && !h.classList.contains('hidden') && document.body.style.overflow !== 'hidden' && !document.documentElement.classList.contains('has-sheet') &&
+    // Dentro de una tarjeta o sección de Uku el tirón hacia abajo cierra la tarjeta, no abre el buscador (que ya está abajo)
+    return h && !h.classList.contains('hidden') && document.body.style.overflow !== 'hidden' && !document.documentElement.classList.contains('has-sheet') && !document.documentElement.classList.contains('uk-chatting') &&
       !document.querySelector('.push-page.open, .as-page.open, .pf-page.open:not(.pf-page--inline), .sheet.open, .card-detail.open, #login-screen.active');
   }
   var pull = null, PULL = 72;
@@ -476,5 +535,11 @@
     open();
   }, true);
 
-  window.Buscador = { open: open, close: close, shortcuts: function () { return shortcuts.slice(); } };
+  window.Buscador = { open: open, close: close, voice: function () { open(); setTimeout(dictate, 260); }, shortcuts: function () { return shortcuts.slice(); },
+    // Para la versión asistente: las acciones, su orden por palabras y cómo abrirlas
+    actions: function () { return ACTIONS.slice(); }, rank: function (q) { return rank(ACTIONS, words(q), function (a) { return a.label + ' ' + a.k; }); }, run: runAction,
+    // Para el buscador universal del asistente: la frase hecha acción, las pantallas de la app y los atajos
+    intent: intent, atajo: function (sc) { if (window.__runShortcut) window.__runShortcut(sc); },
+    app: function (q) { return rank(appItems(), words(q), function (a) { return a.label + ' ' + a.k; }).slice(0, 4).map(function (a) { return { label: a.label, icon: a.icon, sub: a.sub }; }); },
+    abrir: function (label) { var a = appItems().filter(function (x) { return x.label === label; })[0]; if (!a) return; if (a.view != null && window.__goView) window.__goView(a.view); setTimeout(function () { a.el.click(); }, a.view != null ? 120 : 0); } };
 })();

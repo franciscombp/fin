@@ -42,8 +42,8 @@
       ? T('En lo que va de {mes} llevas {gasto}. Si sigues a este ritmo, el mes se parece a tus meses normales.', { mes: p.mes, gasto: money(n.spend) })
       : T('En {mes} gastaste {gasto}, {comp} tu promedio de {prom}.', { mes: p.mes, gasto: money(n.spend), prom: money(p.avg),
           comp: Math.abs(diff) < .03 ? T('casi igual que') : T(diff > 0 ? '{pct} más que' : '{pct} menos que', { pct: pct(Math.abs(diff)) }) }) +
-        ' ' + (n.save ? T('Ahorraste {monto}, el {pct} de lo que te entró.', { monto: money(n.save), pct: pct(rate) }) : T('Este mes no ahorraste.')) +
-        (p.over.length ? ' ' + T('Lo que más pesó fue {cat}, donde te pasaste {monto}.', { cat: p.over[0].name.toLowerCase(), monto: money(p.over[0].over) }) : '');
+        ' ' + (n.save ? T('Ahorraste {monto}, el {pct} de tus ingresos.', { monto: money(n.save), pct: pct(rate) }) : T('Este mes no ahorraste.')) +
+        (p.over.length ? ' ' + T('Lo que más pesó fue {cat}, donde gastaste {monto} de más.', { cat: p.over[0].name.toLowerCase(), monto: money(p.over[0].over) }) : '');
     var finds = p.ins.slice(0, 3).map(function (x) { return { icon: x.icon, t: x.title, s: x.sub }; });
     var plan = [];
     if (p.card && p.card.interest > 0) plan.push({ t: T('Paga el total de tu Mastercard Black'), s: T('Así dejas de pagar unos {monto} de intereses al mes.', { monto: money(p.card.interest) }), k: 'go:Pagar tarjeta', b: T('Pagar tarjeta') });
@@ -52,7 +52,7 @@
     if (late) plan.push({ t: T('Pasa {monto} más al mes a {meta}', { monto: money(late.need - late.monthly), meta: late.name }), s: T('Con eso llegas a tiempo a tu meta.') });
     if (rate >= .08) plan.push({ t: T('Mantén tu ahorro de {monto}', { monto: money(n.save) }), s: T('Vas bien: es más de lo que ahorra la mayoría.') });
     var qs = p.ins.map(function (x) { return x.ask; }).filter(Boolean);
-    ['¿En qué se me va la plata?', '¿Cuánto más puedo ahorrar?', '¿Cómo voy con mis metas?'].forEach(function (q) { if (qs.indexOf(q) < 0) qs.push(q); });
+    ['¿En qué gasto más?', '¿Cuánto más puedo ahorrar?', '¿Cómo voy con mis metas?'].forEach(function (q) { if (qs.indexOf(q) < 0) qs.push(q); });
     return { sum: sum, finds: finds, plan: plan.slice(0, 3), qs: qs.slice(0, 4) };
   }
 
@@ -61,14 +61,15 @@
   function mount() {
     page = document.createElement('div');
     page.className = 'ai-page';
-    page.setAttribute('role', 'dialog'); page.setAttribute('aria-modal', 'true'); page.setAttribute('aria-label', T('Análisis de Uku'));
+    page.setAttribute('role', 'dialog'); page.setAttribute('aria-modal', 'true'); page.setAttribute('aria-label', T('Análisis del Asistente'));
     page.innerHTML =
       '<header class="ai-top"><button class="ai-round" data-ai="close" aria-label="Volver"><span class="material-symbols-rounded">arrow_back</span></button>' +
         '<p class="ai-top__t">' + T('Análisis de {nombre}', { nombre: A().name() }) + '</p><span class="ai-badge">IA</span></header>' +
       '<div class="ai-body"></div>' +
       '<form class="ai-composer"><span class="ai-composer__spark material-symbols-rounded" aria-hidden="true">auto_awesome</span>' +
-        '<input type="text" enterkeyhint="send" autocomplete="off" aria-label="' + T('Pregúntale a Uku sobre tus finanzas') + '" placeholder="' + T('Pregúntale a Uku sobre tus finanzas') + '">' +
-        '<button class="ai-send" type="submit" aria-label="Enviar"><span class="material-symbols-rounded">arrow_upward</span></button></form>';
+        '<input type="text" enterkeyhint="send" autocomplete="off" aria-label="' + T('Pregúntale a tu Asistente sobre tus finanzas') + '" placeholder="' + T('Pregúntale a tu Asistente sobre tus finanzas') + '">' +
+        '<button class="ai-send" type="submit" aria-label="Enviar"><span class="material-symbols-rounded">arrow_upward</span></button></form>' +
+        '<p class="uku-disc">' + T('Uku es una IA y puede cometer errores. Sus sugerencias no son recomendaciones financieras.') + '</p>';
     document.body.appendChild(page);
     body = page.querySelector('.ai-body'); input = page.querySelector('input');
     page.addEventListener('click', onClick);
@@ -105,8 +106,7 @@
       '<section class="ai-sec"><h2>' + T('Sigue preguntando') + '</h2><div class="ai-chips">' + r.qs.map(function (q) {
         return '<button class="ai-chip" data-ai-q="' + esc(q) + '">' + esc(q) + '</button>';
       }).join('') + '</div></section>' +
-      '<div class="ai-thread" aria-live="polite"></div>' +
-      '<p class="ai-legal">' + T('Análisis hecho con IA a partir de tus movimientos. Uku te orienta, no es asesoría financiera, y puede equivocarse.') + '</p>';
+      '<div class="ai-thread" aria-live="polite"></div>';
     page.classList.remove('is-locked');
     if (ask) askQ(ask);
   }
@@ -117,7 +117,7 @@
       '<div class="ai-blur" aria-hidden="true"><div class="ai-card"><i></i><i></i><i></i></div><div class="ai-card"><i></i><i></i><i></i><i></i></div><div class="ai-card"><i></i><i></i></div></div>' +
       '<section class="ai-wall"><span class="ai-wall__spark material-symbols-rounded" aria-hidden="true">auto_awesome</span>' +
         '<h2>' + T('Tu prueba gratis terminó') + '</h2>' +
-        '<p>' + T('Con Uku Plus, Uku analiza tus finanzas con IA cada mes, te arma un plan y le preguntas lo que quieras.') + '</p>' +
+        '<p>' + T('Con Uku Plus, Uku analiza tus finanzas con IA cada mes, te arma un plan y puedes preguntarle lo que quieras.') + '</p>' +
         '<ul><li>' + T('Un análisis completo de cada mes') + '</li><li>' + T('Preguntas sin límite') + '</li><li>' + T('Incluido si tienes cuenta Black') + '</li></ul>' +
         '<button class="ai-wall__cta bp-button" data-ai="plans">' + T('Conocer Uku Plus') + '</button>' +
         '<button class="ai-wall__later" data-ai="close">' + T('Ahora no') + '</button></section>';
@@ -146,7 +146,7 @@
     if (b.dataset.aiDo) { var k = b.dataset.aiDo; close(); setTimeout(function () { A().pf(k); }, 260); return; }
     var k2 = b.dataset.ai;
     if (k2 === 'close') return close();
-    if (k2 === 'plans') { fx('select'); toast(T('Los planes y precios los define el área de negocio. Esto es un prototipo.')); }
+    if (k2 === 'plans') { fx('select'); toast(T('Esto es un prototipo: los planes y precios todavía no están definidos.')); }
   }
   var toastT;
   function toast(t) {
@@ -181,5 +181,5 @@
     if (window.Asistente && Asistente.pf) try { Asistente.pf('repaint'); } catch (e) {}
   }
 
-  window.UkuAnalisis = { open: open, close: close, access: access, plan: function () { return st.plan; }, setPlan: setPlan, plans: function () { return PLANS; } };
+  window.UkuAnalisis = { open: open, close: close, access: access, build: build, plan: function () { return st.plan; }, setPlan: setPlan, plans: function () { return PLANS; } };
 })();

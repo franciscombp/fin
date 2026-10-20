@@ -38,7 +38,7 @@
     return '<span class="dw-ring"><svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="22"/><circle cx="26" cy="26" r="22" class="dw-ring__v" stroke-dasharray="' + (C * v).toFixed(1) + ' ' + C.toFixed(1) + '"/></svg><b>' + label + '</b></span>';
   }
 
-  var PAYS = [['Luz de la casa', 24.8, '16 oct', 'Pagar Luz de la casa'], ['Casa de la abue', 18.35, '20 oct', 'Pagar Casa de la abue'], ['Internet', 32.5, '22 oct', ''], ['Celular', 20, '25 oct', '']];
+  var PAYS = [['Luz de la casa', 24.8, '16 oct', 'Pagar Luz de la casa'], ['Casa de la abuela', 18.35, '20 oct', 'Pagar Casa de la abuela'], ['Internet', 32.5, '22 oct', ''], ['Celular', 20, '25 oct', '']];
 
   /* ---------- Catálogo: una familia, un widget ----------
      sizes: tamaños permitidos (M horizontal por defecto; S cuadrado se
@@ -58,7 +58,7 @@
     // "Sugeridos para ti"; si el cliente no tiene la familia, la sugerencia es
     // la captación de la familia.
     preaprobado: { name: 'Crédito preaprobado', short: 'Crédito', icon: 'request_quote', sizes: ['m', 's'], salida: 1, fam: 'creditos', desc: 'Tienes un crédito preaprobado' },
-    deuna:     { name: 'Cuenta deuna', short: 'deuna', icon: 'account_balance_wallet', sizes: ['m', 's'], salida: 1, fam: 'cuentas', desc: 'Recibe pagos con tu cuenta deuna' }
+    deuna:     { name: 'Cuenta Deuna', short: 'Deuna', icon: 'account_balance_wallet', sizes: ['m', 's'], salida: 1, fam: 'cuentas', desc: 'Recibe pagos con tu cuenta Deuna' }
   };
   // Orden en que el banco sugiere (D4: ahorro e inversión no van por defecto)
   var SUGGESTED = ['tarjeta', 'creditos', 'pagos'];
@@ -101,7 +101,10 @@
   var ELIGIBLE = { cuentas: true, inversion: true, metas: true, tarjeta: true, creditos: true, pagos: true, preaprobado: true, deuna: true };
   function available(id) { var c = CATALOG[id]; return !!(c && c.salida && c.salida <= RELEASE); }
   function capt(id) { return !owned(id) && !!ELIGIBLE[id]; } // captación (widget fantasma)
+  // Las pre-ofertas (tarjetas amarillas de captación) quedan ocultas por ahora: OFERTAS = true las vuelve a mostrar
+  var OFERTAS = false;
   function shown(id) {
+    if (!OFERTAS && !owned(id)) return false;
     var f = CATALOG[id] && CATALOG[id].fam;
     if (f) return available(id) && capt(id) && owned(f); // sin la familia, ya la sugiere su captación
     return available(id) && (owned(id) || capt(id));
@@ -172,7 +175,7 @@
   function promo(text, cta, sub) { return '<p class="dw-promo dw-2l">' + text + '</p>' + (sub ? '<p class="dw-sub dw-1">' + sub + '</p>' : '') + (cta ? '<span class="dw-cta bp-action-button" data-size="sm">' + cta + '</span>' : ''); }
   var R = {
     cuentas: function (s, c) {
-      if (c) return { body: promo('Abre tu cuenta deuna para recibir pagos', s === 'm' ? 'Abrir cuenta' : ''), go: function () { act('Solicitar cuenta'); } };
+      if (c) return { body: promo('Abre tu cuenta Deuna para recibir pagos', s === 'm' ? 'Abrir cuenta' : ''), go: function () { act('Solicitar cuenta'); } };
       var b = '<p class="dw-label dw-1">Intereses del mes</p><p class="dw-value">' + sens(money(3.12)) + '</p>';
       return { body: b + '<p class="dw-sub dw-1">En tus ahorros</p>' + (s === 'm' ? '<p class="dw-sub dw-1">Rendimiento anual 1,50%</p>' : ''), go: function () { act('Cuenta PRINCIPAL'); } };
     },
@@ -207,7 +210,7 @@
         '<button class="dw-btn bp-action-button" data-size="sm" data-dw-act="' + esc(r.action) + '">Pagar cuota</button></div></div>', go: function () { act(r.action); } };
     },
     preaprobado: function (s) { return { body: promo('Tienes un crédito preaprobado', 'Simular', s === 'm' ? 'Sujeto a aprobación' : ''), go: function () { act('Simular crédito preaprobado'); } }; },
-    deuna: function (s) { return { body: promo('Abre tu cuenta deuna para recibir pagos', s === 'm' ? 'Abrir cuenta' : ''), go: function () { act('Solicitar cuenta'); } }; },
+    deuna: function (s) { return { body: promo('Abre tu cuenta Deuna para recibir pagos', s === 'm' ? 'Abrir cuenta' : ''), go: function () { act('Solicitar cuenta'); } }; },
     pagos: function (s, c) {
       if (c) return { body: promo('Programa tus pagos de servicios', 'Programar'), go: function () { act('Pagar servicios'); } };
       // Solo informativo: fecha y monto, sin "vence hoy" (D2)
@@ -220,8 +223,8 @@
   /* Slot fantasma: mismo patrón que la venta de productos de los hubs
      (fondo transparente, borde punteado, ícono, texto y enlace) */
   var GHOST = {
-    cuentas: ['Abre tu cuenta deuna para recibir pagos', 'Abrir cuenta'],
-    deuna: ['Abre tu cuenta deuna para recibir pagos', 'Abrir cuenta'],
+    cuentas: ['Abre tu cuenta Deuna para recibir pagos', 'Abrir cuenta'],
+    deuna: ['Abre tu cuenta Deuna para recibir pagos', 'Abrir cuenta'],
     inversion: ['Haz crecer tu dinero: gana 7,25% al año', 'Invertir'],
     metas: ['Crea tu primera meta de ahorro', 'Crear meta'],
     tarjeta: ['Solicita tu tarjeta de crédito', 'Solicitar tarjeta'],
@@ -240,7 +243,7 @@
     switch (id) {
       case 'inversion': return { t: 'Con tu saldo promedio podrías ganar ' + money(idle * .0725) + ' al año', l: 'Ganarías al año', v: money(idle * .0725), cta: 'Invierte ahora', ts: 'Podrías ganar al año' };
       case 'metas': return { t: 'Ahorrando $ 50 al mes, en un año juntas ' + money(600), l: 'En un año', v: money(600), cta: 'Crea tu meta', ts: 'En un año juntarías' };
-      case 'cuentas': case 'deuna': return { t: 'Cobra a tus clientes y amigos al instante', l: 'Comisión por cobrar', v: money(0), cta: 'Abre tu cuenta deuna', ts: 'Cobra sin comisión' };
+      case 'cuentas': case 'deuna': return { t: 'Cobra a tus clientes y amigos al instante', l: 'Comisión por cobrar', v: money(0), cta: 'Abre tu cuenta Deuna', ts: 'Cobra sin comisión' };
       case 'creditos': case 'preaprobado': return { t: 'Tienes un crédito preaprobado', l: 'Hasta', v: money(5000), s: 'Sujeto a aprobación', cta: 'Simula tu crédito', ts: 'Crédito preaprobado' };
       case 'tarjeta': return { t: 'Con lo que gastaste en septiembre acumularías millas', l: 'Ganarías', v: Math.round(spend).toLocaleString('es-EC') + ' millas', cta: 'Solicita tu tarjeta', ts: 'Acumularías' };
       case 'pagos': return { t: 'Programa tus pagos y olvídate de las fechas', l: 'Pagas al mes', v: money(pays), cta: 'Programa tus pagos', ts: 'Pagas al mes' };
@@ -453,7 +456,7 @@
     window.addEventListener('pointercancel', end);
   }
 
-  /* ---------- Galería: "Sugeridos para ti" (captaciones) y "Tus productos" ---------- */
+  /* ---------- Galería: "Tus productos" primero y luego "Sugeridos para ti" (captaciones) ---------- */
   var sheet, back, pick = {};
   function ensureSheet() {
     if (sheet) return;
@@ -465,7 +468,7 @@
   }
   function openGallery() { ensureSheet(); paintGallery(); sheet.scrollTop = 0; back.classList.add('open'); sheet.classList.add('open'); fx('open'); }
   function closeGallery() { back.classList.remove('open'); sheet.classList.remove('open'); }
-  var WHY = { cuentas: 'Recibe pagos con tu cuenta deuna', inversion: 'Tu dinero puede rendir 7,25% al año', metas: 'Ahorra para algo que quieras', tarjeta: 'Pide tu tarjeta de crédito', creditos: 'Tienes un crédito preaprobado', preaprobado: 'Simula tu cuota, sujeto a aprobación', deuna: 'Recibe pagos de cualquier banco', pagos: 'Programa tus pagos de servicios' };
+  var WHY = { cuentas: 'Recibe pagos con tu cuenta Deuna', inversion: 'Tu dinero puede rendir 7,25% al año', metas: 'Ahorra para algo que quieras', tarjeta: 'Pide tu tarjeta de crédito', creditos: 'Tienes un crédito preaprobado', preaprobado: 'Simula tu cuota, sujeto a aprobación', deuna: 'Recibe pagos de cualquier banco', pagos: 'Programa tus pagos de servicios' };
   function galItem(id, have, free, why) {
     var c = CATALOG[id], sz = pick[id] || defSize(id), on = have.indexOf(id) >= 0, fits = U[sz] <= free;
     return '<div class="dw-gal">' +
@@ -482,8 +485,9 @@
     var sug = ids.filter(capt), mine = ids.filter(function (id) { return !capt(id); });
     sheet.innerHTML = '<div class="as-sheet__handle"></div><h3>Agregar widget</h3><p>' +
       (!free ? 'No queda espacio. Quita uno para agregar otro.' : 'Elige un widget y su tamaño. Caben 2 horizontales o 4 cuadrados.') + '</p>' +
-      (sug.length ? '<p class="as-sheet__label">Sugeridos para ti</p>' + sug.map(function (id) { return galItem(id, have, free, WHY[id]); }).join('') : '') +
-      (mine.length ? '<p class="as-sheet__label">Tus productos</p>' + mine.map(function (id) { return galItem(id, have, free); }).join('') : '');
+      // Primero lo que ya tienes; después lo que te sugerimos
+      (mine.length ? '<p class="as-sheet__label">Tus productos</p>' + mine.map(function (id) { return galItem(id, have, free); }).join('') : '') +
+      (sug.length ? '<p class="as-sheet__label">Sugeridos para ti</p>' + sug.map(function (id) { return galItem(id, have, free, WHY[id]); }).join('') : '');
   }
   function onGallery(e) {
     var b;

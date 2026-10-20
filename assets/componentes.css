@@ -1,0 +1,78 @@
+/* =====================================================================
+   Componentes (capa única, solo tokens). Aquí vive la definición de cada
+   primitiva; las pantallas no la repiten. Se carga al final.
+   ===================================================================== */
+
+/* Título de sección: etiqueta pequeña en gris, encima de su grupo */
+html:not(.theme-y2k) .section__title h2 {
+  font: var(--ui-label-sm);
+  font-size: 14px;
+  letter-spacing: 0;
+  color: var(--bp-theme-color-text-helper);
+}
+
+/* Tarjeta: padding interno con el token de layout (16px en teléfono, 24px desde tablet).
+   Una tarjeta de contenido libre lo aplica a sus cuatro lados.
+   Una tarjeta de lista no tiene padding propio: cada ítem trae el mismo token. */
+.card {
+  padding: var(--bp-layout-card-padding, 16px);
+}
+.card:has(> .sub-item),
+.card:has(> .pf-meter),
+.card:has(> .list-item),
+.card:has(> .product-row) {
+  padding: 0;
+}
+.card > .sub-item,
+.card > .pf-meter {
+  padding-left: var(--bp-layout-card-padding, 16px);
+  padding-right: var(--bp-layout-card-padding, 16px);
+}
+
+/* Tarjeta de cuenta: el encabezado y el monto se alinean con el borde interno
+   que ya da la tarjeta; no suman un margen lateral propio. */
+.account-card .card__header { padding: 0 0 8px; }
+.account-card .amount-row { padding: 0; }
+
+/* Acciones rápidas: son una tarjeta. El token de layout da el aire interno y la
+   grilla sólo reparte; las etiquetas parten palabras largas en vez de desbordar. */
+html:not(.theme-y2k) .quick-actions {
+  padding: var(--bp-layout-card-padding, 16px);
+}
+.quick-action__label { hyphens: auto; overflow-wrap: break-word; }
+
+/* Familia de botones: misma forma y altura en toda la app; sólo el color dice qué tan
+   importante es. Primario (relleno fuerte) · secundario (tinte suave) · terciario (sólo texto). */
+html:not(.theme-y2k) .btn, html:not(.theme-y2k) .pf-cta, html:not(.theme-y2k) .uk-chip, html:not(.theme-y2k) .as-chip {
+  height: 48px !important; min-height: 48px; padding: 0 var(--bp-semantic-spacing-macro-sm); border: 0 !important;
+  border-radius: var(--bp-semantic-radius-md, 12px) !important; box-shadow: none !important;
+  font: var(--ui-body-md-semibold) !important; line-height: 20px; cursor: pointer;
+}
+html:not(.theme-y2k) .btn--primary, html:not(.theme-y2k) .pf-cta { background: var(--bp-theme-color-interaction-primary-bg); color: var(--bp-theme-color-interaction-primary-fg); }
+html:not(.theme-y2k) .btn--secondary, html:not(.theme-y2k) .uk-chip, html:not(.theme-y2k) .as-chip { background: var(--bp-theme-color-interaction-secondary-bg); color: var(--bp-theme-color-interaction-secondary-fg); }
+html:not(.theme-y2k) .btn--tertiary { background: transparent; color: var(--bp-theme-color-interaction-tertiary-fg); }
+
+/* Avatar de la barra superior: iniciales de la persona activa */
+.profile-story__ini { font: var(--ui-label-sm); color: var(--bp-theme-color-text-primary); line-height: 1; }
+
+/* Mis finanzas: resumen de gastos en el inicio y vuelta desde el detalle */
+.pfm-resumen__card { display: flex; flex-direction: column; gap: 4px; width: 100%; margin: 0; padding: var(--bp-layout-card-padding, 16px); border: 0; border-radius: 16px; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; font: inherit; }
+.pfm-resumen__t, .pfm-resumen__s { font: var(--ui-body-sm-medium); color: var(--bp-theme-color-text-helper); }
+.pfm-resumen__m { font: var(--ui-headline-sm, 700 28px/34px sans-serif); color: var(--bp-theme-color-text-primary); }
+.pfm-resumen__go { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; font: var(--ui-body-md-semibold); color: var(--bp-theme-color-text-interactive); }
+.pf-back { display: inline-flex; align-items: center; gap: 4px; margin: 8px 16px 0; padding: 0; border: 0; background: none; font: var(--ui-body-md-semibold); color: var(--bp-theme-color-text-interactive); cursor: pointer; }
+
+
+/* Hubs de productos: cada grupo es su contenedor; los vacíos muestran un placeholder o un hero */
+.prod-group + .prod-group { margin-top: var(--bp-semantic-spacing-macro-sm, 24px); }
+.prod-group .card { margin-top: 0; }
+.prod-ph { display: flex; flex-direction: column; align-items: flex-start; gap: var(--bp-semantic-spacing-micro-md, 8px); padding: var(--bp-layout-card-padding, 16px); border: 1px dashed var(--cx-line, #c9ced8); border-radius: var(--bp-semantic-radius-md, 12px); }
+.prod-ph p { margin: 0; font: var(--ui-body-sm-regular); color: var(--bp-theme-color-text-helper); }
+.prod-ph b { font: var(--ui-body-md-semibold); color: var(--bp-theme-color-text-primary); }
+.prod-hero { display: flex; flex-direction: column; align-items: center; gap: var(--bp-semantic-spacing-micro-md, 8px); padding: var(--bp-semantic-spacing-macro-sm, 24px) var(--bp-layout-card-padding, 16px); border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); text-align: center; }
+.prod-hero__ic { display: grid; place-items: center; width: 56px; height: 56px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font-size: 28px; }
+.prod-hero__t { font: var(--cx-headline); color: var(--bp-theme-color-text-primary); }
+.prod-hero__s { margin: 0; font: var(--ui-body-sm-regular); color: var(--bp-theme-color-text-helper); }
+.prod-total { display: flex; justify-content: space-between; align-items: center; margin-top: var(--bp-semantic-spacing-micro-md, 8px); }
+.prod-total span { font: var(--ui-body-md-medium); color: var(--bp-theme-color-text-helper); }
+.prod-total b { font: var(--ui-body-md-semibold); color: var(--bp-theme-color-text-primary); }

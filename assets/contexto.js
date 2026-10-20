@@ -46,8 +46,8 @@
     finanzas: ['Mis finanzas', 'Pagar servicios', 'Transferir']
   };
   var PREGUNTAS = {
-    inicio: ['¿En qué se me va la plata?', '¿Cómo voy con mis metas?', '¿Cuánto más puedo ahorrar?'],
-    cuentas: ['¿Cuánto tengo en total?', '¿Me conviene un Ahorro Flexible?', '¿En qué se me va la plata?'],
+    inicio: ['¿En qué gasto más?', '¿Cómo voy con mis metas?', '¿Cuánto más puedo ahorrar?'],
+    cuentas: ['¿Cuánto tengo en total?', '¿Me conviene un Ahorro Flexible?', '¿En qué gasto más?'],
     tarjetas: ['¿Cuándo pago mi Mastercard?', 'Mis suscripciones', '¿Para cuántos viajes me alcanza la Movilidad?'],
     prestamos: ['¿Cuánto me falta del préstamo?', '¿Y si abono $ 500 extra?', '¿Me conviene el crédito preaprobado?'],
     inversiones: ['¿Qué hago cuando venza mi depósito?', '¿Cuánto ganaría si invierto $ 1.000?'],
@@ -64,6 +64,8 @@
     finanzas: ['Tu mes', '¿Qué quieres revisar de tu mes?']
   };
 
+  // Lo que el usuario apagó en Cuentas conectadas no se analiza
+  function on(id) { return !(window.Asistente && Asistente.included) || Asistente.included(id); }
   function insights(id) {
     var d = D(), top = subsTop(), r = [];
     if (id === 'tarjetas') {
@@ -73,15 +75,18 @@
     } else if (id === 'cuentas') {
       if (d) r.push({ icon: 'account_balance', t: T('Tienes {total} entre tus cuentas', { total: money(d.assets) }), s: T('El {pct} está en la corriente, que no gana intereses.', { pct: Math.round(CORRIENTE / d.assets * 100) + '%' }), q: '¿Me conviene un Ahorro Flexible?', c: T('Tienes {total} entre tus cuentas, pero el {pct} está en la corriente y no te genera nada. ¿Vemos cómo ponerlo a ganar?', { total: money(d.assets), pct: Math.round(CORRIENTE / d.assets * 100) + '%' }) });
       if (d) { var s = d.by[1], tc = Object.keys(s).filter(function (k) { return k[0] !== '_'; }).sort(function (a, b) { return s[b] - s[a]; })[0];
-        r.push({ icon: 'insights', t: T('En septiembre gastaste {monto}', { monto: money(s._spend) }), s: T('Lo que más se lleva es {cat}.', { cat: T(catName(tc)).toLowerCase() }), q: '¿En qué se me va la plata?', c: T('Este mes gastaste {monto} y lo que más se lleva es {cat}. ¿Quieres que lo revisemos juntos?', { monto: money(s._spend), cat: T(catName(tc)).toLowerCase() }) }); }
+        r.push({ icon: 'insights', t: T('En septiembre gastaste {monto}', { monto: money(s._spend) }), s: T('Lo que más se lleva es {cat}.', { cat: T(catName(tc)).toLowerCase() }), q: '¿En qué gasto más?', c: T('Este mes gastaste {monto} y lo que más se lleva es {cat}. ¿Quieres que lo revisemos juntos?', { monto: money(s._spend), cat: T(catName(tc)).toLowerCase() }) }); }
     } else if (id === 'prestamos') {
+      if (!on('prest1')) return r;
       r.push({ icon: 'event', t: T('Tu próxima cuota es de {cuota}', { cuota: money(LOAN.cuota) }), s: T('Vence el 15 de octubre. Llevas {n} de {de} cuotas.', { n: LOAN.n, de: LOAN.de }), q: '¿Cuánto me falta del préstamo?', c: T('Te recuerdo que tu próxima cuota es de {cuota} y vence el 15 de octubre. Ya llevas {n} de {de}, ¡vas muy bien!', { cuota: money(LOAN.cuota), n: LOAN.n, de: LOAN.de }) });
       r.push({ icon: 'request_quote', t: T('Tienes {monto} preaprobados', { monto: money(LOAN.pre) }), s: T('La cuota sería de unos {cuota} al mes. Mira si te alcanza antes de usarlo.', { cuota: money(cuotaDe(LOAN.pre, 36, LOAN.tasa)) }), q: '¿Me conviene el crédito preaprobado?', c: T('Tienes {monto} preaprobados. Antes de usarlos, te cuento que la cuota sería de unos {cuota} al mes.', { monto: money(LOAN.pre), cuota: money(cuotaDe(LOAN.pre, 36, LOAN.tasa)) }) });
       r.push({ icon: 'savings', t: T('Un abono de {monto} te ahorra {n} cuotas', { monto: money(500), n: Math.floor(500 / LOAN.cuota) }), s: T('Si te sobra algo este mes, abónalo a capital.'), q: '¿Y si abono $ 500 extra?', c: T('Si este mes te sobra algo, un abono de {monto} te ahorra {n} cuotas. ¿Te muestro cómo hacerlo?', { monto: money(500), n: Math.floor(500 / LOAN.cuota) }) });
     } else if (id === 'inversiones') {
+      if (!on('dep1')) return r;
       r.push({ icon: 'event', t: T('Tu depósito vence el 12 de noviembre'), s: T('Te deja {interes}. Decide antes si lo renuevas.', { interes: money(DEP.interes) }), q: '¿Qué hago cuando venza mi depósito?', c: T('Tu depósito vence el 12 de noviembre y te deja {interes}. Conviene que decidas antes si lo renuevas.', { interes: money(DEP.interes) }) });
       r.push({ icon: 'trending_up', t: T('Tienes {monto} sin ganar intereses', { monto: money(CORRIENTE) }), s: T('En un depósito al 7,25% ganarían unos {gana} al año.', { gana: money(CORRIENTE * DEP.tasa) }), q: '¿Cuánto ganaría si invierto $ 1.000?', c: T('Tienes {monto} quietos en la corriente. En un depósito al 7,25% ganarían unos {gana} al año.', { monto: money(CORRIENTE), gana: money(CORRIENTE * DEP.tasa) }) });
     } else if (id === 'seguros') {
+      if (!on('seg1')) return r;
       r.push({ icon: 'shield', t: T('Pagas {total} al mes en seguros', { total: money(SEG.vida + SEG.prot) }), s: T('Vida y protección de tarjetas.'), q: '¿Cuánto pago en seguros?', c: T('Entre vida y protección de tarjetas pagas {total} al mes. ¿Quieres saber qué te cubre cada uno?', { total: money(SEG.vida + SEG.prot) }) });
       r.push({ icon: 'verified_user', t: T('Tus tarjetas están protegidas contra fraude'), s: T('Si ves un cobro raro, repórtalo desde la tarjeta.'), q: '¿Qué cubren mis seguros?', c: T('Tus tarjetas están protegidas contra fraude. Si ves un cobro raro, me avisas y te ayudo a reportarlo.') });
     } else if (window.Asistente && Asistente.insights) {
@@ -110,6 +115,10 @@
   /* ---------- Respuestas por sección (reglas, sin IA) ---------- */
   function answer(s) {
     var d = D(), top = subsTop();
+    var off = function (id, nombre) { return on(id) ? null : { t: T('{nombre} no está en tu análisis. Si quieres que lo revise, inclúyelo en Cuentas conectadas.', { nombre: nombre }), s: ['¿Cuánto debo en mi tarjeta?'] }; };
+    if (/prestamo|cuota|me falta/.test(s) && off('prest1', 'Tu préstamo')) return off('prest1', 'Tu préstamo');
+    if (/deposito|venza|vence|invert|invierto|ganaria|rendimiento/.test(s) && off('dep1', 'Tu depósito')) return off('dep1', 'Tu depósito');
+    if (/seguro|cubre|cobertura|prima/.test(s) && off('seg1', 'Tus seguros')) return off('seg1', 'Tus seguros');
     if (/mastercard|cuando pago|fecha (de|limite)|corte/.test(s)) {
       return { t: T('Tu Mastercard Black tiene <b>{deuda}</b> por pagar. La fecha límite es el 5 de noviembre: si pagas el total, no te cobran intereses.', { deuda: money(d ? d.debt : 0) }),
         s: ['¿Cuánto pago de intereses?', '¿Cuánto debo en mi tarjeta?'] };
