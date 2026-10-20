@@ -321,7 +321,7 @@
     --bp-layout-breakpoint: var(--bp-base-breakpoint-1024);
     --bp-layout-grid-columns: var(--bp-base-count-12);
     --bp-layout-grid-inset: var(--bp-base-dimension-24);
-    --bp-layout-grid-margin: var(--bp-base-dimension-24);
+    --bp-layout-grid-margin: var(--bp-base-dimension-40);
     --bp-layout-height-android: var(--bp-base-height-768);
     --bp-layout-height-ios: var(--bp-base-height-768);
   }
@@ -330,7 +330,7 @@
     --bp-layout-breakpoint: var(--bp-base-breakpoint-1280);
     --bp-layout-grid-columns: var(--bp-base-count-12);
     --bp-layout-grid-inset: var(--bp-base-dimension-24);
-    --bp-layout-grid-margin: var(--bp-base-dimension-24);
+    --bp-layout-grid-margin: var(--bp-base-dimension-40);
     --bp-layout-height-android: var(--bp-base-height-900);
     --bp-layout-height-ios: var(--bp-base-height-900);
   }
@@ -339,7 +339,7 @@
     --bp-layout-breakpoint: var(--bp-base-breakpoint-1366);
     --bp-layout-grid-columns: var(--bp-base-count-12);
     --bp-layout-grid-inset: var(--bp-base-dimension-24);
-    --bp-layout-grid-margin: var(--bp-base-dimension-24);
+    --bp-layout-grid-margin: var(--bp-base-dimension-40);
     --bp-layout-height-android: var(--bp-base-height-900);
     --bp-layout-height-ios: var(--bp-base-height-900);
   }
