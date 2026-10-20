@@ -65,7 +65,7 @@
       '<header class="uk-chathead"><button class="icon-button uk-chathead__x" data-k="cerrar" aria-label="Volver a su mundo">' + ic('expand_more') + '</button></header>' +
       // Sin menú: a Mis finanzas y Ayuda se llega por los accesos y las tarjetas; en las secciones hay flecha y título
       '<div class="uk-head"><button type="button" class="icon-button uk-back-btn" data-k="atras" aria-label="Volver">' + ic('arrow_back') + '</button>' +
-        '<p class="uk-head__t" role="heading" aria-level="1">Tu asistente</p></div>' +
+        '<p class="uk-head__t" role="heading" aria-level="1">Tu asistente</p><button type="button" class="icon-button uk-head__x" data-k="cerrar" aria-label="Cerrar">' + ic('close') + '</button></div>' +
       '<div class="uk-globo" aria-live="polite"></div>' +
       '<div class="uk-home" hidden></div>' +
       '<div class="uk-props" hidden></div>' +
@@ -78,6 +78,7 @@
         '<button type="button" class="uk-bar__mic uk-bar__add" data-k="escanear" aria-label="Tomar una foto de un QR o una factura">' + ic('photo_camera') + '</button>' +
         '<button type="button" class="uk-bar__mic" data-k="voz" aria-label="Hablar">' + ic('mic') + '</button>' +
         '<button type="button" class="uk-bar__mic uk-bar__cerrar" data-k="buscar:cerrar" aria-label="Cerrar la búsqueda">' + ic('close') + '</button>' +
+        '<button type="submit" class="uk-bar__send" aria-label="Enviar">' + ic('arrow_upward') + '</button>' +
         '</form>' +
       '<input type="file" accept="image/*" capture="environment" hidden>' +
       // Contenedor de las subsecciones: Mis finanzas (.pf-host) y Ayuda (.uk-ayuda-slot) viven aquí, dentro de Asistente
@@ -237,14 +238,14 @@
   // Soporte y Solicitudes: «Pregúntale a Uku» abre el chat con Uku listo para escuchar
   function charla() {
     seccion('uku'); msgs = []; pend = null; agente = null;
-    uku('Cuéntame qué necesitas con tus palabras y te ayudo. Si es un inconveniente, dime qué pasó.', [], '', { title: 'Uku' });
+    uku('Cuéntame qué necesitas con tus palabras y te ayudo. Si es un inconveniente, dime qué pasó.');
     pintar(); setTimeout(function () { input.focus(); }, 400);
   }
   // Solicitudes vive dentro de Soporte: el seguimiento de tus casos y lo que puedes pedir
   function solHTML() {
     var fila = function (k, t, s) { return '<button class="sp-row uk-solrow" data-k="' + esc(k) + '" data-l="' + esc(t) + '"><span class="sp-row__main"><b>' + esc(t) + '</b>' + (s ? '<small>' + esc(s) + '</small>' : '') + '</span>' + ic('chevron_right') + '</button>'; };
     var h = '<section class="sp-sec uk-solsec" id="uk-solsec"><h2>Solicitudes</h2>';
-    if (casos.length) h += '<p class="sp-sec__sub">Tus casos</p><div class="sp-list">' + casos.slice(0, 3).map(function (x) { return fila('caso:' + x.id, 'Caso ' + x.id + ' · ' + x.t, x.como === 'agent' ? 'En revisión · respuesta en máximo 48 horas' : x.como === 'call' ? 'Abierto · llamaste al call center' : 'Te llamamos con el resumen'); }).join('') + '</div><p class="sp-sec__sub">Lo que puedes pedir</p>';
+    if (casos.length) h += '<p class="uk-sol__l">Tus casos</p><div class="sp-list">' + casos.slice(0, 3).map(function (x) { return fila('caso:' + x.id, 'Caso ' + x.id + ' · ' + x.t, x.como === 'agent' ? 'En revisión · respuesta en máximo 48 horas' : x.como === 'call' ? 'Abierto · llamaste al call center' : 'Te llamamos con el resumen'); }).join('') + '</div><p class="uk-sol__l">Lo que puedes pedir</p>';
     else h += '<p class="sp-sec__sub">No tienes casos abiertos. Lo que pidas desde aquí lo sigues en esta misma lista.</p>';
     h += '<div class="sp-list">' + fila('rev', 'Revisar un consumo que no reconoces', 'Pedimos la revisión por ti');
     ['Préstamos', 'Mis tarjetas', 'Seguridad'].forEach(function (l) { var a = accion(l); if (a) h += fila('act:' + l, l, 'Pedir o revisar'); });
