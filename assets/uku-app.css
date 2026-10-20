@@ -708,3 +708,8 @@ html.uk-chatting .uk.is-kb .uk-results, .uk.is-kb .uk-results { bottom: 80px; }
 .app-uku .uk:not(.is-chat) .uk-chathead { opacity: 1; pointer-events: none; }
 html.uk-chatting .uk:not(.is-chat) { padding-top: calc(60px + env(safe-area-inset-top, 0px)); } /* a pantalla completa, el chevron de arriba tiene su fila */
 .uk-top__svg { width: 24px; height: 24px; display: block; }
+
+/* ---------- Búsqueda universal: montos a la derecha, íconos solo en lo que es una acción ---------- */
+.uk-row__r { flex: 0 0 auto; font: var(--uk-body-semibold); font-variant-numeric: tabular-nums; color: var(--bp-theme-color-text-primary); }
+.uk-row__ic { flex: 0 0 32px; width: 32px; height: 32px; border-radius: var(--bp-semantic-radius-sm, 8px); }
+.uk-row__ic .material-symbols-rounded { font-size: 20px; }

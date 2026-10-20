@@ -243,21 +243,49 @@
 
   /* ---------- Escribiendo: resultados flotando sobre su mundo ---------- */
   // Una sugerencia: texto y, si hace falta, de qué tipo es; sin ícono (la lista ya dice qué es)
-  function fila(k, icon, t, s) {
-    return '<button class="uk-row" data-k="' + esc(k) + '" data-l="' + esc(t) + '"><span class="uk-row__t"><b>' + esc(t) + '</b>' + (s ? '<small>' + esc(s) + '</small>' : '') + '</span>' + ic('chevron_right') + '</button>';
+  function fila(k, icon, t, s, r) {
+    return '<button class="uk-row" data-k="' + esc(k) + '" data-l="' + esc(t) + '">' + (icon ? '<span class="uk-row__ic">' + ic(icon) + '</span>' : '') + '<span class="uk-row__t"><b>' + esc(t) + '</b>' + (s ? '<small>' + esc(s) + '</small>' : '') + '</span>' + (r ? '<span class="uk-row__r">' + esc(r) + '</span>' : ic('chevron_right')) + '</button>';
   }
   function texto(t) { return String(t || '').replace(/<br\s*\/?>/g, ' ').replace(/<[^>]+>/g, ''); }
+  /* ---------- Búsqueda universal mientras escribes ----------
+     Un solo lugar para encontrar lo que sea: la frase hecha acción («transferir 20 a maría»), tus
+     movimientos (por nombre o por monto), las personas con las que te mueves dinero, tu dinero, la
+     ayuda, las acciones y las pantallas de la app. Uku encabeza: siempre puedes preguntarle. */
+  var RES = { it: null, tx: [], per: [], app: [] };
   function pintarResultados() {
     var q = input.value.trim();
     if (!q) { results.innerHTML = ''; return; }
-    // Pocas sugerencias y buenas: con una sola palabra, la ayuda solo si está en el título de la pregunta
     var n = norm(q), ws = n.split(/\s+/).filter(Boolean), dinero = (DINERO.test(n) || (PLATA.test(n) && !HACER.test(n))) && resumen();
+    var esMonto = /^\$?\s*\d+([.,]\d{1,2})?$/.test(n);
+    RES.it = window.Buscador && Buscador.intent ? Buscador.intent(q) : null;
+    // «transferir 20 a kevin»: la persona sale de con quién te mueves dinero, no de una lista fija
+    if (RES.it && RES.it.action === 'Transferir dinero' && !RES.it.who && window.PFM && PFM.contactos) {
+      var quien = null; ws.filter(function (x) { return x.length > 2 && !/^(transfer|envi|mand|pasa|deposit|dinero|plata)/.test(x); }).some(function (x) { var c = PFM.contactos(x)[0]; if (c) { quien = c.n; return true; } return false; });
+      if (quien) { RES.it.who = quien; RES.it.name += ' a ' + quien; }
+    }
+    RES.tx = window.PFM && PFM.buscar ? PFM.buscar(q, esMonto ? 4 : 3) : [];
+    RES.per = !esMonto && ws[0] && ws[0].length > 2 && window.PFM && PFM.contactos ? PFM.contactos(ws[0]).slice(0, 2) : [];
+    RES.app = window.Buscador && Buscador.app ? Buscador.app(q).slice(0, 2) : [];
     var acts = acciones(q).slice(0, 2), H = ayuda(q, 4).filter(function (h) { return h.kind !== 'flow' && (ws.length > 1 || norm(h.t).indexOf(ws[0]) >= 0); }).slice(0, 2);
-    var html = fila('ask:' + q, null, 'Preguntarle a Uku', '“' + q + '”');
+    // Uku, primero: con lo que encontró, dice qué puede hacer con eso
+    var dice = RES.tx.length && esMonto ? 'Encontré ' + RES.tx.length + ' movimiento' + (RES.tx.length > 1 ? 's' : '') + ' por ese monto' : RES.tx.length ? 'Te cuento lo que veo de «' + q + '»' : RES.per.length ? 'Te digo cómo vas con ' + RES.per[0].n.split(' ')[0] : '“' + q + '”';
+    var html = fila('ask:' + q, null, 'Preguntarle a Uku', dice);
+    if (RES.it) html += '<p class="uk-results__l">Hacer ahora</p>' + fila('res:it', RES.it.icon, RES.it.name, 'Con los datos ya puestos');
     if (dinero) html += '<p class="uk-results__l">Tu dinero</p>' + fila('dinero', null, 'Cómo va mi dinero', 'Disponible, gastos y presupuesto');
+    if (RES.per.length) html += '<p class="uk-results__l">Personas</p>' + RES.per.map(function (x, i) { return fila('res:per:' + i, 'send_money', 'Transferir a ' + x.n, (x.veces === 1 ? '1 vez' : x.veces + ' veces') + ' · la última el ' + x.ultL); }).join('');
+    if (RES.tx.length) html += '<p class="uk-results__l">Movimientos</p>' + RES.tx.map(function (t, i) { return fila('res:tx:' + i, null, t.t, t.f + ' · ' + t.src, (t.m > 0 ? '+' : '−') + money(Math.abs(t.m))); }).join('');
     if (H.length) html += '<p class="uk-results__l">Ayuda</p>' + H.map(function (h) { return fila(h.kind + ':' + h.i, null, h.t, h.kind === 'tut' ? 'Tutorial' : ''); }).join('');
-    if (acts.length) html += '<p class="uk-results__l">Hacer</p>' + acts.map(function (a) { return fila('act:' + a.label, null, a.label, ''); }).join('');
+    if (acts.length) html += '<p class="uk-results__l">Hacer</p>' + acts.map(function (a) { return fila('act:' + a.label, iconoDe({ k: 'act:' + a.label, ic: a.icon }), a.label, ''); }).join('');
+    if (RES.app.length) html += '<p class="uk-results__l">En la app</p>' + RES.app.map(function (a, i) { return fila('res:app:' + i, null, a.label, a.sub || ''); }).join('');
     results.innerHTML = html;
+  }
+  // Lo que se tocó en los resultados: abrir el movimiento, transferir a la persona, la pantalla o la acción con datos
+  function resultado(v) {
+    var p = v.split(':');
+    if (p[0] === 'it' && RES.it) { salir(RES.it.name, true); return Buscador.atajo(RES.it); }
+    if (p[0] === 'tx') { var t = RES.tx[+p[1]]; if (!t) return; salir(t.t, true); seccion('fin'); return setTimeout(function () { PFM.key('tx:' + t.i); }, 200); }
+    if (p[0] === 'per') { var x = RES.per[+p[1]]; if (!x) return; salir('Transferir a ' + x.n, true); return Buscador.atajo({ action: 'Transferir dinero', icon: 'send_money', who: x.n, name: 'Transferir a ' + x.n }); }
+    if (p[0] === 'app') { var a = RES.app[+p[1]]; if (!a) return; salir(a.label, true); return Buscador.abrir(a.label); }
   }
 
   /* ---------- La conversación ----------
@@ -893,6 +921,7 @@
       case 'fl': { var fp = v.split(':'); return flujo(+fp[0], fp[1]); }
       case 'flow': return flujo(+v, 'ini', !enChat);
       case 'dinero': dinero(); return mostrar();
+      case 'res': return resultado(v);
       case 'voto': return votar(v);
       case 'ia': if (!enChat) me('Que Uku IA lo revise'); uku('Lo reviso…'); pintarChat(); return setTimeout(function () { msgs.pop(); iaResponde(v); }, 1400);
       case 'onb': if (v === 'fin') return onboardingFin(); return onboarding(+v);

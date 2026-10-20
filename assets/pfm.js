@@ -1665,7 +1665,28 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 
-  window.PFM = { open: open, paint: paint, world: worldSignals, toast: toast,
+  /* Para el buscador universal del asistente: movimientos por texto o por monto, y las personas con
+     las que te mueves dinero (transferencias), con cuántas veces y cuándo fue la última. */
+  function buscar(q, n) {
+    if (!DB) return [];
+    var k = norm(String(q || '').trim()); if (k.length < 2) return [];
+    var amt = /^\$?\s*\d+([.,]\d{1,2})?$/.test(k) ? parseFloat(k.replace(/[^\d.,]/g, '').replace(',', '.')) : null;
+    return rows().filter(function (r) { return amt != null ? Math.abs(Math.abs(r.m) - amt) < .005 : (norm(desc(r)).indexOf(k) >= 0 || (r.cp && norm(r.cp).indexOf(k) >= 0)); })
+      .sort(function (a, b) { return b.f.localeCompare(a.f); }).slice(0, n || 4)
+      .map(function (r) { var c = cls(r); return { i: r.i, t: desc(r), f: dshort(r.f), m: r.m, src: r.src.replace(/ Pichibank/, ''), cat: c.cat || null, k: c.k }; });
+  }
+  function contactos(q) {
+    if (!DB) return [];
+    var k = norm(String(q || '').trim()), by = {};
+    rows().forEach(function (r) {
+      if (!/persona/i.test(r.c || '') || !r.cp || /^tú/i.test(r.cp) || /\b(s\.?a\.?|c[ií]a\.?|cci|ltda|corp|s\.a\.s)\b/i.test(r.cp)) return; // transferencias e ingresos de personas (no empresas)
+      var x = by[r.cp] || (by[r.cp] = { n: r.cp, veces: 0, ult: r.f, enviado: 0 });
+      x.veces++; if (r.f > x.ult) x.ult = r.f; if (r.m < 0) x.enviado += -r.m;
+    });
+    return Object.keys(by).map(function (n) { var x = by[n]; x.ultL = dshort(x.ult); return x; })
+      .filter(function (x) { return !k || norm(x.n).indexOf(k) >= 0; }).sort(function (a, b) { return b.veces - a.veces; }).slice(0, 4);
+  }
+  window.PFM = { open: open, paint: paint, world: worldSignals, toast: toast, buscar: buscar, contactos: contactos,
     // Para la versión asistente: los consejos de Uku y un resumen de tu dinero
     advice: function () { return DB ? consejos() : []; },
     summary: function () { if (!DB) return null; var s = month(curMes()), a = animo(); return { nombre: nombre(), saldo: sumv(saldos(), function (x) { return x.v; }), gast: s.gast, pres: pres().general, mes: mesName(curMes()), n: a.n, mood: a.k, moodL: T(MOOD[a.k]), moodIc: MOOD_IC[a.k], score: salud(curMes()), bloom: flores() }; }, settings: function () { if (DB) whoSheet(); }, pack: pack, answer: answer, key: key, ready: function () { return !!DB; },
