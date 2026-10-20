@@ -395,9 +395,12 @@
     var cambio = conectado !== en;
     en = conectado;
     document.body.classList.toggle('sin-red', !en);
-    var aviso = document.getElementById('login-offline');
-    if (aviso) aviso.hidden = en;
     if (cambio) document.dispatchEvent(new CustomEvent('red:cambio', { detail: en }));
+    // Al perder la conexión en el login, se avisa con un alert
+    var enLogin = document.getElementById('login-screen');
+    if (cambio && !en && enLogin && enLogin.classList.contains('active')) {
+      alert('Sin internet. Conéctate a una red Wi-Fi o datos para usar todas las funciones.');
+    }
   }
   function sonda() {
     if (!navigator.onLine) return pintarRed(false);
