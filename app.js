@@ -84,11 +84,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Sin internet solo entra con Face ID o huella: sin ellas, el botón principal se apaga
   const pintarEtiqueta = () => {
     if (!btnLoginBiometric || window.__authBusy) return;
-    btnLoginBiometric.disabled = !navigator.onLine && !platformOk;
+    btnLoginBiometric.disabled = !window.Ingreso.enLinea() && !platformOk;
     btnLoginBiometric.textContent = btnLoginBiometric.disabled ? 'Sin internet' : window.Ingreso.etiqueta(platformOk);
   };
-  window.addEventListener('online', pintarEtiqueta);
-  window.addEventListener('offline', pintarEtiqueta);
+  document.addEventListener('red:cambio', pintarEtiqueta);
   if (auth && auth.supported) auth.platformAvailable().then(ok => { platformOk = ok; pintarEtiqueta(); });
   pintarEtiqueta();
 
