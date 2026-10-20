@@ -166,3 +166,16 @@
   40%, 80% { transform: translateX(8px); }
 }
 .ing .sacudir { animation: ing-sacudir .36s ease; }
+
+/* Bottom sheets del login (Mostrar mi QR, Clave digital, Ayuda, Tickets) */
+.ing-hoja { max-height: 86vh; }
+.ing-hoja__titulo { margin: 0 0 16px; font-size: 20px; line-height: 26px; font-weight: 700; color: var(--bp-theme-color-text-primary); }
+.ing-hoja__body { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-macro-sm, 16px); }
+.ing-qr { display: flex; justify-content: center; padding: 8px 0; }
+.ing-qr svg { width: 240px; height: 240px; }
+.ing-ticket { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md, 8px); padding: 16px; border-radius: 16px; background: var(--bp-theme-color-surface-container-default, #fff); }
+.ing-ticket > .material-symbols-rounded { color: #0f265c; }
+.ing-ticket__texto { display: flex; flex-direction: column; gap: 4px; }
+.ing-ticket__nombre { margin: 0; font-size: 16px; font-weight: 600; color: var(--bp-theme-color-text-primary); }
+.ing-ayuda__fila { display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 16px; border: 0; border-radius: 16px; background: var(--bp-theme-color-surface-container-default, #fff); color: var(--bp-theme-color-text-primary); font: inherit; font-size: 16px; font-weight: 500; text-align: left; cursor: pointer; }
+.ing-ayuda__fila > .material-symbols-rounded { color: #0f265c; }
