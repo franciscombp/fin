@@ -80,6 +80,43 @@ Usar siempre los tokens, nunca valores fijos:
 - Iconos: si no existe en Material Symbols (por ejemplo `leaf_spark`), se dibuja un SVG del mismo trazo
   en `ic()` de `assets/uku-util.js`. No se usa el nombre como texto.
 
+### 5.1 Patrón de pantalla: el estilo de la app es el de Perfil
+
+Toda pantalla y toda hoja se arma igual que Perfil. Es el acuerdo de coherencia: mismo esqueleto,
+mismos tokens, nada inventado por pantalla.
+
+- **Fondo de página:** `--bp-theme-color-surface-page-alt` (gris claro). Las tarjetas van sobre ese gris.
+- **Márgenes laterales:** `--bp-layout-grid-margin` (16). Nada pegado al borde, nada con doble margen.
+- **Título de pantalla:** `view-title` (como «Perfil»). En las hojas, el título va en la cabecera con la X al
+  mismo nivel (`title-sm`, color `text-primary`).
+- **Etiqueta de sección:** una línea en gris encima de cada tarjeta, en frase (nunca en mayúsculas):
+  `--ui-body-sm-medium` (14/20), color `--bp-theme-color-text-helper`, alto `--bp-semantic-size-interactive-xs`
+  (40) y 8 px (`micro-md`) hasta la tarjeta. Opcional: una segunda línea corta con el mismo gris y, a la
+  derecha, un enlace «Ver todo» en `--bp-theme-color-text-interactive`.
+- **Tarjeta (grupo de filas):** `--bp-theme-color-surface-container-default` (blanco), radio
+  `--bp-semantic-radius-md` (12), sin borde ni sombra, `overflow: hidden`. Entre tarjetas, 24 px
+  (8 de `padding-top` de la sección + 16 de `padding-bottom`).
+- **Fila:** `min-height` 64 (`--ui-row`), relleno `--bp-semantic-spacing-macro-md` (24) arriba y abajo por
+  `--bp-layout-card-padding` (16) a los lados, `gap` `--bp-semantic-spacing-micro-lg` (12). Divisor
+  `--bp-semantic-border-thin` con `--bp-theme-color-border-divider`; la última fila sin divisor.
+  Estados `--bp-interaction-row-bg`, `--hover` y `--active`.
+- **Icono de fila:** círculo de 40 (`--ui-ic`, radio `full`) con `--bp-theme-color-avatar-bg` y
+  `--bp-theme-color-avatar-fg`; icono de 24 (`--bp-semantic-size-icon-md`). Solo cuando identifica una
+  acción concreta (una pregunta frecuente va sin icono). La tarea de Uku lleva el círculo en azul acento.
+- **Textos de fila:** título `--ui-body-md-semibold` en `text-primary`; línea secundaria
+  `--ui-body-sm-regular` en `text-helper`; cifra a la derecha con el mismo peso del título y números
+  tabulares. Un solo renglón por título (elipsis).
+- **Cierre de fila:** chevron `--bp-semantic-size-icon-sm` en `--bp-theme-color-icon-secondary`, o un
+  switch si la fila es un ajuste.
+- **Bloque destacado** (aviso o héroe): tarjeta con radio `md`, texto en dos niveles y, si hay arte, a la
+  derecha; sin bordes. En Mis finanzas el héroe (cifra, barra, estado) va directo sobre el gris, sin tarjeta.
+- **Qué no hacer:** listas de texto sin tarjeta, etiquetas en mayúsculas, iconos en cada fila por decorar,
+  mosaicos o chips donde una fila resuelve, espaciados fuera de la escala 8/12/16/24/32.
+
+Dónde está aplicado: Perfil (`index.html`), las hojas de Mis finanzas (`hubHTML` en `assets/pfm.js`) y de
+Soporte (`ayudaHTML` en `assets/uku-app.js`), con las clases `.pfm-hub__*` y `.uk-ay__*` en
+`assets/uku-app.css`.
+
 ## 6. Buscador
 
 - Sin título ni subtítulo: la hoja es el campo, el micrófono, la cámara y "Cancelar".
