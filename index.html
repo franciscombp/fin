@@ -2375,6 +2375,7 @@
         html body.sin-sesion .pf-toast { z-index: 690; }
         /* Sin internet: solo entra con Face ID o huella y se ven los accesos que funcionan sin red */
         html body.sin-red #btn-login-other { display: none !important; }
+        .cta-dashed[hidden] { display: none !important; }
         html body.sin-red .quick-action[data-online-only]:disabled { opacity: .4; }
         #login-offline[hidden] { display: none; }
         /* El selector de idioma también se abre desde el login */
@@ -4333,7 +4334,7 @@
             <section class="section">
                 <div class="prod-hub" data-hub="Tarjetas" data-sin-titulo></div>
 
-                <button class="cta-dashed" data-action="Solicitar Débito Digital">
+                <button class="cta-dashed" data-action="Solicitar Débito Digital" data-ph="debito" hidden>
                     <span class="card-thumb card-thumb--ghost">
                         <span class="card-thumb__brand" translate="no">PICHI<br>BANK</span>
                         <span class="card-thumb__foot"><span class="card-thumb__visa">VISA</span></span>
@@ -4341,6 +4342,16 @@
                     <span class="cta-dashed__text">
                         Para todas tus compras y pagos por internet.
                         <span class="cta-dashed__link">Solicitar Débito Digital</span>
+                    </span>
+                </button>
+                <button class="cta-dashed" data-action="Solicitar tarjeta de crédito" data-ph="credito" hidden>
+                    <span class="card-thumb card-thumb--ghost">
+                        <span class="card-thumb__brand" translate="no">PICHI<br>BANK</span>
+                        <span class="card-thumb__foot"><span class="card-thumb__visa">VISA</span></span>
+                    </span>
+                    <span class="cta-dashed__text">
+                        Para comprar ahora y pagar después.
+                        <span class="cta-dashed__link">Solicitar tarjeta de crédito</span>
                     </span>
                 </button>
             </section>

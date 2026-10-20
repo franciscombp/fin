@@ -299,7 +299,7 @@
       secreto = aBase32(crypto.getRandomValues(new Uint8Array(20)));
       guardar(TOTP_KEY, secreto);
     }
-    abrir('Clave digital', function (cuerpo) {
+    hoja('Clave digital', function (cuerpo) {
       var codigo = h('p', { class: 'ing__codigo', text: '··· ···' });
       var barra = h('div', { class: 'ing__barra' }, [h('i')]);
       var cuenta = h('p', { class: 'ing__texto' });
@@ -427,6 +427,194 @@
     if (typeof showToast === 'function') showToast('Sin internet: esta función necesita conexión');
   }, true);
   setInterval(sonda, 30000);
+
+  /* ---------- Bottom sheets del login (no piden ingreso) ---------- */
+  var hojaEl = null, hojaBk = null;
+  function hoja(titulo, pintar) {
+    if (!hojaEl) {
+      hojaBk = h('div', { class: 'as-sheet-back' });
+      hojaEl = h('div', { class: 'as-sheet ing-hoja', role: 'dialog', 'aria-labelledby': 'ing-hoja-titulo' }, [
+        h('div', { class: 'as-sheet__handle' }),
+        h('h3', { class: 'ing-hoja__titulo', id: 'ing-hoja-titulo' }),
+        h('div', { class: 'ing-hoja__body' })
+      ]);
+      hojaBk.addEventListener('click', cerrarHoja);
+      document.body.appendChild(hojaBk);
+      document.body.appendChild(hojaEl);
+    }
+    if (limpiar) { limpiar(); limpiar = null; }
+    hojaEl.querySelector('#ing-hoja-titulo').textContent = titulo;
+    var cuerpo = hojaEl.querySelector('.ing-hoja__body');
+    cuerpo.textContent = '';
+    pintar(cuerpo);
+    hojaBk.classList.add('open');
+    hojaEl.classList.add('open');
+  }
+  function cerrarHoja() {
+    if (limpiar) { limpiar(); limpiar = null; }
+    if (hojaEl) { hojaEl.classList.remove('open'); hojaBk.classList.remove('open'); }
+  }
+
+  // El QR de demostración lo arma index.html (FAKE_QR_SVG); si no está, no se muestra nada
+  function mostrarQR(cuerpo) {
+    cuerpo.append(
+      h('div', { class: 'ing-qr' }),
+      h('p', { class: 'ing__texto', text: 'Muéstralo para que te paguen desde cualquier banco.' })
+    );
+    cuerpo.querySelector('.ing-qr').innerHTML = typeof FAKE_QR_SVG === 'string' ? FAKE_QR_SVG : '';
+  }
+
+  // Tickets de transporte ya comprados: se muestran sin internet (demo local)
+  var TICKETS_DEMO = [
+    { nombre: 'Metro de Quito', detalle: 'Pase de 5 viajes · 3 disponibles' },
+    { nombre: 'Bus urbano', detalle: 'Viaje sencillo · usado' }
+  ];
+  function mostrarTickets(cuerpo) {
+    var tickets = JSON.parse(leer('pb_tickets') || 'null') || TICKETS_DEMO;
+    if (!tickets.length) { cuerpo.append(h('p', { class: 'ing__texto', text: 'Aún no tienes tickets comprados.' })); return; }
+    tickets.forEach(function (t) {
+      cuerpo.append(h('div', { class: 'ing-ticket' }, [
+        h('span', { class: 'material-symbols-rounded', text: 'directions_transit', 'aria-hidden': 'true' }),
+        h('div', { class: 'ing-ticket__texto' }, [
+          h('p', { class: 'ing-ticket__nombre', text: t.nombre }),
+          h('p', { class: 'ing__texto', text: t.detalle })
+        ])
+      ]));
+    });
+  }
+
+  // Ayuda: lo que se hace sin ingresar, y los temas frecuentes; al tocar un tema se abre su respuesta
+  function fila(icono, texto, alTocar) {
+    var b = h('button', { class: 'ing-ayuda__fila', type: 'button' }, [
+      h('span', { class: 'material-symbols-rounded', text: icono, 'aria-hidden': 'true' }),
+      h('span', { text: texto })
+    ]);
+    b.addEventListener('click', alTocar);
+    return b;
+  }
+  function mostrarAyuda(cuerpo) {
+    cuerpo.append(h('p', { class: 'ing-hoja__seccion', text: 'Sin ingresar puedes' }));
+    cuerpo.append(fila('lock_reset', 'No puedo ingresar', function () { hoja('No puedo ingresar', mostrarNoPuedo); }));
+    cuerpo.append(fila('block', 'Bloquear mis tarjetas', function () { flujoBloqueo(FLUJOS.propio); }));
+    cuerpo.append(fila('emergency', 'Me robaron el celular', function () { flujoBloqueo(FLUJOS.robo); }));
+    cuerpo.append(fila('group', 'Ayudar a un amigo', function () { flujoBloqueo(FLUJOS.amigo); }));
+    cuerpo.append(h('p', { class: 'ing-hoja__seccion', text: 'Preguntas frecuentes' }));
+    var temas = window.Soporte && Soporte.faqs ? Soporte.faqs(5) : [];
+    temas.forEach(function (t) {
+      cuerpo.append(fila(t.icon || 'help', t.t, function () { cerrarHoja(); if (window.Soporte) Soporte.openFaq(t.i); }));
+    });
+    var centro = h('button', { class: 'login-button login-button--tertiary', type: 'button', text: 'Centro de ayuda' });
+    centro.addEventListener('click', function () { cerrarHoja(); if (window.Soporte) Soporte.open(); });
+    cuerpo.append(centro);
+  }
+
+  // No puedo ingresar: las salidas del ingreso (recuperar, clave) y el caso del celular
+  function mostrarNoPuedo(cuerpo) {
+    cuerpo.append(
+      fila('person_search', 'Recuperar usuario y contraseña', function () { cerrarHoja(); recuperar(); }),
+      fila('password', 'Ingresar con usuario y contraseña', function () { cerrarHoja(); clave(''); }),
+      fila('block', 'Bloquear mis tarjetas', function () { flujoBloqueo(FLUJOS.propio); }),
+      h('button', { class: 'login-button login-button--tertiary', type: 'button', text: 'Volver a ayuda', 'data-ing-volver-ayuda': '' })
+    );
+    cuerpo.querySelector('[data-ing-volver-ayuda]').addEventListener('click', function () { hoja('Ayuda', mostrarAyuda); });
+  }
+
+  // Bloqueo con cédula y verificación facial (demostración: el rostro no se compara con un registro real)
+  var FLUJOS = {
+    propio: { titulo: 'Bloquear mis tarjetas', tipo: 'propio',
+      intro: 'Necesitamos tu cédula y confirmar con tu rostro. Luego bloqueamos tus tarjetas.',
+      rostro: 'Confirma que eres tú mirando la cámara.', confirma: 'Vas a bloquear tus tarjetas.', final: 'Listo. Tus tarjetas están bloqueadas.' },
+    robo: { titulo: 'Me robaron el celular', tipo: 'robo',
+      intro: 'Bloqueamos tus tarjetas y el acceso a la app. Necesitamos tu cédula y confirmar con tu rostro.',
+      rostro: 'Confirma que eres tú mirando la cámara.', confirma: 'Vas a bloquear tus tarjetas y el acceso a la app.', final: 'Listo. Bloqueamos tus tarjetas y tu acceso. Cuando recuperes tu celular, ingresa con tu usuario y contraseña.' },
+    amigo: { titulo: 'Ayudar a un amigo', tipo: 'amigo', paraAmigo: true,
+      intro: 'Si a tu amigo le robaron el celular, bloqueamos sus tarjetas. Pide su cédula y que confirme con su rostro.',
+      rostro: 'Tu amigo debe mirar la cámara para confirmar que es él.', confirma: 'Vas a bloquear las tarjetas de tu amigo.', final: 'Listo. Bloqueamos las tarjetas de tu amigo.' }
+  };
+
+  // Cédula ecuatoriana: 10 dígitos, provincia 01-24, tercer dígito menor que 6 y verificador (módulo 10)
+  function cedulaValida(c) {
+    if (!/^\d{10}$/.test(c)) return false;
+    var prov = +c.slice(0, 2);
+    if (prov < 1 || prov > 24 || +c[2] >= 6) return false;
+    var s = 0;
+    for (var i = 0; i < 9; i++) { var d = +c[i] * (i % 2 === 0 ? 2 : 1); s += d > 9 ? d - 9 : d; }
+    return (10 - s % 10) % 10 === +c[9];
+  }
+
+  function flujoBloqueo(f) {
+    var cedula = '';
+    function paso1(c) {
+      var campo = h('input', { class: 'ing__campo', type: 'text', inputmode: 'numeric', maxlength: '10', placeholder: f.paraAmigo ? 'Cédula de tu amigo' : 'Tu cédula', 'aria-label': 'Cédula' });
+      var error = h('p', { class: 'ing__error', role: 'alert' });
+      var seguir = h('button', { class: 'login-button login-button--primary', type: 'button', text: 'Continuar' });
+      seguir.addEventListener('click', function () {
+        var v = campo.value.trim();
+        if (!cedulaValida(v)) { error.textContent = 'Revisa la cédula: tiene 10 números válidos.'; sacudir(campo); return; }
+        cedula = v; paso2(c);
+      });
+      c.append(h('p', { class: 'ing__texto', text: f.intro }), campo, error, seguir,
+        h('p', { class: 'ing__texto', text: 'Demo: cédula 1712345675' }),
+        h('button', { class: 'login-button login-button--tertiary', type: 'button', text: 'Volver a ayuda', 'data-ing-volver-ayuda': '' }));
+      c.querySelector('[data-ing-volver-ayuda]').addEventListener('click', function () { hoja('Ayuda', mostrarAyuda); });
+    }
+    function paso2(c) {
+      c.textContent = '';
+      var video = h('video', { class: 'ing-video', playsinline: '', muted: '' });
+      var stream = null;
+      var estado = h('p', { class: 'ing__texto', text: f.rostro });
+      var confirmar = h('button', { class: 'login-button login-button--primary', type: 'button', text: 'Confirmar mi rostro' });
+      function parar() { if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; } }
+      limpiar = parar;
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false }).then(function (s) {
+          stream = s; video.srcObject = s; video.play().catch(function () {});
+        }).catch(function () { estado.textContent = 'No pudimos abrir la cámara. Permite el acceso para continuar.'; });
+      } else {
+        estado.textContent = 'Este navegador no tiene cámara disponible para confirmar tu rostro.';
+      }
+      confirmar.addEventListener('click', function () { parar(); limpiar = null; paso3(c); });
+      c.append(h('p', { class: 'ing__texto', text: 'Verificación facial (demostración)' }), video, estado, confirmar,
+        h('button', { class: 'login-button login-button--tertiary', type: 'button', text: 'Volver a ayuda', 'data-ing-volver-ayuda': '' }));
+      c.querySelector('[data-ing-volver-ayuda]').addEventListener('click', function () { hoja('Ayuda', mostrarAyuda); });
+    }
+    function paso3(c) {
+      c.textContent = '';
+      c.append(
+        h('p', { class: 'ing__texto', text: f.confirma + ' Cédula ' + cedula.slice(0, 2) + '••••••' + cedula.slice(8) + '.' }),
+        h('button', { class: 'login-button login-button--primary', type: 'button', text: 'Bloquear', 'data-ing-bloquear': '' }),
+        h('button', { class: 'login-button login-button--tertiary', type: 'button', text: 'Cancelar', 'data-ing-volver-ayuda': '' })
+      );
+      c.querySelector('[data-ing-volver-ayuda]').addEventListener('click', function () { hoja('Ayuda', mostrarAyuda); });
+      c.querySelector('[data-ing-bloquear]').addEventListener('click', function () {
+        var reg = JSON.parse(leer('pb_bloqueos') || '[]');
+        reg.push({ tipo: f.tipo, fecha: new Date().toISOString(), cedula: cedula.slice(0, 2) + '••••••' + cedula.slice(8) });
+        guardar('pb_bloqueos', JSON.stringify(reg));
+        c.textContent = '';
+        c.append(h('p', { class: 'ing__texto', text: f.final }),
+          h('button', { class: 'login-button login-button--primary', type: 'button', text: 'Listo', 'data-ing-listo': '' }));
+        c.querySelector('[data-ing-listo]').addEventListener('click', cerrarHoja);
+      });
+    }
+    hoja(f.titulo, paso1);
+  }
+
+  // Accesos del login que se abren como bottom sheet (no piden ingreso)
+  var HOJAS_LOGIN = {
+    'Cobrar con QR': function () { hoja('Mostrar mi QR', mostrarQR); },
+    'Clave digital': function () { token(); },
+    'Soporte': function () { hoja('Ayuda', mostrarAyuda); },
+    'Pagar transporte': function () { hoja('Tickets transporte', mostrarTickets); }
+  };
+  document.addEventListener('click', function (e) {
+    var enLogin = document.getElementById('login-screen');
+    if (!enLogin || !enLogin.classList.contains('active')) return;
+    var el = e.target.closest && e.target.closest('[data-action]');
+    if (!el || !HOJAS_LOGIN[el.dataset.action]) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    HOJAS_LOGIN[el.dataset.action]();
+  }, true);
 
   /* ---------- Texto del botón principal ---------- */
   function nombreBiometria() {

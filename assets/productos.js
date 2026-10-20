@@ -55,6 +55,12 @@
     // Sin ningún producto en el hub: hero. Con productos, los grupos vacíos muestran su placeholder
     var con = data.grupos.some(function (g) { return g.filas.length; });
     el.innerHTML = con ? bloques(data.grupos, el.hasAttribute('data-sin-titulo'), data.total) : hero(data.hero);
+    // Placeholders de la pantalla de Tarjetas (débito y crédito) según lo que tiene la persona
+    if (el.dataset.hub === 'Tarjetas') {
+      var ph = function (k, oculto) { var n = document.querySelector('[data-ph="' + k + '"]'); if (n) n.hidden = oculto; };
+      ph('debito', !!data.sinDebito === false);
+      ph('credito', !!data.sinCredito === false);
+    }
   }
 
   // Cada hub: sus grupos, su total y su hero para la persona activa
@@ -84,13 +90,21 @@
       });
     },
     Tarjetas: function (id) {
-      return Persona.deudas(id).then(function (ds) {
+      return Promise.all([Persona.deudas(id), Persona.cuentas(id), Persona.persona(id)]).then(function (r) {
+        var ds = r[0], cs = r[1], persona = r[2];
         var tj = ds.filter(function (d) { return d.clase === 'tarjeta'; });
         var mvp = function (d) { return String(d.en_mvp).indexOf('Sí') === 0; };
         var fila3 = function (d) { return { nombre: d.producto, sub: d.institucion, masked: ultimos(d.producto), monto: money(d.saldo), label: 'Saldo a pagar', ic: 'credit_card' }; };
+        // Débito: la cuenta transaccional, con su titular y los últimos dígitos
+        var trans = cs.filter(function (c) { return c.tipo === 'transaccional'; })[0];
+        var debito = trans ? [{ nombre: 'Débito Pichibank', sub: 'Titular: ' + (persona ? persona.nombre : ''), masked: '******' + trans.numero, monto: money(trans.saldo), label: 'Disponible', ic: 'account_balance_wallet' }] : [];
+        var creditos = tj.filter(mvp);
         return { grupos: [
-            { titulo: 'Pichibank', filas: tj.filter(mvp).map(fila3), ph: { t: 'Sin tarjetas de Pichibank. ', s: 'Pide una tarjeta desde Uku cuando la necesites.' } },
+            { titulo: 'Débito', filas: debito },
+            { titulo: 'Pichibank', filas: creditos.map(fila3) },
             { titulo: 'Otros bancos y tiendas', filas: tj.filter(function (d) { return !mvp(d); }).map(fila3) }],
+          // Los placeholders de débito y crédito de la pantalla solo aparecen si no hay ese producto
+          sinDebito: !debito.length, sinCredito: !creditos.length,
           hero: { ic: 'credit_card', t: 'Aún no tienes tarjetas', s: 'Pide una tarjeta Pichibank o registra una de otro banco con Uku.' } };
       });
     },
@@ -103,7 +117,7 @@
         var cob = ds.filter(function (d) { return d.clase === 'cobrar'; });
         return { grupos: [
             { titulo: 'Hipotecas', filas: hip.map(fila2) },
-            { titulo: 'Préstamos', filas: pre.map(fila2) },
+            { titulo: 'Personales', filas: pre.map(fila2) },
             { titulo: 'Por cobrar', filas: cob.map(function (d) { return { nombre: d.producto, sub: d.institucion, monto: money(d.saldo), label: 'Te deben', ic: ICO.cobrar }; }) }],
           total: { l: 'Saldo pendiente', v: suma(hip.concat(pre)), tras: 1 },
           hero: { ic: 'payments', t: 'Sin préstamos', s: 'Si necesitas dinero, Uku te muestra opciones según tu perfil.' } };

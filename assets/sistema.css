@@ -410,6 +410,12 @@ html:not(.theme-y2k) .nav-item.active, html:not(.theme-y2k) .nav-item[aria-curre
 html:not(.theme-y2k) .section { padding-top: var(--bp-semantic-spacing-micro-md) !important; padding-bottom: var(--bp-semantic-spacing-macro-sm) !important; }
 html:not(.theme-y2k) .tab-panel .section > * + * { margin-top: var(--bp-semantic-spacing-macro-sm); }
 html:not(.theme-y2k) .tab-panel .section > .section__title + * { margin-top: var(--bp-semantic-spacing-micro-md); }
+/* Espaciado normalizado de los hubs: cada bloque de la pestaña va separado 16 px del anterior
+   (el padding de la sección), sin márgenes ni padding extra por bloque */
+html:not(.theme-y2k) .tab-panel .section { padding-top: 0 !important; }
+html:not(.theme-y2k) .tab-panel .section > * { margin-bottom: 0 !important; }
+/* Las tarjetas del hub no dejan margen debajo: el espacio entre bloques lo da la sección */
+html:not(.theme-y2k) .tab-panel .prod-hub .card { margin-bottom: 0 !important; }
 
 /* Botón terciario del DS (login: "Otro método de ingreso"): mismo tamaño que el primario, sin
    fondo y con el texto subrayado en el azul de interacción. */
