@@ -290,19 +290,17 @@
      solo donde identifican una acción, mosaicos para lo que puedes pedir y chips para los temas ---------- */
   function ayudaHTML() {
     var S = window.Soporte || {}, fl = S.flows ? S.flows() : [], fq = S.faqs ? S.faqs() : [], ct = S.cats ? S.cats() : [], tu = S.tuts ? S.tuts() : [];
-    var sec = function (id, t, sub, body) { return '<section class="uk-ay__sec"' + (id ? ' id="' + id + '"' : '') + '><div class="uk-ay__head"><h2 class="uk-ay__t">' + esc(t) + '</h2>' + (sub ? '<p class="uk-ay__sub">' + esc(sub) + '</p>' : '') + '</div>' + body + '</section>'; };
-    var fila = function (attr, icon, t, sm, cls) { return '<button class="uk-ay__row' + (cls ? ' ' + cls : '') + '" ' + attr + ' data-l="' + esc(t) + '">' + (icon ? '<span class="uk-ay__ic material-symbols-rounded" aria-hidden="true">' + icon + '</span>' : '') + '<span class="uk-ay__main"><b>' + esc(t) + '</b>' + (sm ? '<small>' + esc(sm) + '</small>' : '') + '</span>' + ic('chevron_right') + '</button>'; };
-    var lista = function (rows) { return '<div class="uk-ay__list">' + rows.join('') + '</div>'; };
-    // Solicitudes: tus casos (si hay) y lo que puedes pedir, a un toque
+    // Patrón de la app (como Perfil): etiqueta de sección en gris y debajo una tarjeta blanca con filas de 64 px
+    var sec = function (id, t, sub, rows) { return '<section class="uk-ay__sec"' + (id ? ' id="' + id + '"' : '') + '><div class="uk-ay__label"><div><h2>' + esc(t) + '</h2>' + (sub ? '<p>' + esc(sub) + '</p>' : '') + '</div></div><div class="uk-ay__card">' + rows.join('') + '</div></section>'; };
+    var fila = function (attr, icon, t, sm, cls) { return '<button class="uk-ay__row' + (cls ? ' ' + cls : '') + '" ' + attr + ' data-l="' + esc(t) + '">' + (icon ? '<span class="uk-ay__ic"><span class="material-symbols-rounded" aria-hidden="true">' + icon + '</span></span>' : '') + '<span class="uk-ay__main"><b>' + esc(t) + '</b>' + (sm ? '<small>' + esc(sm) + '</small>' : '') + '</span>' + ic('chevron_right') + '</button>'; };
     var cs = casos.slice(0, 3).map(function (x) { return fila('data-k="caso:' + x.id + '"', 'pending_actions', 'Caso ' + x.id + ' · ' + x.t, x.como === 'agent' ? 'En revisión · respuesta en máximo 48 horas' : x.como === 'call' ? 'Abierto · llamaste al call center' : 'Te llamamos con el resumen', 'uk-solrow'); });
-    var pedir = [['rev', 'receipt_long', 'Revisar un consumo'], ['act:Préstamos', 'request_quote', 'Préstamos'], ['act:Mis tarjetas', 'credit_card', 'Mis tarjetas'], ['act:Seguridad', 'lock', 'Seguridad']]
-      .filter(function (x) { return x[0] === 'rev' || accion(x[2]); });
-    var tiles = '<div class="uk-ay__tiles">' + pedir.map(function (x) { return '<button class="uk-ay__tile" data-k="' + x[0] + '" data-l="' + esc(x[2]) + '"><span class="uk-ay__ic material-symbols-rounded" aria-hidden="true">' + x[1] + '</span><b>' + esc(x[2]) + '</b></button>'; }).join('') + '</div>';
-    var h = sec('uk-solsec', 'Solicitudes', cs.length ? 'Tus casos abiertos y lo que puedes pedir.' : 'No tienes casos abiertos. Lo que pidas desde aquí lo sigues en esta lista.', (cs.length ? lista(cs) : '') + tiles);
-    h += sec(null, 'Resolver un inconveniente', 'Uku te pregunta lo justo y te lleva a donde se arregla.', lista(fl.map(function (f) { return fila('data-sp="flow:' + f.i + '"', f.icon, f.t); })));
-    h += sec(null, 'Preguntas frecuentes', null, lista([0, 5, 6, 7, 13].filter(function (i) { return fq[i]; }).map(function (i) { return fila('data-sp="faq:' + i + '"', null, fq[i].t); })));
-    if (ct.length) h += sec(null, 'Temas', null, '<div class="uk-ay__chips">' + ct.map(function (c) { return '<button class="uk-ay__chip" data-sp="cat:' + c.id + '">' + esc(c.t) + '</button>'; }).join('') + '</div>');
-    if (tu.length) h += sec(null, 'Tutoriales', 'Paso a paso, en menos de dos minutos.', lista(tu.map(function (u) { return fila('data-sp="tut:' + u.i + '"', u.icon, u.t, u.pasos + ' pasos · ' + u.min + ' min'); })));
+    var pedir = [['rev', 'receipt_long', 'Revisar un consumo', 'Pedimos la revisión por ti'], ['act:Préstamos', 'request_quote', 'Préstamos', 'Pedir o revisar'], ['act:Mis tarjetas', 'credit_card', 'Mis tarjetas', 'Pedir o revisar'], ['act:Seguridad', 'lock', 'Seguridad', 'Pedir o revisar']]
+      .filter(function (x) { return x[0] === 'rev' || accion(x[2]); }).map(function (x) { return fila('data-k="' + x[0] + '"', x[1], x[2], x[3]); });
+    var h = sec('uk-solsec', 'Solicitudes', cs.length ? 'Tus casos abiertos y lo que puedes pedir' : 'No tienes casos abiertos. Lo que pidas desde aquí lo sigues en esta lista', cs.concat(pedir));
+    h += sec(null, 'Resolver un inconveniente', 'Uku te pregunta lo justo y te lleva a donde se arregla', fl.map(function (f) { return fila('data-sp="flow:' + f.i + '"', f.icon, f.t); }));
+    h += sec(null, 'Preguntas frecuentes', null, [0, 5, 6, 7, 13].filter(function (i) { return fq[i]; }).map(function (i) { return fila('data-sp="faq:' + i + '"', null, fq[i].t); }));
+    if (tu.length) h += sec(null, 'Tutoriales', 'Paso a paso, en menos de dos minutos', tu.map(function (u) { return fila('data-sp="tut:' + u.i + '"', u.icon, u.t, u.pasos + ' pasos · ' + u.min + ' min'); }));
+    if (ct.length) h += sec(null, 'Temas', null, ct.map(function (c) { return fila('data-sp="cat:' + c.id + '"', c.icon, c.t, c.n === 1 ? '1 tema' : c.n + ' temas'); }));
     return h;
   }
   function ocultarGlobo() { globoOff = true; globoEl.classList.add('is-off'); if (b3d && b3d.setFront) b3d.setFront(false); setTimeout(function () { if (globoOff) globoEl.hidden = true; reencuadrar(); }, 260); }

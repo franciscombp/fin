@@ -1479,37 +1479,39 @@
       (p ? '<div class="pfm-hub__bar" aria-hidden="true"><i class="' + cls + '" style="width:' + (u * 100).toFixed(1) + '%"></i></div>' : '') +
       '<p class="pfm-hub__s">' + estado + '</p></div>' +
       '<div class="pfm-hub__acts"><button class="pfm-hub__btn" data-pfm="gastos"><span class="material-symbols-rounded" aria-hidden="true">bar_chart</span>' + T('Gastos') + '</button><button class="pfm-hub__btn" data-pfm="pres"><span class="material-symbols-rounded" aria-hidden="true">tune</span>' + T('Presupuesto') + '</button></div>' +
-      (a.n ? '<button class="pfm-hub__task" data-pfm="game"><span class="pfm-hub__ic material-symbols-rounded" aria-hidden="true">category</span><span class="pfm-hub__pl"><b>' + T('Ordenar mis gastos') + '</b><small>' + T(a.n === 1 ? '1 consumo sin clasificar' : '{n} consumos sin clasificar', { n: a.n }) + '</small></span><span class="material-symbols-rounded pfm-hub__chev" aria-hidden="true">chevron_right</span></button>' : '') +
+      (a.n ? '<div class="pfm-hub__card"><button class="pfm-hub__row pfm-hub__task" data-pfm="game"><span class="pfm-hub__ic is-accent"><span class="material-symbols-rounded" aria-hidden="true">category</span></span><span class="pfm-hub__pl"><b>' + T('Ordenar mis gastos') + '</b><small>' + T(a.n === 1 ? '1 consumo sin clasificar' : '{n} consumos sin clasificar', { n: a.n }) + '</small></span><span class="material-symbols-rounded pfm-hub__chev" aria-hidden="true">chevron_right</span></button></div>' : '') +
       hubGruposHTML(s, m) + hubPagosHTML() + hubUltimosHTML() +
       '</section>';
   }
-  function hubHead(t, sub, k, l) { return '<div class="pfm-hub__head"><div><h3 class="pfm-hub__h">' + t + '</h3>' + (sub ? '<p class="pfm-hub__sub">' + sub + '</p>' : '') + '</div>' + (k ? '<button class="pfm-hub__link" data-pfm="' + k + '">' + l + '</button>' : '') + '</div>'; }
+  // Patrón de la app (como Perfil): etiqueta de sección en gris (con enlace a la derecha) y tarjeta blanca con filas
+  function hubSec(t, sub, k, l, rows) { return '<div class="pfm-hub__label"><div><h3>' + t + '</h3>' + (sub ? '<p>' + sub + '</p>' : '') + '</div>' + (k ? '<button class="pfm-hub__link" data-pfm="' + k + '">' + l + '</button>' : '') + '</div><div class="pfm-hub__card">' + rows.join('') + '</div>'; }
+  function hubRow(k, icon, t, sm, right, extra) { return '<button class="pfm-hub__row" data-pfm="' + k + '"><span class="pfm-hub__ic"><span class="material-symbols-rounded" aria-hidden="true">' + icon + '</span></span><span class="pfm-hub__pl"><b>' + t + '</b>' + (sm ? '<small>' + sm + '</small>' : '') + (extra || '') + '</span>' + right + '</button>'; }
   // Tus gastos por grupo: los tres que más pesan este mes, con su barra proporcional
   function hubGruposHTML(s, m) {
     var G = Object.keys(s.grupos || {}).filter(function (k) { return GRUPOS[k] && !GRUPOS[k].gris && s.grupos[k] > 0; })
       .sort(function (x, y) { return s.grupos[y] - s.grupos[x]; }).slice(0, 3);
     if (!G.length) return '';
     var max = s.grupos[G[0]];
-    return hubHead(T('Gastos por grupo'), T('Lo que más pesa en {mes}', { mes: mesName(m).toLowerCase() }), 'gastos', T('Ver todo')) + '<div class="pfm-hub__list">' + G.map(function (k) {
-      return '<button class="pfm-hub__row" data-pfm="gastos"><span class="pfm-hub__ic material-symbols-rounded" aria-hidden="true">' + GRUPOS[k].ic + '</span><span class="pfm-hub__pl"><b>' + esc(T(k)) + '</b><i class="pfm-hub__gbar" aria-hidden="true"><u style="width:' + (s.grupos[k] / max * 100).toFixed(0) + '%"></u></i></span><em>' + money0(s.grupos[k]) + '</em></button>';
-    }).join('') + '</div>';
+    return hubSec(T('Gastos por grupo'), T('Lo que más pesa en {mes}', { mes: mesName(m).toLowerCase() }), 'gastos', T('Ver todo'), G.map(function (k) {
+      return hubRow('gastos', GRUPOS[k].ic, esc(T(k)), null, '<em>' + money0(s.grupos[k]) + '</em>', '<i class="pfm-hub__gbar" aria-hidden="true"><u style="width:' + (s.grupos[k] / max * 100).toFixed(0) + '%"></u></i>');
+    }));
   }
   // Pagos que vienen en los próximos quince días
   function hubPagosHTML() {
     var fs = facturas().filter(function (x) { return diasA(x.f) >= 0 && diasA(x.f) <= 15; }).sort(function (x, y) { return x.f.localeCompare(y.f); }).slice(0, 3);
     if (!fs.length) return '';
-    return hubHead(T('Pagos que vienen'), T('En los próximos 15 días'), 'bills', T('Ver todos')) + '<div class="pfm-hub__list">' + fs.map(function (x) {
-      return '<button class="pfm-hub__row" data-pfm="bills"><span class="pfm-hub__ic material-symbols-rounded" aria-hidden="true">' + x.ic + '</span><span class="pfm-hub__pl"><b>' + esc(x.n) + '</b><small>' + cuandoTxt(x.f) + (x.aprox ? ' · ' + T('aproximado') : '') + '</small></span><em>' + money0(x.monto) + '</em></button>';
-    }).join('') + '</div>';
+    return hubSec(T('Pagos que vienen'), T('En los próximos 15 días'), 'bills', T('Ver todos'), fs.map(function (x) {
+      return hubRow('bills', x.ic, esc(x.n), cuandoTxt(x.f) + (x.aprox ? ' · ' + T('aproximado') : ''), '<em>' + money0(x.monto) + '</em>');
+    }));
   }
   // Los últimos tres movimientos, con acceso al detalle
   function hubUltimosHTML() {
     var R = rows().slice().sort(function (x, y) { return y.f.localeCompare(x.f) || y.i - x.i; }).slice(0, 3);
     if (!R.length) return '';
-    return hubHead(T('Últimos movimientos'), null, 'alltx', T('Ver todos')) + '<div class="pfm-hub__list">' + R.map(function (r) {
+    return hubSec(T('Últimos movimientos'), null, 'alltx', T('Ver todos'), R.map(function (r) {
       var c = cls(r), icon = (c.cat && CAT[c.cat]) || (r.m > 0 ? 'south_west' : 'receipt_long');
-      return '<button class="pfm-hub__row" data-pfm="tx:' + r.i + '"><span class="pfm-hub__ic material-symbols-rounded" aria-hidden="true">' + icon + '</span><span class="pfm-hub__pl"><b>' + esc(desc(r)) + '</b><small>' + dshort(r.f) + (c.cat ? ' · ' + esc(T(c.cat)) : '') + '</small></span><em' + (r.m > 0 ? ' class="is-in"' : '') + '>' + (r.m > 0 ? '+' : '−') + money0(Math.abs(r.m)) + '</em></button>';
-    }).join('') + '</div>';
+      return hubRow('tx:' + r.i, icon, esc(desc(r)), dshort(r.f) + (c.cat ? ' · ' + esc(T(c.cat)) : ''), '<em' + (r.m > 0 ? ' class="is-in"' : '') + '>' + (r.m > 0 ? '+' : '−') + money0(Math.abs(r.m)) + '</em>');
+    }));
   }
   function resumenGastosHTML() {
     var s = month(curMes()), pr = pres(), g = s.gast, p = pr.general;
