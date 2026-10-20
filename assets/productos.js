@@ -51,7 +51,20 @@
     });
     return out;
   }
+  // Cada producto de la persona tiene su página: se registra con los datos de su fila
+  function registrarDetalle(data) {
+    if (!window.ProductView || !ProductView.registrar) return;
+    data.grupos.forEach(function (g) {
+      g.filas.forEach(function (f) {
+        var rows = [['Institución', f.sub || 'Pichibank']];
+        if (f.masked) rows.push(['Número', f.masked]);
+        ProductView.registrar(f.nombre, { kind: f.nombre, label: f.label || 'Saldo', value: f.monto || '', sub: f.sub || '', acts: [], rows: rows, list: [], listTitle: '' });
+      });
+    });
+  }
+
   function pintarHub(el, data) {
+    registrarDetalle(data);
     // Sin ningún producto en el hub: hero. Con productos, los grupos vacíos muestran su placeholder
     var con = data.grupos.some(function (g) { return g.filas.length; });
     el.innerHTML = con ? bloques(data.grupos, el.hasAttribute('data-sin-titulo'), data.total) : hero(data.hero);

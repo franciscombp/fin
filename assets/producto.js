@@ -110,8 +110,10 @@
     '</div>';
   }
 
+  // Productos de cada persona (hubs): la página se arma con la fila que pintó el hub
+  var R = {};
   function html(title) {
-    var p = V[title];
+    var p = V[title] || R[title];
     if (!p) return A[title] ? accountHtml(A[title]) : '';
     return '<div class="pv">' +
       '<p class="pv-kind">' + p.kind + '</p>' +
@@ -141,5 +143,5 @@
     t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove('show'); }, 2400);
   });
 
-  window.ProductView = { has: function (t) { return !!V[t] || !!A[t]; }, isAccount: function (t) { return !!A[t]; }, title: function (t) { return A[t] ? A[t].title : t; }, html: html };
+  window.ProductView = { registrar: function (t, p) { R[t] = p; }, has: function (t) { return !!V[t] || !!A[t] || !!R[t]; }, isAccount: function (t) { return !!A[t]; }, title: function (t) { return A[t] ? A[t].title : t; }, html: html };
 })();
