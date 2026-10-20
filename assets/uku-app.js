@@ -70,6 +70,8 @@
         '<p class="uk-head__t" role="heading" aria-level="1">Tu asistente</p><button type="button" class="icon-button uk-head__x" data-k="cerrar" aria-label="Cerrar">' + ic('close') + '</button></div>' +
       '<div class="uk-globo" aria-live="polite"></div>' +
       '<div class="uk-home" hidden></div>' +
+      '<div class="uk-chips" hidden></div>' +
+      '<div class="uk-leyenda" hidden aria-hidden="true"></div>' +
       '<div class="uk-props" hidden></div>' +
       '<div class="uk-chat" aria-live="polite"></div>' +
       '<div class="uk-pills"></div>' +
@@ -118,7 +120,7 @@
     host.classList.toggle('is-chat', es);
     var fin = view.classList.contains('uk-fin'); host.classList.toggle('is-fin', fin);
     if (fin) pintarGlobo(); else if (es) { globoEl.hidden = true; }
-    if (homeEl && es) { homeEl.hidden = true; host.classList.remove('is-home'); }
+    if (homeEl && es) { homeEl.hidden = true; host.classList.remove('is-home'); if (chipsEl) chipsEl.hidden = true; }
     // Arriba: flecha para bajar el asistente en la pantalla inicial y su mundo; X en el chat y las secciones
     var xb = host.querySelector('.uk-chathead__x'); if (xb) { var icono = es ? 'close' : 'arrow_back'; if (xb.dataset.ic !== icono) { xb.dataset.ic = icono; xb.innerHTML = ic(icono); xb.setAttribute('aria-label', es ? 'Cerrar' : 'Volver'); xb.dataset.k = es ? 'cerrar' : 'salir'; } }
     if (es) host.classList.remove('is-buscar');
@@ -128,7 +130,7 @@
     // esquina junto a la barra (como Tolan): deja el espacio a las tarjetas sin irse
     if (b3d && era !== es) {
       var bg = host.querySelector('.uk-chatbg');
-      if (es) { var foto = b3d.snapshot(); bg.style.backgroundImage = foto ? 'url(' + foto + ')' : ''; }
+      if (es && !fin) { var foto = b3d.snapshot(); bg.style.backgroundImage = foto ? 'url(' + foto + ')' : ''; }
       b3d.setFocus(es && !fin); b3d.setShift(es && !fin ? -.3 : 0, es && !fin ? -.47 : 0);
       if (!es) setTimeout(function () { if (!msgs.length) bg.style.backgroundImage = ''; }, 500);
     }
@@ -138,7 +140,7 @@
       if (es && b3d) b3d.play(null); // en la conversación se queda quieto
     }
   }
-  function pintar() { modo(); pintarMundo(); pintarPropuestas(); pintarHome(); pintarGlobo(); pintarAccesos(); pintarChat(); pintarResultados(); }
+  function pintar() { modo(); pintarMundo(); pintarPropuestas(); pintarHome(); pintarGlobo(); pintarChips(); pintarAccesos(); pintarChat(); pintarResultados(); }
   // Lo que Uku te propone (antes en Mis finanzas): un carrusel arriba, con puntos y una acción por tarjeta
   function pintarPropuestas() {
       // Las propuestas viven en el globo: el carrusel ya no se usa
@@ -151,13 +153,14 @@
 
   /* El saludo depende del momento: la hora, si ya pasaste hoy, el día de la semana y lo que
      tienes pendiente. Una frase y, si hay algo que hacer, su acción. */
-  var VISTO = 'uk-visto', SAL = null;
+  var VISTO = 'uk-visto', SAL = null, primeraHoy = false;
   function saludo() {
     if (SAL) return SAL;
     var s = resumen(), A = consejos(), nombre = s && s.nombre ? s.nombre.split(' ')[0] : '';
     if (!s) return { t: 'Hola, soy Uku. ¿Vemos cómo vas hoy?', k: 'dinero', l: 'Ver cómo va mi dinero' }; // todavía sin tus datos: no se guarda
     var ahora = new Date(), h = ahora.getHours(), d = ahora.getDay(), antes = 0;
     try { antes = +localStorage.getItem(VISTO) || 0; localStorage.setItem(VISTO, String(ahora.getTime())); } catch (e) {}
+    primeraHoy = !antes || new Date(antes).toDateString() !== ahora.toDateString();
     var hoy = antes && new Date(antes).toDateString() === ahora.toDateString(), hace = (ahora.getTime() - antes) / 36e5;
     var n = nombre ? ', ' + nombre : '';
     var hola = hoy && hace > 1 ? 'Qué bueno verte otra vez' + n + '.' : hoy ? 'Hola otra vez' + n + '.'
@@ -183,25 +186,39 @@
     return consejos().map(function (x) { return { id: x.id, tag: x.tag, t: x.di || x.t, k: x.act ? 'pfm:' + x.act : 'prop:' + x.id, l: x.actl || 'Cuéntame', luego: 'pfm:luego:' + x.id, kind: x.kind }; }).concat(S);
   }
   function pintarGlobo() {
-    var fin = view.classList.contains('uk-fin');
-    if (!fin && !mundoOn && !host.classList.contains('is-onb')) { globoEl.hidden = true; return; } // en la pantalla inicial el saludo va en la cabecera
+    var fin = view.classList.contains('uk-fin'), home = host.classList.contains('is-home');
+    if (!fin && !home && !mundoOn && !host.classList.contains('is-onb')) { globoEl.hidden = true; return; }
     // En Mis finanzas, Uku recomienda: una cosa a la vez (pagos, orden, presupuesto, ahorro), con su acción
     var P = fin ? recomendaciones() : propuestas(), n = P.length, hola = !fin && !saludado && !nota, sal = hola ? saludo() : null, x = !hola && !nota && n ? P[gi % n] : null;
-    if (fin && !x) return globoFin();
-    var t = nota || (hola ? sal.t : x ? x.t : 'Todo está en orden por ahora. ¿Quieres hacer algo hoy?');
-    var go = hola ? sal : x ? { k: x.k, l: x.l } : null;
+    if (fin && !x && !nota) return globoFin();
+    // En el inicio, sin propuestas, Uku cuenta lo que ve en su mundo o propone ver la semana
+    var sinNada = null;
+    if (home && !hola && !nota && !x) { var W = window.PFM && PFM.world && resumen() ? PFM.world() : [], ok = W.filter(function (w) { return !/warn|over|pensativo/.test(w.cls || ''); })[0]; sinNada = ok ? { t: ok.d, k: 'gastos:sem', l: 'Ver mi semana' } : { t: 'Todo en orden. ¿Vemos tu semana?', k: 'gastos:sem', l: 'Ver mi semana' }; }
+    var t = nota || (hola ? sal.t : x ? x.t : sinNada ? sinNada.t : 'Todo está en orden por ahora. ¿Quieres hacer algo hoy?');
+    // En el inicio el nombre ya está en la cabecera: el globo no vuelve a saludar
+    if (home && hola) { t = t.replace(/^(hola|buen[oa]s (d[ií]as|tardes|noches))[^.?!]*[.?!]\s*/i, ''); t = t.charAt(0).toUpperCase() + t.slice(1); }
+    var go = hola ? sal : x ? { k: x.k, l: x.l } : sinNada ? sinNada : null;
     // Sin nada que decir (o en silencio), el globo se va y Uku se queda tranquilo
-    if (!hola && !nota && !x) { if (b3d) b3d.play('happy'); return ocultarGlobo(); }
+    if (!hola && !nota && !x && !sinNada) { if (b3d) b3d.play('happy'); return ocultarGlobo(); }
     globoOff = false; globoEl.hidden = false; globoEl.classList.remove('is-off');
-    if (b3d && b3d.setFront) b3d.setFront(true); // con algo que decir, Uku viene a primer plano
-    globoEl.innerHTML = '<button class="uk-globo__x" data-k="globo:cerrar" aria-label="Cerrar">' + ic('close') + '</button>' +
-      (x ? '<p class="uk-globo__tag">' + esc(x.tag) + '</p>' : '') + '<p class="uk-globo__t">' + esc(t) + '</p>' +
-      '<div class="uk-globo__acts">' + (go ? '<button class="btn btn--tertiary uk-globo__go" data-k="' + esc(go.k) + '" data-l="' + esc(go.l) + '">' + esc(go.l) + '</button>' : '') +
-      (x && x.luego ? '<button class="uk-globo__skip" data-k="' + esc(x.luego) + '" data-l="Ahora no">Ahora no</button>' : '') +
-      (hola && n ? '<button class="uk-globo__skip" data-k="siguiente" data-l="Qué me propones">Qué me propones</button>' : '') + '</div>' +
-      // Al pie: por dónde vas y la siguiente propuesta, separadas de la acción principal
-      (!hola && n > 1 ? '<div class="uk-globo__foot"><div class="uk-globo__dots">' + P.map(function (_, i) { return '<i' + (i === gi % n ? ' class="is-on"' : '') + '></i>'; }).join('') + '</div>' +
-        '<button class="uk-globo__next" data-k="siguiente" data-l="Siguiente">Siguiente' + ic('chevron_right') + '</button></div>' : '');
+    if (b3d && b3d.setFront) b3d.setFront(true); // con algo que decir, Uku te mira
+    var tag = x ? '<p class="uk-globo__tag">' + esc(x.tag) + '</p>' : '', txt = '<p class="uk-globo__t">' + esc(t) + '</p>';
+    var goBtn = go && !nota ? '<button class="btn btn--tertiary uk-globo__go" data-k="' + esc(go.k) + '" data-l="' + esc(go.l) + '">' + esc(go.l) + '</button>' : '';
+    if (home) {
+      // Inicio: una frase y un botón. Pasar a la siguiente propuesta es tocar a Uku.
+      globoEl.innerHTML = tag + txt + (goBtn ? '<div class="uk-globo__acts">' + goBtn + '</div>' : '');
+    } else if (fin) {
+      // Mis finanzas: la recomendación con su acción, «Ahora no» y los puntos (tocar a Uku o deslizar pasa a la siguiente)
+      globoEl.innerHTML = tag + txt + '<div class="uk-globo__acts">' + goBtn + (x && x.luego ? '<button class="uk-globo__skip" data-k="' + esc(x.luego) + '" data-l="Ahora no">Ahora no</button>' : '') + '</div>' +
+        (n > 1 ? '<div class="uk-globo__dots">' + P.map(function (_, i) { return '<i' + (i === gi % n ? ' class="is-on"' : '') + '></i>'; }).join('') + '</div>' : '');
+    } else {
+      globoEl.innerHTML = '<button class="uk-globo__x" data-k="globo:cerrar" aria-label="Cerrar">' + ic('close') + '</button>' + tag + txt +
+        '<div class="uk-globo__acts">' + goBtn +
+        (x && x.luego ? '<button class="uk-globo__skip" data-k="' + esc(x.luego) + '" data-l="Ahora no">Ahora no</button>' : '') +
+        (hola && n ? '<button class="uk-globo__skip" data-k="siguiente" data-l="Qué me propones">Qué me propones</button>' : '') + '</div>' +
+        (!hola && n > 1 ? '<div class="uk-globo__foot"><div class="uk-globo__dots">' + P.map(function (_, i) { return '<i' + (i === gi % n ? ' class="is-on"' : '') + '></i>'; }).join('') + '</div>' +
+          '<button class="uk-globo__next" data-k="siguiente" data-l="Siguiente">Siguiente' + ic('chevron_right') + '</button></div>' : '');
+    }
     globoEl.classList.remove('is-new'); void globoEl.offsetWidth; globoEl.classList.add('is-new');
     reencuadrar();
     // Uku hace lo que dice: saluda, habla, se preocupa o celebra según el mensaje
@@ -217,30 +234,43 @@
     host.classList.toggle('is-home', on); host.classList.toggle('is-mundo', !on && !msgs.length && !enSec && mundoOn);
     if (!on) { homeEl.hidden = true; return; }
     input.placeholder = '¿Qué buscas?';
-    var s = resumen(), sal = saludo(), P = propuestas(), nombre = s && s.nombre ? s.nombre.split(' ')[0] : '';
-    var rows = [{ k: sal.k, t: sal.l }];
-    P.forEach(function (x) { if (rows.length < 3 && !rows.some(function (r) { return r.k === x.k || r.t === x.l; })) rows.push({ k: x.k, t: x.l, tag: x.tag }); });
-    if (rows.length < 3) [{ k: 'dinero', t: 'Cómo va mi dinero' }, { k: 'ayudatoda', t: 'Resolver una duda' }].forEach(function (x) { if (rows.length < 3 && !rows.some(function (r) { return r.k === x.k; })) rows.push(x); });
+    var s = resumen(), nombre = s && s.nombre ? s.nombre.split(' ')[0] : '';
+    saludo(); // fija si es la primera visita del día
     homeEl.hidden = false;
-    homeEl.innerHTML = '<p class="uk-home__hola">' + esc(nombre ? 'Hola, ' + nombre : 'Hola') + '</p><p class="uk-home__q">¿En qué te ayudo?</p>' +
-      '<div class="uk-home__rows">' + rows.map(function (r, i) { return '<button class="uk-home__row" style="--d:' + i * 60 + 'ms" data-k="' + esc(r.k) + '" data-l="' + esc(r.t) + '"><span>' + (r.tag ? '<small>' + esc(r.tag) + '</small>' : '') + '<b>' + esc(r.t) + '</b></span>' + ic('chevron_right') + '</button>'; }).join('') + '</div>';
-    saludado = true;
+    // Un nombre, un oso, una frase (en su globo) y un botón: nada más compite
+    homeEl.innerHTML = '<p class="uk-home__hola">' + esc(nombre ? 'Hola, ' + nombre + '.' : 'Hola.') + '</p>' +
+      '<p class="uk-home__q">' + (primeraHoy ? 'Mi mundo cambia con tu dinero.' : '¿En qué te ayudo?') + '</p>';
+    pintarChips();
   }
   // Lo que Uku recomienda en Mis finanzas: sus consejos del PFM (pagos cercanos, por ordenar, presupuesto,
   // mesadas, ahorro) y, si no hay nada pendiente, lo que cuenta su mundo. Siempre en segunda persona.
   function recomendaciones() {
-    var A = consejos().map(function (x) { return { id: x.id, tag: x.tag, t: x.di || x.t, k: x.act ? 'pfm:' + x.act : 'prop:' + x.id, l: x.actl || 'Cuéntame', luego: 'pfm:luego:' + x.id, kind: x.kind }; });
+    var A = consejos().map(function (x) { return { id: x.id, tag: x.tag, t: x.t || x.di, k: x.act ? 'pfm:' + x.act : 'prop:' + x.id, l: x.actl || 'Cuéntame', luego: 'pfm:luego:' + x.id, kind: x.kind }; }); // la frase corta: el globo tiene dos líneas
     var W = window.PFM && PFM.world && resumen() ? PFM.world() : [];
     var S = W.filter(function (x) { return /warn|over|pensativo/.test(x.cls || ''); }).map(function (x) { return { id: 'mundo', tag: x.l, t: x.d, k: 'mundo', l: 'Ver mi mundo' }; });
     return A.concat(S);
   }
+  // Debajo de Uku, de 0 a 2 chips de pocas palabras con lo demás que propone (lo que ya dice el globo no se repite)
+  var chipsEl = null;
+  function pintarChips() {
+    if (!chipsEl) chipsEl = host.querySelector('.uk-chips');
+    if (!host.classList.contains('is-home')) { chipsEl.hidden = true; return; }
+    var P = propuestas(), n = P.length, enGlobo = !saludado ? saludo().k : (n ? P[gi % n].k : null);
+    var L = [];
+    P.forEach(function (x) { if (L.length < 2 && x.k !== enGlobo && !L.some(function (c) { return c.k === x.k || c.t === x.l; })) L.push({ k: x.k, t: x.l }); });
+    if (!L.length && saludado && n) L.push({ k: 'dinero', t: 'Cómo va mi dinero' });
+    chipsEl.hidden = !L.length;
+    chipsEl.innerHTML = L.map(function (c, i) { return '<button class="uk-chip-s" style="--d:' + (i * 60) + 'ms" data-k="' + esc(c.k) + '" data-l="' + esc(c.t) + '">' + esc(c.t) + '</button>'; }).join('');
+  }
   // En Mis finanzas sin nada pendiente, Uku te dice que vas bien (wireframe: «¡Vas muy bien!»)
   function globoFin() {
-    var s = resumen(), W = window.PFM && PFM.world && s ? PFM.world() : [], alerta = W.filter(function (x) { return /warn|over|pensativo/.test(x.cls || ''); })[0];
-    var t = !s ? 'Estoy mirando tus movimientos…' : alerta ? alerta.d : 'Vas muy bien. Tus gastos están al día y dentro de lo que planeaste.';
+    var s = resumen(), t = !s ? 'Estoy mirando tus movimientos…' : 'Nada pendiente por ahora. Tu mundo está en orden.';
     globoEl.hidden = false; globoEl.classList.remove('is-off');
     globoEl.innerHTML = '<p class="uk-globo__t">' + esc(t) + '</p>';
-    if (b3d) b3d.play(alerta ? 'worried' : 'happy');
+    globoEl.classList.remove('is-new'); void globoEl.offsetWidth; globoEl.classList.add('is-new');
+    reencuadrar();
+    // El mundo sigue vivo aunque no haya tarea: riega (si hay flores) y se va a pasear
+    if (b3d) { if (!s) b3d.play('talk'); else if (s.bloom > 0 && !RM) { b3d.play('water', { hold: 'can' }); setTimeout(function () { b3d.setAmbient('walk'); }, 3400); } else b3d.play('happy'); }
   }
   function buscar(on) {
     host.classList.toggle('is-buscar', !!on);
@@ -272,14 +302,51 @@
     if (s && s.n) L.push('Tienes ' + s.n + ' consumos por ordenar. ¿Los vemos juntos?');
     return L[Math.floor(Math.random() * L.length)];
   }
+  var pulso = 1;
+  function acercar(z, ms) { if (RM) return; pulso = z; reencuadrar(); clearTimeout(acercar.t); acercar.t = setTimeout(function () { pulso = 1; reencuadrar(); }, ms || 700); }
   function tocado() {
     fx('select'); if (b3d) b3d.play(POSES[Math.floor(Math.random() * POSES.length)]);
     if (msgs.length) return;
+    var fin = view.classList.contains('uk-fin'), home = host.classList.contains('is-home');
+    if (fin) { nota = null; leyenda(); return; } // en su mundo-dashboard, tocar enseña qué significa cada cosa
+    if (home) {
+      // Inicio: cada toque trae lo siguiente que tiene para decir, con un leve acercamiento (se inclina)
+      if (!saludado) saludado = true; else gi++;
+      nota = null; pintarGlobo(); pintarChips(); acercar(1.1, 700); return;
+    }
     var P = propuestas();
     if (!saludado) { saludado = true; nota = null; return pintarGlobo(); }
     if (P.length && (globoEl.hidden || Math.random() < .5)) { nota = null; gi++; return pintarGlobo(); }
     nota = frase(); pintarGlobo();
     clearTimeout(tocado.t); tocado.t = setTimeout(function () { if (nota) { nota = null; pintarGlobo(); } }, 6000);
+  }
+  /* ---------- Leyenda efímera del paisaje (Mis finanzas) ----------
+     Tres etiquetas junto a Uku: flores (ahorro), bosque (presupuesto) y él (orden). Nacen en su cabeza,
+     se quedan 2,5 s y se van. Tocar una hace que Uku lo explique y actúe (riega, planta, piensa). */
+  var leyendaEl = null;
+  function leyenda() {
+    if (!leyendaEl) leyendaEl = host.querySelector('.uk-leyenda');
+    var W = window.PFM && PFM.world && resumen() ? PFM.world() : []; if (W.length < 3 || !b3d || !b3d.head) return;
+    var H = b3d.head(); if (!H) return;
+    var R = host.getBoundingClientRect(), s = resumen();
+    var pt = function (cls) { return /warn|over|pensativo/.test(cls || '') ? 'is-warn' : /tranquilo/.test(cls || '') ? 'is-calm' : 'is-ok'; };
+    var items = [
+      { i: 1, t: 'Flores · ' + W[1].v.replace(/^Te alcanza /, 'ahorro '), cls: pt(W[1].cls), x: H.x + H.r + 10, y: H.y + H.r + 12 },
+      { i: 2, t: 'Bosque · ' + W[2].v.toLowerCase(), cls: pt(W[2].cls), x: H.x + H.r + 10, y: H.y - H.r - 36 },
+      { i: 0, t: 'Uku · ' + (s && s.n ? s.n + ' por ordenar' : 'todo en orden'), cls: pt(W[0].cls), x: H.x - 90, y: H.y - H.r - 44 }
+    ];
+    leyendaEl.hidden = false; leyendaEl.classList.remove('is-off');
+    leyendaEl.innerHTML = items.map(function (it, j) { var x = Math.max(8, Math.min(R.width - 150, it.x)), y = Math.max(8, it.y); return '<button class="uk-leyenda__chip ' + it.cls + '" style="--d:' + (j * 70) + 'ms; left:' + x.toFixed(0) + 'px; top:' + y.toFixed(0) + 'px" data-k="leyenda:' + it.i + '" data-l="' + esc(it.t) + '"><i></i>' + esc(it.t) + '</button>'; }).join('');
+    if (b3d) b3d.play('nod');
+    clearTimeout(leyenda.t); leyenda.t = setTimeout(function () { leyendaEl.classList.add('is-off'); setTimeout(function () { leyendaEl.hidden = true; }, 220); }, 2600);
+  }
+  function explicar(i) {
+    var W = window.PFM && PFM.world ? PFM.world() : []; if (!W[i]) return;
+    leyendaEl.classList.add('is-off'); setTimeout(function () { leyendaEl.hidden = true; }, 220);
+    nota = W[i].d; pintarGlobo();
+    if (b3d) b3d.play(i === 1 ? 'water' : i === 2 ? 'hold' : 'worried', i === 1 ? { hold: 'can' } : undefined);
+    acercar(1.25, 1200);
+    clearTimeout(explicar.t); explicar.t = setTimeout(function () { nota = null; pintarGlobo(); }, 6000);
   }
   /* ---------- Encuadre: que nunca le tapen la cara ----------
      Se mide lo que hay en pantalla (globo, propuestas, onboarding arriba; accesos y barra abajo) y se
@@ -293,28 +360,33 @@
     var top = 0, bot = hh;
     var abajo = function (el) { if (el && !el.hidden && el.offsetHeight && getComputedStyle(el).opacity !== '0') top = Math.max(top, el.getBoundingClientRect().bottom - R.top); };
     var arriba = function (el) { if (el && !el.hidden && el.offsetHeight && getComputedStyle(el).opacity !== '0') bot = Math.min(bot, el.getBoundingClientRect().top - R.top); };
+    var home = host.classList.contains('is-home');
     if (host.classList.contains('is-onb') && onbEl) abajo(onbEl);
-    else if (fin) { abajo(host.querySelector('.uk-chathead')); abajo(globoEl); arriba(panel); }
-    else if (host.classList.contains('is-home')) { abajo(host.querySelector('.uk-chathead')); arriba(pills); arriba(host.querySelector('.uk-bar')); }
+    else if (fin) { abajo(host.querySelector('.uk-chathead')); if (!host.classList.contains('is-up')) abajo(globoEl); arriba(panel); }
+    else if (home) { abajo(homeEl); abajo(globoEl); arriba(chipsEl); arriba(host.querySelector('.uk-bar')); arriba(pills); }
     else { abajo(globoEl); abajo(props); abajo(host.querySelector('.uk-head')); arriba(pills); arriba(host.querySelector('.uk-bar')); }
+    // Cada lugar tiene su encuadre: en el inicio Uku está cerca y a la derecha; en Mis finanzas la cámara
+    // retrocede y él queda a la izquierda, con más planeta a la vista; en su mundo, al centro
+    var base = (home ? 1.12 : fin ? .82 : 1) / pulso, sx = home ? .14 : fin ? -.18 : 0;
     var M = 12, band = bot - top - 2 * M, r = H.r, need = 2 * r + 24, zoom = H.zoom;
     if (band < need) zoom = Math.min(1.8, H.zoom * need / Math.max(40, band));
-    else if (H.zoom > 1 && band > need * 1.35) zoom = Math.max(1, H.zoom * need * 1.15 / band);
+    else if (band > need * 1.35) zoom = Math.max(base, Math.min(H.zoom, H.zoom * need * 1.15 / band));
+    if (zoom < base - .02 && band >= need) zoom = base;
     // La cara, en el tercio alto de la franja: el cuerpo sigue hacia abajo
     var target = top + M + Math.max(r + 8, band * .38);
     var y0 = H.y + hh * H.shiftY, sv = (y0 - target) / hh;
-    var sx = host.classList.contains("is-home") ? .3 : 0; // en la pantalla inicial, Uku de pie a la derecha de las sugerencias
     b3d.setShift(sx, Math.max(-.6, Math.min(.5, sv)));
     if (Math.abs(zoom - H.zoom) > .02) b3d.setZoom(zoom);
   }
   function reencuadrar() { clearTimeout(reencuadrar.t); reencuadrar.t = setTimeout(encuadrar, 60); clearTimeout(reencuadrar.t2); reencuadrar.t2 = setTimeout(encuadrar, 750); }
   // Los accesos: Mis finanzas, ordenar, consejos y ayuda, a un toque desde Uku
   function pintarAccesos() {
-    var s = resumen(), A = consejos(), p = function (k, icon, t, sub) { return '<button class="uk-pill" data-k="' + k + '" data-l="' + esc(t) + '">' + ic(icon) + '<span><b>' + esc(t) + '</b>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span></button>'; };
-    // Los accesos de Asistente: presupuesto, ayuda y solicitudes
-    pills.innerHTML = p('fin', 'monitoring', 'Mis finanzas', s ? money0(s.gast) + ' este mes' : 'Gastos y presupuesto') +
-      p('ayudatoda', 'help', 'Soporte', 'Preguntas y ayuda') +
-      p('sol', 'assignment', 'Solicitudes', 'Pedir o revisar');
+    var W = window.PFM && PFM.world && resumen() ? PFM.world() : [], pe = W[2] ? W[2].cls : null;
+    var p = function (k, icon, t, dot) { return '<button class="uk-pill" data-k="' + k + '" data-l="' + esc(t) + '">' + ic(icon) + '<b>' + esc(t) + '</b>' + (dot ? '<i class="uk-pill__dot ' + dot + '" aria-hidden="true"></i>' : '') + '</button>'; };
+    // Tres accesos = tres cosas que hace este lugar: ver tus datos, ayudarte con la app, pedir algo. Solo nombres.
+    pills.innerHTML = p('fin', 'monitoring', 'Mis finanzas', pe ? (/warn|over/.test(pe) ? 'is-warn' : 'is-ok') : '') +
+      p('ayudatoda', 'help', 'Soporte') +
+      p('sol', 'assignment', 'Solicitudes');
   }
 
   /* ---------- Escribiendo: resultados flotando sobre su mundo ---------- */
@@ -692,8 +764,10 @@
   function abrirAsistente() {
     var act = document.querySelector('.nav-item.active'); volverA = act && act.dataset.view != null ? +act.dataset.view : 0; if (volverA === 1) volverA = 0;
     fx('select'); if (window.__goView) __goView(1);
-    mundoOn = false; globoOff = false;
+    mundoOn = false; globoOff = false; saludado = false; nota = null;
+    host.classList.add('is-in'); clearTimeout(abrirAsistente.t); abrirAsistente.t = setTimeout(function () { host.classList.remove('is-in'); }, 1400);
     setTimeout(pintar, 60);
+    if (!RM) setTimeout(function () { if (b3d) b3d.play('wave'); }, 450);
   }
   function bienvenida() {
     if (msgs.length) return;
@@ -719,6 +793,7 @@
       msgs = []; pend = null; agente = null; mundoOn = false;
       if (solSec && !solSec.hidden) { solSec.hidden = true; host.classList.remove('uk-in-sec'); }
       seccion('uku'); pintar();
+      if (b3d && !RM) setTimeout(function () { b3d.play('happy'); }, 320);
     }, RM ? 0 : 220);
   }
   // Volver un paso: en la conversación, a la tarjeta anterior; en una sección, su flecha
@@ -749,7 +824,9 @@
       if (!g.dir) { if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return; g.dir = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y'; }
       if (g.globo) return;
       if (g.dir === 'y' && !g.cab) return; // el contenido se desplaza solo
-      if (g.dir === 'y' && dy < 0) return;
+      var fin = host.classList.contains('is-fin'), arriba = host.classList.contains('is-up');
+      if (g.dir === 'y' && dy < 0 && !(fin && !arriba)) return;
+      if (g.dir === 'y' && dy < 0) { g.on = true; g.el.classList.add('is-drag'); g.el.style.transform = 'translateY(' + Math.max(dy, -(g.el.getBoundingClientRect().top - host.getBoundingClientRect().top - 112)) + 'px)'; reencuadrar(); e.preventDefault(); return; }
       if (g.dir === 'x' && dx < 0) return;
       g.on = true; g.el.classList.add('is-drag'); g.el.style.transform = g.dir === 'y' ? 'translateY(' + dy + 'px)' : 'translateX(' + dx * .6 + 'px)';
       g.el.style.opacity = g.dir === 'x' ? String(Math.max(.4, 1 - dx / 300)) : '';
@@ -758,9 +835,18 @@
     function fin(e) {
       if (!g) return;
       var dx = e.clientX - g.x, dy = e.clientY - g.y, s = g; g = null;
-      if (s.globo) { if (dy < -40 && Math.abs(dx) < 60) { fx('select'); dinero(); mostrar(); } return; }
+      if (s.globo) {
+        if (host.classList.contains('is-fin') || host.classList.contains('is-home')) { if (dx < -40 && Math.abs(dy) < 60) { fx('tap'); if (!saludado) saludado = true; else gi++; nota = null; pintarGlobo(); pintarChips(); } else if (dx > 40 && Math.abs(dy) < 60 && gi > 0) { fx('tap'); gi--; nota = null; pintarGlobo(); pintarChips(); } return; }
+        if (dy < -40 && Math.abs(dx) < 60) { fx('select'); dinero(); mostrar(); } return;
+      }
       s.el.classList.remove('is-drag'); s.el.style.transform = ''; s.el.style.opacity = '';
       if (!s.on) return;
+      if (host.classList.contains('is-fin') && s.dir === 'y') {
+        var up = host.classList.contains('is-up');
+        if (dy < -60 && !up) { fx('select'); host.classList.add('is-up'); reencuadrar(); return; }
+        if (dy > 60 && up) { fx('tap'); host.classList.remove('is-up'); reencuadrar(); return; }
+        if (up) return;
+      }
       if (s.dir === 'y' && dy > 90) return cerrar();
       if (s.dir === 'x' && dx > 80) { fx('tap'); return atras(); }
     }
@@ -841,10 +927,42 @@
   function libre() { root.classList.toggle('uk-idle', view.classList.contains('active')); }
   function finOn(on) {
     view.classList.toggle('uk-fin', !!on); libre();
+    host.classList.remove('is-up');
     if (window.AppScroll) AppScroll.to({ top: 0 }); else window.scrollTo(0, 0);
-    if (on) { if (window.PFM) PFM.paint(); } else setTimeout(escena, 60);
+    if (on) {
+      if (b3d) b3d.play('nod');
+      host.classList.add('is-fin-in'); clearTimeout(finOn.t); finOn.t = setTimeout(function () { host.classList.remove('is-fin-in'); reencuadrar(); }, 900);
+      if (window.PFM) PFM.paint();
+      setTimeout(contarCifra, RM ? 0 : 380);
+    } else setTimeout(escena, 60);
     modo();
   }
+  // La cifra cuenta de 0 a su valor en 500 ms y Uku la mira (asiente)
+  function contarCifra() {
+    var el = panel && panel.querySelector('.pfm-hub__m'); if (!el) return;
+    var v = parseFloat(el.dataset.v || '0'), t0 = null, fin = el.textContent;
+    if (RM || !(v > 0)) return;
+    function paso(ts) { if (!t0) t0 = ts; var k = Math.min(1, (ts - t0) / 500), e = 1 - Math.pow(1 - k, 3); el.textContent = money(v * e); if (k < 1) requestAnimationFrame(paso); else { el.textContent = fin; if (b3d) b3d.play('nod'); } }
+    requestAnimationFrame(paso);
+  }
+  /* ---------- Lo que haces con tu dinero se ve en su mundo ----------
+     Guardar presupuesto: riega y crece el bosque. Ordenar un consumo: una flor más. Separar ahorro: planta. */
+  var floresExtra = 0;
+  document.addEventListener('uku:pres', function () {
+    if (!b3d) return; var s = resumen();
+    b3d.play('water', { hold: 'can' }); setTimeout(function () { if (s) b3d.setScore(s.score); }, 1200);
+    nota = 'Listo. Con presupuesto, el bosque crece.'; pintarGlobo(); setTimeout(function () { nota = null; pintarGlobo(); if (b3d) b3d.play('happy'); }, 5000);
+  });
+  document.addEventListener('uku:clasificado', function (e) {
+    if (!b3d) return; var s = resumen(), restan = e.detail && e.detail.restan;
+    floresExtra++; if (s) b3d.setBloom(Math.min(100, (s.bloom || 0) + floresExtra * 2));
+    if (restan === 0) { b3d.setMood('feliz'); b3d.play('happy'); nota = 'Ordenaste todo. Ya estoy contento otra vez.'; pintarGlobo(); setTimeout(function () { nota = null; pintarGlobo(); }, 5000); }
+  });
+  document.addEventListener('uku:ahorro', function () {
+    if (!b3d) return; var s = resumen();
+    b3d.play('hold'); setTimeout(function () { if (s) b3d.setBloom(Math.min(100, (s.bloom || 0) + 5)); }, 2000);
+    nota = 'Guardado. Cada mes, una flor más.'; pintarGlobo(); acercar(1.15, 2400); setTimeout(function () { nota = null; pintarGlobo(); }, 5000);
+  });
   // Las tres secciones de Asistente: Uku (su mundo y conversación), Mis finanzas y Ayuda
   function seccion(n) {
     var ayuda = n === 'ayuda';
@@ -1036,6 +1154,7 @@
       case 'onb': if (v === 'fin') return onboardingFin(); return onboarding(+v);
       case 'siguiente': fx('tap'); nota = null; if (saludado) gi++; saludado = true; return pintarGlobo();
       case 'globo': fx('tap'); saludado = true; nota = null; return ocultarGlobo();
+      case 'leyenda': fx('select'); return explicar(+v);
       case 'prop': return propuesta(v);
       case 'mundo': mundo(); return mostrar();
       case 'libre': return mundoLibre();

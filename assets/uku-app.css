@@ -768,7 +768,7 @@ html.uk-chatting .uk:not(.is-chat) { padding-top: calc(60px + env(safe-area-inse
 .uk-cta { padding: 20px 0 8px; }
 .uk-cta .pf-cta { margin: 0; width: 100%; }
 /* --- Mis finanzas: el mundo de Uku arriba, el panel abajo --- */
-.uk.is-fin .uk-panel { top: 42% !important; }
+/* (hoja de Mis finanzas: ver bloque «Retrato» más abajo) */
 .uk.is-fin .uk-chatbg { opacity: 0; }
 .uk.is-fin .uk-scene { filter: none; z-index: 1; pointer-events: auto; }
 .uk.is-fin .uk-globo { display: block; opacity: 1; transform: none; pointer-events: none; position: absolute; z-index: 3; left: 16px; top: calc(60px + env(safe-area-inset-top, 0px)); max-width: 240px; padding: 14px 16px; }
@@ -855,7 +855,7 @@ html.app-uku .uk-cta .pf-cta, html.app-uku .uk-sec .pf-cta { background: var(--b
    Mis finanzas: el mundo de Uku con sus recomendaciones arriba y la hoja entrando desde abajo
    ====================================================================== */
 /* La hoja sube desde abajo y deja ver el paisaje; no tapa a Uku (el encuadre lo deja sobre ella) */
-.uk.is-fin .uk-panel { top: 46% !important; animation: ukSheet .5s cubic-bezier(.2, .8, .2, 1) both; }
+.uk.is-fin .uk-panel { animation: ukSheet .42s cubic-bezier(.2, .8, .2, 1) both; }
 @keyframes ukSheet { from { opacity: 0; transform: translateY(40%); } }
 /* Recomendación de Uku: una tarjeta ligera arriba, a lo ancho, con su acción en acento azul */
 .uk.is-fin .uk-globo { left: 16px; right: 16px; top: calc(60px + env(safe-area-inset-top, 0px)); max-width: none; padding: 16px 18px 12px; pointer-events: auto; border-radius: 16px 16px 16px 4px; }
@@ -867,7 +867,7 @@ html.app-uku .uk-cta .pf-cta, html.app-uku .uk-sec .pf-cta { background: var(--b
 .app-uku .view--finanzas.uk-fin .uk .uk-cta { display: none !important; }
 /* Composición de Mis finanzas: recomendación compacta arriba a la izquierda, Uku de cuerpo entero en su
    paisaje, y la hoja desde el 58 % (se puede arrastrar hacia abajo para cerrarla) */
-.uk.is-fin .uk-panel { top: 58% !important; }
+/* top de la hoja: bloque «Retrato» */
 .uk.is-fin .uk-globo { right: auto; max-width: 272px; padding: 14px 16px 10px; }
 .uk.is-fin .uk-globo__t { font: var(--uk-sm); }
 .uk.is-fin .uk-globo__tag { margin-bottom: 4px !important; }
@@ -876,3 +876,84 @@ html.app-uku .uk.is-fin .uk-globo__acts .uk-globo__go.btn, html.app-uku .uk.is-f
 .uk.is-fin .uk-globo__skip { min-height: 40px; padding: 0 10px; font-size: 14px; }
 .uk.is-fin .uk-globo__foot { margin-top: 6px; padding-top: 6px; }
 .uk.is-fin .uk-globo__next { min-height: 34px; font-size: 14px; }
+
+/* ======================================================================
+   Retrato: Uku en su planeta, una frase, un botón. El resto es pequeño y vive abajo.
+   (Propuesta ganadora del panel de diseño, con injertos: globo junto a su cabeza, chips cortos,
+   punto de estado en Mis finanzas, leyenda efímera del paisaje, vacío vivo.)
+   ====================================================================== */
+/* --- Inicio --- */
+.uk.is-home .uk-home { padding-top: 44px; gap: 2px; }
+.uk-home__hola { font: var(--uk-title-md); letter-spacing: -.2px; }
+.uk-home__q { margin: 0 !important; font: var(--uk-body); color: var(--cx-muted); }
+.uk-home__rows { display: none; }
+/* El globo de Uku en el inicio: bajo el saludo, a la izquierda, una frase y un botón */
+.uk.is-home .uk-globo { display: block; order: 3; margin-top: 12px; max-width: 236px; padding: 12px 14px; box-shadow: var(--uk-elev-mid); }
+.uk.is-home .uk-globo__t { font: var(--uk-body); }
+.uk.is-home .uk-globo__tag { margin-bottom: 4px !important; }
+.uk.is-home .uk-globo__acts { margin-top: 10px; }
+html.app-uku .uk.is-home .uk-globo__go.btn { min-height: 40px !important; padding: 0 14px !important; font-size: 14px !important; }
+/* Chips cortos bajo Uku, justo encima de la barra */
+.uk-chips { position: relative; z-index: 3; order: 4; display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; padding-bottom: 2px; }
+.uk-chips[hidden] { display: none; }
+.uk.is-home .uk-bar { margin-top: 12px; }
+.uk.is-home .uk-chips[hidden] + .uk-bar { margin-top: auto; }
+.uk-chip-s { display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); border-radius: var(--bp-semantic-radius-full, 999px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: var(--uk-sm); cursor: pointer; animation: ukIn .3s ease both; animation-delay: var(--d, 0ms); }
+.uk-chip-s:active { transform: scale(.97); }
+/* Accesos: tres mosaicos bajos, solo nombres; el punto dice cómo va el presupuesto */
+.uk.is-home .uk-pills { gap: 8px; margin-top: 12px; }
+.uk.is-home .uk-pill { flex-direction: row; align-items: center; gap: 8px; min-height: 60px; padding: 0 12px; box-shadow: var(--uk-elev-low); }
+.uk.is-home .uk-pill > .material-symbols-rounded { flex: 0 0 24px; width: 24px; height: 24px; background: none; font-size: 22px; color: var(--bp-interaction-tertiary-fg); }
+.uk.is-home .uk-pill b { font: var(--uk-sm-semibold); white-space: nowrap; }
+.uk-pill__dot { flex: 0 0 6px; width: 6px; height: 6px; margin-left: auto; border-radius: 50%; background: var(--bp-theme-color-status-success-bg, #2e8b57); }
+.uk-pill__dot.is-warn { background: var(--bp-theme-color-status-warning-bg, #e8a33d); }
+/* Entrada escalonada al abrir: saludo, globo, chips, barra y accesos */
+.uk.is-in .uk-home__hola, .uk.is-in .uk-home__q { animation: ukIn .3s ease both; }
+.uk.is-in .uk-home__q { animation-delay: 60ms; }
+.uk.is-in.is-home .uk-globo { animation: ukIn .4s cubic-bezier(.2, 1.3, .4, 1) .55s both; }
+.uk.is-in .uk-chips { animation: ukIn .35s ease .7s both; }
+.uk.is-in .uk-bar { animation: ukIn .35s ease .76s both; }
+.uk.is-in .uk-pills { animation: ukIn .35s ease .82s both; }
+/* --- Mis finanzas: el paisaje es el dato --- */
+.uk.is-fin .uk-panel { top: 50%; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); transition: top .28s cubic-bezier(.2, .8, .2, 1); }
+.uk.is-fin.is-up .uk-panel { top: calc(112px + env(safe-area-inset-top, 0px)); }
+.uk.is-fin.is-up .uk-globo { opacity: 0; pointer-events: none; transition: opacity .15s ease; }
+@keyframes ukSheet { from { opacity: .6; transform: translateY(100%); } }
+.uk.is-fin .uk-globo { animation: ukIn .4s cubic-bezier(.2, 1.3, .4, 1) .5s both; }
+.uk.is-fin .uk-globo__dots { margin: 10px 0 2px; }
+.uk.is-fin .uk-globo__t { font: var(--uk-body); }
+/* La cabecera de la hoja: título chico (manda la cifra) y la X a su altura */
+.uk.is-fin .uk-panel .uk-head__t { font: var(--uk-sm); color: var(--cx-muted); }
+.uk.is-fin .uk-panel .uk-head { padding: 18px var(--uk-inset) 4px; }
+/* Jerarquía de la hoja: cifra → estado → dos acciones → filas */
+.app-uku .uk-panel .pfm-hub { padding: 0 var(--uk-inset) 8px; display: flex; flex-direction: column; }
+.app-uku .uk-panel .pfm-hub__cap { margin: 0 0 4px !important; font: var(--uk-caption); color: var(--cx-muted); }
+.app-uku .uk-panel .pfm-hub__m { display: block; font: var(--uk-numeric); letter-spacing: -.4px; color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; animation: ukIn .24s ease .3s both; }
+.app-uku .uk-panel .pfm-hub__bar { height: 4px; margin-top: 12px; border-radius: 2px; background: var(--bp-theme-color-border-divider, var(--cx-line)); overflow: hidden; }
+.app-uku .uk-panel .pfm-hub__bar i { display: block; height: 100%; border-radius: 2px; background: var(--bp-theme-color-status-success-bg, #2e8b57); animation: ukBar .3s ease-out .42s both; transform-origin: left; }
+.app-uku .uk-panel .pfm-hub__bar i.is-warn { background: var(--bp-theme-color-status-warning-bg, #e8a33d); }
+@keyframes ukBar { from { transform: scaleX(0); } }
+.app-uku .uk-panel .pfm-hub__s { margin: 8px 0 0 !important; font: var(--uk-sm); color: var(--cx-muted); }
+.app-uku .uk-panel .pfm-hub__acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 28px; animation: ukIn .3s ease .5s both; }
+.app-uku .uk-panel .pfm-hub__btn { min-height: 48px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font: var(--uk-body-medium); cursor: pointer; }
+.app-uku .uk-panel .pfm-hub__btn:active { opacity: .85; }
+.app-uku .uk-panel .pfm-hub__rows { display: flex; flex-direction: column; margin-top: 20px; animation: ukIn .3s ease .56s both; }
+.app-uku .uk-panel .pfm-hub__rows .pfm-nav__row { min-height: 56px; padding: 8px 0; }
+.app-uku .uk-panel .pfm-hub__rows .pfm-nav__row:first-child { border-top: 0; }
+.app-uku .uk-panel .pfm-hub__n { margin-right: 4px; font: var(--uk-sm); font-style: normal; color: var(--cx-muted); font-variant-numeric: tabular-nums; }
+.app-uku .uk-panel .pfm-tiles, .app-uku .uk-panel .pfm-foot { display: none; }
+/* Leyenda efímera del paisaje: tres etiquetas junto a Uku, 2,5 s, con el punto del estado (nunca rojo) */
+.uk-leyenda { position: absolute; inset: 0; z-index: 4; pointer-events: none; transition: opacity .2s ease; }
+.uk-leyenda[hidden] { display: none; }
+.uk-leyenda.is-off { opacity: 0; }
+.uk-leyenda__chip { position: absolute; display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px 0 8px; border: 0; border-radius: var(--bp-semantic-radius-full, 999px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: var(--uk-caption); text-transform: none; letter-spacing: 0; box-shadow: var(--uk-elev-low); pointer-events: auto; cursor: pointer; white-space: nowrap; animation: ukLeyenda .26s cubic-bezier(.2, .8, .2, 1) both; animation-delay: var(--d, 0ms); }
+.uk-leyenda__chip i { width: 6px; height: 6px; border-radius: 50%; background: var(--bp-theme-color-status-success-bg, #2e8b57); }
+.uk-leyenda__chip.is-warn i { background: var(--bp-theme-color-status-warning-bg, #e8a33d); }
+.uk-leyenda__chip.is-calm i { background: var(--bp-interaction-tertiary-fg); }
+@keyframes ukLeyenda { from { opacity: 0; transform: translate(-12px, 12px) scale(.9); } }
+@media (prefers-reduced-motion: reduce) { .uk-leyenda__chip, .uk.is-in *, .uk.is-fin .uk-globo, .uk.is-fin .uk-panel { animation: none !important; } }
+/* Accesos: icono sobre el nombre, para que «Mis finanzas» quepa en una línea en 390 px */
+.uk.is-home .uk-pill { flex-direction: column; justify-content: center; align-items: center; gap: 4px; min-height: 64px; padding: 8px 6px; position: relative; }
+.uk.is-home .uk-pill b { font: var(--uk-caption); font-weight: 600; text-transform: none; letter-spacing: 0; font-size: 13px; }
+.uk.is-home .uk-pill__dot { position: absolute; top: 8px; right: 8px; margin: 0; }
+.uk.is-fin .uk-panel { top: 52%; }
