@@ -2369,6 +2369,7 @@
         html body.sin-red #btn-login-other { display: none !important; }
         html body.sin-red .quick-action[data-online-only]:disabled { opacity: .4; }
         #btn-login-other { margin-top: var(--bp-semantic-spacing-xl); }
+        #login-offline[hidden] { display: none; }
         /* El selector de idioma también se abre desde el login */
         html body.sin-sesion .as-sheet-back { z-index: 650; }
         html body.sin-sesion .as-sheet { z-index: 651; }
@@ -3999,6 +4000,15 @@
 
             <!-- Botones -->
             <div class="login-screen__buttons">
+                <div class="bp-alert bp-alert--warning" id="login-offline" role="status" hidden>
+                    <div class="bp-alert__content">
+                        <span class="bp-alert__icon material-symbols-rounded" aria-hidden="true">wifi_off</span>
+                        <div class="bp-alert__text">
+                            <p class="bp-alert__title">Sin internet</p>
+                            <p class="bp-alert__body">Conéctate a una red Wi-Fi o datos para usar todas las funciones.</p>
+                        </div>
+                    </div>
+                </div>
                 <button class="login-button login-button--primary" id="btn-login-biometric">
                     Ingresar
                 </button>
