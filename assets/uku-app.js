@@ -197,7 +197,7 @@
     if (home && !hola && !nota && !x) { var W = window.PFM && PFM.world && resumen() ? PFM.world() : [], ok = W.filter(function (w) { return !/warn|over|pensativo/.test(w.cls || ''); })[0]; sinNada = ok ? { t: ok.d, k: 'gastos:sem', l: 'Ver mi semana' } : { t: 'Todo en orden. ¿Vemos tu semana?', k: 'gastos:sem', l: 'Ver mi semana' }; }
     var t = nota || (hola ? sal.t : x ? x.t : sinNada ? sinNada.t : 'Todo está en orden por ahora. ¿Quieres hacer algo hoy?');
     // En el inicio el nombre ya está en la cabecera: el globo no vuelve a saludar
-    if (home && hola) { t = t.replace(/^(hola|buen[oa]s (d[ií]as|tardes|noches))[^.?!]*[.?!]\s*/i, ''); t = t.charAt(0).toUpperCase() + t.slice(1); }
+    if (home && hola) { t = t.replace(/^(hola|qué bueno verte|buen[oa]s (d[ií]as|tardes|noches))[^.?!]*[.?!]\s*/i, ''); t = t.charAt(0).toUpperCase() + t.slice(1); }
     var go = hola ? sal : x ? { k: x.k, l: x.l } : sinNada ? sinNada : null;
     // Sin nada que decir (o en silencio), el globo se va y Uku se queda tranquilo
     if (!hola && !nota && !x && !sinNada) { if (b3d) b3d.play('happy'); return ocultarGlobo(); }
@@ -242,7 +242,7 @@
     homeEl.hidden = false;
     // Un nombre, un oso, una frase (en su globo) y un botón: nada más compite
     homeEl.innerHTML = '<p class="uk-home__hola">' + esc(nombre ? 'Hola, ' + nombre + '.' : 'Hola.') + '</p>' +
-      '<p class="uk-home__q">' + (primeraHoy ? 'Mi mundo cambia con tu dinero.' : '¿En qué te ayudo?') + '</p>';
+      '<p class="uk-home__q">' + (primeraHoy ? 'Mi mundo cambia con tu dinero.' : 'Pregúntame por tu dinero o por la app.') + '</p>';
     pintarChips();
   }
   // Lo que Uku recomienda en Mis finanzas: sus consejos del PFM (pagos cercanos, por ordenar, presupuesto,
@@ -366,7 +366,7 @@
     var home = host.classList.contains('is-home');
     if (host.classList.contains('is-onb') && onbEl) abajo(onbEl);
     else if (fin) { abajo(host.querySelector('.uk-chathead')); if (!host.classList.contains('is-up')) abajo(globoEl); arriba(panel); }
-    else if (home) { abajo(homeEl); abajo(globoEl); arriba(chipsEl); arriba(host.querySelector('.uk-bar')); arriba(pills); }
+    else if (home) { abajo(homeEl); abajo(globoEl); abajo(chipsEl); arriba(host.querySelector('.uk-bar')); arriba(pills); }
     else { abajo(globoEl); abajo(props); abajo(host.querySelector('.uk-head')); arriba(pills); arriba(host.querySelector('.uk-bar')); }
     // Cada lugar tiene su encuadre: en el inicio Uku está cerca y a la derecha; en Mis finanzas la cámara
     // retrocede y él queda a la izquierda, con más planeta a la vista; en su mundo, al centro
@@ -810,6 +810,11 @@
   /* ---------- Gestos ----------
      Arrastrar la tarjeta hacia abajo la cierra; deslizar a la derecha vuelve un paso;
      deslizar el globo hacia arriba abre «Así vas». Mientras arrastras, la tarjeta sigue al dedo. */
+  // Alto del área segura superior (muesca), medido una vez
+  function safeTop() {
+    if (safeTop.v == null) { var t = document.createElement('div'); t.style.cssText = 'position:fixed;top:env(safe-area-inset-top,0px);left:0;width:1px;height:1px;visibility:hidden;pointer-events:none'; document.body.appendChild(t); safeTop.v = t.getBoundingClientRect().top || 0; t.remove(); }
+    return safeTop.v;
+  }
   function gestos() {
     var g = null;
     function tarjeta(t) { return t.closest('.uk-card, .uk-panel, .uk-sec'); }
@@ -829,7 +834,7 @@
       if (g.dir === 'y' && !g.cab) return; // el contenido se desplaza solo
       var fin = host.classList.contains('is-fin'), arriba = host.classList.contains('is-up');
       if (g.dir === 'y' && dy < 0 && !(fin && !arriba)) return;
-      if (g.dir === 'y' && dy < 0) { g.on = true; g.el.classList.add('is-drag'); g.el.style.transform = 'translateY(' + Math.max(dy, -(g.el.getBoundingClientRect().top - host.getBoundingClientRect().top - 112)) + 'px)'; reencuadrar(); e.preventDefault(); return; }
+      if (g.dir === 'y' && dy < 0) { g.on = true; g.el.classList.add('is-drag'); g.el.style.transform = 'translateY(' + Math.max(dy, -(g.el.getBoundingClientRect().top - host.getBoundingClientRect().top - 8 - safeTop())) + 'px)'; reencuadrar(); e.preventDefault(); return; }
       if (g.dir === 'x' && dx < 0) return;
       g.on = true; g.el.classList.add('is-drag'); g.el.style.transform = g.dir === 'y' ? 'translateY(' + dy + 'px)' : 'translateX(' + dx * .6 + 'px)';
       g.el.style.opacity = g.dir === 'x' ? String(Math.max(.4, 1 - dx / 300)) : '';
@@ -983,8 +988,10 @@
       if (body) {
         var viejo = body.querySelector('.uk-solsec'); if (viejo) viejo.remove();
         body.insertAdjacentHTML('afterbegin', solHTML());
-        if (!body.querySelector('.uk-cta')) body.insertAdjacentHTML('beforeend', '<div class="uk-cta"><button class="pf-cta" data-k="escribir">Pregúntale a Uku</button></div>');
+        var dentro = body.querySelector('.uk-cta'); if (dentro) dentro.remove();
       }
+      // El botón «Pregúntale a Uku» es el pie fijo de la hoja: no tapa la última fila
+      if (!panel.querySelector(':scope > .uk-cta')) panel.insertAdjacentHTML('beforeend', '<div class="uk-cta"><button class="pf-cta" data-k="escribir">Pregúntale a Uku</button></div>');
     } else if (n === 'fin') { if (window.PFM) PFM.open(); else finOn(true); }
     else finOn(false);
     tituloDe(n);

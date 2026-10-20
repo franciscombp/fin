@@ -969,3 +969,25 @@ html.app-uku .uk.is-home .uk-globo__go.btn { min-height: 40px !important; paddin
 @keyframes ukTick { 0% { transform: scale(1) } 40% { transform: scale(1.06) } 100% { transform: scale(1) } }
 .uk-globo__go.is-tick { animation: ukTick .36s ease; }
 @media (prefers-reduced-motion: reduce) { .uk-globo__go.is-tick { animation: none; } }
+
+/* =====================================================================
+   Hojas tipo iOS. La parcial (Mis finanzas) flota con margen a los lados para que Uku siga a la
+   vista; al subirla ocupa todo el ancho y el alto. Soporte y Solicitudes siempre completas y a
+   todo el ancho. El buscador universal es también una hoja completa (ver buscador.css).
+   ===================================================================== */
+.uk.is-chat .uk-panel { transition: top .32s cubic-bezier(.2, .8, .2, 1), left .32s cubic-bezier(.2, .8, .2, 1), right .32s cubic-bezier(.2, .8, .2, 1), border-radius .32s ease, transform .28s cubic-bezier(.2, .8, .2, 1), opacity .28s ease; }
+.app-uku .view--finanzas.uk-ayuda .uk.is-chat .uk-panel { left: 0; right: 0; top: calc(8px + env(safe-area-inset-top, 0px)); bottom: 0; border-radius: var(--bp-semantic-radius-lg, 16px) var(--bp-semantic-radius-lg, 16px) 0 0; }
+.uk.is-fin .uk-panel, .app-uku .view--finanzas.uk-fin .uk.is-chat .uk-panel { left: 8px; right: 8px; top: 52%; bottom: 0; border-radius: var(--bp-semantic-radius-lg, 16px) var(--bp-semantic-radius-lg, 16px) 0 0; }
+.uk.is-fin.is-up .uk-panel, .app-uku .view--finanzas.uk-fin .uk.is-chat.is-up .uk-panel { left: 0; right: 0; top: calc(8px + env(safe-area-inset-top, 0px)); }
+.uk.is-fin .uk-panel .pf-host { padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+.uk.is-chat .uk-ayuda-slot { padding-bottom: 8px; }
+/* «Pregúntale a Uku» es el pie fijo de la hoja de Soporte: la lista termina antes, nada queda tapado */
+.uk.is-chat .uk-panel > .uk-cta { position: static; flex: 0 0 auto; margin: 0; padding: 12px var(--uk-inset) calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--bp-theme-color-surface-container-default); box-shadow: 0 -10px 16px -10px rgba(15, 38, 92, .14); }
+/* Las filas de Solicitudes se separan igual que las demás de Soporte */
+.uk.is-chat .uk-ayuda-slot .uk-solrow { min-height: 60px; padding: 12px 0; border-bottom: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+/* Chat: Uku nítido y presente, también mientras escribes */
+.uk.is-chat .uk-scene { filter: none; }
+.uk.is-kb .uk-scene, .uk.is-chat.is-typing .uk-scene { opacity: 1; }
+/* Inicio: los chips van bajo el globo, en la columna de la izquierda; Uku queda a la derecha sin nada encima */
+.uk.is-home .uk-chips { order: 3; margin-top: 10px; max-width: 236px; }
+.uk.is-home .uk-bar { margin-top: auto; }
