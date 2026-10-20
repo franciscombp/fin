@@ -415,8 +415,9 @@
 
   // Sin internet, las acciones que mueven dinero no se abren; lo informativo sigue igual.
   // Va en captura sobre el documento: también frena los clics que hace el buscador.
+  // Tickets de transporte no está aquí: los tickets comprados se muestran sin internet
   var TRANSACCIONALES = ['Transferir dinero', 'Transferir', 'Pagar servicios', 'Recargar celular', 'Pagar tarjeta',
-    'Retirar sin tarjeta', 'Pagar transporte', 'Pagar con QR', 'Pagar a un QR'];
+    'Retirar sin tarjeta', 'Pagar con QR', 'Pagar a un QR'];
   document.addEventListener('click', function (e) {
     if (en) return;
     var el = e.target.closest && e.target.closest('[data-action]');
