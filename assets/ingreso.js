@@ -385,16 +385,32 @@
     return out;
   }
 
-  /* ---------- Sin internet: el ingreso queda con Face ID o huella (CSS en index.html) ---------- */
-  function pintarRed() {
-    var sin = !navigator.onLine;
-    document.body.classList.toggle('sin-red', sin);
+  /* ---------- Conexión real: una petición que sale a la red, no navigator.onLine ----------
+     El service worker responde las peticiones de la app desde caché si no hay red, así que
+     la sonda va a un host externo (endpoint de prueba de conectividad de Google). */
+  var SONDA = 'https://www.gstatic.com/generate_204';
+  var en = navigator.onLine !== false;
+  function enLinea() { return en; }
+  function pintarRed(conectado) {
+    var cambio = conectado !== en;
+    en = conectado;
+    document.body.classList.toggle('sin-red', !en);
     var aviso = document.getElementById('login-offline');
-    if (aviso) aviso.hidden = !sin;
+    if (aviso) aviso.hidden = en;
+    if (cambio) document.dispatchEvent(new CustomEvent('red:cambio', { detail: en }));
   }
-  window.addEventListener('online', pintarRed);
-  window.addEventListener('offline', pintarRed);
-  document.addEventListener('DOMContentLoaded', pintarRed);
+  function sonda() {
+    if (!navigator.onLine) return pintarRed(false);
+    var ctl = new AbortController();
+    var t = setTimeout(function () { ctl.abort(); }, 4000);
+    fetch(SONDA + '?t=' + Date.now(), { mode: 'no-cors', cache: 'no-store', signal: ctl.signal })
+      .then(function () { clearTimeout(t); pintarRed(true); }, function () { clearTimeout(t); pintarRed(false); });
+  }
+  window.addEventListener('online', sonda);
+  window.addEventListener('offline', function () { pintarRed(false); });
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') sonda(); });
+  document.addEventListener('DOMContentLoaded', function () { pintarRed(en); sonda(); });
+  setInterval(sonda, 30000);
 
   /* ---------- Texto del botón principal ---------- */
   function nombreBiometria() {
@@ -408,7 +424,7 @@
   }
 
   window.Ingreso = {
-    etiqueta: etiqueta, pin: pin, otro: otro, clave: clave, recuperar: recuperar,
+    enLinea: enLinea, etiqueta: etiqueta, pin: pin, otro: otro, clave: clave, recuperar: recuperar,
     token: token, totp: totp, aBytes: aBytes, aBase32: aBase32
   };
 })();
