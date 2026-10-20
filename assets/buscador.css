@@ -113,7 +113,7 @@ html:not(.theme-y2k) .sx .sx-app__ic { width: 56px !important; height: 56px !imp
 .sx { transition: visibility 0s linear .42s; }
 .sx.open { transition-delay: 0s; }
 .sx-back { background: rgb(15 38 92 / .28) !important; }
-.sx-panel { top: calc(var(--sx-top, 0px) + 8px + env(safe-area-inset-top, 0px)); height: calc(var(--sx-h, 100%) - 8px - env(safe-area-inset-top, 0px)); max-width: none; margin: 0; padding: 22px 16px 0; border-radius: 16px 16px 0 0; background: var(--bp-theme-color-surface-page-alt, #f5f5f5); box-shadow: 0 -8px 32px rgb(0 0 0 / .12); transform: translateY(100%); opacity: 1; transition: transform .42s cubic-bezier(.32, .72, 0, 1) !important; }
+.sx-panel { top: calc(var(--sx-top, 0px) + 8px + env(safe-area-inset-top, 0px)); height: calc(var(--sx-h, 100%) - 8px - env(safe-area-inset-top, 0px)); max-width: none; margin: 0; padding: 22px var(--bp-layout-grid-margin, 16px) 0; border-radius: 16px 16px 0 0; background: var(--bp-theme-color-surface-page-alt, #f5f5f5); box-shadow: 0 -8px 32px rgb(0 0 0 / .12); transform: translateY(100%); opacity: 1; transition: transform .42s cubic-bezier(.32, .72, 0, 1) !important; }
 .sx-panel::before { content: ''; position: absolute; left: 50%; top: 6px; width: 36px; height: 4px; margin-left: -18px; border-radius: 2px; background: var(--bp-theme-color-border-divider, #c9ced6); }
 .sx.open .sx-panel { transform: none; }
 @media (prefers-reduced-motion: reduce) { .sx-panel { transition: none !important; } }
