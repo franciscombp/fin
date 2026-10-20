@@ -2361,6 +2361,14 @@
             overflow: hidden; /* toda la pantalla visible sin scroll */
         }
 
+        /* Escáner de Pagar con QR: visor redondeado con marco y, debajo, el botón secundario del mismo porte que el primario */
+        .qr-scan { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-macro-sm); }
+        .qr-scan__view { position: relative; aspect-ratio: 3 / 4; border-radius: 16px; overflow: hidden; background: #000; }
+        .qr-scan__view video { display: block; width: 100%; height: 100%; object-fit: cover; }
+        .qr-scan__frame { position: absolute; inset: 20%; border-radius: 16px; border: 2px solid #FFDD00; box-shadow: 0 0 0 999px rgb(0 0 0 / .35); }
+        .qr-scan__msg { margin: 0; font-size: 15px; line-height: 22px; text-align: center; color: var(--bp-theme-color-text-secondary); }
+        .qr-scan .login-button { width: 100%; }
+
         /* Sin sesión: la ayuda y los accesos públicos se abren por encima del inicio de sesión */
         html body.sin-sesion .sp,
         html body.sin-sesion .push-page, html body.sin-sesion #push-page { z-index: 600; }
@@ -2368,7 +2376,6 @@
         /* Sin internet: solo entra con Face ID o huella y se ven los accesos que funcionan sin red */
         html body.sin-red #btn-login-other { display: none !important; }
         html body.sin-red .quick-action[data-online-only]:disabled { opacity: .4; }
-        #btn-login-other { margin-top: var(--bp-semantic-spacing-xl); }
         #login-offline[hidden] { display: none; }
         /* El selector de idioma también se abre desde el login */
         html body.sin-sesion .as-sheet-back { z-index: 650; }
@@ -2453,7 +2460,7 @@
             flex: 0 0 auto;
             background: var(--bp-surface-container);
             border-radius: 24px 24px 0 0;
-            padding: 20px 24px calc(16px + env(safe-area-inset-bottom, 0px));
+            padding: var(--bp-semantic-spacing-macro-lg) 24px calc(16px + env(safe-area-inset-bottom, 0px));
             display: flex;
             flex-direction: column;
             gap: 16px;
@@ -2502,6 +2509,7 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 16px 8px;
+            margin-bottom: var(--bp-semantic-spacing-macro-sm);
         }
 
         /* Badge "Nuevo" sobre el ícono */
@@ -2524,7 +2532,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
+            gap: var(--bp-semantic-spacing-macro-sm);
             width: 100%;
         }
 
@@ -3967,7 +3975,7 @@
             <div class="login-screen__illustration">
                 <img class="login-illustration__img" src="./assets/login-illustration.svg" alt="Ilustración de bienvenida">
             </div>
-            <p class="login-screen__title">¡Vive la alegría del fútbol con La Tri!</p>
+            <p class="login-screen__title">¡Vive la alegría con Pichibank!</p>
             <!-- Festejo de independencia: pirotecnia + contador global -->
             <button class="fiesta-btn" id="fiesta-btn" aria-label="Festejar la independencia de Ecuador">
                 <span class="fiesta-btn__flag" aria-hidden="true"></span>
@@ -5395,7 +5403,7 @@
                 <div class="qr-scan">
                     <div class="qr-scan__view"><video id="qr-video" playsinline muted></video><span class="qr-scan__frame"></span></div>
                     <p class="qr-scan__msg" id="qr-msg">Apunta la cámara al código QR del negocio</p>
-                    <div class="push-chip-row"><button class="push-chip" data-soon="Ingresar código del comercio">Ingresar código</button></div>
+                    <button class="login-button login-button--secondary" data-soon="Ingresar código del comercio">Ingresar código</button>
                 </div>`,
             'Recibir dinero': () => `
                 <p class="finance-subtitle" style="margin-top:0;">Compartir mis datos</p>
@@ -6055,6 +6063,10 @@
             });
             if (!hasExtra && !soon) renderPushSummary(title);
             renderSoon(title, soon);
+            // Próximamente: solo queda el mensaje de arriba; título, ícono y Continuar no aplican
+            document.getElementById('push-title').style.display = soon ? 'none' : '';
+            document.getElementById('push-hero').style.display = soon ? 'none' : '';
+            pushCta.style.display = (soon || title === 'Transferir dinero' || title === 'Pagar servicios') ? 'none' : '';
             pushHeroIcon.textContent = (PRODUCT_DETAILS[title] && PRODUCT_DETAILS[title].icon) || pushIcons[title] || 'bolt';
             pushPage.classList.remove('scrolled');
             pushPage.scrollTop = 0;
