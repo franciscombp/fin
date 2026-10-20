@@ -2361,6 +2361,14 @@
             overflow: hidden; /* toda la pantalla visible sin scroll */
         }
 
+        /* Escáner de Pagar con QR: visor redondeado con marco y, debajo, el botón secundario del mismo porte que el primario */
+        .qr-scan { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-macro-sm); }
+        .qr-scan__view { position: relative; aspect-ratio: 3 / 4; border-radius: 16px; overflow: hidden; background: #000; }
+        .qr-scan__view video { display: block; width: 100%; height: 100%; object-fit: cover; }
+        .qr-scan__frame { position: absolute; inset: 20%; border-radius: 16px; border: 2px solid #FFDD00; box-shadow: 0 0 0 999px rgb(0 0 0 / .35); }
+        .qr-scan__msg { margin: 0; font-size: 15px; line-height: 22px; text-align: center; color: var(--bp-theme-color-text-secondary); }
+        .qr-scan .login-button { width: 100%; }
+
         /* Sin sesión: la ayuda y los accesos públicos se abren por encima del inicio de sesión */
         html body.sin-sesion .sp,
         html body.sin-sesion .push-page, html body.sin-sesion #push-page { z-index: 600; }
@@ -5395,7 +5403,7 @@
                 <div class="qr-scan">
                     <div class="qr-scan__view"><video id="qr-video" playsinline muted></video><span class="qr-scan__frame"></span></div>
                     <p class="qr-scan__msg" id="qr-msg">Apunta la cámara al código QR del negocio</p>
-                    <div class="push-chip-row"><button class="push-chip" data-soon="Ingresar código del comercio">Ingresar código</button></div>
+                    <button class="login-button login-button--secondary" data-soon="Ingresar código del comercio">Ingresar código</button>
                 </div>`,
             'Recibir dinero': () => `
                 <p class="finance-subtitle" style="margin-top:0;">Compartir mis datos</p>
