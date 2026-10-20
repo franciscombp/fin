@@ -964,7 +964,7 @@ html.app-uku .uk.is-home .uk-globo__go.btn { min-height: 40px !important; paddin
 /* Mis finanzas: la hoja se arrastra con el dedo en cualquier dirección desde su cabecera */
 .uk.is-fin .uk-panel .uk-head { touch-action: none; }
 /* Lo que Uku ya recomienda en su globo no se repite como fila del hub */
-.uk.is-fin[data-rec="game"] .pfm-hub__rows [data-pfm="game"] { display: none; }
+.uk.is-fin[data-rec="game"] .pfm-hub .pfm-hub__task { display: none; }
 /* El botón del globo late cuando cambia su número (Clasificar 6 → 5) */
 @keyframes ukTick { 0% { transform: scale(1) } 40% { transform: scale(1.06) } 100% { transform: scale(1) } }
 .uk-globo__go.is-tick { animation: ukTick .36s ease; }
@@ -1033,3 +1033,63 @@ html.app-uku .uk.is-home .uk-globo__go.btn { min-height: 40px !important; paddin
 /* Tutoriales como lista (no carrusel): sin ancho fijo ni desplazamiento lateral */
 .uk.is-chat .uk-ayuda-slot .sp-tuts { margin: 0; padding: 0; overflow: visible; scroll-snap-type: none; }
 .uk.is-chat .uk-ayuda-slot .sp-tut { flex: 0 0 auto; scroll-snap-align: none; }
+
+/* =====================================================================
+   Mis finanzas, rediseño: héroe (cifra + barra + estado), dos acciones, una tarea de Uku y tres
+   bloques con cabecera (título + línea corta + enlace) y filas de 56 px con icono en contenedor de 40.
+   Espaciado fijo: 24 entre bloques del héroe, 32 entre secciones, 12 de cabecera a lista.
+   ===================================================================== */
+.app-uku .uk-panel .pfm-hub { padding: 4px var(--uk-inset) 24px; }
+.app-uku .uk-panel .pfm-hub__hero { display: flex; flex-direction: column; }
+.app-uku .uk-panel .pfm-hub__acts { margin-top: 24px; gap: 12px; }
+.app-uku .uk-panel .pfm-hub__btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; font: var(--uk-sm-semibold); }
+.app-uku .uk-panel .pfm-hub__btn .material-symbols-rounded { font-size: 20px; }
+.app-uku .uk-panel .pfm-hub__task { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin-top: 24px; padding: 12px 16px; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-secondary-bg); color: var(--bp-theme-color-text-primary); text-align: left; font: inherit; cursor: pointer; }
+.app-uku .uk-panel .pfm-hub__task .pfm-hub__ic { background: var(--bp-interaction-accent-bg, #0f265c); color: var(--bp-interaction-accent-fg, #fff); }
+.app-uku .uk-panel .pfm-hub__task:active { opacity: .85; }
+.app-uku .uk-panel .pfm-hub__chev { color: var(--cx-muted); font-size: 22px; }
+.app-uku .uk-panel .pfm-hub__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin: 32px 0 8px; }
+.app-uku .uk-panel .pfm-hub__h { margin: 0 !important; font: var(--uk-title) !important; letter-spacing: 0 !important; color: var(--bp-theme-color-text-primary) !important; }
+.app-uku .uk-panel .pfm-hub__sub { margin: 2px 0 0 !important; font: var(--uk-sm); color: var(--cx-muted); }
+.app-uku .uk-panel .pfm-hub__link { flex: 0 0 auto; margin-top: 2px; padding: 0; border: 0; background: none; font: var(--uk-sm-semibold); color: var(--bp-interaction-tertiary-fg); cursor: pointer; }
+.app-uku .uk-panel .pfm-hub__list { display: flex; flex-direction: column; }
+.app-uku .uk-panel .pfm-hub__row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px 0; border: 0; border-bottom: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); background: none; color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; font: inherit; }
+.app-uku .uk-panel .pfm-hub__list > :last-child { border-bottom: 0; }
+.app-uku .uk-panel .pfm-hub__row:active { opacity: .7; }
+.app-uku .uk-panel .pfm-hub__ic { display: grid; place-items: center; flex: 0 0 40px; width: 40px; height: 40px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-tertiary-fg); font-size: 20px; }
+.app-uku .uk-panel .pfm-hub__pl { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.app-uku .uk-panel .pfm-hub__pl b { font: var(--uk-body-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app-uku .uk-panel .pfm-hub__pl small { font: var(--uk-caption); color: var(--cx-muted); }
+.app-uku .uk-panel .pfm-hub__gbar { display: block; height: 3px; margin-top: 4px; border-radius: 2px; background: var(--bp-theme-color-border-divider, var(--cx-line)); overflow: hidden; }
+.app-uku .uk-panel .pfm-hub__gbar u { display: block; height: 100%; border-radius: 2px; background: var(--bp-interaction-tertiary-fg); text-decoration: none; }
+.app-uku .uk-panel .pfm-hub__row em { flex: 0 0 auto; font: var(--uk-sm-semibold); font-style: normal; color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
+.app-uku .uk-panel .pfm-hub__row em.is-in { color: var(--bp-theme-color-status-success-text, #1b8a3a); }
+
+/* =====================================================================
+   Soporte, rediseño: mismos bloques (cabecera con título y línea corta), mosaicos para lo que puedes
+   pedir, filas con icono solo donde identifica una acción, chips para los temas. 32 entre secciones.
+   ===================================================================== */
+.uk-ay__sec { margin-top: 32px; }
+.uk.is-chat .uk-ayuda-slot .sp-hub > .uk-ay__sec:first-of-type { margin-top: 4px; }
+.uk-ay__head { margin-bottom: 12px; }
+.uk-ay__t { margin: 0; font: var(--uk-title); letter-spacing: 0; color: var(--bp-theme-color-text-primary); }
+.uk-ay__sub { margin: 4px 0 0; font: var(--uk-sm); color: var(--cx-muted); }
+.uk-ay__list { display: flex; flex-direction: column; }
+.uk-ay__row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px 0; border: 0; border-bottom: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); background: none; color: var(--bp-theme-color-text-primary); text-align: left; font: inherit; cursor: pointer; }
+.uk-ay__list > :last-child { border-bottom: 0; }
+.uk-ay__row:active { opacity: .7; }
+.uk-ay__ic { display: grid; place-items: center; flex: 0 0 40px; width: 40px; height: 40px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-tertiary-fg); font-size: 20px; }
+.uk-ay__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.uk-ay__main b { font: var(--uk-body-medium); }
+.uk-ay__main small { font: var(--uk-caption); color: var(--cx-muted); }
+.uk-ay__row > .material-symbols-rounded:last-child { flex: 0 0 auto; color: var(--cx-muted); font-size: 22px; }
+.uk-ay__tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+.uk-ay__tiles:first-child { margin-top: 0; }
+.uk-ay__tile { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; min-height: 104px; padding: 16px; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-secondary-bg); color: var(--bp-theme-color-text-primary); text-align: left; font: inherit; cursor: pointer; }
+.uk-ay__tile .uk-ay__ic { background: var(--bp-theme-color-surface-container-default); }
+.uk-ay__tile b { font: var(--uk-body-medium); }
+.uk-ay__tile:active { opacity: .85; }
+.uk-ay__chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.uk-ay__chip { min-height: 36px; padding: 0 14px; border: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); border-radius: var(--bp-semantic-radius-full, 999px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: var(--uk-sm); cursor: pointer; }
+.uk-ay__chip:active { transform: scale(.97); }
+.uk.is-chat .uk-ayuda-slot .sp-found { margin-top: 8px; }

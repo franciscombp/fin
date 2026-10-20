@@ -632,6 +632,8 @@
     faqIndex: function (t) { for (var i = 0; i < FAQ.length; i++) if (FAQ[i].t === t) return i; return -1; },
     tema: tema, temaDe: function (i) { var x = TEMAS[i]; return x && { t: x.t, a: x.a, mas: x.mas, acts: x.acts || [], links: x.links || [] }; }, buscarURL: buscarURL, blogURL: BLOG_URL,
     flows: function () { return FLOWS.map(function (f, i) { return { i: i, id: f.id, icon: f.icon, t: f.t }; }); },
+    cats: function () { return CATS.map(function (c) { return { id: c[0], icon: c[1], t: c[2], n: FAQ.filter(function (f) { return f.cat === c[0]; }).length }; }); },
+    tuts: function () { return TUT.map(function (u, i) { return { i: i, icon: u.icon, t: u.t, pasos: u.steps.length, min: u.min }; }); },
     flow: function (i) { var f = FLOWS[i]; return f && { i: i, id: f.id, icon: f.icon, t: f.t, s: f.s }; },
     cats: function () { return CATS.map(function (c) { return { id: c[0], icon: c[1], t: c[2] }; }); },
     byCat: function (id) { return FAQ.map(function (f, i) { return f.cat === id ? { kind: 'faq', i: i, icon: f.icon, t: f.t } : null; }).filter(Boolean).concat(TUT.map(function (u, i) { return u.cat === id ? { kind: 'tut', i: i, icon: u.icon, t: u.t } : null; }).filter(Boolean)); },
