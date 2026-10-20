@@ -484,7 +484,7 @@ html.uk-chatting.uk-fin .pf-toast { top: auto !important; bottom: calc(24px + en
 
 /* ---------- Onboarding: una tarjeta arriba, sobre su mundo ----------
    Pasos con puntos, un ícono grande, título, una frase y el botón principal. Uku, grande, saluda debajo. */
-.uk-onb { position: absolute; z-index: 7; left: 16px; right: 16px; top: calc(16px + env(safe-area-inset-top, 0px)); animation: ukCard .4s cubic-bezier(.2, 1.1, .4, 1) both; }
+.uk-onb { position: absolute; z-index: 7; left: var(--bp-layout-grid-margin, 16px); right: var(--bp-layout-grid-margin, 16px); top: calc(16px + env(safe-area-inset-top, 0px)); animation: ukCard .4s cubic-bezier(.2, 1.1, .4, 1) both; }
 .uk-onb.is-out { animation: ukCardOut .22s ease-in both; }
 .uk-onb__card { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: var(--bp-layout-card-padding); border-radius: var(--bp-semantic-radius-lg, 16px); background: var(--bp-theme-color-surface-container-default); box-shadow: 0 var(--bp-semantic-elevation-high-offset-y, 12px) var(--bp-semantic-elevation-high-blur, 24px) var(--bp-semantic-elevation-high-color, rgba(15, 38, 92, .16)); animation: ukIn .35s ease both; }
 .uk-onb__dots { display: flex; gap: 6px; margin: 0 0 4px !important; }
@@ -550,7 +550,7 @@ html.uk-chatting.uk-fin .pf-toast { top: auto !important; bottom: calc(24px + en
    Más espacio entre elementos (gap-content y gap-item del sistema) y el amarillo de marca
    queda fuera de lo que hace Uku: sus acciones usan el acento azul del sistema y sus
    detalles (caras, ícono del onboarding, puntos) el azul claro secundario. */
-.uk { --uk-gap: var(--bp-semantic-spacing-gap-content, 16px); --uk-gap-item: var(--bp-semantic-spacing-gap-item, 12px); --uk-inset: 20px; }
+.uk { --uk-gap: var(--bp-semantic-spacing-gap-content, 16px); --uk-gap-item: var(--bp-semantic-spacing-gap-item, 12px); --uk-inset: var(--bp-layout-grid-margin, 16px); }
 /* Color: nada amarillo en lo de Uku */
 .uk-onb__go, .uk-bar__x { background: var(--bp-interaction-accent-bg, #0f265c); color: var(--bp-interaction-accent-fg, #fff); box-shadow: none; }
 .uk-onb__go:hover, .uk-bar__x:hover { background: var(--bp-theme-color-interaction-accent-bg-hover, #0f265c); }
@@ -582,7 +582,7 @@ html.uk-chatting.uk-fin .pf-toast { top: auto !important; bottom: calc(24px + en
 .uk-meter__l { margin-top: -4px !important; }
 .uk-card.is-typing .uk-dots { margin: 12px var(--uk-inset) var(--uk-inset); }
 /* Onboarding */
-.uk-onb__card { gap: 10px; padding: var(--bp-layout-card-padding); }
+.uk-onb__card { gap: 10px; padding: var(--bp-layout-card-padding, 16px) var(--bp-layout-card-padding, 16px) 20px; }
 .uk-onb__t { margin-top: 10px !important; }
 .uk-onb__go { margin-top: 16px; }
 .uk-onb__skip { margin-top: 2px; }
@@ -591,7 +591,7 @@ html.uk-chatting.uk-fin .pf-toast { top: auto !important; bottom: calc(24px + en
 .uk-sec__top { padding: 20px var(--uk-inset) 12px; }
 .uk-sec__body { padding: 0 var(--bp-layout-card-padding) var(--bp-layout-card-padding); gap: 10px; }
 .uk-sec__row { padding: 16px 0; }
-.app-uku .uk-panel .pfm-tabs { padding: 6px 24px 12px; }
+.app-uku .uk-panel .pfm-tabs { padding: 6px var(--bp-layout-grid-margin, 16px) 12px; }
 .uk.is-chat .uk-ayuda-slot .sp-body { padding: 0 var(--bp-layout-card-padding) var(--bp-layout-card-padding) !important; }
 .uk.is-chat .uk-ayuda-slot .sp-sec { margin-top: 24px; }
 .uk.is-chat .uk-ayuda-slot .sp-sec h2 { margin-bottom: 6px !important; }
@@ -656,7 +656,7 @@ html.app-uku .uk-globo__acts .uk-globo__go.btn, html.app-uku .uk-globo__go.btn {
 
 /* ---------- Mis finanzas en el asistente: a dónde puedes ir ----------
    Filas con chevron bajo el resumen, al estilo de las tarjetas: el texto dice qué es. */
-.app-uku .uk-panel .pfm-nav { padding: 8px 20px 0; display: flex; flex-direction: column; }
+.app-uku .uk-panel .pfm-nav { padding: 8px var(--bp-layout-grid-margin, 16px) 0; display: flex; flex-direction: column; }
 .app-uku .uk-panel .pfm-nav__row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 10px 0; border: 0; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); background: none; color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; }
 .app-uku .uk-panel .pfm-nav__row > span:first-child { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .app-uku .uk-panel .pfm-nav__row b { font: var(--uk-body-medium); }
@@ -861,7 +861,7 @@ html.app-uku .uk-cta .pf-cta, html.app-uku .uk-sec .pf-cta { background: var(--b
 .uk.is-fin .uk-panel { animation: ukSheet .42s cubic-bezier(.2, .8, .2, 1) both; }
 @keyframes ukSheet { from { opacity: 0; transform: translateY(40%); } }
 /* Recomendación de Uku: una tarjeta ligera arriba, a lo ancho, con su acción en acento azul */
-.uk.is-fin .uk-globo { left: 16px; right: 16px; top: calc(60px + env(safe-area-inset-top, 0px)); max-width: none; padding: 16px 18px 12px; pointer-events: auto; border-radius: 16px 16px 16px 4px; }
+.uk.is-fin .uk-globo { left: var(--bp-layout-grid-margin, 16px); right: var(--bp-layout-grid-margin, 16px); top: calc(60px + env(safe-area-inset-top, 0px)); max-width: none; padding: 16px 18px 12px; pointer-events: auto; border-radius: 16px 16px 16px 4px; }
 .uk.is-fin .uk-globo__x { display: none; }
 .uk.is-fin .uk-globo__t { font: var(--uk-body); }
 .uk.is-fin .uk-globo__acts { margin-top: 12px; }
@@ -1143,3 +1143,7 @@ html.app-uku .uk.is-home .uk-globo__go.btn { min-height: 40px !important; paddin
 .uk.is-chat .uk-ayuda-slot .sp-body { padding: 0 var(--bp-layout-grid-margin, 16px) var(--bp-semantic-spacing-macro-md, 24px) !important; }
 /* Mismo título de hoja en Mis finanzas y Soporte */
 .uk.is-fin .uk-panel .uk-head__t { font: var(--uk-title); color: var(--bp-theme-color-text-primary); }
+/* Acuerdo: márgenes de página y relleno de contenedores con los tokens de layout (se adaptan al dispositivo) */
+.uk.is-chat .uk-ayuda-slot .sp-body { padding: 0 var(--bp-layout-grid-margin, 16px) var(--bp-semantic-spacing-macro-md, 24px) !important; }
+.uk.is-chat .uk-panel > .uk-cta { padding: 12px var(--bp-layout-grid-margin, 16px) calc(16px + env(safe-area-inset-bottom, 0px)); }
+.uk.is-chat .uk-panel .uk-head { padding-left: var(--bp-layout-grid-margin, 16px); padding-right: var(--bp-layout-grid-margin, 16px); }

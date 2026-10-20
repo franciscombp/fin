@@ -65,6 +65,12 @@ Si una decisión cambia, actualiza esta página en el mismo cambio.
 
 Usar siempre los tokens, nunca valores fijos:
 
+- **Márgenes de página y relleno de contenedores: con los tokens de layout, nunca con un número.**
+  `--bp-layout-grid-margin` para el margen lateral de toda pantalla y hoja (16 en 360, 24 en 390 y 40 en
+  tablet) y `--bp-layout-card-padding` para el relleno interno de tarjetas y filas (16 en móvil, 24 en
+  tablet). Así el mismo CSS se adapta al dispositivo. En el asistente, `--uk-inset` es un alias de
+  `--bp-layout-grid-margin`; `--bp-layout-grid-gutter` es el espacio entre columnas de una rejilla.
+
 - Espacios: `--bp-semantic-spacing-micro-md` (8), `micro-lg` (12), `macro-sm` (16), `macro-md` (24),
   `macro-lg` (32), `xl` (20).
 - **Botón primario:** `login-button--primary`, 56 px de alto en las pantallas de flujo, ancho completo.
@@ -86,7 +92,7 @@ Toda pantalla y toda hoja se arma igual que Perfil. Es el acuerdo de coherencia:
 mismos tokens, nada inventado por pantalla.
 
 - **Fondo de página:** `--bp-theme-color-surface-page-alt` (gris claro). Las tarjetas van sobre ese gris.
-- **Márgenes laterales:** `--bp-layout-grid-margin` (16). Nada pegado al borde, nada con doble margen.
+- **Márgenes laterales:** `--bp-layout-grid-margin` (16, 24 o 40 según el dispositivo). Nada pegado al borde, nada con doble margen.
 - **Título de pantalla:** `view-title` (como «Perfil»). En las hojas, el título va en la cabecera con la X al
   mismo nivel (`title-sm`, color `text-primary`).
 - **Etiqueta de sección:** una línea en gris encima de cada tarjeta, en frase (nunca en mayúsculas):
@@ -97,7 +103,7 @@ mismos tokens, nada inventado por pantalla.
   `--bp-semantic-radius-md` (12), sin borde ni sombra, `overflow: hidden`. Entre tarjetas, 24 px
   (8 de `padding-top` de la sección + 16 de `padding-bottom`).
 - **Fila:** `min-height` 64 (`--ui-row`), relleno `--bp-semantic-spacing-macro-md` (24) arriba y abajo por
-  `--bp-layout-card-padding` (16) a los lados, `gap` `--bp-semantic-spacing-micro-lg` (12). Divisor
+  `--bp-layout-card-padding` (16 en móvil, 24 en tablet) a los lados, `gap` `--bp-semantic-spacing-micro-lg` (12). Divisor
   `--bp-semantic-border-thin` con `--bp-theme-color-border-divider`; la última fila sin divisor.
   Estados `--bp-interaction-row-bg`, `--hover` y `--active`.
 - **Icono de fila:** círculo de 40 (`--ui-ic`, radio `full`) con `--bp-theme-color-avatar-bg` y
