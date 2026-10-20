@@ -451,7 +451,10 @@ html:not(.theme-y2k) .uk-globo__acts .uk-globo__go.btn { margin: 0 !important; }
 .uk-card .uk-msg__acts .uk-chip { min-height: 44px; padding: 10px 16px; border-radius: 12px; font-size: 15px; }
 .uk-card__data > div { padding: 10px 0; }
 /* El aviso (toast) va arriba, bajo el botón de bajar: no tapa a Uku ni la barra */
-html.uk-chatting .pf-toast { top: calc(64px + env(safe-area-inset-top, 0px)); bottom: auto; }
+/* El aviso del PFM dentro del asistente: una sola línea centrada (sin «top» y «bottom» a la vez, que lo estiraban),
+   arriba en el chat (la barra está abajo) y abajo en Mis finanzas (el globo de Uku está arriba) */
+html.uk-chatting .pf-toast { top: calc(64px + env(safe-area-inset-top, 0px)) !important; bottom: auto !important; width: max-content !important; max-width: min(440px, calc(100vw - 32px)) !important; }
+html.uk-chatting.uk-fin .pf-toast { top: auto !important; bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important; }
 /* Las secciones, con el mismo margen */
 .uk.is-chat .uk-panel, .uk.is-chat .uk-sec { border-radius: var(--bp-semantic-radius-lg, 16px); }
 .uk.is-chat .uk-panel .uk-head { padding: 18px 16px 8px; }
@@ -957,3 +960,12 @@ html.app-uku .uk.is-home .uk-globo__go.btn { min-height: 40px !important; paddin
 .uk.is-home .uk-pill b { font: var(--uk-caption); font-weight: 600; text-transform: none; letter-spacing: 0; font-size: 13px; }
 .uk.is-home .uk-pill__dot { position: absolute; top: 8px; right: 8px; margin: 0; }
 .uk.is-fin .uk-panel { top: 52%; }
+
+/* Mis finanzas: la hoja se arrastra con el dedo en cualquier dirección desde su cabecera */
+.uk.is-fin .uk-panel .uk-head { touch-action: none; }
+/* Lo que Uku ya recomienda en su globo no se repite como fila del hub */
+.uk.is-fin[data-rec="game"] .pfm-hub__rows [data-pfm="game"] { display: none; }
+/* El botón del globo late cuando cambia su número (Clasificar 6 → 5) */
+@keyframes ukTick { 0% { transform: scale(1) } 40% { transform: scale(1.06) } 100% { transform: scale(1) } }
+.uk-globo__go.is-tick { animation: ukTick .36s ease; }
+@media (prefers-reduced-motion: reduce) { .uk-globo__go.is-tick { animation: none; } }
