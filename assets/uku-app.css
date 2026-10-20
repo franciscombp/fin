@@ -1147,3 +1147,5 @@ html.app-uku .uk.is-home .uk-globo__go.btn { min-height: 40px !important; paddin
 .uk.is-chat .uk-ayuda-slot .sp-body { padding: 0 var(--bp-layout-grid-margin, 16px) var(--bp-semantic-spacing-macro-md, 24px) !important; }
 .uk.is-chat .uk-panel > .uk-cta { padding: 12px var(--bp-layout-grid-margin, 16px) calc(16px + env(safe-area-inset-bottom, 0px)); }
 .uk.is-chat .uk-panel .uk-head { padding-left: var(--bp-layout-grid-margin, 16px); padding-right: var(--bp-layout-grid-margin, 16px); }
+/* Dos accesos: Mis finanzas y Ayuda y soporte */
+.uk-pills { grid-template-columns: repeat(2, minmax(0, 1fr)); }

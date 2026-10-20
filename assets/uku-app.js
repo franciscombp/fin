@@ -393,10 +393,9 @@
   function pintarAccesos() {
     var W = window.PFM && PFM.world && resumen() ? PFM.world() : [], pe = W[2] ? W[2].cls : null;
     var p = function (k, icon, t, dot) { return '<button class="uk-pill" data-k="' + k + '" data-l="' + esc(t) + '">' + ic(icon) + '<b>' + esc(t) + '</b>' + (dot ? '<i class="uk-pill__dot ' + dot + '" aria-hidden="true"></i>' : '') + '</button>'; };
-    // Tres accesos = tres cosas que hace este lugar: ver tus datos, ayudarte con la app, pedir algo. Solo nombres.
+    // Dos accesos = dos cosas que hace este lugar: ver tus datos y ayudarte con la app (las solicitudes viven dentro de Ayuda y soporte). Solo nombres.
     pills.innerHTML = p('fin', 'monitoring', 'Mis finanzas', pe ? (/warn|over/.test(pe) ? 'is-warn' : 'is-ok') : '') +
-      p('ayudatoda', 'help', 'Soporte') +
-      p('sol', 'assignment', 'Solicitudes');
+      p('ayudatoda', 'help', 'Ayuda y soporte');
   }
 
   /* ---------- Escribiendo: resultados flotando sobre su mundo ---------- */
