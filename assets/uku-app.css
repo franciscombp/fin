@@ -1155,3 +1155,7 @@ html.app-uku .uk.is-home .uk-globo__go.btn { min-height: 40px !important; paddin
 @media (prefers-reduced-motion: reduce) { .uk-scene .b3d { transition: none; } }
 /* En Mis finanzas no hay barra abajo: el lienzo no cambia de tamaño al entrar ni al salir (sin salto) */
 .uk.is-chat.is-fin .uk-scene, .uk.is-kb.is-chat.is-fin .uk-scene { bottom: 0; }
+/* Un solo control por cabecera: en la raíz de la hoja la X; dentro de una página, solo la flecha de volver,
+   del mismo tamaño y fondo que la X (patrón uniforme en Mis finanzas y Soporte) */
+.uk.is-chat .uk-panel .uk-back-btn { width: 40px; height: 40px; flex: 0 0 40px; border-radius: var(--bp-semantic-radius-full, 999px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-tertiary-fg); place-items: center; }
+.uk.is-chat .uk-panel:has(.pf-back) .uk-head__x, .uk.is-chat .uk-panel:has(.sp.is-page) .uk-head__x { display: none; }
