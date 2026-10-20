@@ -6068,7 +6068,7 @@
             // datos que no vienen al caso.
             const hasExtra = !!ACTION_EXTRAS[title];
             // Lo que aún no tiene pantalla propia muestra "Próximamente", no la genérica
-            const soon = !hasExtra && !PRODUCT_DETAILS[title] && title.indexOf('Cuenta') !== 0;
+            const soon = !hasExtra && !PRODUCT_DETAILS[title] && !(window.ProductView && ProductView.has(title)) && title.indexOf('Cuenta') !== 0;
             document.querySelectorAll('#push-page .section').forEach(s => {
                 s.style.display = (hasExtra || soon) ? 'none' : '';
             });
@@ -6152,8 +6152,10 @@
         // Sin sesión: los accesos públicos responden; los que usan tu cuenta
         // inician el ingreso al instante y se abren al entrar (window.__pendingAction).
         const ACCESOS_PUBLICOS = ['Soporte', 'Ayuda', 'Clave digital', 'Idioma', 'Cobrar con QR'];
-        document.querySelectorAll('[data-action]').forEach(el => {
-            el.addEventListener('click', (e) => {
+        // Delegado en el documento: también responden las filas que los hubs pintan después
+        document.addEventListener('click', (e) => {
+            const el = e.target.closest && e.target.closest('[data-action]');
+            if (!el) return;
                 const sinSesion = document.getElementById('login-screen')?.classList.contains('active');
                 if (sinSesion && el.closest('#login-screen') && !ACCESOS_PUBLICOS.includes(el.dataset.action)) {
                     e.preventDefault(); e.stopImmediatePropagation();
@@ -6198,7 +6200,6 @@
                 `;
                 document.body.appendChild(ripple);
                 setTimeout(() => ripple.remove(), 600);
-            });
         });
 
         // Agregar animación de ripple al CSS dinámicamente
