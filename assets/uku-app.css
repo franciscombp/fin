@@ -713,3 +713,70 @@ html.uk-chatting .uk:not(.is-chat) { padding-top: calc(60px + env(safe-area-inse
 .uk-row__r { flex: 0 0 auto; font: var(--uk-body-semibold); font-variant-numeric: tabular-nums; color: var(--bp-theme-color-text-primary); }
 .uk-row__ic { flex: 0 0 32px; width: 32px; height: 32px; border-radius: var(--bp-semantic-radius-sm, 8px); }
 .uk-row__ic .material-symbols-rounded { font-size: 20px; }
+
+/* ======================================================================
+   Wireframe: pantalla inicial → entry points (Mis finanzas, Soporte, Solicitudes) y buscador → chat
+   ====================================================================== */
+/* --- Arriba: flecha a la izquierda en la pantalla inicial y su mundo; X a la derecha en chat y secciones --- */
+.app-uku .uk .uk-chathead { justify-content: flex-start; padding: 0 12px; }
+.app-uku .uk.is-chat .uk-chathead { justify-content: flex-end; }
+/* --- Pantalla inicial --- */
+.uk-home { position: relative; z-index: 3; order: 2; display: flex; flex-direction: column; gap: 4px; padding-top: 48px; }
+.uk-home[hidden] { display: none; }
+.uk-home__hola { margin: 0 !important; font: var(--uk-title-md); color: var(--bp-theme-color-text-primary); }
+.uk-home__q { margin: 0 0 14px !important; font: var(--uk-body); color: var(--cx-muted); }
+.uk-home__rows { display: flex; flex-direction: column; gap: 10px; max-width: 58%; }
+.uk-home__row { display: flex; align-items: center; gap: 8px; min-height: 56px; padding: 10px 10px 10px 14px; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; box-shadow: var(--uk-elev-low); animation: ukIn .3s ease both; animation-delay: var(--d, 0ms); }
+.uk-home__row > span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.uk-home__row small { font: var(--uk-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
+.uk-home__row b { font: var(--uk-body-medium); }
+.uk-home__row > .material-symbols-rounded { color: var(--cx-muted); }
+.uk-home__row:active { background: var(--bp-interaction-secondary-bg); }
+.uk.is-home .uk-globo, .uk.is-home .uk-props { display: none; }
+.uk.is-home .uk-pills { margin-top: auto; }
+/* En la pantalla inicial Uku no se pone delante de nada: la escena va detrás de las sugerencias */
+.uk.is-home .uk-scene { z-index: 0; }
+/* --- Chat de burbujas con Uku como avatar (sin el 3D detrás) --- */
+.uk.is-chat:not(.is-fin) .uk-scene { display: none; }
+.uk.is-chat:not(.is-fin) .uk-chatbg { background-image: none !important; filter: none; }
+.uk.is-chat .uk-chat { top: calc(56px + env(safe-area-inset-top, 0px)); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); padding: 8px 4px 12px; gap: 14px; }
+.uk-msg:not(.is-agent) .uk-msg__face, .uk-msg__face.is-gap { display: block; }
+.uk-msg__face { flex: 0 0 32px; width: 32px; height: 32px; background: var(--bp-interaction-secondary-bg); }
+.uk-msg__b { display: flex; flex-direction: column; gap: var(--uk-gap-item); max-width: 100%; padding: 14px 16px; border: 0; border-radius: 4px 16px 16px 16px; box-shadow: var(--uk-elev-low); }
+.uk-msg__b > p { margin: 0; font: var(--uk-body); }
+.uk-msg__t { font: var(--uk-title); }
+.uk-msg__body .uk-card__nav { margin: 0; width: 100%; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); overflow: hidden; box-shadow: var(--uk-elev-low); }
+.uk-msg__body .uk-card__row { padding: 10px 14px; border-top-color: var(--bp-theme-color-border-divider, var(--cx-line)); }
+.uk-msg__body .uk-card__row:first-child { border-top: 0; }
+.uk-msg__body .uk-voto { width: 100%; border-top: 0; padding-top: 0; }
+.uk-me p { max-width: 82%; border-radius: 16px 4px 16px 16px; box-shadow: none; }
+.uk.is-chat .uk-bar__x { display: grid; }
+/* --- Soporte y Solicitudes: categorías en mosaico y «Pregúntale a Uku» al final --- */
+.uk.is-chat .uk-ayuda-slot .sp-body { display: flex; flex-direction: column; }
+.uk.is-chat .uk-ayuda-slot .sp-sec:nth-of-type(1) { order: 3; } /* Solucionar un inconveniente */
+.uk.is-chat .uk-ayuda-slot .sp-sec:nth-of-type(2) { order: 1; } /* Preguntas frecuentes */
+.uk.is-chat .uk-ayuda-slot .sp-sec:nth-of-type(3) { order: 2; } /* Categorías */
+.uk.is-chat .uk-ayuda-slot .sp-sec:nth-of-type(4) { order: 4; } /* Tutoriales */
+.uk.is-chat .uk-ayuda-slot .sp-sec:nth-of-type(5) { order: 5; } /* Trámites con un asesor */
+.uk.is-chat .uk-ayuda-slot .uk-cta { order: 9; }
+.uk.is-chat .uk-ayuda-slot .sp-cats { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.uk.is-chat .uk-ayuda-slot .sp-cat { flex-direction: column; align-items: flex-start; gap: 8px; min-height: 0; padding: 14px !important; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-secondary-bg); }
+.uk.is-chat .uk-ayuda-slot .sp-cat .sp-row__ic { width: 36px; height: 36px; flex-basis: 36px; border-radius: 8px; background: var(--bp-theme-color-surface-container-default); }
+.uk.is-chat .uk-ayuda-slot .sp-cat b { flex: 0 0 auto; }
+.uk-cta { padding: 20px 0 8px; }
+.uk-cta .pf-cta { margin: 0; width: 100%; }
+/* --- Mis finanzas: el mundo de Uku arriba, el panel abajo --- */
+.uk.is-fin .uk-panel { top: 42% !important; }
+.uk.is-fin .uk-chatbg { opacity: 0; }
+.uk.is-fin .uk-scene { filter: none; z-index: 1; pointer-events: auto; }
+.uk.is-fin .uk-globo { display: block; opacity: 1; transform: none; pointer-events: none; position: absolute; z-index: 3; left: 16px; top: calc(60px + env(safe-area-inset-top, 0px)); max-width: 240px; padding: 14px 16px; }
+.uk.is-fin .uk-globo__t { font: var(--uk-body-medium); }
+.app-uku .uk-panel .pfm-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 4px 0 8px; }
+.app-uku .uk-panel .pfm-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 14px; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-secondary-bg); color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; }
+.app-uku .uk-panel .pfm-tile .material-symbols-rounded { color: var(--bp-interaction-tertiary-fg); }
+.app-uku .uk-panel .pfm-tile b { font: var(--uk-body-medium); }
+.app-uku .uk-panel .pfm-tile small { font: var(--uk-caption); color: var(--cx-muted); }
+.app-uku .uk-panel .pfm-nav__row:first-of-type { border-top: 0; }
+.uk.is-chat .uk-home { display: none !important; }
+html.app-uku .uk-cta .pf-cta, html.app-uku .uk-sec .pf-cta { background: var(--bp-interaction-accent-bg, #0f265c) !important; color: var(--bp-interaction-accent-fg, #fff) !important; }
+.app-uku .view--finanzas.uk-fin .uk.is-fin > .uk-globo { display: block !important; } /* en Mis finanzas, Uku te dice cómo vas */
