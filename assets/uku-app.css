@@ -753,11 +753,13 @@ html.uk-chatting .uk:not(.is-chat) { padding-top: calc(60px + env(safe-area-inse
 .uk.is-chat .uk-bar__x { display: grid; }
 /* --- Soporte y Solicitudes: categorías en mosaico y «Pregúntale a Uku» al final --- */
 .uk.is-chat .uk-ayuda-slot .sp-body { display: flex; flex-direction: column; }
-.uk.is-chat .uk-ayuda-slot .sp-sec:nth-of-type(1) { order: 3; } /* Solucionar un inconveniente */
-.uk.is-chat .uk-ayuda-slot .sp-sec:nth-of-type(2) { order: 1; } /* Preguntas frecuentes */
-.uk.is-chat .uk-ayuda-slot .sp-sec:nth-of-type(3) { order: 2; } /* Categorías */
-.uk.is-chat .uk-ayuda-slot .sp-sec:nth-of-type(4) { order: 4; } /* Tutoriales */
-.uk.is-chat .uk-ayuda-slot .sp-sec:nth-of-type(5) { order: 5; } /* Trámites con un asesor */
+/* Con Solicitudes como primera sección: después van preguntas, categorías, inconvenientes, tutoriales y asesor */
+.uk.is-chat .uk-ayuda-slot .sp-sec.uk-solsec { order: 0 !important; }
+.uk.is-chat .uk-ayuda-slot .sp-sec:nth-of-type(2) { order: 3; } /* Solucionar un inconveniente */
+.uk.is-chat .uk-ayuda-slot .sp-sec:nth-of-type(3) { order: 1; } /* Preguntas frecuentes */
+.uk.is-chat .uk-ayuda-slot .sp-sec:nth-of-type(4) { order: 2; } /* Categorías */
+.uk.is-chat .uk-ayuda-slot .sp-sec:nth-of-type(5) { order: 4; } /* Tutoriales */
+.uk.is-chat .uk-ayuda-slot .sp-sec:nth-of-type(6) { order: 5; } /* Trámites con un asesor */
 .uk.is-chat .uk-ayuda-slot .uk-cta { order: 9; }
 .uk.is-chat .uk-ayuda-slot .sp-cats { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .uk.is-chat .uk-ayuda-slot .sp-cat { flex-direction: column; align-items: flex-start; gap: 8px; min-height: 0; padding: 14px !important; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-secondary-bg); }
@@ -780,3 +782,25 @@ html.uk-chatting .uk:not(.is-chat) { padding-top: calc(60px + env(safe-area-inse
 .uk.is-chat .uk-home { display: none !important; }
 html.app-uku .uk-cta .pf-cta, html.app-uku .uk-sec .pf-cta { background: var(--bp-interaction-accent-bg, #0f265c) !important; color: var(--bp-interaction-accent-fg, #fff) !important; }
 .app-uku .view--finanzas.uk-fin .uk.is-fin > .uk-globo { display: block !important; } /* en Mis finanzas, Uku te dice cómo vas */
+
+/* --- Pantalla inicial como Google: la barra sobre los tres accesos --- */
+.uk.is-home .uk-bar { order: 5; margin-top: auto; }
+.uk.is-home .uk-pills { order: 6; margin-top: 0; }
+/* --- Pantalla del buscador: la barra arriba con su X, los resultados debajo --- */
+.uk-bar__cerrar { display: none; }
+.uk.is-buscar .uk-bar__cerrar { display: grid; }
+.uk.is-buscar .uk-bar__add, .uk.is-buscar .uk-bar__mic[data-k="voz"] { display: none; }
+.uk.is-buscar .uk-home, .uk.is-buscar .uk-pills, .uk.is-buscar .uk-scene, .uk.is-buscar .uk-globo, .uk.is-buscar .uk-chathead { display: none !important; }
+.uk.is-buscar .uk-bar { order: -1; margin-top: 0 !important; }
+.uk.is-buscar .uk-results { order: 0; }
+.uk.is-buscar .uk-chat { display: none; }
+.uk.is-buscar .uk-results { display: block !important; position: static; flex: 1 1 auto; min-height: 0; max-height: none; margin-top: 8px; padding: 0 4px; background: transparent; box-shadow: none; overflow-y: auto; }
+.uk.is-buscar .uk-results__l { margin-top: 16px !important; }
+.uk.is-buscar::before { display: none; }
+/* --- Solicitudes dentro de Soporte --- */
+.uk.is-chat .uk-ayuda-slot .uk-solsec { order: 0; }
+.uk.is-chat .uk-ayuda-slot .uk-solsec .sp-sec__sub { margin: 10px 0 2px; font: var(--uk-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
+.uk.is-chat .uk-ayuda-slot .uk-solrow { display: flex; align-items: center; gap: 12px; width: 100%; border: 0; background: none; color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; }
+.uk.is-chat .uk-ayuda-slot .uk-solrow .sp-row__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.uk.is-chat .uk-ayuda-slot .uk-solrow small { font: var(--uk-caption); color: var(--cx-muted); }
+.uk.is-chat .uk-ayuda-slot .uk-solrow > .material-symbols-rounded { color: var(--cx-muted); }
