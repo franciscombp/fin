@@ -3971,23 +3971,11 @@
 
         <!-- Parte inferior: acciones + botones (fondo blanco) -->
         <div class="login-screen__panel">
-            <!-- Destacados: etiqueta arriba, ícono abajo -->
-            <div class="login-features">
-                <button class="login-feature" data-action="Cobrar con QR">
-                    <span class="login-feature__label">Cobrar con QR</span>
-                    <span class="login-feature__icon"><span class="material-symbols-rounded">qr_code_2</span></span>
-                </button>
-                <button class="login-feature" data-action="Pagar con QR">
-                    <span class="login-feature__label">Pagar con QR</span>
-                    <span class="login-feature__icon"><span class="material-symbols-rounded">qr_code_scanner</span></span>
-                </button>
-            </div>
-
             <!-- Acciones rápidas (mismo estilo que Destacado) -->
             <div class="login-qa">
-                <button class="quick-action" data-action="Transferir dinero">
-                    <span class="quick-action__icon"><span class="material-symbols-rounded">send_money</span></span>
-                    <span class="quick-action__label">Transferir dinero</span>
+                <button class="quick-action" data-action="Pagar con QR">
+                    <span class="quick-action__icon"><span class="material-symbols-rounded">qr_code_scanner</span></span>
+                    <span class="quick-action__label">Pagar a un QR</span>
                 </button>
                 <button class="quick-action" data-action="Retirar sin tarjeta">
                     <span class="quick-action__icon"><span class="material-symbols-rounded">payments</span></span>
@@ -3997,9 +3985,9 @@
                     <span class="quick-action__icon"><span class="material-symbols-rounded">directions_transit</span></span>
                     <span class="quick-action__label">Pagar transporte</span>
                 </button>
-                <button class="quick-action" data-action="Verificar pago">
-                    <span class="quick-action__icon"><span class="badge-new">Nuevo</span><span class="material-symbols-rounded">verified_user</span></span>
-                    <span class="quick-action__label">Verificar pago</span>
+                <button class="quick-action" data-action="Cobrar con QR">
+                    <span class="quick-action__icon"><span class="material-symbols-rounded">qr_code_2</span></span>
+                    <span class="quick-action__label">Mostrar como QR</span>
                 </button>
             </div>
 
@@ -5238,7 +5226,7 @@
             'Recibir dinero': 'control_point_duplicate', 'Pagar servicios': 'emoji_objects',
             'Pagar tarjeta': 'credit_card', 'Retirar sin tarjeta': 'payments', 'Más transacciones': 'apps',
             'Recargar celular': 'smartphone', 'Más transacciones': 'apps',
-            'Pagar transporte': 'directions_transit', 'Verificar pago': 'verified_user',
+            'Pagar transporte': 'directions_transit', 'Mostrar como QR': 'qr_code_2',
             'Cuenta PRINCIPAL': 'account_balance_wallet'
         };
 
@@ -6124,7 +6112,7 @@
         // página (push o resumen); el resto sólo confirma con un toast.
         // Sin sesión: los accesos públicos responden; los que usan tu cuenta
         // inician el ingreso al instante y se abren al entrar (window.__pendingAction).
-        const ACCESOS_PUBLICOS = ['Soporte', 'Ayuda', 'Verificar pago', 'Clave digital', 'Idioma'];
+        const ACCESOS_PUBLICOS = ['Soporte', 'Ayuda', 'Clave digital', 'Idioma'];
         document.querySelectorAll('[data-action]').forEach(el => {
             el.addEventListener('click', (e) => {
                 const sinSesion = document.getElementById('login-screen')?.classList.contains('active');
