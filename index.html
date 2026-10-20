@@ -2366,7 +2366,8 @@
         html body.sin-sesion .push-page, html body.sin-sesion #push-page { z-index: 600; }
         html body.sin-sesion .pf-toast { z-index: 690; }
         /* Sin internet: solo entra con Face ID o huella y se ven los accesos que funcionan sin red */
-        html body.sin-red [data-online-only], html body.sin-red #btn-login-other { display: none !important; }
+        html body.sin-red #btn-login-other { display: none !important; }
+        html body.sin-red .quick-action[data-online-only]:disabled { opacity: .4; }
         #btn-login-other { margin-top: var(--bp-semantic-spacing-xl); }
         /* El selector de idioma también se abre desde el login */
         html body.sin-sesion .as-sheet-back { z-index: 650; }

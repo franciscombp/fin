@@ -395,6 +395,8 @@
     var cambio = conectado !== en;
     en = conectado;
     document.body.classList.toggle('sin-red', !en);
+    // Los accesos que necesitan internet quedan visibles pero deshabilitados
+    document.querySelectorAll('[data-online-only]').forEach(function (el) { el.disabled = !en; });
     if (cambio) document.dispatchEvent(new CustomEvent('red:cambio', { detail: en }));
     // Al perder la conexión en el login, se avisa con un alert
     var enLogin = document.getElementById('login-screen');
