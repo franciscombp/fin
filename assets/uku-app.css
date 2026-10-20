@@ -850,3 +850,29 @@ html.app-uku .uk-cta .pf-cta, html.app-uku .uk-sec .pf-cta { background: var(--b
 /* Uku nunca va en un círculo de avatar: en las hojas del PFM, su frase va sola (él ya está en su mundo) */
 .app-uku .uku-say__face, .app-uku .pfm-game__iqface, .app-uku .pfm-play__uku { display: none !important; }
 .app-uku .uku-say { gap: 0; }
+
+/* ======================================================================
+   Mis finanzas: el mundo de Uku con sus recomendaciones arriba y la hoja entrando desde abajo
+   ====================================================================== */
+/* La hoja sube desde abajo y deja ver el paisaje; no tapa a Uku (el encuadre lo deja sobre ella) */
+.uk.is-fin .uk-panel { top: 46% !important; animation: ukSheet .5s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes ukSheet { from { opacity: 0; transform: translateY(40%); } }
+/* Recomendación de Uku: una tarjeta ligera arriba, a lo ancho, con su acción en acento azul */
+.uk.is-fin .uk-globo { left: 16px; right: 16px; top: calc(60px + env(safe-area-inset-top, 0px)); max-width: none; padding: 16px 18px 12px; pointer-events: auto; border-radius: 16px 16px 16px 4px; }
+.uk.is-fin .uk-globo__x { display: none; }
+.uk.is-fin .uk-globo__t { font: var(--uk-body); }
+.uk.is-fin .uk-globo__acts { margin-top: 12px; }
+.uk.is-fin .uk-globo__foot { margin-top: 8px; padding-top: 8px; }
+/* Sin barra ni «Pregúntale a Uku» en Mis finanzas */
+.app-uku .view--finanzas.uk-fin .uk .uk-cta { display: none !important; }
+/* Composición de Mis finanzas: recomendación compacta arriba a la izquierda, Uku de cuerpo entero en su
+   paisaje, y la hoja desde el 58 % (se puede arrastrar hacia abajo para cerrarla) */
+.uk.is-fin .uk-panel { top: 58% !important; }
+.uk.is-fin .uk-globo { right: auto; max-width: 272px; padding: 14px 16px 10px; }
+.uk.is-fin .uk-globo__t { font: var(--uk-sm); }
+.uk.is-fin .uk-globo__tag { margin-bottom: 4px !important; }
+.uk.is-fin .uk-globo__acts { margin-top: 10px; gap: 6px 2px; }
+html.app-uku .uk.is-fin .uk-globo__acts .uk-globo__go.btn, html.app-uku .uk.is-fin .uk-globo__go.btn { min-height: 40px !important; padding: 0 14px !important; font-size: 14px !important; }
+.uk.is-fin .uk-globo__skip { min-height: 40px; padding: 0 10px; font-size: 14px; }
+.uk.is-fin .uk-globo__foot { margin-top: 6px; padding-top: 6px; }
+.uk.is-fin .uk-globo__next { min-height: 34px; font-size: 14px; }
