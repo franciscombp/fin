@@ -412,6 +412,20 @@
   window.addEventListener('offline', function () { pintarRed(false); });
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') sonda(); });
   document.addEventListener('DOMContentLoaded', function () { pintarRed(en); sonda(); });
+
+  // Sin internet, las acciones que mueven dinero no se abren; lo informativo sigue igual.
+  // Va en captura sobre el documento: también frena los clics que hace el buscador.
+  // Tickets de transporte no está aquí: los tickets comprados se muestran sin internet
+  var TRANSACCIONALES = ['Transferir dinero', 'Transferir', 'Pagar servicios', 'Recargar celular', 'Pagar tarjeta',
+    'Retirar sin tarjeta', 'Pagar con QR', 'Pagar a un QR'];
+  document.addEventListener('click', function (e) {
+    if (en) return;
+    var el = e.target.closest && e.target.closest('[data-action]');
+    if (!el || TRANSACCIONALES.indexOf(el.dataset.action) < 0) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if (typeof showToast === 'function') showToast('Sin internet: esta función necesita conexión');
+  }, true);
   setInterval(sonda, 30000);
 
   /* ---------- Texto del botón principal ---------- */
