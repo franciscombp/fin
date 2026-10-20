@@ -386,9 +386,9 @@
   }
 
   /* ---------- Conexión real: una petición que sale a la red, no navigator.onLine ----------
-     El service worker responde las peticiones de la app desde caché si no hay red, así que
-     la sonda va a un host externo (endpoint de prueba de conectividad de Google). */
-  var SONDA = 'https://www.gstatic.com/generate_204';
+     El service worker responde desde caché a los archivos de la app si no hay red, así que la
+     sonda es un archivo que no está en caché: si no hay red falla; si hay, responde (aunque sea 404). */
+  var SONDA = './assets/sonda.txt';
   var en = navigator.onLine !== false;
   function enLinea() { return en; }
   function pintarRed(conectado) {
@@ -403,7 +403,7 @@
     if (!navigator.onLine) return pintarRed(false);
     var ctl = new AbortController();
     var t = setTimeout(function () { ctl.abort(); }, 4000);
-    fetch(SONDA + '?t=' + Date.now(), { mode: 'no-cors', cache: 'no-store', signal: ctl.signal })
+    fetch(SONDA + '?t=' + Date.now(), { cache: 'no-store', signal: ctl.signal })
       .then(function () { clearTimeout(t); pintarRed(true); }, function () { clearTimeout(t); pintarRed(false); });
   }
   window.addEventListener('online', sonda);
