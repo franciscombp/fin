@@ -1480,8 +1480,36 @@
       (p ? '<div class="pfm-hub__bar" aria-hidden="true"><i class="' + cls + '" style="width:' + (u * 100).toFixed(1) + '%"></i></div>' : '') +
       '<p class="pfm-hub__s">' + estado + '</p>' +
       '<div class="pfm-hub__acts"><button class="pfm-hub__btn" data-pfm="gastos">' + T('Gastos') + '</button><button class="pfm-hub__btn" data-pfm="pres">' + T('Presupuesto') + '</button></div>' +
-      '<div class="pfm-hub__rows">' + row('alltx', T('Movimientos')) + (a.n ? row('game', T('Ordenar mis gastos'), a.n) : '') + '</div>' +
+      hubGruposHTML(s) + hubPagosHTML() + hubUltimosHTML() +
+      '<div class="pfm-hub__rows">' + row('alltx', T('Todos los movimientos')) + (a.n ? row('game', T('Ordenar mis gastos'), a.n) : '') + '</div>' +
       '</section>';
+  }
+  // En qué se va el dinero del mes: los tres grupos que más pesan, con su barra proporcional
+  function hubGruposHTML(s) {
+    var G = Object.keys(s.grupos || {}).filter(function (k) { return GRUPOS[k] && !GRUPOS[k].gris && s.grupos[k] > 0; })
+      .sort(function (x, y) { return s.grupos[y] - s.grupos[x]; }).slice(0, 3);
+    if (!G.length) return '';
+    var max = s.grupos[G[0]];
+    return '<h3 class="pfm-hub__h">' + T('En qué se va') + '</h3><div class="pfm-hub__list">' + G.map(function (k) {
+      return '<button class="pfm-hub__g" data-pfm="gastos"><span class="material-symbols-rounded" aria-hidden="true">' + GRUPOS[k].ic + '</span><span class="pfm-hub__gl"><b>' + esc(T(k)) + '</b><i aria-hidden="true"><u style="width:' + (s.grupos[k] / max * 100).toFixed(0) + '%"></u></i></span><em>' + money0(s.grupos[k]) + '</em></button>';
+    }).join('') + '</div>';
+  }
+  // Lo que viene por pagar en las próximas dos semanas
+  function hubPagosHTML() {
+    var fs = facturas().filter(function (x) { return diasA(x.f) >= 0 && diasA(x.f) <= 14; }).sort(function (x, y) { return x.f.localeCompare(y.f); }).slice(0, 3);
+    if (!fs.length) return '';
+    return '<h3 class="pfm-hub__h">' + T('Por pagar') + '</h3><div class="pfm-hub__list">' + fs.map(function (x) {
+      return '<button class="pfm-hub__p" data-pfm="bills"><span class="pfm-hub__pl"><b>' + esc(x.n) + '</b><small>' + cuandoTxt(x.f) + (x.aprox ? ' · ' + T('aproximado') : '') + '</small></span><em>' + money0(x.monto) + '</em></button>';
+    }).join('') + '</div>';
+  }
+  // Los últimos tres movimientos, para no tener que ir a la lista completa
+  function hubUltimosHTML() {
+    var R = rows().slice().sort(function (x, y) { return y.f.localeCompare(x.f) || y.i - x.i; }).slice(0, 3);
+    if (!R.length) return '';
+    return '<h3 class="pfm-hub__h">' + T('Últimos movimientos') + '</h3><div class="pfm-hub__list">' + R.map(function (r) {
+      var c = cls(r);
+      return '<button class="pfm-hub__p" data-pfm="tx:' + r.i + '"><span class="pfm-hub__pl"><b>' + esc(desc(r)) + '</b><small>' + dshort(r.f) + (c.cat ? ' · ' + esc(T(c.cat)) : '') + '</small></span><em' + (r.m > 0 ? ' class="is-in"' : '') + '>' + (r.m > 0 ? '+' : '−') + money0(Math.abs(r.m)) + '</em></button>';
+    }).join('') + '</div>';
   }
   function resumenGastosHTML() {
     var s = month(curMes()), pr = pres(), g = s.gast, p = pr.general;

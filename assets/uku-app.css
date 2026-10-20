@@ -969,3 +969,67 @@ html.app-uku .uk.is-home .uk-globo__go.btn { min-height: 40px !important; paddin
 @keyframes ukTick { 0% { transform: scale(1) } 40% { transform: scale(1.06) } 100% { transform: scale(1) } }
 .uk-globo__go.is-tick { animation: ukTick .36s ease; }
 @media (prefers-reduced-motion: reduce) { .uk-globo__go.is-tick { animation: none; } }
+
+/* =====================================================================
+   Hojas tipo iOS. La parcial (Mis finanzas) flota con margen a los lados para que Uku siga a la
+   vista; al subirla ocupa todo el ancho y el alto. Soporte y Solicitudes siempre completas y a
+   todo el ancho. El buscador universal es también una hoja completa (ver buscador.css).
+   ===================================================================== */
+.uk.is-chat .uk-panel { transition: top .32s cubic-bezier(.2, .8, .2, 1), left .32s cubic-bezier(.2, .8, .2, 1), right .32s cubic-bezier(.2, .8, .2, 1), border-radius .32s ease, transform .28s cubic-bezier(.2, .8, .2, 1), opacity .28s ease; }
+.app-uku .view--finanzas.uk-ayuda .uk.is-chat .uk-panel { left: 0; right: 0; top: calc(8px + env(safe-area-inset-top, 0px)); bottom: 0; border-radius: var(--bp-semantic-radius-lg, 16px) var(--bp-semantic-radius-lg, 16px) 0 0; }
+.uk.is-fin .uk-panel, .app-uku .view--finanzas.uk-fin .uk.is-chat .uk-panel { left: 8px; right: 8px; top: 52%; bottom: 0; border-radius: var(--bp-semantic-radius-lg, 16px) var(--bp-semantic-radius-lg, 16px) 0 0; }
+.uk.is-fin.is-up .uk-panel, .app-uku .view--finanzas.uk-fin .uk.is-chat.is-up .uk-panel { left: 0; right: 0; top: calc(8px + env(safe-area-inset-top, 0px)); }
+.uk.is-fin .uk-panel .pf-host { padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+.uk.is-chat .uk-ayuda-slot { padding-bottom: 8px; }
+/* «Pregúntale a Uku» es el pie fijo de la hoja de Soporte: la lista termina antes, nada queda tapado */
+.uk.is-chat .uk-panel > .uk-cta { position: static; flex: 0 0 auto; margin: 0; padding: 12px var(--uk-inset) calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--bp-theme-color-surface-container-default); box-shadow: 0 -10px 16px -10px rgba(15, 38, 92, .14); }
+/* Las filas de Solicitudes se separan igual que las demás de Soporte */
+.uk.is-chat .uk-ayuda-slot .uk-solrow { min-height: 60px; padding: 12px 0; border-bottom: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+/* Chat: Uku nítido y presente, también mientras escribes */
+.uk.is-chat .uk-scene { filter: none; }
+.uk.is-kb .uk-scene, .uk.is-chat.is-typing .uk-scene { opacity: 1; }
+/* Inicio: los chips van bajo el globo, en la columna de la izquierda; Uku queda a la derecha sin nada encima */
+.uk.is-home .uk-chips { order: 3; margin-top: 10px; max-width: 236px; }
+.uk.is-home .uk-bar { margin-top: auto; }
+
+/* =====================================================================
+   Mis finanzas con contenido: en qué se va, por pagar y últimos movimientos.
+   Títulos en frase (title-sm), filas de 56 px sin cajas, cifras tabulares.
+   ===================================================================== */
+.app-uku .uk-panel .pfm-hub__h { margin: 32px 0 4px !important; font: var(--uk-title) !important; letter-spacing: 0 !important; color: var(--bp-theme-color-text-primary) !important; }
+.app-uku .uk-panel .pfm-hub__list { display: flex; flex-direction: column; }
+.app-uku .uk-panel .pfm-hub__g, .app-uku .uk-panel .pfm-hub__p { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px 0; border: 0; border-bottom: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); background: none; color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; font: inherit; }
+.app-uku .uk-panel .pfm-hub__list > :last-child { border-bottom: 0; }
+.app-uku .uk-panel .pfm-hub__g > .material-symbols-rounded { flex: 0 0 24px; font-size: 22px; color: var(--bp-interaction-tertiary-fg); }
+.app-uku .uk-panel .pfm-hub__gl, .app-uku .uk-panel .pfm-hub__pl { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.app-uku .uk-panel .pfm-hub__gl b, .app-uku .uk-panel .pfm-hub__pl b { font: var(--uk-body-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app-uku .uk-panel .pfm-hub__pl { gap: 2px; }
+.app-uku .uk-panel .pfm-hub__pl small { font: var(--uk-caption); color: var(--cx-muted); }
+.app-uku .uk-panel .pfm-hub__gl i { display: block; height: 3px; border-radius: 2px; background: var(--bp-theme-color-border-divider, var(--cx-line)); overflow: hidden; }
+.app-uku .uk-panel .pfm-hub__gl i u { display: block; height: 100%; border-radius: 2px; background: var(--bp-interaction-accent-bg, #0f265c); text-decoration: none; }
+.app-uku .uk-panel .pfm-hub__g em, .app-uku .uk-panel .pfm-hub__p em { flex: 0 0 auto; font: var(--uk-sm-semibold); font-style: normal; color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
+.app-uku .uk-panel .pfm-hub__p em.is-in { color: var(--bp-theme-color-status-success-text, #1b8a3a); }
+.app-uku .uk-panel .pfm-hub__rows { margin-top: 24px; }
+.app-uku .uk-panel .pfm-hub { padding-bottom: 24px; }
+
+/* =====================================================================
+   Soporte con jerarquía: títulos de sección en frase (title-sm), subtítulo corto en gris,
+   32 px entre secciones, filas de 56 px con separador fino. Sin etiquetas en mayúsculas.
+   ===================================================================== */
+.uk.is-chat .uk-ayuda-slot .sp-sec { margin-top: 32px; }
+.uk.is-chat .uk-ayuda-slot .sp-body > .sp-sec:first-child { margin-top: 8px; }
+.uk.is-chat .uk-ayuda-slot .sp-sec h2 { margin: 0 0 4px !important; font: var(--uk-title) !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--bp-theme-color-text-primary) !important; }
+.uk.is-chat .uk-ayuda-slot .sp-sec__sub, .uk.is-chat .uk-ayuda-slot .uk-solsec .sp-sec__sub { margin: 0 0 12px !important; font: var(--uk-sm) !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--cx-muted) !important; }
+.uk.is-chat .uk-ayuda-slot .uk-sol__l { margin: 20px 0 4px !important; font: var(--uk-sm-semibold) !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--bp-theme-color-text-primary) !important; }
+.uk.is-chat .uk-ayuda-slot .sp-row, .uk.is-chat .uk-ayuda-slot .uk-solrow, .uk.is-chat .uk-ayuda-slot .sp-tut { min-height: 56px; padding: 10px 0 !important; border-bottom: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
+.uk.is-chat .uk-ayuda-slot .sp-list > :last-child, .uk.is-chat .uk-ayuda-slot .sp-tuts > :last-child { border-bottom: 0; }
+.uk.is-chat .uk-ayuda-slot .sp-row__main b, .uk.is-chat .uk-ayuda-slot .uk-solrow b, .uk.is-chat .uk-ayuda-slot .sp-tut b { font: var(--uk-body-medium); }
+.uk.is-chat .uk-ayuda-slot .uk-solrow small, .uk.is-chat .uk-ayuda-slot .sp-row small, .uk.is-chat .uk-ayuda-slot .sp-tut small { font: var(--uk-caption); color: var(--cx-muted); }
+.uk.is-chat .uk-ayuda-slot .sp-cats { margin-top: 12px; }
+.uk.is-chat .uk-ayuda-slot .sp-cat { padding: 16px !important; gap: 10px; }
+.uk.is-chat .uk-ayuda-slot .sp-cat b { font: var(--uk-body-medium); }
+.uk.is-chat .uk-ayuda-slot .sp-cat small { font: var(--uk-caption); color: var(--cx-muted); }
+.uk.is-chat .uk-ayuda-slot .sp-body { padding-bottom: 16px; }
+/* Tutoriales como lista (no carrusel): sin ancho fijo ni desplazamiento lateral */
+.uk.is-chat .uk-ayuda-slot .sp-tuts { margin: 0; padding: 0; overflow: visible; scroll-snap-type: none; }
+.uk.is-chat .uk-ayuda-slot .sp-tut { flex: 0 0 auto; scroll-snap-align: none; }
