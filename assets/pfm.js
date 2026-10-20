@@ -1462,7 +1462,7 @@
       row('alltx', T('Movimientos'), T('Todo lo que entró y salió')) +
       (a.n ? row('game', T('Ordenar mis gastos'), T(a.n === 1 ? '1 consumo sin clasificar' : '{n} consumos sin clasificar', { n: a.n })) : '') +
       row('who', T('El mundo de Uku'), T('Qué significa cada cosa')) +
-      '</section>';
+      '</section><div class="uk-cta"><button class="pf-cta" data-k="escribir">Pregúntale a Uku</button></div>';
   }
   function resumenGastosHTML() {
     var s = month(curMes()), pr = pres(), g = s.gast, p = pr.general;

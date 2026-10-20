@@ -736,12 +736,12 @@ html.uk-chatting .uk:not(.is-chat) { padding-top: calc(60px + env(safe-area-inse
 .uk.is-home .uk-pills { margin-top: auto; }
 /* En la pantalla inicial Uku no se pone delante de nada: la escena va detrás de las sugerencias */
 .uk.is-home .uk-scene { z-index: 0; }
-/* --- Chat de burbujas con Uku como avatar (sin el 3D detrás) --- */
-.uk.is-chat:not(.is-fin) .uk-scene { display: none; }
-.uk.is-chat:not(.is-fin) .uk-chatbg { background-image: none !important; filter: none; }
-.uk.is-chat .uk-chat { top: calc(56px + env(safe-area-inset-top, 0px)); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); padding: 8px 4px 12px; gap: 14px; }
-.uk-msg:not(.is-agent) .uk-msg__face, .uk-msg__face.is-gap { display: block; }
-.uk-msg__face { flex: 0 0 32px; width: 32px; height: 32px; background: var(--bp-interaction-secondary-bg); }
+/* --- Chat de burbujas: Uku en 3D abajo, como antes (nunca un avatar en círculo) --- */
+.uk.is-chat .uk-chat { top: calc(56px + env(safe-area-inset-top, 0px)); bottom: 176px; padding: 8px 4px 12px; gap: 14px; }
+.uk-msg:not(.is-agent) .uk-msg__face, .uk-msg__face.is-gap { display: none; }
+/* Una persona es el último recurso: en el asistente, Soporte no muestra el bloque de asesor y call center;
+   se llega a ellos solo desde un flujo que no se pudo resolver */
+.uk.is-chat .uk-ayuda-slot .sp-sec--people { display: none !important; }
 .uk-msg__b { display: flex; flex-direction: column; gap: var(--uk-gap-item); max-width: 100%; padding: 14px 16px; border: 0; border-radius: 4px 16px 16px 16px; box-shadow: var(--uk-elev-low); }
 .uk-msg__b > p { margin: 0; font: var(--uk-body); }
 .uk-msg__t { font: var(--uk-title); }
@@ -804,3 +804,44 @@ html.app-uku .uk-cta .pf-cta, html.app-uku .uk-sec .pf-cta { background: var(--b
 .uk.is-chat .uk-ayuda-slot .uk-solrow .sp-row__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .uk.is-chat .uk-ayuda-slot .uk-solrow small { font: var(--uk-caption); color: var(--cx-muted); }
 .uk.is-chat .uk-ayuda-slot .uk-solrow > .material-symbols-rounded { color: var(--cx-muted); }
+
+/* --- En las secciones, la X va en la cabecera, a la altura del título --- */
+.uk-head__x { display: none; margin-left: auto; width: 40px; height: 40px; flex: 0 0 40px; border-radius: 50%; background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-tertiary-fg); }
+.uk.is-chat .uk-panel .uk-head .uk-head__x { display: grid; place-items: center; }
+.app-uku .view--finanzas.uk-fin .uk .uk-chathead, .app-uku .view--finanzas.uk-ayuda .uk .uk-chathead { display: none; }
+/* Sin la X flotante, la hoja de Soporte empieza arriba del todo */
+.app-uku .view--finanzas.uk-ayuda .uk.is-chat .uk-panel { top: calc(12px + env(safe-area-inset-top, 0px)); }
+.uk.is-chat .uk-panel .uk-head { align-items: center; }
+.uk-head__t { flex: 1; min-width: 0; }
+
+/* --- Aire y jerarquía por espaciado (fondo blanco, sin cajas de más) --- */
+.uk.is-chat .uk-panel .uk-head { padding: 20px var(--uk-inset) 16px; }
+.app-uku .uk-panel .pfm-resumen { padding-top: 0; }
+.app-uku .uk-panel .pfm-resumen__card { padding: 0; background: transparent; box-shadow: none; gap: 6px; }
+.app-uku .uk-panel .pfm-nav { padding-top: 20px; }
+.uk.is-chat .uk-ayuda-slot .sp-sec { margin-top: 28px; }
+.uk.is-chat .uk-ayuda-slot .sp-sec.uk-solsec { margin-top: 0; }
+.uk.is-chat .uk-ayuda-slot .uk-sol__l { margin: 16px 0 2px !important; font: var(--uk-caption); text-transform: uppercase; letter-spacing: .4px; color: var(--cx-muted); }
+.uk.is-chat .uk-ayuda-slot .uk-solsec .sp-sec__sub { margin: 4px 0 8px; font: var(--uk-sm); text-transform: none; letter-spacing: 0; color: var(--cx-muted); }
+.uk.is-fin .uk-globo { max-width: 230px; }
+
+/* ======================================================================
+   Solo el chat tiene a Uku abajo y su barra es de texto. En Soporte y Mis finanzas no hay barra:
+   «Pregúntale a Uku» es el botón que abre el chat.
+   ====================================================================== */
+/* Chat: texto y enviar; sin lupa (es del buscador), sin cámara ni micrófono */
+.uk-bar__send { display: none; flex: 0 0 48px; width: 48px; height: 48px; place-items: center; border: 0; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-accent-bg, #0f265c); color: var(--bp-interaction-accent-fg, #fff); cursor: pointer; }
+.uk.is-chat:not(.is-fin) .uk-bar__send { display: grid; }
+.uk.is-chat:not(.is-fin) .uk-bar__add, .uk.is-chat:not(.is-fin) .uk-bar__mic[data-k="voz"] { display: none; }
+.uk.is-chat:not(.is-fin) .uk-bar__f > .material-symbols-rounded { display: none; }
+.uk.is-chat:not(.is-fin) .uk-bar input { padding-left: 16px; }
+/* Soporte: sin Uku ni barra; la hoja ocupa la pantalla y el botón del final abre el chat */
+.app-uku .view--finanzas.uk-ayuda .uk .uk-scene, .app-uku .view--finanzas.uk-ayuda .uk .uk-skel, .app-uku .view--finanzas.uk-ayuda .uk .uk-bar, .app-uku .view--finanzas.uk-ayuda .uk .uk-chatbg { display: none !important; }
+.app-uku .view--finanzas.uk-ayuda .uk.is-chat .uk-panel { bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+/* Mis finanzas: el mundo arriba, el panel hasta abajo, sin barra */
+.app-uku .view--finanzas.uk-fin .uk .uk-bar { display: none !important; }
+.app-uku .view--finanzas.uk-fin .uk.is-chat .uk-panel { bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+/* El botón «Pregúntale a Uku» queda fijo al pie de la hoja, sobre fondo blanco */
+.uk-cta { position: sticky; bottom: 0; z-index: 2; margin: 12px calc(var(--uk-inset) * -1) 0; padding: 12px var(--uk-inset) 16px; background: var(--bp-theme-color-surface-container-default); }
+.uk.is-chat .uk-ayuda-slot .uk-cta { margin: 12px -24px 0; padding: 12px 24px 16px; }
+.uk-cta { box-shadow: 0 -10px 16px -10px rgba(15, 38, 92, .14); }
