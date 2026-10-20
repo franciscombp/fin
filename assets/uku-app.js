@@ -117,7 +117,7 @@
     host.classList.toggle('is-typing', !!input.value.trim());
     host.classList.toggle('is-chat', es);
     var fin = view.classList.contains('uk-fin'); host.classList.toggle('is-fin', fin);
-    if (fin) globoFin(); else if (es) { globoEl.hidden = true; }
+    if (fin) pintarGlobo(); else if (es) { globoEl.hidden = true; }
     if (homeEl && es) { homeEl.hidden = true; host.classList.remove('is-home'); }
     // Arriba: flecha para bajar el asistente en la pantalla inicial y su mundo; X en el chat y las secciones
     var xb = host.querySelector('.uk-chathead__x'); if (xb) { var icono = es ? 'close' : 'arrow_back'; if (xb.dataset.ic !== icono) { xb.dataset.ic = icono; xb.innerHTML = ic(icono); xb.setAttribute('aria-label', es ? 'Cerrar' : 'Volver'); xb.dataset.k = es ? 'cerrar' : 'salir'; } }
@@ -183,9 +183,11 @@
     return consejos().map(function (x) { return { id: x.id, tag: x.tag, t: x.di || x.t, k: x.act ? 'pfm:' + x.act : 'prop:' + x.id, l: x.actl || 'Cuéntame', luego: 'pfm:luego:' + x.id, kind: x.kind }; }).concat(S);
   }
   function pintarGlobo() {
-    if (view.classList.contains('uk-fin')) return globoFin();
-    if (!mundoOn && !host.classList.contains('is-onb')) { globoEl.hidden = true; return; } // en la pantalla inicial el saludo va en la cabecera
-    var P = propuestas(), n = P.length, hola = !saludado && !nota, sal = hola ? saludo() : null, x = !hola && !nota && n ? P[gi % n] : null;
+    var fin = view.classList.contains('uk-fin');
+    if (!fin && !mundoOn && !host.classList.contains('is-onb')) { globoEl.hidden = true; return; } // en la pantalla inicial el saludo va en la cabecera
+    // En Mis finanzas, Uku recomienda: una cosa a la vez (pagos, orden, presupuesto, ahorro), con su acción
+    var P = fin ? recomendaciones() : propuestas(), n = P.length, hola = !fin && !saludado && !nota, sal = hola ? saludo() : null, x = !hola && !nota && n ? P[gi % n] : null;
+    if (fin && !x) return globoFin();
     var t = nota || (hola ? sal.t : x ? x.t : 'Todo está en orden por ahora. ¿Quieres hacer algo hoy?');
     var go = hola ? sal : x ? { k: x.k, l: x.l } : null;
     // Sin nada que decir (o en silencio), el globo se va y Uku se queda tranquilo
@@ -224,7 +226,15 @@
       '<div class="uk-home__rows">' + rows.map(function (r, i) { return '<button class="uk-home__row" style="--d:' + i * 60 + 'ms" data-k="' + esc(r.k) + '" data-l="' + esc(r.t) + '"><span>' + (r.tag ? '<small>' + esc(r.tag) + '</small>' : '') + '<b>' + esc(r.t) + '</b></span>' + ic('chevron_right') + '</button>'; }).join('') + '</div>';
     saludado = true;
   }
-  // En Mis finanzas, Uku está en su mundo arriba y te dice cómo vas (wireframe: «¡Vas muy bien!»)
+  // Lo que Uku recomienda en Mis finanzas: sus consejos del PFM (pagos cercanos, por ordenar, presupuesto,
+  // mesadas, ahorro) y, si no hay nada pendiente, lo que cuenta su mundo. Siempre en segunda persona.
+  function recomendaciones() {
+    var A = consejos().map(function (x) { return { id: x.id, tag: x.tag, t: x.di || x.t, k: x.act ? 'pfm:' + x.act : 'prop:' + x.id, l: x.actl || 'Cuéntame', luego: 'pfm:luego:' + x.id, kind: x.kind }; });
+    var W = window.PFM && PFM.world && resumen() ? PFM.world() : [];
+    var S = W.filter(function (x) { return /warn|over|pensativo/.test(x.cls || ''); }).map(function (x) { return { id: 'mundo', tag: x.l, t: x.d, k: 'mundo', l: 'Ver mi mundo' }; });
+    return A.concat(S);
+  }
+  // En Mis finanzas sin nada pendiente, Uku te dice que vas bien (wireframe: «¡Vas muy bien!»)
   function globoFin() {
     var s = resumen(), W = window.PFM && PFM.world && s ? PFM.world() : [], alerta = W.filter(function (x) { return /warn|over|pensativo/.test(x.cls || ''); })[0];
     var t = !s ? 'Estoy mirando tus movimientos…' : alerta ? alerta.d : 'Vas muy bien. Tus gastos están al día y dentro de lo que planeaste.';
