@@ -2368,7 +2368,6 @@
         /* Sin internet: solo entra con Face ID o huella y se ven los accesos que funcionan sin red */
         html body.sin-red #btn-login-other { display: none !important; }
         html body.sin-red .quick-action[data-online-only]:disabled { opacity: .4; }
-        #btn-login-other { margin-top: var(--bp-semantic-spacing-xl); }
         #login-offline[hidden] { display: none; }
         /* El selector de idioma también se abre desde el login */
         html body.sin-sesion .as-sheet-back { z-index: 650; }
@@ -2502,6 +2501,7 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 16px 8px;
+            margin-bottom: var(--bp-semantic-spacing-macro-sm);
         }
 
         /* Badge "Nuevo" sobre el ícono */
@@ -2524,7 +2524,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
+            gap: var(--bp-semantic-spacing-macro-sm);
             width: 100%;
         }
 
