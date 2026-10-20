@@ -2363,7 +2363,8 @@
 
         /* Sin sesión: la ayuda y los accesos públicos se abren por encima del inicio de sesión */
         html body.sin-sesion .sp,
-        html body.sin-sesion .push-page { z-index: 600; }
+        html body.sin-sesion .push-page, html body.sin-sesion #push-page { z-index: 600; }
+        html body.sin-sesion .pf-toast { z-index: 690; }
         /* Sin internet: solo entra con Face ID o huella y se ven los accesos que funcionan sin red */
         html body.sin-red [data-online-only], html body.sin-red #btn-login-other { display: none !important; }
         .login-offline { margin: 0 0 8px; text-align: center; font-size: 14px; color: var(--bp-theme-color-text-secondary); }
