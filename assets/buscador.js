@@ -537,5 +537,9 @@
 
   window.Buscador = { open: open, close: close, voice: function () { open(); setTimeout(dictate, 260); }, shortcuts: function () { return shortcuts.slice(); },
     // Para la versión asistente: las acciones, su orden por palabras y cómo abrirlas
-    actions: function () { return ACTIONS.slice(); }, rank: function (q) { return rank(ACTIONS, words(q), function (a) { return a.label + ' ' + a.k; }); }, run: runAction };
+    actions: function () { return ACTIONS.slice(); }, rank: function (q) { return rank(ACTIONS, words(q), function (a) { return a.label + ' ' + a.k; }); }, run: runAction,
+    // Para el buscador universal del asistente: la frase hecha acción, las pantallas de la app y los atajos
+    intent: intent, atajo: function (sc) { if (window.__runShortcut) window.__runShortcut(sc); },
+    app: function (q) { return rank(appItems(), words(q), function (a) { return a.label + ' ' + a.k; }).slice(0, 4).map(function (a) { return { label: a.label, icon: a.icon, sub: a.sub }; }); },
+    abrir: function (label) { var a = appItems().filter(function (x) { return x.label === label; })[0]; if (!a) return; if (a.view != null && window.__goView) window.__goView(a.view); setTimeout(function () { a.el.click(); }, a.view != null ? 120 : 0); } };
 })();

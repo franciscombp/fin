@@ -1,7 +1,7 @@
 /* =====================================================================
    Privacidad de saldos: un solo interruptor para toda la app.
    - El ojo (cualquier [data-eye]) muestra u oculta todos los montos.
-   - Un monto oculto se ve siempre igual: "$ ••,••", sin importar su valor.
+   - Un monto oculto se ve siempre igual: "$ **,**" (bp-amount Blind), sin importar su valor.
    - Se enmascaran solo los saldos (lo que tienes o debes): el saldo del
      inicio, las filas de productos, Tu dinero en Mis finanzas y los datos
      marcados con data-saldo. Los montos a pagar o elegir no se tocan.
@@ -10,7 +10,7 @@
 (function () {
   'use strict';
 
-  var KEY = 'pb_saldos_ocultos', MASK = '$ ••,••';
+  var KEY = 'pb_saldos_ocultos', MASK = '$ **,**'; // bp-amount · Display=hidden (variante Blind)
   var BUSCA = /\$\s?\d[\d.]*(?:,\d{2})?/;
   var CAMBIA = /\$\s?\d[\d.]*(?:,\d{2})?/g;
   var NO_TOCAR = /^(SCRIPT|STYLE|TEXTAREA|INPUT|NOSCRIPT)$/;
