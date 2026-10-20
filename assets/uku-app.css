@@ -845,3 +845,8 @@ html.app-uku .uk-cta .pf-cta, html.app-uku .uk-sec .pf-cta { background: var(--b
 .uk-cta { position: sticky; bottom: 0; z-index: 2; margin: 12px calc(var(--uk-inset) * -1) 0; padding: 12px var(--uk-inset) 16px; background: var(--bp-theme-color-surface-container-default); }
 .uk.is-chat .uk-ayuda-slot .uk-cta { margin: 12px -24px 0; padding: 12px 24px 16px; }
 .uk-cta { box-shadow: 0 -10px 16px -10px rgba(15, 38, 92, .14); }
+/* El chat es solo texto: sin lista de resultados al escribir (el buscador universal es el de la barra del inicio) */
+.uk.is-chat .uk-results { display: none !important; }
+/* Uku nunca va en un círculo de avatar: en las hojas del PFM, su frase va sola (él ya está en su mundo) */
+.app-uku .uku-say__face, .app-uku .pfm-game__iqface, .app-uku .pfm-play__uku { display: none !important; }
+.app-uku .uku-say { gap: 0; }

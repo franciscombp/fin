@@ -112,6 +112,7 @@
     if (!go) return;
     if (go.a) { var a = ACTIONS.filter(function (x) { return x.label === go.a; })[0]; return a ? runAction(a) : null; }
     if (go.sc) return runShortcut(go.sc);
+    if (go.tx != null) { close(true); return setTimeout(function () { window.UkuAsistente && UkuAsistente.movimiento && UkuAsistente.movimiento(go.tx); }, 280); }
     if (go.app) { var ap = appItems().filter(function (x) { return x.label === go.app; })[0]; return ap ? runApp(ap) : null; }
     if (go.help) { close(true); return setTimeout(function () { if (window.UkuAsistente && UkuAsistente.ayuda) return UkuAsistente.ayuda(); window.Soporte && Soporte.open(); }, 280); }
     if (go.faq != null) { close(true); return setTimeout(function () { window.Soporte && (go.kind === 'tut' ? Soporte.openTut(go.faq) : Soporte.openFaq(go.faq)); }, 280); }
@@ -176,7 +177,7 @@
     return { title: 'Suele hacerse por la noche', icon: 'insights', main: 'Revisar tus gastos de hoy', sub: 'En Mis finanzas', a: ACTIONS[4] };
   }
 
-  var el, input, results, hint, open_ = false, ctxId = null, curIt = null, rec_ = null;
+  var el, input, results, hint, open_ = false, ctxId = null, curIt = null, rec_ = null, TX = [], PER = [];
   function mount() {
     el = document.createElement('div');
     el.className = 'sx';
@@ -218,6 +219,8 @@
       if (i.indexOf('rc:') === 0) { var rc = recent[+i.slice(3)]; fx('tap'); return rc && irA(rc.go); }
       if (i === 'ask') { var q = input.value.trim(); addRecent({ t: q, icon: 'forum', go: { ask: q } }); close(true); setTimeout(function () { if (window.UkuAsistente && UkuAsistente.preguntar) return UkuAsistente.preguntar(q); window.Asistente && Asistente.open({ ctx: ctxId, ask: q }); }, 280); return; }
       if (i === 'pfm') return runAction(ACTIONS[4]);
+      if (i.indexOf('tx:') === 0) { var tr = TX[+i.slice(3)]; if (!tr) return; addRecent({ t: tr.t, icon: 'receipt_long', go: tr.i != null ? { tx: tr.i } : { a: 'Mis finanzas' } }); close(true); return setTimeout(function () { if (tr.i != null && window.UkuAsistente && UkuAsistente.movimiento) return UkuAsistente.movimiento(tr.i); runAction(ACTIONS[4]); }, 280); }
+      if (i.indexOf('per:') === 0) { var pr = PER[+i.slice(4)]; if (!pr) return; return runShortcut({ action: 'Transferir dinero', icon: 'send_money', who: pr.n, name: 'Transferir a ' + pr.n }); }
       if (i === 'help') { close(true); setTimeout(function () { window.Soporte && Soporte.open(); }, 280); return; }
       if (i.indexOf('hp:') === 0) { var hp = HELP[+i.slice(3)]; addRecent({ t: hp.t, icon: 'help', go: { faq: hp.i, kind: hp.kind } }); close(true); setTimeout(function () { if (!window.Soporte) return; if (hp.kind === 'tut') Soporte.openTut(hp.i); else Soporte.openFaq(hp.i); }, 280); return; }
       if (i === 'mo') { var mo = moment(); return mo.sc ? runShortcut(mo.sc) : runAction(mo.a); }
@@ -315,7 +318,7 @@
     return '<button class="sx-row" data-sx-i="' + id + '">' + ic + '<span class="sx-row__main"><b>' + main + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (right ? '<span class="sx-row__r">' + right + '</span>' : '') + '</button>';
   }
   function T(x, v) { return window.I18n ? I18n.t(x, v) : x; }
-  function ukuName() { return 'Asistente'; }
+  function ukuName() { return 'Uku'; }
   function readRec() {
     var n = results.querySelector('[data-rec="name"]'), m = results.querySelector('[data-rec="amt"]');
     if (n) rec_.name = n.value.trim();
@@ -385,16 +388,22 @@
       if (acts.length) html += '<section class="sx-card"><h3>Acciones</h3>' + acts.slice(0, 4).map(function (a) { return row('a:' + ACTIONS.indexOf(a), a.icon, a.label); }).join('') + '</section>';
       var apps = rank(APP, ws, function (a) { return a.label + ' ' + a.k; });
       if (apps.length) html += '<section class="sx-card"><h3>En la app</h3>' + apps.slice(0, 4).map(function (a) { return row('app:' + APP.indexOf(a), a.icon, esc(a.label), a.sub); }).join('') + '</section>';
-      var d = window.Asistente && Asistente.data && Asistente.data();
-      if (d && q.length > 1) {
-        var MON = ['ago', 'sep', 'oct'];
-        var tx = d.tx.filter(function (t) { return t.cat !== 'ahorro' && norm(t.who).indexOf(q) >= 0; })
-          .sort(function (a, b) { return (b.mi * 40 + b.day) - (a.mi * 40 + a.day); }).slice(0, 4);
-        if (tx.length) html += '<section class="sx-card"><h3>Movimientos</h3>' + tx.map(function (t) {
-          var inc = t.cat === 'ingreso';
-          return row('pfm', inc ? 'south_west' : 'north_east', esc(t.who), t.day + ' ' + MON[t.mi], (inc ? '+' : '-') + money(t.amt));
-        }).join('') + '</section>';
+      // Personas con las que te mueves dinero y movimientos (por nombre o por monto): salen del PFM, que ve toda la app
+      PER = window.PFM && PFM.contactos && q.length > 2 ? PFM.contactos(ws[0] || q).slice(0, 3) : [];
+      if (PER.length) html += '<section class="sx-card"><h3>Personas</h3>' + PER.map(function (x, i) { return row('per:' + i, 'send_money', esc(x.n), (x.veces === 1 ? '1 vez' : x.veces + ' veces') + ' · la última el ' + x.ultL, 'Transferir'); }).join('') + '</section>';
+      TX = window.PFM && PFM.buscar && q.length > 1 ? PFM.buscar(input.value, 4) : [];
+      if (!TX.length) {
+        var d = window.Asistente && Asistente.data && Asistente.data();
+        if (d && q.length > 1) {
+          var MON = ['ago', 'sep', 'oct'];
+          TX = d.tx.filter(function (t) { return t.cat !== 'ahorro' && norm(t.who).indexOf(q) >= 0; })
+            .sort(function (a, b) { return (b.mi * 40 + b.day) - (a.mi * 40 + a.day); }).slice(0, 4)
+            .map(function (t) { return { t: t.who, f: t.day + ' ' + MON[t.mi], m: t.cat === 'ingreso' ? t.amt : -t.amt, src: '' }; });
+        }
       }
+      if (TX.length) html += '<section class="sx-card"><h3>Movimientos</h3>' + TX.map(function (t, i) {
+        return row('tx:' + i, t.m > 0 ? 'south_west' : 'north_east', esc(t.t), t.f + (t.src ? ' · ' + t.src : ''), (t.m > 0 ? '+' : '−') + money(Math.abs(t.m)));
+      }).join('') + '</section>';
       // Ayuda: preguntas frecuentes y tutoriales del centro de ayuda
       HELP = window.Soporte && Soporte.find ? Soporte.find(input.value, ayudaCtx ? 6 : 3) : [];
       if (HELP.length && !ayudaCtx) html += '<section class="sx-card"><h3>Ayuda</h3>' + HELP.map(function (h, i) { return row('hp:' + i, h.icon, esc(h.t), h.kind === 'tut' ? 'Tutorial' : 'Pregunta frecuente'); }).join('') + '</section>';
