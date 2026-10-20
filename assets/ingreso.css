@@ -179,3 +179,5 @@
 .ing-ticket__nombre { margin: 0; font-size: 16px; font-weight: 600; color: var(--bp-theme-color-text-primary); }
 .ing-ayuda__fila { display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 16px; border: 0; border-radius: 16px; background: var(--bp-theme-color-surface-container-default, #fff); color: var(--bp-theme-color-text-primary); font: inherit; font-size: 16px; font-weight: 500; text-align: left; cursor: pointer; }
 .ing-ayuda__fila > .material-symbols-rounded { color: #0f265c; }
+.ing-hoja__seccion { margin: 8px 0 0; font-size: 14px; font-weight: 600; color: var(--bp-theme-color-text-secondary); }
+.ing-video { width: 100%; aspect-ratio: 3 / 4; border-radius: 16px; object-fit: cover; background: #000; transform: scaleX(-1); }
