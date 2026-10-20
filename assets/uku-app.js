@@ -611,7 +611,7 @@
     if (b3d) b3d.play('wave');
   }
   // Sin conversación ni sección, Uku vuelve a su mundo (globo, propuestas, cámara libre)
-  function mundoLibre() { msgs = []; pend = null; agente = null; if (solSec && !solSec.hidden) { solSec.hidden = true; host.classList.remove('uk-in-sec'); } seccion('uku'); pintar(); saludado = true; globoOff = false; pintarGlobo(); }
+  function mundoLibre() { if (!view.classList.contains('active') && window.__goView) { var act = document.querySelector('.nav-item.active'); volverA = act && act.dataset.view != null && +act.dataset.view !== 1 ? +act.dataset.view : 0; __goView(1); } msgs = []; pend = null; agente = null; if (solSec && !solSec.hidden) { solSec.hidden = true; host.classList.remove('uk-in-sec'); } seccion('uku'); pintar(); saludado = true; globoOff = false; pintarGlobo(); }
   // El chevron de arriba baja el asistente: se cierra lo abierto y vuelves a la pestaña anterior
   function cerrar() {
     if (cerrando) return;
