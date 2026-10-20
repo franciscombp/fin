@@ -55,7 +55,9 @@
       tut: function (i) { seccion('uku'); me(Soporte.tut(i).t); ayudaEn({ kind: 'tut', i: i }); },
       preguntar: function (q) { seccion('uku'); preguntar(q); },
       escribir: function () { seccion('uku'); setTimeout(function () { input.focus(); }, 350); },
-      abrir: abrirAsistente, libre: mundoLibre };
+      abrir: abrirAsistente, libre: mundoLibre,
+      // Un movimiento encontrado en el buscador se abre en Mis finanzas
+      movimiento: function (i) { if (!view.classList.contains('active') && window.__goView) __goView(1); seccion('fin'); setTimeout(function () { window.PFM && PFM.key('tx:' + i); }, 250); } };
     // Ayuda, dentro de esta pantalla: al volver desde su flecha, regresa a Uku
     document.addEventListener('soporte:cerrar', function () { seccion('uku'); });
     host.innerHTML =
@@ -99,8 +101,8 @@
     input.addEventListener('input', function () { modo(); pintarResultados(); });
     // En su mundo, el campo de abajo es el buscador (como deslizar desde arriba): responde o lleva a la acción.
     // En la conversación sigue siendo el campo para hablar con Uku.
-    // Tocar la barra en la pantalla inicial abre la pantalla del buscador (wireframe): la barra sube, los resultados debajo
-    input.addEventListener('focus', function () { if (host.classList.contains('is-home')) buscar(true); });
+    // Tocar la barra en la pantalla inicial abre el buscador universal de la app (el mismo en todas partes)
+    input.addEventListener('focus', function () { if (host.classList.contains('is-home') && window.Buscador) { input.blur(); Buscador.open('uku'); } });
     // Dictado: el mismo del buscador, con la frase como búsqueda o pregunta
     view.addEventListener('click', onClick);
     gestos();
