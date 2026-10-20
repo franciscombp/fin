@@ -2364,6 +2364,9 @@
         /* Sin sesión: la ayuda y los accesos públicos se abren por encima del inicio de sesión */
         html body.sin-sesion .sp,
         html body.sin-sesion .push-page { z-index: 600; }
+        /* El selector de idioma también se abre desde el login */
+        html body.sin-sesion .as-sheet-back { z-index: 650; }
+        html body.sin-sesion .as-sheet { z-index: 651; }
         .login-screen.active {
             display: flex;
         }
