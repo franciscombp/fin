@@ -413,6 +413,8 @@ html:not(.theme-y2k) .tab-panel .section > .section__title + * { margin-top: var
 /* Espaciado normalizado de los hubs: cada bloque de la pestaña va separado 16 px del anterior
    (el padding de la sección), sin márgenes ni padding extra por bloque */
 html:not(.theme-y2k) .tab-panel .section { padding-top: 0 !important; }
+/* Márgenes horizontales de los hubs: 16 px (el margen global de la grilla en 390 px es 24) */
+html:not(.theme-y2k) .tab-panel .section { padding-left: var(--bp-semantic-spacing-macro-sm) !important; padding-right: var(--bp-semantic-spacing-macro-sm) !important; }
 html:not(.theme-y2k) .tab-panel .section > * { margin-bottom: 0 !important; }
 /* Las tarjetas del hub no dejan margen debajo: el espacio entre bloques lo da la sección */
 html:not(.theme-y2k) .tab-panel .prod-hub .card { margin-bottom: 0 !important; }
