@@ -6055,6 +6055,10 @@
             });
             if (!hasExtra && !soon) renderPushSummary(title);
             renderSoon(title, soon);
+            // Próximamente: solo queda el mensaje de arriba; título, ícono y Continuar no aplican
+            document.getElementById('push-title').style.display = soon ? 'none' : '';
+            document.getElementById('push-hero').style.display = soon ? 'none' : '';
+            pushCta.style.display = (soon || title === 'Transferir dinero' || title === 'Pagar servicios') ? 'none' : '';
             pushHeroIcon.textContent = (PRODUCT_DETAILS[title] && PRODUCT_DETAILS[title].icon) || pushIcons[title] || 'bolt';
             pushPage.classList.remove('scrolled');
             pushPage.scrollTop = 0;
