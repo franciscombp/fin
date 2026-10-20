@@ -57,6 +57,7 @@
       escribir: function () { seccion('uku'); setTimeout(function () { input.focus(); }, 350); },
       abrir: abrirAsistente, libre: mundoLibre,
       // Un movimiento encontrado en el buscador se abre en Mis finanzas
+      cabeza: function () { return b3d && b3d.head ? b3d.head() : null; },
       movimiento: function (i) { if (!view.classList.contains('active') && window.__goView) __goView(1); seccion('fin'); setTimeout(function () { window.PFM && PFM.key('tx:' + i); }, 250); } };
     // Ayuda, dentro de esta pantalla: al volver desde su flecha, regresa a Uku
     document.addEventListener('soporte:cerrar', function () { seccion('uku'); });
@@ -362,14 +363,17 @@
      Se mide lo que hay en pantalla (globo, propuestas, onboarding arriba; accesos y barra abajo) y se
      corre la cámara para que la cara de Uku quede en la franja libre. Si la franja es más chica que
      su cabeza, la cámara se aleja. Conversando no aplica: ahí Uku se asoma abajo a propósito. */
-  function encuadrar() {
+  function encuadrar(instante) {
     var fin = host.classList.contains('is-fin');
     if (!b3d || !b3d.head || (host.classList.contains('is-chat') && !fin)) return;
     var H = b3d.head(); if (!H) return;
     var R = host.getBoundingClientRect(), hh = R.height; if (!hh) return;
     var top = 0, bot = hh;
-    var abajo = function (el) { if (el && !el.hidden && el.offsetHeight && getComputedStyle(el).opacity !== '0') top = Math.max(top, el.getBoundingClientRect().bottom - R.top); };
-    var arriba = function (el) { if (el && !el.hidden && el.offsetHeight && getComputedStyle(el).opacity !== '0') bot = Math.min(bot, el.getBoundingClientRect().top - R.top); };
+    // Se mide la posición de diseño (sin transformaciones ni fundidos): así el encuadre apunta desde el
+    // primer momento a donde van a quedar el globo, los chips o la hoja, y la cámara hace un solo movimiento
+    var topDe = function (el) { var y = 0, e = el; while (e && e !== host) { y += e.offsetTop; e = e.offsetParent; } return y; };
+    var abajo = function (el) { if (el && !el.hidden && el.offsetHeight) top = Math.max(top, topDe(el) + el.offsetHeight); };
+    var arriba = function (el) { if (el && !el.hidden && el.offsetHeight) bot = Math.min(bot, topDe(el)); };
     var home = host.classList.contains('is-home');
     if (host.classList.contains('is-onb') && onbEl) abajo(onbEl);
     else if (fin) { abajo(host.querySelector('.uk-chathead')); if (!host.classList.contains('is-up')) abajo(globoEl); arriba(panel); }
@@ -385,10 +389,17 @@
     // La cara, en el tercio alto de la franja: el cuerpo sigue hacia abajo
     var target = top + M + Math.max(r + 8, band * .38);
     var y0 = H.y + hh * H.shiftY, sv = (y0 - target) / hh;
-    b3d.setShift(sx, Math.max(-.6, Math.min(.5, sv)));
-    if (Math.abs(zoom - H.zoom) > .02) b3d.setZoom(zoom);
+    b3d.setShift(sx, Math.max(-.6, Math.min(.5, sv)), instante);
+    if (Math.abs(zoom - H.zoomTo) > .02) b3d.setZoom(zoom, instante);
   }
-  function reencuadrar() { clearTimeout(reencuadrar.t); reencuadrar.t = setTimeout(encuadrar, 60); clearTimeout(reencuadrar.t2); reencuadrar.t2 = setTimeout(encuadrar, 750); }
+  // Mientras la pantalla se acomoda (globo que entra, hoja que sube, chips, teclado) el encuadre se recalcula
+  // seguido durante un segundo: la cámara sigue el movimiento con suavidad en vez de dar dos saltos
+  function reencuadrar() {
+    clearInterval(reencuadrar.i); clearTimeout(reencuadrar.fin);
+    if (!RM) requestAnimationFrame(function () { encuadrar(); }); else encuadrar();
+    reencuadrar.i = setInterval(function () { encuadrar(); }, 80);
+    reencuadrar.fin = setTimeout(function () { clearInterval(reencuadrar.i); encuadrar(); }, 1100);
+  }
   // Los accesos: Mis finanzas, ordenar, consejos y ayuda, a un toque desde Uku
   function pintarAccesos() {
     var W = window.PFM && PFM.world && resumen() ? PFM.world() : [], pe = W[2] ? W[2].cls : null;
@@ -770,12 +781,15 @@
   /* El asistente se abre desde arriba y Uku entra directo en modo asistente: cerca, mirándote, con
      una tarjeta de bienvenida (su saludo, lo que propone y los accesos). Su mundo es un lugar al
      que puedes ir («Ver mi mundo»), no la pantalla de llegada. */
+  var abriendo = false;
+  function mostrarEscena() { var sc = host.querySelector('.uk-scene'); if (sc && b3d && b3d.isReady && b3d.isReady()) sc.classList.add('is-framed'); }
   function abrirAsistente() {
     var act = document.querySelector('.nav-item.active'); volverA = act && act.dataset.view != null ? +act.dataset.view : 0; if (volverA === 1) volverA = 0;
-    fx('select'); if (window.__goView) __goView(1);
+    fx('select'); abriendo = true; if (window.__goView) __goView(1);
     mundoOn = false; globoOff = false; saludado = false; nota = null;
     host.classList.add('is-in'); clearTimeout(abrirAsistente.t); abrirAsistente.t = setTimeout(function () { host.classList.remove('is-in'); }, 1400);
-    setTimeout(pintar, 60);
+    // Primero se pinta la pantalla y recién entonces se encuadra a Uku (de una, sin movimiento) y se muestra
+    pintar(); abriendo = false; encuadrar(true); mostrarEscena(); reencuadrar();
     if (!RM) setTimeout(function () { if (b3d) b3d.play('wave'); }, 450);
   }
   function bienvenida() {
@@ -922,11 +936,12 @@
       if (!m3.supported()) return;
       b3d = m3; var c = window.Clima && Clima.last(); if (c) m3.setLook(c.look);
       if (s) { m3.setBloom(s.bloom); m3.setMood(s.mood); }
-      m3.attach(el, { score: s ? s.score : 60, onReady: function () { var k = host.querySelector('.uk-skel'); if (k) { k.classList.add('is-off'); setTimeout(function () { k.remove(); }, 400); } reencuadrar(); setTimeout(encuadrar, 1500); }, onTap: tocado });
+      m3.attach(el, { score: s ? s.score : 60, onReady: function () { var k = host.querySelector('.uk-skel'); if (k) { k.classList.add('is-off'); setTimeout(function () { k.remove(); }, 400); } if (!abriendo) { encuadrar(true); mostrarEscena(); reencuadrar(); } }, onTap: tocado });
       el.classList.add('is-3d');
       // Si la escena llega con una conversación ya abierta (modo asistente), Uku entra directo en foco
       if (host.classList.contains('is-chat')) { m3.setFocus(true); m3.setShift(-.3, -.47); if (b3d.setFront) b3d.setFront(true); }
-      if (!escena.hola) { escena.hola = 1; m3.setAmbient('walk'); if (!msgs.length) pintarGlobo(); }
+      // Al llegar: si tiene algo que decir, te mira desde el inicio; si no, pasea. (Antes arrancaba a caminar y se frenaba en seco.)
+      if (!escena.hola) { escena.hola = 1; if (!msgs.length) pintarGlobo(); if (globoEl.hidden) m3.setAmbient('walk'); }
     }).catch(function () {});
   }
 

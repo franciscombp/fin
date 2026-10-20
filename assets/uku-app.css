@@ -1149,3 +1149,9 @@ html.app-uku .uk.is-home .uk-globo__go.btn { min-height: 40px !important; paddin
 .uk.is-chat .uk-panel .uk-head { padding-left: var(--bp-layout-grid-margin, 16px); padding-right: var(--bp-layout-grid-margin, 16px); }
 /* Dos accesos: Mis finanzas y Ayuda y soporte */
 .uk-pills { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+/* Uku aparece ya encuadrado, con un fundido, en vez de saltar al lugar tras cargarse */
+.uk-scene .b3d { opacity: 0; transition: opacity .45s ease; }
+.uk-scene.is-framed .b3d { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .uk-scene .b3d { transition: none; } }
+/* En Mis finanzas no hay barra abajo: el lienzo no cambia de tamaño al entrar ni al salir (sin salto) */
+.uk.is-chat.is-fin .uk-scene, .uk.is-kb.is-chat.is-fin .uk-scene { bottom: 0; }

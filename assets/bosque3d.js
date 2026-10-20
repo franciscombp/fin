@@ -28,7 +28,14 @@ const lerp = THREE.MathUtils.lerp;
 let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
 let bear = null, readyFns = [], rig = null, bones = {}, forest, held = null, ground, stage = null, walkAng = 0, walkAmt = 0, walkMoving = false;
 let waterOn = false, waterT = 0, drops = [], ambient = null, focus = false, ambFocus = null;
-let focusAmt = 0, shiftTo = { x: 0, y: 0 }, shiftCur = { x: 0, y: 0 }, zoomTo = 1, zoomCur = 1, front = false, frontAmt = 1; // la cámara se acerca y se corre suavemente, nunca de golpe // focus: Uku sale del mundo y se acerca a conversar // ambient: lo que Uku hace cuando no hay gesto (p. ej. caminar)
+let focusAmt = 0, shiftTo = { x: 0, y: 0 }, shiftCur = { x: 0, y: 0 }, zoomTo = 1, zoomCur = 1, front = false, frontAmt = 1;
+const camVel = { x: 0, y: 0, z: 0 }; // velocidad del encuadre (resorte amortiguado: arranca y frena suave)
+// Resorte críticamente amortiguado: sigue un destino que puede moverse (hoja que sube, globo que entra) sin tirones
+function spring(cur, to, velKey, dt) {
+  const w = 8, v0 = camVel[velKey], d = cur - to;
+  const v = (v0 - w * w * d * dt) / Math.pow(1 + w * dt, 2);
+  camVel[velKey] = v; return cur + v * dt;
+} // la cámara se acerca y se corre suavemente, nunca de golpe // focus: Uku sale del mundo y se acerca a conversar // ambient: lo que Uku hace cuando no hay gesto (p. ej. caminar)
 // Mundo: un planeta esférico de radio PLANET_R; su punto más alto está bajo los pies de Uku.
 // WORLD_S agranda el mundo (planeta, árboles, flores y el paso de Uku); el oso mide lo mismo.
 const WORLD_S = 2, PLANET_R = 1.5 * WORLD_S, PLANET_C = new THREE.Vector3(0, -PLANET_R, 0);
@@ -523,9 +530,12 @@ function frame(now) {
   const free = (1 - frontAmt) * (1 - focusAmt);
   const cd = camDist * (.66 - .1 * focusAmt) * zoomCur * (1 + .4 * free), ch = CAM_H * (.6 - .04 * focusAmt + .14 * free);
   // El encuadre (corrimiento) también se mueve con suavidad
-  const k = RM ? 1 : Math.min(1, dt * 5);
-  if (Math.abs(shiftCur.x - shiftTo.x) > 1e-4 || Math.abs(shiftCur.y - shiftTo.y) > 1e-4) { shiftCur.x = lerp(shiftCur.x, shiftTo.x, k); shiftCur.y = lerp(shiftCur.y, shiftTo.y, k); applyShift(); }
-  if (Math.abs(zoomCur - zoomTo) > 1e-3) zoomCur = lerp(zoomCur, zoomTo, k);
+  const sdt = Math.min(dt, .05);
+  if (Math.abs(shiftCur.x - shiftTo.x) > 1e-4 || Math.abs(shiftCur.y - shiftTo.y) > 1e-4 || Math.abs(camVel.x) > 1e-4 || Math.abs(camVel.y) > 1e-4) {
+    if (RM) { shiftCur.x = shiftTo.x; shiftCur.y = shiftTo.y; camVel.x = camVel.y = 0; } else { shiftCur.x = spring(shiftCur.x, shiftTo.x, 'x', sdt); shiftCur.y = spring(shiftCur.y, shiftTo.y, 'y', sdt); }
+    applyShift();
+  }
+  if (Math.abs(zoomCur - zoomTo) > 1e-3 || Math.abs(camVel.z) > 1e-4) { if (RM) { zoomCur = zoomTo; camVel.z = 0; } else zoomCur = spring(zoomCur, zoomTo, 'z', sdt); }
   camera.position.copy(stage.localToWorld(_cam.set(Math.sin(yaw) * cd + Math.cos(yaw) * sway, ch, Math.cos(yaw) * cd - Math.sin(yaw) * sway)));
   camera.up.copy(_camUp.set(0, 1, 0).applyQuaternion(stage.quaternion));
   camera.lookAt(stage.localToWorld(_look.set(0, .32 + .04 * focusAmt, 0)));
@@ -677,9 +687,10 @@ export function snapshot() {
   // La foto es de su mundo, sin él: Uku queda delante, nítido, no repetido en el fondo
   try { if (bear) bear.visible = false; renderer.render(scene, camera); const u = renderer.domElement.toDataURL('image/png'); if (bear) bear.visible = true; return u; } catch (e) { if (bear) bear.visible = true; return null; }
 }
-export function setShift(f, fy) { shiftTo = { x: +f || 0, y: +fy || 0 }; }
+// El encuadre se mueve con suavidad hacia su destino; con `instant` salta de una (antes de mostrarse)
+export function setShift(f, fy, instant) { shiftTo = { x: +f || 0, y: +fy || 0 }; if (instant) { shiftCur.x = shiftTo.x; shiftCur.y = shiftTo.y; camVel.x = camVel.y = 0; if (camera) applyShift(); } }
 // La cámara se aleja (z > 1) o se acerca; sirve para que la cara de Uku quepa donde hay sitio
-export function setZoom(z) { zoomTo = Math.max(.8, Math.min(1.8, +z || 1)); }
+export function setZoom(z, instant) { zoomTo = Math.max(.8, Math.min(1.8, +z || 1)); if (instant) { zoomCur = zoomTo; camVel.z = 0; } }
 // Primer plano (true): Uku viene al frente, te mira y no camina; libre (false): pasea y la cámara orbita
 export function setFront(on) { front = !!on; if (front && gesture === 'walk') { gesture = null; gestureT = 0; } }
 // Dónde está su cara en pantalla (px del contenedor): centro, radio aproximado y el encuadre actual.
@@ -693,7 +704,7 @@ export function head() {
   _h1.project(camera); _h2.project(camera);
   const x1 = (_h1.x + 1) / 2 * w, y1 = (1 - _h1.y) / 2 * h, x2 = (_h2.x + 1) / 2 * w, y2 = (1 - _h2.y) / 2 * h;
   const r = Math.hypot(x2 - x1, y2 - y1) * .62; // la mitad de cuello a coronilla, con margen para las orejas
-  return { x: (x1 + x2) / 2, y: (y1 + y2) / 2, r, shiftX: shiftCur.x, shiftY: shiftCur.y, zoom: zoomCur };
+  return { x: (x1 + x2) / 2, y: (y1 + y2) / 2, r, shiftX: shiftCur.x, shiftY: shiftCur.y, zoom: zoomCur, shiftToX: shiftTo.x, shiftToY: shiftTo.y, zoomTo };
 }
 export function setMood(m) { mood = ['feliz', 'tranquilo', 'pensativo'].includes(m) ? m : null; }
 export function isReady() { return !!bear; }
