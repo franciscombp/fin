@@ -23,7 +23,7 @@ const CASOS = [
   ['cuando pago mi tarjeta', 'faq.tarjetas.corte-pago'], ['fecha de corte', 'faq.tarjetas.corte-pago'], ['cuanto debo de la tarjeta', 'faq.tarjetas.corte-pago'], ['pago minimo', 'faq.tarjetas.corte-pago'],
   ['por que me cobraron intereses', 'faq.tarjetas.intereses'], ['me atrase con la tarjeta', 'faq.tarjetas.mora'],
   ['subir el cupo', 'faq.tarjetas.cupo'], ['aumentar limite tarjeta', 'faq.tarjetas.cupo'], ['bajar cupo', 'faq.tarjetas.bajar-cupo'],
-  ['me robaron la tarjeta', 'faq.tarjetas.perdida'], ['perdi mi tarjeta', 'faq.tarjetas.perdida'], ['congelar tarjeta', 'faq.tarjetas.congelar'],
+  ['me robaron la tarjeta', 'faq.tarjetas.perdida'], ['perdi mi tarjeta', 'faq.tarjetas.perdida'], ['congelar tarjeta', 'accion.bloquear-tarjeta'], ['como congelo mi tarjeta', 'faq.tarjetas.congelar'],
   ['bloqueo temporal debito', 'faq.tarjetas.bloqueo-debito'], ['bloqueo definitivo', 'faq.tarjetas.bloqueo-definitivo'], ['reponer tarjeta', 'faq.tarjetas.bloqueo-definitivo'],
   ['cambiar pin de la tarjeta', 'faq.tarjetas.clave-tarjeta'], ['clave del cajero', 'faq.tarjetas.clave-tarjeta'], ['tarjeta vencida', 'faq.tarjetas.caducada'],
   ['apple pay', 'faq.tarjetas.wallet'], ['pagar con el celular', 'faq.tarjetas.wallet'], ['diferir una compra', 'faq.tarjetas.diferir'], ['pasar a cuotas', 'faq.tarjetas.diferir'],
@@ -34,10 +34,10 @@ const CASOS = [
   ['mi transferencia no llega', 'faq.cuentas.transferencia-llega'], ['cuanto demora una transferencia a otro banco', 'faq.cuentas.transferencia-llega'],
   ['cuanto puedo transferir al dia', 'faq.cuentas.limite-transferir'], ['limite de transferencias', 'faq.cuentas.limite-transferir'],
   ['cual es mi numero de cuenta', 'faq.cuentas.numero'], ['como abro una cuenta', 'faq.cuentas.abrir'], ['requisitos para abrir cuenta', 'prod.cuentas.ahorros'], ['puedo abrir una cuenta desde el celular', 'faq.cuentas.abrir'],
-  ['certificado bancario', 'accion.certificado'], ['necesito un certificado', 'accion.certificado'], ['referencia bancaria', 'faq.cuentas.certificado'], ['descargar estado de cuenta', 'faq.cuentas.estado-cuenta'],
+  ['certificado bancario', 'accion.certificado'], ['necesito un certificado', 'accion.certificado'], ['referencia bancaria', 'faq.cuentas.certificado'], ['descargar estado de cuenta', 'accion.estado-cuenta'], ['como descargo mi estado de cuenta', 'faq.cuentas.estado-cuenta'],
   ['actualizar mis datos', 'accion.datos'], ['como actualizo mis datos', 'faq.cuentas.datos'], ['cambiar mi correo', 'accion.datos'], ['transferir a un celular', 'accion.transferir'], ['como transfiero a un celular', 'faq.cuentas.celular'], ['vincular mi numero', 'faq.cuentas.vincular-celular'],
   ['por que me descontaron', 'faq.cuentas.comisiones'], ['comisiones', 'faq.cuentas.comisiones'], ['que es el isd', 'faq.cuentas.isd'], ['impuesto salida de divisas', 'faq.cuentas.isd'],
-  ['enviar plata a españa', 'accion.transferir'], ['como envio plata a españa', 'faq.cuentas.exterior'], ['swift', 'faq.cuentas.exterior'], ['sobregiro', 'faq.cuentas.sobregiro'], ['cuenta inactiva', 'faq.cuentas.reactivar'],
+  ['enviar plata a españa', 'accion.transferir-exterior'], ['como envio plata a españa', 'accion.transferir-exterior'], ['cuanto cuesta enviar al exterior', 'faq.cuentas.exterior'], ['swift', 'faq.cuentas.exterior'], ['sobregiro', 'faq.cuentas.sobregiro'], ['cuenta inactiva', 'faq.cuentas.reactivar'],
   ['cancelar un producto', 'faq.cuentas.cancelar'], ['cerrar mi cuenta', 'faq.cuentas.cancelar'], ['cosede', 'faq.cuentas.cosede'], ['retencion', 'faq.cuentas.retencion'], ['depositar un cheque', 'faq.cuentas.cheque'],
   // Pagos
   ['como pago la luz', 'faq.pagos.servicios'], ['pago automatico', 'faq.pagos.automatico'], ['pague la luz y no se refleja', 'faq.pagos.no-refleja'],
@@ -74,7 +74,7 @@ const CASOS = [
   ['seguridad', 'accion.seguridad'], ['mis finanzas', 'accion.mis-finanzas'], ['en que gasto', 'faq.app.mis-finanzas'],
   ['solicitar tarjeta de credito', 'accion.solicitar-tarjeta'], ['abrir cuenta', 'accion.solicitar-cuenta'], ['activar debito digital', 'accion.debito-digital'],
   ['simular credito', 'accion.simular-credito'], ['crear meta', 'accion.meta'], ['contratar seguro', 'accion.contratar-seguro'], ['hablar con una persona', 'accion.persona'], ['quiero un asesor', 'accion.persona'],
-  ['cajero cercano', 'accion.punto-retiro'], ['revisar un consumo', 'accion.revisar-consumo'], ['mis solicitudes', 'accion.solicitudes'],
+  ['cajero cercano', 'accion.punto-retiro'], ['pagar el sri', 'accion.pagar-sri'], ['pagar la matricula del carro', 'accion.pagar-matricula'], ['pagar el iess', 'accion.pagar-iess'], ['bloquear tarjeta', 'accion.bloquear-tarjeta'], ['programar una transferencia', 'accion.programar'], ['pagar la pension del colegio', 'accion.pagar-educacion'], ['revisar un consumo', 'accion.revisar-consumo'], ['mis solicitudes', 'accion.solicitudes'],
   // Errores de tipeo y escritura a medias
   ['trasferencia', 'faq.cuentas.transferencia-llega'], ['tarjta bloqueada', 'faq.tarjetas.bloqueo-debito'], ['certficado', 'faq.cuentas.certificado'], ['olvdie mi clave', 'faq.acceso.olvide-clave'],
   ['sobregir', 'faq.cuentas.sobregiro'], ['recar', 'accion.recargar'], ['transf', 'accion.transferir']
