@@ -58,6 +58,8 @@
       abrir: abrirAsistente, libre: mundoLibre,
       // Un movimiento encontrado en el buscador se abre en Mis finanzas
       cabeza: function () { return b3d && b3d.head ? b3d.head() : null; },
+      ayuda: function () { if (!view.classList.contains('active') && window.__goView) __goView(1); seccion('ayuda'); pintar(); },
+      soporte: function () { if (!view.classList.contains('active') && window.__goView) __goView(1); seccion('soporte'); pintar(); },
       finanzas: function (act) { if (!view.classList.contains('active') && window.__goView) __goView(1); seccion('fin'); if (act) setTimeout(function () { window.PFM && PFM.key(act); }, 250); },
       movimiento: function (i) { if (!view.classList.contains('active') && window.__goView) __goView(1); seccion('fin'); setTimeout(function () { window.PFM && PFM.key('tx:' + i); }, 250); } };
     // Ayuda, dentro de esta pantalla: al volver desde su flecha, regresa a Uku
@@ -66,10 +68,10 @@
       '<div class="uk-scene"><div class="b3d"></div><div class="uk-skel" aria-hidden="true"><i class="uk-skel__ear"></i><i class="uk-skel__ear"></i><i class="uk-skel__head"></i><i class="uk-skel__body"></i></div></div>' +
       // Al conversar, su mundo se desvanece detrás de un fondo limpio y arriba queda la cabecera del chat
       '<div class="uk-chatbg" aria-hidden="true"></div>' +
-      '<header class="uk-chathead"><button class="icon-button uk-chathead__x" data-k="cerrar" aria-label="Volver a su mundo">' + ic('expand_more') + '</button></header>' +
+      '<header class="uk-chathead"><button class="icon-button uk-chathead__x" data-k="cerrar" aria-label="Volver a su mundo">' + ic('expand_more') + '</button><b class="uk-chathead__t"></b></header>' +
       // Sin menú: a Mis finanzas y Ayuda se llega por los accesos y las tarjetas; en las secciones hay flecha y título
       '<div class="uk-head"><button type="button" class="icon-button uk-back-btn" data-k="atras" aria-label="Volver">' + ic('arrow_back') + '</button>' +
-        '<p class="uk-head__t" role="heading" aria-level="1">Tu asistente</p><button type="button" class="icon-button uk-head__x" data-k="cerrar" aria-label="Cerrar">' + ic('close') + '</button></div>' +
+        '<p class="uk-head__t" role="heading" aria-level="1">Tu asistente</p><button type="button" class="icon-button uk-head__x" data-k="ayudacerrar" aria-label="Volver a Soporte">' + ic('close') + '</button></div>' +
       '<div class="uk-globo" aria-live="polite"></div>' +
       '<div class="uk-home" hidden></div>' +
       '<div class="uk-chips" hidden></div>' +
@@ -117,14 +119,15 @@
   function modo() {
     // Conversación o sección: en ambos Uku sale de su mundo y lo que ves es una tarjeta sobre él
     var enSec = view.classList.contains('uk-fin') || view.classList.contains('uk-ayuda') || host.classList.contains('uk-in-sec');
-    var era = host.classList.contains('is-chat'), es = msgs.length > 0 || enSec;
+    var era = host.classList.contains('is-chat'), es = msgs.length > 0 || enSec || ayudaPage;
+    host.classList.toggle('is-ayuda', ayudaPage && !msgs.length);
     host.classList.toggle('is-typing', !!input.value.trim());
     host.classList.toggle('is-chat', es);
     var fin = view.classList.contains('uk-fin'); host.classList.toggle('is-fin', fin);
     if (fin) pintarGlobo(); else if (es) { globoEl.hidden = true; }
     if (homeEl && es) { homeEl.hidden = true; host.classList.remove('is-home'); if (chipsEl) chipsEl.hidden = true; }
     // Arriba: flecha para bajar el asistente en la pantalla inicial y su mundo; X en el chat y las secciones
-    var xb = host.querySelector('.uk-chathead__x'); if (xb) { if (xb.dataset.ic !== 'arrow_back') { xb.dataset.ic = 'arrow_back'; xb.innerHTML = ic('arrow_back'); } xb.setAttribute('aria-label', es ? 'Volver al inicio' : 'Volver'); xb.dataset.k = es ? 'cerrar' : 'salir'; } // wireframe: siempre una flecha; en el chat vuelve al inicio del asistente
+    cabecera(es);
     if (es) host.classList.remove('is-buscar');
     // Sin barra superior ni inferior: la tarjeta ocupa la pantalla y se baja con la flecha de arriba
     document.documentElement.classList.toggle('uk-chatting', view.classList.contains('active'));
@@ -138,7 +141,7 @@
       if (!es) setTimeout(function () { if (!msgs.length) bg.style.backgroundImage = ''; }, 500);
     }
     if (era !== es) {
-      input.placeholder = es ? 'Escríbele a Uku' : 'Busca o pregunta';
+      input.placeholder = es ? (ayudaPage ? 'Pregúntale a Uku' : 'Escríbele a Uku') : 'Busca o pregunta';
       if (!es && b3d) setTimeout(function () { b3d.play('wave'); setTimeout(function () { if (!msgs.length) b3d.play('walk'); }, 2200); }, 350); // vuelve a su mundo, saluda y camina
       if (es && b3d) b3d.play(null); // en la conversación se queda quieto
     }
@@ -217,9 +220,9 @@
       // Inicio: una frase y un botón. Pasar a la siguiente propuesta es tocar a Uku.
       globoEl.innerHTML = tag + txt + (goBtn ? '<div class="uk-globo__acts">' + goBtn + '</div>' : '');
     } else if (fin) {
-      // Mis finanzas: la recomendación con su acción, «Ahora no» y los puntos (tocar a Uku o deslizar pasa a la siguiente)
-      globoEl.innerHTML = tag + txt + '<div class="uk-globo__acts">' + goBtn + (x && x.luego ? '<button class="uk-globo__skip" data-k="' + esc(x.luego) + '" data-l="Ahora no">Ahora no</button>' : '') + '</div>' +
-        (n > 1 ? '<div class="uk-globo__dots">' + P.map(function (_, i) { return '<i' + (i === gi % n ? ' class="is-on"' : '') + '></i>'; }).join('') + '</div>' : '');
+      // Mis finanzas (Figma): el globo solo dice; la acción es una tarjeta en la hoja. Tocar a Uku o deslizar pasa a la siguiente.
+      globoEl.innerHTML = txt;
+      recActual = x || null; llenarSlot();
     } else {
       globoEl.innerHTML = '<button class="uk-globo__x" data-k="globo:cerrar" aria-label="Cerrar">' + ic('close') + '</button>' + tag + txt +
         '<div class="uk-globo__acts">' + goBtn +
@@ -240,7 +243,7 @@
   var mundoOn = false, homeEl = null;
   function pintarHome() {
     if (!homeEl) homeEl = host.querySelector('.uk-home');
-    var enSec = view.classList.contains('uk-fin') || view.classList.contains('uk-ayuda') || host.classList.contains('uk-in-sec');
+    var enSec = view.classList.contains('uk-fin') || view.classList.contains('uk-ayuda') || host.classList.contains('uk-in-sec') || ayudaPage;
     var on = !msgs.length && !mundoOn && !enSec && !host.classList.contains('is-onb');
     host.classList.toggle('is-home', on); host.classList.toggle('is-mundo', !on && !msgs.length && !enSec && mundoOn);
     if (!on) { homeEl.hidden = true; return; }
@@ -253,9 +256,9 @@
   // Lo que Uku recomienda en Mis finanzas: sus consejos del PFM (pagos cercanos, por ordenar, presupuesto,
   // mesadas, ahorro) y, si no hay nada pendiente, lo que cuenta su mundo. Siempre en segunda persona.
   function recomendaciones() {
-    var A = consejos().map(function (x) { return { id: x.id, tag: x.tag, t: x.t || x.di, k: x.act ? 'pfm:' + x.act : 'prop:' + x.id, l: x.actl || 'Cuéntame', luego: 'pfm:luego:' + x.id, kind: x.kind }; }); // la frase corta: el globo tiene dos líneas
+    var A = consejos().map(function (x) { return { id: x.id, tag: x.tag, t: x.t || x.di, k: x.act ? 'pfm:' + x.act : 'prop:' + x.id, l: x.actl || 'Cuéntame', luego: 'pfm:luego:' + x.id, kind: x.kind, icon: x.icon }; }); // la frase corta: el globo tiene dos líneas
     var W = window.PFM && PFM.world && resumen() ? PFM.world() : [];
-    var S = W.filter(function (x) { return /warn|over|pensativo/.test(x.cls || ''); }).map(function (x) { return { id: 'mundo', tag: x.l, t: x.d, k: 'mundo', l: 'Ver mi mundo' }; });
+    var S = W.filter(function (x) { return /warn|over|pensativo/.test(x.cls || ''); }).map(function (x) { return { id: 'mundo', tag: x.l, t: x.d, k: 'mundo', l: 'Ver mi mundo', icon: 'park' }; });
     return A.concat(S);
   }
   // Debajo de Uku, de 0 a 2 chips de pocas palabras con lo demás que propone (lo que ya dice el globo no se repite)
@@ -308,6 +311,24 @@
     h += sec(null, 'Preguntas frecuentes', null, [0, 5, 6, 7, 13].filter(function (i) { return fq[i]; }).map(function (i) { return fila('data-sp="faq:' + i + '"', null, fq[i].t); }));
     if (tu.length) h += sec(null, 'Tutoriales', 'Paso a paso, en menos de dos minutos', tu.map(function (u) { return fila('data-sp="tut:' + u.i + '"', u.icon, u.t, u.pasos + ' pasos · ' + u.min + ' min'); }));
     if (ct.length) h += sec(null, 'Temas', null, ct.map(function (c) { return fila('data-sp="cat:' + c.id + '"', c.icon, c.t, c.n === 1 ? '1 tema' : c.n + ' temas'); }));
+    return h;
+  }
+  // Mis finanzas: la acción que Uku recomienda, como tarjeta en la hoja (icono, qué hacer y por qué)
+  var recActual = null;
+  function llenarSlot() {
+    var slot = panel && panel.querySelector('.pfm-hub__slot'); if (!slot) return;
+    var x = recActual, h = x ? '<button class="pfm-hub__act" data-k="' + esc(x.k) + '" data-l="' + esc(x.l) + '"><span class="material-symbols-rounded pfm-hub__act-ic" aria-hidden="true">' + esc(x.icon || 'category') + '</span><span class="pfm-hub__act-t"><b>' + esc(x.l) + '</b><small>' + esc(x.tag) + '</small></span>' + ic('chevron_right') + '</button>' : '';
+    if (slot.innerHTML !== h) slot.innerHTML = h;
+  }
+  // Soporte como página (Figma): tu solicitud en curso, preguntas frecuentes, todas las categorías; Uku abajo y la barra para preguntarle
+  function ayudaPageHTML() {
+    var S = window.Soporte || {}, fq = S.faqs ? S.faqs() : [];
+    var fila = function (k, icon, t) { return '<button class="uk-ay2__row" data-k="' + esc(k) + '" data-l="' + esc(t) + '">' + (icon ? '<span class="material-symbols-rounded uk-ay2__ic" aria-hidden="true">' + esc(icon) + '</span>' : '') + '<b>' + esc(t) + '</b>' + ic('chevron_right') + '</button>'; };
+    var c = casos[0], h = '';
+    if (c) h += '<section class="uk-ay2__card" data-k="caso:' + esc(c.id) + '"><p class="uk-ay2__cap">Solicitud en curso</p><b class="uk-ay2__big">Caso ' + esc(c.id) + '</b><div class="uk-ay2__bar" aria-hidden="true"><i style="width:' + (c.como === 'agent' ? 40 : 65) + '%"></i></div><small>' + esc(c.t) + ' · ' + (c.como === 'agent' ? 'en revisión, respuesta en máximo 48 horas' : c.como === 'call' ? 'abierto, llamaste al call center' : 'te llamamos con el resumen') + '</small></section>';
+    else h += '<section class="uk-ay2__card"><p class="uk-ay2__cap">Solicitudes</p><b class="uk-ay2__big">Nada pendiente</b><small>Lo que pidas desde aquí lo sigues en esta tarjeta.</small></section>';
+    h += '<p class="uk-ay2__label">Preguntas frecuentes</p><section class="uk-ay2__card uk-ay2__list">' + [0, 5, 6].filter(function (i) { return fq[i]; }).map(function (i) { return fila('faq:' + i, fq[i].icon, fq[i].t); }).join('') + '</section>';
+    h += '<section class="uk-ay2__card uk-ay2__list">' + fila('ayudatoda', 'help', 'Ver todas las categorías') + '</section>';
     return h;
   }
   function ocultarGlobo() { globoOff = true; globoEl.classList.add('is-off'); if (b3d && b3d.setFront) b3d.setFront(false); setTimeout(function () { if (globoOff) globoEl.hidden = true; reencuadrar(); }, 260); }
@@ -387,13 +408,13 @@
     else { abajo(globoEl); abajo(props); abajo(host.querySelector('.uk-head')); arriba(pills); arriba(host.querySelector('.uk-bar')); }
     // Cada lugar tiene su encuadre: en el inicio Uku está cerca y a la derecha; en Mis finanzas la cámara
     // retrocede y él queda a la izquierda, con más planeta a la vista; en su mundo, al centro
-    var base = (home ? 1.12 : fin ? .82 : 1) / pulso, sx = home ? .14 : fin ? -.18 : 0;
+    var base = (home ? 1.12 : fin ? .82 : 1) / pulso, sx = home ? .24 : 0;
     var M = 12, band = bot - top - 2 * M, r = H.r, need = 2 * r + 24, zoom = H.zoom;
     if (band < need) zoom = Math.min(1.8, H.zoom * need / Math.max(40, band));
     else if (band > need * 1.35) zoom = Math.max(base, Math.min(H.zoom, H.zoom * need * 1.15 / band));
     if (zoom < base - .02 && band >= need) zoom = base;
     // La cara, en el tercio alto de la franja: el cuerpo sigue hacia abajo
-    var target = top + M + Math.max(r + 8, band * .38);
+    var target = home || fin ? top + M + r + 6 : top + M + Math.max(r + 8, band * .38); // en el inicio y Mis finanzas, la cabeza queda justo bajo el globo (atado a él)
     var y0 = H.y + hh * H.shiftY, sv = (y0 - target) / hh;
     b3d.setShift(sx, Math.max(-.6, Math.min(.5, sv)), instante);
     if (Math.abs(zoom - H.zoomTo) > .02) b3d.setZoom(zoom, instante);
@@ -412,7 +433,7 @@
     var p = function (k, icon, t, sub, dot) { return '<button class="uk-pill" data-k="' + k + '" data-l="' + esc(t) + '">' + ic(icon) + '<b>' + esc(t) + '</b><small>' + esc(sub) + '</small>' + (dot ? '<i class="uk-pill__dot ' + dot + '" aria-hidden="true"></i>' : '') + '</button>'; };
     // Dos accesos = dos cosas que hace este lugar: ver tus datos y ayudarte con la app (las solicitudes viven dentro de Ayuda y soporte). Solo nombres.
     pills.innerHTML = p('fin', 'monitoring', 'Mis finanzas', 'Organicemos tus gastos', pe ? (/warn|over/.test(pe) ? 'is-warn' : 'is-ok') : '') +
-      p('ayudatoda', 'headset_mic', 'Soporte', 'Resolvamos tus dudas');
+      p('soporte', 'headset_mic', 'Soporte', 'Resolvamos tus dudas');
   }
 
   /* ---------- Escribiendo: resultados flotando sobre su mundo ---------- */
@@ -679,7 +700,7 @@
         (nav.length ? '<div class="uk-card__nav">' + nav.map(function (x, j) { var ico = iconoDe(x); return '<button class="uk-card__row' + (ico ? ' has-ic' : '') + '" style="--d:' + j * 40 + 'ms" data-k="' + esc(x.k) + '" data-l="' + esc(x.t) + '">' + (ico ? ic(ico) : '') + '<span>' + esc(x.t) + '</span>' + ic('chevron_right') + '</button>'; }).join('') + '</div>' : '') +
         (ask.length ? (m.pregunta ? '<p class="uk-msg__q">' + esc(m.pregunta) + '</p>' : '') + '<div class="uk-msg__acts">' + ask.map(function (x, j) { return '<button class="uk-chip is-ask" style="--d:' + (nav.length + j) * 40 + 'ms" data-k="' + esc(x.k) + '" data-l="' + esc(x.t) + '">' + (x.ic ? ic(x.ic) : '') + esc(x.t) + '</button>'; }).join('') + '</div>' : '') +
         // ¿Te sirvió? Pulgar arriba cierra; pulgar abajo abre el siguiente paso de autogestión
-        (m.voto ? '<div class="uk-voto' + (m.votado ? ' is-' + m.votado : '') + '"><span>' + (m.votado === 'up' ? 'Gracias por contarme.' : m.votado === 'down' ? 'Busquemos otra forma.' : '¿Te sirvió?') + '</span>' + (m.votado ? '' : '<button data-k="voto:up" aria-label="Sí me sirvió">' + ic('thumb_up') + '</button><button data-k="voto:down" aria-label="No me sirvió">' + ic('thumb_down') + '</button>') + '</div>' : '') + '</div>') + '</section>';
+        (m.voto ? '<div class="uk-voto' + (m.votado ? ' is-' + m.votado : '') + '"><span>' + (m.votado === 'up' ? 'Gracias por contarme.' : m.votado === 'down' ? 'Busquemos otra forma.' : '¿Te sirvió?') + '</span>' + (m.votado ? '' : '<button data-k="voto:down" aria-label="No me sirvió">' + ic('thumb_down') + '</button><button data-k="voto:up" aria-label="Sí me sirvió">' + ic('thumb_up') + '</button>') + '</div>' : '') + '</div>') + '</section>';
   }
   function pintarTarjetas() {
     var nuevo = -1; msgs.forEach(function (m, i) { if (m.uku != null && m.nuevo && nuevo < 0) nuevo = i; });
@@ -702,11 +723,13 @@
       (m.links && m.links.length ? '<div class="uk-links"><small>Para leer más</small>' + m.links.map(function (l) { return '<a class="uk-link" href="' + esc(l[1]) + '" target="_blank" rel="noopener">' + ic('open_in_new') + esc(l[0]) + '</a>'; }).join('') + '</div>' : '');
     var fuera = !on ? '' : (nav.length ? '<div class="uk-card__nav">' + nav.map(function (x, j) { var ico = iconoDe(x); return '<button class="uk-card__row' + (ico ? ' has-ic' : '') + '" style="--d:' + j * 40 + 'ms" data-k="' + esc(x.k) + '" data-l="' + esc(x.t) + '">' + (ico ? ic(ico) : '') + '<span>' + esc(x.t) + '</span>' + ic('chevron_right') + '</button>'; }).join('') + '</div>' : '') +
       (ask.length ? (m.pregunta ? '<p class="uk-msg__q">' + esc(m.pregunta) + '</p>' : '') + '<div class="uk-msg__acts">' + ask.map(function (x, j) { return '<button class="uk-chip is-ask" style="--d:' + (nav.length + j) * 40 + 'ms" data-k="' + esc(x.k) + '" data-l="' + esc(x.t) + '">' + (x.ic ? ic(x.ic) : '') + esc(x.t) + '</button>'; }).join('') + '</div>' : '') +
-      (m.voto ? '<div class="uk-voto' + (m.votado ? ' is-' + m.votado : '') + '"><span>' + (m.votado === 'up' ? 'Gracias por contarme.' : m.votado === 'down' ? 'Busquemos otra forma.' : '¿Te sirvió?') + '</span>' + (m.votado ? '' : '<button data-k="voto:up" aria-label="Sí me sirvió">' + ic('thumb_up') + '</button><button data-k="voto:down" aria-label="No me sirvió">' + ic('thumb_down') + '</button>') + '</div>' : '');
+      (m.voto ? '<div class="uk-voto' + (m.votado ? ' is-' + m.votado : '') + '"><span>' + (m.votado === 'up' ? 'Gracias por contarme.' : m.votado === 'down' ? 'Busquemos otra forma.' : '¿Te sirvió?') + '</span>' + (m.votado ? '' : '<button data-k="voto:down" aria-label="No me sirvió">' + ic('thumb_down') + '</button><button data-k="voto:up" aria-label="Sí me sirvió">' + ic('thumb_up') + '</button>') + '</div>' : '');
     return { dentro: dentro, fuera: fuera };
   }
   function pintarChat() {
     host.classList.remove('is-cards');
+    if (ayudaPage && !msgs.length) { chat.innerHTML = ayudaPageHTML(); chat.hidden = false; return; }
+    if (ayudaPage && msgs.length) { ayudaPage = false; host.classList.remove('is-ayuda'); tituloDe('uku'); }
     // Lo nuevo de Uku aparece después de un "escribiendo…" corto, como en una conversación de verdad
     var nuevo = -1; msgs.forEach(function (m, i) { if (m.uku != null && m.nuevo && nuevo < 0) nuevo = i; });
     if (nuevo >= 0 && !RM) {
@@ -819,7 +842,7 @@
     host.classList.add('is-out');
     setTimeout(function () {
       host.classList.remove('is-out'); cerrando = false;
-      msgs = []; pend = null; agente = null; mundoOn = false;
+      msgs = []; pend = null; agente = null; mundoOn = false; ayudaPage = false; host.classList.remove('is-ayuda');
       if (solSec && !solSec.hidden) { solSec.hidden = true; host.classList.remove('uk-in-sec'); }
       seccion('uku'); pintar();
       if (b3d && !RM) setTimeout(function () { b3d.play('happy'); }, 320);
@@ -953,10 +976,27 @@
 
   /* ---------- Toques ---------- */
   // Un solo título por sección: el del encabezado. En Mis finanzas, el de su página (Mis finanzas o Tus gastos)
+  // Barra de arriba: flecha que vuelve (al inicio del asistente o, desde el inicio, a la app); en una página
+  // dentro de Mis finanzas (Mis gastos), una X que vuelve a Mis finanzas. El título centrado va en las secciones.
+  function cabecera(es) {
+    var xb = host.querySelector('.uk-chathead__x'); if (!xb) return;
+    if (es == null) es = host.classList.contains('is-chat');
+    var pagina = host.classList.contains('is-page'), icono = pagina ? 'close' : 'arrow_back';
+    if (xb.dataset.ic !== icono) { xb.dataset.ic = icono; xb.innerHTML = ic(icono); }
+    xb.setAttribute('aria-label', pagina ? 'Volver a Mis finanzas' : es ? 'Volver al inicio' : 'Volver');
+    xb.dataset.k = pagina ? 'atras' : es ? 'cerrar' : 'salir';
+  }
   function tituloDe(n) {
     var h = panel && panel.querySelector('.pf-head h1');
-    var t = n === 'ayuda' ? 'Ayuda y soporte' : n === 'fin' ? (h ? h.textContent : 'Mis finanzas') : 'Tu asistente';
+    var pagina = n === 'fin' && !!(panel && panel.querySelector('.pf-back'));
+    if (host.classList.contains('is-page') !== pagina) { host.classList.toggle('is-page', pagina); host.classList.remove('is-up'); reencuadrar(); }
+    cabecera();
+    var t = n === 'ayuda' ? 'Ayuda y soporte' : n === 'fin' ? (h ? h.textContent : 'Mis finanzas') : n === 'soporte' ? 'Soporte' : 'Tu asistente';
     if (headT.textContent !== t) headT.textContent = t; // la cabecera vive dentro del panel observado: escribir igual lo volvería a disparar
+    // Figma: en Mis finanzas y Soporte el título va centrado en la barra de arriba, junto a la flecha
+    var ct = host && host.querySelector('.uk-chathead__t'), tt = n === 'fin' || n === 'soporte' ? t : '';
+    if (ct && ct.textContent !== tt) ct.textContent = tt;
+    if (n === 'fin') llenarSlot();
   }
   // En todas las secciones de Asistente, el título va en su encabezado (no en la barra de arriba)
   function libre() { root.classList.toggle('uk-idle', view.classList.contains('active')); }
@@ -1005,9 +1045,12 @@
     nota = 'Guardado. Cada mes, una flor más.'; pintarGlobo(); acercar(1.15, 2400); setTimeout(function () { nota = null; pintarGlobo(); }, 5000);
   });
   // Las tres secciones de Asistente: Uku (su mundo y conversación), Mis finanzas y Ayuda
+  var ayudaPage = false;
   function seccion(n) {
     var ayuda = n === 'ayuda';
     view.classList.toggle('uk-ayuda', ayuda);
+    ayudaPage = n === 'soporte';
+    if (ayudaPage) { if (view.classList.contains('uk-fin')) finOn(false); msgs = []; pend = null; agente = null; }
     if (ayuda) {
       if (view.classList.contains('uk-fin')) finOn(false);
       if (window.Soporte) Soporte.into(ayudaSlot);
@@ -1200,6 +1243,7 @@
       case 'mundo': mundo(); return mostrar();
       case 'libre': return mundoLibre();
       case 'ayudatoda': fx('select'); return seccion('ayuda');
+      case 'soporte': fx('select'); seccion('soporte'); pintar(); return;
       case 'hum': return humano(v);
       case 'tel': location.href = 'tel:' + v; return;
       case 'cb': uku('Listo. Te llaman ' + esc(v) + ' al 099 *** 4521, con el resumen de tu caso. Lo ves en Solicitudes.', [b('ok', 'Gracias', 'thumb_up', 'is-ask')]); fx('success'); return pintarChat();
@@ -1208,6 +1252,8 @@
       case 'no': uku('Cuéntame qué necesitas con tus palabras o, si prefieres, te comunico con una persona.', [b('persona', 'Hablar con una persona', 'support_agent')]); pintarChat(); return setTimeout(function () { input.focus(); }, 300);
       case 'consejo': { var A = consejos(); if (!A.length) return resuelto('Por ahora no tengo nada más. ¡Vas muy bien!'); var x = A[0]; uku(esc(x.di || x.t), x.act ? [b('pfm:' + x.act, x.actl, 'arrow_forward')] : []); return pintarChat(); }
       case 'cerrar': return cerrar();
+      // La X de la ayuda completa vuelve a Soporte, su punto de entrada
+      case 'ayudacerrar': fx('tap'); return seccion('soporte');
     }
   }
   // Un solo punto de entrada: la lupa y la ayuda llevan a Uku (antes que el buscador y el soporte)
