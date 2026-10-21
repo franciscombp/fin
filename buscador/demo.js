@@ -24,7 +24,7 @@
    ===================================================================== */
 (function () {
   'use strict';
-  var K = window.Conocimiento, P = window.DemoPersona, L = window.Lector;
+  var K = window.Conocimiento, P = window.DemoPersona, L = window.Lector, BUILD = '__BUILD__'; // lo reemplaza el workflow de Pages: cada despliegue cambia el ?v= y el navegador no reutiliza nada viejo
   var $ = function (s) { return document.querySelector(s); };
   var q = $('#q'), out = $('#out'), toast = $('#toast'), sx = $('.sx'), cancelBtn = $('#cancel'), cancelIc = cancelBtn.querySelector('span');
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -184,6 +184,7 @@
       row('data-catalogo', 'apps', 'Todas las acciones', K.lista('accion').length + ' acciones de la banca móvil, por tema'));
     h += sec('Abierto desde', '<div class="sx-chips">' + P.secciones().map(function (x) { return chip('data-seccion="' + x[0] + '"', x[1], x[0] === seccion()); }).join('') + '</div>') +
       sec('Frases para probar', '<div class="sx-chips">' + EJ.map(function (e) { return chip('data-q="' + esc(e) + '"', e); }).join('') + '</div>');
+    h += nota('Versión ' + esc(BUILD.indexOf('__') === 0 ? 'de desarrollo' : BUILD) + ' · cada despliegue renueva scripts, estilos y datos; si ves algo viejo, recarga.');
     h += sec('Atajos', (atajos.length ? row('data-borrar-atajos', 'delete', 'Borrar mis atajos', atajos.length + ' guardados en este navegador') : row('data-nuevo-atajo', 'add', 'Grabar un atajo', 'Todavía no has guardado ninguno')));
     return h;
   }
@@ -465,6 +466,6 @@
 
   /* ---------- Arranque: la base y la persona ---------- */
   construirFlujos();
-  Promise.all([K.listo(), P.cargar('../assets/pfm/datos.json').catch(function () { return null; })]).then(function () { aplicarPersona(); if (location.hash.length > 1) q.value = decodeURIComponent(location.hash.slice(1)); render(); });
+  Promise.all([K.listo(), P.cargar('../assets/pfm/datos.json?v=' + BUILD).catch(function () { return null; })]).then(function () { aplicarPersona(); if (location.hash.length > 1) q.value = decodeURIComponent(location.hash.slice(1)); render(); });
   render();
 })();
