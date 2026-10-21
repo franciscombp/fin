@@ -60,18 +60,36 @@ export function ukuFrom(gltf, { onLog = () => {} } = {}) {
   const mixer = new THREE.AnimationMixer(root);
   const actions = {};
   clips.forEach(c => { actions[c.name] = mixer.clipAction(c); });
-  let current = null;
-  function playClip(name, fade = .7) {
+  // Pose de reposo (primer cuadro de Happy Idle): «calm» acerca cada hueso a ella después del mixer,
+  // así cualquier clip se mueve con menos amplitud sin cambiar su ritmo (y sin mezclar pesos, que
+  // con menos de 1 dejarían ver la pose T del archivo)
+  const rest0 = [], REST = actions['Happy Idle'] ? 'Happy Idle' : clips[0] && clips[0].name;
+  if (REST) { actions[REST].play(); mixer.update(0); Object.values(bones).forEach(b => rest0.push([b, b.quaternion.clone()])); actions[REST].stop(); }
+  let current = null, calmTo = 0, calmCur = 0, keep = null;
+  /* playClip(nombre, fundido, { speed, calm, keep }): speed es la velocidad de la clip y calm (0–1) cuánto
+     se acerca a la pose de reposo (0.6 = se mueve al 40 %); keep (RegExp) deja fuera de la calma los huesos
+     que deben moverse completos (p. ej. el brazo que saluda). La misma clip no se reinicia. */
+  function playClip(name, fade = .7, { speed = 1, calm = 0, keep: k = null } = {}) {
     const next = actions[name];
     if (!next) { report.errors.push('clip inexistente: ' + name); return false; }
-    if (current === next) return true;
-    next.reset().fadeIn(fade).play();
+    calmTo = calm; keep = k;
+    if (current === next) { next.setEffectiveTimeScale(speed); return true; }
+    next.reset().setEffectiveTimeScale(speed).fadeIn(fade).play();
     if (current) current.fadeOut(fade);
     current = next;
     return true;
   }
 
-  function update(dt) { mixer.update(dt); }
+  // El mixer solo reescribe un hueso si su valor cambió: antes de cada cuadro se devuelve cada hueso a lo
+  // que dejó el mixer, así los retoques de después (calma, mirada) no se acumulan cuadro a cuadro
+  const mixed = Object.values(bones).map(b => [b, b.quaternion.clone()]);
+  function update(dt) {
+    mixed.forEach(([b, q]) => b.quaternion.copy(q));
+    mixer.update(dt);
+    mixed.forEach(([b, q]) => q.copy(b.quaternion));
+    calmCur += (calmTo - calmCur) * Math.min(1, dt * 2.5);
+    if (calmCur > .005) rest0.forEach(([b, q]) => { if (!keep || !keep.test(b.name)) b.quaternion.slerp(q, calmCur); });
+  }
 
   return { root, body, box, skinned, bones, nodes, clips, playClip, update, report, B: n => bones[key(n)], N: n => nodes[key(n)] };
 }

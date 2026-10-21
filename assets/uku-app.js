@@ -154,7 +154,7 @@
   }
   // El ánimo y las flores de su campo siguen a tus finanzas (las señales van en los insights)
   function pintarMundo() {
-    var s = resumen(); if (b3d && s) { b3d.setBloom(s.bloom); b3d.setMood(s.mood); }
+    var s = resumen(); if (b3d && s) { b3d.setBloom(s.bloom); b3d.setMood(s.mood); if (b3d.setFinanzas && PFM.finanzas) b3d.setFinanzas(PFM.finanzas()); }
   }
 
   /* El saludo depende del momento: la hora, si ya pasaste hoy, el día de la semana y lo que
@@ -282,8 +282,8 @@
     globoEl.innerHTML = '<p class="uk-globo__t">' + esc(t) + '</p>';
     globoEl.classList.remove('is-new'); void globoEl.offsetWidth; globoEl.classList.add('is-new');
     reencuadrar();
-    // El mundo sigue vivo aunque no haya tarea: riega (si hay flores) y se va a pasear
-    if (b3d) { if (!s) b3d.play('talk'); else if (s.bloom > 0 && !RM) { b3d.play('water', { hold: 'can' }); setTimeout(function () { b3d.setAmbient('walk'); }, 3400); } else b3d.play('happy'); }
+    // El mundo sigue vivo aunque no haya tarea: planta un brote (si hay flores) y se va a pasear
+    if (b3d) { if (!s) b3d.play('talk'); else if (s.bloom > 0 && !RM) { b3d.play('plant'); setTimeout(function () { b3d.setAmbient('walk'); }, 3400); } else b3d.play('happy'); }
   }
   function buscar(on) {
     host.classList.toggle('is-buscar', !!on);
@@ -360,7 +360,7 @@
   }
   /* ---------- Leyenda efímera del paisaje (Mis finanzas) ----------
      Tres etiquetas junto a Uku: flores (ahorro), bosque (presupuesto) y él (orden). Nacen en su cabeza,
-     se quedan 2,5 s y se van. Tocar una hace que Uku lo explique y actúe (riega, planta, piensa). */
+     se quedan 2,5 s y se van. Tocar una hace que Uku lo explique y actúe (planta, asiente, piensa). */
   var leyendaEl = null;
   function leyenda() {
     if (!leyendaEl) leyendaEl = host.querySelector('.uk-leyenda');
@@ -382,7 +382,7 @@
     var W = window.PFM && PFM.world ? PFM.world() : []; if (!W[i]) return;
     leyendaEl.classList.add('is-off'); setTimeout(function () { leyendaEl.hidden = true; }, 220);
     nota = W[i].d; pintarGlobo();
-    if (b3d) b3d.play(i === 1 ? 'water' : i === 2 ? 'hold' : 'worried', i === 1 ? { hold: 'can' } : undefined);
+    if (b3d) b3d.play(i === 1 ? 'plant' : i === 2 ? 'nod' : 'worried');
     acercar(1.25, 1200);
     clearTimeout(explicar.t); explicar.t = setTimeout(function () { nota = null; pintarGlobo(); }, 6000);
   }
@@ -990,7 +990,7 @@
     import(ASSET + 'bosque3d.js').then(function (m3) {
       if (!m3.supported()) return;
       b3d = m3; var c = window.Clima && Clima.last(); if (c) m3.setLook(c.look);
-      if (s) { m3.setBloom(s.bloom); m3.setMood(s.mood); }
+      if (s) { m3.setBloom(s.bloom); m3.setMood(s.mood); if (m3.setFinanzas && PFM.finanzas) m3.setFinanzas(PFM.finanzas()); } // brotes, flores, guayacanes y lo que tienes por tus créditos
       m3.attach(el, { score: s ? s.score : 60, onReady: function () { var k = host.querySelector('.uk-skel'); if (k) { k.classList.add('is-off'); setTimeout(function () { k.remove(); }, 400); } if (!abriendo) { encuadrar(true); mostrarEscena(); reencuadrar(); } }, onTap: tocado });
       el.classList.add('is-3d');
       // Si la escena llega con una conversación ya abierta (modo asistente), Uku entra directo en foco
