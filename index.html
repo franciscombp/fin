@@ -1515,6 +1515,31 @@
             margin-top: 2px;
         }
 
+        /* Perfil con gamificación: nivel, chips, progreso, casillas y beneficios */
+        .perfil-head { flex-direction: column; align-items: stretch; gap: var(--bp-semantic-spacing-macro-sm, 16px); padding-bottom: var(--bp-semantic-spacing-macro-sm, 16px); }
+        .perfil-head__id { display: flex; align-items: center; gap: 14px; }
+        .perfil-head__avatar { position: relative; }
+        .perfil-head__nivel { position: absolute; right: -4px; bottom: -4px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #CD7F32; color: #fff; font-size: 14px; border: 2px solid var(--bp-surface-page, #fff); }
+        .perfil-head__nivel-txt { font-size: 14px; font-weight: 600; color: var(--bp-text-primary); }
+        .perfil-chips { display: flex; flex-wrap: wrap; gap: var(--bp-semantic-spacing-micro-md, 8px); }
+        .perfil-chip { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--bp-theme-color-interaction-segmented-bg, #eef1f6); color: var(--bp-text-primary); font: 600 14px/20px var(--sol-font); cursor: pointer; }
+        .perfil-chip .material-symbols-rounded { font-size: 18px; }
+        .perfil-chip--pro { background: var(--bp-theme-color-brand-main, #ffdd00); color: #0f265c; }
+        .perfil-card { display: flex; flex-direction: column; gap: 8px; margin-bottom: var(--bp-semantic-spacing-micro-md, 8px); }
+        .perfil-fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .perfil-card__titulo { font-size: 16px; font-weight: 700; color: var(--bp-text-primary); }
+        .perfil-card__icono { color: #CD7F32; }
+        .perfil-hint { margin: 0; font-size: 14px; line-height: 20px; color: var(--bp-text-helper); }
+        .perfil-barra { height: 8px; border-radius: 4px; background: var(--bp-theme-color-surface-page-alt, #e4e7ee); overflow: hidden; margin-top: 4px; }
+        .perfil-barra i { display: block; height: 100%; border-radius: 4px; background: var(--bp-theme-color-brand-main, #ffdd00); }
+        .perfil-monedas { display: flex; justify-content: space-between; align-items: center; }
+        .perfil-moneda { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; color: var(--bp-text-primary); }
+        .perfil-moneda .material-symbols-rounded { font-size: 18px; color: #CD7F32; }
+        .perfil-moneda--bonus { color: var(--bp-text-helper); }
+        .perfil-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: var(--bp-semantic-spacing-micro-md, 8px); margin: var(--bp-semantic-spacing-macro-sm, 16px) 0; }
+        .perfil-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; min-height: 96px; padding: 16px; border: 0; border-radius: 16px; background: var(--bp-theme-color-surface-container-default, #fff); color: var(--bp-text-primary); font: 600 15px/20px var(--sol-font); text-align: left; cursor: pointer; }
+        .perfil-tile .material-symbols-rounded { color: #0f265c; }
+
         .logout-btn {
             display: flex;
             align-items: center;
@@ -4690,12 +4715,71 @@
         <div class="view" data-view="4">
             <h1 class="view-title">Perfil</h1>
             <section class="section">
-                <div class="profile-head">
-                    <span class="profile-head__avatar">FM</span>
-                    <div>
-                        <div class="profile-head__name">Francisco Maldonado</div>
-                        <div class="profile-head__mail">francisco@maldonado.pro</div>
+                <div class="profile-head perfil-head">
+                    <div class="perfil-head__id">
+                        <span class="profile-head__avatar perfil-head__avatar">
+                            FM
+                            <span class="perfil-head__nivel material-symbols-rounded" aria-hidden="true">military_tech</span>
+                        </span>
+                        <div class="perfil-head__datos">
+                            <div class="profile-head__name">Francisco Maldonado</div>
+                            <div class="perfil-head__nivel-txt">Nivel Bronce</div>
+                            <div class="profile-head__mail">francisco@maldonado.pro</div>
+                        </div>
                     </div>
+                    <div class="perfil-chips">
+                        <button class="perfil-chip" data-action="Datos personales"><span class="material-symbols-rounded">edit</span>Editar perfil</button>
+                        <button class="perfil-chip" data-action="Mis puntos"><span class="material-symbols-rounded">stars</span>0 puntos</button>
+                    </div>
+                </div>
+
+                <div class="card perfil-card">
+                    <div class="perfil-fila">
+                        <span class="perfil-card__titulo">Transferencias del mes</span>
+                        <button class="perfil-chip perfil-chip--pro" data-soon="Pichibank PRO">Subir a PRO</button>
+                    </div>
+                    <div class="perfil-barra" role="progressbar" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0"><i style="width: 0%"></i></div>
+                    <p class="perfil-hint">0 de 5 transferencias sin comisión</p>
+                </div>
+
+                <div class="card perfil-card">
+                    <div class="perfil-fila">
+                        <span class="perfil-card__titulo">Nivel Bronce</span>
+                        <span class="material-symbols-rounded perfil-card__icono" aria-hidden="true">military_tech</span>
+                    </div>
+                    <p class="perfil-hint">Junta monedas usando tus productos para subir de nivel.</p>
+                    <div class="perfil-barra perfil-barra--monedas" role="progressbar" aria-valuemin="0" aria-valuemax="200" aria-valuenow="0"><i style="width: 0%"></i></div>
+                    <div class="perfil-monedas">
+                        <span class="perfil-moneda"><span class="material-symbols-rounded">paid</span>0</span>
+                        <span class="perfil-moneda"><span class="material-symbols-rounded">paid</span>200</span>
+                        <span class="perfil-moneda perfil-moneda--bonus"><span class="material-symbols-rounded">paid</span>+400</span>
+                    </div>
+                </div>
+
+                <div class="perfil-tiles">
+                    <button class="perfil-tile" data-action="Seguridad"><span class="material-symbols-rounded">shield_lock</span><span>Privacidad y seguridad</span></button>
+                    <button class="perfil-tile" data-action="Ayuda"><span class="material-symbols-rounded">support_agent</span><span>Centro de ayuda</span></button>
+                    <button class="perfil-tile" data-action="Calificación crediticia"><span class="material-symbols-rounded">speed</span><span>Calificación crediticia</span></button>
+                    <button class="perfil-tile" data-action="Datos personales"><span class="material-symbols-rounded">tune</span><span>Configurar perfil</span></button>
+                </div>
+
+                <div class="section__title"><h2>Beneficios del Nivel Bronce</h2></div>
+                <div class="card">
+                    <button class="list-item" data-action="Transferencias sin comisión">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">swap_horiz</span></span>
+                        <span class="list-item__title">Transferencias sin comisión</span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">chevron_right</span>
+                    </button>
+                    <button class="list-item" data-action="Descuentos en comercios aliados">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">local_offer</span></span>
+                        <span class="list-item__title">Descuentos en comercios aliados</span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">chevron_right</span>
+                    </button>
+                    <button class="list-item" data-action="Uku">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">chat_bubble</span></span>
+                        <span class="list-item__title">Uku, tu asistente personal</span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">chevron_right</span>
+                    </button>
                 </div>
 
                 <div class="bp-tips-security" style="margin-bottom: 12px;" role="note">
