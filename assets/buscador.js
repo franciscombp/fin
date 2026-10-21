@@ -114,6 +114,7 @@
     if (go.sc) return runShortcut(go.sc);
     if (go.tx != null) { close(true); return setTimeout(function () { window.UkuAsistente && UkuAsistente.movimiento && UkuAsistente.movimiento(go.tx); }, 280); }
     if (go.app) { var ap = appItems().filter(function (x) { return x.label === go.app; })[0]; return ap ? runApp(ap) : null; }
+    if (go.kb) { var kv = KB() && Conocimiento.entrada(go.kb); if (!kv) return; input.value = kv.t; kbOpen = go.kb; fx('tap'); return render(); }
     if (go.help) { close(true); return setTimeout(function () { if (window.UkuAsistente && UkuAsistente.ayuda) return UkuAsistente.ayuda(); window.Soporte && Soporte.open(); }, 280); }
     if (go.faq != null) { close(true); return setTimeout(function () { window.Soporte && (go.kind === 'tut' ? Soporte.openTut(go.faq) : Soporte.openFaq(go.faq)); }, 280); }
     if (go.ask) { close(true); return setTimeout(function () { if (window.UkuAsistente && UkuAsistente.preguntar) return UkuAsistente.preguntar(go.ask); window.Asistente && Asistente.open({ ctx: ctxId, ask: go.ask }); }, 280); }
@@ -159,7 +160,35 @@
     });
     return out;
   }
-  var APP = [], HELP = [];
+  var APP = [], HELP = [], KBP = [], KBA = [], kbOpen = null;
+  /* Base de conocimiento (assets/conocimiento.js): preguntas frecuentes, productos y acciones con un
+     buscador que entiende sinónimos, errores de tipeo y lo que se está escribiendo. Si no cargó, el
+     buscador sigue con la ayuda de Soporte. */
+  function KB() { return window.Conocimiento && Conocimiento.cargada() ? Conocimiento : null; }
+  function ctxCat() { var c = { inicio: null, cuentas: 'cuentas', tarjetas: 'tarjetas', prestamos: 'prestamos', inversiones: 'inversiones', seguros: 'seguros', finanzas: 'app', ayuda: null }; return ctxId && c[ctxId] !== undefined ? c[ctxId] : null; }
+  // Ejecuta la clave de una acción de la base (do:, tab:, card:, pfm, review, handoff, sol, search, ask:)
+  function kbGo(k) {
+    close(true);
+    setTimeout(function () {
+      if (k === 'search') return open();
+      if (k === 'handoff') { if (window.UkuAsistente && UkuAsistente.persona) return UkuAsistente.persona(); return window.Soporte && Soporte.open(); }
+      if (k === 'sol') { if (window.UkuAsistente && UkuAsistente.solicitudes) return UkuAsistente.solicitudes(); return window.Soporte && Soporte.open(); }
+      if (k.indexOf('ask:') === 0) { var q = k.slice(4); if (window.UkuAsistente && UkuAsistente.preguntar) return UkuAsistente.preguntar(q); return window.Asistente && Asistente.open({ ctx: ctxId, ask: q }); }
+      if (window.Soporte && Soporte.run) Soporte.run(k);
+    }, 280);
+  }
+  // La respuesta de una entrada, abierta dentro del buscador: texto, datos del producto, pasos y sus acciones
+  function kbCard(v, titulo) {
+    var h = '<section class="sx-card sx-kb" data-kb="' + esc(v.id) + '"><h3>' + esc(titulo || (v.tipo === 'producto' ? 'Producto' : v.tipo === 'accion' ? 'Acción' : 'Respuesta')) + '</h3><div class="sx-kb__body">' +
+      '<b class="sx-kb__t">' + esc(v.t) + '</b><p class="sx-kb__p">' + esc(v.r) + '</p>' +
+      (v.datos.length ? '<dl class="sx-kb__datos">' + v.datos.map(function (d) { return '<div><dt>' + esc(d[0]) + '</dt><dd>' + esc(d[1]) + '</dd></div>'; }).join('') + '</dl>' : '') +
+      (v.pasos.length ? '<ol class="sx-kb__pasos">' + v.pasos.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>' : '') +
+      ((v.acts.length || v.go) ? '<div class="sx-chips">' + (v.go ? '<button class="sx-chip sx-chip--go" data-sx-i="kbgo:' + esc(v.go) + '">' + esc(v.tipo === 'accion' ? v.t : 'Abrir') + '</button>' : '') +
+        v.acts.map(function (a) { return '<button class="sx-chip" data-sx-i="kbgo:' + esc(a[1]) + '">' + esc(a[0]) + '</button>'; }).join('') + '</div>' : '') +
+      (v.links.length ? '<p class="sx-kb__links">' + v.links.map(function (l) { return '<a href="' + esc(l[1]) + '" target="_blank" rel="noopener">' + esc(l[0]) + '</a>'; }).join(' · ') + '</p>' : '') +
+      '</div></section>';
+    return h;
+  }
   function runApp(a) {
     addRecent({ t: a.label, icon: a.icon, go: { app: a.label } });
     close(true);
@@ -222,7 +251,15 @@
       if (i.indexOf('tx:') === 0) { var tr = TX[+i.slice(3)]; if (!tr) return; addRecent({ t: tr.t, icon: 'receipt_long', go: tr.i != null ? { tx: tr.i } : { a: 'Mis finanzas' } }); close(true); return setTimeout(function () { if (tr.i != null && window.UkuAsistente && UkuAsistente.movimiento) return UkuAsistente.movimiento(tr.i); runAction(ACTIONS[4]); }, 280); }
       if (i.indexOf('per:') === 0) { var pr = PER[+i.slice(4)]; if (!pr) return; return runShortcut({ action: 'Transferir dinero', icon: 'send_money', who: pr.n, name: 'Transferir a ' + pr.n }); }
       if (i === 'help') { close(true); setTimeout(function () { window.Soporte && Soporte.open(); }, 280); return; }
-      if (i.indexOf('hp:') === 0) { var hp = HELP[+i.slice(3)]; addRecent({ t: hp.t, icon: 'help', go: { faq: hp.i, kind: hp.kind } }); close(true); setTimeout(function () { if (!window.Soporte) return; if (hp.kind === 'tut') Soporte.openTut(hp.i); else Soporte.openFaq(hp.i); }, 280); return; }
+      if (i.indexOf('kbgo:') === 0) { var kbg = results.querySelector('.sx-kb'); if (kbg && kbOpen) { var ke = KB() && Conocimiento.entrada(kbOpen); if (ke) addRecent({ t: ke.t, icon: ke.tipo === 'producto' ? 'inventory_2' : 'help', go: { kb: ke.id } }); } fx('tap'); return kbGo(i.slice(5)); }
+      if (i.indexOf('kb:') === 0) { var kid = i.slice(3), kv = KB() && Conocimiento.entrada(kid); if (!kv) return; fx('tap');
+        // Una pregunta que también responde Uku en Ayuda se abre allá (con su conversación); lo demás, aquí mismo
+        var si = kv.tipo === 'faq' && window.Soporte && Soporte.faqIndex ? Soporte.faqIndex(kv.t) : -1;
+        addRecent({ t: kv.t, icon: kv.tipo === 'producto' ? 'inventory_2' : 'help', go: { kb: kid } });
+        if (si >= 0) { close(true); return setTimeout(function () { Soporte.openFaq(si); }, 280); }
+        kbOpen = kid; render(); var kc = results.querySelector('.sx-kb'); if (kc) kc.scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
+      if (i.indexOf('kba:') === 0) { var ka = KBA[+i.slice(4)]; if (!ka) return; addRecent({ t: ka.t, icon: ka.icon || 'bolt', go: { kb: ka.id } }); return kbGo(ka.go); }
+      if (i.indexOf('hp:') === 0) { var hp = HELP[+i.slice(3)]; if (!hp) return; addRecent({ t: hp.t, icon: 'help', go: { faq: hp.i, kind: hp.kind } }); close(true); setTimeout(function () { if (!window.Soporte) return; if (hp.kind === 'tut') Soporte.openTut(hp.i); else if (hp.kind === 'flow') { if (window.UkuAsistente && UkuAsistente.flow) UkuAsistente.flow(hp.i); else Soporte.open(); } else Soporte.openFaq(hp.i); }, 280); return; }
       if (i === 'mo') { var mo = moment(); return mo.sc ? runShortcut(mo.sc) : runAction(mo.a); }
       if (i === 'it') return runShortcut(curIt);
       if (i === 'it-save') { shortcuts.push(Object.assign({}, curIt)); saveShortcuts(); fx('success'); input.value = ''; render(); return; }
@@ -385,7 +422,18 @@
       var acts = rank(ACTIONS, ws, function (a) { return a.label + ' ' + a.k + ' ' + T(a.label); }); // también en el idioma elegido
       var cxa = window.Contexto ? Contexto.info(ctxId).acciones : [];
       acts.sort(function (a, b) { return (cxa.indexOf(b.label) >= 0) - (cxa.indexOf(a.label) >= 0); }); // primero lo de esta sección
-      if (acts.length) html += '<section class="sx-card"><h3>Acciones</h3>' + acts.slice(0, 4).map(function (a) { return row('a:' + ACTIONS.indexOf(a), a.icon, a.label); }).join('') + '</section>';
+      // Base de conocimiento: la respuesta directa (si está clara), productos, acciones que faltan y ayudas
+      var kb = KB(), kbr = kb ? kb.buscar(input.value, { n: 10, ctx: ctxCat() }) : [], kbTop = kb && q.length > 2 ? kb.responder(input.value, { ctx: ctxCat() }) : null;
+      if (kbr.length) { var kbMax = kbr[0].s; kbr = kbr.filter(function (x) { return x.s >= kbMax * .3; }); } // lo que coincide apenas, fuera
+      var abierta = kbOpen && kb ? kb.entrada(kbOpen) : null;
+      if (abierta && norm(abierta.t) !== q && !kbr.some(function (x) { return x.id === kbOpen; })) { abierta = null; kbOpen = null; } // ya se escribió otra cosa
+      if (abierta) html += kbCard(abierta);
+      else if (kbTop && kbTop.conf === 'alta' && kbTop.tipo !== 'accion') { kbOpen = kbTop.id; html += kbCard(kbTop); }
+      KBA = kbr.filter(function (x) { return x.tipo === 'accion' && !acts.some(function (a) { return a.label === x.t || 'do:' + a.action === x.e.go || 'tab:' + a.tab === x.e.go; }); }).slice(0, 2).map(function (x) { return { id: x.id, t: x.t, icon: x.icon, go: x.e.go }; });
+      if (acts.length || KBA.length) html += '<section class="sx-card"><h3>Acciones</h3>' + acts.slice(0, 4).map(function (a) { return row('a:' + ACTIONS.indexOf(a), a.icon, a.label); }).join('') +
+        KBA.slice(0, Math.max(0, 4 - Math.min(4, acts.length))).map(function (x, i) { return row('kba:' + i, x.icon || 'bolt', esc(x.t)); }).join('') + '</section>';
+      KBP = kbr.filter(function (x) { return x.tipo === 'producto' && x.id !== kbOpen; }).slice(0, 2);
+      if (KBP.length) html += '<section class="sx-card"><h3>Productos</h3>' + KBP.map(function (x) { return row('kb:' + x.id, x.icon || 'inventory_2', esc(x.t), x.e.datos && x.e.datos[0] ? esc(x.e.datos[0][0] + ': ' + kb.texto(x.e.datos[0][1])) : 'Producto'); }).join('') + '</section>';
       var apps = rank(APP, ws, function (a) { return a.label + ' ' + a.k; });
       if (apps.length) html += '<section class="sx-card"><h3>En la app</h3>' + apps.slice(0, 4).map(function (a) { return row('app:' + APP.indexOf(a), a.icon, esc(a.label), a.sub); }).join('') + '</section>';
       // Personas con las que te mueves dinero y movimientos (por nombre o por monto): salen del PFM, que ve toda la app
@@ -404,14 +452,20 @@
       if (TX.length) html += '<section class="sx-card"><h3>Movimientos</h3>' + TX.map(function (t, i) {
         return row('tx:' + i, t.m > 0 ? 'south_west' : 'north_east', esc(t.t), t.f + (t.src ? ' · ' + t.src : ''), (t.m > 0 ? '+' : '−') + money(Math.abs(t.m)));
       }).join('') + '</section>';
-      // Ayuda: preguntas frecuentes y tutoriales del centro de ayuda
+      // Ayuda: preguntas frecuentes de la base de conocimiento (con sinónimos y errores de tipeo) y tutoriales e inconvenientes de Soporte
       HELP = window.Soporte && Soporte.find ? Soporte.find(input.value, ayudaCtx ? 6 : 3) : [];
-      if (HELP.length && !ayudaCtx) html += '<section class="sx-card"><h3>Ayuda</h3>' + HELP.map(function (h, i) { return row('hp:' + i, h.icon, esc(h.t), h.kind === 'tut' ? 'Tutorial' : 'Pregunta frecuente'); }).join('') + '</section>';
+      var nH = ayudaCtx ? 6 : 3, kbf = kbr.filter(function (x) { return x.tipo === 'faq' && x.id !== kbOpen; });
+      if (kb) {
+        var tuts = HELP.filter(function (h) { return h.kind !== 'faq' && h.sc >= 4; }).slice(0, 1), vistos = {}; // un tutorial o inconveniente solo si coincide de verdad
+        HELP = kbf.slice(0, nH).map(function (x) { vistos[norm(x.t)] = 1; return { kind: 'kb', i: x.id, icon: x.icon || 'help', t: x.t }; }).concat(tuts.filter(function (h) { return !vistos[norm(h.t)]; })).slice(0, nH);
+      }
+      var ayudaHTML = HELP.map(function (h, i) { return h.kind === 'kb' ? row('kb:' + h.i, 'help', esc(h.t), 'Pregunta frecuente') : row('hp:' + i, h.icon, esc(h.t), h.kind === 'tut' ? 'Tutorial' : h.kind === 'flow' ? 'Resolver paso a paso' : 'Pregunta frecuente'); }).join('');
+      if (HELP.length && !ayudaCtx) html += '<section class="sx-card"><h3>Ayuda</h3>' + ayudaHTML + '</section>';
       // Al final, el análisis con IA de Uku (se marca como IA)
       var asks = rank(ASKS, ws, function (a) { return a.q + ' ' + a.k + ' ' + T(a.q); }).slice(0, 2);
       if (asks.length) html += '<section class="sx-card"><h3>Analizar con ' + ukuName() + ' <span class="ai-badge">IA</span></h3>' + asks.map(function (a) { return row('q:' + ASKS.indexOf(a), 'ai', a.q); }).join('') + '</section>';
       // En Ayuda, los temas de ayuda van primero
-      if (ayudaCtx && HELP.length) html = '<section class="sx-card"><h3>Ayuda</h3>' + HELP.map(function (h, i) { return row('hp:' + i, h.icon, esc(h.t), h.kind === 'tut' ? 'Tutorial' : 'Pregunta frecuente'); }).join('') + '</section>' + html;
+      if (ayudaCtx && HELP.length) html = '<section class="sx-card"><h3>Ayuda</h3>' + ayudaHTML + '</section>' + html;
       // Lo que no se resuelve aquí (o es una pregunta) va al Asistente, con la misma frase
       var hadResults = !!html, esPregunta = /[?¿]|^(cu[aá]nto|c[oó]mo|qu[eé]|por qu[eé]|d[oó]nde|cu[aá]ndo|cu[aá]l|en qu[eé]|me |debo|puedo)/i.test(input.value.trim());
       if (!hadResults) html += '<section class="sx-card sx-empty"><p>No encontramos «' + esc(input.value.trim()) + '» en la app.</p>' +
@@ -459,7 +513,7 @@
     if (!el) mount();
     if (open_) return;
     open_ = true;
-    rec_ = null;
+    rec_ = null; kbOpen = null;
     ctxId = c || (window.Contexto ? Contexto.get() : null); // la sección desde donde se abre (o 'ayuda')
     input.value = '';
     render();
@@ -550,5 +604,6 @@
     // Para el buscador universal del asistente: la frase hecha acción, las pantallas de la app y los atajos
     intent: intent, atajo: function (sc) { if (window.__runShortcut) window.__runShortcut(sc); },
     app: function (q) { return rank(appItems(), words(q), function (a) { return a.label + ' ' + a.k; }).slice(0, 4).map(function (a) { return { label: a.label, icon: a.icon, sub: a.sub }; }); },
+    conocimiento: function (q, n) { var kb = KB(); return kb ? kb.buscar(q, { n: n || 6 }) : []; },
     abrir: function (label) { var a = appItems().filter(function (x) { return x.label === label; })[0]; if (!a) return; if (a.view != null && window.__goView) window.__goView(a.view); setTimeout(function () { a.el.click(); }, a.view != null ? 120 : 0); } };
 })();
