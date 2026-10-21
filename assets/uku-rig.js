@@ -1,226 +1,174 @@
 /* =====================================================================
-   Uku: el oso de anteojos (assets/oso/uku.glb, generado por
-   tools/uku/uku.py). Este módulo sólo carga y anima al personaje; la escena
-   (claro, flores, planeta) la arma bosque3d.js, que lo usa como su único oso.
-   - El modelo trae el esqueleto (nombres de Mixamo) en reposo y sin clips:
-     cada gesto es una función del tiempo que da el giro de cada hueso.
-     Así se controla todo: la velocidad, cuánto se mueve (calm), los fundidos
-     entre gestos y que los pies queden siempre apoyados en el suelo.
-   - La ropa usa los mismos pesos que el cuerpo que cubre (no se deforma
-     raro) y la punta de la bufanda tiene su hueso: se mece con un resorte.
-   - face: ojos (abiertos, entrecerrados, cerrados, contentos) y boca
-     (cerrada o abierta, para hablar).
+   Uku: el modelo con esqueleto Mixamo (assets/oso/uku-rig.glb). Este módulo
+   sólo carga y controla el personaje; la escena (bosque, flores, planeta) la
+   arma bosque3d.js, que lo usa como su único oso.
+   - ukuFrom(gltf): huesos, piezas y clips (crossfade). El modelo trae sus
+     animaciones; no tiene morph targets.
+   - Las clips traen el desplazamiento del torso al caminar; el planeta mueve
+     al oso, así que x y z del torso se fijan en su pose de reposo.
+   - Los pies siempre en el suelo: cada cuadro se miden las plantas (los
+     vértices más bajos del modelo) y la cadera sube o baja hasta apoyarlas.
+   - face: ojos pintados en la textura de la cabeza; para pestañear se
+     cambia el mapa por variantes (entrecerrados, cerrados, contentos).
+   - gest: cómo hace cada gesto de la app con estas clips (velocidad, calma).
    - loadUkuRig(container): visor independiente para verificar el modelo.
-   Unidad = 1 m; Uku mide 1.
+   (El oso de respaldo, hecho por código, está en uku-rig-nuevo.js.)
+   Unidad = 1 m; el cuerpo mide ~1.64.
    ===================================================================== */
 import * as THREE from './vendor/three/three.module.min.js';
 import { GLTFLoader } from './vendor/three/jsm/loaders/GLTFLoader.js';
 
-export const UKU_URL = './oso/uku.glb';
-const key = (n) => n.replace(/[\[\].:\/]/g, ''); // three.js quita ":" de los nombres ("mixamorig:Hips" -> "mixamorigHips")
+export const UKU_URL = './oso/uku-rig.glb';
+// three.js guarda los nombres sin puntos ni corchetes ni dos puntos ("mixamorig:Hips" -> "mixamorigHips")
+const key = (n) => n.replace(/[\[\].:\/]/g, '');
+const HIPS = key('mixamorig:Hips');
+const NEEDED = ['mixamorig:Hips', 'mixamorig:Head', 'mixamorig:RightHand'].map(key);
 
 export function loadUkuGltf() {
   return new Promise((ok, fail) => new GLTFLoader().load(new URL(UKU_URL, import.meta.url).href, ok, undefined, fail));
 }
 
-/* ---------- Gestos ----------
-   Cada gesto devuelve el giro (x, y, z en radianes, desde el reposo) de los huesos que mueve y la
-   altura de la cadera; t es su tiempo (s). Ejes del personaje: x a su izquierda, y arriba, z al frente.
-   En un hueso que cuelga (brazo, pierna), x negativo lo lleva al frente; en el tronco, x positivo
-   lo inclina hacia adelante; en la cabeza, x positivo mira abajo. Brazo derecho: z negativo lo sube. */
-const ss = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-const S = Math.sin, C = Math.cos, PI = Math.PI;
-// Pose base: de pie, tranquilo, los brazos junto al cuerpo
-function base(p) {
-  p.LeftArm = [0, 0, -.2]; p.RightArm = [0, 0, .2];
-  p.LeftForeArm = [-.12, 0, 0]; p.RightForeArm = [-.12, 0, 0];
-  return p;
-}
-const GESTOS = {
-  // Reposo: respira, se balancea apenas de un pie al otro y mueve un poco los brazos
-  idle(t) {
-    const p = base({}), b = S(t * 1.25), w = S(t * .42);
-    p.Spine1 = [.015 * b, 0, 0]; p.Spine2 = [.012 * b, 0, 0];
-    p.Hips = [0, 0, .018 * w]; p.Spine = [0, 0, -.022 * w]; p.Neck = [-.01 * b, 0, .01 * w];
-    p.Head = [.02 * S(t * .6), .03 * S(t * .31), .025 * S(t * .37 + 1)];
-    p.LeftArm[2] -= .025 * b; p.RightArm[2] += .025 * b; p.LeftArm[0] = .03 * w; p.RightArm[0] = -.03 * w;
-    p.y = -.003 * (1 - b);
-    return p;
-  },
-  // Saluda: sube el brazo derecho junto a la cara y lo mueve de lado a lado, sin aspaviento
-  wave(t) {
-    const p = GESTOS.idle(t), up = ss(0, .45, t), sw = S(t * 6.5) * up;
-    p.RightArm = [-.25 * up, -.2 * up, .2 - 2.35 * up];
-    p.RightForeArm = [-.15 - .55 * up, 0, -.35 * sw];
-    p.RightHand = [0, 0, -.2 * sw];
-    p.Spine2 = [0, -.05 * up, .04 * up]; p.Head = [.02, -.08 * up, -.06 * up + .03 * sw];
-    return p;
-  },
-  // Contento: un rebote suave de rodillas, los brazos un poco afuera y la cabeza de lado a lado
-  happy(t) {
-    const p = base({}), b = Math.abs(S(t * 4.2)), s = S(t * 2.1), o = ss(0, .3, t);
-    p.LeftUpLeg = [-.1 * b, 0, 0]; p.RightUpLeg = [-.1 * b, 0, 0]; p.LeftLeg = [.2 * b, 0, 0]; p.RightLeg = [.2 * b, 0, 0]; p.LeftFoot = [-.1 * b, 0, 0]; p.RightFoot = [-.1 * b, 0, 0];
-    p.LeftArm = [-.15 * o, 0, -.2 - .35 * o - .1 * b]; p.RightArm = [-.15 * o, 0, .2 + .35 * o + .1 * b];
-    p.LeftForeArm = [-.5 * o, 0, 0]; p.RightForeArm = [-.5 * o, 0, 0];
-    p.Spine = [0, .06 * s, .03 * s]; p.Spine2 = [-.06 * o, 0, 0]; p.Head = [-.08 * o, .06 * s, .12 * s];
-    return p;
-  },
-  // Habla: la cabeza acompaña con pequeños asentimientos y una mano explica
-  talk(t) {
-    const p = GESTOS.idle(t), o = ss(0, .4, t), g = S(t * 3.1);
-    p.LeftArm = [-.35 * o, 0, -.2 - .15 * o]; p.LeftForeArm = [-.9 * o - .15 * g * o, 0, .1 * g * o]; p.LeftHand = [0, .3 * g * o, 0];
-    p.Head = [.05 * S(t * 4.3), .05 * S(t * 1.7), .03 * g];
-    return p;
-  },
-  // Asiente despacio, dos veces
-  nod(t) {
-    const p = GESTOS.idle(t), k = ss(0, .3, t) * (1 - ss(2.4, 3, t));
-    p.Neck = [.08 * k * Math.max(0, S(t * 4.6)), 0, 0]; p.Head = [.22 * k * Math.max(0, S(t * 4.6)), 0, 0];
-    p.Spine2 = [.03 * k, 0, 0];
-    return p;
-  },
-  // Pensativo: la pata derecha al mentón y la cabeza ladeada
-  worried(t) {
-    const p = GESTOS.idle(t), o = ss(0, .6, t) * (1 - ss(3.2, 3.8, t)), r = S(t * 1.3);
-    p.RightArm = [-1.1 * o, .7 * o, .2 - .1 * o]; p.RightForeArm = [-2.05 * o, .15 * o, 0]; p.RightHand = [.3 * o, 0, 0];
-    p.Head = [.1 * o + .03 * r, .12 * o, .16 * o]; p.Neck = [.05 * o, 0, .04 * o]; p.Spine2 = [.04 * o, 0, 0];
-    return p;
-  },
-  // Caminar: piernas cortas que se alternan, la cadera sube y baja y los brazos van al revés de las piernas
-  walk(t) {
-    const p = base({}), f = t * 2 * PI / 1.05, sL = S(f), sR = -sL;
-    [['Left', sL], ['Right', sR]].forEach(([n, s]) => {
-      const lift = Math.max(0, S(f + (n === 'Left' ? .9 : .9 + PI)));
-      p[n + 'UpLeg'] = [-.42 * s - .15 * lift, 0, 0]; p[n + 'Leg'] = [.55 * lift, 0, 0]; p[n + 'Foot'] = [.42 * s + .15 * lift - .55 * lift * .6, 0, 0];
-    });
-    p.LeftArm = [.32 * sL, 0, -.2]; p.RightArm = [.32 * sR, 0, .2]; p.LeftForeArm = [-.2 - .1 * Math.max(0, -sL), 0, 0]; p.RightForeArm = [-.2 - .1 * Math.max(0, -sR), 0, 0];
-    p.Hips = [0, .09 * sL, .03 * S(f)]; p.Spine = [.04, -.06 * sL, -.03 * S(f)]; p.Spine2 = [0, -.04 * sL, 0]; p.Head = [-.03, .04 * sL, 0];
-    p.y = .012 * Math.abs(C(f));
-    return p;
-  },
-  // Plantar (7,6 s): se agacha, deja el brote con la pata derecha, aprieta la tierra con las dos, se para y lo mira
-  plant(t) {
-    const p = base({}), d = ss(.1, 1.2, t) * (1 - ss(5.6, 6.8, t)), pat = ss(3, 3.3, t) * (1 - ss(5.2, 5.6, t)), place = ss(1.3, 1.9, t) * (1 - ss(2.9, 3.3, t));
-    p.LeftUpLeg = [-1.2 * d, 0, -.18 * d]; p.RightUpLeg = [-1.2 * d, 0, .18 * d];
-    p.LeftLeg = [1.9 * d, 0, 0]; p.RightLeg = [1.9 * d, 0, 0]; p.LeftFoot = [-.7 * d, 0, 0]; p.RightFoot = [-.7 * d, 0, 0];
-    p.Hips = [.2 * d, 0, 0]; p.Spine = [.25 * d, 0, 0]; p.Spine1 = [.2 * d, 0, 0]; p.Spine2 = [.12 * d, 0, 0];
-    p.Neck = [.1 * d, 0, 0]; p.Head = [.25 * d + .08 * ss(6.6, 7.2, t), 0, 0];
-    const tap = (ph) => Math.max(0, S(t * 7 + ph)) * pat;
-    // brazos al frente y abajo: la derecha deja el brote, después las dos golpean suave la tierra
-    p.RightArm = [-1.15 * d - .1 * tap(0), .2 * d, .2 - .1 * d]; p.RightForeArm = [-.45 * d - .35 * place + .3 * tap(0), 0, 0];
-    p.LeftArm = [-1.0 * d - .1 * tap(PI), -.2 * d, -.2 + .1 * d]; p.LeftForeArm = [-.55 * d + .3 * tap(PI), 0, 0];
-    p.y = 0;
-    return p;
-  }
-};
-// Duración natural de cada gesto (los que no terminan, se repiten)
-export const GESTO_DUR = { wave: 2.6, happy: 2.4, talk: 2.2, nod: 3, worried: 3.8, plant: 7.6 };
-// Los nombres de las clips de Mixamo que usaba la app siguen funcionando
-const CLIP = { 'Happy Idle': 'idle', Waving: 'wave', Walking: 'walk', 'Plant A Plant': 'plant', 'Thoughtful Head Nod': 'nod', Watering: 'plant' };
-
-/* Sobre un GLTF ya cargado: huesos, piezas, gestos y cara. No crea render ni escena. */
+/* Sobre un GLTF ya cargado: huesos, piezas, clips y expresiones. No crea render ni escena. */
 export function ukuFrom(gltf, { onLog = () => {} } = {}) {
   const root = gltf.scene;
   const report = { errors: [], warnings: [] };
-  const skinned = [], bones = {}, nodes = {};
+  const skinned = []; const bones = {}; const nodes = {};
   root.traverse(o => {
     if (o.isSkinnedMesh) skinned.push(o);
     if (o.isBone) bones[o.name] = o;
     nodes[o.name] = nodes[o.name] || o;
   });
-  ['mixamorig:Hips', 'mixamorig:Head', 'mixamorig:RightHand'].map(key).forEach(n => { if (!bones[n]) report.errors.push('hueso inexistente: ' + n); });
+  NEEDED.forEach(n => { if (!bones[n] && !nodes[n]) report.errors.push('hueso inexistente: ' + n); });
+
+  // El cuerpo es la pieza más alta (la caja de la pose base, sin morph targets)
+  // Caja de la pose base (la del archivo, no la de una pose)
   const boxOf = (m) => new THREE.Box3().setFromBufferAttribute(m.geometry.attributes.position);
-  const body = skinned.find(m => m.name === 'uku') || skinned[0];
+  const hOf = (m) => { const b = boxOf(m); return b.max.y - b.min.y; };
+  const body = skinned.reduce((a, m) => (hOf(m) > hOf(a) ? m : a), skinned[0]);
+  // Altura del personaje: la caja que envuelve todas sus piezas (la ropa no siempre llega a los pies)
   const box = skinned.map(boxOf).reduce((u, b) => u.union(b));
-  onLog('Piezas: ' + skinned.map(m => m.name + ' ' + m.geometry.attributes.position.count + ' vértices').join(', '));
+  onLog('Piezas: ' + skinned.map(m => m.name + ' ' + hOf(m).toFixed(3) + ' m').join(', '));
 
-  const B = n => bones[key('mixamorig:' + n)];
-  const hips = B('Hips'), hipsY = hips.position.y;
-  const names = Object.keys(bones).map(k => k.replace(/^mixamorig/, ''));
-  // Puntos que tocan el suelo: el talón (bajo el tobillo) y la punta de cada pie
-  const feet = ['Left', 'Right'].map(s => ({ foot: B(s + 'Foot'), toe: B(s + 'ToeBase') }));
-  const heel = new THREE.Vector3(), tip = new THREE.Vector3();
+  // Desplazamiento del torso: x y z vuelven a su pose de reposo; la altura (y) conserva el vaivén al caminar
+  const hips = bones[HIPS];
+  const rest = hips ? hips.position.clone() : null;
+  const clips = gltf.animations.map(c => {
+    c.tracks = c.tracks.map(t => {
+      if (!rest || t.name !== HIPS + '.position') return t;
+      const v = Float32Array.from(t.values);
+      for (let i = 0; i < v.length; i += 3) { v[i] = rest.x; v[i + 2] = rest.z; }
+      return new THREE.VectorKeyframeTrack(t.name, t.times, v);
+    });
+    return c;
+  });
 
-  // Gestos activos (con fundido): cada uno con su tiempo, velocidad y peso
-  let layers = [], calmTo = 0, calmCur = 0, keep = null, cur = null, scarfV = 0, scarfA = 0, lastChest = 0;
-  /* playClip(nombre, fundido, { speed, calm, keep }): el gesto (o el nombre de su clip de Mixamo), su
-     velocidad, calm (0–1: cuánto se acerca a la pose base) y keep (RegExp): huesos fuera de la calma.
-     El mismo gesto no se reinicia; solo cambia su velocidad. */
-  function playClip(name, fade = .6, { speed = 1, calm = 0, keep: k = null } = {}) {
-    const g = CLIP[name] || name;
-    if (!GESTOS[g]) { report.errors.push('gesto inexistente: ' + name); return false; }
+  // Mixer y clips con crossfade
+  const mixer = new THREE.AnimationMixer(root);
+  const actions = {};
+  clips.forEach(c => { actions[c.name] = mixer.clipAction(c); });
+  // Pose de reposo (primer cuadro de Happy Idle): «calm» acerca cada hueso a ella después del mixer,
+  // así cualquier clip se mueve con menos amplitud sin cambiar su ritmo (y sin mezclar pesos, que
+  // con menos de 1 dejarían ver la pose T del archivo)
+  const rest0 = [], REST = actions['Happy Idle'] ? 'Happy Idle' : clips[0] && clips[0].name;
+  if (REST) { actions[REST].play(); mixer.update(0); Object.values(bones).forEach(b => rest0.push([b, b.quaternion.clone()])); actions[REST].stop(); }
+  let current = null, calmTo = 0, calmCur = 0, keep = null;
+  /* playClip(nombre, fundido, { speed, calm, keep }): speed es la velocidad de la clip y calm (0–1) cuánto
+     se acerca a la pose de reposo (0.6 = se mueve al 40 %); keep (RegExp) deja fuera de la calma los huesos
+     que deben moverse completos (p. ej. el brazo que saluda). La misma clip no se reinicia. */
+  function playClip(name, fade = .7, { speed = 1, calm = 0, keep: k = null } = {}) {
+    const next = actions[name];
+    if (!next) { report.errors.push('clip inexistente: ' + name); return false; }
     calmTo = calm; keep = k;
-    if (cur && cur.g === g) { cur.speed = speed; return true; }
-    layers.forEach(l => { l.to = 0; l.rate = 1 / Math.max(.05, fade); });
-    cur = { g, t: 0, speed, w: layers.length ? 0 : 1, to: 1, rate: 1 / Math.max(.05, fade) };
-    layers.push(cur);
+    if (current === next) { next.setEffectiveTimeScale(speed); return true; }
+    next.reset().setEffectiveTimeScale(speed).fadeIn(fade).play();
+    if (current) current.fadeOut(fade);
+    current = next;
     return true;
   }
-  const rot = {}, E = new THREE.Euler(), BASE = base({});
+
+  // El mixer solo reescribe un hueso si su valor cambió: antes de cada cuadro se devuelve cada hueso a lo
+  // que dejó el mixer, así los retoques de después (calma, mirada, apoyo) no se acumulan cuadro a cuadro
+  const mixed = Object.values(bones).map(b => [b, b.quaternion.clone()]), hipsMixed = hips ? hips.position.clone() : null;
+  // Las plantas de los pies: los vértices más bajos del modelo en la pose del archivo
+  const soles = [];
+  skinned.forEach(m => { const p = m.geometry.attributes.position; for (let i = 0; i < p.count; i++) soles.push([m, i, p.getY(i)]); });
+  soles.sort((a, b) => a[2] - b[2]); soles.length = Math.min(60, soles.length);
+  const _v = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3();
   function update(dt) {
-    // Avanza y funde los gestos
-    layers.forEach(l => { l.t += dt * l.speed; l.w += Math.sign(l.to - l.w) * Math.min(Math.abs(l.to - l.w), dt * l.rate); });
-    layers = layers.filter(l => l.w > 0 || l.to > 0);
-    const tot = layers.reduce((a, l) => a + l.w, 0) || 1;
-    for (const n in rot) rot[n].fill(0);
-    let y = 0;
-    layers.forEach(l => {
-      const p = GESTOS[l.g](l.t), k = l.w / tot;
-      for (const n in p) { if (n === 'y') { y += p.y * k; continue; } const r = rot[n] || (rot[n] = [0, 0, 0]); r[0] += p[n][0] * k; r[1] += p[n][1] * k; r[2] += p[n][2] * k; }
-    });
-    // Calma: todo se acerca a la pose base (menos los huesos de keep)
+    mixed.forEach(([b, q]) => b.quaternion.copy(q));
+    if (hips) hips.position.copy(hipsMixed);
+    mixer.update(dt);
+    mixed.forEach(([b, q]) => q.copy(b.quaternion));
+    if (hips) hipsMixed.copy(hips.position);
     calmCur += (calmTo - calmCur) * Math.min(1, dt * 2.5);
-    names.forEach(n => {
-      const b = bones['mixamorig' + n]; if (!b || n === 'ScarfTail') return;
-      const r = rot[n] || (rot[n] = [0, 0, 0]), q = BASE[n] || [0, 0, 0], c = keep && keep.test('mixamorig:' + n) ? 0 : calmCur;
-      b.rotation.set(r[0] + (q[0] - r[0]) * c, r[1] + (q[1] - r[1]) * c, r[2] + (q[2] - r[2]) * c);
-    });
-    // La punta de la bufanda: un resorte que sigue el movimiento del pecho, con un vaivén leve
-    const chest = (rot.Spine2 ? rot.Spine2[1] : 0) + (rot.Spine ? rot.Spine[1] : 0) + (rot.Hips ? rot.Hips[1] : 0) + y * 8;
-    const acc = -(chest - lastChest) / Math.max(dt, 1e-3) * .12; lastChest = chest;
-    scarfV += (acc - scarfA * 30 - scarfV * 5) * dt; scarfA += scarfV * dt;
-    const tail = B('ScarfTail'); if (tail) { const ti = performance.now() / 1000; tail.rotation.set(.04 + .03 * S(ti * 1.1), 0, scarfA + .03 * S(ti * .8)); }
-    // Los pies en el suelo: la cadera baja o sube hasta que el pie más bajo apoya (nunca flota ni se hunde)
-    hips.position.y = hipsY + y;
+    if (calmCur > .005) rest0.forEach(([b, q]) => { if (!keep || !keep.test(b.name)) b.quaternion.slerp(q, calmCur); });
+    // Los pies en el suelo: la cadera baja o sube hasta que la planta más baja toca el suelo (ni flota ni se hunde)
+    if (!hips) return;
     root.updateMatrixWorld(true);
     let low = Infinity;
-    feet.forEach(f => {
-      f.foot.localToWorld(heel.set(0, -.058, -.05)); root.worldToLocal(heel); f.toe.localToWorld(tip.set(0, -.02, .02)); root.worldToLocal(tip);
-      low = Math.min(low, heel.y, tip.y);
-    });
-    hips.position.y -= low;
+    soles.forEach(([m, i]) => { m.getVertexPosition(i, _v).applyMatrix4(m.matrixWorld); root.worldToLocal(_v); if (_v.y < low) low = _v.y; });
+    root.localToWorld(_a.set(0, 0, 0)); root.localToWorld(_b.set(0, box.min.y - low, 0));
+    hips.parent.worldToLocal(_a); hips.parent.worldToLocal(_b);
+    hips.position.add(_b.sub(_a));
   }
 
-  // Cara: ojos y boca son piezas hijas de la cabeza; se escalan en su lugar
-  const N_ = n => nodes[n];
-  const eyes = ['L', 'R'].map(s => ({ o: N_('ojo_' + s), h: N_('ojo_feliz_' + s) }));
-  const mouth = { c: N_('boca'), o: N_('boca_abierta') };
+  /* Ojos: están pintados en la textura de la cabeza (uku_cabeza_final) como dos puntos azul marino sobre el
+     pelaje. Para pestañear se dibujan variantes de la textura y se cambia el mapa unos cuadros. M dice cuánto
+     mide en la cara (mm; x a la derecha, y hacia arriba) un píxel de la textura en x y en y: en el mapa UV los
+     ojos están girados y estirados. */
+  let headMesh = null, headMap = null;
+  root.traverse(o => { if (o.isMesh && o.material && o.material.map && /cabeza/.test(o.material.map.name || '')) { headMesh = o; headMap = o.material.map; } });
+  const maps = { open: headMap };
   const face = {
-    eyes(kind) { // open, half, shut, happy
-      const k = { open: 1, half: .5, shut: .1, happy: 0 }[kind]; if (k == null) return;
-      eyes.forEach(e => { if (e.o) { e.o.scale.set(1, Math.max(.001, k), 1); e.o.visible = k > 0; } if (e.h) e.h.scale.setScalar(kind === 'happy' ? 1 : .001); });
+    eyes(kind) {
+      if (!headMesh || !headMap || !headMap.image) return;
+      if (!maps[kind]) { try { maps[kind] = eyeMap(headMap, kind); } catch (e) { maps[kind] = headMap; } }
+      headMesh.material.map = maps[kind];
     },
-    mouth(open) { // 0 = sonrisa cerrada; 1 = abierta
-      if (mouth.o) mouth.o.scale.set(1, Math.max(.001, open), 1);
-      if (mouth.c) mouth.c.scale.setScalar(open > .25 ? .001 : 1);
-    }
+    mouth() {} // la boca está pintada: no se abre
   };
 
-  return { root, body, box, skinned, bones, nodes, clips: Object.keys(GESTOS), playClip, update, face, report, B: n => bones[key(n)], N: n => nodes[key(n)] };
+  // Cómo hace cada gesto de la app: [clip, velocidad, calma (cuánto se acerca a su pose quieta), duración en s, huesos fuera de la calma]
+  const gest = {
+    wave: ['Waving', .55, .45, 2.7, /Right(Shoulder|Arm|ForeArm|Hand)/], // saluda con el brazo entero, pero el cuerpo casi quieto
+    happy: ['Happy Idle', .8, .15, 2.4], talk: ['Happy Idle', .6, .45, 2.2],
+    nod: ['Thoughtful Head Nod', .8, .1, 3.4], worried: ['Thoughtful Head Nod', .7, .2, 3.8], plant: ['Plant A Plant', .9, 0, 8.2],
+    idle: ['Happy Idle', .45, .65], walk: ['Walking', .6, .1],
+    plantAt: { hold: [1.6, 3.4], at: 3.4 } // plantar: cuándo sostiene el brote y cuándo queda en la tierra (s del gesto)
+  };
+
+  return { root, body, box, skinned, bones, nodes, clips, playClip, update, face, gest, report, B: n => bones[key(n)], N: n => nodes[key(n)] };
 }
 
-/* Visor independiente (uku-rig.html): cámara, luz, suelo y Uku con el gesto que se pida. */
-export async function loadUkuRig(container, { onLog = console.log, frame = { dist: 3.4, y: .5 } } = {}) {
+const EYES = [{ c: [189, 132], M: [-3.08, -5.66, -5.10, 2.61] }, { c: [169, 111], M: [-4.74, -2.86, -2.59, 5.62] }];
+function eyeMap(base, kind) {
+  const img = base.image, c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+  const x = c.getContext('2d'), k = img.width / 512; x.drawImage(img, 0, 0);
+  EYES.forEach(e => {
+    const [a, b, cc, d] = e.M, det = a * d - cc * b, r = 3.9 * Math.sqrt(Math.abs(det)); // radio (mm) del punto original, ~3.9 px
+    x.setTransform(k, 0, 0, k, 0, 0); x.fillStyle = '#88909d'; x.beginPath(); x.arc(e.c[0], e.c[1], 6, 0, 7); x.fill(); // el pelaje tapa el ojo
+    x.setTransform(k * d / det, -k * b / det, -k * cc / det, k * a / det, k * e.c[0], k * e.c[1]); // de mm de la cara a píxeles
+    x.fillStyle = x.strokeStyle = '#0b2750'; x.lineCap = 'round'; x.lineWidth = r * .5; x.beginPath();
+    if (kind === 'half') { x.ellipse(0, -r * .3, r, r * .55, 0, 0, Math.PI * 2); x.fill(); }
+    else if (kind === 'shut') { x.moveTo(-r, 0); x.quadraticCurveTo(0, -r * .7, r, 0); x.stroke(); }
+    else { x.moveTo(-r, -r * .35); x.quadraticCurveTo(0, r * 1.1, r, -r * .35); x.stroke(); }
+  });
+  const t = new THREE.CanvasTexture(c);
+  ['flipY', 'colorSpace', 'wrapS', 'wrapT', 'anisotropy', 'magFilter', 'minFilter'].forEach(p => { t[p] = base[p]; });
+  return t;
+}
+
+/* Visor independiente (uku-rig.html): cámara, luz, suelo y Uku con la clip que se pida. */
+export async function loadUkuRig(container, { onLog = console.log, frame = { dist: 3.4, y: .85 } } = {}) {
   const u = ukuFrom(await loadUkuGltf(), { onLog });
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#f6f6f5');
   const camera = new THREE.PerspectiveCamera(30, 1, .05, 50);
   camera.position.set(0, frame.y + .25, frame.dist); camera.lookAt(0, frame.y, 0);
-  scene.add(new THREE.HemisphereLight('#ffffff', '#c9ccd6', 2.2));
-  const sun = new THREE.DirectionalLight('#ffffff', 1.4); sun.position.set(-1.5, 3, 3); scene.add(sun);
+  scene.add(new THREE.AmbientLight('#ffffff', 1.4));
+  const sun = new THREE.DirectionalLight('#ffffff', 1.2); sun.position.set(2, 4, 3); scene.add(sun);
   const floor = new THREE.Mesh(new THREE.CircleGeometry(6, 48), new THREE.MeshLambertMaterial({ color: '#e7ebf2' }));
   floor.rotation.x = -Math.PI / 2; scene.add(floor);
-  u.root.traverse(o => { if (o.isMesh) { o.frustumCulled = false; o.material = new THREE.MeshLambertMaterial({ vertexColors: true }); } });
   scene.add(u.root);
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1));
@@ -233,7 +181,6 @@ export async function loadUkuRig(container, { onLog = console.log, frame = { dis
   new ResizeObserver(resize).observe(container); resize();
   const clock = new THREE.Clock();
   let raf = 0;
-  function loop() { raf = requestAnimationFrame(loop); u.update(Math.min(.1, clock.getDelta())); renderer.render(scene, camera); }
-  u.playClip('idle');
+  function loop() { raf = requestAnimationFrame(loop); u.update(clock.getDelta()); renderer.render(scene, camera); }
   return { ...u, scene, camera, renderer, start() { if (!raf) loop(); }, stop() { cancelAnimationFrame(raf); raf = 0; } };
 }
