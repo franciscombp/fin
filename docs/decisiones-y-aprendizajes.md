@@ -285,6 +285,11 @@ Cómo queda:
 
 ## 10. Reglas técnicas que nos costaron tiempo
 
+- **`hidden` siempre oculta.** El CSS base de `index.html` está en `@layer base` y `componentes.css` va
+  al final sin capa, así que cualquier `display` de un componente (p. ej. `.bp-alert { display: flex }`)
+  le gana a una regla `#algo[hidden] { display: none }` del base, aunque tenga id. Así se veía «Sin
+  internet» en el login con conexión. Por eso `componentes.css` tiene `[hidden] { display: none
+  !important }`, y el barrido revisa en cada pantalla que nada con `hidden` se vea.
 - **Un id gana sobre una clase.** `#push-page { z-index: 310 }` tapaba al login aunque la clase tuviera 600.
   Para forzar algo sobre el login hay que usar selectores con el mismo nivel de especificidad o mayor.
 - **Capas al abrir sin ingresar** (con `body.sin-sesion`): login 500; páginas de Ayuda y push 600; selector

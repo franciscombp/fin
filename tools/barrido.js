@@ -7,7 +7,8 @@
 // Qué revisa en cada paso: errores de JS y de consola, archivos que no cargan (HTTP ≥ 400), que la página
 // siga respondiendo (el congelamiento al entrar a Mis finanzas), scroll horizontal, el botón principal de
 // las hojas sin fondo, la barra de abajo (oculta en Mis finanzas y visible en el inicio del asistente) y
-// que el aviso con «Deshacer» se pueda tocar.
+// que el aviso con «Deshacer» se pueda tocar. También que nada con hidden se vea y que el login no diga
+// «Sin internet» con conexión.
 const { chromium } = require(process.env.PW || 'playwright');
 const fs = require('fs'), path = require('path');
 const BASE = process.env.BASE || 'http://localhost:8765/';
@@ -33,6 +34,9 @@ const IGN = /ERR_CONNECTION_REFUSED|ERR_FAILED|ERR_NAME_NOT_RESOLVED|ERR_TUNNEL|
         const vivo = await Promise.race([p.evaluate(() => 1), new Promise(r => setTimeout(() => r(0), 3000))]);
         if (!vivo) { errs.push(n + ' · la página no responde'); return; }
         await check(() => document.documentElement.scrollWidth <= innerWidth + 1, 'hay scroll horizontal');
+        // Nada con el atributo hidden debe verse (así se colaba «Sin internet» en el login con red)
+        const ocultos = await p.evaluate(() => Array.from(document.querySelectorAll('[hidden]')).filter(e => getComputedStyle(e).display !== 'none').map(e => (e.id ? '#' + e.id : e.className)).slice(0, 3));
+        if (ocultos.length) errs.push(paso + ' · se ve algo que debería estar oculto: ' + ocultos.join(', '));
         if (extra) await extra();
         await p.waitForTimeout(500); await p.screenshot({ path: path.join(OUT, persona + '_' + n + '.png') });
       } catch (e) { errs.push(n + ' · no se pudo: ' + e.message.split('\n')[0].slice(0, 160)); }
@@ -41,7 +45,7 @@ const IGN = /ERR_CONNECTION_REFUSED|ERR_FAILED|ERR_NAME_NOT_RESOLVED|ERR_TUNNEL|
     await p.goto(BASE + 'index.html'); await p.waitForTimeout(500);
     await p.evaluate((id) => { localStorage.clear(); localStorage.setItem('uk-onboard', '1'); localStorage.setItem('pb_persona', id); }, persona);
     await p.reload(); await p.waitForTimeout(1500);
-    await step('00login', async () => {});
+    await step('00login', async () => {}, 1200, () => check(() => !navigator.onLine || getComputedStyle(document.getElementById('login-offline')).display === 'none', 'el login dice «Sin internet» aunque hay conexión'));
     await step('01inicio', async () => { await p.evaluate(() => { document.getElementById('login-screen').classList.remove('active'); document.getElementById('home-page').classList.remove('hidden'); }); });
     await step('02beneficios', () => p.click('.nav-item[data-view="2"]'));
     await step('03perfil', () => p.click('.nav-item[data-view="4"]'));
