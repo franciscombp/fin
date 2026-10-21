@@ -1,130 +1,62 @@
 /* =====================================================================
-   Asistente financiero — Candado (perro) y PIA (pollito)
-   Estructura aireada: escena a pantalla completa, personaje grande y un
-   solo mensaje; el chat flota sobre el paisaje. Colores neutros: línea
-   navy, grises y el amarillo de la marca como único acento.
+   Asistente: respuestas de Uku (barras, cifras, informes), hojas inferiores
+   (as-sheet), la pantalla de Mis finanzas (pf-page) y la escena 3D.
+   Filas, botones, hojas y títulos vienen de componentes.css.
    ===================================================================== */
-:root {
-  --as-line: #1b2a4e; --as-g0: #f3f3f3; --as-g1: #e3e3e3; --as-g2: #c9c9c9; --as-accent: #ffd200; --as-paper: #ffffff;
-}
-:root[data-theme="dark"] { --as-line: #d6dcea; --as-g0: #2c2c2c; --as-g1: #3a3a3a; --as-g2: #5a5a5a; --as-paper: #1f1f1f; }
 
-/* ---------- Respuestas de Uku: barras, cifras e informes (se ven en el análisis) ---------- */
+/* ---------- Respuestas de Uku: barras, cifras e informes ---------- */
 .as-bars { display: flex; flex-direction: column; gap: 10px; }
-.as-bar { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; font-size: 14px; line-height: 20px; }
+.as-bar { display: grid; grid-template-columns: 1fr auto; gap: var(--bp-semantic-spacing-micro-xs) var(--bp-semantic-spacing-micro-md); font: var(--sol-body-sm-medium); }
 .as-bar span:last-of-type { font-weight: 600; font-variant-numeric: tabular-nums; }
-.as-bar u { grid-column: 1 / 3; height: 4px; border-radius: 99px; background: var(--as-g0); text-decoration: none; overflow: hidden; }
-.as-bar u i { display: block; height: 100%; border-radius: inherit; background: var(--c); }
-.as-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.as-stat { padding: 10px 12px; border-radius: 12px; background: var(--as-g0); }
-.as-stat small { display: block; font-size: 12px; color: var(--bp-theme-color-text-helper); }
-.as-stat b { font-size: 16px; font-variant-numeric: tabular-nums; }
+.as-bar u { grid-column: 1 / 3; height: 4px; border-radius: var(--bp-semantic-radius-full); background: var(--bp-theme-color-data-chart-track); text-decoration: none; overflow: hidden; }
+.as-bar u i { display: block; height: 100%; border-radius: inherit; background: var(--c, var(--bp-interaction-tertiary-fg)); }
+.as-stats { display: grid; grid-template-columns: 1fr 1fr; gap: var(--bp-semantic-spacing-micro-md); }
+.as-stat { padding: 10px var(--bp-semantic-spacing-micro-lg); background: var(--bp-theme-color-surface-page-alt); }
+.as-stat small { display: block; font: var(--sol-body-xs-medium); color: var(--bp-theme-color-text-helper); }
+.as-stat b { font: var(--sol-body-md-semibold); font-variant-numeric: tabular-nums; }
 .as-report { display: flex; flex-direction: column; }
-.as-report__row { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 8px; padding: 10px 0; border-top: 1px solid var(--as-g1); font-size: 14px; line-height: 20px; }
-.as-report__row em { font-style: normal; font-size: 12px; font-weight: 600; color: var(--bp-theme-color-text-helper); }
-.as-note { font-size: 12px; line-height: 16px; color: var(--bp-theme-color-text-helper); }
+.as-report__row { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: var(--bp-semantic-spacing-micro-md); padding: 10px 0; border-top: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); font: var(--sol-body-sm-medium); }
+.as-report__row em { font-style: normal; font: var(--sol-body-xs-semibold); color: var(--bp-theme-color-text-helper); }
+.as-note { font: var(--sol-body-xs-medium); color: var(--bp-theme-color-text-helper); }
 
-/* Hojas inferiores (paisaje, ajustes) */
-.as-sheet-back { position: fixed; inset: 0; z-index: 310; background: rgb(0 0 0 / .32); opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+/* ---------- Hojas inferiores (gestos en assets/sheets.js) ---------- */
+.as-sheet-back { position: fixed; inset: 0; z-index: 310; opacity: 0; pointer-events: none; }
 .as-sheet-back.open { opacity: 1; pointer-events: auto; }
-.as-sheet { position: fixed; left: 50%; bottom: 0; z-index: 311; width: 100%; max-width: 480px; max-height: 86vh; overflow-y: auto; transform: translate(-50%, 100%); transition: transform .38s cubic-bezier(.32,.72,0,1); background: var(--as-paper); color: var(--bp-theme-color-text-primary); border-radius: 24px 24px 0 0; padding: 8px 24px calc(32px + env(safe-area-inset-bottom, 0px)); }
+.as-sheet { position: fixed; left: 50%; bottom: 0; z-index: 311; width: 100%; max-width: 480px; max-height: 86vh; overflow-y: auto; box-sizing: border-box; transform: translate(-50%, 100%); padding: var(--bp-semantic-spacing-micro-md) var(--bp-layout-grid-margin) calc(32px + env(safe-area-inset-bottom, 0px)); }
 .as-sheet.open { transform: translate(-50%, 0); }
-.as-sheet__handle { width: 36px; height: 5px; border-radius: 3px; margin: 0 auto 24px; background: var(--as-g1); }
-.as-sheet h3 { margin: 0 0 8px; font-size: 22px; line-height: 28px; font-weight: 600; }
-.as-sheet > p { margin: 0 0 16px; font-size: 15px; line-height: 22px; color: var(--bp-theme-color-text-secondary); }
-.as-sheet .as-sheet__label { margin: 24px 0 4px; font-size: 13px; font-weight: 600; color: var(--bp-theme-color-text-helper); }
 .as-rows { display: flex; flex-direction: column; }
-.as-row { display: flex; align-items: center; gap: 16px; width: 100%; padding: 16px 0; border: 0; border-bottom: 1px solid var(--as-g1); background: transparent; color: inherit; font: inherit; text-align: left; }
-.as-row:last-child { border-bottom: 0; }
-.as-row--btn { cursor: pointer; }
+.as-radio { width: 22px; height: 22px; flex: 0 0 22px; border-radius: var(--bp-semantic-radius-full); border: 2px solid var(--bp-theme-color-border-default); transition: border .15s ease; }
+[aria-pressed="true"] > .as-radio { border: 7px solid var(--bp-interaction-tertiary-fg); }
 
-.as-row__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.as-row__main b { font-size: 16px; line-height: 22px; font-weight: 600; }
-.as-row__main small { font-size: 13px; line-height: 18px; color: var(--bp-theme-color-text-helper); }
-.as-radio { width: 22px; height: 22px; flex: 0 0 22px; border-radius: 50%; border: 2px solid var(--as-g2); transition: border .15s ease; }
-[aria-pressed="true"] > .as-radio { border: 7px solid var(--as-line); }
-
-/* =====================================================================
-   PFM — Mis finanzas
-   ===================================================================== */
+/* ---------- Mis finanzas: la pantalla completa ---------- */
 .pf-page {
   position: fixed; top: 0; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto; z-index: 290;
-  display: flex; flex-direction: column; background: var(--bp-theme-color-surface-page-alt, #f5f5f5); color: var(--bp-theme-color-text-primary);
+  display: flex; flex-direction: column; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary);
   transform: translateX(100%); visibility: hidden;
-  transition: transform .4s cubic-bezier(.32,.72,0,1), visibility 0s linear .4s;
+  transition: transform .4s cubic-bezier(.32, .72, 0, 1), visibility 0s linear .4s;
 }
-.pf-page.open { transform: none; visibility: visible; transition: transform .4s cubic-bezier(.32,.72,0,1); }
-
+.pf-page.open { transform: none; visibility: visible; transition: transform .4s cubic-bezier(.32, .72, 0, 1); }
 .pf-scroll { flex: 1; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
-
-.pf-sec { padding: 48px 20px 0; }
-.pf-sec h2 { margin: 0 4px 6px; font-size: 22px; line-height: 30px; font-weight: 600; letter-spacing: -.2px; }
-.pf-meter { width: 56px; height: 6px; border-radius: 99px; background: var(--as-g0); overflow: hidden; flex: 0 0 56px; }
-.pf-meter i { display: block; height: 100%; background: var(--as-line); border-radius: inherit; }
-
-.pf-tx { display: flex; align-items: center; gap: 14px; min-height: 72px; padding: 14px 0; border-bottom: 1px solid var(--as-g1); }
-.pf-tx__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.pf-tx__main b { font-size: 16px; font-weight: 500; }
-.pf-tx__main small { font-size: 13px; color: var(--bp-theme-color-text-helper); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pf-tx__amt { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.pf-tx__amt.is-in { color: var(--bp-theme-color-status-success-text, #107524); }
-
-.pf-note { margin: 24px 4px 0; font-size: 14px; line-height: 21px; color: var(--bp-theme-color-text-helper); }
-
-/* Hojas del PFM */
-.pf-sheet-list .pf-tx:last-child { border-bottom: 0; }
-.pf-cta { width: 100%; height: 56px; margin-top: 24px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-theme-color-interaction-primary-bg, #ffdd00); color: var(--bp-theme-color-interaction-primary-fg, #0f265c); font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; }
-.pf-linking { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 24px 0 8px; }
+.pf-head { padding: var(--bp-semantic-spacing-micro-xs) var(--bp-layout-grid-margin) 0; }
+.pf-head h1 { margin-bottom: var(--bp-semantic-spacing-micro-lg); }
+.pf-note { margin: var(--bp-semantic-spacing-macro-sm) 0 0; font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-helper); }
+.pf-link--block { display: flex; align-items: center; justify-content: center; margin: var(--bp-semantic-spacing-macro-sm) 0 0; }
+.pf-linking { display: flex; flex-direction: column; align-items: center; text-align: center; padding: var(--bp-semantic-spacing-macro-sm) 0 var(--bp-semantic-spacing-micro-md); }
 .pf-linking h3 { margin-top: 20px; }
-.pf-spinner { width: 48px; height: 48px; border-radius: 50%; border: 3px solid var(--as-g1); border-top-color: var(--as-line); animation: pfSpin .8s linear infinite; }
+.pf-spinner { width: 48px; height: 48px; border-radius: var(--bp-semantic-radius-full); border: 3px solid var(--bp-theme-color-border-divider); border-top-color: var(--bp-theme-color-loading-spinner-on-page); animation: pfSpin .8s linear infinite; }
 @keyframes pfSpin { to { transform: rotate(360deg); } }
-.pf-done { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--as-accent); color: #0f265c; font-size: 30px; }
-.pf-toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 400; width: calc(100% - 32px); max-width: 448px; padding: 14px 16px; border-radius: 14px; background: #1f1f1f; color: #fff; font-size: 14px; line-height: 20px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; transition: opacity .25s ease, transform .25s ease; }
+.pf-done { width: 56px; height: 56px; border-radius: var(--bp-semantic-radius-full); display: grid; place-items: center; background: var(--bp-theme-color-brand-main); color: var(--bp-theme-color-text-on-brand); font-size: 30px; }
+/* Aviso del PFM: posición (el aspecto es el de bp-toast) */
+.pf-toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 400; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; transition: opacity .25s ease, transform .25s ease; }
 .pf-toast.show { opacity: 1; transform: translate(-50%, 0); }
 
-/* =====================================================================
-   Mis finanzas por mes (tipo Replay): personaje → insights → detalle
-   ===================================================================== */
-.pf-page { background: var(--as-paper); }
-
-.pf-round { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--as-g1); background: var(--as-paper); color: var(--bp-theme-color-icon-primary, #1f1f1f); display: grid; place-items: center; cursor: pointer; }
-.pf-head { padding: 12px 24px 0; }
-.pf-head h1 { margin: 0 0 20px; font-size: 36px; line-height: 42px; font-weight: 700; letter-spacing: -.8px; }
-
-.pf-sec { padding: 44px 24px 0; }
-
-.pf-link { height: 36px; padding: 0; border: 0; background: transparent; color: var(--bp-theme-color-text-interactive); font: inherit; font-size: 15px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-.pf-link--block { display: block; margin: 16px auto 0; }
-
-/* =====================================================================
-   Jerarquía y color (escala --cx-*, benchmark Cash App)
-   ===================================================================== */
-.pf-head { padding: 4px 24px 0; }
-.pf-head h1 { font: var(--cx-title); font-size: 32px; line-height: 38px; letter-spacing: -.6px; margin-bottom: 12px; }
-.pf-sec { padding: 40px var(--bp-layout-grid-margin) 0; }
-.pf-sec h2 { font: var(--cx-headline); margin: 0 0 4px; letter-spacing: -.2px; }
-
-.pf-link { height: 36px; padding: 0 14px; border-radius: 99px; background: var(--cx-surface); color: var(--cx-ink); text-decoration: none; font: 600 14px/1 var(--sol-font, Roboto, sans-serif); }
-.pf-link--block { display: flex; align-items: center; margin: 16px 0 0; background: var(--cx-fill); }
-.pf-note { font: var(--cx-sub); color: var(--cx-muted); }
-.pf-tx__amt.is-in { color: var(--cx-ink); }
-.as-sheet h3 { font: var(--cx-title); font-size: 24px; line-height: 30px; }
-.as-sheet > p { font: var(--cx-sub); color: var(--cx-muted); }
-
-/* =====================================================================
-   Uku, el oso andino: escena 3D (bosque3d.js) y versiones 2D
-   ===================================================================== */
+/* ---------- Uku, el oso andino: escena 3D (bosque3d.js) y versiones 2D ---------- */
 .as-oso { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; user-select: none; -webkit-user-drag: none; }
 .as-oso--cara { object-fit: cover; object-position: center 20%; }
-.b3d { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--cx-fill, #f5f5f5); }
-.b3d .b3d-canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; touch-action: pan-y; animation: b3dIn .5s ease both; }
-@keyframes b3dIn { from { opacity: 0; } }
-
-/* =====================================================================
-   Bosque onírico: máscara de portal (los bordes se disuelven)
-   ===================================================================== */
-.b3d { background: transparent; }
+.b3d { position: relative; width: 100%; height: 100%; overflow: hidden; background: transparent; }
 .b3d .b3d-canvas {
+  position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; touch-action: pan-y; animation: b3dIn .5s ease both;
   -webkit-mask-image: radial-gradient(ellipse 64% 62% at 50% 54%, #000 42%, rgba(0,0,0,.55) 66%, transparent 94%);
           mask-image: radial-gradient(ellipse 64% 62% at 50% 54%, #000 42%, rgba(0,0,0,.55) 66%, transparent 94%);
 }
+@keyframes b3dIn { from { opacity: 0; } }

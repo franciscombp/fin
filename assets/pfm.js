@@ -102,7 +102,7 @@
             cp: D.contraparte[r[5]], m: r[6], t: D.tratamiento[r[7]], c: D.categoria[r[8]], e: D.escenario[r[9]], n: D.nota[r[10]], s: r[11] };
         });
       });
-      DB = { mov: U, usuarios: d.usuarios, deudas: d.deudas, escenarios: d.escenarios, hipoteca: d.hipoteca };
+      DB = { mov: U, usuarios: d.usuarios, deudas: d.deudas, escenarios: d.escenarios, hipoteca: d.hipoteca, cuentas: d.cuentas || {} };
       if (!DB.mov[ST.u]) ST.u = 'andres';
       Object.keys(U).forEach(sembrar);
       cache = {}; fijoCache = {};
@@ -424,6 +424,17 @@
       total: r2(bp.concat(otras, casas).reduce(function (a, x) { return a + Math.max(0, x.saldo); }, 0)) };
   }
 
+  /* ---------- Lo que tienes, para el claro de Uku (bosque3d.setFinanzas) ----------
+     nuevo: sin movimientos ni productos además de la cuenta (su claro se llena de brotes); ahorro: cuentas de
+     ahorro y metas (flores); inversion: depósitos a plazo (guayacanes en flor); deudas: los créditos con saldo
+     (cada uno pone en el claro lo que tienes gracias a él: casa, tiendita, carretilla…). */
+  function finanzas() {
+    var C = DB.cuentas[ST.u] || [], suma = function (tipos) { return r2(C.filter(function (c) { return tipos.indexOf(c.tipo) >= 0; }).reduce(function (a, c) { return a + (+c.saldo || 0); }, 0)); };
+    var ahorro = suma(['ahorro', 'meta']), inversion = suma(['inversion']);
+    var deu = DB.deudas.filter(function (x) { return x.usuario === ST.u && x.saldo > 0; }).map(function (x) { return { clase: x.clase, producto: x.producto, institucion: x.institucion, saldo: x.saldo }; });
+    return { nuevo: !(DB.mov[ST.u] || []).length && !ahorro && !inversion && !deu.length, ahorro: ahorro, inversion: inversion, deudas: deu };
+  }
+
   /* ---------- El mundo de Uku (como Duo) ----------
      Tres señales, cada una con un solo significado:
      · Su ánimo = tus consumos clasificados. Al día: contento. Algo nuevo:
@@ -683,15 +694,19 @@
   // Qué significa cada cosa del mundo de Uku
   // Las tres señales del mundo de Uku (consumos, ahorro, presupuesto): Uku las muestra en su pantalla
   function worldSignals() {
-    var a = animo(), c = colchon(), pe = presEstado();
+    var a = animo(), c = colchon(), pe = presEstado(), F = finanzas();
     return [
       { ic: MOOD_IC[a.k], l: T('Tus gastos por ordenar'), v: a.n ? T('{n} sin clasificar', { n: a.n }) : T('Todo en orden'), cls: a.k,
         d: a.n ? T(a.n === 1 ? 'Tienes 1 consumo sin clasificar. Cuando lo ordenes, vuelvo a estar contento.' : 'Tienes {n} consumos sin clasificar. Cuando los ordenes, vuelvo a estar contento.', { n: a.n }) : T('Tus gastos están clasificados. Por eso me ves contento.') },
       { ic: 'local_florist', l: T('Tu ahorro'), v: c >= 1 ? T(Math.floor(c) === 1 ? 'Te alcanza 1 mes' : 'Te alcanza {n} meses', { n: Math.floor(c) }) : T('Menos de 1 mes'), cls: c >= 3 ? 'ok' : c >= 1 ? 'warn' : 'over',
         d: c >= 3 ? T('Lo que tienes cubre {n} meses de gastos. Por eso el campo está lleno de flores.', { n: Math.floor(c) }) : c >= 1 ? T(Math.floor(c) === 1 ? 'Lo que tienes cubre 1 mes de gastos. Las flores crecen cuando llega a 3 meses.' : 'Lo que tienes cubre {n} meses de gastos. Las flores crecen cuando llega a 3 meses.', { n: Math.floor(c) }) : T('Lo que tienes cubre menos de 1 mes de gastos. Las flores crecen cuando llega a 3 meses.') },
       { ic: 'park', l: T('Tu presupuesto'), v: pe.l, cls: pe.k,
-        d: pe.k === 'over' ? T('Este mes gastaste más de tu presupuesto. Por eso el bosque se ve seco.') : T('Vas dentro de tu presupuesto este mes. Por eso el bosque está verde.') }
-    ];
+        d: pe.k === 'over' ? T('Este mes gastaste más de tu presupuesto. Por eso hay menos árboles en el bosque.') : T('Vas dentro de tu presupuesto este mes. Por eso el bosque está tupido.') }
+    ].concat(
+      // Lo que tienes también se ve (y nunca es triste): brotes si recién empiezas, guayacanes por tus inversiones, y lo que lograste con tus créditos
+      F.nuevo ? [{ ic: 'potted_plant', l: T('Recién empiezas'), v: T('Lleno de brotes'), cls: 'ok', d: T('Tu claro está lleno de brotes amarillos. Con tus primeros ahorros salen las flores.') }] : [],
+      F.inversion > 0 ? [{ ic: 'forest', l: T('Tus inversiones'), v: T('Guayacanes en flor'), cls: 'ok', d: T('Tienes {m} invertidos: por eso en tu claro florecen guayacanes.', { m: money0(F.inversion) }) }] : [],
+      F.deudas.length ? [{ ic: 'cottage', l: T('Tus créditos'), v: T(F.deudas.length === 1 ? '1 crédito' : '{n} créditos', { n: F.deudas.length }), cls: 'ok', d: T('Cada crédito pone en tu claro lo que tienes gracias a él: tu casa, tu carro, la tiendita de tus tarjetas o lo que compraste a cuotas.') }] : []);
   }
   function worldSheet() {
     var a = animo(), c = colchon(), pe = presEstado(), p = pres().general;
@@ -699,7 +714,7 @@
     showSheet('<h3>' + T('El mundo de tu Asistente') + '</h3><p>' + T('Uku y su campo cambian con tus finanzas. Cada cosa tiene un solo significado.') + '</p>' +
       row(MOOD_IC[a.k], a.k, T('Su ánimo: tus consumos clasificados'), a.n ? T('Está {animo}: tienes {n} sin clasificar. Si pasa más de una semana se queda pensativo, esperándote. Si una semana no gastas, no pasa nada.', { animo: T(MOOD[a.k]), n: a.n }) : T('Está contento: todo está clasificado. Si una semana no gastas, no pasa nada.')) +
       row('local_florist', c >= 3 ? 'ok' : c >= 1 ? 'warn' : 'over', T('Las flores amarillas: tu ahorro'), T('Lo que tienes en tus cuentas te alcanza para {n} meses de gasto. Con 3 meses o más, su campo está lleno de flores.', { n: (Math.round(c * 10) / 10).toString().replace('.', ',') })) +
-      row('park', pe.k, T('El bosque: tu presupuesto'), T('{e}: llevas {g} de {p} este mes. Si excedes el presupuesto, el bosque se seca.', { e: pe.l, g: money0(month(curMes()).gast), p: money0(p) })) +
+      row('park', pe.k, T('El bosque: tu presupuesto'), T('{e}: llevas {g} de {p} este mes. Si excedes el presupuesto, el bosque tiene menos árboles.', { e: pe.l, g: money0(month(curMes()).gast), p: money0(p) })) +
       (a.n ? '<button class="pf-cta pfm-block" data-pfm="game">' + T('Clasificar {n}', { n: Math.min(TANDA, a.n) }) + '</button>' : ''));
   }
 
@@ -1742,6 +1757,7 @@
   window.PFM = { open: open, paint: paint, world: worldSignals, toast: toast, buscar: buscar, contactos: contactos,
     // Para la versión asistente: los consejos de Uku y un resumen de tu dinero
     advice: function () { return DB ? consejos() : []; },
+    finanzas: function () { return DB ? finanzas() : null; },
     summary: function () { if (!DB) return null; var s = month(curMes()), a = animo(); return { nombre: nombre(), saldo: sumv(saldos(), function (x) { return x.v; }), gast: s.gast, pres: pres().general, mes: mesName(curMes()), n: a.n, mood: a.k, moodL: T(MOOD[a.k]), moodIc: MOOD_IC[a.k], score: salud(curMes()), bloom: flores() }; }, settings: function () { if (DB) whoSheet(); }, pack: pack, answer: answer, key: key, ready: function () { return !!DB; },
     modo: function () { return ST.modo; },
     // Para el sandbox (sin la pantalla de Mis finanzas): cargar los datos y cambiar de persona

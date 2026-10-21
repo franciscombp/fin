@@ -18,6 +18,8 @@
   <link rel="stylesheet" href="../assets/uku-app.css?v=__BUILD__">
   <link rel="stylesheet" href="../assets/soporte.css?v=__BUILD__">
   <link rel="stylesheet" href="../assets/componentes.css?v=__BUILD__">
+  <!-- El reset base de la app (el mismo que index.html): caja border-box, sin margen y la fuente -->
+  <style>*, *::before, *::after { box-sizing: border-box; } body { margin: 0; font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }</style>
 </head>
 <body>
   <div class="sx open">
@@ -25,7 +27,7 @@
     <div class="sx-panel">
       <div class="sx-head">
         <form class="sx-field" role="search" id="form"><span class="material-symbols-rounded" aria-hidden="true">search</span><input id="q" type="search" autocomplete="off" placeholder="Bases y repositorio" aria-label="Bases y repositorio"></form>
-        <button type="button" class="sx-cancel" id="cancel" aria-label="Limpiar"><span class="material-symbols-rounded">close</span></button>
+        <button type="button" class="sx-cancel" id="cancel" aria-label="Volver al sandbox"><span class="material-symbols-rounded">arrow_back</span></button>
       </div>
       <div class="sx-results" id="out"></div>
     </div>

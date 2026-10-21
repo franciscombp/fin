@@ -130,19 +130,7 @@
   font-variant-numeric: tabular-nums;
   color: var(--bp-theme-color-text-primary);
 }
-.ing__barra {
-  height: 6px;
-  border-radius: 3px;
-  background: rgba(0, 0, 0, .08);
-  overflow: hidden;
-}
-.ing__barra i {
-  display: block;
-  height: 100%;
-  width: 100%;
-  background: var(--bp-theme-color-brand-main, #f5c400);
-  transition: width .25s linear;
-}
+
 .ing__detalle {
   font-size: 14px;
   color: var(--bp-theme-color-text-primary);

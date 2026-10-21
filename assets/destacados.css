@@ -36,8 +36,6 @@
   color: var(--cx-ink); text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .15s ease, box-shadow .2s ease;
 }
 .dw--s { grid-column: span 1; grid-row: span 1; }
-.dw--m { grid-column: span 2; grid-row: span 1; }
-.dw--l { grid-column: span 2; grid-row: span 2; }
 .dw:active { transform: scale(.985); }
 .dw p { margin: 0; }
 .dw-h { display: flex; align-items: center; gap: 6px; min-height: 20px; margin-bottom: 8px !important; font: var(--ui-body-sm-semibold, 600 13px/18px sans-serif); color: var(--cx-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -130,12 +128,6 @@
 html.pb-masked .dw-s__v { display: none; }
 html.pb-masked .dw-s__m { display: inline; }
 
-/* Uñeros (agarraderas) iguales en todas las hojas: 36×5, centrados */
-.sheet__handle, .as-sheet__handle {
-  width: 36px !important; height: 5px !important; border-radius: 99px !important; margin: 0 auto 20px !important;
-  background: color-mix(in srgb, var(--cx-ink) 20%, transparent) !important;
-}
-.sheet, .as-sheet { padding-top: 8px; }
 /* Mantener presionado entra en edición: sin selección de texto ni menú del sistema */
 .dw-grid .dw { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 

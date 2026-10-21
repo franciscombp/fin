@@ -117,8 +117,9 @@ mismos tokens, nada inventado por pantalla.
 - **Tarjeta (grupo de filas):** `--bp-theme-color-surface-container-default` (blanco), radio
   `--bp-semantic-radius-md` (12), sin borde ni sombra, `overflow: hidden`. Entre tarjetas, 24 px
   (8 de `padding-top` de la sección + 16 de `padding-bottom`).
-- **Fila:** `min-height` 64 (`--ui-row`), relleno `--bp-semantic-spacing-macro-md` (24) arriba y abajo por
-  `--bp-layout-card-padding` (16 en móvil, 24 en tablet) a los lados, `gap` `--bp-semantic-spacing-micro-lg` (12). Divisor
+- **Fila:** `min-height` 64 (`--ui-row`), relleno `--bp-semantic-spacing-micro-lg` (12) arriba y abajo por
+  `--bp-layout-card-padding` (16 en móvil, 24 en tablet) a los lados, `gap` `--bp-semantic-spacing-micro-lg` (12);
+  una fila de una línea mide 64 y una de dos líneas, 68. Divisor
   `--bp-semantic-border-thin` con `--bp-theme-color-border-divider`; la última fila sin divisor.
   Estados `--bp-interaction-row-bg`, `--hover` y `--active`.
 - **Icono de fila:** círculo de 40 (`--ui-ic`, radio `full`) con `--bp-theme-color-avatar-bg` y
@@ -134,9 +135,8 @@ mismos tokens, nada inventado por pantalla.
 - **Qué no hacer:** listas de texto sin tarjeta, etiquetas en mayúsculas, iconos en cada fila por decorar,
   mosaicos o chips donde una fila resuelve, espaciados fuera de la escala 8/12/16/24/32.
 
-Dónde está aplicado: Perfil (`index.html`), las hojas de Mis finanzas (`hubHTML` en `assets/pfm.js`) y de
-Soporte (`ayudaHTML` en `assets/uku-app.js`), con las clases `.pfm-hub__*` y `.uk-ay__*` en
-`assets/uku-app.css`.
+Dónde está aplicado: en toda la app, porque cada primitiva se define una sola vez en
+`assets/componentes.css` (ver 5.3).
 
 ### 5.2 Mapa de navegación del asistente (Uku)
 
@@ -157,6 +157,39 @@ Un solo control arriba a la izquierda y, cuando la pantalla tiene nombre, el tí
 - **Soporte** (`is-ayuda`): título «Soporte», la flecha vuelve al inicio. Tarjeta de Solicitudes, tres
   preguntas frecuentes (cada una se responde en el chat) y «Ver todas las categorías», que abre la
   **ayuda completa**: hoja a pantalla completa con título y X que vuelve a Soporte.
+
+### 5.3 Una sola capa de componentes (acuerdo del 21 de octubre)
+
+El problema que teníamos: botones, filas, tarjetas, chips, hojas y títulos estaban definidos cuatro
+veces (CSS base de `index.html`, `solar.css`, `sistema.css` y la hoja de cada pantalla), cada capa
+pisando a la anterior con `!important`. Cualquier ajuste salía distinto según la pantalla.
+
+Cómo queda:
+
+- **`assets/componentes.css` es la única definición de cada componente** del DS: bp-button,
+  bp-action-button, enlace, bp-navigation-button, bp-icon-switch, bp-quick-action, bp-tab-item,
+  bp-filter-item, bp-segmented, bp-avatar, bp-tag, bp-section-title, bp-section, bp-page-header,
+  bp-widget (tarjeta), bp-list-item (fila), bp-bottom-sheet, bp-toast, bp-alert, bp-tips-security,
+  bp-top-bar, bp-nav-bar, bp-text-field, bp-amount y bp-progress. Cada regla lista primero el nombre
+  bp-* y después los nombres heredados de la app como alias (`.login-button`, `.pf-cta`, `.list-item`,
+  `.sx-row`, `.uk-chip`…), así el markup existente recibe el mismo componente sin reescribirlo. Los alias
+  tipográficos (`--sol-*`, `--ui-*`, `--cx-*`) también viven ahí, una sola vez.
+- **El CSS base de `index.html` va dentro de `@layer base`**: todo lo que no está en una capa (los
+  componentes y las hojas por pantalla) gana sobre él sin `!important`, sea cual sea la especificidad.
+  Los estados que la base controlaba (`.tabs.is-hidden`, `.toast.show`, `.sheet.open`…) se respetan
+  porque el componente no fija esas propiedades.
+- **Orden de carga:** tokens → base (capa) → hojas por pantalla → `sistema.css` (patrones de la app
+  que no son componentes: banners, hubs, transiciones, títulos grandes) → `componentes.css` al final.
+- **Una pantalla que necesite una variante la escribe con un selector de contexto**
+  (`.uk-panel .pf-cta { background: var(--uk-accent) }`), nunca redefiniendo la clase a secas ni con
+  `!important`. Si una regla por pantalla repite lo que ya hace el componente, se borra.
+- **Se retiró el tema Y2K** (prueba de concepto de theming) y sus fuentes Anton y Bungee: el DS es la
+  única fuente de estilos, y los prefijos `html:not(.theme-y2k)` desaparecieron de todas las hojas.
+- **`solar.css` se eliminó**: sus componentes pasaron a `componentes.css` y los ajustes de modo
+  oscuro de lo decorativo, a `sistema.css`.
+- Antes de agregar una clase nueva, buscar el componente en `componentes.css` y sumarla a su lista de
+  alias. Antes de borrar, comprobar que ningún `html`, `js` (también `app.js` en la raíz) ni la demo
+  de `buscador/` la usa.
 
 ## 6. Buscador
 

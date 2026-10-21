@@ -24,5 +24,12 @@
   function setPersona(id) { try { localStorage.setItem(KEY, id); } catch (e) {} }
   function chipsPersona(lista, actual) { return chips(lista.map(function (u) { return chip('data-persona="' + u.id + '" title="' + esc(u.tipo || '') + '"', u.nombre.split(' ')[0], u.id === actual); }), 'Persona de la demo'); }
   function versionRow() { return nota('Sandbox · versión ' + esc(BUILD.indexOf('__') === 0 ? 'de desarrollo' : BUILD) + ' · cada despliegue renueva scripts, estilos y datos.'); }
-  window.Sandbox = { BUILD: BUILD, esc: esc, ic: ic, row: row, link: link, sec: sec, chips: chips, chip: chip, nota: nota, card: card, datos: datos, money: money, aviso: aviso, persona: persona, setPersona: setPersona, chipsPersona: chipsPersona, versionRow: versionRow };
+  // La hoja de cambios de los laboratorios a pantalla completa
+  var hoja = document.getElementById('hoja'), hojaBack = document.getElementById('hoja-back'), abrir = document.getElementById('abrir');
+  function abrirHoja() { if (!hoja) return; hoja.classList.add('open'); hojaBack.classList.add('open'); hoja.scrollTop = 0; }
+  function cerrarHoja() { if (!hoja) return; hoja.classList.remove('open'); hojaBack.classList.remove('open'); }
+  if (abrir) abrir.addEventListener('click', abrirHoja);
+  if (hojaBack) hojaBack.addEventListener('click', cerrarHoja);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') cerrarHoja(); });
+  window.Sandbox = { abrirHoja: abrirHoja, cerrarHoja: cerrarHoja, BUILD: BUILD, esc: esc, ic: ic, row: row, link: link, sec: sec, chips: chips, chip: chip, nota: nota, card: card, datos: datos, money: money, aviso: aviso, persona: persona, setPersona: setPersona, chipsPersona: chipsPersona, versionRow: versionRow };
 })();

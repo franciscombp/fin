@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Sandbox · Sandbox Pichibank</title>
+  <title>Sandbox · Pichibank</title>
   <meta name="build" content="__BUILD__">
   <link rel="icon" type="image/svg+xml" href="../assets/pichibank-avatar.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,42 +18,52 @@
   <link rel="stylesheet" href="../assets/uku-app.css?v=__BUILD__">
   <link rel="stylesheet" href="../assets/soporte.css?v=__BUILD__">
   <link rel="stylesheet" href="../assets/componentes.css?v=__BUILD__">
+  <!-- El reset base de la app (el mismo que index.html): caja border-box, sin margen y la fuente -->
+  <style>*, *::before, *::after { box-sizing: border-box; } body { margin: 0; font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }</style>
 </head>
 <body>
+  <!-- El hub es solo panel y lanzadera: sin campo de búsqueda. La misma hoja de la app como esqueleto -->
   <div class="sx open">
     <div class="sx-back"></div>
     <div class="sx-panel">
-      <div class="sx-head">
-        <form class="sx-field" role="search" id="form"><span class="material-symbols-rounded" aria-hidden="true">search</span><input id="q" type="search" autocomplete="off" placeholder="Sandbox" aria-label="Sandbox"></form>
-        <a class="sx-cancel" href="../" aria-label="Ir a la app"><span class="material-symbols-rounded">home</span></a>
-      </div>
       <div class="sx-results" id="out"></div>
     </div>
   </div>
   <div class="pf-toast" id="toast" role="status"></div>
   <script src="../sandbox/sandbox.js?v=__BUILD__"></script>
+  <script src="../assets/conocimiento.js?v=__BUILD__"></script>
   <script src="../buscador/persona.js?v=__BUILD__"></script>
   <script>
     (function () {
-      var S = window.Sandbox, out = document.getElementById('out'), q = document.getElementById('q');
-      function pintar(filtro) {
-        var f = (filtro || '').toLowerCase(), L = [
-          ['../buscador/', 'search', 'Buscador', 'Base de conocimiento, intención, contactos, atajos, lector de facturas y voz'],
-          ['mundo.html', 'park', 'El mundo de Uku', 'El bosque 3D, su ánimo y las recomendaciones financieras que salen de los datos'],
-          ['animaciones.html', 'animation', 'Animaciones y microinteracciones', 'Háptica, sonido, transiciones y animaciones de la app, en cámara lenta'],
-          ['conocimiento.html', 'database', 'Bases y repositorio', 'Cómo están construidas la base de conocimiento y la base de personas; mapa del repo']
-        ].filter(function (x) { return !f || (x[2] + ' ' + x[3]).toLowerCase().indexOf(f) >= 0; });
-        var p = window.DemoPersona && DemoPersona.datos();
-        out.innerHTML = (f ? '' : S.nota('<b>Sandbox de pruebas.</b> Cuatro laboratorios sobre la app real: mismos datos, mismos estilos, mismo código. Elige la persona y entra a uno.')) +
-          (p && !f ? S.chipsPersona(DemoPersona.lista(), p.id) : '') +
-          S.sec(f ? 'Resultados' : 'Laboratorios', L.map(function (x) { return S.link(x[0], x[1], S.esc(x[2]), S.esc(x[3])); }).join('') || '<p class="sx-kb__p">Nada con «' + S.esc(filtro) + '».</p>') +
-          (f ? '' : S.versionRow());
+      var S = window.Sandbox, out = document.getElementById('out'), esc = S.esc;
+      // La lanzadera: los cuatro laboratorios, como los accesos del buscador de la app
+      var LABS = [
+        ['../buscador/', 'search', 'Buscador'],
+        ['mundo.html', 'park', 'Mundo de Uku'],
+        ['animaciones.html', 'animation', 'Animaciones'],
+        ['conocimiento.html', 'database', 'Bases y repo']
+      ];
+      function tile(l) { return '<button class="sx-app" data-href="' + l[0] + '"><span class="sx-app__ic material-symbols-rounded">' + l[1] + '</span><span>' + esc(l[2]) + '</span></button>'; }
+      function pintar() {
+        var p = window.DemoPersona && DemoPersona.datos(), b = window.Conocimiento && Conocimiento.cargada() ? Conocimiento.base() : null, h = '';
+        h += '<section class="sx-card"><h3>Sandbox de pruebas</h3><div class="sx-grid">' + LABS.map(tile).join('') + '</div></section>';
+        if (p) h += S.chipsPersona(DemoPersona.lista(), p.id);
+        // El panel: qué hay en cada laboratorio para la persona elegida
+        var porTipo = {}; if (b) b.entradas.forEach(function (e) { porTipo[e.tipo] = (porTipo[e.tipo] || 0) + 1; });
+        h += S.card(p ? p.nombre : 'Cargando…', p ? '<p class="sx-kb__p">' + esc(p.tipo) + ' · ' + esc(p.ciudad) + '</p>' + S.datos([
+          ['Buscador', b ? b.entradas.length + ' entradas: ' + porTipo.faq + ' preguntas, ' + porTipo.producto + ' productos, ' + porTipo.accion + ' acciones' : '…'],
+          ['Su agenda', p.contactos.length + ' contactos · ' + p.exterior.length + ' en el exterior · ' + p.servicios.filter(function (x) { return x.contrato; }).length + ' servicios'],
+          ['Mundo de Uku', p.movimientos ? p.movimientos + ' movimientos para su bosque' : 'Sin movimientos: su mundo empieza vacío'],
+          ['Sus productos', p.cuentas.length + ' cuentas · ' + p.tarjetas.length + ' tarjetas · ' + (p.prestamos.length + (p.hipoteca ? 1 : 0)) + ' préstamos · ' + p.inversiones.length + ' inversiones'],
+          ['Animaciones', '11 animaciones · 12 efectos de háptica'],
+          ['Bases y repo', (b ? Object.keys(b.sinonimos).length + ' sinónimos · ' : '') + DemoPersona.lista().length + ' personas · 7 carpetas']
+        ]) : '', 'Persona activa');
+        h += S.versionRow();
+        out.innerHTML = h;
       }
-      q.addEventListener('input', function () { pintar(q.value.trim()); });
-      document.getElementById('form').addEventListener('submit', function (e) { e.preventDefault(); var a = out.querySelector('[data-href]'); if (a) location.href = a.dataset.href; });
       document.addEventListener('click', function (e) { var b = e.target.closest('[data-persona]'); if (!b) return; DemoPersona.set(b.dataset.persona); S.setPersona(b.dataset.persona); pintar(); S.aviso('Ahora eres ' + DemoPersona.datos().primerNombre); });
       pintar();
-      DemoPersona.cargar('../assets/pfm/datos.json?v=' + S.BUILD).then(function () { var g = S.persona(); DemoPersona.set(g); pintar(); }).catch(function () {});
+      Promise.all([DemoPersona.cargar('../assets/pfm/datos.json?v=' + S.BUILD), Conocimiento.listo()]).then(function () { DemoPersona.set(S.persona()); pintar(); }).catch(function () {});
     })();
   </script>
 </body>

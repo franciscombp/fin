@@ -3,45 +3,24 @@
    de Uku a demanda y gráficas con aire, fáciles de leer.
    ===================================================================== */
 
-.is-in { background: var(--cx-fill); box-shadow: inset 0 0 0 1px var(--cx-line); }
-
 /* ---------- Presupuestos y categorías ---------- */
 
-.pf-page--inline .pf-sec__sub { margin-top: 4px; }
 /* ---------- Medidores (estilo "uso"): tarjeta limpia y barra fina
    sobre su mismo color claro ---------- */
-.pf-mcard { padding: 8px 24px; border-radius: 28px; background: var(--bp-theme-color-surface-container-default); }
 .pf-meter { --tone: var(--bp-interaction-tertiary-fg); display: flex; flex-direction: column; gap: 10px; width: 100%; padding: 20px 0; border: 0; border-bottom: 1px solid var(--cx-line); background: none; color: var(--bp-theme-color-text-primary); text-align: left; font: inherit; }
 button.pf-meter { cursor: pointer; }
 .pf-meter:last-child { border-bottom: 0; }
 /* Grupo de tarjeta (como Inicio): título gris encima y filas con aire */
-.pf-sec .card { border-radius: var(--bp-semantic-radius-md, 20px); }
 .pf-sec .pf-meter { padding: 16px; }
 .pf-meter--ok { --tone: #3f7be0; }
-.pf-meter--cat { --tone: var(--bp-interaction-tertiary-fg); }
+
 .pf-meter--warn { --tone: #e8a530; }
 .pf-meter--over { --tone: var(--bp-theme-color-status-error-icon, #c20505); }
 /* Las reglas generales de botones no deben recortar el medidor */
 .pf-mcard .pf-meter { height: auto !important; min-height: 0 !important; max-height: none !important; overflow: visible !important; border-radius: 0 !important; }
 
-/* ---------- Íconos en listas: siempre sobre fondo neutral ----------
-   El color queda para gráficas, medidores, fotos y promos; en la interfaz
-   los íconos de lista usan el avatar del DS (fondo neutro, ícono de marca). */
-.dw-gal__ic, .sp-row__ic, .soon__ic {
-  background: var(--bp-theme-color-avatar-bg) !important; color: var(--bp-theme-color-avatar-fg) !important;
-}
-
 /* ---------- Tablas y valores: más aire, jerarquía limpia ---------- */
-/* Títulos de sección iguales en toda la vista */
-.pf-page--inline .pf-sec > h2, .pf-page--inline .pf-sec__head h2 { font: var(--ui-body-md-medium, 500 16px/22px sans-serif) !important; color: var(--cx-muted) !important; letter-spacing: 0 !important; margin: 0 0 12px 4px !important; }
 .pf-page--inline .pf-sec__head { margin-bottom: 0; }
-.pf-page--inline .pf-sec__head h2 { margin-bottom: 0 !important; }
 .pf-page--inline .pf-sec__head .pf-link { margin-bottom: 0; }
 .pf-page--inline .pf-sec__head + * { margin-top: 12px; }
-.pf-page--inline .pf-sec__sub { margin: 0 0 12px 4px !important; }
-.pf-page--inline .pf-tx { min-height: 76px; padding: 16px 0 !important; gap: 14px !important; }
 .pf-page--inline .pf-tx__main small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
- /* deber no es una alerta: va en neutro */
-.pf-tx__ic { flex: 0 0 44px; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--bp-theme-color-avatar-bg); color: var(--bp-theme-color-avatar-fg); font-size: 22px !important; }
-.pf-page--inline .pf-tx__amt, .pf-sheet-list .pf-tx__amt { font: var(--ui-body-md-semibold) !important; color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
-.pf-tx__amt.is-in { color: var(--bp-theme-color-status-success-text, #107524) !important; }
