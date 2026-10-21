@@ -34,6 +34,7 @@ jobs:
           cp -r locales _site/locales
           cp -r buscador _site/buscador
           cp -r sandbox _site/sandbox
+          cp -r orquestador _site/orquestador
       - name: Versiona con este despliegue la caché del service worker y los archivos que carga la demo
         # Cada despliegue cambia el ?v= de scripts, estilos y datos de la demo: el navegador no reutiliza nada viejo
         run: sed -i "s/__BUILD__/${GITHUB_SHA::8}-${GITHUB_RUN_NUMBER}/g" _site/sw.js _site/buscador/index.html _site/buscador/demo.js _site/sandbox/*.html _site/sandbox/*.js
