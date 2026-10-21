@@ -14,11 +14,10 @@ const uku = await loadUkuRig(document.getElementById('stage'), { onLog: log });
 window.uku = uku;
 uku.start();
 log('--- verificación ---');
-log('clips disponibles: ' + uku.clips.map(c => c.name).join(' | '));
-log('playClip("Waving") -> ' + uku.playClip('Waving'));
-log('playClip("Walking") -> ' + uku.playClip('Walking'));
-log('playClip("Watering") -> ' + uku.playClip('Watering'));
-log('playClip("Female Laying Pose") -> ' + uku.playClip('Female Laying Pose'));
+log('gestos: ' + uku.clips.join(' | '));
+// ?g=wave muestra un gesto; sin nada, recorre todos cada 4 s
+const g = new URLSearchParams(location.search).get('g');
+let i = 0; const next = () => { const n = g || uku.clips[i++ % uku.clips.length]; uku.playClip(n); log('gesto: ' + n); };
+next(); if (!g) setInterval(next, 4000);
 log('errores: ' + (uku.report.errors.length ? uku.report.errors.join('; ') : 'ninguno'));
-log('avisos: ' + (uku.report.warnings.length ? uku.report.warnings.join('; ') : 'ninguno'));
 </script></body></html>
