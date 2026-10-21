@@ -303,18 +303,13 @@ html.uk-chatting.uk-fin .pf-toast { top: auto !important; bottom: calc(24px + en
 .app-uku .view--finanzas.uk-fin .uk .uk-cta { display: none !important; }
 
 /* ---------- 9. Onboarding, teclado, movimiento ---------- */
-.uk-onb { position: absolute; z-index: 7; left: var(--uk-margin); right: var(--uk-margin); top: calc(16px + env(safe-area-inset-top, 0px)); animation: ukCard .4s cubic-bezier(.2, 1.1, .4, 1) both; }
-.uk-onb.is-out { animation: ukCardOut .22s ease-in both; }
-.uk-onb__card { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: var(--uk-pad) var(--uk-pad) 20px; border-radius: var(--uk-r-lg); background: var(--uk-white); box-shadow: var(--uk-elev-mid); }
-.uk-onb__dots { display: flex; gap: 6px; margin: 0 0 4px !important; }
-.uk-onb__dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--uk-line); transition: width .2s ease, background .2s ease; }
-.uk-onb__dots i.is-on { width: 18px; background: var(--uk-navy); }
-.uk-onb__ic { margin: 0 !important; width: 48px; height: 48px; display: grid; place-items: center; border-radius: var(--uk-r); background: var(--uk-grey); color: var(--uk-navy); }
-.uk-onb__ic .material-symbols-rounded { font-size: 26px; }
-.uk-onb__t { margin: 10px 0 0 !important; font: var(--uk-title-md); letter-spacing: 0; }
-.uk-onb__s { margin: 0 !important; font: var(--uk-body); }
-.uk-onb__go { margin-top: 16px; width: 100%; }
-.uk-onb__skip { align-self: center; margin-top: 2px; padding: 10px; border: 0; background: none; font: var(--uk-sm-medium); color: var(--uk-muted); cursor: pointer; }
+/* Onboarding de Uku: sus tres pasos se dicen en el globo de siempre */
+.uk-globo--onb .uk-globo__dots { display: flex; gap: 6px; margin: 0 0 12px; }
+.uk-globo--onb .uk-globo__dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--uk-line); transition: width .2s ease, background .2s ease; }
+.uk-globo--onb .uk-globo__dots i.is-on { width: 18px; background: var(--uk-navy); }
+.uk-globo--onb .uk-globo__h { margin: 0 0 6px; font: var(--uk-title-md); letter-spacing: 0; }
+.uk-globo--onb .uk-onb__go { margin-top: 16px; width: 100%; }
+.uk-globo--onb .uk-onb__skip { display: block; margin: 8px auto 0; }
 /* Teclado: la pantalla se acorta hasta el borde del teclado y la barra sube con él */
 .uk.is-kb { padding-bottom: 12px; }
 .uk.is-kb.is-chat:not(.is-fin) .uk-scene { bottom: calc(var(--uk-bar-h) + 8px); }
