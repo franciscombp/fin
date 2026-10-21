@@ -32,6 +32,7 @@ jobs:
           cp index.html clasica.html asistente.html duo.html guia.html principios.html app.js fiesta.js haptics.js webauthn.js sw.js manifest.json .nojekyll _site/
           cp -r assets _site/assets
           cp -r locales _site/locales
+          cp -r buscador _site/buscador
       - name: Versiona la caché del service worker con este despliegue
         run: sed -i "s/__BUILD__/${GITHUB_SHA::8}-${GITHUB_RUN_NUMBER}/" _site/sw.js
       - uses: actions/upload-pages-artifact@v3

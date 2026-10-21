@@ -117,3 +117,54 @@ html:not(.theme-y2k) .sx .sx-app__ic { width: 56px !important; height: 56px !imp
 .sx-panel::before { content: ''; position: absolute; left: 50%; top: 6px; width: 36px; height: 4px; margin-left: -18px; border-radius: 2px; background: var(--bp-theme-color-border-divider, #c9ced6); }
 .sx.open .sx-panel { transform: none; }
 @media (prefers-reduced-motion: reduce) { .sx-panel { transition: none !important; } }
+
+/* =====================================================================
+   Buscador según el wireframe y el patrón de la app: fondo de página gris, campo y botón de cierre
+   blancos, etiqueta de sección en gris, chips de sugerencias, tarjetas con filas de 64 px (icono en
+   círculo de 40, título, categoría debajo) y la coincidencia resaltada.
+   ===================================================================== */
+.sx-panel { background: var(--bp-theme-color-surface-page-alt, #f5f5f5); }
+.sx-head { gap: 12px; }
+.sx-field { height: 56px !important; border-radius: var(--bp-semantic-radius-md, 12px) !important; padding: 0 8px 0 var(--bp-layout-card-padding, 16px); }
+.sx-field > .material-symbols-rounded:first-child { display: none; }
+.sx-field input { font-size: 16px; }
+.sx-field input::placeholder { font-size: 16px; }
+.sx-cancel { width: 56px; height: 56px; padding: 0; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-tertiary-fg); text-decoration: none !important; }
+.sx-cancel .material-symbols-rounded { font-size: 24px; }
+.sx-results { gap: 0; padding-top: 8px; }
+.sx-card { padding: var(--bp-semantic-spacing-micro-md, 8px) 0 var(--bp-semantic-spacing-macro-sm, 16px) !important; }
+.sx-card h3 { min-height: 40px; margin: 0 !important; padding: 0 0 8px; font: var(--ui-body-sm-medium, 500 14px/20px sans-serif) !important; color: var(--bp-theme-color-text-helper) !important; align-items: flex-end; }
+.sx-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.sx-chip { min-height: 48px !important; padding: 0 var(--bp-layout-card-padding, 16px) !important; border: 0 !important; border-radius: var(--bp-semantic-radius-md, 12px) !important; background: var(--bp-theme-color-surface-container-default) !important; color: var(--bp-theme-color-text-primary) !important; font: var(--ui-body-md-regular, 400 16px/24px sans-serif) !important; }
+.sx-card > .sx-row { min-height: var(--ui-row, 64px); padding: var(--bp-semantic-spacing-macro-md, 24px) var(--bp-layout-card-padding, 16px) !important; gap: 12px; border-top: var(--bp-semantic-border-thin, 1px) solid var(--bp-theme-color-border-divider) !important; }
+.sx-card > h3 + .sx-row, .sx-card > .sx-row:first-child { border-radius: var(--bp-semantic-radius-md, 12px) var(--bp-semantic-radius-md, 12px) 0 0; }
+.sx-card > .sx-row:last-child, .sx-card > .sx-row:has(+ .sx-link) { border-radius: 0 0 var(--bp-semantic-radius-md, 12px) var(--bp-semantic-radius-md, 12px); }
+.sx-card > h3 + .sx-row:last-child, .sx-card > .sx-row:only-child { border-radius: var(--bp-semantic-radius-md, 12px); }
+.sx-row__ic { border-radius: var(--bp-semantic-radius-full, 999px) !important; }
+.sx-row__main b { font: var(--ui-body-md-semibold, 600 16px/24px sans-serif) !important; }
+.sx-row__main small { font: var(--ui-body-sm-regular, 400 14px/20px sans-serif); }
+.sx-row__main mark { background: none; color: inherit; font-weight: 700; }
+.sx-ask .sx-row__ic--ai { background: var(--bp-theme-color-avatar-bg) !important; -webkit-background-clip: border-box !important; background-clip: border-box !important; color: var(--bp-interaction-tertiary-fg) !important; box-shadow: none; }
+.sx-card > .sx-link { margin-top: 0; border-radius: var(--bp-semantic-radius-md, 12px); padding: 12px var(--bp-layout-card-padding, 16px); }
+/* Ajustes: filas pegadas dentro de la tarjeta, chips blancos, campo limpio mientras escribes */
+.sx-card { display: flex; flex-direction: column; gap: 0 !important; }
+.sx .sx-chips .sx-chip { background: var(--bp-theme-color-surface-container-default) !important; }
+.sx.has-q .sx-mic { display: none; }
+.sx-card > .sx-row { border-radius: 0 !important; }
+.sx-card > h3 + .sx-row, .sx-card > .sx-row:first-child { border-radius: var(--bp-semantic-radius-md, 12px) var(--bp-semantic-radius-md, 12px) 0 0 !important; }
+.sx-card > .sx-row:last-child, .sx-card > .sx-row:has(+ .sx-link) { border-radius: 0 0 var(--bp-semantic-radius-md, 12px) var(--bp-semantic-radius-md, 12px) !important; }
+.sx-card > h3 + .sx-row:last-child, .sx-card > .sx-row:only-child { border-radius: var(--bp-semantic-radius-md, 12px) !important; }
+/* Respuesta de la base de conocimiento dentro del buscador: una tarjeta con el texto, los datos del
+   producto (si es uno), los pasos y lo que puedes hacer; mismo porte que las filas de resultados */
+.sx-kb__body { padding: 16px var(--bp-layout-card-padding, 16px); border-radius: 16px; background: var(--bp-theme-color-surface-container-default, #fff); color: var(--bp-theme-color-text-primary); }
+.sx-kb__t { display: block; font: var(--ui-body-md-semibold, 600 16px/22px sans-serif); }
+.sx-kb__p { margin: 8px 0 0; font: var(--ui-body-md-regular, 400 16px/22px sans-serif); }
+.sx-kb__datos { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; margin: 12px 0 0; border-top: 1px solid var(--bp-theme-color-border-divider, rgba(0,0,0,.08)); }
+.sx-kb__datos > div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--bp-theme-color-border-divider, rgba(0,0,0,.08)); font: var(--ui-body-sm-regular, 400 14px/20px sans-serif); }
+.sx-kb__datos dt { margin: 0; color: var(--bp-theme-color-text-helper); }
+.sx-kb__datos dd { margin: 0; text-align: right; font-weight: 600; }
+.sx-kb__pasos { margin: 12px 0 0; padding-left: 20px; font: var(--ui-body-sm-regular, 400 14px/20px sans-serif); }
+.sx-kb__pasos li + li { margin-top: 4px; }
+.sx-kb__body .sx-chips { margin-top: 12px; }
+.sx-kb__links { margin: 12px 0 0; font: var(--ui-body-sm-regular, 400 14px/20px sans-serif); }
+.sx-kb__links a { color: var(--bp-theme-color-text-interactive); }

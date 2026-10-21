@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es" data-theme="light" data-layout="mobile-sm">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Buscador · Pichibank</title>
+  <meta name="description" content="Demo del buscador sobre la base de conocimiento de Pichibank: preguntas frecuentes, productos y acciones.">
+  <link rel="stylesheet" href="../assets/tokens.css">
+  <style>
+    /* POC: sólo tokens del design system, sin componentes */
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--bp-theme-color-surface-page-alt); color: var(--bp-theme-color-text-primary); font-family: var(--bp-base-typography-font-family-sans), system-ui, sans-serif; font-size: 16px; line-height: 22px; }
+    main { max-width: 640px; margin: 0 auto; padding: var(--bp-semantic-spacing-macro-md) var(--bp-layout-grid-margin) 64px; }
+    h1 { margin: 0 0 var(--bp-semantic-spacing-micro-md); font-size: 24px; line-height: 32px; }
+    .sub { margin: 0 0 var(--bp-semantic-spacing-macro-sm); color: var(--bp-theme-color-text-helper); font-size: 14px; line-height: 20px; }
+    .field { display: flex; align-items: center; height: var(--bp-semantic-size-interactive-md); padding: 0 var(--bp-semantic-spacing-macro-sm); border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-container-default); border: 1px solid var(--bp-theme-color-border-default); }
+    .field:focus-within { border-color: var(--bp-theme-color-interaction-primary-bg); box-shadow: 0 0 0 3px color-mix(in srgb, var(--bp-theme-color-interaction-primary-bg) 35%, transparent); }
+    .field input { flex: 1; min-width: 0; border: 0; background: transparent; color: inherit; font: inherit; outline: none; }
+    .mic { flex: 0 0 44px; width: 44px; height: 44px; margin-right: -8px; border: 0; border-radius: var(--bp-semantic-radius-sm); background: transparent; color: var(--bp-theme-color-icon-secondary); cursor: pointer; display: grid; place-items: center; }
+    .mic .ic { font-family: 'Material Symbols Rounded'; font-size: 24px; }
+    .mic.on { background: var(--bp-theme-color-interaction-primary-bg); color: var(--bp-theme-color-interaction-primary-fg); animation: pulso 1.2s ease-in-out infinite; }
+    @keyframes pulso { 50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--bp-theme-color-interaction-primary-bg) 35%, transparent); } }
+    .chips { display: flex; flex-wrap: wrap; gap: var(--bp-semantic-spacing-micro-md); margin: var(--bp-semantic-spacing-micro-lg) 0 var(--bp-semantic-spacing-macro-md); }
+    .chip { padding: 6px 12px; border: 1px solid var(--bp-theme-color-border-default); border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-surface-container-default); color: inherit; font: inherit; font-size: 14px; cursor: pointer; }
+    .chip--go { background: var(--bp-theme-color-interaction-primary-bg); border-color: transparent; color: var(--bp-theme-color-interaction-primary-fg); font-weight: 600; }
+    .label { margin: var(--bp-semantic-spacing-macro-md) 4px var(--bp-semantic-spacing-micro-md); color: var(--bp-theme-color-text-helper); font-size: 14px; line-height: 20px; font-weight: 500; }
+    .card { border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-container-default); overflow: hidden; }
+    .row { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-lg); width: 100%; min-height: 64px; padding: var(--bp-semantic-spacing-micro-lg) var(--bp-layout-card-padding); border: 0; border-top: 1px solid var(--bp-theme-color-border-divider); background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+    .row:first-child { border-top: 0; }
+    .row:hover { background: var(--bp-theme-color-surface-page-alt); }
+    .row b { display: block; font-weight: 600; }
+    .row small { display: block; color: var(--bp-theme-color-text-helper); font-size: 14px; line-height: 20px; }
+    .tag { flex: 0 0 auto; padding: 2px 8px; border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-avatar-bg); color: var(--bp-theme-color-text-helper); font-size: 12px; line-height: 16px; }
+    .answer { padding: var(--bp-layout-card-padding); }
+    .answer h2 { margin: 0 0 var(--bp-semantic-spacing-micro-md); font-size: 18px; line-height: 24px; }
+    .answer p { margin: 0; }
+    .answer dl { margin: var(--bp-semantic-spacing-micro-lg) 0 0; border-top: 1px solid var(--bp-theme-color-border-divider); }
+    .answer dl div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--bp-theme-color-border-divider); font-size: 14px; line-height: 20px; }
+    .answer dt { color: var(--bp-theme-color-text-helper); } .answer dd { margin: 0; text-align: right; font-weight: 600; }
+    .answer ol { margin: var(--bp-semantic-spacing-micro-lg) 0 0; padding-left: 20px; font-size: 14px; line-height: 20px; }
+    .answer .chips { margin-bottom: 0; }
+    .answer .src { margin-top: var(--bp-semantic-spacing-micro-lg); color: var(--bp-theme-color-text-helper); font-size: 12px; line-height: 16px; }
+    .row.static { cursor: default; }
+    .row .main { flex: 1; min-width: 0; }
+    .row .ic { flex: 0 0 40px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 999px; background: var(--bp-theme-color-avatar-bg); color: var(--bp-theme-color-avatar-fg); font-family: 'Material Symbols Rounded'; font-size: 22px; font-weight: normal; }
+    .row.static { flex-wrap: wrap; }
+    .row .acts { display: flex; gap: 8px; flex: 1 0 100%; padding-left: 52px; }
+    .chip--on { background: var(--bp-theme-color-text-primary); border-color: transparent; color: var(--bp-theme-color-surface-container-default); }
+    .fld { display: block; margin: var(--bp-semantic-spacing-micro-lg) 0 0; }
+    .fld > span { display: block; margin-bottom: 4px; color: var(--bp-theme-color-text-helper); font-size: 14px; line-height: 20px; }
+    .fld input, .fld select { width: 100%; height: 48px; padding: 0 12px; border: 1px solid var(--bp-theme-color-border-default); border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-surface-container-default); color: inherit; font: inherit; }
+    .fld .chips { margin: 0 0 8px; }
+    .fld .chips + input { margin-top: 8px; }
+    .back { margin: 0 0 var(--bp-semantic-spacing-micro-lg); padding: 8px 0; border: 0; background: none; color: var(--bp-theme-color-text-interactive); font: inherit; cursor: pointer; }
+    .ok .check { display: grid; place-items: center; width: 56px; height: 56px; margin-bottom: 12px; border-radius: 999px; background: var(--bp-theme-color-interaction-primary-bg); color: var(--bp-theme-color-interaction-primary-fg); font-size: 28px; font-weight: 700; }
+    .answer .chips { margin-top: var(--bp-semantic-spacing-micro-lg); }
+    .empty { padding: var(--bp-layout-card-padding); color: var(--bp-theme-color-text-helper); }
+    .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); padding: 10px 16px; border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-text-primary); color: var(--bp-theme-color-surface-container-default); font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+    .toast.on { opacity: 1; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Buscador</h1>
+    <p class="sub">Demo sobre la base de conocimiento: escribe lo que quieres hacer («transferir 20 a juan», «pagar la luz»), un contacto, una acción o una pregunta. Los flujos son simulados.</p>
+    <label class="field"><input id="q" type="search" placeholder="¿Qué necesitas?" autocomplete="off" autofocus aria-label="Buscar"><button type="button" class="mic" id="mic" aria-label="Buscar por voz"><span class="ic">mic</span></button></label>
+    <div class="chips" id="ejemplos"></div>
+    <div id="out"></div>
+    <div id="flujo" hidden></div>
+  </main>
+  <div class="toast" id="toast" role="status"></div>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap">
+  <script src="../assets/conocimiento.js"></script>
+  <script src="../buscador/demo.js"></script>
+</body>
+</html>

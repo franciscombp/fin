@@ -57,6 +57,8 @@
       escribir: function () { seccion('uku'); setTimeout(function () { input.focus(); }, 350); },
       abrir: abrirAsistente, libre: mundoLibre,
       // Un movimiento encontrado en el buscador se abre en Mis finanzas
+      cabeza: function () { return b3d && b3d.head ? b3d.head() : null; },
+      finanzas: function (act) { if (!view.classList.contains('active') && window.__goView) __goView(1); seccion('fin'); if (act) setTimeout(function () { window.PFM && PFM.key(act); }, 250); },
       movimiento: function (i) { if (!view.classList.contains('active') && window.__goView) __goView(1); seccion('fin'); setTimeout(function () { window.PFM && PFM.key('tx:' + i); }, 250); } };
     // Ayuda, dentro de esta pantalla: al volver desde su flecha, regresa a Uku
     document.addEventListener('soporte:cerrar', function () { seccion('uku'); });
@@ -122,7 +124,7 @@
     if (fin) pintarGlobo(); else if (es) { globoEl.hidden = true; }
     if (homeEl && es) { homeEl.hidden = true; host.classList.remove('is-home'); if (chipsEl) chipsEl.hidden = true; }
     // Arriba: flecha para bajar el asistente en la pantalla inicial y su mundo; X en el chat y las secciones
-    var xb = host.querySelector('.uk-chathead__x'); if (xb) { var icono = es ? 'close' : 'arrow_back'; if (xb.dataset.ic !== icono) { xb.dataset.ic = icono; xb.innerHTML = ic(icono); xb.setAttribute('aria-label', es ? 'Cerrar' : 'Volver'); xb.dataset.k = es ? 'cerrar' : 'salir'; } }
+    var xb = host.querySelector('.uk-chathead__x'); if (xb) { if (xb.dataset.ic !== 'arrow_back') { xb.dataset.ic = 'arrow_back'; xb.innerHTML = ic('arrow_back'); } xb.setAttribute('aria-label', es ? 'Volver al inicio' : 'Volver'); xb.dataset.k = es ? 'cerrar' : 'salir'; } // wireframe: siempre una flecha; en el chat vuelve al inicio del asistente
     if (es) host.classList.remove('is-buscar');
     // Sin barra superior ni inferior: la tarjeta ocupa la pantalla y se baja con la flecha de arriba
     document.documentElement.classList.toggle('uk-chatting', view.classList.contains('active'));
@@ -136,7 +138,7 @@
       if (!es) setTimeout(function () { if (!msgs.length) bg.style.backgroundImage = ''; }, 500);
     }
     if (era !== es) {
-      input.placeholder = es ? 'Escríbele a Uku' : '¿Qué buscas?';
+      input.placeholder = es ? 'Escríbele a Uku' : 'Busca o pregunta';
       if (!es && b3d) setTimeout(function () { b3d.play('wave'); setTimeout(function () { if (!msgs.length) b3d.play('walk'); }, 2200); }, 350); // vuelve a su mundo, saluda y camina
       if (es && b3d) b3d.play(null); // en la conversación se queda quieto
     }
@@ -197,13 +199,19 @@
     if (home && !hola && !nota && !x) { var W = window.PFM && PFM.world && resumen() ? PFM.world() : [], ok = W.filter(function (w) { return !/warn|over|pensativo/.test(w.cls || ''); })[0]; sinNada = ok ? { t: ok.d, k: 'gastos:sem', l: 'Ver mi semana' } : { t: 'Todo en orden. ¿Vemos tu semana?', k: 'gastos:sem', l: 'Ver mi semana' }; }
     var t = nota || (hola ? sal.t : x ? x.t : sinNada ? sinNada.t : 'Todo está en orden por ahora. ¿Quieres hacer algo hoy?');
     // En el inicio el nombre ya está en la cabecera: el globo no vuelve a saludar
-    if (home && hola) { t = t.replace(/^(hola|qué bueno verte|buen[oa]s (d[ií]as|tardes|noches))[^.?!]*[.?!]\s*/i, ''); t = t.charAt(0).toUpperCase() + t.slice(1); }
-    var go = hola ? sal : x ? { k: x.k, l: x.l } : sinNada ? sinNada : null;
+    var titulo = '';
+    if (home && hola) {
+      // Wireframe: «¡Qué gusto verte por aquí, Fran!» arriba y debajo lo que Uku propone hacer
+      var mm = t.match(/^((?:hola|qué bueno verte|buen[oa]s (?:d[ií]as|tardes|noches))[^.?!]*[.?!])\s*([\s\S]*)$/i);
+      titulo = mm ? mm[1] : ''; t = mm ? mm[2] : t;
+      if (!t || /^¿en qué te ayudo\?$/i.test(t)) t = '¿Vemos tus finanzas, resolvemos una duda o revisamos tus gastos? Cuéntame qué tienes en mente.';
+    }
+    var go = hola ? (home ? null : sal) : x ? { k: x.k, l: x.l } : sinNada ? sinNada : null;
     // Sin nada que decir (o en silencio), el globo se va y Uku se queda tranquilo
     if (!hola && !nota && !x && !sinNada) { if (b3d) b3d.play('happy'); return ocultarGlobo(); }
     globoOff = false; globoEl.hidden = false; globoEl.classList.remove('is-off');
     if (b3d && b3d.setFront) b3d.setFront(true); // con algo que decir, Uku te mira
-    var tag = x ? '<p class="uk-globo__tag">' + esc(x.tag) + '</p>' : '', txt = '<p class="uk-globo__t">' + esc(t) + '</p>';
+    var tag = x ? '<p class="uk-globo__tag">' + esc(x.tag) + '</p>' : titulo ? '<p class="uk-globo__h">' + esc(titulo) + '</p>' : '', txt = '<p class="uk-globo__t">' + esc(t) + '</p>';
     var goBtn = go && !nota ? '<button class="btn btn--tertiary uk-globo__go" data-k="' + esc(go.k) + '" data-l="' + esc(go.l) + '">' + esc(go.l) + '</button>' : '';
     if (home) {
       // Inicio: una frase y un botón. Pasar a la siguiente propuesta es tocar a Uku.
@@ -236,13 +244,10 @@
     var on = !msgs.length && !mundoOn && !enSec && !host.classList.contains('is-onb');
     host.classList.toggle('is-home', on); host.classList.toggle('is-mundo', !on && !msgs.length && !enSec && mundoOn);
     if (!on) { homeEl.hidden = true; return; }
-    input.placeholder = '¿Qué buscas?';
-    var s = resumen(), nombre = s && s.nombre ? s.nombre.split(' ')[0] : '';
+    input.placeholder = 'Busca o pregunta';
     saludo(); // fija si es la primera visita del día
-    homeEl.hidden = false;
-    // Un nombre, un oso, una frase (en su globo) y un botón: nada más compite
-    homeEl.innerHTML = '<p class="uk-home__hola">' + esc(nombre ? 'Hola, ' + nombre + '.' : 'Hola.') + '</p>' +
-      '<p class="uk-home__q">' + (primeraHoy ? 'Mi mundo cambia con tu dinero.' : 'Pregúntame por tu dinero o por la app.') + '</p>';
+    // El saludo va en el globo de Uku (wireframe): arriba solo queda la flecha
+    homeEl.hidden = true; homeEl.innerHTML = '';
     pintarChips();
   }
   // Lo que Uku recomienda en Mis finanzas: sus consejos del PFM (pagos cercanos, por ordenar, presupuesto,
@@ -258,10 +263,12 @@
   function pintarChips() {
     if (!chipsEl) chipsEl = host.querySelector('.uk-chips');
     if (!host.classList.contains('is-home')) { chipsEl.hidden = true; return; }
-    var P = propuestas(), n = P.length, enGlobo = !saludado ? saludo().k : (n ? P[gi % n].k : null);
+    var P = propuestas(), n = P.length, sal = saludo(), enGlobo = !saludado ? null : (n ? P[gi % n].k : null);
     var L = [];
+    if (!saludado && sal && sal.k) L.push({ k: sal.k, t: sal.l }); // el saludo ya no lleva botón: su acción es el primer chip
     P.forEach(function (x) { if (L.length < 2 && x.k !== enGlobo && !L.some(function (c) { return c.k === x.k || c.t === x.l; })) L.push({ k: x.k, t: x.l }); });
     if (!L.length && saludado && n) L.push({ k: 'dinero', t: 'Cómo va mi dinero' });
+    if (L.length < 3 && resumen()) L.push({ k: 'ask:¿En qué gasto más?', t: '¿En qué gasto más?' }); // una pregunta, para que se entienda que también se le pregunta
     chipsEl.hidden = !L.length;
     chipsEl.innerHTML = L.map(function (c, i) { return '<button class="uk-chip-s" style="--d:' + (i * 60) + 'ms" data-k="' + esc(c.k) + '" data-l="' + esc(c.t) + '">' + esc(c.t) + '</button>'; }).join('');
   }
@@ -362,18 +369,21 @@
      Se mide lo que hay en pantalla (globo, propuestas, onboarding arriba; accesos y barra abajo) y se
      corre la cámara para que la cara de Uku quede en la franja libre. Si la franja es más chica que
      su cabeza, la cámara se aleja. Conversando no aplica: ahí Uku se asoma abajo a propósito. */
-  function encuadrar() {
+  function encuadrar(instante) {
     var fin = host.classList.contains('is-fin');
     if (!b3d || !b3d.head || (host.classList.contains('is-chat') && !fin)) return;
     var H = b3d.head(); if (!H) return;
     var R = host.getBoundingClientRect(), hh = R.height; if (!hh) return;
     var top = 0, bot = hh;
-    var abajo = function (el) { if (el && !el.hidden && el.offsetHeight && getComputedStyle(el).opacity !== '0') top = Math.max(top, el.getBoundingClientRect().bottom - R.top); };
-    var arriba = function (el) { if (el && !el.hidden && el.offsetHeight && getComputedStyle(el).opacity !== '0') bot = Math.min(bot, el.getBoundingClientRect().top - R.top); };
+    // Se mide la posición de diseño (sin transformaciones ni fundidos): así el encuadre apunta desde el
+    // primer momento a donde van a quedar el globo, los chips o la hoja, y la cámara hace un solo movimiento
+    var topDe = function (el) { var y = 0, e = el; while (e && e !== host) { y += e.offsetTop; e = e.offsetParent; } return y; };
+    var abajo = function (el) { if (el && !el.hidden && el.offsetHeight) top = Math.max(top, topDe(el) + el.offsetHeight); };
+    var arriba = function (el) { if (el && !el.hidden && el.offsetHeight) bot = Math.min(bot, topDe(el)); };
     var home = host.classList.contains('is-home');
     if (host.classList.contains('is-onb') && onbEl) abajo(onbEl);
     else if (fin) { abajo(host.querySelector('.uk-chathead')); if (!host.classList.contains('is-up')) abajo(globoEl); arriba(panel); }
-    else if (home) { abajo(homeEl); abajo(globoEl); abajo(chipsEl); arriba(host.querySelector('.uk-bar')); arriba(pills); }
+    else if (home) { abajo(homeEl); abajo(globoEl); arriba(host.querySelector('.uk-bar')); arriba(pills); }
     else { abajo(globoEl); abajo(props); abajo(host.querySelector('.uk-head')); arriba(pills); arriba(host.querySelector('.uk-bar')); }
     // Cada lugar tiene su encuadre: en el inicio Uku está cerca y a la derecha; en Mis finanzas la cámara
     // retrocede y él queda a la izquierda, con más planeta a la vista; en su mundo, al centro
@@ -385,17 +395,24 @@
     // La cara, en el tercio alto de la franja: el cuerpo sigue hacia abajo
     var target = top + M + Math.max(r + 8, band * .38);
     var y0 = H.y + hh * H.shiftY, sv = (y0 - target) / hh;
-    b3d.setShift(sx, Math.max(-.6, Math.min(.5, sv)));
-    if (Math.abs(zoom - H.zoom) > .02) b3d.setZoom(zoom);
+    b3d.setShift(sx, Math.max(-.6, Math.min(.5, sv)), instante);
+    if (Math.abs(zoom - H.zoomTo) > .02) b3d.setZoom(zoom, instante);
   }
-  function reencuadrar() { clearTimeout(reencuadrar.t); reencuadrar.t = setTimeout(encuadrar, 60); clearTimeout(reencuadrar.t2); reencuadrar.t2 = setTimeout(encuadrar, 750); }
+  // Mientras la pantalla se acomoda (globo que entra, hoja que sube, chips, teclado) el encuadre se recalcula
+  // seguido durante un segundo: la cámara sigue el movimiento con suavidad en vez de dar dos saltos
+  function reencuadrar() {
+    clearInterval(reencuadrar.i); clearTimeout(reencuadrar.fin);
+    if (!RM) requestAnimationFrame(function () { encuadrar(); }); else encuadrar();
+    reencuadrar.i = setInterval(function () { encuadrar(); }, 80);
+    reencuadrar.fin = setTimeout(function () { clearInterval(reencuadrar.i); encuadrar(); }, 1100);
+  }
   // Los accesos: Mis finanzas, ordenar, consejos y ayuda, a un toque desde Uku
   function pintarAccesos() {
     var W = window.PFM && PFM.world && resumen() ? PFM.world() : [], pe = W[2] ? W[2].cls : null;
-    var p = function (k, icon, t, dot) { return '<button class="uk-pill" data-k="' + k + '" data-l="' + esc(t) + '">' + ic(icon) + '<b>' + esc(t) + '</b>' + (dot ? '<i class="uk-pill__dot ' + dot + '" aria-hidden="true"></i>' : '') + '</button>'; };
+    var p = function (k, icon, t, sub, dot) { return '<button class="uk-pill" data-k="' + k + '" data-l="' + esc(t) + '">' + ic(icon) + '<b>' + esc(t) + '</b><small>' + esc(sub) + '</small>' + (dot ? '<i class="uk-pill__dot ' + dot + '" aria-hidden="true"></i>' : '') + '</button>'; };
     // Dos accesos = dos cosas que hace este lugar: ver tus datos y ayudarte con la app (las solicitudes viven dentro de Ayuda y soporte). Solo nombres.
-    pills.innerHTML = p('fin', 'monitoring', 'Mis finanzas', pe ? (/warn|over/.test(pe) ? 'is-warn' : 'is-ok') : '') +
-      p('ayudatoda', 'help', 'Ayuda y soporte');
+    pills.innerHTML = p('fin', 'monitoring', 'Mis finanzas', 'Organicemos tus gastos', pe ? (/warn|over/.test(pe) ? 'is-warn' : 'is-ok') : '') +
+      p('ayudatoda', 'headset_mic', 'Soporte', 'Resolvamos tus dudas');
   }
 
   /* ---------- Escribiendo: resultados flotando sobre su mundo ---------- */
@@ -438,7 +455,12 @@
     if (dinero) html += '<p class="uk-results__l">Tu dinero</p>' + fila('dinero', null, 'Cómo va mi dinero', 'Disponible, gastos y presupuesto');
     if (RES.per.length) html += '<p class="uk-results__l">Personas</p>' + RES.per.map(function (x, i) { return fila('res:per:' + i, 'send_money', 'Transferir a ' + x.n, (x.veces === 1 ? '1 vez' : x.veces + ' veces') + ' · la última el ' + x.ultL); }).join('');
     if (RES.tx.length) html += '<p class="uk-results__l">Movimientos</p>' + RES.tx.map(function (t, i) { return fila('res:tx:' + i, null, t.t, t.f + ' · ' + t.src, (t.m > 0 ? '+' : '−') + money(Math.abs(t.m))); }).join('');
-    if (H.length) html += '<p class="uk-results__l">Ayuda</p>' + H.map(function (h) { return fila(h.kind + ':' + h.i, null, h.t, h.kind === 'tut' ? 'Tutorial' : ''); }).join('');
+    // La base de conocimiento suma lo que Soporte no tiene: productos (con su dato principal) y más preguntas, con sinónimos y errores de tipeo
+    var KBR = window.Conocimiento && Conocimiento.cargada() ? Conocimiento.buscar(q, { n: 6 }) : [], vistosH = {};
+    H.forEach(function (h) { vistosH[norm(h.t)] = 1; });
+    var KBF = KBR.filter(function (x) { return x.tipo === 'faq' && !vistosH[norm(x.t)]; }).slice(0, Math.max(0, 2 - H.length)), KBP = KBR.filter(function (x) { return x.tipo === 'producto'; }).slice(0, 2);
+    if (H.length || KBF.length) html += '<p class="uk-results__l">Ayuda</p>' + H.map(function (h) { return fila(h.kind + ':' + h.i, null, h.t, h.kind === 'tut' ? 'Tutorial' : ''); }).join('') + KBF.map(function (x) { return fila('kb:' + x.id, null, x.t, ''); }).join('');
+    if (KBP.length) html += '<p class="uk-results__l">Productos</p>' + KBP.map(function (x) { return fila('kb:' + x.id, null, x.t, x.e.datos && x.e.datos[0] ? x.e.datos[0][0] + ': ' + Conocimiento.texto(x.e.datos[0][1]) : ''); }).join('');
     if (acts.length) html += '<p class="uk-results__l">Hacer</p>' + acts.map(function (a) { return fila('act:' + a.label, iconoDe({ k: 'act:' + a.label, ic: a.icon }), a.label, ''); }).join('');
     if (RES.app.length) html += '<p class="uk-results__l">En la app</p>' + RES.app.map(function (a, i) { return fila('res:app:' + i, null, a.label, a.sub || ''); }).join('');
     results.innerHTML = html;
@@ -479,11 +501,14 @@
     if (DINERO.test(n) && !HACER.test(n) && resumen()) { dinero(); return mostrar(); }
     var fin = finanzas(q), acts = acciones(q).slice(0, 2), H = ayuda(q, 3), ws = n.replace(/[¿?¡!.,]/g, ' ').split(/\s+/).filter(function (w) { return w.length > 2; });
     // Un «por qué» o «qué es» que coincide fuerte con un tema (ISD, intereses, comisiones) va antes que un inconveniente
-    var tm = Soporte.tema ? Soporte.tema(q, 1) : [];
+    var tm = Soporte.tema ? Soporte.tema(q, 1) : [], fl = H.filter(function (h) { return h.kind === 'flow'; })[0], esFlujo = fl && !fin && !/^(que es|que significa|cuanto tarda|donde veo|por que)/.test(n);
+    // La base de conocimiento (preguntas, productos y acciones): si una entrada coincide claro, responde con ella;
+    // un inconveniente guiado va primero porque pregunta lo justo en vez de explicar
+    var kb = window.Conocimiento && Conocimiento.cargada() ? Conocimiento.responder(q) : null;
+    if (kb && kb.conf === 'alta' && kb.tipo !== 'accion' && !fin && !esFlujo) return kbCard(kb, q);
     if (tm.length && tm[0].sc >= 6 && !fin) return temaCard(tm[0].i, q);
     // 3. Un inconveniente: si lo que escribes se parece a uno, Uku lo guía paso a paso
-    var fl = H.filter(function (h) { return h.kind === 'flow'; })[0];
-    if (fl && !fin && !/^(que es|que significa|cuanto tarda|donde veo|por que)/.test(n)) return flujo(fl.i, 'ini');
+    if (esFlujo) return flujo(fl.i, 'ini');
     // La ayuda solo si coincide de verdad: dos palabras, o una sola que esté en el título
     H = H.filter(function (h) { return h.kind !== 'flow' && (h.sc >= 4 || (ws.length === 1 && norm(h.t).indexOf(ws[0]) >= 0)); });
     if (fin) uku(fin.t, (fin.acts || []).map(function (a) { return b('pfm:' + a[1], a[0], 'arrow_forward'); }).concat((fin.s || []).slice(0, 2).map(function (c) { return b('ask:' + c, c, null, 'is-ask'); })), '', { title: fin.title || q, num: fin.num, bars: fin.bars, meter: fin.meter });
@@ -494,6 +519,9 @@
     else if (acts.length) uku(acts.length === 1 ? 'Te llevo a ' + acts[0].label.toLowerCase() + '. ¿Lo hacemos?' : 'Puedo llevarte a hacerlo:', acts.map(function (a) { return b('act:' + a.label, a.label, a.icon); }).concat(H.slice(0, 1).map(function (h) { return b(h.kind + ':' + h.i, h.t, 'help', 'is-ask'); }))
       // Si es un problema (un cobro, un reclamo), una persona también está a un toque
       );
+    // Lo que Soporte no cubre, lo responde la base de conocimiento (pregunta, producto o la acción que pide)
+    else if (kb && kb.tipo !== 'accion') return kbCard(kb, q);
+    else if (kb && kb.tipo === 'accion') uku('Te llevo a ' + esc(kb.t.toLowerCase()) + '. ¿Lo hacemos?', [b(kbKey(kb.go), kb.t, kb.icon || 'arrow_forward')].concat(kb.otras.slice(0, 1).map(function (x) { return b('kb:' + x.id, x.t, null, 'is-ask'); })), '', { title: q });
     else return iaCard(q); // lo que no está en reglas ni en la ayuda: Uku busca y, si no, lo mira con IA
     mostrar();
   }
@@ -548,6 +576,21 @@
     uku('¿En qué te ayudo? Elige un tema o escríbeme tu pregunta. Te respondo aquí y, si hace falta, te llevo a donde se resuelve.',
       F.slice(0, 4).map(function (f) { return b('flow:' + f.i, f.t, f.icon); })
         .concat([b('ayudatoda', 'Todas las preguntas frecuentes', 'help')]), '', { title: 'Ayuda' });
+    mostrar();
+  }
+  // Una entrada de la base de conocimiento (assets/conocimiento/base.json): respuesta, datos del producto, pasos y acciones
+  function kbKey(k) {
+    if (k === 'handoff') return 'persona';
+    if (k === 'sol') return 'sol';
+    if (k === 'search') return 'buscar';
+    if (k.indexOf('ask:') === 0) return k;
+    return 'sp:' + k;
+  }
+  function kbCard(v, q) {
+    var btns = (v.go ? [b(kbKey(v.go), v.tipo === 'accion' ? v.t : 'Abrir', v.icon || 'arrow_forward')] : []).concat(v.acts.map(function (a) { return b(kbKey(a[1]), a[0], a[1] === 'handoff' ? 'support_agent' : 'arrow_forward'); }));
+    if (v.otras) btns = btns.concat(v.otras.filter(function (x) { return x.tipo !== 'accion'; }).slice(0, 2).map(function (x) { return b('kb:' + x.id, x.t, null, 'is-ask'); }));
+    uku(esc(v.r), btns, v.pasos.length ? '<ol class="uk-steps">' + v.pasos.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>' : '',
+      { title: v.t, rows: v.datos.length ? v.datos : null, links: v.links.length ? v.links : null, voto: true });
     mostrar();
   }
   // Un tema de «por qué» o «qué es»: explicación corta, lo que puedes hacer y dónde leer más
@@ -770,12 +813,15 @@
   /* El asistente se abre desde arriba y Uku entra directo en modo asistente: cerca, mirándote, con
      una tarjeta de bienvenida (su saludo, lo que propone y los accesos). Su mundo es un lugar al
      que puedes ir («Ver mi mundo»), no la pantalla de llegada. */
+  var abriendo = false;
+  function mostrarEscena() { var sc = host.querySelector('.uk-scene'); if (sc && b3d && b3d.isReady && b3d.isReady()) sc.classList.add('is-framed'); }
   function abrirAsistente() {
     var act = document.querySelector('.nav-item.active'); volverA = act && act.dataset.view != null ? +act.dataset.view : 0; if (volverA === 1) volverA = 0;
-    fx('select'); if (window.__goView) __goView(1);
+    fx('select'); abriendo = true; if (window.__goView) __goView(1);
     mundoOn = false; globoOff = false; saludado = false; nota = null;
     host.classList.add('is-in'); clearTimeout(abrirAsistente.t); abrirAsistente.t = setTimeout(function () { host.classList.remove('is-in'); }, 1400);
-    setTimeout(pintar, 60);
+    // Primero se pinta la pantalla y recién entonces se encuadra a Uku (de una, sin movimiento) y se muestra
+    pintar(); abriendo = false; encuadrar(true); mostrarEscena(); reencuadrar();
     if (!RM) setTimeout(function () { if (b3d) b3d.play('wave'); }, 450);
   }
   function bienvenida() {
@@ -922,11 +968,12 @@
       if (!m3.supported()) return;
       b3d = m3; var c = window.Clima && Clima.last(); if (c) m3.setLook(c.look);
       if (s) { m3.setBloom(s.bloom); m3.setMood(s.mood); }
-      m3.attach(el, { score: s ? s.score : 60, onReady: function () { var k = host.querySelector('.uk-skel'); if (k) { k.classList.add('is-off'); setTimeout(function () { k.remove(); }, 400); } reencuadrar(); setTimeout(encuadrar, 1500); }, onTap: tocado });
+      m3.attach(el, { score: s ? s.score : 60, onReady: function () { var k = host.querySelector('.uk-skel'); if (k) { k.classList.add('is-off'); setTimeout(function () { k.remove(); }, 400); } if (!abriendo) { encuadrar(true); mostrarEscena(); reencuadrar(); } }, onTap: tocado });
       el.classList.add('is-3d');
       // Si la escena llega con una conversación ya abierta (modo asistente), Uku entra directo en foco
       if (host.classList.contains('is-chat')) { m3.setFocus(true); m3.setShift(-.3, -.47); if (b3d.setFront) b3d.setFront(true); }
-      if (!escena.hola) { escena.hola = 1; m3.setAmbient('walk'); if (!msgs.length) pintarGlobo(); }
+      // Al llegar: si tiene algo que decir, te mira desde el inicio; si no, pasea. (Antes arrancaba a caminar y se frenaba en seco.)
+      if (!escena.hola) { escena.hola = 1; if (!msgs.length) pintarGlobo(); if (globoEl.hidden) m3.setAmbient('walk'); }
     }).catch(function () {});
   }
 
@@ -1167,6 +1214,7 @@
       case 'atras-card': { var li = -1; msgs.forEach(function (m, j) { if (m.uku != null) li = j; }); if (li < 0) return; msgs.splice(li, 1); if (msgs.length && msgs[msgs.length - 1].me) msgs.pop(); fx('tap'); return pintarChat(); }
       case 'fl': { var fp = v.split(':'); return flujo(+fp[0], fp[1]); }
       case 'flow': return flujo(+v, 'ini', !enChat);
+      case 'kb': { var kv = window.Conocimiento ? Conocimiento.entrada(v) : null; if (!kv) return; if (!enChat) me(kv.t); return kbCard(kv, kv.t); }
       case 'dinero': dinero(); return mostrar();
       case 'res': return resultado(v);
       case 'voto': return votar(v);
