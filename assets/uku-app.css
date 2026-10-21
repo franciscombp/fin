@@ -176,6 +176,26 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 .uk-msg__q { display: block; font: var(--uk-body-semibold); }
 .uk-msg.is-old .uk-msg__b { color: var(--uk-muted); }
 .uk-msg__acts { display: flex; flex-direction: column; gap: 0; width: 92%; border-radius: var(--uk-r-lg); background: var(--uk-white); overflow: hidden; }
+/* Datos de una respuesta (dt / dd en filas), barras por grupo, mensajes del sistema y el asesor */
+.uk-card__data { margin: 0; display: flex; flex-direction: column; }
+.uk-card__data > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 0; border-top: 1px solid var(--uk-line); }
+.uk-card__data > div:first-child { border-top: 0; padding-top: 0; }
+.uk-card__data dt { font: var(--uk-sm); color: var(--uk-muted); }
+.uk-card__data dd { margin: 0; font: var(--uk-body-semibold); color: var(--uk-text); text-align: right; font-variant-numeric: tabular-nums; }
+.uk-barras { display: flex; flex-direction: column; gap: 12px; }
+.uk-barra { display: grid; grid-template-columns: 1fr auto; row-gap: 6px; align-items: baseline; }
+.uk-barra span { font: var(--uk-sm); color: var(--uk-text); }
+.uk-barra b { font: var(--uk-sm-semibold); font-variant-numeric: tabular-nums; }
+.uk-barra i { grid-column: 1 / -1; display: block; height: 6px; border-radius: 3px; background: var(--uk-navy); }
+.uk-sys { margin: 4px 0; text-align: center; font: var(--uk-caption); color: var(--uk-muted); }
+.uk-av { display: grid; place-items: center; width: 100%; height: 100%; font: var(--uk-caption); font-weight: 700; color: var(--uk-text); }
+/* «Lo que encontré» (análisis del mes): cada hallazgo en su fila, título y explicación */
+.uk-finds { display: flex; flex-direction: column; }
+.uk-finds__l { margin: 0 0 4px !important; font: var(--uk-caption); color: var(--uk-muted); }
+.uk-find { margin: 0 !important; display: flex; flex-direction: column; gap: 2px; padding: 12px 0; border-top: 1px solid var(--uk-line); }
+.uk-find:first-of-type { border-top: 0; }
+.uk-find b { font: var(--uk-body-semibold); color: var(--uk-text); }
+.uk-find small { font: var(--uk-caption); color: var(--uk-muted); }
 .uk-msg__body .uk-card__nav { width: 92%; border-radius: var(--uk-r-lg); background: var(--uk-white); overflow: hidden; }
 .uk-card__row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 12px var(--uk-pad); border: 0; border-top: var(--bp-semantic-border-thin, 1px) solid var(--uk-line); background: var(--uk-white); color: var(--uk-text); font: var(--uk-body); text-align: left; cursor: pointer; }
 .uk-card__row:first-child { border-top: 0; }

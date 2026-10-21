@@ -1,0 +1,17 @@
+
+/* ---- Revisión del 21 de octubre: clases que ya no aparecen en ningún HTML ni JS ---- */
+.pf-uku2__row.is-on { margin: 0 -12px; padding-left: 12px; padding-right: 12px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-secondary-bg); }
+/
+.pfm-find__main { display: block; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.pfm-find__ask { margin-top: var(--bp-semantic-spacing-micro-md, 8px); }
+.pfm-dcard { display: flex; flex-direction: column; align-items: stretch; gap: var(--bp-semantic-spacing-micro-md, 8px); width: 100%; margin-top: var(--bp-semantic-spacing-micro-md, 8px); padding: 20px !important; border: 0; color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
+.pfm-dcard__tag { display: flex; align-items: center; gap: 6px; font: var(--ui-body-sm-semibold); color: var(--bp-interaction-tertiary-fg); }
+.pfm-dcard__tag .material-symbols-rounded { font-size: 18px; }
+.pfm-dcard__t { font: var(--cx-headline); letter-spacing: -.2px; }
+.pfm-dcard__go { margin-top: 4px; font: var(--ui-link-md, var(--ui-label-md)); color: var(--bp-theme-color-text-interactive); text-decoration: underline; text-underline-offset: 3px; }
+.pfm-q .uku-say__reply { cursor: pointer; }
+/
+
+.pfm-dock__ask { flex: 1 1 auto; min-width: 0; height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 18px; border-radius: 99px; font: var(--ui-body-sm-semibold); text-align: left; }
+.pfm-dock__ask > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pfm-dock__ask .material-symbols-rounded { color: var(--bp-interaction-tertiary-fg); }

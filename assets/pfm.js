@@ -608,11 +608,6 @@
     if (A) { x.go = A[0]; x.gol = T(A[1]); }
     return x;
   }
-  function ukuMsg(a) {
-    if (a.k === 'feliz') return T('¡Todo clasificado! Así da gusto ayudarte.');
-    if (a.k === 'tranquilo') return T(a.n === 1 ? 'Tengo 1 consumo nuevo para ti. ¿Lo vemos?' : 'Tengo {n} consumos nuevos para ti. ¿Los vemos?', { n: a.n });
-    return T(a.n === 1 ? 'Tienes 1 consumo sin clasificar, de hace {d} días. ¿Lo ordenamos?' : 'Tienes {n} consumos sin clasificar, algunos de hace {d} días. ¿Los ordenamos?', { n: a.n, d: a.dias });
-  }
   /* ---------- Uku, tu asesor ----------
      Una sola lista de lo que Uku descubre y te propone, ordenada por lo que
      más importa ahora. Cada consejo dice qué notó, por qué importa y trae su
@@ -1222,7 +1217,7 @@
           (pu > 1 ? T('{m} más de tu presupuesto', { m: money0(pj - mb.general) }) : T('te sobrarían {m}', { m: money0(mb.general - pj) })) + '</p></div>';
     } else if (P.m && !hayPres() && rows().length) {
       // Sin presupuesto solo se ve lo gastado, sin comparar; Uku propone armarlo
-      html += '<p class="pfm-budget__t pfm-budget__t--sin"><span>' + T('Todavía no tienes presupuesto') + '</span><button class="section__link" data-pfm="pres">' + T('Armar mi presupuesto') + '</button></p>';
+      html += '<p class="pfm-budget__t pfm-budget__t--sin"><span>' + T('Sin presupuesto todavía') + '</span><button class="section__link" data-pfm="pres">' + T('Armar mi presupuesto') + '</button></p>';
     }
     html += '</section>';
     // En qué grupos se fue, en el mismo periodo
@@ -1561,18 +1556,6 @@
   function onClick(e) { var b = e.target.closest('[data-pfm]'); if (b) key(b.dataset.pfm); }
   // Resumen de gastos del mes en el inicio: un toque lleva a gastos y sus gráficas
   var vistaGastos = null;
-  // En el asistente, lo que puedes hacer desde Mis finanzas, a un toque
-  function navHTML() {
-    var a = animo(), pr = pres();
-    var row = function (k, t, s) { return '<button class="pfm-nav__row" data-pfm="' + k + '"><span><b>' + t + '</b>' + (s ? '<small>' + s + '</small>' : '') + '</span><span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></button>'; };
-    var tile = function (k, ic, t, s) { return '<button class="pfm-tile" data-pfm="' + k + '"><span class="material-symbols-rounded" aria-hidden="true">' + ic + '</span><b>' + t + '</b><small>' + s + '</small></button>'; };
-    return '<section class="pf-sec pfm-nav">' +
-      '<div class="pfm-tiles">' + tile('gastos', 'bar_chart', T('Gastos'), T('Por semana, mes o año')) + tile('pres', 'speed', T('Presupuesto'), pr.general ? T('{m} al mes', { m: money0(pr.general) }) : T('Todavía no tienes uno')) + '</div>' +
-      row('alltx', T('Movimientos'), T('Todo lo que entró y salió')) +
-      (a.n ? row('game', T('Ordenar mis gastos'), T(a.n === 1 ? '1 consumo sin clasificar' : '{n} consumos sin clasificar', { n: a.n })) : '') +
-      row('who', T('El mundo de Uku'), T('Qué significa cada cosa')) +
-      '</section>';
-  }
   /* La hoja de Mis finanzas en el asistente (el mundo de Uku va arriba): una cifra, una línea de estado,
      dos acciones y dos filas. Nada más en el primer pantallazo; los gráficos viven en Gastos. */
   function hubHTML() {
@@ -1590,35 +1573,6 @@
         '<div class="pfm-hub__cols"><p><small>' + T('Dinero en mis cuentas e inversiones') + '</small><b>' + money(pat.tienes) + '</b></p>' +
         '<p><small>' + T('Deuda total acumulada') + '</small><b>' + money(pat.debes) + '</b></p></div></div>' +
       '</section>';
-  }
-  function hubSec(t, sub, k, l, rows) { return '<div class="pfm-hub__label"><div><h3>' + t + '</h3>' + (sub ? '<p>' + sub + '</p>' : '') + '</div>' + (k ? '<button class="pfm-hub__link" data-pfm="' + k + '">' + l + '</button>' : '') + '</div><div class="pfm-hub__card">' + rows.join('') + '</div>'; }
-  function hubRow(k, icon, t, sm, right, extra) { return '<button class="pfm-hub__row" data-pfm="' + k + '"><span class="pfm-hub__ic"><span class="material-symbols-rounded" aria-hidden="true">' + icon + '</span></span><span class="pfm-hub__pl"><b>' + t + '</b>' + (sm ? '<small>' + sm + '</small>' : '') + (extra || '') + '</span>' + right + '</button>'; }
-  // Tus gastos por grupo: los tres que más pesan este mes, con su barra proporcional
-  function hubGruposHTML(s, m) {
-    var G = Object.keys(s.grupos || {}).filter(function (k) { return GRUPOS[k] && !GRUPOS[k].gris && s.grupos[k] > 0; })
-      .sort(function (x, y) { return s.grupos[y] - s.grupos[x]; }).slice(0, 3);
-    if (!G.length) return '';
-    var max = s.grupos[G[0]];
-    return hubSec(T('Gastos por grupo'), T('Lo que más pesa en {mes}', { mes: mesName(m).toLowerCase() }), 'gastos', T('Ver todo'), G.map(function (k) {
-      return hubRow('gastos', GRUPOS[k].ic, esc(T(k)), null, '<em>' + money0(s.grupos[k]) + '</em>', '<i class="pfm-hub__gbar" aria-hidden="true"><u style="width:' + (s.grupos[k] / max * 100).toFixed(0) + '%"></u></i>');
-    }));
-  }
-  // Pagos que vienen en los próximos quince días
-  function hubPagosHTML() {
-    var fs = facturas().filter(function (x) { return diasA(x.f) >= 0 && diasA(x.f) <= 15; }).sort(function (x, y) { return x.f.localeCompare(y.f); }).slice(0, 3);
-    if (!fs.length) return '';
-    return hubSec(T('Pagos que vienen'), T('En los próximos 15 días'), 'bills', T('Ver todos'), fs.map(function (x) {
-      return hubRow('bills', x.ic, esc(x.n), cuandoTxt(x.f) + (x.aprox ? ' · ' + T('aproximado') : ''), '<em>' + money0(x.monto) + '</em>');
-    }));
-  }
-  // Los últimos tres movimientos, con acceso al detalle
-  function hubUltimosHTML() {
-    var R = rows().slice().sort(function (x, y) { return y.f.localeCompare(x.f) || y.i - x.i; }).slice(0, 3);
-    if (!R.length) return '';
-    return hubSec(T('Últimos movimientos'), null, 'alltx', T('Ver todos'), R.map(function (r) {
-      var c = cls(r), icon = (c.cat && CAT[c.cat]) || (r.m > 0 ? 'south_west' : 'receipt_long');
-      return hubRow('tx:' + r.i, icon, esc(desc(r)), dshort(r.f) + (c.cat ? ' · ' + esc(T(c.cat)) : ''), '<em' + (r.m > 0 ? ' class="is-in"' : '') + '>' + (r.m > 0 ? '+' : '−') + money0(Math.abs(r.m)) + '</em>');
-    }));
   }
   function resumenGastosHTML() {
     var s = month(curMes()), pr = pres(), g = s.gast, p = pr.general;

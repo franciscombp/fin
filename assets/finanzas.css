@@ -7,17 +7,14 @@
 
 /* ---------- Medidores (estilo "uso"): tarjeta limpia y barra fina
    sobre su mismo color claro ---------- */
-.pf-meter { --tone: var(--bp-interaction-tertiary-fg); display: flex; flex-direction: column; gap: 10px; width: 100%; padding: 20px 0; border: 0; border-bottom: 1px solid var(--cx-line); background: none; color: var(--bp-theme-color-text-primary); text-align: left; font: inherit; }
-button.pf-meter { cursor: pointer; }
-.pf-meter:last-child { border-bottom: 0; }
+
 /* Grupo de tarjeta (como Inicio): título gris encima y filas con aire */
-.pf-sec .pf-meter { padding: 16px; }
+
 .pf-meter--ok { --tone: #3f7be0; }
 
 .pf-meter--warn { --tone: #e8a530; }
 .pf-meter--over { --tone: var(--bp-theme-color-status-error-icon, #c20505); }
 /* Las reglas generales de botones no deben recortar el medidor */
-.pf-mcard .pf-meter { height: auto !important; min-height: 0 !important; max-height: none !important; overflow: visible !important; border-radius: 0 !important; }
 
 /* ---------- Tablas y valores: más aire, jerarquía limpia ---------- */
 .pf-page--inline .pf-sec__head { margin-bottom: 0; }
