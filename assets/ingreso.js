@@ -408,10 +408,9 @@
     return out;
   }
 
-  /* ---------- Conexión real: una petición que sale a la red, no navigator.onLine ----------
-     El service worker responde desde caché a los archivos de la app si no hay red, así que la
-     sonda es un archivo que no está en caché: si no hay red falla; si hay, responde (aunque sea 404). */
-  var SONDA = './assets/sonda.txt';
+  /* ---------- Conexión: la dice el navegador (navigator.onLine y sus eventos online/offline).
+     Antes se sondeaba un archivo; en el teléfono esa petición fallaba aunque hubiera red (caché del
+     service worker, app instalada) y mostraba "Sin internet" por error. */
   var en = navigator.onLine !== false;
   function enLinea() { return en; }
   function pintarRed(conectado) {
@@ -424,30 +423,9 @@
     if (aviso) aviso.hidden = en;
     if (cambio) document.dispatchEvent(new CustomEvent('red:cambio', { detail: en }));
   }
-  // Una petición: true si la red respondió. Espera hasta 8 s (red lenta o despertando de segundo plano)
-  function sondaUnaVez() {
-    var ctl = new AbortController();
-    var t = setTimeout(function () { ctl.abort(); }, 8000);
-    return fetch(SONDA + '?t=' + Date.now(), { cache: 'no-store', signal: ctl.signal })
-      .then(function () { clearTimeout(t); return true; }, function () { clearTimeout(t); return false; });
-  }
-  // Una sola falla no basta para decir "sin internet": iOS suele fallar la primera
-  // petición al volver a la app. Se reintenta antes de avisar.
-  function sonda() {
-    if (!navigator.onLine) return pintarRed(false);
-    sondaUnaVez().then(function (ok) {
-      if (ok) return pintarRed(true);
-      return new Promise(function (r) { setTimeout(r, 1500); })
-        .then(sondaUnaVez)
-        .then(function (ok2) { pintarRed(ok2); });
-    });
-  }
-  // Sin red se vuelve a comprobar cada 5 s para recuperarse rápido; con red, cada 30 s
-  function ciclo() { sonda(); setTimeout(ciclo, en ? 30000 : 5000); }
-  window.addEventListener('online', sonda);
+  window.addEventListener('online', function () { pintarRed(true); });
   window.addEventListener('offline', function () { pintarRed(false); });
-  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') sonda(); });
-  document.addEventListener('DOMContentLoaded', function () { pintarRed(en); ciclo(); });
+  document.addEventListener('DOMContentLoaded', function () { pintarRed(navigator.onLine !== false); });
 
   // Sin internet, las acciones que mueven dinero no se abren; lo informativo sigue igual.
   // Va en captura sobre el documento: también frena los clics que hace el buscador.
