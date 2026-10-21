@@ -61,7 +61,7 @@ html.uk-chatting .header, html.uk-chatting .nav-bar { display: none !important; 
 .app-uku .view--finanzas:not(.uk-fin) .pf-host { display: none; }
 .app-uku .view--finanzas:not(.uk-ayuda) .uk-ayuda-slot { display: none; }
 /* Piezas de versiones anteriores que el código aún crea: no se muestran */
-.uk-props, .uk-results, .uk-home, .uk-sec, .uk-bar__cerrar, .uk-bar__x, .uk-msg__face, .uku-say__face, .pfm-game__iqface, .pfm-play__uku { display: none !important; }
+.uk-props, .uk-results, .uk-home, .uk-sec, .uk-bar__cerrar, .uk-msg__face, .uku-say__face, .pfm-game__iqface, .pfm-play__uku { display: none !important; }
 
 /* ---------- 1. Mundo 3D y fondo ---------- */
 .uk-scene { position: absolute; inset: 0; z-index: 0; transition: opacity .35s ease; }
@@ -86,9 +86,8 @@ html.uk-chatting .header, html.uk-chatting .nav-bar { display: none !important; 
 .uk.is-page { background: var(--uk-page); }
 
 /* ---------- 2. Barra superior: flecha (o X en una página) y título centrado ---------- */
+.uk-chathead__x { pointer-events: auto; margin-left: -12px; }
 .uk-chathead { position: absolute; z-index: 6; left: var(--uk-margin); right: var(--uk-margin); top: calc(8px + env(safe-area-inset-top, 0px)); height: 48px; display: flex; align-items: center; pointer-events: none; }
-.uk-chathead__x { pointer-events: auto; width: 48px; height: 48px; display: grid; place-items: center; border: 0; border-radius: var(--uk-r); background: transparent; color: var(--uk-navy); cursor: pointer; margin-left: -12px; }
-.uk-chathead__x .material-symbols-rounded { font-size: 24px; }
 .uk-chathead__t { position: absolute; left: 48px; right: 48px; top: 0; height: 48px; display: flex; align-items: center; justify-content: center; font: var(--uk-title); color: var(--uk-navy); }
 .uk:not(.is-fin):not(.is-ayuda):not(.is-page) .uk-chathead__t { display: none; }
 .app-uku .view--finanzas.uk-ayuda .uk .uk-chathead { display: none; }
@@ -103,7 +102,6 @@ html.uk-chatting .header, html.uk-chatting .nav-bar { display: none !important; 
 .uk-globo__t { font: var(--uk-body); }
 .uk-globo__tag { margin: 0 0 4px; font: var(--uk-caption); color: var(--uk-muted); }
 .uk-globo__acts { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
-.uk-globo__go.btn, .uk-globo__go { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 0; border-radius: var(--uk-r); background: var(--uk-accent); color: var(--uk-accent-fg); font: var(--uk-sm-semibold); cursor: pointer; }
 .uk-globo__skip, .uk-globo__next, .uk-globo__x { border: 0; background: none; color: var(--uk-navy); font: var(--uk-sm-semibold); cursor: pointer; }
 .uk-globo__dots, .uk-globo__foot { display: none; }
 .uk-globo::after { content: ''; position: absolute; right: 22px; bottom: -14px; width: 12px; height: 12px; border-radius: 50%; background: var(--uk-white); box-shadow: var(--uk-elev-low); }
@@ -111,8 +109,6 @@ html.uk-chatting .header, html.uk-chatting .nav-bar { display: none !important; 
 .uk-globo.is-new { animation: ukIn .35s cubic-bezier(.2, 1.2, .4, 1) both; }
 /* Tres chips apilados a la izquierda, sobre Uku */
 .uk-chips { position: relative; z-index: 3; order: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 28px; max-width: 72%; }
-.uk-chip-s { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--uk-pad); border: 0; border-radius: var(--uk-r); background: var(--uk-white); color: var(--uk-text); font: var(--uk-body-medium); text-align: left; box-shadow: var(--uk-elev-low); cursor: pointer; animation: ukIn .3s ease both; animation-delay: var(--d, 0ms); }
-.uk-chip-s:active { transform: scale(.97); }
 /* Barra «Busca o pregunta» y micrófono aparte */
 .uk-bar { position: relative; z-index: 5; order: 5; display: flex; align-items: center; gap: 12px; margin: auto 0 0; }
 .uk-bar__f { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; min-height: var(--uk-bar-h); padding: 0 var(--uk-pad); border-radius: var(--uk-r); background: var(--uk-white); box-shadow: var(--uk-elev-low); }
@@ -168,11 +164,6 @@ html.uk-chatting .header, html.uk-chatting .nav-bar { display: none !important; 
 .uk-msg__q { display: block; font: var(--uk-body-semibold); }
 .uk-msg.is-old .uk-msg__b { color: var(--uk-muted); }
 .uk-msg__acts { display: flex; flex-direction: column; gap: 0; width: 92%; border-radius: var(--uk-r-lg); background: var(--uk-white); overflow: hidden; }
-.uk-chip { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 12px var(--uk-pad); border: 0; border-top: var(--bp-semantic-border-thin, 1px) solid var(--uk-line); background: var(--uk-white); color: var(--uk-text); font: var(--uk-body); text-align: left; cursor: pointer; }
-.uk-chip:first-child { border-top: 0; }
-.uk-chip .material-symbols-rounded { font-size: 24px; color: var(--uk-navy); }
-.uk-chip::after { content: 'chevron_right'; font-family: 'Material Symbols Rounded'; font-size: 22px; color: var(--uk-icon); margin-left: auto; }
-.uk-chip:active { background: var(--bp-interaction-row-bg--active, var(--uk-grey)); }
 .uk-msg__body .uk-card__nav { width: 92%; border-radius: var(--uk-r-lg); background: var(--uk-white); overflow: hidden; }
 .uk-card__row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 12px var(--uk-pad); border: 0; border-top: var(--bp-semantic-border-thin, 1px) solid var(--uk-line); background: var(--uk-white); color: var(--uk-text); font: var(--uk-body); text-align: left; cursor: pointer; }
 .uk-card__row:first-child { border-top: 0; }
@@ -251,18 +242,12 @@ html.uk-chatting .header, html.uk-chatting .nav-bar { display: none !important; 
 .uk-panel .pfm-hub__card:active { background: var(--bp-interaction-row-bg--active, var(--uk-grey)); }
 .uk-panel .pfm-hub__h { margin: 0 0 8px !important; font: var(--uk-title) !important; letter-spacing: 0 !important; color: var(--uk-text) !important; text-transform: none !important; }
 .uk-panel .pfm-hub__m { display: block; margin: 0; font: var(--uk-numeric); letter-spacing: -.4px; font-variant-numeric: tabular-nums; }
-.uk-panel .pfm-hub__bar { height: 8px; margin-top: 12px; border-radius: 4px; background: var(--uk-line); overflow: hidden; }
-.uk-panel .pfm-hub__bar i { display: block; height: 100%; border-radius: 4px; background: var(--bp-theme-color-status-success-bg, #2e8b57); animation: ukBar .3s ease-out .42s both; transform-origin: left; }
-.uk-panel .pfm-hub__bar i.is-warn { background: var(--bp-theme-color-status-warning-bg, #e8a33d); }
+.uk-panel .pfm-hub__bar { --tone: var(--bp-theme-color-status-success-bg); margin-top: 12px; }
+.uk-panel .pfm-hub__bar i { animation: ukBar .3s ease-out .42s both; transform-origin: left; }
+.uk-panel .pfm-hub__bar:has(i.is-warn) { --tone: var(--bp-theme-color-status-warning-bg); }
 .uk-panel .pfm-hub__s { margin: 8px 0 0 !important; font: var(--uk-caption); color: var(--uk-muted); }
 .uk-panel .pfm-hub__slot:empty { display: none; }
-.uk-panel .pfm-hub__act { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 72px; padding: 14px var(--uk-pad); border: 0; border-radius: var(--uk-r); background: var(--uk-white); color: var(--uk-text); text-align: left; font: inherit; cursor: pointer; }
-.uk-panel .pfm-hub__act:active { background: var(--bp-interaction-row-bg--active, var(--uk-grey)); }
 .uk-panel .pfm-hub__act-ic { flex: 0 0 32px; width: 32px; text-align: center; font-size: 24px; color: var(--uk-navy); }
-.uk-panel .pfm-hub__act-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.uk-panel .pfm-hub__act-t b { font: var(--uk-body-semibold); }
-.uk-panel .pfm-hub__act-t small { font: var(--uk-caption); color: var(--uk-muted); }
-.uk-panel .pfm-hub__act > .material-symbols-rounded:last-child { color: var(--uk-icon); font-size: 22px; }
 .uk-panel .pfm-hub__stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .uk-panel .pfm-hub__stats small { display: block; margin-bottom: 4px; font: var(--uk-caption); color: var(--uk-muted); }
 .uk-panel .pfm-hub__stats b { font: var(--uk-body-semibold); font-variant-numeric: tabular-nums; }
@@ -276,7 +261,7 @@ html.uk-chatting .header, html.uk-chatting .nav-bar { display: none !important; 
 .uk-panel .pfm-flow { margin: 0 !important; padding: 0 !important; }
 .uk-panel .pfm-flow .pf-sec__head { display: none; }
 .uk-panel .pfm-tabs { position: static; z-index: auto; display: flex; gap: 8px; margin: 0; padding: 0 var(--uk-margin) 12px; background: transparent; }
-.uk-panel .pfm-tabs .tab { flex: 1 1 0; justify-content: center; min-height: 44px; border-radius: var(--uk-r); }
+.uk-panel .pfm-tabs .tab { flex: 1 1 0; justify-content: center; }
 .uk-panel .pfm-flow__body { margin: 0 var(--uk-margin) !important; padding: var(--uk-pad) !important; border-radius: var(--uk-r); background: var(--uk-white); }
 .uk-panel .pfm-chart { margin-top: 0; }
 .uk-panel .pfm-groups { margin: 12px var(--uk-margin) 0 !important; padding: var(--uk-pad) !important; border-radius: var(--uk-r); background: var(--uk-white); }
@@ -297,21 +282,9 @@ html.uk-chatting.uk-fin .pf-toast { top: auto !important; bottom: calc(24px + en
 
 /* ---------- 7. Soporte (página): tu solicitud, preguntas frecuentes, todas las categorías; Uku abajo y la barra ---------- */
 .uk.is-ayuda .uk-chat { justify-content: flex-start; gap: 0; padding: 8px 0 24px; -webkit-mask-image: none; mask-image: none; }
-.uk-ay2__card { display: flex; flex-direction: column; padding: var(--uk-pad); border-radius: var(--uk-r); background: var(--uk-white); }
 .uk-ay2__card + .uk-ay2__card { margin-top: 12px; }
 .uk-ay2__cap { margin: 0 0 4px; font: var(--uk-sm); }
-.uk-ay2__big { font: var(--uk-title-md); }
-.uk-ay2__bar { height: 8px; margin: 12px 0 8px; border-radius: 4px; background: var(--uk-line); overflow: hidden; }
-.uk-ay2__bar i { display: block; height: 100%; border-radius: 4px; background: var(--uk-navy); }
 .uk-ay2__card > small { font: var(--uk-caption); color: var(--uk-muted); }
-.uk-ay2__label { min-height: 40px; display: flex; align-items: flex-end; margin: 8px 0; font: var(--uk-sm-medium); color: var(--uk-muted); }
-.uk-ay2__list { padding: 0; overflow: hidden; }
-.uk-ay2__row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 12px var(--uk-pad); border: 0; border-top: var(--bp-semantic-border-thin, 1px) solid var(--uk-line); background: var(--uk-white); color: var(--uk-text); text-align: left; font: inherit; cursor: pointer; }
-.uk-ay2__row:first-child { border-top: 0; }
-.uk-ay2__row b { flex: 1; min-width: 0; font: var(--uk-body); }
-.uk-ay2__ic { flex: 0 0 24px; font-size: 24px; color: var(--uk-navy); }
-.uk-ay2__row > .material-symbols-rounded:last-child { color: var(--uk-icon); font-size: 22px; }
-.uk-ay2__row:active { background: var(--bp-interaction-row-bg--active, var(--uk-grey)); }
 
 /* ---------- 8. Ayuda completa (hoja): todas las categorías, con X que vuelve ---------- */
 .app-uku .view--finanzas.uk-ayuda .uk .uk-scene, .app-uku .view--finanzas.uk-ayuda .uk .uk-skel, .app-uku .view--finanzas.uk-ayuda .uk .uk-bar, .app-uku .view--finanzas.uk-ayuda .uk .uk-chatbg, .app-uku .view--finanzas.uk-ayuda .uk .uk-globo, .app-uku .view--finanzas.uk-ayuda .uk .uk-chat { display: none !important; }
@@ -319,7 +292,6 @@ html.uk-chatting.uk-fin .pf-toast { top: auto !important; bottom: calc(24px + en
 .app-uku .view--finanzas.uk-ayuda .uk-panel .uk-head { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; position: relative; padding: 20px var(--uk-margin) 12px; touch-action: none; }
 .app-uku .view--finanzas.uk-ayuda .uk-panel .uk-head::before { content: ''; position: absolute; left: 50%; top: 6px; width: 36px; height: 4px; margin-left: -18px; border-radius: 2px; background: var(--uk-line); }
 .app-uku .view--finanzas.uk-ayuda .uk-panel .uk-head__t { flex: 1; min-width: 0; margin: 0; font: var(--uk-title); color: var(--uk-text); }
-.app-uku .view--finanzas.uk-ayuda .uk-panel .uk-head__x { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: var(--uk-r); background: var(--uk-white); color: var(--uk-navy); cursor: pointer; }
 .app-uku .view--finanzas.uk-ayuda .uk-panel .uk-back-btn { display: none; }
 .uk-ayuda-slot { position: relative; flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; }
 .uk-ayuda-slot .sp-top, .uk-ayuda-slot .sp-find, .uk-ayuda-slot .sp-composer, .uk-ayuda-slot .sp-sec--people { display: none !important; }
@@ -327,21 +299,7 @@ html.uk-chatting.uk-fin .pf-toast { top: auto !important; bottom: calc(24px + en
 .uk-ayuda-slot .sp-body { padding: 0 var(--uk-margin) 24px !important; }
 .uk-ayuda-slot .sp-found { margin-top: 8px; }
 .uk-ay__sec { padding: 8px 0 16px; }
-.uk-ay__label { display: flex; align-items: flex-end; min-height: 40px; padding: 0 0 8px; }
-.uk-ay__label h2 { margin: 0 !important; font: var(--uk-sm-medium) !important; letter-spacing: 0 !important; text-transform: none !important; color: var(--uk-muted) !important; }
-.uk-ay__label p { margin: 2px 0 0 !important; font: var(--uk-sm); color: var(--uk-muted); }
-.uk-ay__card { display: flex; flex-direction: column; border-radius: var(--uk-r); background: var(--uk-white); overflow: hidden; }
-.uk-ay__row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 16px var(--uk-pad); border: 0; border-bottom: var(--bp-semantic-border-thin, 1px) solid var(--uk-line); background: var(--uk-white); color: var(--uk-text); text-align: left; font: inherit; cursor: pointer; }
-.uk-ay__card > :last-child { border-bottom: 0; }
-.uk-ay__row:active { background: var(--bp-interaction-row-bg--active, var(--uk-grey)); }
-.uk-ay__ic { display: grid; place-items: center; flex: 0 0 24px; width: 24px; color: var(--uk-navy); }
-.uk-ay__ic .material-symbols-rounded { font-size: 24px; }
-.uk-ay__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.uk-ay__main b { font: var(--uk-body-semibold); }
-.uk-ay__main small { font: var(--uk-sm); color: var(--uk-muted); }
-.uk-ay__row > .material-symbols-rounded:last-child { color: var(--uk-icon); font-size: 22px; }
 .uk-cta { flex: 0 0 auto; padding: 12px var(--uk-margin) calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--uk-page); }
-.uk-cta .pf-cta { width: 100%; margin: 0; }
 .app-uku .view--finanzas.uk-fin .uk .uk-cta { display: none !important; }
 
 /* ---------- 9. Onboarding, teclado, movimiento ---------- */
