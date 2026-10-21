@@ -6,7 +6,8 @@
 <div id="stage"></div>
 <pre id="out">cargando…</pre>
 <script type="module">
-import { loadUkuRig } from './assets/uku-rig.js';
+// ?oso=nuevo abre el oso de respaldo hecho por código
+const { loadUkuRig } = await import(new URLSearchParams(location.search).get('oso') === 'nuevo' ? './assets/uku-rig-nuevo.js' : './assets/uku-rig.js');
 const out = document.getElementById('out');
 const lines = [];
 const log = (m) => { lines.push(m); console.log('[uku-rig] ' + m); out.textContent = lines.join('\n'); };
@@ -14,10 +15,11 @@ const uku = await loadUkuRig(document.getElementById('stage'), { onLog: log });
 window.uku = uku;
 uku.start();
 log('--- verificación ---');
-log('gestos: ' + uku.clips.join(' | '));
+const nombres = uku.clips.map(c => c.name || c);
+log('gestos: ' + nombres.join(' | '));
 // ?g=wave muestra un gesto; sin nada, recorre todos cada 4 s
 const g = new URLSearchParams(location.search).get('g');
-let i = 0; const next = () => { const n = g || uku.clips[i++ % uku.clips.length]; uku.playClip(n); log('gesto: ' + n); };
+let i = 0; const next = () => { const n = g || nombres[i++ % nombres.length]; uku.playClip(n); log('gesto: ' + n); };
 next(); if (!g) setInterval(next, 4000);
 log('errores: ' + (uku.report.errors.length ? uku.report.errors.join('; ') : 'ninguno'));
 </script></body></html>

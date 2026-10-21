@@ -36,6 +36,9 @@
     h += S.chips([0, 25, 50, 75, 100].map(function (v) { return S.chip('data-bloom="' + v + '"', v + ' %', e.bloom === v && manual.bloom != null); }).concat([S.chip('data-bloom=""', 'Dato real', manual.bloom == null)]), 'Flores: ahorro');
     h += S.chips(MOODS.map(function (x) { return S.chip('data-mood="' + x[0] + '"', x[1], manual.mood === x[0]); }).concat([S.chip('data-mood=""', 'Dato real', !manual.mood)]), 'Ánimo');
     h += S.chips(POSES.map(function (x) { return S.chip('data-pose="' + x[0] + '"', x[1], poseActual === x[0]); }), 'Gestos');
+    // El oso de respaldo (hecho por código) se prueba aquí; la app sigue con el de siempre
+    var oso = (function () { try { return localStorage.getItem('uku_oso') === 'nuevo' ? 'nuevo' : 'clasico'; } catch (e) { return 'clasico'; } })();
+    h += S.chips([S.chip('data-oso="clasico"', 'El de siempre', oso === 'clasico'), S.chip('data-oso="nuevo"', 'Respaldo (prueba)', oso === 'nuevo')], 'Oso');
     // Qué significa cada cosa (las señales del mundo) y lo que Uku recomienda con esos datos
     if (window.PFM && PFM.ready()) {
       var W = PFM.world(), A = PFM.advice().filter(function (c) { return !filtro || (c.t + ' ' + (c.s || '') + ' ' + (c.tag || '')).toLowerCase().indexOf(filtro) >= 0; });
@@ -63,8 +66,9 @@
     }
   }
   document.addEventListener('click', function (e) {
-    var b = e.target.closest('[data-persona],[data-score],[data-bloom],[data-mood],[data-pose],[data-esc]'); if (!b) return;
+    var b = e.target.closest('[data-persona],[data-score],[data-bloom],[data-mood],[data-pose],[data-esc],[data-oso]'); if (!b) return;
     var d = b.dataset;
+    if (d.oso) { try { if (d.oso === 'nuevo') localStorage.setItem('uku_oso', 'nuevo'); else localStorage.removeItem('uku_oso'); } catch (x) {} location.reload(); return; }
     if (d.persona) {
       DemoPersona.set(d.persona); S.setPersona(d.persona); if (window.PFM && PFM.setPersona) PFM.setPersona(d.persona);
       manual = { score: null, bloom: null, mood: null, esc: null }; aplicar(); pintar(); S.cerrarHoja();
