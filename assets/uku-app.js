@@ -476,7 +476,12 @@
     if (dinero) html += '<p class="uk-results__l">Tu dinero</p>' + fila('dinero', null, 'Cómo va mi dinero', 'Disponible, gastos y presupuesto');
     if (RES.per.length) html += '<p class="uk-results__l">Personas</p>' + RES.per.map(function (x, i) { return fila('res:per:' + i, 'send_money', 'Transferir a ' + x.n, (x.veces === 1 ? '1 vez' : x.veces + ' veces') + ' · la última el ' + x.ultL); }).join('');
     if (RES.tx.length) html += '<p class="uk-results__l">Movimientos</p>' + RES.tx.map(function (t, i) { return fila('res:tx:' + i, null, t.t, t.f + ' · ' + t.src, (t.m > 0 ? '+' : '−') + money(Math.abs(t.m))); }).join('');
-    if (H.length) html += '<p class="uk-results__l">Ayuda</p>' + H.map(function (h) { return fila(h.kind + ':' + h.i, null, h.t, h.kind === 'tut' ? 'Tutorial' : ''); }).join('');
+    // La base de conocimiento suma lo que Soporte no tiene: productos (con su dato principal) y más preguntas, con sinónimos y errores de tipeo
+    var KBR = window.Conocimiento && Conocimiento.cargada() ? Conocimiento.buscar(q, { n: 6 }) : [], vistosH = {};
+    H.forEach(function (h) { vistosH[norm(h.t)] = 1; });
+    var KBF = KBR.filter(function (x) { return x.tipo === 'faq' && !vistosH[norm(x.t)]; }).slice(0, Math.max(0, 2 - H.length)), KBP = KBR.filter(function (x) { return x.tipo === 'producto'; }).slice(0, 2);
+    if (H.length || KBF.length) html += '<p class="uk-results__l">Ayuda</p>' + H.map(function (h) { return fila(h.kind + ':' + h.i, null, h.t, h.kind === 'tut' ? 'Tutorial' : ''); }).join('') + KBF.map(function (x) { return fila('kb:' + x.id, null, x.t, ''); }).join('');
+    if (KBP.length) html += '<p class="uk-results__l">Productos</p>' + KBP.map(function (x) { return fila('kb:' + x.id, null, x.t, x.e.datos && x.e.datos[0] ? x.e.datos[0][0] + ': ' + Conocimiento.texto(x.e.datos[0][1]) : ''); }).join('');
     if (acts.length) html += '<p class="uk-results__l">Hacer</p>' + acts.map(function (a) { return fila('act:' + a.label, iconoDe({ k: 'act:' + a.label, ic: a.icon }), a.label, ''); }).join('');
     if (RES.app.length) html += '<p class="uk-results__l">En la app</p>' + RES.app.map(function (a, i) { return fila('res:app:' + i, null, a.label, a.sub || ''); }).join('');
     results.innerHTML = html;
@@ -517,11 +522,14 @@
     if (DINERO.test(n) && !HACER.test(n) && resumen()) { dinero(); return mostrar(); }
     var fin = finanzas(q), acts = acciones(q).slice(0, 2), H = ayuda(q, 3), ws = n.replace(/[¿?¡!.,]/g, ' ').split(/\s+/).filter(function (w) { return w.length > 2; });
     // Un «por qué» o «qué es» que coincide fuerte con un tema (ISD, intereses, comisiones) va antes que un inconveniente
-    var tm = Soporte.tema ? Soporte.tema(q, 1) : [];
+    var tm = Soporte.tema ? Soporte.tema(q, 1) : [], fl = H.filter(function (h) { return h.kind === 'flow'; })[0], esFlujo = fl && !fin && !/^(que es|que significa|cuanto tarda|donde veo|por que)/.test(n);
+    // La base de conocimiento (preguntas, productos y acciones): si una entrada coincide claro, responde con ella;
+    // un inconveniente guiado va primero porque pregunta lo justo en vez de explicar
+    var kb = window.Conocimiento && Conocimiento.cargada() ? Conocimiento.responder(q) : null;
+    if (kb && kb.conf === 'alta' && kb.tipo !== 'accion' && !fin && !esFlujo) return kbCard(kb, q);
     if (tm.length && tm[0].sc >= 6 && !fin) return temaCard(tm[0].i, q);
     // 3. Un inconveniente: si lo que escribes se parece a uno, Uku lo guía paso a paso
-    var fl = H.filter(function (h) { return h.kind === 'flow'; })[0];
-    if (fl && !fin && !/^(que es|que significa|cuanto tarda|donde veo|por que)/.test(n)) return flujo(fl.i, 'ini');
+    if (esFlujo) return flujo(fl.i, 'ini');
     // La ayuda solo si coincide de verdad: dos palabras, o una sola que esté en el título
     H = H.filter(function (h) { return h.kind !== 'flow' && (h.sc >= 4 || (ws.length === 1 && norm(h.t).indexOf(ws[0]) >= 0)); });
     if (fin) uku(fin.t, (fin.acts || []).map(function (a) { return b('pfm:' + a[1], a[0], 'arrow_forward'); }).concat((fin.s || []).slice(0, 2).map(function (c) { return b('ask:' + c, c, null, 'is-ask'); })), '', { title: fin.title || q, num: fin.num, bars: fin.bars, meter: fin.meter });
@@ -532,6 +540,9 @@
     else if (acts.length) uku(acts.length === 1 ? 'Te llevo a ' + acts[0].label.toLowerCase() + '. ¿Lo hacemos?' : 'Puedo llevarte a hacerlo:', acts.map(function (a) { return b('act:' + a.label, a.label, a.icon); }).concat(H.slice(0, 1).map(function (h) { return b(h.kind + ':' + h.i, h.t, 'help', 'is-ask'); }))
       // Si es un problema (un cobro, un reclamo), una persona también está a un toque
       );
+    // Lo que Soporte no cubre, lo responde la base de conocimiento (pregunta, producto o la acción que pide)
+    else if (kb && kb.tipo !== 'accion') return kbCard(kb, q);
+    else if (kb && kb.tipo === 'accion') uku('Te llevo a ' + esc(kb.t.toLowerCase()) + '. ¿Lo hacemos?', [b(kbKey(kb.go), kb.t, kb.icon || 'arrow_forward')].concat(kb.otras.slice(0, 1).map(function (x) { return b('kb:' + x.id, x.t, null, 'is-ask'); })), '', { title: q });
     else return iaCard(q); // lo que no está en reglas ni en la ayuda: Uku busca y, si no, lo mira con IA
     mostrar();
   }
@@ -586,6 +597,21 @@
     uku('¿En qué te ayudo? Elige un tema o escríbeme tu pregunta. Te respondo aquí y, si hace falta, te llevo a donde se resuelve.',
       F.slice(0, 4).map(function (f) { return b('flow:' + f.i, f.t, f.icon); })
         .concat([b('ayudatoda', 'Todas las preguntas frecuentes', 'help')]), '', { title: 'Ayuda' });
+    mostrar();
+  }
+  // Una entrada de la base de conocimiento (assets/conocimiento/base.json): respuesta, datos del producto, pasos y acciones
+  function kbKey(k) {
+    if (k === 'handoff') return 'persona';
+    if (k === 'sol') return 'sol';
+    if (k === 'search') return 'buscar';
+    if (k.indexOf('ask:') === 0) return k;
+    return 'sp:' + k;
+  }
+  function kbCard(v, q) {
+    var btns = (v.go ? [b(kbKey(v.go), v.tipo === 'accion' ? v.t : 'Abrir', v.icon || 'arrow_forward')] : []).concat(v.acts.map(function (a) { return b(kbKey(a[1]), a[0], a[1] === 'handoff' ? 'support_agent' : 'arrow_forward'); }));
+    if (v.otras) btns = btns.concat(v.otras.filter(function (x) { return x.tipo !== 'accion'; }).slice(0, 2).map(function (x) { return b('kb:' + x.id, x.t, null, 'is-ask'); }));
+    uku(esc(v.r), btns, v.pasos.length ? '<ol class="uk-steps">' + v.pasos.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>' : '',
+      { title: v.t, rows: v.datos.length ? v.datos : null, links: v.links.length ? v.links : null, voto: true });
     mostrar();
   }
   // Un tema de «por qué» o «qué es»: explicación corta, lo que puedes hacer y dónde leer más
@@ -1231,6 +1257,7 @@
       case 'atras-card': { var li = -1; msgs.forEach(function (m, j) { if (m.uku != null) li = j; }); if (li < 0) return; msgs.splice(li, 1); if (msgs.length && msgs[msgs.length - 1].me) msgs.pop(); fx('tap'); return pintarChat(); }
       case 'fl': { var fp = v.split(':'); return flujo(+fp[0], fp[1]); }
       case 'flow': return flujo(+v, 'ini', !enChat);
+      case 'kb': { var kv = window.Conocimiento ? Conocimiento.entrada(v) : null; if (!kv) return; if (!enChat) me(kv.t); return kbCard(kv, kv.t); }
       case 'dinero': dinero(); return mostrar();
       case 'res': return resultado(v);
       case 'voto': return votar(v);

@@ -1077,6 +1077,9 @@
             overflow: hidden;
         }
         .card-thumb--visa { background: #ffdd00; }
+        /* En las filas de producto la tarjeta se ve a un tamaño que se pueda leer */
+        .product-row .card-thumb { width: 72px; height: 46px; border-radius: 8px; padding: 6px 8px; }
+        .product-row .card-thumb__brand { font-size: 7px; }
         .card-thumb--black { background: linear-gradient(135deg, #2b2d33, #060606); }
         /* diners/ghost son claras: necesitan un borde para definirse contra
            el fondo blanco de la fila (antes era un box-shadow inset) */
@@ -1516,6 +1519,31 @@
             margin-top: 2px;
         }
 
+        /* Perfil con gamificación: nivel, chips, progreso, casillas y beneficios */
+        .perfil-head { flex-direction: column; align-items: stretch; gap: var(--bp-semantic-spacing-macro-sm, 16px); padding-bottom: var(--bp-semantic-spacing-macro-sm, 16px); }
+        .perfil-head__id { display: flex; align-items: center; gap: 14px; }
+        .perfil-head__avatar { position: relative; }
+        .perfil-head__nivel { position: absolute; right: -4px; bottom: -4px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #CD7F32; color: #fff; font-size: 14px; border: 2px solid var(--bp-surface-page, #fff); }
+        .perfil-head__nivel-txt { font-size: 14px; font-weight: 600; color: var(--bp-text-primary); }
+        .perfil-chips { display: flex; flex-wrap: wrap; gap: var(--bp-semantic-spacing-micro-md, 8px); }
+        .perfil-chip { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--bp-theme-color-interaction-segmented-bg, #eef1f6); color: var(--bp-text-primary); font: 600 14px/20px var(--sol-font); cursor: pointer; }
+        .perfil-chip .material-symbols-rounded { font-size: 18px; }
+        .perfil-chip--pro { background: var(--bp-theme-color-brand-main, #ffdd00); color: #0f265c; }
+        .perfil-card { display: flex; flex-direction: column; gap: 8px; margin-bottom: var(--bp-semantic-spacing-micro-md, 8px); }
+        .perfil-fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .perfil-card__titulo { font-size: 16px; font-weight: 700; color: var(--bp-text-primary); }
+        .perfil-card__icono { color: #CD7F32; }
+        .perfil-hint { margin: 0; font-size: 14px; line-height: 20px; color: var(--bp-text-helper); }
+        .perfil-barra { height: 8px; border-radius: 4px; background: var(--bp-theme-color-surface-page-alt, #e4e7ee); overflow: hidden; margin-top: 4px; }
+        .perfil-barra i { display: block; height: 100%; border-radius: 4px; background: var(--bp-theme-color-brand-main, #ffdd00); }
+        .perfil-monedas { display: flex; justify-content: space-between; align-items: center; }
+        .perfil-moneda { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; color: var(--bp-text-primary); }
+        .perfil-moneda .material-symbols-rounded { font-size: 18px; color: #CD7F32; }
+        .perfil-moneda--bonus { color: var(--bp-text-helper); }
+        .perfil-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: var(--bp-semantic-spacing-micro-md, 8px); margin: var(--bp-semantic-spacing-macro-sm, 16px) 0; }
+        .perfil-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; min-height: 96px; padding: 16px; border: 0; border-radius: 16px; background: var(--bp-theme-color-surface-container-default, #fff); color: var(--bp-text-primary); font: 600 15px/20px var(--sol-font); text-align: left; cursor: pointer; }
+        .perfil-tile .material-symbols-rounded { color: #0f265c; }
+
         .logout-btn {
             display: flex;
             align-items: center;
@@ -1905,6 +1933,32 @@
             font-weight: 800;
             animation: cardRise 0.4s cubic-bezier(0.25, 0.8, 0.35, 1) 0.18s backwards;
         }
+
+        /* Story con foto: tarjeta de CTA abajo, sobre la imagen */
+        .story-slide--foto {
+            justify-content: flex-end;
+            align-items: stretch;
+            padding: 0 16px calc(32px + env(safe-area-inset-bottom, 0px));
+            background: linear-gradient(to bottom, rgba(0, 0, 0, .25) 0%, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0) 70%, rgba(0, 0, 0, .35) 100%);
+        }
+        .story-cta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
+            padding: 16px;
+            border: 0;
+            border-radius: 16px;
+            background: var(--bp-theme-color-surface-container-default, #fff);
+            color: var(--bp-theme-color-text-primary, #0f265c);
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+        }
+        .story-cta__tarjeta { display: grid; place-items: center; flex: 0 0 auto; width: 72px; height: 48px; border-radius: 8px; background: linear-gradient(135deg, #1a1a1a 0%, #000 100%); }
+        .story-cta__tarjeta img { width: 40px; height: auto; }
+        .story-cta__texto { font-size: 16px; line-height: 22px; }
+        .story-cta__marca { display: block; font-size: 16px; line-height: 22px; opacity: .8; }
 
         .story-slide p {
             font-size: 15px;
@@ -2369,6 +2423,16 @@
         .qr-scan__frame { position: absolute; inset: 20%; border-radius: 16px; border: 2px solid #FFDD00; box-shadow: 0 0 0 999px rgb(0 0 0 / .35); }
         .qr-scan__msg { margin: 0; font-size: 15px; line-height: 22px; text-align: center; color: var(--bp-theme-color-text-secondary); }
         .qr-scan .login-button { width: 100%; }
+.qr-scan[hidden] { display: none; }
+.qr-pay { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-macro-sm); }
+.qr-pay .bp-segmented { padding: 0; }
+.qr-code { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--bp-semantic-spacing-micro-md); }
+.qr-code__caja { display: grid; place-items: center; height: 56px; border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-container-default); font: 600 24px/32px var(--sol-font); color: var(--bp-theme-color-text-primary); }
+.qr-code__caja.on { box-shadow: inset 0 0 0 2px var(--bp-theme-color-text-primary); }
+.qr-pay__expira { margin: 0; text-align: center; font-size: 15px; line-height: 22px; color: var(--bp-theme-color-text-secondary); }
+.qr-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--bp-semantic-spacing-micro-md); }
+.qr-key { display: grid; place-items: center; height: 56px; border: 0; border-radius: var(--bp-semantic-radius-lg); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: 600 24px/32px var(--sol-font); cursor: pointer; }
+.qr-key:active { transform: scale(.96); }
 
         /* Sin sesión: la ayuda y los accesos públicos se abren por encima del inicio de sesión */
         html body.sin-sesion .sp,
@@ -4655,12 +4719,71 @@
         <div class="view" data-view="4">
             <h1 class="view-title">Perfil</h1>
             <section class="section">
-                <div class="profile-head">
-                    <span class="profile-head__avatar">FM</span>
-                    <div>
-                        <div class="profile-head__name">Francisco Maldonado</div>
-                        <div class="profile-head__mail">francisco@maldonado.pro</div>
+                <div class="profile-head perfil-head">
+                    <div class="perfil-head__id">
+                        <span class="profile-head__avatar perfil-head__avatar">
+                            FM
+                            <span class="perfil-head__nivel material-symbols-rounded" aria-hidden="true">military_tech</span>
+                        </span>
+                        <div class="perfil-head__datos">
+                            <div class="profile-head__name">Francisco Maldonado</div>
+                            <div class="perfil-head__nivel-txt">Nivel Bronce</div>
+                            <div class="profile-head__mail">francisco@maldonado.pro</div>
+                        </div>
                     </div>
+                    <div class="perfil-chips">
+                        <button class="perfil-chip" data-action="Datos personales"><span class="material-symbols-rounded">edit</span>Editar perfil</button>
+                        <button class="perfil-chip" data-action="Mis puntos"><span class="material-symbols-rounded">stars</span>0 puntos</button>
+                    </div>
+                </div>
+
+                <div class="card perfil-card">
+                    <div class="perfil-fila">
+                        <span class="perfil-card__titulo">Transferencias del mes</span>
+                        <button class="perfil-chip perfil-chip--pro" data-soon="Pichibank PRO">Subir a PRO</button>
+                    </div>
+                    <div class="perfil-barra" role="progressbar" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0"><i style="width: 0%"></i></div>
+                    <p class="perfil-hint">0 de 5 transferencias sin comisión</p>
+                </div>
+
+                <div class="card perfil-card">
+                    <div class="perfil-fila">
+                        <span class="perfil-card__titulo">Nivel Bronce</span>
+                        <span class="material-symbols-rounded perfil-card__icono" aria-hidden="true">military_tech</span>
+                    </div>
+                    <p class="perfil-hint">Junta monedas usando tus productos para subir de nivel.</p>
+                    <div class="perfil-barra perfil-barra--monedas" role="progressbar" aria-valuemin="0" aria-valuemax="200" aria-valuenow="0"><i style="width: 0%"></i></div>
+                    <div class="perfil-monedas">
+                        <span class="perfil-moneda"><span class="material-symbols-rounded">paid</span>0</span>
+                        <span class="perfil-moneda"><span class="material-symbols-rounded">paid</span>200</span>
+                        <span class="perfil-moneda perfil-moneda--bonus"><span class="material-symbols-rounded">paid</span>+400</span>
+                    </div>
+                </div>
+
+                <div class="perfil-tiles">
+                    <button class="perfil-tile" data-action="Seguridad"><span class="material-symbols-rounded">shield_lock</span><span>Privacidad y seguridad</span></button>
+                    <button class="perfil-tile" data-action="Ayuda"><span class="material-symbols-rounded">support_agent</span><span>Centro de ayuda</span></button>
+                    <button class="perfil-tile" data-action="Calificación crediticia"><span class="material-symbols-rounded">speed</span><span>Calificación crediticia</span></button>
+                    <button class="perfil-tile" data-action="Datos personales"><span class="material-symbols-rounded">tune</span><span>Configurar perfil</span></button>
+                </div>
+
+                <div class="section__title"><h2>Beneficios del Nivel Bronce</h2></div>
+                <div class="card">
+                    <button class="list-item" data-action="Transferencias sin comisión">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">swap_horiz</span></span>
+                        <span class="list-item__title">Transferencias sin comisión</span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">chevron_right</span>
+                    </button>
+                    <button class="list-item" data-action="Descuentos en comercios aliados">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">local_offer</span></span>
+                        <span class="list-item__title">Descuentos en comercios aliados</span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">chevron_right</span>
+                    </button>
+                    <button class="list-item" data-action="Uku">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">chat_bubble</span></span>
+                        <span class="list-item__title">Uku, tu asistente personal</span>
+                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">chevron_right</span>
+                    </button>
                 </div>
 
                 <div class="bp-tips-security" style="margin-bottom: 12px;" role="note">
@@ -5410,12 +5533,31 @@
 
         // Plantillas por acción: reemplazan el bloque genérico de
         // ícono+Resumen cuando la acción tiene un flujo propio reconocible.
+        const QR_TECLAS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'back'].map(k => {
+            if (k === '') return '<span></span>';
+            if (k === 'back') return '<button class="qr-key" data-qr-key="back" aria-label="Borrar"><span class="material-symbols-rounded">backspace</span></button>';
+            return `<button class="qr-key" data-qr-key="${k}">${k}</button>`;
+        }).join('');
         const ACTION_EXTRAS = {
             'Pagar con QR': () => `
-                <div class="qr-scan">
-                    <div class="qr-scan__view"><video id="qr-video" playsinline muted></video><span class="qr-scan__frame"></span></div>
-                    <p class="qr-scan__msg" id="qr-msg">Apunta la cámara al código QR del negocio</p>
-                    <button class="login-button login-button--secondary" data-soon="Ingresar código del comercio">Ingresar código</button>
+                <div class="qr-pay">
+                    <div class="bp-segmented">
+                        <div class="bp-segmented__track" role="tablist" aria-label="Forma de pago">
+                            <button class="bp-segmented-item" role="tab" aria-selected="true" data-qr-tab="qr">QR</button>
+                            <button class="bp-segmented-item" role="tab" aria-selected="false" data-qr-tab="codigo">Código único</button>
+                        </div>
+                    </div>
+                    <div class="qr-scan" data-qr-panel="qr">
+                        <div class="qr-scan__view"><video id="qr-video" playsinline muted></video><span class="qr-scan__frame"></span></div>
+                        <p class="qr-scan__msg" id="qr-msg">Apunta la cámara al código QR del negocio</p>
+                        <button class="login-button login-button--secondary" data-action="Cobrar con QR">Mostrar mi Código QR</button>
+                    </div>
+                    <div class="qr-scan" data-qr-panel="codigo" hidden>
+                        <div class="qr-code" aria-label="Código único de 6 dígitos">${'<span class="qr-code__caja"></span>'.repeat(6)}</div>
+                        <p class="qr-pay__expira">Código expira en <strong id="qr-expira">02:00</strong></p>
+                        <div class="qr-keys">${QR_TECLAS}</div>
+                        <button class="login-button login-button--tertiary" data-soon="Código Único de Pago">Conoce cómo pagar con tu Código Único de Pago</button>
+                    </div>
                 </div>`,
             'Recibir dinero': () => `
                 <p class="finance-subtitle" style="margin-top:0;">Compartir mis datos</p>
@@ -5915,7 +6057,7 @@
         });
 
         // Escáner: cámara trasera + lectura de QR si el navegador la soporta
-        let qrStream = null, qrTimer = null;
+        let qrStream = null, qrTimer = null, qrExpiraTimer = null, qrSegundos = 120, qrCodigo = '';
         function setQrMsg(t) { const m = document.getElementById('qr-msg'); if (m) m.textContent = t; }
         function startQrScan() {
             stopQrScan();
@@ -5938,7 +6080,49 @@
         }
         function stopQrScan() {
             clearInterval(qrTimer); qrTimer = null;
+            clearInterval(qrExpiraTimer); qrExpiraTimer = null;
             if (qrStream) { qrStream.getTracks().forEach(t => t.stop()); qrStream = null; }
+        }
+        // Código único: seis casillas, teclado propio y cuenta regresiva de 2 minutos
+        function qrPintarCodigo() {
+            document.querySelectorAll('#push-extra .qr-code__caja').forEach((c, i) => {
+                c.textContent = qrCodigo[i] || '';
+                c.classList.toggle('on', i === qrCodigo.length);
+            });
+        }
+        function qrPintarExpira() {
+            const t = document.getElementById('qr-expira');
+            if (!t) return;
+            const seg = Math.max(qrSegundos, 0);
+            t.textContent = String(Math.floor(seg / 60)).padStart(2, '0') + ':' + String(seg % 60).padStart(2, '0');
+        }
+        function qrIniciarExpira() {
+            clearInterval(qrExpiraTimer);
+            qrSegundos = 120; qrPintarExpira();
+            qrExpiraTimer = setInterval(() => {
+                qrSegundos--; qrPintarExpira();
+                if (qrSegundos <= 0) { clearInterval(qrExpiraTimer); qrExpiraTimer = null; qrCodigo = ''; qrPintarCodigo(); }
+            }, 1000);
+        }
+        function qrTecla(k) {
+            if (qrSegundos <= 0) return;
+            if (k === 'back') qrCodigo = qrCodigo.slice(0, -1);
+            else if (qrCodigo.length < 6) qrCodigo += k;
+            qrPintarCodigo();
+            if (qrCodigo.length === 6) showToast('Código ingresado');
+        }
+        function qrCambiarTab(tab) {
+            const extra = document.getElementById('push-extra');
+            extra.querySelectorAll('[data-qr-tab]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.qrTab === tab)));
+            extra.querySelectorAll('[data-qr-panel]').forEach(p => { p.hidden = p.dataset.qrPanel !== tab; });
+            if (tab === 'qr') startQrScan();
+            else { stopQrScan(); qrIniciarExpira(); }
+        }
+        function qrClick(e) {
+            const tab = e.target.closest('[data-qr-tab]');
+            if (tab) return qrCambiarTab(tab.dataset.qrTab);
+            const tecla = e.target.closest('[data-qr-key]');
+            if (tecla) qrTecla(tecla.dataset.qrKey);
         }
 
         function renderPushExtra(title) {
@@ -5946,7 +6130,8 @@
             const extra = document.getElementById('push-extra');
             const hero = document.getElementById('push-hero');
             extra.innerHTML = build ? build() : '';
-            if (title === 'Pagar con QR') startQrScan(); else stopQrScan();
+            if (title === 'Pagar con QR') { qrCodigo = ''; startQrScan(); } else stopQrScan();
+            extra.onclick = title === 'Pagar con QR' ? qrClick : null;
             // Con una plantilla propia, el ícono genérico amarillo sobra —
             // el QR/los chips/los beneficiarios ya comunican la acción.
             hero.classList.toggle('is-hidden', !!build);
@@ -7123,10 +7308,18 @@
                 desc: 'Tu meta de ahorro va por buen camino. ¡Sigue así!'
             },
             {
+                photo: './assets/stories/familia.webp',
+                cta: { titulo: 'Solicita tu <strong>Tarjeta de Crédito</strong>', marca: 'Pichibank' }
+            },
+            {
                 bg: 'linear-gradient(160deg, #7a0930 0%, #b31237 60%, #f76800 100%)',
                 icon: 'local_fire_department',
                 title: '30% dcto. en restaurantes',
                 desc: 'Este fin de semana paga con tu tarjeta y acumula beneficios.'
+            },
+            {
+                photo: './assets/stories/pareja.webp',
+                cta: { titulo: 'Abre tu <strong>Cuenta Flexible</strong>', marca: 'Pichibank' }
             },
             {
                 bg: 'linear-gradient(160deg, #073d27 0%, #0f7a4d 60%, #1e9e5a 100%)',
@@ -7150,11 +7343,21 @@
         function showStory(index) {
             storyIndex = index;
             const s = storiesData[index];
-            storyViewer.style.background = s.bg;
-            storySlide.innerHTML = `
-                <span class="material-symbols-rounded">${s.icon}</span>
-                <h2>${s.title}</h2>
-                <p>${s.desc}</p>`;
+            storySlide.classList.toggle('story-slide--foto', !!s.photo);
+            if (s.photo) {
+                storyViewer.style.background = `url("${s.photo}") center / cover no-repeat, #000`;
+                storySlide.innerHTML = `
+                    <button class="story-cta" type="button" data-story-cta>
+                        <span class="story-cta__tarjeta"><img src="./assets/pichibank-logo--white.svg" alt="" width="40" height="24"></span>
+                        <span class="story-cta__texto">${s.cta.titulo}<span class="story-cta__marca">${s.cta.marca}</span></span>
+                    </button>`;
+            } else {
+                storyViewer.style.background = s.bg;
+                storySlide.innerHTML = `
+                    <span class="material-symbols-rounded">${s.icon}</span>
+                    <h2>${s.title}</h2>
+                    <p>${s.desc}</p>`;
+            }
             // reinicia la animación de entrada del slide
             storySlide.style.animation = 'none';
             void storySlide.offsetWidth;
@@ -7192,6 +7395,10 @@
         document.querySelector('.profile-story').addEventListener('click', openStories);
         document.getElementById('story-close').addEventListener('click', closeStories);
         document.getElementById('story-next').addEventListener('click', nextStory);
+        storySlide.addEventListener('click', e => {
+            if (!e.target.closest('[data-story-cta]')) return;
+            showToast('Solicitud de tarjeta: próximamente');
+        });
         document.getElementById('story-prev').addEventListener('click', prevStory);
         window.addEventListener('keydown', e => {
             if (!storyViewer.classList.contains('open')) return;
@@ -7212,6 +7419,7 @@
     <script src="./assets/asistente.js"></script>
     <script src="./assets/analisis.js"></script>
     <script src="./assets/contexto.js"></script>
+    <script src="./assets/conocimiento.js"></script>
     <script src="./assets/buscador.js"></script>
     <script src="./assets/producto.js"></script>
     <script src="./assets/destacados.js"></script>

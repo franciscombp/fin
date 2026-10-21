@@ -166,6 +166,25 @@ Un solo control arriba a la izquierda y, cuando la pantalla tiene nombre, el tí
 - Sugerencias agrupadas por caso de uso: Pagar y enviar; Mi dinero; Ayuda y seguridad.
   Además, cinco frases frecuentes como chips (estilo de la app). Tocar una llena la búsqueda.
 
+### 6.1 Base de conocimiento
+
+- Las preguntas frecuentes, los productos y las acciones del flujo viven en una sola base:
+  `assets/conocimiento/base.json` (155 entradas, con sinónimos y valores de la demo). La indexa y
+  busca `assets/conocimiento.js` en el teléfono, sin servidor. Detalle en `docs/base-de-conocimiento.md`.
+- Los temas siguen el centro de ayuda de Banco Pichincha (Banca Móvil, Tarjetas, Cuentas, Reclamos);
+  los montos y plazos son los de la demo.
+- El buscador muestra una tarjeta de respuesta solo con confianza alta; Uku responde con la base
+  antes que con sus temas genéricos, pero un inconveniente guiado (Soporte) sigue teniendo prioridad.
+- Las preguntas que también existen en `assets/soporte.js` llevan el mismo título y la misma
+  respuesta; `tools/conocimiento-validar.js` avisa si se desalinean. `tools/conocimiento-probar.js`
+  mide el buscador con 190 consultas reales: no bajar del 90 % en primer lugar.
+
+- La demo pública del buscador vive en `buscador/` y se publica con el workflow de Pages (solo
+  acepta `main`). Cambia según la persona de `assets/pfm/datos.json`; la agenda de cada persona
+  (contactos, exterior, Deuna, domiciliados, recurrentes) la genera `tools/pfm-agenda.py`, no se
+  edita a mano. `camila` es la persona nueva sin movimientos: cualquier pantalla debe aguantar una
+  persona sin historial (en `pfm.js`, `curMes()` cae al mes de hoy).
+
 ## 7. Escáner de Pagar con QR
 
 - Visor redondeado de 16 px con marco amarillo.
