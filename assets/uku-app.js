@@ -192,6 +192,7 @@
     return consejos().map(function (x) { return { id: x.id, tag: x.tag, t: x.di || x.t, k: x.act ? 'pfm:' + x.act : 'prop:' + x.id, l: x.actl || 'Cuéntame', luego: 'pfm:luego:' + x.id, kind: x.kind }; }).concat(S);
   }
   function pintarGlobo() {
+    if (onbActivo) return; // mientras Uku se presenta, el globo muestra sus pasos
     var fin = view.classList.contains('uk-fin'), home = host.classList.contains('is-home');
     if (!fin && !home && !mundoOn && !host.classList.contains('is-onb')) { globoEl.hidden = true; return; }
     // En Mis finanzas, Uku recomienda: una cosa a la vez (pagos, orden, presupuesto, ahorro), con su acción
@@ -402,9 +403,8 @@
     var abajo = function (el) { if (el && !el.hidden && el.offsetHeight) top = Math.max(top, topDe(el) + el.offsetHeight); };
     var arriba = function (el) { if (el && !el.hidden && el.offsetHeight) bot = Math.min(bot, topDe(el)); };
     var home = host.classList.contains('is-home');
-    if (host.classList.contains('is-onb') && onbEl) abajo(onbEl);
-    else if (fin) { abajo(host.querySelector('.uk-chathead')); if (!host.classList.contains('is-up')) abajo(globoEl); arriba(panel); }
-    else if (home) { abajo(homeEl); abajo(globoEl); arriba(host.querySelector('.uk-bar')); arriba(pills); }
+    if (fin) { abajo(host.querySelector('.uk-chathead')); if (!host.classList.contains('is-up')) abajo(globoEl); arriba(panel); }
+    else if (home || onbActivo) { abajo(homeEl); abajo(globoEl); arriba(host.querySelector('.uk-bar')); arriba(pills); }
     else { abajo(globoEl); abajo(props); abajo(host.querySelector('.uk-head')); arriba(pills); arriba(host.querySelector('.uk-bar')); }
     // Cada lugar tiene su encuadre: en el inicio Uku está cerca y a la derecha; en Mis finanzas la cámara
     // retrocede y él queda a la izquierda, con más planeta a la vista; en su mundo, al centro
@@ -662,23 +662,28 @@
   function ultimaPregunta() { for (var i = msgs.length - 1; i >= 0; i--) if (msgs[i].me) return msgs[i].me; return null; }
   /* Onboarding: la primera vez, Uku se presenta en tres pasos. Es una tarjeta arriba, sobre su mundo
      (sin conversación), con un botón principal claro; él, grande, te mira y saluda. */
-  var ONB = 'uk-onboard', onbEl = null, PASOS = [
+  var ONB = 'uk-onboard', onbActivo = false, PASOS = [
     { ic: 'waving_hand', t: 'Hola, soy Uku', s: 'Tu asistente en Pichibank. Te cuento cómo va tu dinero, respondo tus dudas y te ayudo a resolver inconvenientes sin salir de aquí.' },
     { ic: 'park', t: 'Mi mundo eres tú', s: 'Las flores son tu ahorro, el bosque es tu presupuesto y mi ánimo depende de tus gastos ordenados. Tócame y te cuento cómo estoy.' },
     { ic: 'forum', t: 'Háblame como quieras', s: 'Escribe, dicta o toma una foto de un QR o una factura. Si algo no lo sé, lo busco por ti y, solo si hace falta, te comunico con una persona.' }];
+  // Los tres pasos se dicen en el globo de siempre: Uku habla y el globo avanza con Siguiente
   function onboarding(i) {
     i = i || 0; var p = PASOS[i], fin = i === PASOS.length - 1;
-    if (!onbEl) { onbEl = document.createElement('section'); onbEl.className = 'uk-onb'; onbEl.setAttribute('aria-label', 'Conoce a Uku'); host.appendChild(onbEl); host.classList.add('is-onb'); if (b3d) { b3d.play('wave'); } } // el encuadre lo baja para que quede entero bajo la tarjeta
-    onbEl.innerHTML = '<div class="uk-onb__card" style="--k:' + i + '"><p class="uk-onb__dots">' + PASOS.map(function (_, j) { return '<i' + (j === i ? ' class="is-on"' : '') + '></i>'; }).join('') + '</p>' +
-      '<p class="uk-onb__ic">' + ic(p.ic) + '</p><h2 class="uk-onb__t">' + esc(p.t) + '</h2><p class="uk-onb__s">' + esc(p.s) + '</p>' +
+    if (!onbActivo) { onbActivo = true; host.classList.add('is-onb'); if (b3d) b3d.play('wave'); }
+    globoOff = false; globoEl.hidden = false; globoEl.classList.remove('is-off');
+    globoEl.classList.add('uk-globo--onb');
+    if (b3d && b3d.setFront) b3d.setFront(true);
+    globoEl.innerHTML = '<div class="uk-globo__dots" style="--k:' + i + '">' + PASOS.map(function (_, j) { return '<i' + (j === i ? ' class="is-on"' : '') + '></i>'; }).join('') + '</div>' +
+      '<h2 class="uk-globo__h uk-globo__h--onb">' + esc(p.t) + '</h2><p class="uk-globo__t">' + esc(p.s) + '</p>' +
       '<button class="pf-cta uk-onb__go" data-k="' + (fin ? 'onb:fin' : 'onb:' + (i + 1)) + '">' + (fin ? 'Empezar' : 'Siguiente') + '</button>' +
-      (fin ? '' : '<button class="uk-onb__skip" data-k="onb:fin">Saltar</button>') + '</div>';
+      (fin ? '' : '<button class="uk-globo__skip uk-onb__skip" data-k="onb:fin">Saltar</button>');
+    globoEl.classList.remove('is-new'); void globoEl.offsetWidth; globoEl.classList.add('is-new');
     reencuadrar();
     fx('select');
   }
   function onboardingFin() {
     try { localStorage.setItem(ONB, '1'); } catch (e) {}
-    if (onbEl) { onbEl.classList.add('is-out'); setTimeout(function () { onbEl.remove(); onbEl = null; host.classList.remove('is-onb'); }, 260); }
+    onbActivo = false; host.classList.remove('is-onb'); globoEl.classList.remove('uk-globo--onb');
     if (b3d) b3d.setShift(0, 0);
     fx('success'); if (b3d) b3d.play('happy');
     setTimeout(reencuadrar, 300);
@@ -1264,7 +1269,7 @@
       case 'ia': if (!enChat) me('Que Uku IA lo revise'); uku('Lo reviso…'); pintarChat(); return setTimeout(function () { msgs.pop(); iaResponde(v); }, 1400);
       case 'onb': if (v === 'fin') return onboardingFin(); return onboarding(+v);
       case 'siguiente': fx('tap'); nota = null; if (saludado) gi++; saludado = true; return pintarGlobo();
-      case 'globo': fx('tap'); saludado = true; nota = null; return ocultarGlobo();
+      case 'globo': if (onbActivo) return; fx('tap'); saludado = true; nota = null; return ocultarGlobo();
       case 'leyenda': fx('select'); return explicar(+v);
       case 'prop': return propuesta(v);
       case 'mundo': mundo(); return mostrar();
