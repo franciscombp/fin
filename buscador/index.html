@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es" data-theme="light" data-layout="mobile-sm">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Buscador · Pichibank</title>
+  <meta name="description" content="Demo del buscador sobre la base de conocimiento de Pichibank: preguntas frecuentes, productos y acciones.">
+  <link rel="stylesheet" href="../assets/tokens.css">
+  <style>
+    /* POC: sólo tokens del design system, sin componentes */
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--bp-theme-color-surface-page-alt); color: var(--bp-theme-color-text-primary); font-family: var(--bp-base-typography-font-family-sans), system-ui, sans-serif; font-size: 16px; line-height: 22px; }
+    main { max-width: 640px; margin: 0 auto; padding: var(--bp-semantic-spacing-macro-md) var(--bp-layout-grid-margin) 64px; }
+    h1 { margin: 0 0 var(--bp-semantic-spacing-micro-md); font-size: 24px; line-height: 32px; }
+    .sub { margin: 0 0 var(--bp-semantic-spacing-macro-sm); color: var(--bp-theme-color-text-helper); font-size: 14px; line-height: 20px; }
+    .field { display: flex; align-items: center; height: var(--bp-semantic-size-interactive-md); padding: 0 var(--bp-semantic-spacing-macro-sm); border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-container-default); border: 1px solid var(--bp-theme-color-border-default); }
+    .field:focus-within { border-color: var(--bp-theme-color-interaction-primary-bg); box-shadow: 0 0 0 3px color-mix(in srgb, var(--bp-theme-color-interaction-primary-bg) 35%, transparent); }
+    .field input { flex: 1; min-width: 0; border: 0; background: transparent; color: inherit; font: inherit; outline: none; }
+    .chips { display: flex; flex-wrap: wrap; gap: var(--bp-semantic-spacing-micro-md); margin: var(--bp-semantic-spacing-micro-lg) 0 var(--bp-semantic-spacing-macro-md); }
+    .chip { padding: 6px 12px; border: 1px solid var(--bp-theme-color-border-default); border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-surface-container-default); color: inherit; font: inherit; font-size: 14px; cursor: pointer; }
+    .chip--go { background: var(--bp-theme-color-interaction-primary-bg); border-color: transparent; color: var(--bp-theme-color-interaction-primary-fg); font-weight: 600; }
+    .label { margin: var(--bp-semantic-spacing-macro-md) 4px var(--bp-semantic-spacing-micro-md); color: var(--bp-theme-color-text-helper); font-size: 14px; line-height: 20px; font-weight: 500; }
+    .card { border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-container-default); overflow: hidden; }
+    .row { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-lg); width: 100%; min-height: 64px; padding: var(--bp-semantic-spacing-micro-lg) var(--bp-layout-card-padding); border: 0; border-top: 1px solid var(--bp-theme-color-border-divider); background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+    .row:first-child { border-top: 0; }
+    .row:hover { background: var(--bp-theme-color-surface-page-alt); }
+    .row b { display: block; font-weight: 600; }
+    .row small { display: block; color: var(--bp-theme-color-text-helper); font-size: 14px; line-height: 20px; }
+    .tag { flex: 0 0 auto; padding: 2px 8px; border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-avatar-bg); color: var(--bp-theme-color-text-helper); font-size: 12px; line-height: 16px; }
+    .answer { padding: var(--bp-layout-card-padding); }
+    .answer h2 { margin: 0 0 var(--bp-semantic-spacing-micro-md); font-size: 18px; line-height: 24px; }
+    .answer p { margin: 0; }
+    .answer dl { margin: var(--bp-semantic-spacing-micro-lg) 0 0; border-top: 1px solid var(--bp-theme-color-border-divider); }
+    .answer dl div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--bp-theme-color-border-divider); font-size: 14px; line-height: 20px; }
+    .answer dt { color: var(--bp-theme-color-text-helper); } .answer dd { margin: 0; text-align: right; font-weight: 600; }
+    .answer ol { margin: var(--bp-semantic-spacing-micro-lg) 0 0; padding-left: 20px; font-size: 14px; line-height: 20px; }
+    .answer .chips { margin-bottom: 0; }
+    .answer .src { margin-top: var(--bp-semantic-spacing-micro-lg); color: var(--bp-theme-color-text-helper); font-size: 12px; line-height: 16px; }
+    .empty { padding: var(--bp-layout-card-padding); color: var(--bp-theme-color-text-helper); }
+    .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); padding: 10px 16px; border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-text-primary); color: var(--bp-theme-color-surface-container-default); font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+    .toast.on { opacity: 1; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Buscador</h1>
+    <p class="sub">Demo sobre la base de conocimiento: preguntas frecuentes, productos y acciones de la app. Escribe como hablas, con errores incluidos.</p>
+    <label class="field"><input id="q" type="search" placeholder="¿Qué necesitas?" autocomplete="off" autofocus aria-label="Buscar"></label>
+    <div class="chips" id="ejemplos"></div>
+    <div id="out"></div>
+  </main>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="../assets/conocimiento.js"></script>
+  <script>
+    var q = document.getElementById('q'), out = document.getElementById('out'), toast = document.getElementById('toast');
+    var EJ = ['cuanto debo de la tarjeta', 'me robaron la tarjeta', 'que es la cuenta joven', 'pagar la luz', 'trasferencia no llega', 'olvide mi clave'];
+    var TIPO = { faq: 'Pregunta', producto: 'Producto', accion: 'Acción' };
+    function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    document.getElementById('ejemplos').innerHTML = EJ.map(function (e) { return '<button class="chip" data-q="' + esc(e) + '">' + esc(e) + '</button>'; }).join('');
+    function tarjeta(v) {
+      return '<p class="label">' + (v.tipo === 'producto' ? 'Producto' : v.tipo === 'accion' ? 'Acción' : 'Respuesta') + '</p><section class="card answer"><h2>' + esc(v.t) + '</h2><p>' + esc(v.r) + '</p>' +
+        (v.datos.length ? '<dl>' + v.datos.map(function (d) { return '<div><dt>' + esc(d[0]) + '</dt><dd>' + esc(d[1]) + '</dd></div>'; }).join('') + '</dl>' : '') +
+        (v.pasos.length ? '<ol>' + v.pasos.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('') + '</ol>' : '') +
+        '<div class="chips">' + (v.go ? '<button class="chip chip--go" data-go="' + esc(v.go) + '">' + esc(v.tipo === 'accion' ? v.t : 'Abrir') + '</button>' : '') +
+        v.acts.map(function (a) { return '<button class="chip" data-go="' + esc(a[1]) + '">' + esc(a[0]) + '</button>'; }).join('') + '</div>' +
+        (v.fuente ? '<p class="src">Fuente: ' + esc(v.fuente) + '</p>' : '') + '</section>';
+    }
+    var abierta = null;
+    function render() {
+      var t = q.value.trim();
+      if (!t) { out.innerHTML = ''; abierta = null; return; }
+      if (!Conocimiento.cargada()) { out.innerHTML = '<p class="empty">Cargando la base…</p>'; return; }
+      var r = Conocimiento.buscar(t, { n: 8 }), top = Conocimiento.responder(t), html = '';
+      var v = abierta ? Conocimiento.entrada(abierta) : (top && top.conf === 'alta' ? top : null);
+      if (v) html += tarjeta(v);
+      var resto = r.filter(function (x) { return !v || x.id !== v.id; });
+      if (resto.length) html += '<p class="label">' + (v ? 'También' : 'Resultados') + '</p><section class="card">' + resto.map(function (x) {
+        return '<button class="row" data-id="' + esc(x.id) + '"><span style="flex:1;min-width:0"><b>' + esc(x.t) + '</b>' + (x.e.r ? '<small>' + esc(Conocimiento.texto(x.e.r)).slice(0, 90) + '…</small>' : '') + '</span><span class="tag">' + TIPO[x.tipo] + '</span></button>';
+      }).join('') + '</section>';
+      if (!html) html = '<section class="card"><p class="empty">No encontré «' + esc(t) + '». Prueba con otras palabras.</p></section>';
+      out.innerHTML = html;
+    }
+    q.addEventListener('input', function () { abierta = null; render(); });
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-q],[data-id],[data-go]'); if (!b) return;
+      if (b.dataset.q) { q.value = b.dataset.q; abierta = null; render(); q.focus(); return; }
+      if (b.dataset.id) { abierta = b.dataset.id; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+      // En la demo las acciones no abren la app: sólo muestran qué harían
+      toast.textContent = 'En la app abriría: ' + b.dataset.go; toast.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(function () { toast.classList.remove('on'); }, 1800);
+    });
+    Conocimiento.listo().then(render);
+    if (location.hash.length > 1) { q.value = decodeURIComponent(location.hash.slice(1)); render(); }
+  </script>
+</body>
+</html>

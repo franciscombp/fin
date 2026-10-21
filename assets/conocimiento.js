@@ -252,7 +252,9 @@
       if (k === 'tarjeta.nombre') return c.name || null;
       return null;
     };
-    cargarDesde('./assets/conocimiento/base.json').catch(function () {});
+    // La base está junto a este archivo (assets/conocimiento/base.json), se cargue desde la página que sea
+    var me = win.document.currentScript && win.document.currentScript.src;
+    cargarDesde(me ? me.replace(/conocimiento\.js(\?.*)?$/, 'conocimiento/base.json') : './assets/conocimiento/base.json').catch(function () {});
   }
   return api;
 });
