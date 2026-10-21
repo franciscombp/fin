@@ -154,3 +154,17 @@ html:not(.theme-y2k) .sx .sx-app__ic { width: 56px !important; height: 56px !imp
 .sx-card > h3 + .sx-row, .sx-card > .sx-row:first-child { border-radius: var(--bp-semantic-radius-md, 12px) var(--bp-semantic-radius-md, 12px) 0 0 !important; }
 .sx-card > .sx-row:last-child, .sx-card > .sx-row:has(+ .sx-link) { border-radius: 0 0 var(--bp-semantic-radius-md, 12px) var(--bp-semantic-radius-md, 12px) !important; }
 .sx-card > h3 + .sx-row:last-child, .sx-card > .sx-row:only-child { border-radius: var(--bp-semantic-radius-md, 12px) !important; }
+/* Respuesta de la base de conocimiento dentro del buscador: una tarjeta con el texto, los datos del
+   producto (si es uno), los pasos y lo que puedes hacer; mismo porte que las filas de resultados */
+.sx-kb__body { padding: 16px var(--bp-layout-card-padding, 16px); border-radius: 16px; background: var(--bp-theme-color-surface-container-default, #fff); color: var(--bp-theme-color-text-primary); }
+.sx-kb__t { display: block; font: var(--ui-body-md-semibold, 600 16px/22px sans-serif); }
+.sx-kb__p { margin: 8px 0 0; font: var(--ui-body-md-regular, 400 16px/22px sans-serif); }
+.sx-kb__datos { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; margin: 12px 0 0; border-top: 1px solid var(--bp-theme-color-border-divider, rgba(0,0,0,.08)); }
+.sx-kb__datos > div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--bp-theme-color-border-divider, rgba(0,0,0,.08)); font: var(--ui-body-sm-regular, 400 14px/20px sans-serif); }
+.sx-kb__datos dt { margin: 0; color: var(--bp-theme-color-text-helper); }
+.sx-kb__datos dd { margin: 0; text-align: right; font-weight: 600; }
+.sx-kb__pasos { margin: 12px 0 0; padding-left: 20px; font: var(--ui-body-sm-regular, 400 14px/20px sans-serif); }
+.sx-kb__pasos li + li { margin-top: 4px; }
+.sx-kb__body .sx-chips { margin-top: 12px; }
+.sx-kb__links { margin: 12px 0 0; font: var(--ui-body-sm-regular, 400 14px/20px sans-serif); }
+.sx-kb__links a { color: var(--bp-theme-color-text-interactive); }
