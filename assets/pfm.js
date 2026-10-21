@@ -341,13 +341,19 @@
     recurrentes(m).forEach(function (x) { o[x.cp + '|' + x.cat] = 1; });
     return o;
   }
+  // Predicción de cierre del mes en curso (como Revolut): lo gastado + los cobros fijos que faltan
+  // + el gasto variable al ritmo de lo que va del mes.
+  function proyeccion(m) {
+    var s = month(m), d = +HOY.slice(8, 10), n = diasMes(m), rec = recurrentes(m);
+    var fijo = rec.filter(function (x) { return x.dia > d; }).reduce(function (a, x) { return a + x.monto; }, 0);
+    var varHoy = s.gast - rec.filter(function (x) { return x.dia <= d; }).reduce(function (a, x) { return a + Math.min(x.monto, s.cats[x.cat] || 0); }, 0);
+    return r2(s.gast + fijo + Math.max(0, varHoy) / d * (n - d));
+  }
   function anticipa(m) {
     var out = [], s = month(m), p = pres();
     if (isCur(m)) {
       var d = +HOY.slice(8, 10), n = diasMes(m), rec = recurrentes(m), falta = rec.filter(function (x) { return x.dia > d; });
-      var fijo = falta.reduce(function (a, x) { return a + x.monto; }, 0);
-      var varHoy = s.gast - rec.filter(function (x) { return x.dia <= d; }).reduce(function (a, x) { return a + Math.min(x.monto, s.cats[x.cat] || 0); }, 0);
-      var proj = r2(s.gast + fijo + Math.max(0, varHoy) / d * (n - d));
+      var proj = proyeccion(m);
       out.push({ icon: 'speed', kind: proj > p.general ? 'warn' : 'good', t: T('A este ritmo cierras {mes} en {monto}', { mes: mesName(m), monto: money0(proj) }),
         s: proj > p.general ? T('Podrías excederte en {monto} de tu presupuesto. Cuenta los cobros fijos que todavía no llegan.', { monto: money0(proj - p.general) }) : T('Te sobrarían {monto} de tu presupuesto, contando los cobros fijos que faltan.', { monto: money0(p.general - proj) }), ask: '¿Cómo cierro el mes?' });
       var sem = falta.filter(function (x) { return x.dia <= d + 10; });
@@ -1206,10 +1212,14 @@
         return '<button class="tab' + (ST.per === x[0] ? ' active' : '') + '" role="tab" aria-selected="' + (ST.per === x[0]) + '" data-pfm="per:' + x[0] + '">' + T(x[1]) + '</button>'; }).join('') + '</div>' +
       '<section class="pf-sec pfm-flow__body">' + chartHTML(P);
     if (mb) {
-      var u = s.gast / mb.general, f = +HOY.slice(8, 10) / diasMes(P.m), left = mb.general - s.gast;
-      html += '<div class="pfm-budget"><div class="pfm-bar"><i class="is-gast' + (u > 1 ? ' is-over' : '') + '" style="width:' + Math.min(100, u * 100).toFixed(1) + '%"></i><em style="left:' + (f * 100).toFixed(1) + '%"></em></div>' +
+      var u = s.gast / mb.general, f = +HOY.slice(8, 10) / diasMes(P.m), left = mb.general - s.gast, pj = proyeccion(P.m), pu = pj / mb.general;
+      html += '<div class="pfm-budget"><div class="pfm-bar"><i class="is-gast' + (u > 1 ? ' is-over' : '') + '" style="width:' + Math.min(100, u * 100).toFixed(1) + '%"></i>' +
+        (pj > s.gast ? '<i class="is-proj' + (pu > 1 ? ' is-over' : '') + '" style="width:' + (Math.min(100, pu * 100) - Math.min(100, u * 100)).toFixed(1) + '%"></i>' : '') +
+        '<em style="left:' + (f * 100).toFixed(1) + '%"></em></div>' +
         '<p class="pfm-budget__t"><span>' + (left >= 0 ? T('Te quedan <b>{m}</b> de {p}', { m: money0(left), p: money0(mb.general) }) : T('Llevas <b>{m}</b> más de {p}', { m: money0(-left), p: money0(mb.general) })) + '</span>' +
-        '<button class="section__link" data-pfm="budgets">' + T('Presupuesto') + '</button></p></div>';
+        '<button class="section__link" data-pfm="budgets">' + T('Presupuesto') + '</button></p>' +
+        '<p class="pfm-budget__proj' + (pu > 1 ? ' is-over' : '') + '">' + T('A este ritmo cierras el mes en <b>{m}</b>', { m: money0(pj) }) + ' · ' +
+          (pu > 1 ? T('{m} más de tu presupuesto', { m: money0(pj - mb.general) }) : T('te sobrarían {m}', { m: money0(mb.general - pj) })) + '</p></div>';
     } else if (P.m && !hayPres() && rows().length) {
       // Sin presupuesto solo se ve lo gastado, sin comparar; Uku propone armarlo
       html += '<p class="pfm-budget__t pfm-budget__t--sin"><span>' + T('Todavía no tienes presupuesto') + '</span><button class="section__link" data-pfm="pres">' + T('Armar mi presupuesto') + '</button></p>';
@@ -1699,7 +1709,7 @@
     if (g && /gast|cuant|en que|fue|pague|pago/.test(s0) && !/presupuesto/.test(s0)) {
       var v = s.grupos[g] || 0, pv = month(prevMes(m)).grupos[g] || 0, d = pv ? (v - pv) / pv : 0, pg = pres().cats[g];
       return { title: T('{g} en {mes}', { g: g, mes: mesName(m) }), num: { v: money0(v), l: T('gastaste en {g}', { g: g.toLowerCase() }) },
-        meter: pg ? { v: v, max: pg, l: T('{g} de {p} de presupuesto', { g: money0(v), p: money0(pg) }), cls: v > pg ? 'over' : v > pg * .85 ? 'warn' : 'ok' } : null,
+        meter: pg ? { v: v, max: pg, l: T('{g} de {p} de presupuesto', { g: money0(v), p: money0(pg) }), cls: v > pg ? 'over' : isCur(m) && v > pg * .85 ? 'warn' : 'ok' } : null, // meses cerrados: solo dentro o te pasaste
         t: !v ? T('Este mes no tienes gastos en {g}.', { g: g.toLowerCase() }) : pv ? T(d > .05 ? 'Es {pct} más que en {mes}.' : d < -.05 ? 'Es {pct} menos que en {mes}.' : 'Casi igual que en {mes}.', { pct: pct(Math.abs(d)), mes: mesName(prevMes(m)) }) : T('Aquí va lo que más pesó.'),
         bars: topComercios(m, g, 4), s: ['¿En qué gasto más?', T('¿Cuánto me queda este mes?')], acts: [[T('Ver mis gastos'), 'gastos']] };
     }
@@ -1754,7 +1764,7 @@
       var ks = Object.keys(s.grupos).sort(function (a, b) { return s.grupos[b] - s.grupos[a]; }).slice(0, 3);
       var pa = pres();
       return { title: T('En qué gastas más'), num: { v: money0(s.gast), l: T('gastaste en {mes}', { mes: mesName(m) }) },
-        meter: pa.auto ? null : { v: s.gast, max: pa.general, l: T('{g} de {p} de presupuesto', { g: money0(s.gast), p: money0(pa.general) }), cls: s.gast > pa.general ? 'over' : s.gast > pa.general * .85 ? 'warn' : 'ok' },
+        meter: pa.auto ? null : { v: s.gast, max: pa.general, l: T('{g} de {p} de presupuesto', { g: money0(s.gast), p: money0(pa.general) }), cls: s.gast > pa.general ? 'over' : isCur(m) && s.gast > pa.general * .85 ? 'warn' : 'ok' },
         t: ks.length ? T('Lo que más pesó fue {k}.', { k: ks[0].toLowerCase() }) + (pa.auto ? ' ' + T('Todavía no tienes presupuesto.') : '') : T('Este mes casi no has gastado.'),
         bars: ks.map(function (k) { return { l: k, v: s.grupos[k] }; }), s: ['¿Cómo cierro el mes?', '¿Qué tengo por revisar?'], acts: [[T('Ver mis gastos'), 'gastos']].concat(pa.auto ? [[T('Armar mi presupuesto'), 'pres']] : []) };
     }
