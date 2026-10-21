@@ -140,23 +140,53 @@ Dónde está aplicado: en toda la app, porque cada primitiva se define una sola 
 
 ### 5.2 Mapa de navegación del asistente (Uku)
 
-Un solo control arriba a la izquierda y, cuando la pantalla tiene nombre, el título centrado
-(`.uk-chathead`). Nunca una flecha y una X a la vez.
+El asistente vive en la barra inferior (pestaña **Asistente**, entre Beneficios y Perfil). Arriba de la
+app quedan solo la búsqueda (abre el **Buscador** universal) y las notificaciones. Dentro del asistente
+hay un solo control arriba a la izquierda y, cuando la pantalla tiene nombre, el título centrado
+(`.uk-chathead`). Nunca una flecha y una X a la vez. La barra inferior sigue visible en Inicio y Mis
+finanzas; se oculta en el chat y en las páginas a pantalla completa.
 
-- **Inicio** (`is-home`): la flecha sale del asistente a la app. Globo de Uku con saludo, chips de
+- **Inicio** (`is-home`): sin flecha (se sale con la barra inferior). Globo de Uku con saludo, chips de
   propuestas, buscador con micrófono y dos accesos: Mis finanzas y Soporte.
 - **Buscador**: hoja a pantalla completa que abre el campo; la X vuelve al inicio.
 - **Chat** (`is-chat`): la flecha vuelve al inicio. Uku asoma abajo a la izquierda, sobre la barra
   «Escríbele a Uku». Mensajes del usuario en gris, respuestas en blanco, acciones en tarjeta y
-  «¿Te sirvió?» con pulgar abajo y pulgar arriba.
-- **Mis finanzas** (`is-fin`): título «Mis finanzas», la flecha vuelve al inicio. Globo con la
-  recomendación, Uku en escena y una hoja a media altura con tres tarjetas: gasto del mes (abre
-  **Mis gastos**), la acción recomendada y «Mi dinero en Pichibank» (abre su hoja).
-- **Mis gastos** (`is-page`): página completa con título y X que vuelve a Mis finanzas. Hallazgo del mes,
-  periodos, tarjeta con total y gráfico, categorías con barras.
+  «¿Te sirvió?» con pulgar abajo y pulgar arriba. Las respuestas de Uku se escriben palabra por palabra,
+  como un chat de IA; las filas y botones entran cuando termina el texto.
+- **Mis finanzas** (`is-fin`): título «Mis finanzas», la flecha vuelve al inicio, la «i» abre la leyenda
+  del mundo. Uku se ve en **plano general** dentro de su bosque, con un globo que escribe su mensaje.
+  Abajo hay una **sección fija** (sin scroll ni handle; su fondo solo separa del mundo y da contraste):
+  la tarjeta «Gastaste en…» (abre **Mis gastos**), hasta dos acciones recomendadas y «Mi dinero en
+  Pichibank» (abre su hoja).
+- **Mis gastos** (`is-page`): página a pantalla completa con título y X que vuelve a Mis finanzas. Hallazgo
+  del mes, periodos, tarjeta con total y gráfico, categorías con barras.
 - **Soporte** (`is-ayuda`): título «Soporte», la flecha vuelve al inicio. Tarjeta de Solicitudes, tres
   preguntas frecuentes (cada una se responde en el chat) y «Ver todas las categorías», que abre la
   **ayuda completa**: hoja a pantalla completa con título y X que vuelve a Soporte.
+
+#### Lógica de Mis finanzas
+
+- **Gastos sin categorizar** → Uku pide ordenarlos («Clasificar n»). Es la primera recomendación.
+- **Sin presupuesto** → Uku recomienda armarlo, y la tarjeta del mes muestra solo lo gastado, sin barra
+  ni comparación («Todavía no tienes presupuesto · Armar mi presupuesto»). Mis gastos hace lo mismo.
+  «Sin presupuesto» es que no haya uno guardado; el que calcula Uku solo como propuesta no cuenta.
+- **Con presupuesto** → barra de avance y «Te queda…» / «Vas … por encima».
+- **Mensajes según el perfil** (hogar, negocio, joven, jubilado, al día, nuevo), siempre en positivo y
+  con una propuesta: no «tu cuenta llega casi a cero», sino «te puedo ayudar a armar un presupuesto
+  para ver en qué se va tu dinero».
+- **Arma tu presupuesto** (hoja de tres pasos, alto estable): arriba la barra de avance y «Paso n de 3»;
+  abajo un pie fijo con «Atrás»/«Ahora no» (secundario) y la acción principal (azul de Uku).
+  1. Cuánto gastar: tu mes (recibes / gastas) y tres planes en tarjetas con radio, el monto, una barra
+     gasto · ahorro (o lo que te pasarías, en ámbar) y «Ahorras $ x al mes · $ y al año».
+  2. Cómo repartirlo: resumen apilado (fijo · para mover · libre), grupos «Lo fijo» y «Lo que puedes
+     mover» con stepper en píldora y la diferencia contra tu promedio; aviso si los grupos se pasan.
+  3. Lo que significa hoy: el monto, la barra del mes con la marca de hoy, «Para gastar al día» y
+     «Ahorrarías», y cómo te acompaña Uku.
+  Sin ingresos ni gastos (persona nueva) no hay pasos: un aviso corto y «Entendido».
+- **Bosque ↔ historia financiera**: árboles = un mes de historia cada uno (el más reciente, al frente;
+  los meses flojos, más pequeños); flores = ahorro; guayacanes = inversiones; casa, tienda, etc. =
+  créditos; **mariposas = sugerencias** (siempre hay, mínimo dos). Una persona nueva (Camila) no tiene
+  árboles: solo brotes pequeños en el suelo y las mariposas.
 
 ### 5.3 Una sola capa de componentes (acuerdo del 21 de octubre)
 
@@ -259,6 +289,14 @@ Cómo queda:
 - **Nombres y textos de acciones:** el `data-action` es la clave de la función; el texto visible puede
   cambiar sin tocar la lógica. Al cambiar un nombre visible, revisar también los mapas de iconos y
   las listas de accesos públicos o transaccionales.
+- **Un observador que escribe lo mismo se dispara solo.** `privacidad.js` reescribía el mismo ícono y
+  `aria-*` cada 60 ms desde su propio `MutationObserver` y congelaba la página al entrar a Mis finanzas.
+  Todo observador debe escribir solo cuando el valor cambia.
+- **Las variables `--uk-*` viven en `.uk`.** Las hojas (`.as-sheet`) cuelgan de `body`, así que una regla
+  de hoja que use `var(--uk-accent)` queda sin valor (el botón principal salía transparente). En hojas se
+  usan los tokens `--bp-*` directamente.
+- **Efecto de escritura:** se parte el texto en `span.uk-w` con `animation-delay` después de un
+  `setTimeout 0`, para que el traductor (`MutationObserver` de i18n) traduzca la frase completa antes.
 - **Fondo amarillo y círculo amarillo** no se distinguen: en el splash se usa la variante azul.
 
 ## 11. Pendientes y preguntas abiertas
