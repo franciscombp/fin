@@ -52,6 +52,11 @@
     var ws = n.split(' ').filter(function (w) { return w.length > 3 && !/^(hogar|plan|internet|telefonia|energia|potable|agua)$/.test(w); });
     return new RegExp('\\b(' + (ws.length ? ws.map(function (w) { return w.replace(/[^a-z0-9]/g, ''); }).join('|') : n.replace(/[^a-z0-9]/g, '')) + extra.replace(/^\|/, '|') + ')');
   }
+  // Desde dónde se abrió el buscador (en la app sería la sección activa): ajustes o ?desde=tarjetas
+  var SEC_KEY = 'kbdemo_seccion';
+  function seccion() { var m = location.search.match(/[?&]desde=([a-z]+)/); if (m) return m[1]; try { return localStorage.getItem(SEC_KEY) || 'inicio'; } catch (e) { return 'inicio'; } }
+  function setSeccion(id) { try { localStorage.setItem(SEC_KEY, id); } catch (e) {} if (location.search) history.replaceState(null, '', location.pathname); }
+  function nombreSeccion(id) { var x = P.secciones().filter(function (s) { return s[0] === id; })[0]; return x ? x[1] : 'Inicio'; }
   function atajosKey() { return 'kbdemo_atajos_' + (persona ? persona.id : 'x'); }
   function aplicarPersona() {
     persona = P.datos(); if (!persona) return;
@@ -167,6 +172,8 @@
       row('data-ver="servicios"', 'receipt_long', 'Servicios', persona.servicios.filter(function (x) { return x.contrato; }).length ? persona.domiciliados.length + ' domiciliados · ' + persona.recurrentes.length + ' recurrentes' : 'Ninguno todavía') +
       row('data-ver="productos"', 'account_balance', 'Productos', persona.cuentas.length + (persona.cuentas.length === 1 ? ' cuenta' : ' cuentas') + ' · ' + persona.tarjetas.length + (persona.tarjetas.length === 1 ? ' tarjeta' : ' tarjetas') + ' · ' + (persona.prestamos.length + (persona.hipoteca ? 1 : 0)) + ' préstamos · ' + persona.inversiones.length + ' inversiones') +
       row('data-catalogo', 'apps', 'Todas las acciones', K.lista('accion').length + ' acciones de la banca móvil, por tema'));
+    h += sec('Abierto desde', '<div class="sx-chips">' + P.secciones().map(function (x) { return chip('data-seccion="' + x[0] + '"', x[1], x[0] === seccion()); }).join('') + '</div>') +
+      sec('Frases para probar', '<div class="sx-chips">' + EJ.map(function (e) { return chip('data-q="' + esc(e) + '"', e); }).join('') + '</div>');
     h += sec('Atajos', (atajos.length ? row('data-borrar-atajos', 'delete', 'Borrar mis atajos', atajos.length + ' guardados en este navegador') : row('data-nuevo-atajo', 'add', 'Grabar un atajo', 'Todavía no has guardado ninguno')));
     return h;
   }
@@ -182,9 +189,17 @@
     return h;
   }
   function filaServicio(s) { return row('data-servicio="' + esc(s.empresa) + '"', s.auto ? 'autorenew' : 'receipt_long', esc(s.empresa), esc((s.auto ? 'Domiciliado: se paga solo el ' + s.dia : 'Cada mes') + ' · ' + money(s.monto))); }
+  // Un producto sugerido como duda se muestra como pregunta («¿Cómo solicito una tarjeta de crédito?»), no como nombre
+  function textoPregunta(e) {
+    if (/\?$/.test(e.t) || /^¿/.test(e.t) || e.tipo === 'faq') return e.t;
+    var raw = K.base() ? K.base().entradas.filter(function (x) { return x.id === e.id; })[0] : null, pq = raw && (raw.preguntas || []).filter(function (x) { return /\?/.test(x); })[0];
+    return pq || '¿Qué es ' + e.t.toLowerCase() + '?';
+  }
   // El inicio, como la hoja del buscador de la app: sugerencias, lo tuyo y poco más
   function inicio() {
-    var h = chips(EJ.slice(0, 4).map(function (e) { return chip('data-q="' + esc(e) + '"', e); })), A = listaAtajos();
+    // Primero, las dudas de siempre de esta persona: por la sección desde la que abrió y por lo que hizo hace poco
+    var pq = persona ? P.preguntas(seccion(), 4).map(function (id) { return K.entrada(id); }).filter(Boolean) : [];
+    var h = pq.length ? chips(pq.map(function (e) { return chip('data-pregunta="' + e.id + '"', textoPregunta(e)); })) : '', A = listaAtajos();
     if (persona && persona.paraTi.length) h += sec('Para ti', persona.paraTi.slice(0, 3).map(function (x, i) { return row('data-parati="' + i + '"', x.accion ? (K.entrada(x.accion) || {}).icon || 'bolt' : 'lightbulb', esc(x.t), esc(x.s)); }).join(''));
     h += sec(atajos.length ? 'Tus atajos' : 'Atajos sugeridos', A.slice(0, 3).map(filaAtajo).join('') + row('data-nuevo-atajo', 'add', 'Grabar un atajo', 'Guarda una acción con sus datos y repítela con un toque'));
     h += sec('Con una foto', row('data-accion="accion.pagar-factura"', 'document_scanner', 'Pagar una factura', 'Foto, imagen o PDF: la app lee la empresa, el contrato y el valor'));
@@ -375,6 +390,8 @@
     var d = b.dataset;
     if (d.persona) { P.set(d.persona); aplicarPersona(); out.innerHTML = ajustes(); aviso('Ahora eres ' + persona.primerNombre); return; }
     if (d.ver) { out.innerHTML = verLista(d.ver); out.scrollTop = 0; return; }
+    if (d.seccion) { setSeccion(d.seccion); out.innerHTML = ajustes(); aviso('Buscador abierto desde ' + nombreSeccion(d.seccion)); return; }
+    if (d.pregunta) { var pe = K.entrada(d.pregunta); if (!pe) return; fl = null; lec = null; abierta = pe.id; q.value = pe.t; render(); return; }
     if (d.borrarAtajos != null) { atajos = []; guardarAtajos(); out.innerHTML = ajustes(); aviso('Atajos borrados'); return; }
     if (d.q != null) { q.value = d.q; abierta = null; render(); if (d.q) q.focus(); return; }
     if (d.id) { fl = null; lec = null; abierta = d.id; var v0 = K.entrada(d.id); if (v0 && !q.value.trim()) q.value = v0.t; render(); return; }
