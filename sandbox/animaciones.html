@@ -18,17 +18,16 @@
   <link rel="stylesheet" href="../assets/uku-app.css?v=__BUILD__">
   <link rel="stylesheet" href="../assets/soporte.css?v=__BUILD__">
   <link rel="stylesheet" href="../assets/componentes.css?v=__BUILD__">
+  <!-- El reset base de la app (el mismo que index.html): caja border-box, sin margen y la fuente -->
+  <style>*, *::before, *::after { box-sizing: border-box; } body { margin: 0; font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }</style>
 </head>
 <body>
   <div class="sx open">
-    <div class="sx-back"></div>
-    <div class="sx-panel">
-      <div class="sx-head">
-        <form class="sx-field" role="search" id="form"><span class="material-symbols-rounded" aria-hidden="true">search</span><input id="q" type="search" autocomplete="off" placeholder="Animaciones y microinteracciones" aria-label="Animaciones y microinteracciones"></form>
-        <a class="sx-cancel" href="./" aria-label="Volver al sandbox"><span class="material-symbols-rounded">arrow_back</span></a>
-      </div>
-      <div class="sx-results" id="out"></div>
-    </div>
+    <div class="sx-back"><div class="sx-panel"><div class="sx-results" id="stage"></div></div></div>
+  <!-- La píldora flotante del buscador, siempre visible, abre el panel de cambios -->
+  <button type="button" class="sx-hint" id="abrir" style="opacity:1; transform:translate(-50%, 0); pointer-events:auto"><span class="material-symbols-rounded">tune</span><span>Cambios</span></button>
+  <div class="as-sheet-back" id="hoja-back"></div>
+  <div class="as-sheet" id="hoja" role="dialog" aria-label="Cambios"><div class="as-sheet__handle"></div><h3>Animaciones y microinteracciones</h3><div id="out"></div></div>
   </div>
   <div class="pf-toast" id="toast" role="status"></div>
   <script src="../sandbox/sandbox.js?v=__BUILD__"></script>
