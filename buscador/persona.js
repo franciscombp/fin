@@ -30,7 +30,7 @@
   var EMPRESA = /c[ií]a|s\.a|s\.a\.s|ltda|cooperativa|universidad|unidad educativa|distribuidora|hnos|banco|municipio|cuota|matr[ií]cula|pensi[oó]n|cr[eé]dito|intermex|western/i;
   var ENVIO = [[/^Transf\. Directa a (.+)$/, 'Pichibank'], [/^Transf\. Interbancaria a (.+)$/, 'Otro banco'], [/^Pago a persona (.+)$/, 'Deuna']];
   var RECIBO = [[/^Transf\. Directa de (.+)$/, 'Pichibank'], [/^Transferencia recibida de (.+)$/, 'Pichibank'], [/^Transf\. Interbancaria de (.+)$/, 'Otro banco'], [/^Transf\. Deuna de .+? \((.+)\)$/, 'Deuna'], [/^Transferencia internacional recibida .*?[-–] (.+)$/, 'Exterior'], [/^Transferencia internacional recibida desde (.+?) - (.+)$/, 'Exterior']];
-  var SERVICIO = [[/^Pago por servicio de (.+)$/], [/^D[eé]bito autom[aá]tico (.+)$/], [/^(CLARO|MOVISTAR|CNT) (PLAN .+)$/], [/^Pago a comercio (Claro recargas)$/], [/^(CLARO RECARGA ONLINE)$/]];
+  var SERVICIO = [[/^Pago por servicio de (.+)$/], [/^D[eé]bito autom[aá]tico (?!hacia)(.+)$/], [/^((?:CLARO|MOVISTAR|CNT) PLAN .+)$/], [/^Pago a comercio (Claro recargas)$/], [/^(CLARO RECARGA ONLINE)$/]];
   function limpiarEmpresa(s) { return s.replace(/\s+(pensi[oó]n|matr[ií]cula|tarjeta.*|cr[eé]dito.*|impuesto predial|recarga prepago)$/i, '').trim(); }
 
   function derivar(id) {
@@ -121,12 +121,58 @@
     if (tv) { valores['tarjeta.nombre'] = tv.nombre; valores['tarjeta.deuda'] = money(tv.saldo); valores['tarjeta.minimo'] = money(tv.minimo); valores['tarjeta.limite'] = money(tv.limite); valores['tarjeta.cupo'] = money(Math.max(0, tv.limite - tv.saldo)); }
     if (pv) { valores['prestamo.cuota'] = money(pv.cuota); valores['prestamo.vence'] = pv.vence; valores['prestamo.n'] = String(pv.n); valores['prestamo.de'] = String(pv.de); }
     if (inversiones[0]) { valores['deposito.monto'] = money(inversiones[0].saldo); }
-    var out = { id: id, nombre: u.nombre, primerNombre: u.nombre.split(' ')[0], tipo: u.tipo, ciudad: u.ciudad, necesita: u.lo_que_necesita, cuentas: cuentas, tarjetas: tarjetas, prestamos: prestamos, hipoteca: hip, inversiones: inversiones, metas: metas, cobrar: cobrar,
+    // Actividad reciente (últimos 30 días): lo que dispara las dudas de siempre
+    var desde = d.hoy ? new Date(new Date(d.hoy).getTime() - 30 * 864e5).toISOString().slice(0, 10) : '2026-09-15', rec = { isd: 0, interes: 0, retiro: 0, intl: 0, pagoTarjeta: 0, recarga: 0, qr: 0, remesa: 0, servicio: 0, interb: 0, mora: 0 };
+    mov.forEach(function (r) {
+      if (r[0] < desde) return;
+      var desc = D.descripcion[r[4]] || '', cat = D.categoria[r[8]] || '';
+      if (/IMPUESTO ISD/.test(desc)) rec.isd++;
+      if (/INTER[EÉ]S DE FINANCIAMIENTO/i.test(desc) || cat === 'Intereses') rec.interes++;
+      if (/mora/i.test(desc)) rec.mora++;
+      if (/retiro/i.test(desc) || cat === 'Efectivo retirado') rec.retiro++;
+      if (/Consumo Internacional/i.test(desc)) rec.intl++;
+      if (cat === 'Pago de tarjeta') rec.pagoTarjeta++;
+      if (/recarga/i.test(desc) && !/Recarga de saldo/.test(desc)) rec.recarga++;
+      if (/Cobro QR/.test(desc)) rec.qr++;
+      if (cat === 'Remesa' || /internacional recibida/i.test(desc)) rec.remesa++;
+      if (/Pago por servicio|D[eé]bito autom/i.test(desc)) rec.servicio++;
+      if (/Interbancaria a/i.test(desc)) rec.interb++;
+    });
+    var tieneTarjeta = tarjetas.some(function (t) { return t.mvp; });
+    var out = { id: id, nombre: u.nombre, reciente: rec, tieneTarjeta: tieneTarjeta, primerNombre: u.nombre.split(' ')[0], tipo: u.tipo, ciudad: u.ciudad, necesita: u.lo_que_necesita, cuentas: cuentas, tarjetas: tarjetas, prestamos: prestamos, hipoteca: hip, inversiones: inversiones, metas: metas, cobrar: cobrar,
       contactos: contactos, exterior: exterior, deuna: deuna, recargas: recargasL, domiciliados: domiciliados, recurrentes: recurrentes, favoritos: favoritos, servicios: servicios, atajosSugeridos: sugeridos, paraTi: paraTi.slice(0, 5), valores: valores, movimientos: mov.length };
     cache[id] = out;
     return out;
   }
   function datos() { return base && actual ? derivar(actual) : null; }
-  var api = { cargar: cargar, lista: lista, set: set, get: get, datos: datos, money: money };
+  /* Las dudas que suele tener esta persona, para la primera fila del buscador: por la sección desde la
+     que lo abrió y por lo que hizo hace poco. Devuelve ids de la base de conocimiento, en orden. */
+  var POR_SECCION = {
+    inicio: [], cuentas: ['faq.cuentas.numero', 'faq.cuentas.limite-transferir', 'faq.cuentas.certificado'], tarjetas: ['faq.tarjetas.corte-pago', 'faq.tarjetas.cupo', 'faq.tarjetas.congelar', 'faq.tarjetas.exterior'],
+    prestamos: ['faq.prestamos.cuota', 'faq.prestamos.adelantar', 'faq.prestamos.preaprobado'], inversiones: ['faq.inversiones.vence', 'faq.inversiones.renovar', 'faq.inversiones.cuanto-gano'],
+    seguros: ['faq.seguros.vida', 'faq.seguros.reclamo', 'faq.seguros.compras'], finanzas: ['faq.app.mis-finanzas', 'faq.inversiones.meta', 'faq.app.atajo'], ayuda: ['faq.acceso.olvide-clave', 'faq.reclamos.no-reconozco', 'faq.canales.atencion']
+  };
+  function preguntas(seccion, n) {
+    var p = datos(); if (!p) return [];
+    var r = p.reciente, ids = [];
+    function add(id) { if (ids.indexOf(id) < 0) ids.push(id); }
+    (POR_SECCION[seccion] || []).forEach(add);
+    // Por lo que hizo hace poco (la señal más fuerte primero)
+    var senales = [
+      [r.isd, 'faq.cuentas.isd'], [r.interes + r.mora, 'faq.tarjetas.intereses'], [r.remesa, 'faq.cuentas.exterior'], [r.qr, 'faq.pagos.cobrar-qr'], [r.interb, 'faq.cuentas.transferencia-llega'],
+      [r.retiro, 'faq.canales.cajero'], [r.intl, 'faq.tarjetas.exterior'], [r.pagoTarjeta, 'faq.tarjetas.corte-pago'], [r.servicio && !p.domiciliados.length ? r.servicio : 0, 'faq.pagos.automatico'], [r.recarga, 'faq.pagos.recarga']
+    ].filter(function (x) { return x[0] > 0; }).sort(function (a, b) { return b[0] - a[0]; });
+    senales.forEach(function (x) { add(x[1]); });
+    // Por lo que tiene (o le falta)
+    if (!tieneTarjetaDe(p)) add('prod.tarjetas.credito');
+    if (p.hipoteca) add('faq.prestamos.adelantar');
+    if (p.cuentas[0] && p.cuentas[0].saldo < 50) add('faq.inversiones.meta');
+    if (p.inversiones.length) add('faq.inversiones.vence');
+    if (!p.movimientos) ['faq.cuentas.numero', 'faq.cuentas.celular', 'faq.pagos.qr', 'faq.cuentas.abrir'].forEach(add);
+    ['faq.cuentas.transferencia-llega', 'faq.acceso.olvide-clave', 'faq.tarjetas.perdida', 'faq.canales.atencion'].forEach(add);
+    return ids.slice(0, n || 4);
+  }
+  function tieneTarjetaDe(p) { return p.tarjetas.some(function (t) { return t.mvp; }); }
+  var api = { cargar: cargar, lista: lista, set: set, get: get, datos: datos, preguntas: preguntas, secciones: function () { return [['inicio', 'Inicio'], ['cuentas', 'Cuentas'], ['tarjetas', 'Tarjetas'], ['prestamos', 'Préstamos'], ['inversiones', 'Inversiones'], ['seguros', 'Seguros'], ['finanzas', 'Mis finanzas'], ['ayuda', 'Ayuda']]; }, money: money };
   window.DemoPersona = api;
 })();

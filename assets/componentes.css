@@ -119,7 +119,7 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 /* bp-button · 56 alto (lg 64), px 24, radius sm, label-lg/semibold.
    Variantes: primary (amarillo, solo el banco) · secondary (gris) · tertiary
    (sin fondo, subrayado) · accent (azul, acciones de Uku) · destructive. */
-.bp-button, .login-button, .sheet__cta, .pf-cta, .gyro-modal__btn, .sx-btn, .btn, .dw-gal__add {
+.bp-button, .login-button, .sheet__cta, .pf-cta, .gyro-modal__btn, .sx-btn, .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--bp-semantic-spacing-micro-sm);
   box-sizing: border-box; height: var(--bp-button-size); min-height: var(--bp-button-size); padding: 0 var(--bp-button-padding-x);
   border: 0; border-radius: var(--bp-semantic-radius-sm); box-shadow: none;
@@ -135,12 +135,12 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 .bp-button:active, .login-button--primary:active, .sheet__cta:active, .pf-cta:active, .gyro-modal__btn--primary:active, .btn--primary:active, .sx-btn:active { background: var(--bp-interaction-primary-bg--active); transform: none; }
 .bp-button[disabled], .login-button:disabled, .sheet__cta:disabled, .pf-cta:disabled, .btn:disabled { background: var(--bp-theme-color-interaction-primary-bg-disabled); color: var(--bp-theme-color-interaction-primary-fg-disabled); cursor: default; opacity: 1; }
 
-.bp-button--secondary, .login-button--secondary, .login-button:not(.login-button--primary):not(.login-button--tertiary), .gyro-modal__btn--secondary, .btn--secondary, .sx-btn--ghost, .dw-gal__add {
+.bp-button--secondary, .login-button--secondary, .login-button:not(.login-button--primary):not(.login-button--tertiary), .gyro-modal__btn--secondary, .btn--secondary, .sx-btn--ghost {
   background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg);
 }
 .bp-button--secondary:hover, .login-button--secondary:hover, .gyro-modal__btn--secondary:hover, .btn--secondary:hover, .sx-btn--ghost:hover { background: var(--bp-interaction-secondary-bg--hover); }
 .bp-button--secondary:active, .login-button--secondary:active, .gyro-modal__btn--secondary:active, .btn--secondary:active, .sx-btn--ghost:active { background: var(--bp-interaction-secondary-bg--active); }
-.bp-button--secondary[disabled], .login-button--secondary:disabled, .dw-gal__add:disabled { background: var(--bp-theme-color-interaction-secondary-bg-disabled); color: var(--bp-theme-color-interaction-secondary-fg-disabled); }
+.bp-button--secondary[disabled], .login-button--secondary:disabled { background: var(--bp-theme-color-interaction-secondary-bg-disabled); color: var(--bp-theme-color-interaction-secondary-fg-disabled); }
 
 .bp-button--tertiary, .login-button--tertiary, .btn--tertiary {
   background: var(--bp-interaction-tertiary-bg); color: var(--bp-interaction-tertiary-fg);
@@ -316,13 +316,13 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 
 /* bp-avatar (Display=icon) · círculo avatar/bg + avatar/fg; 40 en filas,
    48 (md) en productos; ícono 24. */
-.bp-avatar, .avatar-cat, .avatar-lg, .pf-tx__ic, .sp-row__ic, .dw-gal__ic, .soon__ic, .as-row__ic, .pfm-av, .pfm-groups__ic, .pfm-insight__ic, .prod-hero__ic {
+.bp-avatar, .avatar-cat, .avatar-lg, .pf-tx__ic, .sp-row__ic, .soon__ic, .as-row__ic, .pfm-av, .pfm-groups__ic, .pfm-insight__ic, .prod-hero__ic {
   display: inline-grid; place-items: center; flex: 0 0 var(--ui-ic); box-sizing: border-box;
   width: var(--ui-ic); height: var(--ui-ic); padding: 0; overflow: hidden;
   border: 0; border-radius: var(--bp-semantic-radius-full);
   background: var(--bp-theme-color-avatar-bg); color: var(--bp-theme-color-avatar-fg); font-size: var(--bp-semantic-size-icon-md);
 }
-.bp-avatar .material-symbols-rounded, .avatar-cat .material-symbols-rounded, .avatar-lg .material-symbols-rounded, .pf-tx__ic .material-symbols-rounded, .sp-row__ic .material-symbols-rounded, .dw-gal__ic .material-symbols-rounded, .as-row__ic .material-symbols-rounded, .pfm-groups__ic .material-symbols-rounded { font-size: var(--bp-semantic-size-icon-md); }
+.bp-avatar .material-symbols-rounded, .avatar-cat .material-symbols-rounded, .avatar-lg .material-symbols-rounded, .pf-tx__ic .material-symbols-rounded, .sp-row__ic .material-symbols-rounded, .as-row__ic .material-symbols-rounded, .pfm-groups__ic .material-symbols-rounded { font-size: var(--bp-semantic-size-icon-md); }
 .bp-avatar[data-size="md"], .product-row .avatar-lg, .product-row .avatar-cat { width: var(--bp-semantic-size-avatar-md); height: var(--bp-semantic-size-avatar-md); flex-basis: var(--bp-semantic-size-avatar-md); }
 .bp-avatar[data-size="xs"] { width: var(--bp-semantic-size-avatar-xs); height: var(--bp-semantic-size-avatar-xs); flex-basis: var(--bp-semantic-size-avatar-xs); font-size: var(--bp-semantic-size-icon-xs); }
 .bp-avatar img, .avatar-cat img, .avatar-lg img { width: 100%; height: 100%; object-fit: cover; }

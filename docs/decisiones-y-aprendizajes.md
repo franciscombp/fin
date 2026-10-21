@@ -212,6 +212,10 @@ Cómo queda:
   respuesta; `tools/conocimiento-validar.js` avisa si se desalinean. `tools/conocimiento-probar.js`
   mide el buscador con 190 consultas reales: no bajar del 90 % en primer lugar.
 
+- Caché: el service worker pide la app por red con `no-cache` y borra sus cachés viejas al activarse; la
+  demo no usa service worker, así que el workflow reemplaza `__BUILD__` también en `buscador/` y todo
+  lo que carga (estilos, scripts, `base.json`, `datos.json`) lleva `?v=<commit>`: cada despliegue
+  invalida la caché HTTP del navegador. Un archivo nuevo en la demo debe llevar `?v=__BUILD__`.
 - La demo pública del buscador vive en `buscador/` y se publica con el workflow de Pages (solo
   acepta `main`). Cambia según la persona de `assets/pfm/datos.json`; la agenda de cada persona
   (contactos, exterior, Deuna, domiciliados, recurrentes) la genera `tools/pfm-agenda.py`, no se

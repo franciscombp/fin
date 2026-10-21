@@ -65,6 +65,9 @@ html.sx-open #home-page { filter: none; }
 
 /* Chips de sugerencias: bp-filter-item en blanco sobre la página gris */
 .sx-chips { display: flex; flex-wrap: wrap; gap: var(--bp-semantic-spacing-micro-md); }
+/* El chip elegido (Grabar un atajo, formularios) conserva su estado seleccionado; dentro de una tarjeta blanca van en gris claro */
+.sx .sx-chips .sx-chip[aria-pressed="true"] { background: var(--bp-interaction-selectable-selected-bg); color: var(--bp-interaction-selectable-selected-fg); }
+.sx .sx-kb__body .sx-chips .sx-chip:not([aria-pressed="true"]) { background: var(--bp-interaction-selectable-bg); }
 
 /* Pista mientras se desliza para abrir */
 .sx-hint {

@@ -469,22 +469,32 @@
   function openGallery() { ensureSheet(); paintGallery(); sheet.scrollTop = 0; back.classList.add('open'); sheet.classList.add('open'); fx('open'); }
   function closeGallery() { back.classList.remove('open'); sheet.classList.remove('open'); }
   var WHY = { cuentas: 'Recibe pagos con tu cuenta Deuna', inversion: 'Tu dinero puede rendir 7,25% al año', metas: 'Ahorra para algo que quieras', tarjeta: 'Pide tu tarjeta de crédito', creditos: 'Tienes un crédito preaprobado', preaprobado: 'Simula tu cuota, sujeto a aprobación', deuna: 'Recibe pagos de cualquier banco', pagos: 'Programa tus pagos de servicios' };
+  // Una tarjeta por widget, como la galería de iOS: qué es, un "+" para agregarlo,
+  // la vista previa del tamaño elegido y puntos para cambiar de tamaño
   function galItem(id, have, free, why) {
     var c = CATALOG[id], sz = pick[id] || defSize(id), on = have.indexOf(id) >= 0, fits = U[sz] <= free;
+    var tamanos = ['s', 'm', 'l'].filter(function (x) { return c.sizes.indexOf(x) >= 0; });
+    var accion = on
+      ? '<span class="dw-gal__ok material-symbols-rounded" aria-label="Agregado">check_circle</span>'
+      : '<button class="dw-gal__add' + (fits ? '' : ' dw-gal__add--texto') + '" data-gal-add="' + id + '"' + (fits ? '' : ' disabled') +
+        ' aria-label="' + (fits ? 'Agregar ' : 'No cabe ') + c.name + '">' +
+        (fits ? '<span class="material-symbols-rounded">add</span>' : 'No cabe') + '</button>';
+    var pager = tamanos.length > 1
+      ? '<div class="dw-gal__pager" role="tablist" aria-label="Tamaño">' + tamanos.map(function (x) {
+          return '<button class="dw-gal__dot' + (x === sz ? ' is-on' : '') + '" role="tab" aria-selected="' + (x === sz) + '" aria-label="' + SIZE[x] + '" data-gal-size="' + id + ':' + x + '"></button>';
+        }).join('') + '</div><p class="dw-gal__size">' + SIZE[sz] + '</p>'
+      : '';
     return '<div class="dw-gal">' +
-      '<div class="dw-gal__head"><span class="dw-gal__ic material-symbols-rounded">' + c.icon + '</span><span class="dw-gal__t"><b>' + c.name + '</b><small>' + (why || c.desc) + '</small></span>' +
-        '<button class="dw-gal__add bp-action-button" data-size="sm" data-gal-add="' + id + '"' + (on || !fits ? ' disabled' : '') + '>' + (on ? 'Agregado' : fits ? 'Agregar' : 'No cabe') + '</button></div>' +
-      (c.sizes.length > 1 ? '<div class="dw-gal__sizes" role="tablist">' + ['s', 'm', 'l'].filter(function (x) { return c.sizes.indexOf(x) >= 0; }).map(function (x) {
-        return '<button class="sx-chip" role="tab" data-gal-size="' + id + ':' + x + '" aria-pressed="' + (x === sz) + '">' + SIZE[x] + '</button>';
-      }).join('') + '</div>' : '') +
-      '<div class="dw-gal__prev"><div class="dw-grid dw-grid--prev">' + widgetHTML({ id: id, size: sz }, true) + '</div></div></div>';
+      '<div class="dw-gal__head"><span class="dw-gal__ic material-symbols-rounded">' + c.icon + '</span>' +
+        '<span class="dw-gal__t"><b>' + c.name + '</b><small>' + (why || c.desc) + '</small></span>' + accion + '</div>' +
+      '<div class="dw-gal__prev"><div class="dw-grid dw-grid--prev">' + widgetHTML({ id: id, size: sz }, true) + '</div></div>' + pager + '</div>';
   }
   function paintGallery() {
     var ws = items(), have = ws.map(function (w) { return w.id; }), free = CAP - units(ws);
     var ids = Object.keys(CATALOG).filter(shown);
     var sug = ids.filter(capt), mine = ids.filter(function (id) { return !capt(id); });
     sheet.innerHTML = '<div class="as-sheet__handle"></div><h3>Agregar widget</h3><p>' +
-      (!free ? 'No queda espacio. Quita uno para agregar otro.' : 'Elige un widget y su tamaño. Caben 2 horizontales o 4 cuadrados.') + '</p>' +
+      (!free ? 'No queda espacio. Quita uno para agregar otro.' : 'Caben 2 horizontales o 4 cuadrados.') + '</p>' +
       // Primero lo que ya tienes; después lo que te sugerimos
       (mine.length ? '<p class="as-sheet__label">Tus productos</p>' + mine.map(function (id) { return galItem(id, have, free); }).join('') : '') +
       (sug.length ? '<p class="as-sheet__label">Sugeridos para ti</p>' + sug.map(function (id) { return galItem(id, have, free, WHY[id]); }).join('') : '');
