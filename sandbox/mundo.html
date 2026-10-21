@@ -24,6 +24,8 @@
 <body>
   <div class="sx open">
     <div class="sx-back"><div class="uk-scene is-framed"><div class="b3d" id="b3d"></div></div></div>
+  <!-- Volver al hub: el botón redondo de la app, arriba a la izquierda -->
+  <button type="button" class="pf-round" data-href="./" aria-label="Volver al sandbox" style="position:fixed; top:calc(6px + env(safe-area-inset-top, 0px)); left:16px; z-index:499"><span class="material-symbols-rounded">arrow_back</span></button>
   <!-- La píldora flotante del buscador, siempre visible, abre el panel de cambios -->
   <button type="button" class="sx-hint" id="abrir" style="opacity:1; transform:translate(-50%, 0); pointer-events:auto"><span class="material-symbols-rounded">tune</span><span>Cambios</span></button>
   <div class="as-sheet-back" id="hoja-back"></div>
