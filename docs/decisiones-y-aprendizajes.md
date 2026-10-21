@@ -183,6 +183,10 @@ Un solo control arriba a la izquierda y, cuando la pantalla tiene nombre, el tí
   demo no usa service worker, así que el workflow reemplaza `__BUILD__` también en `buscador/` y todo
   lo que carga (estilos, scripts, `base.json`, `datos.json`) lleva `?v=<commit>`: cada despliegue
   invalida la caché HTTP del navegador. Un archivo nuevo en la demo debe llevar `?v=__BUILD__`.
+- `sandbox/` es el banco de pruebas público (hub, el mundo 3D de Uku con sus recomendaciones, animaciones y
+  háptica en cámara lenta, y el explorador de la base de conocimiento, la base de personas y el repo).
+  Comparte la persona con `buscador/` (`kbdemo_usuario`) y usa solo clases de la app; `pfm.js` expone
+  `load` y `setPersona` para correr sin la pantalla de Mis finanzas.
 - La demo pública del buscador vive en `buscador/` y se publica con el workflow de Pages (solo
   acepta `main`). Cambia según la persona de `assets/pfm/datos.json`; la agenda de cada persona
   (contactos, exterior, Deuna, domiciliados, recurrentes) la genera `tools/pfm-agenda.py`, no se

@@ -181,7 +181,8 @@
     h += sec('Sus datos', row('data-ver="contactos"', 'group', 'Contactos', CONTACTOS.length ? CONTACTOS.length + ' personas · ' + CONTACTOS.filter(function (c) { return c.favorito; }).length + ' favoritos · ' + CONTACTOS.filter(function (c) { return c.exterior; }).length + ' en el exterior' : 'Ninguno todavía') +
       row('data-ver="servicios"', 'receipt_long', 'Servicios', persona.servicios.filter(function (x) { return x.contrato; }).length ? persona.domiciliados.length + ' domiciliados · ' + persona.recurrentes.length + ' recurrentes' : 'Ninguno todavía') +
       row('data-ver="productos"', 'account_balance', 'Productos', persona.cuentas.length + (persona.cuentas.length === 1 ? ' cuenta' : ' cuentas') + ' · ' + persona.tarjetas.length + (persona.tarjetas.length === 1 ? ' tarjeta' : ' tarjetas') + ' · ' + (persona.prestamos.length + (persona.hipoteca ? 1 : 0)) + ' préstamos · ' + persona.inversiones.length + ' inversiones') +
-      row('data-catalogo', 'apps', 'Todas las acciones', K.lista('accion').length + ' acciones de la banca móvil, por tema'));
+      row('data-catalogo', 'apps', 'Todas las acciones', K.lista('accion').length + ' acciones de la banca móvil, por tema') +
+      row('data-ir="../sandbox/"', 'science', 'Sandbox de pruebas', 'El mundo de Uku, animaciones, bases y repositorio'));
     h += sec('Abierto desde', '<div class="sx-chips">' + P.secciones().map(function (x) { return chip('data-seccion="' + x[0] + '"', x[1], x[0] === seccion()); }).join('') + '</div>') +
       sec('Frases para probar', '<div class="sx-chips">' + EJ.map(function (e) { return chip('data-q="' + esc(e) + '"', e); }).join('') + '</div>');
     h += nota('Versión ' + esc(BUILD.indexOf('__') === 0 ? 'de desarrollo' : BUILD) + ' · cada despliegue renueva scripts, estilos y datos; si ves algo viejo, recarga.');
@@ -399,6 +400,7 @@
   document.addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b) return;
     var d = b.dataset;
+    if (d.ir) { location.href = d.ir; return; }
     if (d.persona) { P.set(d.persona); aplicarPersona(); out.innerHTML = ajustes(); aviso('Ahora eres ' + persona.primerNombre); return; }
     if (d.ver) { out.innerHTML = verLista(d.ver); out.scrollTop = 0; return; }
     if (d.seccion) { setSeccion(d.seccion); out.innerHTML = ajustes(); aviso('Buscador abierto desde ' + nombreSeccion(d.seccion)); return; }
