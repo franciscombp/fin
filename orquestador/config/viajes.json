@@ -1,0 +1,32 @@
+{
+  "_nota": "Tarifas de referencia en USD, desde Quito o Guayaquil. vuelo: ida y vuelta por persona (o pasaje de bus). hotel: por habitación y noche (2 personas por habitación). comida, transporte: por persona y día. paseos: por persona en todo el viaje. ingreso: tasas por persona (parques, migración). internacional: sugiere avisar el viaje a la tarjeta.",
+  "imprevistos": 0.1,
+  "redondeo": 10,
+  "colchonMeses": 1,
+  "plazos": [3, 6, 9],
+  "duraciones": [
+    { "id": "d3p1", "texto": "3 días · solo yo", "dias": 3, "personas": 1 },
+    { "id": "d5p2", "texto": "5 días · en pareja", "dias": 5, "personas": 2 },
+    { "id": "d7p4", "texto": "7 días · en familia (4)", "dias": 7, "personas": 4 }
+  ],
+  "destinos": [
+    { "id": "galapagos", "nombre": "Galápagos", "claves": ["galapagos", "santa cruz", "san cristobal", "isabela"], "transporte": "Vuelos", "vuelo": 450, "hotel": 90, "comida": 35, "paseos": 220, "ingreso": 50, "ingresoTexto": "Ingreso al parque y tarjeta de tránsito", "transporteLocal": 10, "internacional": false },
+    { "id": "cusco", "nombre": "Cusco y Machu Picchu", "claves": ["cusco", "cuzco", "machu picchu", "peru", "perú"], "transporte": "Vuelos", "vuelo": 420, "hotel": 60, "comida": 25, "paseos": 260, "ingreso": 0, "transporteLocal": 8, "internacional": true },
+    { "id": "cartagena", "nombre": "Cartagena", "claves": ["cartagena", "colombia"], "transporte": "Vuelos", "vuelo": 380, "hotel": 80, "comida": 30, "paseos": 120, "ingreso": 0, "transporteLocal": 10, "internacional": true },
+    { "id": "miami", "nombre": "Miami", "claves": ["miami", "estados unidos", "florida", "orlando"], "transporte": "Vuelos", "vuelo": 520, "hotel": 140, "comida": 45, "paseos": 150, "ingreso": 0, "transporteLocal": 25, "internacional": true },
+    { "id": "montanita", "nombre": "Montañita", "claves": ["montanita", "montañita", "playa", "salinas", "olon", "olón"], "transporte": "Pasajes de bus", "vuelo": 30, "hotel": 40, "comida": 20, "paseos": 40, "ingreso": 0, "transporteLocal": 5, "internacional": false },
+    { "id": "cuenca", "nombre": "Cuenca", "claves": ["cuenca"], "transporte": "Pasajes de bus", "vuelo": 25, "hotel": 45, "comida": 20, "paseos": 30, "ingreso": 0, "transporteLocal": 6, "internacional": false },
+    { "id": "banos", "nombre": "Baños de Agua Santa", "claves": ["banos", "baños"], "transporte": "Pasajes de bus", "vuelo": 15, "hotel": 35, "comida": 18, "paseos": 60, "ingreso": 0, "transporteLocal": 5, "internacional": false }
+  ],
+  "ritmoDemo": { "comida": 1.25, "paseos": 0.9, "movilidad": 1 },
+  "gastosDemo": [
+    { "cat": "comida", "texto": "Almuerzo en el puerto", "monto": 28 },
+    { "cat": "paseos", "texto": "Tour de snorkel", "monto": 140 },
+    { "cat": "transporte", "texto": "Taxi al hotel", "monto": 12 },
+    { "cat": "comida", "texto": "Cena con mariscos", "monto": 52 },
+    { "cat": "paseos", "texto": "Entrada a la playa y equipo", "monto": 35 },
+    { "cat": "comida", "texto": "Café y helados", "monto": 14 },
+    { "cat": "transporte", "texto": "Lancha entre islas", "monto": 60 },
+    { "cat": "comida", "texto": "Cena en el malecón", "monto": 46 }
+  ]
+}

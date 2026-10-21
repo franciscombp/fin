@@ -138,6 +138,9 @@
     view.addEventListener('click', onClick);
     gestos();
     host.classList.add('is-fresh'); setTimeout(function () { host.classList.remove('is-fresh'); }, 1500); // los accesos solo entran animados la primera vez
+    // Lo que el orquestador tiene en marcha aparece en el globo y en Mis finanzas
+    document.addEventListener('orq:sugerencias', function () { if (!msgs.length) { pintarGlobo(); pintarChips(); } });
+    if (window.Orquestador) Orquestador.refrescar();
     document.addEventListener('pfm:change', function () { if (pend) pend.cambio = true; if (!msgs.length) pintar(); }); // el índice se queda: al saltar una propuesta, el globo sigue con la siguiente
     pintar();
   }
@@ -224,10 +227,14 @@
      para dejarla para después y «Siguiente» para pasar; la lista se renueva cuando haces o saltas algo. */
   var QUIET = 'uk-quiet', globoOff = false;
   function quiet() { try { return localStorage.getItem(QUIET) === '1'; } catch (e) { return false; } }
+  // Ocultar una sugerencia del orquestador (p. ej. el viaje en marcha) desde el globo del inicio
+  function orqOculto(id) { try { return (JSON.parse(localStorage.getItem('uk-orq-oculto') || '{}'))[Persona.get() + ':' + id]; } catch (e) { return false; } }
+  function orqOcultar(id) { try { var o = JSON.parse(localStorage.getItem('uk-orq-oculto') || '{}'); o[Persona.get() + ':' + id] = 1; localStorage.setItem('uk-orq-oculto', JSON.stringify(o)); } catch (e) {} }
   function propuestas() {
     if (quiet()) return [];
     // Solo los consejos que proponen algo que hacer; los hallazgos sueltos y las señales del mundo se cuentan en Mis finanzas
-    return consejos().filter(function (x) { return x.act; }).map(function (x) { return { id: x.id, tag: x.tag, t: x.di || x.t, act: true, k: /^app:/.test(x.act || '') ? 'act:' + x.act.slice(4) : x.act ? 'pfm:' + x.act : 'prop:' + x.id, l: x.actl || 'Cuéntame', luego: 'pfm:luego:' + x.id, kind: x.kind }; });
+    var O = window.Orquestador ? Orquestador.sugerencias().filter(function (x) { return !orqOculto(x.id); }).map(function (x) { return { id: 'orq:' + x.id, tag: x.etiqueta, t: x.texto, act: true, k: 'orq:' + x.accion, l: x.accionTexto, kind: 'info' }; }) : [];
+    return O.concat(consejos().filter(function (x) { return x.act; }).map(function (x) { return { id: x.id, tag: x.tag, t: x.di || x.t, act: true, k: /^app:/.test(x.act || '') ? 'act:' + x.act.slice(4) : x.act ? 'pfm:' + x.act : 'prop:' + x.id, l: x.actl || 'Cuéntame', luego: 'pfm:luego:' + x.id, kind: x.kind }; }));
   }
   function pintarGlobo() {
     if (onbActivo) return; // mientras Uku se presenta, el globo muestra sus pasos
@@ -305,7 +312,8 @@
   // Los chips de una sugerencia: su acción (o «Cuéntame más») y algo relacionado con ella
   function chipsDe(x, P) {
     var s = resumen(), gasta = s && s.gast > 0, id = x.id, L = [x.act ? { k: x.k, t: x.l } : { k: 'prop:' + id, t: 'Cuéntame más' }], rel = null;
-    if (/^pago:/.test(id)) rel = { k: 'pfm:bills', t: 'Ver todos mis pagos' };
+    if (/^orq:/.test(id)) rel = null; // lo del orquestador trae su propia acción
+    else if (/^pago:/.test(id)) rel = { k: 'pfm:bills', t: 'Ver todos mis pagos' };
     else if (id === 'tarjeta') rel = { k: 'pfm:debt', t: 'Ver mis deudas' };
     else if (id === 'pres') rel = gasta ? { k: 'ask:¿En qué gasto más?', t: '¿En qué gasto más?' } : null;
     else if (/^nuevo:/.test(id)) { var o = P.filter(function (y) { return /^nuevo:/.test(y.id) && y.id !== id; })[0]; rel = o ? { k: o.k, t: o.l } : null; }
@@ -341,6 +349,9 @@
   function recomendaciones() {
     // Lo que dice Uku es el diálogo (conversado, en positivo); la fila de la hoja lleva el nombre de la acción y una línea de por qué
     var A = consejos().map(function (x) { return { id: x.id, tag: x.tag, sub: x.sub, t: x.di || x.t, k: /^app:/.test(x.act || '') ? 'act:' + x.act.slice(4) : x.act ? 'pfm:' + x.act : 'prop:' + x.id, l: x.actl || 'Cuéntame', luego: 'pfm:luego:' + x.id, kind: x.kind, icon: x.icon }; });
+    // Lo que el orquestador tiene en marcha (p. ej. tu viaje) va primero
+    var O = window.Orquestador ? Orquestador.sugerencias().map(function (x) { return { id: 'orq:' + x.id, tag: x.etiqueta, sub: x.detalle, t: x.texto, k: 'orq:' + x.accion, l: x.accionTexto, icon: x.icono }; }) : [];
+    A = O.concat(A);
     var W = window.PFM && PFM.world && resumen() ? PFM.world() : [];
     var S = W.filter(function (x) { return /warn|over|pensativo/.test(x.cls || ''); }).map(function (x) { return { id: 'mundo', tag: x.l, t: x.d, k: 'mundo', l: 'Ver mi mundo', icon: 'park' }; });
     return A.concat(S);
@@ -662,6 +673,16 @@
     var n = norm(q);
     if (agente) return responde();
     if (fotoPend && montoEscrito(q)) return mostrar();
+    // Todo lo que escribes pasa primero por el orquestador (orquestador/LEEME.md); si ninguna de sus habilidades
+    // lo atiende, responde lo de siempre
+    if (window.Orquestador) {
+      mostrar(); // tu mensaje se ve de una
+      return Orquestador.enviar({ texto: q }).then(function (r) { if (r && r.manejado) orqPintar(r); else responderLocal(q, n); }, function () { responderLocal(q, n); });
+    }
+    responderLocal(q, n);
+  }
+  // Lo que todavía responde el front (se puede ir pasando al orquestador como habilidades)
+  function responderLocal(q, n) {
     // Pedir una persona es pedir una persona: sin rodeos
     if (/persona|humano|asesor|agente|ejecutiv/.test(n)) { persona(); return mostrar(); }
     // Su mundo: Uku te cuenta cómo está, en primera persona (sus flores, su bosque y su ánimo son tus finanzas)
@@ -693,6 +714,26 @@
     else if (kb && kb.tipo === 'accion') uku('Te llevo a ' + esc(kb.t.toLowerCase()) + '. ¿Lo hacemos?', [b(kbKey(kb.go), kb.t, kb.icon || 'arrow_forward')].concat(kb.otras.slice(0, 1).map(function (x) { return b('kb:' + x.id, x.t, null, 'is-ask'); })), '', { title: q });
     else return iaCard(q); // lo que no está en reglas ni en la ayuda: Uku busca y, si no, lo mira con IA
     mostrar();
+  }
+  /* Lo que responde el orquestador, dibujado con los bloques de siempre: texto, título, cifra, barras, filas,
+     medidor y una lista de medidores; sus botones vuelven al orquestador (orq:<id>). El front no decide nada. */
+  function orqPintar(r) {
+    (r.mensajes || []).forEach(function (m) {
+      var btns = (m.acciones || []).map(function (a) { return b('orq:' + a.id, a.texto, a.icono, a.estilo === 'pregunta' ? 'is-ask' : ''); });
+      var med = m.medidores ? '<div class="uk-medidores">' + m.medidores.map(function (x) {
+        return '<div class="uk-medidor' + (x.tono ? ' is-' + esc(x.tono) : '') + '"><span>' + esc(x.l) + '</span><b>' + esc(x.d || '') + '</b><i><u style="width:' + Math.max(x.v ? 3 : 0, Math.min(100, x.v / (x.max || 1) * 100)).toFixed(1) + '%"></u></i></div>'; }).join('') + '</div>' : '';
+      uku(esc(m.texto), btns, med, { title: m.titulo, num: m.cifra, bars: m.barras, rows: m.filas, meter: m.medidor ? { v: m.medidor.v, max: m.medidor.max, l: m.medidor.l, cls: m.medidor.tono } : null });
+    });
+    (r.efectos || []).forEach(function (e) {
+      if (e.tipo === 'animo' && b3d) setTimeout(function () { if (b3d) b3d.play(e.valor); }, RM ? 0 : 700);
+      if (e.tipo === 'aviso' && window.PFM && PFM.toast) PFM.toast(e.texto);
+    });
+    mostrar();
+  }
+  function orqAccion(id, l, enChat) {
+    // Desde Mis finanzas (la sugerencia del orquestador), la conversación sigue en el chat
+    if (!enChat) { seccion('uku'); me(l); mostrar(); }
+    return Orquestador.enviar({ accion: id }).then(orqPintar, function () { uku('No pude seguir con eso ahora. Probemos de nuevo en un momento.'); mostrar(); });
   }
   function mundo() {
     var W = PFM.world(), s = resumen(), pend = s && s.n;
@@ -1346,6 +1387,7 @@
     if (enChat) me(l);
     switch (kind) {
       case 'ask': return preguntar(v);
+      case 'orq': fx('tap'); return window.Orquestador && orqAccion(v, l, enChat);
       case 'faq': case 'tut': if (!enChat) me(l); return ayudaEn({ kind: kind, i: +v });
       case 'act': { var a = accion(v); if (!a) return; salir(a.label, true); return window.Buscador && Buscador.run(a); }
       case 'sp': salir(l, !/^(review|agent)$/.test(v)); if (window.Soporte) Soporte.run(v); return pintarChat();
@@ -1378,7 +1420,9 @@
       case 'onb': if (v === 'fin') return onboardingFin(); return onboarding(+v);
       case 'siguiente': fx('tap'); nota = null; if (saludado) gi++; saludado = true; pintarGlobo(); return pintarChips();
       // Ocultar una sugerencia: no vuelve a aparecer (con «Deshacer» en el aviso); el globo pasa a la siguiente o al saludo
-      case 'ocultar': nota = null; if (window.PFM) PFM.key('ocultar:' + v); return;
+      case 'ocultar': nota = null;
+        if (/^orq:/.test(v)) { orqOcultar(v.slice(4)); fx('tap'); if (window.PFM && PFM.toast) PFM.toast('Listo, ya no te la muestro aquí. La sigues en Mis finanzas.'); pintarGlobo(); return pintarChips(); }
+        if (window.PFM) PFM.key('ocultar:' + v); return;
       case 'globo': if (onbActivo) return; fx('tap'); saludado = true; nota = null; return ocultarGlobo();
       case 'leyenda': fx('select'); return explicar(v);
       case 'prop': return propuesta(v);

@@ -231,6 +231,32 @@ Cómo queda:
   alias. Antes de borrar, comprobar que ningún `html`, `js` (también `app.js` en la raíz) ni la demo
   de `buscador/` la usa.
 
+### 5.4 Orquestador de Uku (acuerdo del 21 de octubre)
+
+**Nada de la lógica de las conversaciones va quemada en el front.** Todo lo que escribes en el chat (y cada
+botón de sus respuestas) pasa primero por el orquestador (`orquestador/`, ver su `LEEME.md`): elige la
+habilidad, esta usa herramientas (hoy `finanzas`, que lee los datos de la persona) y responde mensajes con
+un contrato fijo (texto, título, cifra, barras, filas, medidores y acciones). El front
+(`assets/orquestador.js` + `orqPintar` en `uku-app.js`) solo los dibuja con componentes genéricos.
+Destinos, tarifas y reglas viven en `orquestador/config/`.
+
+- Corre igual en un Web Worker (la demo en Pages, sin servidor) y en `server.js` (`POST /api/orquestador`);
+  con `localStorage.setItem('orq-url', …)` la app usa el servidor.
+- El estado de la conversación es opaco para el front: se guarda por persona y se devuelve en cada petición.
+- Si ninguna habilidad atiende el mensaje (`manejado: false`), el front responde como antes. Lo que hoy
+  responde el front (dinero, ayuda, acciones) se puede ir pasando como habilidades.
+- Lo que el orquestador tiene en marcha (p. ej. un viaje) aparece como sugerencia en el globo del inicio y
+  en Mis finanzas.
+- En el buscador, una frase (tres palabras o más) con Enter se le pregunta a Uku; una búsqueda corta abre
+  el primer resultado.
+
+**Demo: planear un viaje** («Quiero viajar a Galápagos» o «Planear un viaje» en el buscador): destino, días,
+personas y fecha → presupuesto del viaje (pasajes, hospedaje, comida, paseos, movilidad e imprevistos) que se
+guarda como presupuesto específico → si no alcanza sin tocar ahorros ni el colchón de un mes, una meta (o se
+actualiza la que ya existe, como la de Andrés); si alcanza, apartar el dinero → con la meta cumplida
+(«Simular: pasan los meses»), el control del viaje: cuánto puedes gastar hoy, cada parte contra su
+presupuesto (ámbar al 80 %) e imprevistos como reserva → un resumen al volver y pasar lo que sobró al ahorro.
+
 ## 6. Buscador
 
 - Sin título ni subtítulo: la hoja es el campo, el micrófono, la cámara y "Cancelar".

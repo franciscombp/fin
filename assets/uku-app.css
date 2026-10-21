@@ -181,7 +181,7 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 .uk-card__data > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 0; border-top: 1px solid var(--uk-line); }
 .uk-card__data > div:first-child { border-top: 0; padding-top: 0; }
 .uk-card__data dt { font: var(--uk-sm); color: var(--uk-muted); }
-.uk-card__data dd { margin: 0; font: var(--uk-body-semibold); color: var(--uk-text); text-align: right; font-variant-numeric: tabular-nums; }
+.uk-card__data dd { margin: 0; font: var(--uk-body-semibold); color: var(--uk-text); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .uk-barras { display: flex; flex-direction: column; gap: 12px; }
 .uk-barra { display: grid; grid-template-columns: 1fr auto; row-gap: 6px; align-items: baseline; }
 .uk-barra span { font: var(--uk-sm); color: var(--uk-text); }
@@ -189,6 +189,16 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 .uk-barra i { grid-column: 1 / -1; display: block; height: 6px; border-radius: 3px; background: var(--uk-navy); }
 .uk-sys { margin: 4px 0; text-align: center; font: var(--uk-caption); color: var(--uk-muted); }
 .uk-av { display: grid; place-items: center; width: 100%; height: 100%; font: var(--uk-caption); font-weight: 700; color: var(--uk-text); }
+/* Lista de medidores (respuestas del orquestador): cada parte con lo usado de su total y su tono */
+.uk-medidores { display: flex; flex-direction: column; gap: 12px; }
+.uk-medidor { display: grid; grid-template-columns: 1fr auto; row-gap: 6px; align-items: baseline; }
+.uk-medidor span { font: var(--uk-sm); color: var(--uk-text); }
+.uk-medidor b { font: var(--uk-sm-semibold); color: var(--uk-muted); font-variant-numeric: tabular-nums; }
+.uk-medidor i { grid-column: 1 / -1; display: block; height: 6px; border-radius: 3px; background: var(--bp-theme-color-data-chart-track, var(--uk-grey)); overflow: hidden; }
+.uk-medidor u { display: block; height: 100%; border-radius: inherit; background: var(--uk-navy); transition: width .4s ease; }
+.uk-medidor.is-ok u { background: var(--bp-theme-color-data-positive, var(--uk-navy)); }
+.uk-medidor.is-warn u, .uk-medidor.is-over u { background: var(--bp-theme-color-status-warning-bg); }
+.uk-medidor.is-warn b, .uk-medidor.is-over b { color: var(--bp-theme-color-status-warning-text, var(--uk-text)); }
 /* «Lo que encontré» (análisis del mes): cada hallazgo en su fila, título y explicación */
 .uk-finds { display: flex; flex-direction: column; }
 .uk-finds__l { margin: 0 0 4px !important; font: var(--uk-caption); color: var(--uk-muted); }
