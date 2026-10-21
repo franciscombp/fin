@@ -176,13 +176,12 @@
   // Ajustes de la demo (bajo el botón de la cabecera): la persona, sus datos y los atajos guardados
   function ajustes() {
     if (!persona) return volver();
-    var h = volver() + '<section class="sx-card"><h3>Persona de la demo</h3><div class="sx-chips">' + P.lista().map(function (u) { return chip('data-persona="' + u.id + '" title="' + esc(u.tipo) + '"', u.nombre.split(' ')[0], u.id === persona.id); }).join('') + '</div></section>' +
+    var h = volver() + sec('', row('data-ir="../sandbox/"', 'science', 'Sandbox de pruebas', 'Volver al panel de laboratorios')) + '<section class="sx-card"><h3>Persona de la demo</h3><div class="sx-chips">' + P.lista().map(function (u) { return chip('data-persona="' + u.id + '" title="' + esc(u.tipo) + '"', u.nombre.split(' ')[0], u.id === persona.id); }).join('') + '</div></section>' +
       nota('<b>' + esc(persona.nombre) + '</b> · ' + esc(persona.tipo) + ' · ' + esc(persona.ciudad) + '<br>' + (persona.movimientos ? persona.movimientos + ' movimientos' : 'Sin movimientos todavía') + (persona.deuna && persona.deuna.mi_numero ? ' · Deuna ' + esc(persona.deuna.mi_numero) : '') + (persona.necesita ? '<br>Lo que necesita: ' + esc(persona.necesita.toLowerCase()) : '') + '.');
     h += sec('Sus datos', row('data-ver="contactos"', 'group', 'Contactos', CONTACTOS.length ? CONTACTOS.length + ' personas · ' + CONTACTOS.filter(function (c) { return c.favorito; }).length + ' favoritos · ' + CONTACTOS.filter(function (c) { return c.exterior; }).length + ' en el exterior' : 'Ninguno todavía') +
       row('data-ver="servicios"', 'receipt_long', 'Servicios', persona.servicios.filter(function (x) { return x.contrato; }).length ? persona.domiciliados.length + ' domiciliados · ' + persona.recurrentes.length + ' recurrentes' : 'Ninguno todavía') +
       row('data-ver="productos"', 'account_balance', 'Productos', persona.cuentas.length + (persona.cuentas.length === 1 ? ' cuenta' : ' cuentas') + ' · ' + persona.tarjetas.length + (persona.tarjetas.length === 1 ? ' tarjeta' : ' tarjetas') + ' · ' + (persona.prestamos.length + (persona.hipoteca ? 1 : 0)) + ' préstamos · ' + persona.inversiones.length + ' inversiones') +
-      row('data-catalogo', 'apps', 'Todas las acciones', K.lista('accion').length + ' acciones de la banca móvil, por tema') +
-      row('data-ir="../sandbox/"', 'science', 'Sandbox de pruebas', 'El mundo de Uku, animaciones, bases y repositorio'));
+      row('data-catalogo', 'apps', 'Todas las acciones', K.lista('accion').length + ' acciones de la banca móvil, por tema'));
     h += sec('Abierto desde', '<div class="sx-chips">' + P.secciones().map(function (x) { return chip('data-seccion="' + x[0] + '"', x[1], x[0] === seccion()); }).join('') + '</div>') +
       sec('Frases para probar', '<div class="sx-chips">' + EJ.map(function (e) { return chip('data-q="' + esc(e) + '"', e); }).join('') + '</div>');
     h += nota('Versión ' + esc(BUILD.indexOf('__') === 0 ? 'de desarrollo' : BUILD) + ' · cada despliegue renueva scripts, estilos y datos; si ves algo viejo, recarga.');

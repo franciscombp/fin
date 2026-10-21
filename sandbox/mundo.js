@@ -30,7 +30,6 @@
       h += S.nota('Las recomendaciones salen de <b>assets/pfm.js › consejos()</b>: pagos cercanos, consumos por ordenar, el mínimo de la tarjeta, el presupuesto, el colchón de ahorro, mesadas repetidas y hallazgos del mes. El bosque usa <b>salud()</b>, las flores <b>flores()</b> y el ánimo <b>animo()</b>.');
     } else h += S.nota('Cargando los movimientos de la persona…');
     h += S.versionRow();
-    h += S.sec('', S.link('./', 'arrow_back', 'Volver al sandbox', ''));
     out.innerHTML = h;
     document.querySelector('#hoja h3').textContent = 'El mundo de Uku' + (manual.score != null || manual.bloom != null || manual.mood ? ' · forzado' : s ? ' · con los datos de ' + s.nombre : '');
     montar();
@@ -52,7 +51,13 @@
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-persona],[data-score],[data-bloom],[data-mood],[data-pose]'); if (!b) return;
     var d = b.dataset;
-    if (d.persona) { DemoPersona.set(d.persona); S.setPersona(d.persona); if (window.PFM && PFM.setPersona) PFM.setPersona(d.persona); manual = { score: null, bloom: null, mood: null }; pintar(); aplicar(); S.aviso('Ahora eres ' + DemoPersona.datos().primerNombre); return; }
+    if (d.persona) {
+      DemoPersona.set(d.persona); S.setPersona(d.persona); if (window.PFM && PFM.setPersona) PFM.setPersona(d.persona);
+      manual = { score: null, bloom: null, mood: null }; pintar(); aplicar(); S.cerrarHoja();
+      if (m3) { m3.play('wave'); setTimeout(function () { m3.setAmbient('walk'); }, 2200); }
+      var r = resumen(); S.aviso('Ahora eres ' + DemoPersona.datos().primerNombre + (r ? ' · bosque ' + r.score + ' · flores ' + r.bloom + ' % · ' + r.moodL.toLowerCase() : ''));
+      return;
+    }
     if (d.score != null) manual.score = d.score === '' ? null : +d.score;
     if (d.bloom != null) manual.bloom = d.bloom === '' ? null : +d.bloom;
     if (d.mood != null) manual.mood = d.mood || null;

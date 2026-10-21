@@ -47,7 +47,7 @@
       S.sec('Háptica y sonido · haptics.js', '<div class="sx-chips">' + S.chip('data-haptica', 'Vibración', H && H.isEnabled && H.isEnabled()) + S.chip('data-sonido', 'Sonido', sonido) + '</div>' +
         FX.map(function (x) { return S.row('data-fx="' + x[0] + '"', 'vibration', esc(x[1]), esc(x[2] + ' · Haptics.fx(\'' + x[0] + '\')'), 'Probar'); }).join('')) +
       S.nota('La vibración solo existe en Android (navigator.vibrate); en iOS no hay API y solo suena. El sonido se sintetiza con WebAudio y se desbloquea con un gesto. Con «Reducir movimiento» activado, la app quita las animaciones.') +
-      S.sec('', S.link('./', 'arrow_back', 'Volver al sandbox', '')) + S.versionRow();
+      S.versionRow();
   }
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-fx],[data-vel],[data-play],[data-sig],[data-ver],[data-haptica],[data-sonido],[data-demo-chip]'); if (!b) return;

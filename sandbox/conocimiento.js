@@ -100,7 +100,10 @@
   });
   q.addEventListener('input', function () { if (tab === 'resumen' || tab === 'repo' || tab === 'personas') tab = 'buscar'; pintar(); });
   document.getElementById('form').addEventListener('submit', function (e) { e.preventDefault(); });
-  document.getElementById('cancel').addEventListener('click', function () { q.value = ''; pintar(); });
+  var cancel = document.getElementById('cancel'), cancelIc = cancel.querySelector('span');
+  function cabecera() { var t = !!q.value.trim(); cancelIc.textContent = t ? 'close' : 'arrow_back'; cancel.setAttribute('aria-label', t ? 'Limpiar' : 'Volver al sandbox'); }
+  cancel.addEventListener('click', function () { if (!q.value.trim()) { location.href = './'; return; } q.value = ''; cabecera(); pintar(); });
+  q.addEventListener('input', cabecera);
   pintar();
   Promise.all([K.listo(), P.cargar('../assets/pfm/datos.json?v=' + S.BUILD).catch(function () { return null; })]).then(function () { P.set(S.persona()); pintar(); });
 })();
