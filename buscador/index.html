@@ -43,7 +43,8 @@
     .row.static { cursor: default; }
     .row .main { flex: 1; min-width: 0; }
     .row .ic { flex: 0 0 40px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 999px; background: var(--bp-theme-color-avatar-bg); color: var(--bp-theme-color-avatar-fg); font-family: 'Material Symbols Rounded'; font-size: 22px; font-weight: normal; }
-    .row .acts { display: flex; gap: 8px; flex: 0 0 auto; }
+    .row.static { flex-wrap: wrap; }
+    .row .acts { display: flex; gap: 8px; flex: 1 0 100%; padding-left: 52px; }
     .chip--on { background: var(--bp-theme-color-text-primary); border-color: transparent; color: var(--bp-theme-color-surface-container-default); }
     .fld { display: block; margin: var(--bp-semantic-spacing-micro-lg) 0 0; }
     .fld > span { display: block; margin-bottom: 4px; color: var(--bp-theme-color-text-helper); font-size: 14px; line-height: 20px; }
