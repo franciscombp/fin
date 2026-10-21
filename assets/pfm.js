@@ -132,7 +132,7 @@
     var s = {}; rows().forEach(function (r) { s[r.mes] = 1; });
     return Object.keys(s).sort().reverse();
   }
-  function curMes() { return meses()[0]; } // el mes en curso (ya no hay pestañas de meses)
+  function curMes() { return meses()[0] || HOY.slice(0, 7); } // el mes en curso (ya no hay pestañas de meses); sin movimientos, el mes de hoy
 
   /* ---------- Preguntas de Uku (Por revisar) ----------
      Una pregunta por persona y sentido. Las opciones dependen de lo que el

@@ -54,6 +54,19 @@
     .back { margin: 0 0 var(--bp-semantic-spacing-micro-lg); padding: 8px 0; border: 0; background: none; color: var(--bp-theme-color-text-interactive); font: inherit; cursor: pointer; }
     .ok .check { display: grid; place-items: center; width: 56px; height: 56px; margin-bottom: 12px; border-radius: 999px; background: var(--bp-theme-color-interaction-primary-bg); color: var(--bp-theme-color-interaction-primary-fg); font-size: 28px; font-weight: 700; }
     .answer .chips { margin-top: var(--bp-semantic-spacing-micro-lg); }
+    .tag--alta { background: color-mix(in srgb, #2e7d32 15%, transparent); color: #2e7d32; }
+    .tag--media { background: color-mix(in srgb, var(--bp-theme-color-interaction-primary-bg) 45%, transparent); color: var(--bp-theme-color-text-primary); }
+    .tag--baja { background: color-mix(in srgb, #c62828 12%, transparent); color: #c62828; }
+    .drop { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: var(--bp-semantic-spacing-micro-lg) 0; padding: 24px 16px; border: 2px dashed var(--bp-theme-color-border-default); border-radius: var(--bp-semantic-radius-md); text-align: center; cursor: pointer; }
+    .drop.over { border-color: var(--bp-theme-color-interaction-primary-bg); background: color-mix(in srgb, var(--bp-theme-color-interaction-primary-bg) 12%, transparent); }
+    .drop .ic { font-family: 'Material Symbols Rounded'; font-size: 36px; color: var(--bp-theme-color-icon-secondary); }
+    .drop small { color: var(--bp-theme-color-text-helper); font-size: 13px; line-height: 18px; }
+    .meter { height: 8px; margin: 12px 0; border-radius: 4px; background: var(--bp-theme-color-surface-page-alt); overflow: hidden; }
+    .meter i { display: block; height: 100%; background: var(--bp-theme-color-interaction-primary-bg); transition: width .3s; }
+    .texto { margin: 12px 0 0; padding: 12px; max-height: 240px; overflow: auto; border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-surface-page-alt); font-size: 12px; line-height: 16px; white-space: pre-wrap; }
+    .answer .label { margin-left: 0; }
+    .answer .row { padding-left: 0; padding-right: 0; }
+    .star { color: var(--bp-theme-color-interaction-primary-bg); }
     .empty { padding: var(--bp-layout-card-padding); color: var(--bp-theme-color-text-helper); }
     .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); padding: 10px 16px; border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-text-primary); color: var(--bp-theme-color-surface-container-default); font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; }
     .toast.on { opacity: 1; }
@@ -62,7 +75,10 @@
 <body>
   <main>
     <h1>Buscador</h1>
-    <p class="sub">Demo sobre la base de conocimiento: escribe lo que quieres hacer («transferir 20 a juan», «pagar la luz»), un contacto, una acción o una pregunta. Los flujos son simulados.</p>
+    <p class="sub">Demo sobre la base de conocimiento y la base de personas: escribe lo que quieres hacer («transferir 20 a juan», «pagar la luz»), un contacto, una acción o una pregunta; o lee una factura con una foto. Todo cambia según la persona. Los flujos son simulados.</p>
+    <p class="label" style="margin-top:0">Persona de la demo</p>
+    <div class="chips" id="personas"></div>
+    <p class="sub" id="saludo"></p>
     <label class="field"><input id="q" type="search" placeholder="¿Qué necesitas?" autocomplete="off" autofocus aria-label="Buscar"><button type="button" class="mic" id="mic" aria-label="Buscar por voz"><span class="ic">mic</span></button></label>
     <div class="chips" id="ejemplos"></div>
     <div id="out"></div>
@@ -71,6 +87,8 @@
   <div class="toast" id="toast" role="status"></div>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap">
   <script src="../assets/conocimiento.js"></script>
+  <script src="../buscador/persona.js"></script>
+  <script src="../buscador/lector.js"></script>
   <script src="../buscador/demo.js"></script>
 </body>
 </html>

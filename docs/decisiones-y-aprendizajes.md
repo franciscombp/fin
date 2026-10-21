@@ -144,6 +144,12 @@ Soporte (`ayudaHTML` en `assets/uku-app.js`), con las clases `.pfm-hub__*` y `.u
   respuesta; `tools/conocimiento-validar.js` avisa si se desalinean. `tools/conocimiento-probar.js`
   mide el buscador con 190 consultas reales: no bajar del 90 % en primer lugar.
 
+- La demo pública del buscador vive en `buscador/` y se publica con el workflow de Pages (solo
+  acepta `main`). Cambia según la persona de `assets/pfm/datos.json`; la agenda de cada persona
+  (contactos, exterior, Deuna, domiciliados, recurrentes) la genera `tools/pfm-agenda.py`, no se
+  edita a mano. `camila` es la persona nueva sin movimientos: cualquier pantalla debe aguantar una
+  persona sin historial (en `pfm.js`, `curMes()` cae al mes de hoy).
+
 ## 7. Escáner de Pagar con QR
 
 - Visor redondeado de 16 px con marco amarillo.

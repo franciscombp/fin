@@ -71,3 +71,28 @@ app), `tab:<pestaña>`, `card:<tarjeta>`, `pfm`, `review`, `handoff`, `sol`, `se
   Con `-v` muestra cada caso; con un texto (`node tools/conocimiento-probar.js "cuanto debo"`)
   explica la puntuación de cada resultado. Al agregar entradas, agregar también sus consultas.
 - `assets/conocimiento.js` y `assets/conocimiento/base.json` están en el precache de `sw.js`.
+
+## La demo pública (`buscador/`)
+
+Publicada en Pages (`https://franciscombp.github.io/fin/buscador/`). Es un POC con los tokens del
+design system y sin componentes de la app.
+
+- `buscador/demo.js`: la frase hecha acción («transferir 20 a kevin», «pagar la luz», «recargar 5 a
+  mamá», «enviar 100 a andrea»), atajos, contactos, acciones directas al flujo (sin pasar por las
+  preguntas), catálogo de acciones, flujos simulados (formulario, Confirmar, comprobante) y dictado
+  por voz.
+- `buscador/persona.js`: la persona de la demo sale de la base de usuarios (`assets/pfm/datos.json`):
+  cuentas y tarjetas en los flujos, contactos y servicios, los atajos que le convienen, «Para ti» y
+  los valores de los `{marcadores}` de la base. Si un producto no existe (Camila no tiene tarjeta),
+  la respuesta lo dice en vez de usar los valores de la demo.
+- `assets/pfm/datos.json › agenda` (lo genera `tools/pfm-agenda.py` desde los movimientos): por
+  persona, contactos con favoritos, cuenta, cédula y celular Deuna; beneficiarios en el exterior
+  (país, banco, SWIFT, IBAN); números para recargar; servicios domiciliados (débito automático con
+  día y tope) y pagos recurrentes; accesos favoritos. Camila es la persona nueva: solo una cuenta
+  transaccional, sin movimientos ni agenda.
+- `buscador/lector.js`: lee facturas y documentos. Imagen → canvas mejorado (escala, gris,
+  contraste) → Tesseract en español desde cdnjs; PDF con texto → pdf.js sin OCR; PDF escaneado →
+  OCR por página. `analizar(texto)` saca empresa (catálogo de emisores ecuatorianos), contrato o
+  cuenta, cédula, RUC, placa, valor a pagar (el monto más cercano a «total a pagar»), vencimiento,
+  periodo y tipo (factura, comprobante, estado de cuenta), con confianza por campo. Corre en Node:
+  `node -e "const L=require('./buscador/lector.js'); console.log(L.analizar(texto))"`.

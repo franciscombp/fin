@@ -20,6 +20,8 @@ PERFIL = {
               'inversiones': [('Depósito a plazo 24 meses', 6000.00, '4409')]},
     'luis': {'ahorro_extra': ('Ahorro flexible', 310.00, '8802'), 'metas': [('Pagar el celular', 120.00, 240.00)],
              'inversiones': []},
+    # Cliente nueva: solo su cuenta transaccional, sin movimientos (la cuenta se agrega abajo, no sale de movimientos)
+    'camila': {'metas': [], 'inversiones': [], 'cuenta_nueva': ('Cuenta transaccional', '3350')},
 }
 
 def mask(n): return '••' + n[-4:]
@@ -46,6 +48,9 @@ for u in d['usuarios']:
         else:
             lista.append({'tipo': 'ahorro', 'nombre': nombre_c, 'numero': num, 'saldo': round(ultimo.get(f, 0.0), 2), 'fuente': f})
     p = PERFIL[k]
+    if not lista and p.get('cuenta_nueva'):
+        nombre_n, num_n = p['cuenta_nueva']
+        lista.append({'tipo': 'transaccional', 'nombre': nombre_n, 'numero': num_n, 'saldo': 0.0, 'fuente': nombre_n + ' Pichibank ···' + num_n})
     # Ahorro flexible adicional: quien tiene poco en la transaccional guarda en otra cuenta
     if p.get('ahorro_extra'):
         nombre_e, saldo_e, num_e = p['ahorro_extra']
