@@ -36,8 +36,7 @@
   color: var(--cx-ink); text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .15s ease, box-shadow .2s ease;
 }
 .dw--s { grid-column: span 1; grid-row: span 1; }
-.dw--m { grid-column: span 2; grid-row: span 1; }
-.dw--l { grid-column: span 2; grid-row: span 2; }
+
 .dw:active { transform: scale(.985); }
 .dw p { margin: 0; }
 .dw-h { display: flex; align-items: center; gap: 6px; min-height: 20px; margin-bottom: 8px !important; font: var(--ui-body-sm-semibold, 600 13px/18px sans-serif); color: var(--cx-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -105,12 +104,10 @@
 .dw-gallery .dw-gal__prev { background: color-mix(in srgb, var(--cx-ink) 5%, var(--cx-fill)); }
 .dw-gal { margin: 0 0 12px; padding: 14px; border-radius: var(--bp-semantic-radius-lg, 20px); background: var(--cx-surface); }
 .dw-gal__head { display: flex; align-items: center; gap: 12px; }
-.dw-gal__ic { width: 40px; height: 40px; flex: 0 0 40px; border-radius: 50%; display: grid; place-items: center; background: var(--bp-interaction-tertiary-bg); color: var(--bp-interaction-tertiary-fg); font-size: 22px; }
 .dw-gal__t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .dw-gal__t b { font: var(--ui-body-md-semibold, 600 16px/22px sans-serif); }
 .dw-gal__t small { font: var(--ui-body-sm-medium, 500 13px/18px sans-serif); color: var(--cx-muted); }
 .dw-gal__add { height: 36px; padding: 0 14px; border: 0; border-radius: var(--bp-semantic-radius-sm, 8px); font: var(--ui-label-md, 600 14px/1 sans-serif); cursor: pointer; white-space: nowrap; } /* secundario: el estilo lo da bp-action-button */
-.dw-gal__add:disabled { background: var(--bp-interaction-tertiary-bg); color: var(--cx-muted); cursor: default; }
 .dw-gal__sizes { display: flex; gap: 8px; margin-top: 12px; }
 .dw-gal__prev { margin-top: 12px; padding: 12px; border-radius: 16px; background: var(--cx-fill); container-type: inline-size; pointer-events: none; }
 .dw-grid--prev .dw { box-shadow: 0 1px 2px rgb(0 0 0 / .06); }
@@ -121,11 +118,6 @@ html.pb-masked .dw-s__v { display: none; }
 html.pb-masked .dw-s__m { display: inline; }
 
 /* Uñeros (agarraderas) iguales en todas las hojas: 36×5, centrados */
-.sheet__handle, .as-sheet__handle {
-  width: 36px !important; height: 5px !important; border-radius: 99px !important; margin: 0 auto 20px !important;
-  background: color-mix(in srgb, var(--cx-ink) 20%, transparent) !important;
-}
-.sheet, .as-sheet { padding-top: 8px; }
 /* Mantener presionado entra en edición: sin selección de texto ni menú del sistema */
 .dw-grid .dw { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 
@@ -194,6 +186,5 @@ button.dw-ghost__link { padding: 0; border: 0; background: none; cursor: pointer
 .dw--s.dw--ghost .dw-ghost__fig small, .dw--s.dw--ghost .dw-ghost__fig em { display: none; }
 .dw--s.dw--ghost .dw-ghost__link { font-size: 13px; }
 .dw--wsug .dw-ghost__fig { margin-left: auto; opacity: .85; }
-.dw-grid .dw--m.dw--wsug { padding-right: 44px; }
-.dw-grid .dw--m.dw--wsug .dw-ghost__ic { display: none; }
+
 .dw-ghost__acts button { white-space: nowrap; }

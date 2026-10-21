@@ -50,13 +50,6 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0">
-    <!-- Sólo para el tema Y2K (POC, ver Preferencias en Perfil): dos
-         tipografías de afiche en vez de una — Anton (condensada, se lee
-         bien incluso chica: tabs/nav/listas) y Bungee (más extravagante,
-         reservada al monto grande y los títulos hero). font-display:swap,
-         igual que Material Symbols arriba — si no cargan, el tema igual
-         funciona con el fallback del sistema. -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bungee&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap">
 
     <!-- Revela los íconos (ocultos por CSS) sólo cuando la fuente real está
@@ -132,14 +125,16 @@
 
     <title>Pichibank app</title>
     <style>
+    /* Capa "base": estilos originales de la app. Todo lo que no esté en una capa
+       (componentes.css, sistema.css y las hojas por pantalla) gana sobre esto. */
+    @layer base {
         /* Tipografía: Roboto (Google Fonts, abierta) reemplaza a Prelo, que es
            comercial. Pesos reales 400/500/600/700, sin negrita sintética. */
 
         /* Los nombres locales de abajo son alias de los tokens oficiales del
            Design System (assets/tokens.css, export de Figma "Components 4").
-           Los componentes siguen leyendo estos alias, así el tema Y2K puede
-           reasignarlos y el resto de la app no cambia. Fallback = valor del
-           token, por si tokens.css no cargara. */
+           Los componentes siguen leyendo estos alias; el valor de respaldo es
+           el del token, por si tokens.css no cargara. */
         :root {
             --bp-surface-page: var(--bp-theme-color-surface-page-alt, #f5f5f5);
             --bp-surface-container: var(--bp-theme-color-surface-container-default, #ffffff);
@@ -3461,7 +3456,6 @@
            ALINEACIÓN CON FIGMA — Destacado (Components 4 [Beta])
            Márgenes de 16px (grid-margin), banner claro de 136px, links
            subrayados, CTA punteado y promociones verticales 144×256.
-           Va antes del tema Y2K para que éste siga pudiendo sobreescribir.
            ====================================================== */
         .top-bar { padding: 0 16px; }
         .tabs { padding: 12px 0 12px var(--bp-layout-grid-margin, 16px); }
@@ -3607,400 +3601,8 @@
         .promo--2 { background: radial-gradient(90% 60% at 70% 85%, rgb(190 130 80 / 0.55), transparent 70%), linear-gradient(160deg, #1d5a40 0%, #0f3d2a 100%); }
         .promo--3 { background: radial-gradient(90% 60% at 70% 85%, rgb(255 200 220 / 0.55), transparent 70%), linear-gradient(160deg, #ff7eb6 0%, #e0409a 100%); }
 
-        /* ======================================================
-           TEMA Y2K — POC de theming vía Design System
-           ======================================================
-           Se activa agregando la clase .theme-y2k a <html> (ver toggle en
-           Perfil → Preferencias, y la función applyTheme() en el script).
-
-           La app entera ya lee color de tokens --bp-* definidos en :root
-           (fondo, texto, bordes, superficies…), así que reasignar esos
-           MISMOS tokens acá reskinea prácticamente todo — cards, botones,
-           tabs, textos — sin tocar un solo componente ni duplicar CSS. Eso
-           es"crear un tema" en un design system: cambian los valores de
-           los tokens, no la forma en que cada componente los usa.
-
-           Encima de eso se agregan unos pocos acentos decorativos propios
-           del tema (bordes/sombras "sticker", textura de puntos, colores
-           por ítem en tabs/nav/accesos, tipografía de afiche) — pero sólo
-           donde no cambian layout ni contenido, así el diseño original
-           queda intacto en todo momento: apagar el tema (quitar la clase)
-           vuelve exactamente a los tokens de :root de siempre. */
-        html.theme-y2k {
-            /* Acentos propios del tema (no son tokens semánticos del DS,
-               sólo los usan los estilos decorativos de acá abajo) */
-            --y2k-pink: #ff2f92;
-            --y2k-cyan: #22e5ff;
-            --y2k-green: #7cff4f;
-            --y2k-purple: #a855f7;
-
-            /* Reasignación de los tokens del DS: esto es "el tema" */
-            --bp-surface-page: #0a0a12;
-            --bp-surface-container: #14141f;
-            --bp-surface-fixed: rgba(10, 10, 18, 0.88);
-            --bp-brand-support: #0f265c;
-            --bp-text-primary: #f5f5ff;
-            --bp-text-secondary: #b3b3d1;
-            --bp-text-helper: #85859f;
-            --bp-text-interactive: var(--y2k-cyan);
-            --bp-selection-bg-active: var(--y2k-pink);
-            --bp-selection-bg-active-subtle: #3a1830;
-            --bp-selection-fg: var(--y2k-pink);
-            --bp-selection-fg-subtle: #8f8fb8;
-            --bp-secondary-bg: rgba(255, 255, 255, 0.07);
-            --bp-border-focus: var(--y2k-cyan);
-            --bp-border-divider: rgba(255, 255, 255, 0.12);
-            --bp-status-info-bg-subtle: rgba(34, 229, 255, 0.14);
-            --bp-status-info-bg: var(--y2k-cyan);
-            --bp-border-elevated: rgba(255, 255, 255, 0.08);
-            --bp-icon-secondary-fg: var(--y2k-cyan);
-            color-scheme: dark;
-        }
-
-        /* Textura de puntos sobre el fondo: sutil, se nota en los huecos
-           entre tarjetas, no compite con el contenido */
-        html.theme-y2k body {
-            background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
-            background-size: 16px 16px;
-        }
-
-        /* Tipografía de afiche en toda la "cáscara" de navegación/títulos
-           (tabs, nav, encabezados de sección, botones) — el contenido real
-           de las filas (nombres, montos de movimientos, correos) se deja
-           con la tipografía normal para que siga siendo legible.
-
-           Anton es CONDENSADA (letras angostas) — a diferencia de Archivo
-           Black (una grotesca ancha), a igual tamaño ocupa menos y se lee
-           más liviana, así que además de cambiar la fuente se bajan los
-           tamaños unos puntos respecto al original: la heavy-weight ya
-           aporta el peso visual por su cuenta, no hace falta que también
-           sea grande. Sin letter-spacing extra (Anton ya viene apretada). */
-        html.theme-y2k .tab,
-        html.theme-y2k .nav-item__label,
-        html.theme-y2k .section__title h2,
-        html.theme-y2k .section__link,
-        html.theme-y2k .card__header-title,
-        html.theme-y2k .quick-action__label,
-        html.theme-y2k .login-button,
-        html.theme-y2k .logout-btn,
-        html.theme-y2k .list-item__title {
-            font-family: 'Anton', 'Roboto', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 0.2px;
-        }
-        html.theme-y2k .tab { font-size: 12px; }
-        html.theme-y2k .nav-item__label { font-size: 10.5px; }
-        html.theme-y2k .section__title h2 { font-size: 16px; }
-        html.theme-y2k .section__link { font-size: 13px; }
-        html.theme-y2k .card__header-title { font-size: 14px; }
-        html.theme-y2k .quick-action__label { font-size: 11px; }
-        html.theme-y2k .login-button,
-        html.theme-y2k .logout-btn { font-size: 15px; letter-spacing: 0.5px; }
-        html.theme-y2k .list-item__title { font-size: 14px; }
-
-        /* El monto grande y los títulos hero de pantalla completa sí usan
-           la fuente más extravagante (Bungee) — son 2-3 elementos por
-           pantalla, no todo el texto, así que el "ruido" no se acumula. */
-        html.theme-y2k .amount,
-        html.theme-y2k .detail-title,
-        html.theme-y2k .cd-title {
-            font-family: 'Bungee', 'Roboto', sans-serif;
-            text-transform: uppercase;
-        }
-        html.theme-y2k .amount { font-size: 26px; letter-spacing: 0.5px; }
-        html.theme-y2k .detail-title,
-        html.theme-y2k .cd-title { font-size: 22px; letter-spacing: 0.3px; }
-
-        /* Glitch/cromático sutil sobre el monto grande, como en la
-           referencia (duplicado de color desfasado en vez de blur) */
-        html.theme-y2k .amount {
-            text-shadow: 1.5px 0 var(--y2k-cyan), -1.5px 0 var(--y2k-pink);
-        }
-
-        /* Cards/tarjetas con borde grueso + sombra dura desplazada
-           ("sticker"), en vez del box-shadow difuso original */
-        html.theme-y2k .card,
-        html.theme-y2k .account-card,
-        html.theme-y2k .cta-dashed,
-        html.theme-y2k .push-qr,
-        html.theme-y2k .finance-hero,
-        html.theme-y2k .finance-networth,
-        html.theme-y2k .debit-card-disabled {
-            border: 2px solid var(--y2k-pink);
-            box-shadow: 4px 4px 0 var(--y2k-cyan);
-        }
-
-        html.theme-y2k .debit-card {
-            border: 3px solid var(--y2k-pink);
-            box-shadow: 5px 5px 0 var(--y2k-cyan);
-        }
-
-        /* Textura de puntos sobre la tarjeta de cuenta (la más "hero" de
-           Destacado), como el fondo punteado detrás del monto/tarjeta en
-           la referencia — el resto de .card (listas, filas) se deja lisa
-           para no acumular ruido detrás de texto denso. */
-        html.theme-y2k .account-card,
-        html.theme-y2k .debit-card-disabled {
-            background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-            background-size: 10px 10px;
-        }
-
-        /* Subrayado tipo garabato bajo los títulos de sección */
-        html.theme-y2k .section__title h2 {
-            position: relative;
-            display: inline-block;
-            padding-bottom: 6px;
-        }
-        html.theme-y2k .section__title h2::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            height: 4px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 6'%3E%3Cpath d='M0 3 Q3 0 6 3 T12 3 T18 3 T24 3' stroke='%23ff2f92' stroke-width='1.6' fill='none'/%3E%3C/svg%3E");
-            background-repeat: repeat-x;
-            background-size: 14px 4px;
-        }
-
-        /* Tabs de sección: borde + sombra dura, color distinto por ítem
-           (igual espíritu que la referencia, sin depender de que el orden
-           de las pestañas sea exactamente el mismo) */
-        html.theme-y2k .tab {
-            border: 2px solid var(--y2k-cyan);
-            box-shadow: 3px 3px 0 var(--y2k-cyan);
-            border-radius: 10px;
-        }
-        html.theme-y2k .tabs__scroll .tab:nth-child(3n+2) {
-            border-color: var(--y2k-pink);
-            box-shadow: 3px 3px 0 var(--y2k-pink);
-            color: var(--y2k-pink);
-        }
-        html.theme-y2k .tabs__scroll .tab:nth-child(3n+3) {
-            border-color: var(--y2k-green);
-            box-shadow: 3px 3px 0 var(--y2k-green);
-            color: var(--y2k-green);
-        }
-        html.theme-y2k .tab[data-action="Modo finanzas"] {
-            background-color: var(--y2k-purple);
-            background-image:
-                linear-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
-            background-size: 6px 6px;
-            border-color: var(--y2k-purple);
-            box-shadow: 3px 3px 0 var(--y2k-cyan);
-            color: var(--y2k-cyan);
-        }
-        html.theme-y2k .tab.active {
-            background: var(--bp-surface-brand);
-            color: var(--bp-brand-support);
-            border-color: var(--y2k-pink);
-            box-shadow: 3px 3px 0 var(--y2k-pink);
-        }
-
-        /* Accesos rápidos: mismo tratamiento, un color distinto por ícono */
-        html.theme-y2k .quick-action__icon {
-            border: 2px solid var(--y2k-cyan);
-            box-shadow: 2px 2px 0 var(--y2k-cyan);
-            color: var(--y2k-cyan);
-        }
-        html.theme-y2k .quick-action:nth-child(4n+2) .quick-action__icon {
-            border-color: var(--y2k-pink);
-            box-shadow: 2px 2px 0 var(--y2k-pink);
-            color: var(--y2k-pink);
-        }
-        html.theme-y2k .quick-action:nth-child(4n+3) .quick-action__icon {
-            border-color: var(--y2k-green);
-            box-shadow: 2px 2px 0 var(--y2k-green);
-            color: var(--y2k-green);
-        }
-        html.theme-y2k .quick-action:nth-child(4n+4) .quick-action__icon {
-            border-color: var(--bp-surface-brand);
-            box-shadow: 2px 2px 0 var(--bp-surface-brand);
-            color: var(--bp-surface-brand);
-        }
-
-        /* Nav inferior: ícono inactivo con acento de color propio, activo
-           con placa sólida (rosa+amarillo, como "Inicio" en la referencia) */
-        html.theme-y2k .nav-item__wrap {
-            color: var(--y2k-cyan);
-        }
-        html.theme-y2k .nav-item:nth-child(3) .nav-item__wrap { color: var(--y2k-green); }
-        html.theme-y2k .nav-item:nth-child(4) .nav-item__wrap { color: var(--y2k-pink); }
-        html.theme-y2k .nav-item:nth-child(5) .nav-item__wrap { color: var(--y2k-cyan); }
-        html.theme-y2k .nav-item.active .nav-item__wrap {
-            background: var(--y2k-pink);
-            border: 2px solid var(--bp-surface-brand);
-            color: var(--bp-surface-brand);
-        }
-        html.theme-y2k .nav-item.active .nav-item__label {
-            color: var(--bp-surface-brand);
-        }
-
-        /* Unos pocos hovers de filas usan un blanco fijo (#fafbfc) en vez
-           de un token — a propósito no se toca esa regla original (sigue
-           sirviendo al tema claro), sólo se agrega el equivalente oscuro acá */
-        html.theme-y2k .list-item:hover,
-        html.theme-y2k .product-row:hover,
-        html.theme-y2k .goal-row:hover,
-        html.theme-y2k .sub-item:hover {
-            background: rgba(255, 255, 255, 0.06);
-        }
-
-        /* El menú inferior (.nav-bar) tiene su fondo blanco fijo (no un
-           token) porque es un blur translúcido pensado para asomar el
-           contenido claro de atrás — bajo el tema oscuro ese mismo blanco
-           quedaba flotando encima del fondo negro, sin contraste con los
-           acentos de neón. Mismo criterio: no se toca la regla original,
-           sólo su equivalente oscuro acá. */
-        html.theme-y2k .nav-bar {
-            background: rgba(10, 10, 18, 0.85);
-            border-top-color: rgba(255, 255, 255, 0.1);
-            border-right-color: rgba(255, 255, 255, 0.1); /* variante de escritorio (sidebar) */
-        }
-
-        /* El shimmer del skeleton (mientras "carga" Inicio) es un gris casi
-           blanco fijo — sobre el fondo casi negro del tema se ve como un
-           destello. Mismo criterio de siempre: se agrega el equivalente
-           oscuro sólo acá, sin tocar el shimmer claro original. */
-        html.theme-y2k .skeleton {
-            background: linear-gradient(90deg, #1c1c2b 25%, #26263a 50%, #1c1c2b 75%);
-            background-size: 200% 100%;
-        }
-
-        /* Dos superficies más con blanco fijo (no tokens) que quedaban
-           deslavadas contra el fondo oscuro: el modal de permiso del
-           giroscopio y el "handle" del bottom sheet. */
-        html.theme-y2k .gyro-modal__content {
-            background: var(--bp-surface-container);
-            border: 2px solid var(--y2k-cyan);
-            box-shadow: 5px 5px 0 var(--y2k-pink);
-        }
-        html.theme-y2k .sheet__handle {
-            background: var(--y2k-pink);
-        }
-
-        /* ---------- Más cositas Y2K: grano, franjas, brillos, ligero tilt ---------- */
-
-        /* Grano/ruido muy sutil sobre toda la pantalla — textura de VHS/
-           impresión barata en vez de un fondo perfectamente liso. Fixed +
-           pointer-events:none: nunca estorba al contenido ni al tacto. */
-        html.theme-y2k body::after {
-            content: '';
-            position: fixed;
-            inset: 0;
-            z-index: 999;
-            pointer-events: none;
-            opacity: 0.035;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-        }
-
-        /* Franja diagonal de colores arriba del todo (zona del status bar),
-           como el filo de cinta de peligro/póster de feria de la
-           referencia. .header ya es position:sticky, así que alcanza de
-           contenedor para este ::before absoluto. */
-        html.theme-y2k .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: repeating-linear-gradient(-45deg,
-                var(--y2k-pink) 0 6px,
-                var(--y2k-cyan) 6px 12px,
-                var(--y2k-green) 12px 18px,
-                var(--bp-surface-brand) 18px 24px);
-        }
-
-        /* Chispa cómica + franja a cuadros (banderín de carrera) sobre la
-           tarjeta destacada — .debit-card ya tiene overflow:hidden y
-           border-radius, así que ambos quedan recortados prolijos dentro
-           del borde de la tarjeta. */
-        html.theme-y2k .debit-card::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            height: 7px;
-            background: repeating-linear-gradient(45deg, #06060a 0 6px, #fff 6px 12px);
-            opacity: 0.9;
-            z-index: 2;
-        }
-        html.theme-y2k .debit-card::after {
-            content: '';
-            position: absolute;
-            bottom: 14px;
-            right: 54px;
-            width: 0;
-            height: 0;
-            border-left: 13px solid transparent;
-            border-right: 13px solid transparent;
-            border-bottom: 22px solid var(--y2k-cyan);
-            transform: rotate(18deg);
-            opacity: 0.85;
-            z-index: 2;
-        }
-
-        /* Tilt tipo sticker/collage en los accesos rápidos — se rota el
-           botón entero, no el ícono, porque el ícono ya tiene su propio
-           transform (scale) al tocarlo y ambos convivían mal en el mismo
-           elemento. */
-        html.theme-y2k .quick-action:nth-child(odd) {
-            transform: rotate(-2deg);
-        }
-        html.theme-y2k .quick-action:nth-child(even) {
-            transform: rotate(2deg);
-        }
-
-        /* Brillo pulsante en el tab activo y el aro del logo, en vez de una
-           sombra de neón fija — se siente más "encendido". */
-        @keyframes y2kTabGlow {
-            0%, 100% { box-shadow: 3px 3px 0 var(--y2k-pink), 0 0 8px rgba(255, 47, 146, 0.35); }
-            50% { box-shadow: 3px 3px 0 var(--y2k-pink), 0 0 18px rgba(255, 47, 146, 0.8); }
-        }
-        html.theme-y2k .tab.active {
-            animation: y2kTabGlow 2.2s ease-in-out infinite;
-        }
-        @keyframes y2kLogoGlow {
-            0%, 100% { box-shadow: 0 0 0 2px var(--y2k-pink), 0 0 12px rgba(255, 47, 146, 0.5); }
-            50% { box-shadow: 0 0 0 2px var(--y2k-cyan), 0 0 18px rgba(34, 229, 255, 0.7); }
-        }
-        html.theme-y2k .profile-story {
-            animation: y2kLogoGlow 3s ease-in-out infinite;
-        }
-
-        /* Chispita titilante + glitch cromático sobre los títulos de
-           sección — de a poco, no en cada texto de la app. */
-        html.theme-y2k .section__title h2 {
-            text-shadow: 1px 0 var(--y2k-cyan), -1px 0 var(--y2k-pink);
-        }
-        html.theme-y2k .section__title h2::before {
-            content: '✦';
-            position: absolute;
-            top: -9px;
-            right: -13px;
-            font-size: 9px;
-            color: var(--y2k-cyan);
-            animation: y2kTwinkle 1.8s ease-in-out infinite;
-        }
-        @keyframes y2kTwinkle {
-            0%, 100% { opacity: 0.35; transform: scale(0.8); }
-            50% { opacity: 1; transform: scale(1.15); }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            html.theme-y2k .tab.active,
-            html.theme-y2k .profile-story,
-            html.theme-y2k .section__title h2::before {
-                animation: none;
-            }
-        }
+    }
     </style>
-    <!-- Solar Design System: componentes y mapeo de la app (va después del CSS
-         inline para ganar la cascada con la misma especificidad) -->
-    <link rel="stylesheet" href="./assets/solar.css">
     <link rel="stylesheet" href="./assets/asistente.css">
     <link rel="stylesheet" href="./assets/buscador.css">
     <link rel="stylesheet" href="./assets/destacados.css">
@@ -4824,18 +4426,9 @@
                         <span class="list-item__value" data-i18n-current translate="no">Español</span>
                         <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">chevron_right</span>
                     </button>
-                    <!-- POC de theming: el resto de la app usa tokens
-                         --bp-* para color, así que un tema nuevo es sólo
-                         reasignar esos tokens (ver bloque html.theme-y2k
-                         más abajo) — nada de HTML/JS distinto por tema. -->
                     <button class="list-item" id="dark-toggle-row" aria-pressed="false">
                         <span class="avatar-cat"><span class="material-symbols-rounded">dark_mode</span></span>
                         <span class="list-item__title">Modo oscuro</span>
-                        <span class="pref-switch" aria-hidden="true"><span class="pref-switch__knob"></span></span>
-                    </button>
-                    <button class="list-item" id="theme-toggle-row" aria-pressed="false">
-                        <span class="avatar-cat"><span class="material-symbols-rounded">palette</span></span>
-                        <span class="list-item__title">Tema Y2K</span>
                         <span class="pref-switch" aria-hidden="true"><span class="pref-switch__knob"></span></span>
                     </button>
                     <button class="list-item" id="pref-haptics" aria-pressed="true">
@@ -5294,25 +4887,6 @@
             toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
         }
 
-        // ---------- Tema Y2K (POC de theming vía Design System) ----------
-        // Todo el resto de la app ya lee color de tokens --bp-* en :root;
-        // el tema es sólo reasignar esos tokens bajo html.theme-y2k (ver
-        // CSS) + persistir la preferencia. Nada de HTML/JS distinto por
-        // tema, ni un solo componente reescrito — por eso el diseño
-        // original queda intacto cuando el tema está apagado.
-        const THEME_KEY = 'bp_theme_y2k';
-        const themeToggleRow = document.getElementById('theme-toggle-row');
-        function applyTheme(on) {
-            document.documentElement.classList.toggle('theme-y2k', on);
-            themeToggleRow.setAttribute('aria-pressed', String(on));
-        }
-        applyTheme(localStorage.getItem(THEME_KEY) === '1');
-        themeToggleRow.addEventListener('click', () => {
-            const on = themeToggleRow.getAttribute('aria-pressed') !== 'true';
-            applyTheme(on);
-            localStorage.setItem(THEME_KEY, on ? '1' : '0');
-            showToast(on ? 'Tema Y2K activado' : 'Tema Y2K desactivado');
-        });
 
         // ---------- Modo oscuro (tema Solar data-theme="dark") ----------
         // El valor inicial ya lo resolvió el script del <head>; acá sólo

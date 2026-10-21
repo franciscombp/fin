@@ -20,13 +20,13 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Roboto+Slab:wght@400;600&display=swap">
     <link rel="stylesheet" href="./assets/tokens.css">
     <link rel="stylesheet" href="./assets/componentes-tokens.css">
-    <link rel="stylesheet" href="./assets/solar.css">
+    <link rel="stylesheet" href="./assets/componentes.css">
     <style>
         /* =====================================================================
            Página de documentación. Todo color, radio, espaciado y tipografía
            sale de tokens Solar (theme / semantic), así que la página y sus
            ejemplos funcionan igual en data-theme="light" y "dark".
-           Las clases propias llevan prefijo d- para no chocar con solar.css
+           Las clases propias llevan prefijo d- para no chocar con componentes.css
            (que mapea clases heredadas como .tab, .card, .sheet o .toast).
            ===================================================================== */
         :root {
@@ -62,7 +62,7 @@
             --ease-ios: cubic-bezier(.32, .72, 0, 1);
         }
 
-        /* Base en una capa propia: los componentes de solar.css (sin capa)
+        /* Base en una capa propia: los componentes de componentes.css (sin capa)
            siempre ganan sobre estos valores por defecto. */
         @layer doc.base {
             *, *::before, *::after { box-sizing: border-box; }
