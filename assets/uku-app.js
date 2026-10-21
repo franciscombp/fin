@@ -254,7 +254,7 @@
     } else if (fin) {
       // Mis finanzas (Figma): el globo solo dice; la acción es una tarjeta en la hoja. Tocar a Uku o deslizar pasa a la siguiente.
       html = txt;
-      recActual = x || null; llenarSlot();
+      recActual = nota && zonaGo ? Object.assign({ id: 'zona', tag: 'Para tu paisaje' }, zonaGo) : x || null; llenarSlot();
     } else {
       html = '<button class="uk-globo__x" data-k="globo:cerrar" aria-label="Cerrar">' + ic('close') + '</button>' + tag + txt +
         '<div class="uk-globo__acts">' + goBtn +
@@ -456,33 +456,73 @@
     nota = frase(); pintarGlobo();
     clearTimeout(tocado.t); tocado.t = setTimeout(function () { if (nota) { nota = null; pintarGlobo(); } }, 6000);
   }
-  /* ---------- Leyenda efímera del paisaje (Mis finanzas) ----------
-     Tres etiquetas junto a Uku: flores (ahorro), bosque (presupuesto) y él (orden). Nacen en su cabeza,
-     se quedan 2,5 s y se van. Tocar una hace que Uku lo explique y actúe (planta, asiente, piensa). */
-  var leyendaEl = null;
+  /* ---------- El paisaje se explica (Mis finanzas) ----------
+     Cada zona del claro es una parte de tus finanzas, con su estado y la acción del banco que la mejora:
+     los canteros (tu ahorro), los guayacanes (tus inversiones), el bosque (tu presupuesto), lo que tienes por
+     tus créditos (la casa, la tiendita…) y Uku (tus gastos por ordenar). Tocar a Uku muestra sus etiquetas
+     sobre cada zona; tocar una zona o su etiqueta hace que Uku la explique y te proponga qué hacer. */
+  var PROP_L = { casa: 'Tu casa', carro: 'Tu carro', tienda: 'Tus compras', carretilla: 'Tu crédito', nevera: 'Tu nevera', tele: 'Tu televisor', caja: 'Tu compra a cuotas', libros: 'Tus estudios' };
+  function zona(id) {
+    var W = window.PFM && PFM.world && resumen() ? PFM.world() : [], F = window.PFM && PFM.finanzas ? PFM.finanzas() : null, s = resumen();
+    var warn = function (c) { return /warn|over|pensativo/.test(c || ''); };
+    var cx = function (cid) { return consejos().filter(function (x) { return x.id === cid; })[0]; };
+    if (id === 'ahorro' && W[1]) {
+      var tiene = F && (F.ahorro > 0);
+      return { t: tiene ? 'Tu ahorro · ' + W[1].v.replace(/^Te alcanza /, '').toLowerCase() : 'Aquí florece tu ahorro', cls: !tiene ? 'is-calm' : warn(W[1].cls) ? 'is-warn' : 'is-ok', play: 'plant',
+        d: tiene ? 'Estos canteros son tu ahorro. ' + W[1].d : 'Estos canteros están esperando tu ahorro: con lo primero que guardes salen flores amarillas, y con 3 meses de gastos guardados se llenan.',
+        go: cx('ahorro') ? { k: 'pfm:ahorro', l: 'Programar mi ahorro', icon: 'savings', sub: 'Y florece tu jardín' } : { k: 'ask:¿Cuánto más puedo ahorrar?', l: '¿Cuánto puedo ahorrar?', icon: 'savings', sub: 'Uku te lo calcula' } };
+    }
+    if (id === 'inversion') {
+      var inv = F && F.inversion > 0;
+      return { t: inv ? 'Tus inversiones · ' + money0(F.inversion) : 'Aquí crece tu inversión', cls: inv ? 'is-ok' : 'is-calm', play: 'happy',
+        d: inv ? 'Los guayacanes en flor son tus inversiones: ' + money0(F.inversion) + ' que te generan intereses. Cada depósito nuevo hace florecer otro.' : 'Este arbolito es un guayacán por crecer. Con un depósito a plazo tu dinero gana intereses y aquí florece.',
+        go: { k: 'act:Inversiones', l: inv ? 'Ver mis inversiones' : 'Conocer las inversiones', icon: 'trending_up', sub: 'Depósitos a plazo y pólizas' } };
+    }
+    if (id === 'bosque' && W[2]) {
+      var sinPres = s && !s.pres;
+      return { t: 'Tu bosque · ' + (sinPres ? 'sin presupuesto' : W[2].v.toLowerCase()), cls: warn(W[2].cls) ? 'is-warn' : sinPres ? 'is-calm' : 'is-ok', play: 'nod',
+        d: sinPres ? 'El bosque de atrás es tu presupuesto: un árbol por mes, frondoso cuando cierras el mes con saldo a favor. Arma tu presupuesto y lo cuido contigo.' : W[2].d,
+        go: sinPres ? { k: 'pfm:pres', l: 'Armar mi presupuesto', icon: 'speed', sub: 'En 3 pasos' } : { k: 'gastos:sem', l: 'Ver mis gastos', icon: 'account_balance_wallet', sub: 'De esta semana' } };
+    }
+    if (/^credito:/.test(id)) {
+      var k = id.split(':')[1], tarjeta = k === 'tienda';
+      return { t: (PROP_L[k] || 'Lo que tienes') + (k === 'casa' ? ' · hipoteca' : tarjeta ? ' · tarjetas' : ' · a crédito'), cls: 'is-calm', play: 'happy',
+        d: k === 'casa' ? 'Tu casa es tu hipoteca: cada cuota que pagas la hace más tuya.' : tarjeta ? 'La tiendita son tus tarjetas: lo que compras con ellas. Si pagas el total, no pagas intereses.' : 'Esto es lo que tienes gracias a tu crédito. Al día con tus cuotas, todo sigue en su lugar.',
+        go: tarjeta ? { k: 'act:Pagar tarjeta', l: 'Pagar mi tarjeta', icon: 'credit_card', sub: 'El total, sin intereses' } : { k: 'pfm:debt', l: 'Ver mis deudas', icon: 'account_balance', sub: 'Saldos y cuotas' } };
+    }
+    if (id === 'uku' && W[0]) {
+      return { t: 'Uku · ' + (s && s.n ? s.n + ' por ordenar' : 'todo en orden'), cls: warn(W[0].cls) ? 'is-warn' : 'is-ok', play: s && s.n ? 'worried' : 'happy', d: W[0].d,
+        go: s && s.n ? { k: 'pfm:game', l: 'Clasificar conmigo', icon: 'category', sub: s.n + ' consumos' } : null };
+    }
+    return null;
+  }
+  var leyendaEl = null, zonaGo = null;
   function leyenda() {
     if (!leyendaEl) leyendaEl = host.querySelector('.uk-leyenda');
-    var W = window.PFM && PFM.world && resumen() ? PFM.world() : []; if (W.length < 3 || !b3d || !b3d.head) return;
-    var H = b3d.head(); if (!H) return;
-    var R = host.getBoundingClientRect(), s = resumen();
-    var pt = function (cls) { return /warn|over|pensativo/.test(cls || '') ? 'is-warn' : /tranquilo/.test(cls || '') ? 'is-calm' : 'is-ok'; };
-    var items = [
-      { i: 1, t: 'Flores · ' + W[1].v.replace(/^Te alcanza /, 'ahorro '), cls: pt(W[1].cls), x: H.x + H.r + 10, y: H.y + H.r + 12 },
-      { i: 2, t: 'Bosque · ' + W[2].v.toLowerCase(), cls: pt(W[2].cls), x: H.x + H.r + 10, y: H.y - H.r - 36 },
-      { i: 0, t: 'Uku · ' + (s && s.n ? s.n + ' por ordenar' : 'todo en orden'), cls: pt(W[0].cls), x: H.x - 90, y: H.y - H.r - 44 }
-    ];
+    if (!b3d || !b3d.head || !resumen()) return;
+    var R = host.getBoundingClientRect(), H = b3d.head(), L = b3d.lugares ? b3d.lugares() : [];
+    // Las etiquetas viven en el paisaje que se ve: nunca debajo del globo, la bienvenida o la hoja
+    var top = 8, bot = R.height - 40;
+    [globoEl, host.querySelector('.uk-onb')].forEach(function (el) { if (el && !el.hidden && el.offsetParent) top = Math.max(top, el.getBoundingClientRect().bottom - R.top + 6); });
+    var hoja = panel && panel.offsetParent ? panel.getBoundingClientRect().top - R.top - 36 : null; if (hoja != null && hoja > top) bot = Math.min(bot, hoja);
+    var items = L.map(function (p) { return { id: p.id, x: p.x - 60, y: p.y - 36, z: zona(p.id) }; });
+    if (H) items.push({ id: 'uku', x: H.x - 70, y: H.y - H.r - 44, z: zona('uku') });
+    items = items.filter(function (it) { return it.z; });
+    // Que no se pisen: de arriba a abajo, cada etiqueta baja si choca con la anterior
+    items.sort(function (a, b) { return a.y - b.y; }).forEach(function (it, j, A) { for (var q = 0; q < j; q++) if (Math.abs(A[q].x - it.x) < 140 && Math.abs(A[q].y - it.y) < 32) it.y = A[q].y + 34; });
     leyendaEl.hidden = false; leyendaEl.classList.remove('is-off');
-    leyendaEl.innerHTML = items.map(function (it, j) { var x = Math.max(8, Math.min(R.width - 150, it.x)), y = Math.max(8, it.y); return '<button class="uk-leyenda__chip ' + it.cls + '" style="--d:' + (j * 70) + 'ms; left:' + x.toFixed(0) + 'px; top:' + y.toFixed(0) + 'px" data-k="leyenda:' + it.i + '" data-l="' + esc(it.t) + '"><i></i>' + esc(it.t) + '</button>'; }).join('');
+    leyendaEl.innerHTML = items.map(function (it, j) { var x = Math.max(8, Math.min(R.width - 168, it.x)), y = Math.max(top, Math.min(bot, it.y)); return '<button class="uk-leyenda__chip ' + it.z.cls + '" style="--d:' + (j * 70) + 'ms; left:' + x.toFixed(0) + 'px; top:' + y.toFixed(0) + 'px" data-k="leyenda:' + esc(it.id) + '" data-l="' + esc(it.z.t) + '"><i></i>' + esc(it.z.t) + '</button>'; }).join('');
     if (b3d) b3d.play('nod');
-    clearTimeout(leyenda.t); leyenda.t = setTimeout(function () { leyendaEl.classList.add('is-off'); setTimeout(function () { leyendaEl.hidden = true; }, 220); }, 2600);
+    clearTimeout(leyenda.t); leyenda.t = setTimeout(function () { leyendaEl.classList.add('is-off'); setTimeout(function () { leyendaEl.hidden = true; }, 220); }, 4200);
   }
-  function explicar(i) {
-    var W = window.PFM && PFM.world ? PFM.world() : []; if (!W[i]) return;
-    leyendaEl.classList.add('is-off'); setTimeout(function () { leyendaEl.hidden = true; }, 220);
-    nota = W[i].d; pintarGlobo();
-    if (b3d) b3d.play(i === 1 ? 'plant' : i === 2 ? 'nod' : 'worried');
-    acercar(1.25, 1200);
-    clearTimeout(explicar.t); explicar.t = setTimeout(function () { nota = null; pintarGlobo(); }, 6000);
+  // Uku explica una zona y deja en la hoja la acción del banco que la mejora
+  function explicar(id) {
+    var z = zona(id); if (!z) return;
+    if (leyendaEl) { leyendaEl.classList.add('is-off'); setTimeout(function () { leyendaEl.hidden = true; }, 220); }
+    nota = z.d; zonaGo = z.go; pintarGlobo();
+    if (b3d) b3d.play(z.play);
+    acercar(1.15, 1200);
+    clearTimeout(explicar.t); explicar.t = setTimeout(function () { nota = null; zonaGo = null; pintarGlobo(); }, 9000);
   }
   /* ---------- Encuadre: que nunca le tapen la cara ----------
      Se mide lo que hay en pantalla (globo, propuestas, onboarding arriba; accesos y barra abajo) y se
@@ -1091,7 +1131,7 @@
       if (!m3.supported()) return;
       b3d = m3; var c = window.Clima && Clima.last(); if (c) m3.setLook(c.look);
       if (s) { m3.setBloom(s.bloom); m3.setMood(s.mood); if (m3.setFinanzas && PFM.finanzas) m3.setFinanzas(PFM.finanzas()); } // brotes, flores, guayacanes y lo que tienes por tus créditos
-      m3.attach(el, { score: s ? s.score : 60, onReady: function () { var k = host.querySelector('.uk-skel'); if (k) { k.classList.add('is-off'); setTimeout(function () { k.remove(); }, 400); } if (!abriendo) { encuadrar(true); mostrarEscena(); reencuadrar(); } }, onTap: tocado });
+      m3.attach(el, { score: s ? s.score : 60, onPick: function (id) { fx('select'); explicar(id); }, onReady: function () { var k = host.querySelector('.uk-skel'); if (k) { k.classList.add('is-off'); setTimeout(function () { k.remove(); }, 400); } if (!abriendo) { encuadrar(true); mostrarEscena(); reencuadrar(); } }, onTap: tocado });
       el.classList.add('is-3d');
       // Si la escena llega con una conversación ya abierta, Uku entra directo en foco; en Mis finanzas y Soporte
       // no (ahí está en su mundo, en plano general). La misma regla que modo(), y queda anotada para no pisarse.
@@ -1150,12 +1190,12 @@
     requestAnimationFrame(paso);
   }
   /* ---------- Lo que haces con tu dinero se ve en su mundo ----------
-     Guardar presupuesto: riega y crece el bosque. Ordenar un consumo: una flor más. Separar ahorro: planta. */
+     Guardar presupuesto: planta y el bosque crece. Ordenar un consumo: una flor más. Separar ahorro: planta y florece. */
   var floresExtra = 0;
   document.addEventListener('uku:pres', function () {
     if (!b3d) return; var s = resumen();
-    b3d.play('water', { hold: 'can' }); setTimeout(function () { if (s) b3d.setScore(s.score); }, 1200);
-    nota = 'Listo. Con presupuesto, el bosque crece.'; pintarGlobo(); setTimeout(function () { nota = null; pintarGlobo(); if (b3d) b3d.play('happy'); }, 5000);
+    b3d.play('plant'); setTimeout(function () { if (s) b3d.setScore(s.score); }, 1200);
+    nota = 'Listo. Con presupuesto, tu bosque crece frondoso.'; pintarGlobo(); setTimeout(function () { nota = null; pintarGlobo(); if (b3d) b3d.play('happy'); }, 5000);
   });
   document.addEventListener('uku:clasificado', function (e) {
     if (!b3d) return; var s = resumen(), restan = e.detail && e.detail.restan;
@@ -1170,8 +1210,8 @@
   });
   document.addEventListener('uku:ahorro', function () {
     if (!b3d) return; var s = resumen();
-    b3d.play('hold'); setTimeout(function () { if (s) b3d.setBloom(Math.min(100, (s.bloom || 0) + 5)); }, 2000);
-    nota = 'Guardado. Cada mes, una flor más.'; pintarGlobo(); acercar(1.15, 2400); setTimeout(function () { nota = null; pintarGlobo(); }, 5000);
+    b3d.play('plant'); setTimeout(function () { if (s) b3d.setBloom(Math.min(100, (s.bloom || 0) + 5)); }, 2000);
+    nota = 'Guardado. Cada mes, más flores en tus canteros.'; pintarGlobo(); acercar(1.15, 2400); setTimeout(function () { nota = null; pintarGlobo(); }, 5000);
   });
   // Las tres secciones de Asistente: Uku (su mundo y conversación), Mis finanzas y Ayuda
   var ayudaPage = false;
@@ -1340,7 +1380,7 @@
       // Ocultar una sugerencia: no vuelve a aparecer (con «Deshacer» en el aviso); el globo pasa a la siguiente o al saludo
       case 'ocultar': nota = null; if (window.PFM) PFM.key('ocultar:' + v); return;
       case 'globo': if (onbActivo) return; fx('tap'); saludado = true; nota = null; return ocultarGlobo();
-      case 'leyenda': fx('select'); return explicar(+v);
+      case 'leyenda': fx('select'); return explicar(v);
       case 'prop': return propuesta(v);
       case 'mundo': mundo(); return mostrar();
       // Mis finanzas: qué significa cada cosa del mundo de Uku (el bosque, las flores, las mariposas…)

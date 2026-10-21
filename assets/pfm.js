@@ -447,7 +447,7 @@
        tranquilo. Pendiente hace más de una semana: pensativo. Uku es un
        personaje del banco: no se enoja ni se pone triste, te espera. Una
        semana sin gastos no cuenta en contra: no hay nada que clasificar.
-     · Las flores amarillas de su campo = tu ahorro (cuántos meses te alcanza).
+     · Las flores amarillas de sus canteros = tu ahorro (cuántos meses te alcanza).
      · El bosque = tu presupuesto del mes. */
   var MOOD = { feliz: 'contento', tranquilo: 'tranquilo', pensativo: 'pensativo' };
   var MOOD_IC = { feliz: 'sentiment_very_satisfied', tranquilo: 'sentiment_satisfied', pensativo: 'sentiment_neutral' };
@@ -686,8 +686,8 @@
       di: T('Este mes vas un poco por encima de tu presupuesto. Revisemos juntos en qué grupo se fue y lo ajustamos.'), act: 'budgets', actl: T('Revisar presupuesto') });
     // 5. Ahorro (con presupuesto): tu cuenta llega casi en cero; separar algo apenas cobras
     if ((hayPres() && col < 1) || hecho('ahorro')) out.push({ id: 'ahorro', p: 60, icon: 'savings', tag: T('Ahorro'), kind: 'info', t: T('Tu cuenta llega casi a cero cada mes'), sub: T('Para tu primer colchón'),
-      s: T('Si separas {q} cada mes, apenas cobras, en 6 meses tienes {t} para un imprevisto. Y su campo empieza a florecer.', { q: money0(q), t: money0(q * 6) }),
-      di: por({ jubilado: 'Si separas {q} cada mes apenas cobras tu pensión, en 6 meses tendrás {t} para un imprevisto. ¡Y mi campo empezará a florecer!' }, 'Tu cuenta llega casi a cero cada mes. Si separas {q} apenas cobras, en 6 meses tendrás {t} para un imprevisto. ¡Y mi campo empezará a florecer!', { q: money0(q), t: money0(q * 6) }),
+      s: T('Si separas {q} cada mes, apenas cobras, en 6 meses tienes {t} para un imprevisto. Y sus canteros empiezan a florecer.', { q: money0(q), t: money0(q * 6) }),
+      di: por({ jubilado: 'Si separas {q} cada mes apenas cobras tu pensión, en 6 meses tendrás {t} para un imprevisto. ¡Y mis canteros empezarán a florecer!' }, 'Tu cuenta llega casi a cero cada mes. Si separas {q} apenas cobras, en 6 meses tendrás {t} para un imprevisto. ¡Y mis canteros empezarán a florecer!', { q: money0(q), t: money0(q * 6) }),
       act: 'ahorro', actl: T('Separar {q} al mes', { q: money0(q) }), ok: T('Listo: cada mes se separan {q} a tu ahorro, apenas cobras.', { q: money0(q) }),
       conf: { para: T('Tu cuenta de ahorro'), monto: q, cuando: T('Cada mes, apenas cobras') } });
     // 6. Mesadas y pagos repetidos
@@ -735,7 +735,7 @@
       { ic: MOOD_IC[a.k], l: T('Tus gastos por ordenar'), v: a.n ? T('{n} sin clasificar', { n: a.n }) : T('Todo en orden'), cls: a.k,
         d: a.n ? T(a.n === 1 ? 'Tienes 1 consumo sin clasificar. Cuando lo ordenes, vuelvo a estar contento.' : 'Tienes {n} consumos sin clasificar. Cuando los ordenes, vuelvo a estar contento.', { n: a.n }) : T('Tus gastos están clasificados. Por eso me ves contento.') },
       { ic: 'local_florist', l: T('Tu ahorro'), v: c >= 1 ? T(Math.floor(c) === 1 ? 'Te alcanza 1 mes' : 'Te alcanza {n} meses', { n: Math.floor(c) }) : T('Menos de 1 mes'), cls: c >= 3 ? 'ok' : c >= 1 ? 'warn' : 'over',
-        d: c >= 3 ? T('Lo que tienes cubre {n} meses de gastos. Por eso el campo está lleno de flores.', { n: Math.floor(c) }) : c >= 1 ? T(Math.floor(c) === 1 ? 'Lo que tienes cubre 1 mes de gastos. Las flores crecen cuando llega a 3 meses.' : 'Lo que tienes cubre {n} meses de gastos. Las flores crecen cuando llega a 3 meses.', { n: Math.floor(c) }) : T('Con ahorro, el campo se llena de flores. Con un primer colchón empiezan a salir.') },
+        d: c >= 3 ? T('Lo que tienes cubre {n} meses de gastos. Por eso tus canteros están llenos de flores.', { n: Math.floor(c) }) : c >= 1 ? T(Math.floor(c) === 1 ? 'Lo que tienes cubre 1 mes de gastos. Las flores crecen cuando llega a 3 meses.' : 'Lo que tienes cubre {n} meses de gastos. Las flores crecen cuando llega a 3 meses.', { n: Math.floor(c) }) : T('Con ahorro, el campo se llena de flores. Con un primer colchón empiezan a salir.') },
       // Tu historia: un árbol por cada mes con movimientos; los frondosos, meses en que te sobró dinero
       F.nuevo ? { ic: 'potted_plant', l: T('Tu historia'), v: T('Recién empieza'), cls: 'ok', d: T('Todavía no hay árboles: tu historia recién empieza. Por ahora solo ves brotes; con tus primeros movimientos crece el bosque.') }
         : { ic: 'park', l: T('Tu historia'), v: T(H.length === 1 ? '1 mes' : '{n} meses', { n: H.length }), cls: H[0] && !H[0].ok ? 'warn' : 'ok',

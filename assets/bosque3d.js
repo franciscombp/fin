@@ -58,7 +58,7 @@ let target = null, loadAt = 0, ambLight = null, moodTint = new THREE.Color('#fff
 let bloom = null, mood = null;
 // Lo que la persona tiene (PFM.finanzas()): nuevo en el banco, ahorro, inversiones y créditos
 let fin = { nuevo: false, ahorro: 0, inversion: 0, deudas: [], historia: null, sugerencias: null };
-let gesture = null, gestureT = 0, onTap = null;
+let gesture = null, gestureT = 0, onTap = null, onPick = null;
 let yaw = 0, yawTo = 0, camDist = 3.6, drag = null, idleAt = 0; // giro con el dedo
 const CAM_H = 1.3; // altura de la cámara sobre los pies de Uku
 
@@ -128,16 +128,39 @@ function VISIBLE(x, z) {
   return CAMS.every(c => _vc.set(c[0], c[1], c[2]).sub(_vp).normalize().dot(_vn) > .01);
 }
 // Los lugares principales del fondo: primero lo que tienes por tus créditos, luego los guayacanes y el resto, árboles
-const BIG = [[-.75, -1.05], [.8, -1.15], [.05, -1.6], [-1.4, -1], [1.45, -1.05], [-1.75, -.55], [1.8, -.6]].filter(([x, z]) => VISIBLE(x, z - .25));
+/* Zonas del claro: cada cosa de tus finanzas tiene su lugar fijo, así el paisaje se lee de un vistazo.
+   · a la izquierda, tu hogar y lo que tienes gracias a tus créditos
+   · a la derecha, tus inversiones (guayacanes en flor; si no tienes, un arbolito por crecer)
+   · delante de Uku, los dos canteros de tu ahorro (flores; vacíos con su letrero si aún no ahorras)
+   · al fondo, el bosque de tu presupuesto (un árbol por mes) */
+const ZONA = {
+  creditos: [[-.5, -1.1], [-1.05, -.95], [-.2, -1.65], [-.95, -1.65]].filter(([x, z]) => VISIBLE(x, z - .25)),
+  inversion: [[.5, -1.15], [1.05, -.95], [.25, -1.7], [1, -1.7]].filter(([x, z]) => VISIBLE(x, z - .25)),
+  ahorro: [[-.56, .32], [.56, .32]]
+};
+const BED_R = .24, BIG = ZONA.creditos.concat(ZONA.inversion);
 const awayBig = (d) => (x, z) => BIG.every(([bx, bz]) => Math.hypot(x - bx, z - bz) > d);
-const TREES = scatter(11, 24, 1.2, 2.5, (x, z) => TALL(x, z) && VISIBLE(x, z - .3) && awayBig(.75)(x, z), .55);
-// Flores y brotes donde se ven: delante de la cámara solo hasta donde alcanza el encuadre
+const outBeds = (d) => (x, z) => ZONA.ahorro.every(([bx, bz]) => Math.hypot(x - bx, z - bz) > BED_R + d);
+// El bosque va atrás de todo (o en los costados lejanos): nunca tapa lo que tienes
+const TREES = scatter(11, 24, 1.3, 2.4, (x, z) => (z < -1.25 || Math.abs(x) > 1.6) && TALL(x, z) && VISIBLE(x, z - .3) && awayBig(.6)(x, z), .5);
+// Flores de tu ahorro: dentro de los canteros, repartidas entre los dos para que crezcan parejo
+const FLOWERS = (() => {
+  const r = rng(71), out = [[], []];
+  ZONA.ahorro.forEach(([cx, cz], b) => {
+    for (let i = 0; out[b].length < 24 && i < 900; i++) {
+      const a = r() * 6.28, d = Math.sqrt(r()) * BED_R * .82, x = cx + Math.cos(a) * d, z = cz + Math.sin(a) * d;
+      if (out[b].some(q => Math.hypot(q.x - x, q.z - z) < .068)) continue;
+      out[b].push({ x, z, s: r(), rot: r() * 6.28, v: Math.floor(r() * 3), t: r() });
+    }
+  });
+  return out[0].flatMap((p, i) => [p, out[1][i]].filter(Boolean));
+})();
+// Brotes (recién empiezas): por todo el claro a la vista, menos donde va lo grande
 const SEEN = (x, z) => z < 1.1 && Math.abs(x) < 1.5 + Math.max(0, -z) * .5;
-const FLOWERS = scatter(71, 56, .38, 2.1, (x, z) => SEEN(x, z) && VISIBLE(x, z) && awayBig(.42)(x, z), .1);
 const SPROUTS = scatter(37, 52, .3, 1.9, (x, z) => SEEN(x, z) && VISIBLE(x, z) && awayBig(.35)(x, z), .09);
 const DECO = {
-  tufts: scatter(5, 150, .2, 2.9, (x, z) => z < .6 && VISIBLE(x, z), .07), rocks: scatter(17, 12, .6, 2.6, (x, z) => VISIBLE(x, z) && awayBig(.45)(x, z), .3),
-  bushes: scatter(23, 8, 1.1, 2.4, (x, z) => TALL(x, z) && VISIBLE(x, z - .15) && awayBig(.6)(x, z), .5), daisies: scatter(43, 34, .35, 2.4, (x, z) => VISIBLE(x, z) && awayBig(.35)(x, z), .1)
+  tufts: scatter(5, 70, .35, 2.6, (x, z) => z < .4 && VISIBLE(x, z) && outBeds(.08)(x, z) && awayBig(.4)(x, z), .14), rocks: scatter(17, 6, .9, 2.4, (x, z) => VISIBLE(x, z) && outBeds(.1)(x, z) && awayBig(.5)(x, z), .5),
+  bushes: scatter(23, 8, 1.1, 2.4, (x, z) => TALL(x, z) && VISIBLE(x, z - .15) && awayBig(.6)(x, z), .5), daisies: scatter(43, 24, .35, 2.4, (x, z) => VISIBLE(x, z) && outBeds(.06)(x, z) && awayBig(.35)(x, z), .12)
 };
 
 /* ---------- Piezas ----------
@@ -195,6 +218,18 @@ const PARTS = {
       pc(new THREE.SphereGeometry(.024, 7, 5), L[1], [.02, h + .01, 0], [0, 0, .85], [1, .4, .7]),
       pc(new THREE.SphereGeometry(.009, 5, 4), L[0], [0, h + .012, 0])];
   },
+  // Cantero de ahorro: tierra con un borde de piedritas (las flores crecen adentro)
+  cantero: pal => {
+    const o = [pc(CYL(BED_R, BED_R + .01, .022, 28), pal.trunk, [0, .006, 0])], r = rng(5);
+    for (let i = 0; i < 18; i++) { const a = i / 18 * 6.28; o.push(pc(new THREE.DodecahedronGeometry(.026, 0), pal.rock, [Math.cos(a) * (BED_R + .012), .014, Math.sin(a) * (BED_R + .012)], [r(), r(), 0], [1, .6, 1])); }
+    return o;
+  },
+  // Letrero clavado en el cantero vacío: aquí florece tu ahorro
+  letrero: pal => [pc(CYL(.007, .007, .16, 5), CARTON, [0, .08, 0]), pc(new THREE.BoxGeometry(.11, .07, .012), CREMA, [0, .15, 0]), pc(new THREE.CircleGeometry(.018, 10), pal.flower, [0, .15, .007])],
+  // Arbolito por crecer (aún sin inversiones): un guayacán chiquito atado a su tutor, con su letrero
+  arbolito: pal => [pc(CYL(.012, .018, .2, 6), pal.trunk, [0, .1, 0]), pc(new THREE.IcosahedronGeometry(.05, 0), pal.sprout[1], [0, .22, 0], [.3, 0, 0], [1, .8, 1]), pc(new THREE.IcosahedronGeometry(.035, 0), pal.sprout[0], [.04, .19, .02]),
+    pc(CYL(.006, .006, .26, 5), CARTON, [-.05, .13, -.01]), pc(new THREE.TorusGeometry(.03, .004, 4, 10), CARTON, [-.025, .14, 0], [Math.PI / 2, 0, 0], [1, .6, 1]),
+    pc(CYL(.006, .006, .14, 5), CARTON, [.12, .07, .06]), pc(new THREE.BoxGeometry(.1, .065, .012), CREMA, [.12, .14, .06]), pc(new THREE.CircleGeometry(.016, 10), pal.guaya[0], [.12, .14, .067])],
   // Lo que tienes gracias a tus créditos: siempre algo propio, nunca un paisaje triste
   // Casa hobbit: un montículo de pasto con puerta redonda, ventanitas con luz, chimenea de piedra y un caminito
   casa: pal => {
@@ -282,21 +317,28 @@ function buildForest(full) {
   if (!forest) { forest = new THREE.Group(); scene.add(forest); }
   if (full) { forest.children.slice().forEach(o => forest.remove(o)); clearGeo(); buildGarden(pal); }
   const f = finScene(), want = {}, id = (x, z) => x.toFixed(2) + ',' + z.toFixed(2);
-  let spot = 0;
-  f.props.forEach(k => { if (spot >= BIG.length) return; const [x, z] = BIG[spot++]; want['C' + k + id(x, z)] = () => makeProp(k, pal, x, z); });
-  for (let i = 0; i < f.guayas && spot < BIG.length; i++) { const [x, z] = BIG[spot++]; want['G' + id(x, z)] = () => item('guaya', i % 3, pal, { x, z, rot: i * 1.7 }, 1.1 + (i % 2) * .12, { sway: .015, gs: .7, crown: .95 }); }
+  const Z = (o, zona) => { o.userData.zona = zona; return o; };
+  f.props.forEach((k, i) => { const sp = ZONA.creditos[i]; if (!sp) return; const [x, z] = sp; want['C' + k + id(x, z)] = () => Z(makeProp(k, pal, x, z), 'credito:' + k); });
+  for (let i = 0; i < f.guayas && i < ZONA.inversion.length; i++) { const [x, z] = ZONA.inversion[i]; want['G' + id(x, z)] = () => Z(item('guaya', i % 3, pal, { x, z, rot: i * 1.7 }, 1.1 + (i % 2) * .12, { sway: .015, gs: .7, crown: .95 }), 'inversion'); }
+  // Sin inversiones, en su lugar espera un arbolito: el guayacán que puede crecer
+  if (!f.guayas && ZONA.inversion[0]) { const [x, z] = ZONA.inversion[0]; want['A' + id(x, z)] = () => Z(item('arbolito', '', pal, { x, z, rot: -.5 }, 1.5, { sway: .03, gs: 1 }), 'inversion'); }
+  // Los canteros del ahorro siempre están; vacíos, con un letrero que invita a llenarlos
+  ZONA.ahorro.forEach(([x, z], i) => {
+    want['K' + i] = () => Z(item('cantero', '', pal, { x, z, rot: i }, 1, { gs: 1.6 }), 'ahorro');
+    if (!f.flores && !f.brotes && i === 0) want['L' + i] = () => Z(item('letrero', '', pal, { x: x + .18, z: z - .2, rot: Math.atan2(-x, 3.2 - z) }, 1.3, { sway: .01 }), 'ahorro');
+  });
   // Bosque de atrás: lo dice la salud financiera (siempre hay algunos árboles; nunca tocones ni tierra seca)
   // Un árbol por cada mes de tu historia (el más reciente, el más cerca): frondoso si cerraste el mes con saldo a favor,
   // más chico si cerraste justo. Si recién empiezas no hay árboles: solo brotes en el suelo. Sin historia a la mano
   // (otras pantallas), el bosque sigue a la salud financiera como antes.
-  const spots = BIG.slice(spot).map(([x, z], i) => ({ x, z, s: 1, rot: i * 2.3, v: i, t: i % 2 ? .3 : .8, big: 1 })).concat(TREES);
+  const spots = TREES;
   const trees = fin.nuevo ? [] : Array.isArray(fin.historia) ? spots.slice(0, fin.historia.length).map((p, i) => Object.assign({}, p, { low: !fin.historia[i].ok }))
     : spots.slice(0, 3 + Math.round(score / 100 * (spots.length - 3)));
-  trees.forEach(p => { want['T' + (p.low ? 'l' : 'h') + id(p.x, p.z)] = () => makeTree(p, pal); });
+  trees.forEach(p => { want['T' + (p.low ? 'l' : 'h') + id(p.x, p.z)] = () => Z(makeTree(p, pal), 'bosque'); });
   // En la costa, dos palmeras a los lados de Uku para que se lean a primera vista
   if (look.region === 'costa' && !fin.nuevo) [{ x: -1.35, z: -.45, s: 1, t: .1, v: 0, rot: .4 }, { x: 1.4, z: -.5, s: .8, t: .2, v: 1, rot: 2.6 }].forEach(p => { want['P' + id(p.x, p.z)] = () => item('palma', p.v, pal, p, 1.05, { sway: .02, gs: .9 }); });
-  FLOWERS.slice(0, Math.round(f.flores / 100 * FLOWERS.length)).forEach((p, i) => { want['F' + i] = () => item('flor', p.v, pal, { x: p.x, z: p.z, rot: Math.atan2(-p.x, 3.2 - p.z) + (p.t - .5) * .8 }, .95 + p.s * .45, { sway: .1, top: .12 }); });
-  if (f.brotes) SPROUTS.forEach((p, i) => { want['B' + i] = () => item('brote', p.v, pal, p, .9 + p.s * .5, { sway: .08, top: .06 + p.v * .012 }); });
+  FLOWERS.slice(0, Math.round(f.flores / 100 * FLOWERS.length)).forEach((p, i) => { want['F' + i] = () => Z(item('flor', p.v, pal, { x: p.x, z: p.z, rot: Math.atan2(-p.x, 3.2 - p.z) + (p.t - .5) * .8 }, .95 + p.s * .45, { sway: .1, top: .12 }), 'ahorro'); });
+  if (f.brotes) SPROUTS.concat(FLOWERS.slice(0, 20)).forEach((p, i) => { want['B' + i] = () => Z(item('brote', p.v, pal, p, .9 + p.s * .5, { sway: .08, top: .06 + p.v * .012 }), 'ahorro'); });
   planted.forEach(p => { want[p.key] = () => item('brote', 1, pal, p, 1.15, { sway: .08, top: .07, gs: .32 }); });
   const have = {};
   forest.children.forEach(o => { have[o.userData.key] = o; });
@@ -496,7 +538,7 @@ function next() {
   acts++;
   if ((fin.nuevo || fin.ahorro > 0 || (bloom || 0) > 0) && acts % 3 === 0) { play('plant'); idleFor = 2.5; return; }
   for (let i = 0; i < 12; i++) {
-    const x = (Math.random() - .5) * 1.1, z = -.45 + Math.random() * .75;
+    const x = (Math.random() - .5) * 1.1, z = -.45 + Math.random() * .55; // delante quedan los canteros
     if (Math.hypot(x - pos.x, z - pos.z) > .25) { goal = { x, z }; return; }
   }
   idleFor = 2;
@@ -959,7 +1001,7 @@ function init() {
       setTimeout(() => window.removeEventListener('click', stop, true), 400);
       return;
     }
-    if (e.type === 'pointerup') { play(['wave', 'nod', 'happy'][Math.floor(Math.random() * 3)]); onTap && onTap(); }
+    if (e.type === 'pointerup') { const z = onPick && pick(e); if (z) { play('nod'); onPick(z); return; } play(['wave', 'nod', 'happy'][Math.floor(Math.random() * 3)]); onTap && onTap(); }
   };
   cv.addEventListener('pointerup', end);
   cv.addEventListener('pointercancel', end);
@@ -1002,6 +1044,7 @@ export function attach(el, opts) {
     else if (opts.score !== score) { score = opts.score; buildForest(); }
   }
   if (opts && opts.onTap) onTap = opts.onTap;
+  if (opts && opts.onPick) onPick = opts.onPick;
   if (opts && opts.onReady) { if (bear) opts.onReady(); else readyFns.push(opts.onReady); }
   resize();
   attach._ro && attach._ro.disconnect();
@@ -1023,6 +1066,40 @@ export function setFinanzas(f) {
   if (renderer) buildForest();
 }
 // Qué hay hoy en el claro (para explicarlo): lo que tienes por tus créditos, guayacanes, flores, brotes y mariposas
+// Qué cosa del paisaje se tocó: su zona (ahorro, inversion, bosque o credito:casa…), o null si fue el cielo o Uku
+const _ray = new THREE.Raycaster(), _ndc = new THREE.Vector2();
+function pick(e) {
+  if (!forest || !host) return null;
+  const r = renderer.domElement.getBoundingClientRect();
+  _ndc.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
+  _ray.setFromCamera(_ndc, camera);
+  if (bear) { const hb = _ray.intersectObject(bear, true)[0]; if (hb) return null; } // Uku delante: el toque es para él
+  const hit = _ray.intersectObjects(forest.children.filter(o => o.userData.zona && o.userData.dir > 0), true)[0];
+  if (!hit) return null;
+  let o = hit.object; while (o.parent && o.parent !== forest) o = o.parent;
+  return o.userData.zona || null;
+}
+/* Dónde está cada zona en pantalla (px del contenedor) para poner sus etiquetas: [{ id, x, y, tiene }].
+   id: ahorro, inversion, bosque o credito:<lo que tienes> (casa, carro, tienda…). */
+const _za = new THREE.Vector3(), _zu = new THREE.Vector3();
+export function lugares() {
+  if (!forest || !host || !camera) return [];
+  const w = host.clientWidth, h = host.clientHeight, out = [], f = finScene();
+  const at = (o, up, id, tiene) => {
+    _zu.set(0, 1, 0).applyQuaternion(o.quaternion); _za.copy(o.position).addScaledVector(_zu, up * o.userData.base).project(camera);
+    if (_za.z > 1) return;
+    const x = (_za.x + 1) / 2 * w, y = (1 - _za.y) / 2 * h;
+    if (x > 8 && x < w - 8 && y > 8 && y < h - 8) out.push({ id, x, y, tiene });
+  };
+  const live = forest.children.filter(o => o.userData.dir > 0 && o.userData.grow > .5);
+  const first = (re) => live.find(o => re.test(o.userData.key || ''));
+  const bed = first(/^K/); if (bed) at(bed, .12, 'ahorro', f.flores > 0 || f.brotes);
+  const inv = first(/^G/) || first(/^A/); if (inv) at(inv, inv.userData.crown ? .75 : .3, 'inversion', f.guayas > 0);
+  live.filter(o => /^C/.test(o.userData.key || '')).forEach(o => at(o, .3, o.userData.zona, true));
+  const tr = live.filter(o => /^T/.test(o.userData.key || '')).sort((a, b) => Math.abs(a.position.x) - Math.abs(b.position.x))[0];
+  if (tr) at(tr, .8, 'bosque', true);
+  return out;
+}
 export function contenido() { const f = finScene(); return { arboles: forest ? forest.children.filter(o => /^T/.test(o.userData.key || '') && o.userData.dir > 0).length : 0, props: f.props, guayacanes: f.guayas, flores: Math.round(f.flores / 100 * FLOWERS.length), brotes: f.brotes ? SPROUTS.length : 0, plantados: planted.length, mariposas: flyN }; }
 /* Uku sale de su mundo para conversar: el bosque, el suelo y el polvo se apagan y queda él solo,
    nítido, sobre una foto borrosa de su mundo (snapshot). Al volver, todo reaparece. */
