@@ -435,7 +435,7 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
    lados, divisor border/divider (la última sin divisor); título body-md/
    semibold, secundario body-sm/medium, cifra body-md/medium tabular, chevron
    icon-sm en icon/secondary. Estados row-bg/*. */
-.bp-list-item, .list-item, .product-row, .sub-item, .goal-row, .sx-row, .as-row, .pf-tx, .pfm-tx, .uk-chip, .uk-ay__row, .uk-ay2__row, .sp-row, .pfm-debt, .pfm-inc, .pv-row, .sheet__row, .pfm-groups__row, .pfm-hub__act {
+.bp-list-item, .list-item, .product-row, .sub-item, .goal-row, .sx-row, .as-row, .pf-tx, .pfm-tx, .uk-chip, .uk-ay__row, .uk-ay2__row, .sp-row, .pfm-debt, .pfm-inc, .pv-row, .sheet__row, .pfm-groups__row, .pfm-hub__act, .pfm-hub__dinero {
   display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-lg); box-sizing: border-box; width: 100%;
   min-height: var(--ui-row); margin: 0; padding: var(--bp-semantic-spacing-micro-lg) var(--bp-layout-card-padding);
   border: 0; border-bottom: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); border-radius: 0;
@@ -443,8 +443,8 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
   font: var(--sol-body-md-medium); text-align: left; text-decoration: none; cursor: pointer;
 }
 .bp-list-item:last-child, .card > .list-item:last-child, .card > .product-row:last-of-type, .sub-item:last-child, .as-row:last-child, .pf-sheet-list .pf-tx:last-child, .pf-sheet-list .pfm-tx:last-child, .uk-msg__acts > .uk-chip:last-child, .uk-ay__card > :last-child, .uk-ay2__list > :last-child, .sp-list > .sp-row:last-child, .pfm-debt:last-child, .pfm-inc:last-child, .pf-tx:last-child, .pfm-groups__row:last-child, .pv-row:last-child { border-bottom: 0; }
-.bp-list-item:hover, .list-item:hover, .product-row:hover, .sub-item:hover, .goal-row:hover, .sx-row:hover, .as-row--btn:hover, .uk-chip:hover, .uk-ay__row:hover, .uk-ay2__row:hover, .sp-row:hover, .pfm-hub__act:hover { background: var(--bp-interaction-row-bg--hover); }
-.bp-list-item:active, .list-item:active, .product-row:active, .sub-item:active, .goal-row:active, .sx-row:active, .as-row--btn:active, .uk-chip:active, .uk-ay__row:active, .uk-ay2__row:active, .sp-row:active, .pfm-hub__act:active { background: var(--bp-interaction-row-bg--active); transform: none; }
+.bp-list-item:hover, .list-item:hover, .product-row:hover, .sub-item:hover, .goal-row:hover, .sx-row:hover, .as-row--btn:hover, .uk-chip:hover, .uk-ay__row:hover, .uk-ay2__row:hover, .sp-row:hover, .pfm-hub__act:hover, .pfm-hub__dinero:hover { background: var(--bp-interaction-row-bg--hover); }
+.bp-list-item:active, .list-item:active, .product-row:active, .sub-item:active, .goal-row:active, .sx-row:active, .as-row--btn:active, .uk-chip:active, .uk-ay__row:active, .uk-ay2__row:active, .sp-row:active, .pfm-hub__act:active, .pfm-hub__dinero:active { background: var(--bp-interaction-row-bg--active); transform: none; }
 .bp-list-item:focus-visible, .list-item:focus-visible, .product-row:focus-visible { outline: none; box-shadow: inset var(--sol-focus); }
 /* Textos de fila */
 .bp-list-item__main, .sx-row__main, .as-row__main, .pf-tx__main, .uk-ay__main, .sp-row__main, .pfm-debt__main, .product-row__info, .goal-row__info, .list-item__text, .pfm-hub__act-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-xs); }
@@ -458,7 +458,7 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 .pf-tx__amt.is-in, .pfm-tx__amt.is-pos { color: var(--bp-theme-color-status-success-text); }
 .pfm-tx.is-no .pf-tx__amt { color: var(--bp-theme-color-text-helper); text-decoration: line-through; text-decoration-thickness: 1px; }
 .uk-chip::after { content: 'chevron_right'; font-family: 'Material Symbols Rounded'; }
-.bp-list-item > .material-symbols-rounded:last-child, .list-item > .material-symbols-rounded:last-child, .product-row > .material-symbols-rounded:last-child, .sub-item > .material-symbols-rounded:last-child, .sx-row > .material-symbols-rounded:last-child, .uk-ay__row > .material-symbols-rounded:last-child, .uk-ay2__row > .material-symbols-rounded:last-child, .sp-row > .material-symbols-rounded:last-child, .uk-chip::after, .pfm-hub__act > .material-symbols-rounded:last-child { margin-left: auto; font-size: var(--bp-semantic-size-icon-sm); color: var(--bp-theme-color-icon-secondary); }
+.bp-list-item > .material-symbols-rounded:last-child, .list-item > .material-symbols-rounded:last-child, .product-row > .material-symbols-rounded:last-child, .sub-item > .material-symbols-rounded:last-child, .sx-row > .material-symbols-rounded:last-child, .uk-ay__row > .material-symbols-rounded:last-child, .uk-ay2__row > .material-symbols-rounded:last-child, .sp-row > .material-symbols-rounded:last-child, .uk-chip::after, .pfm-hub__act > .material-symbols-rounded:last-child, .pfm-hub__dinero > .material-symbols-rounded:last-child { margin-left: auto; font-size: var(--bp-semantic-size-icon-sm); color: var(--bp-theme-color-icon-secondary); }
 /* Filas del hub de productos: más compactas (16), avatar cuadrado 32, label-lg */
 .tab-panel .product-row, .tab-panel .goal-row { min-height: 0; padding: var(--bp-semantic-spacing-macro-sm); align-items: flex-start; }
 .tab-panel .product-row__name, .tab-panel .goal-row__name, .tab-panel .product-row__amount, .tab-panel .goal-row__amount { font: var(--sol-label-lg); }

@@ -38,7 +38,7 @@ const angDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
 let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
 let bear = null, readyFns = [], rig = null, bones = {}, forest, garden = null, held = null, ground, stage = null;
 let ambient = null, focus = false, ambFocus = null;
-let focusAmt = 0, shiftTo = { x: 0, y: 0 }, shiftCur = { x: 0, y: 0 }, zoomTo = 1, zoomCur = 1, front = false, frontAmt = 1, folCur = 1;
+let focusAmt = 0, shiftTo = { x: 0, y: 0 }, shiftCur = { x: 0, y: 0 }, zoomTo = 1, zoomCur = 1, front = false, frontAmt = 1, folCur = 1, plano = false, planoAmt = 0;
 const camVel = { x: 0, y: 0, z: 0 }; // velocidad del encuadre (resorte amortiguado: arranca y frena suave)
 // Resorte críticamente amortiguado: sigue un destino que puede moverse (hoja que sube, globo que entra) sin tirones
 function spring(cur, to, velKey, dt) {
@@ -53,7 +53,7 @@ let target = null, loadAt = 0, ambLight = null, moodTint = new THREE.Color('#fff
 // bloom: flores amarillas del campo (0–100, ahorro); mood: ánimo que se queda (feliz, tranquilo, pensativo)
 let bloom = null, mood = null;
 // Lo que la persona tiene (PFM.finanzas()): nuevo en el banco, ahorro, inversiones y créditos
-let fin = { nuevo: false, ahorro: 0, inversion: 0, deudas: [] };
+let fin = { nuevo: false, ahorro: 0, inversion: 0, deudas: [], historia: null, sugerencias: null };
 let gesture = null, gestureT = 0, onTap = null;
 let yaw = 0, yawTo = 0, camDist = 3.6, drag = null, idleAt = 0; // giro con el dedo
 const CAM_H = 1.3; // altura de la cámara sobre los pies de Uku
@@ -236,7 +236,7 @@ function item(kind, v, pal, p, base, opts) {
 }
 function makeTree(p, pal) {
   const kind = p.t < .6 ? (look.region === 'costa' ? 'palma' : 'pino') : 'copa';
-  return item(kind, p.v % 3, pal, p, p.big ? 1.15 : .85 + p.s * .4, { sway: .02, gs: .9 });
+  return item(kind, p.v % 3, pal, p, (p.big ? 1.15 : .85 + p.s * .4) * (p.low ? .7 : 1), { sway: .02, gs: .9 });
 }
 // Humo de la chimenea: tres bocanadas que suben, crecen y se deshacen
 let smokeM = null; const smokeG = new THREE.SphereGeometry(.03, 7, 5);
@@ -259,10 +259,15 @@ function buildForest(full) {
   f.props.forEach(k => { const [x, z] = BIG[spot++]; want['C' + k + id(x, z)] = () => makeProp(k, pal, x, z); });
   for (let i = 0; i < f.guayas; i++) { const [x, z] = BIG[spot++]; want['G' + id(x, z)] = () => item('guaya', i % 3, pal, { x, z, rot: i * 1.7 }, 1.1 + (i % 2) * .12, { sway: .015, gs: .7, crown: .95 }); }
   // Bosque de atrás: lo dice la salud financiera (siempre hay algunos árboles; nunca tocones ni tierra seca)
+  // Un árbol por cada mes de tu historia (el más reciente, el más cerca): frondoso si cerraste el mes con saldo a favor,
+  // más chico si cerraste justo. Si recién empiezas no hay árboles: solo brotes en el suelo. Sin historia a la mano
+  // (otras pantallas), el bosque sigue a la salud financiera como antes.
   const spots = BIG.slice(spot).map(([x, z], i) => ({ x, z, s: 1, rot: i * 2.3, v: i, t: i % 2 ? .3 : .8, big: 1 })).concat(TREES);
-  spots.slice(0, 3 + Math.round(score / 100 * (spots.length - 3))).forEach(p => { want['T' + id(p.x, p.z)] = () => makeTree(p, pal); });
+  const trees = fin.nuevo ? [] : Array.isArray(fin.historia) ? spots.slice(0, fin.historia.length).map((p, i) => Object.assign({}, p, { low: !fin.historia[i].ok }))
+    : spots.slice(0, 3 + Math.round(score / 100 * (spots.length - 3)));
+  trees.forEach(p => { want['T' + (p.low ? 'l' : 'h') + id(p.x, p.z)] = () => makeTree(p, pal); });
   // En la costa, dos palmeras a los lados de Uku para que se lean a primera vista
-  if (look.region === 'costa') [{ x: -1.35, z: -.45, s: 1, t: .1, v: 0, rot: .4 }, { x: 1.4, z: -.5, s: .8, t: .2, v: 1, rot: 2.6 }].forEach(p => { want['P' + id(p.x, p.z)] = () => item('palma', p.v, pal, p, 1.05, { sway: .02, gs: .9 }); });
+  if (look.region === 'costa' && !fin.nuevo) [{ x: -1.35, z: -.45, s: 1, t: .1, v: 0, rot: .4 }, { x: 1.4, z: -.5, s: .8, t: .2, v: 1, rot: 2.6 }].forEach(p => { want['P' + id(p.x, p.z)] = () => item('palma', p.v, pal, p, 1.05, { sway: .02, gs: .9 }); });
   FLOWERS.slice(0, Math.round(f.flores / 100 * FLOWERS.length)).forEach((p, i) => { want['F' + i] = () => item('flor', p.v, pal, { x: p.x, z: p.z, rot: Math.atan2(-p.x, 3.2 - p.z) + (p.t - .5) * .8 }, .95 + p.s * .45, { sway: .1, top: .12 }); });
   if (f.brotes) SPROUTS.forEach((p, i) => { want['B' + i] = () => item('brote', p.v, pal, p, .9 + p.s * .5, { sway: .08, top: .06 + p.v * .012 }); });
   planted.forEach(p => { want[p.key] = () => item('brote', 1, pal, p, 1.15, { sway: .08, top: .07, gs: .32 }); });
@@ -277,7 +282,8 @@ function buildForest(full) {
     o.scale.setScalar(full ? u.base : .001);
     forest.add(o);
   });
-  flyN = Math.min(5, 2 + (f.flores > 0) + (f.guayas > 0) + f.brotes);
+  // Las mariposas son las sugerencias de Uku: una por cada una (siempre hay al menos dos revoloteando)
+  flyN = fin.sugerencias != null ? Math.max(2, Math.min(6, fin.sugerencias)) : Math.min(5, 2 + (f.flores > 0) + (f.guayas > 0) + f.brotes);
 }
 // Lo que siempre está, tenga lo que tenga: pasto, piedras, arbustos y florcitas blancas (una sola malla)
 const _dum = new THREE.Object3D();
@@ -357,7 +363,7 @@ function buildFlies() {
   fliesG = new THREE.Group(); scene.add(fliesG);
   wingM = new THREE.MeshLambertMaterial({ color: palette().flower, side: THREE.DoubleSide });
   const wg = wingGeo(), bm = new THREE.MeshLambertMaterial({ color: '#3a3c43' }), bg = new THREE.CapsuleGeometry(.0035, .026, 2, 5).rotateX(Math.PI / 2), r = rng(7);
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 6; i++) {
     const g = new THREE.Group(), wr = new THREE.Mesh(wg, wingM), wl = new THREE.Mesh(wg, wingM); wl.scale.x = -1;
     g.add(wr, wl, new THREE.Mesh(bg, bm)); g.scale.setScalar(.95 + (i % 3) * .15);
     const p = new THREE.Vector3((r() - .5) * 1.6, 0, -r() * 1.2); p.y = groundY(p.x, p.z) + .25 + r() * .4;
@@ -782,7 +788,8 @@ function frame(now) {
   focusAmt = RM ? (focus ? 1 : 0) : lerp(focusAmt, focus ? 1 : 0, Math.min(1, dt * 4));
   // En libertad la cámara se aleja y sube un poco (se ve el horizonte del planeta); con un mensaje, Uku pasa a primer plano
   const free = (1 - frontAmt) * (1 - focusAmt);
-  const cd = camDist * (.66 - .1 * focusAmt) * zoomCur * (1 + .4 * free), ch = CAM_H * (.6 - .04 * focusAmt + .14 * free);
+  planoAmt = RM ? (plano ? 1 : 0) : lerp(planoAmt, plano ? 1 : 0, Math.min(1, dt * 2.2));
+  const cd = camDist * (.66 - .1 * focusAmt) * zoomCur * (1 + .4 * free + .5 * planoAmt), ch = CAM_H * (.6 - .04 * focusAmt + .14 * free + .3 * planoAmt);
   // El encuadre (corrimiento) también se mueve con suavidad
   const sdt = Math.min(dt, .05);
   if (Math.abs(shiftCur.x - shiftTo.x) > 1e-4 || Math.abs(shiftCur.y - shiftTo.y) > 1e-4 || Math.abs(camVel.x) > 1e-4 || Math.abs(camVel.y) > 1e-4) {
@@ -795,7 +802,7 @@ function frame(now) {
   const fx = pos.x * folCur, fz = pos.z * folCur, fy = groundY(fx, fz);
   camera.position.set(Math.sin(yaw) * cd + Math.cos(yaw) * sway + fx, ch + fy, Math.cos(yaw) * cd - Math.sin(yaw) * sway + fz);
   camera.up.set(0, 1, 0);
-  camera.lookAt(fx, .32 + .04 * focusAmt + fy, fz);
+  camera.lookAt(fx, .32 + .04 * focusAmt + .1 * planoAmt + fy, fz);
   renderer.render(scene, camera);
 }
 
@@ -952,11 +959,12 @@ export function setBloom(b) { b = b == null ? null : Math.max(0, Math.min(100, b
    nuevo llena el claro de brotes; ahorro, de flores; inversion planta guayacanes; cada crédito pone lo que tienes gracias a él. */
 export function setFinanzas(f) {
   f = f || {};
-  fin = { nuevo: !!f.nuevo, ahorro: +f.ahorro || 0, inversion: +f.inversion || 0, deudas: Array.isArray(f.deudas) ? f.deudas : [] };
+  fin = { nuevo: !!f.nuevo, ahorro: +f.ahorro || 0, inversion: +f.inversion || 0, deudas: Array.isArray(f.deudas) ? f.deudas : [],
+    historia: Array.isArray(f.historia) ? f.historia.slice(0, 12) : null, sugerencias: f.sugerencias == null ? null : Math.max(0, +f.sugerencias || 0) };
   if (renderer) buildForest();
 }
 // Qué hay hoy en el claro (para explicarlo): lo que tienes por tus créditos, guayacanes, flores, brotes y mariposas
-export function contenido() { const f = finScene(); return { props: f.props, guayacanes: f.guayas, flores: Math.round(f.flores / 100 * FLOWERS.length), brotes: f.brotes ? SPROUTS.length : 0, plantados: planted.length, mariposas: flyN }; }
+export function contenido() { const f = finScene(); return { arboles: forest ? forest.children.filter(o => /^T/.test(o.userData.key || '') && o.userData.dir > 0).length : 0, props: f.props, guayacanes: f.guayas, flores: Math.round(f.flores / 100 * FLOWERS.length), brotes: f.brotes ? SPROUTS.length : 0, plantados: planted.length, mariposas: flyN }; }
 /* Uku sale de su mundo para conversar: el bosque, el suelo y el polvo se apagan y queda él solo,
    nítido, sobre una foto borrosa de su mundo (snapshot). Al volver, todo reaparece. */
 export function setFocus(on) {
@@ -975,6 +983,8 @@ export function snapshot() {
 // El encuadre se mueve con suavidad hacia su destino; con `instant` salta de una (antes de mostrarse)
 export function setShift(f, fy, instant) { shiftTo = { x: +f || 0, y: +fy || 0 }; if (instant) { shiftCur.x = shiftTo.x; shiftCur.y = shiftTo.y; camVel.x = camVel.y = 0; if (camera) applyShift(); } }
 // La cámara se aleja (z > 1) o se acerca; sirve para que la cara de Uku quepa donde hay sitio
+// Plano general: la cámara se aleja y sube para que se vea el mundo de Uku entero (Mis finanzas)
+export function setPlano(on) { plano = !!on; }
 export function setZoom(z, instant) { zoomTo = Math.max(.8, Math.min(1.8, +z || 1)); if (instant) { zoomCur = zoomTo; camVel.z = 0; } }
 // Primer plano (true): Uku se detiene, te mira y no pasea; libre (false): pasea y la cámara orbita
 export function setFront(on) { front = !!on; }
