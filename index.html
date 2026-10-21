@@ -1076,6 +1076,9 @@
             overflow: hidden;
         }
         .card-thumb--visa { background: #ffdd00; }
+        /* En las filas de producto la tarjeta se ve a un tamaño que se pueda leer */
+        .product-row .card-thumb { width: 72px; height: 46px; border-radius: 8px; padding: 6px 8px; }
+        .product-row .card-thumb__brand { font-size: 7px; }
         .card-thumb--black { background: linear-gradient(135deg, #2b2d33, #060606); }
         /* diners/ghost son claras: necesitan un borde para definirse contra
            el fondo blanco de la fila (antes era un box-shadow inset) */
