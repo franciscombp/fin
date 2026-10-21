@@ -3,7 +3,7 @@
    chat).
 
    - Un único renderer WebGL que se "muda" al contenedor activo.
-   - Uku (assets/oso/uku-rig.glb, ver uku-rig.js) con sus clips de Mixamo,
+   - Uku (assets/oso/uku.glb, ver uku-rig.js) con sus gestos hechos por código,
      más lentas y con menos amplitud (calm): saluda sin exagerar, respira,
      pestañea (los ojos están pintados en la textura y se cambian por
      variantes), mira a su alrededor y a las mariposas. Puede sostener
@@ -35,7 +35,7 @@ const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const lerp = THREE.MathUtils.lerp, clamp = THREE.MathUtils.clamp;
 const angDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
 
-let renderer, scene, camera, clock, host = null, raf = 0, visible = true;
+let renderer, scene, bearScene, shadow, camera, clock, host = null, raf = 0, visible = true;
 let bear = null, readyFns = [], rig = null, bones = {}, forest, garden = null, held = null, ground, stage = null;
 let ambient = null, focus = false, ambFocus = null;
 let focusAmt = 0, shiftTo = { x: 0, y: 0 }, shiftCur = { x: 0, y: 0 }, zoomTo = 1, zoomCur = 1, front = false, frontAmt = 1, folCur = 1;
@@ -183,9 +183,23 @@ const PARTS = {
       pc(new THREE.SphereGeometry(.009, 5, 4), L[0], [0, h + .012, 0])];
   },
   // Lo que tienes gracias a tus créditos: siempre algo propio, nunca un paisaje triste
-  casa: pal => [pc(new THREE.BoxGeometry(.5, .36, .42), CREMA, [0, .18, 0]), pc(new THREE.ConeGeometry(.42, .26, 4), AZUL, [0, .49, 0], [0, Math.PI / 4, 0], [1, 1, .85]),
-    pc(new THREE.BoxGeometry(.11, .19, .012), pal.trunk, [-.1, .095, .212]), pc(new THREE.BoxGeometry(.1, .09, .012), pal.flower, [.12, .22, .212]),
-    pc(new THREE.BoxGeometry(.06, .14, .06), pal.trunk, [.13, .56, -.06])],
+  // Casa hobbit: un montículo de pasto con puerta redonda, ventanitas con luz, chimenea de piedra y un caminito
+  casa: pal => {
+    const A = .4, H = .29, Z = .36, on = (x, y, k) => { // un punto del frente del montículo, mirando hacia afuera
+      const z = Z * Math.sqrt(Math.max(0, 1 - (x / A) ** 2 - (y / H) ** 2)), n = new THREE.Vector3(x / (A * A), y / (H * H), z / (Z * Z)).normalize();
+      return new THREE.Matrix4().compose(new THREE.Vector3(x, y, z).addScaledVector(n, k), new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), n), new THREE.Vector3(1, 1, 1));
+    };
+    const door = new THREE.Matrix4().compose(new THREE.Vector3(0, .11, .336), new THREE.Quaternion(), new THREE.Vector3(1, 1, 1));
+    const o = [pc(new THREE.SphereGeometry(1, 28, 12, 0, Math.PI * 2, 0, Math.PI / 2), pal.pine[1 % pal.pine.length], [0, 0, 0], 0, [A, H, Z]),
+      pc(new THREE.SphereGeometry(1, 20, 8, 0, Math.PI * 2, 0, Math.PI / 2), pal.trunk, [0, .2, -.02], 0, [.27, .1, .24]), // el lomo, un poco más oscuro
+      pc(new THREE.TorusGeometry(.108, .018, 8, 28), CARTON, door), pc(new THREE.CircleGeometry(.1, 28), AZUL, door.clone().multiply(TRS([0, 0, .004]))),
+      pc(new THREE.BoxGeometry(.005, .19, .004), MARINO, door.clone().multiply(TRS([0, 0, .007]))), pc(new THREE.SphereGeometry(.012, 8, 6), AMARILLO, door.clone().multiply(TRS([.055, 0, .012])))];
+    [-1, 1].forEach(sx => { o.push(pc(new THREE.TorusGeometry(.05, .011, 6, 20), CREMA, on(sx * .215, .135, .004)), pc(new THREE.CircleGeometry(.047, 20), pal.flower, on(sx * .215, .135, .006)), pc(new THREE.BoxGeometry(.094, .006, .004), CREMA, on(sx * .215, .135, .009))); });
+    o.push(pc(CYL(.034, .04, .15, 8), pal.rock, [.14, .3, -.05]), pc(CYL(.044, .044, .022, 8), pal.trunk, [.14, .38, -.05]));
+    [[0, .44, .07], [.03, .55, .06], [-.01, .66, .055]].forEach(([x, z, r]) => o.push(pc(CYL(r, r, .016, 9), pal.rock, [x, .004, z], [0, x * 20, 0], [1, 1, .75])));
+    [[-.18, .24, .1], [.05, .27, -.17], [.25, .17, .02], [-.08, .28, -.05]].forEach(([x, y, z]) => o.push(pc(new THREE.ConeGeometry(.013, .06, 3), pal.trunk, [x, y, z], [z, 0, x])));
+    return o;
+  },
   carro: pal => [pc(new THREE.BoxGeometry(.52, .12, .26), AZUL, [0, .1, 0]), pc(new THREE.BoxGeometry(.28, .11, .24), AZUL, [-.04, .21, 0]), pc(new THREE.BoxGeometry(.24, .075, .245), CREMA, [-.04, .215, 0]),
     ...[[-.16, .13], [.16, .13], [-.16, -.13], [.16, -.13]].map(([x, z]) => pc(CYL(.055, .055, .04, 12), LLANTA, [x, .055, z], [Math.PI / 2, 0, 0])),
     pc(new THREE.BoxGeometry(.012, .03, .05), AMARILLO, [.262, .11, .08]), pc(new THREE.BoxGeometry(.012, .03, .05), AMARILLO, [.262, .11, -.08])],
@@ -208,7 +222,7 @@ const PARTS = {
   libros: () => [pc(new THREE.BoxGeometry(.24, .05, .17), AZUL, [0, .025, 0], [0, .1, 0]), pc(new THREE.BoxGeometry(.22, .045, .16), CREMA, [.01, .073, 0], [0, -.15, 0]),
     pc(new THREE.BoxGeometry(.2, .045, .15), AMARILLO, [0, .118, 0], [0, .25, 0]), pc(new THREE.BoxGeometry(.16, .04, .12), MARINO, [0, .16, 0], [0, -.1, 0])]
 };
-const PROP_S = { casa: 1.45, carro: 1.3, tienda: 1.4, carretilla: 1.45, nevera: 1.35, tele: 1.35, caja: 1.4, libros: 1.45 };
+const PROP_S = { casa: 1.75, carro: 1.3, tienda: 1.4, carretilla: 1.45, nevera: 1.35, tele: 1.35, caja: 1.4, libros: 1.45 };
 const PROP_ORDER = ['casa', 'carro', 'tienda', 'carretilla', 'nevera', 'tele', 'caja', 'libros'];
 // Qué tienes por cada crédito con saldo (uno de cada tipo, hasta cuatro)
 function propsDe(deudas) {
@@ -240,7 +254,7 @@ function makeTree(p, pal) {
 }
 // Humo de la chimenea: tres bocanadas que suben, crecen y se deshacen
 let smokeM = null; const smokeG = new THREE.SphereGeometry(.03, 7, 5);
-function smoke(o, t) { o.children.forEach((c, i) => { const f = (t * .22 + i / 3) % 1; c.position.set(.13 + f * .09, .64 + f * .34, -.06); c.scale.setScalar(Math.max(.001, Math.sin(f * Math.PI) * (.6 + f))); }); }
+function smoke(o, t) { o.children.forEach((c, i) => { const f = (t * .22 + i / 3) % 1; c.position.set(.14 + f * .08, .41 + f * .32, -.05); c.scale.setScalar(Math.max(.001, Math.sin(f * Math.PI) * (.6 + f))); }); }
 function makeProp(k, pal, x, z) {
   const o = item(k, '', pal, { x, z, rot: Math.atan2(-x, 3.2 - z) * .8 }, PROP_S[k], { gs: 1.1 });
   if (k === 'casa') { for (let i = 0; i < 3; i++) o.add(new THREE.Mesh(smokeG, smokeM)); o.userData.tick = smoke; }
@@ -371,7 +385,7 @@ const handFree = () => !!(bear && bones.hand_R && !gesture && !moving && !focus 
 function perchPoint(f, out) {
   const P = f.perch; if (!P) return null;
   // sobre la pata derecha, del lado de la cámara (en metros, con los ejes de Uku)
-  if (P === 'hand') { if (!handFree()) return null; bones.hand_R.getWorldPosition(out); return out.add(_fu.set(-.012, -.012, .026).applyQuaternion(bear.quaternion)); }
+  if (P === 'hand') { if (!handFree()) return null; bones.hand_R.getWorldPosition(out); return out.add(_fu.set(-.006, -.014, .034).applyQuaternion(bear.quaternion)); }
   if (!P.parent || P.userData.dir < 0) return null;
   _fu.set(0, 1, 0).applyQuaternion(P.quaternion);
   return out.copy(P.position).addScaledVector(_fu, P.userData.top * P.scale.y + .004);
@@ -428,19 +442,19 @@ function flyNear(head, max) {
 }
 
 /* ---------- Uku: gestos, paseo, mirada y ojos ---------- */
-// Gesto → [clip, velocidad, calma (cuánto se acerca a su pose quieta: menos amplitud), duración en s]
+// Gesto → [gesto de uku-rig.js, velocidad, calma (cuánto se acerca a su pose base), duración en s]
 const GEST = {
-  wave: ['Waving', .55, .45, 2.7, /Right(Shoulder|Arm|ForeArm|Hand)/], // saluda con el brazo entero, pero el cuerpo casi quieto happy: ['Happy Idle', .8, .15, 2.4], talk: ['Happy Idle', .6, .45, 2.2],
-  nod: ['Thoughtful Head Nod', .8, .1, 3.4], worried: ['Thoughtful Head Nod', .7, .2, 3.8], plant: ['Plant A Plant', .9, 0, 8.2]
+  wave: ['wave', 1, 0, 2.6], happy: ['happy', 1, 0, 2.4], talk: ['talk', 1, 0, 2.2],
+  nod: ['nod', 1, 0, 3], worried: ['worried', 1, 0, 3.8], plant: ['plant', 1, 0, 7.6]
 };
-const IDLE = ['Happy Idle', .45, .65], WALK = ['Walking', .6, .1], ALIAS = { water: 'plant', hold: 'plant' };
+const IDLE = ['idle', 1, 0], WALK = ['walk', 1, 0], ALIAS = { water: 'plant', hold: 'plant' };
 // Conversando solo hace los gestos de pie: los que lo agachan (asentir, plantar) quedan para su mundo
 const STANDING = { wave: 1, happy: 1, talk: 1 };
 const BEAR_S = .58, WALK_V = .15; // Uku grande; pasea despacio (m/s)
 let pos = { x: 0, z: 0 }, heading = 0, goal = null, idleFor = 3, acts = 0, speed = 0, turnTo = 0, moving = false, swayB = 0;
 function clipFor() {
   if (gesture && GEST[gesture] && (!focus || STANDING[gesture])) return GEST[gesture];
-  if (moving) return [WALK[0], WALK[1] * clamp(speed / WALK_V, .45, 1), WALK[2]];
+  if (moving) return [WALK[0], WALK[1] * clamp(speed / WALK_V, .5, 1.1), WALK[2]];
   return IDLE;
 }
 // Pasear: elige un punto del claro, gira hacia él, camina despacio y se queda un rato mirando
@@ -474,8 +488,8 @@ function next() {
 // Plantar: toma un brote de su lado, se agacha y lo deja en la tierra frente a él; el brote crece despacio
 let plantedNow = false;
 function plantStep() {
-  if (gestureT > 1.6 && gestureT < 3.4 && !held) holdObject('sprout');
-  if (gestureT >= 3.4 && !plantedNow) {
+  if (gestureT > .5 && gestureT < 2 && !held) holdObject('sprout');
+  if (gestureT >= 2 && !plantedNow) {
     plantedNow = true; holdObject(null);
     planted.push({ key: 'X' + plantN++, x: pos.x + Math.sin(heading) * .17, z: pos.z + Math.cos(heading) * .17, rot: Math.random() * 6.28 });
     if (planted.length > 6) planted.shift();
@@ -518,39 +532,24 @@ function lookAround(dt) {
     b.updateMatrixWorld(true);
   });
 }
-/* Ojos: están pintados en la textura de la cabeza (uku_cabeza_final) como dos puntos azul marino
-   sobre el pelaje. Para pestañear se dibujan variantes de la textura (entrecerrados, cerrados y
-   contentos ^ ^) y se cambia el mapa unos cuadros. M dice cuánto mide en la cara (mm; x a la derecha,
-   y hacia arriba) un píxel de la textura en x y en y: en el mapa UV los ojos están girados y estirados. */
-const EYES = [{ c: [189, 132], M: [-3.08, -5.66, -5.10, 2.61] }, { c: [169, 111], M: [-4.74, -2.86, -2.59, 5.62] }];
-let headMat = null, eyeMaps = null, eyeKind = 'open', blinkT = 2.5, happyFor = 0;
-function eyeMap(base, kind) {
-  const img = base.image, c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
-  const x = c.getContext('2d'), k = img.width / 512; x.drawImage(img, 0, 0);
-  EYES.forEach(e => {
-    const [a, b, cc, d] = e.M, det = a * d - cc * b, r = 3.9 * Math.sqrt(Math.abs(det)); // radio (mm) del punto original, ~3.9 px
-    x.setTransform(k, 0, 0, k, 0, 0); x.fillStyle = '#88909d'; x.beginPath(); x.arc(e.c[0], e.c[1], 6, 0, 7); x.fill(); // el pelaje tapa el ojo
-    x.setTransform(k * d / det, -k * b / det, -k * cc / det, k * a / det, k * e.c[0], k * e.c[1]); // de mm de la cara a píxeles
-    x.fillStyle = x.strokeStyle = '#0b2750'; x.lineCap = 'round'; x.lineWidth = r * .5; x.beginPath();
-    if (kind === 'half') { x.ellipse(0, -r * .3, r, r * .55, 0, 0, Math.PI * 2); x.fill(); }
-    else if (kind === 'shut') { x.moveTo(-r, 0); x.quadraticCurveTo(0, -r * .7, r, 0); x.stroke(); }
-    else { x.moveTo(-r, -r * .35); x.quadraticCurveTo(0, r * 1.1, r, -r * .35); x.stroke(); }
-  });
-  const t = new THREE.CanvasTexture(c);
-  ['flipY', 'colorSpace', 'wrapS', 'wrapT', 'anisotropy', 'magFilter', 'minFilter'].forEach(p => { t[p] = base[p]; });
-  return t;
-}
-function eyes(dt) {
-  if (!headMat || !eyeMaps) return;
+/* Ojos y boca: piezas de la cara (rig.face). Pestañea cada pocos segundos (a veces dos seguidas), pone ojos
+   contentos ^ ^ al alegrarse o cuando una mariposa se le posa, y mueve la boca al hablar. */
+let eyeKind = 'open', blinkT = 2.5, happyFor = 0, mouthCur = 0;
+function eyes(dt, t) {
+  if (!rig || !rig.face) return;
   let k = 'open';
   if (gesture === 'happy' && gestureT > .25 && gestureT < 1.9) happyFor = Math.max(happyFor, .05);
   if (happyFor > 0) { happyFor -= dt; k = 'happy'; blinkT = Math.max(blinkT, .8); }
   else if (!RM && (blinkT -= dt) < 0) {
-    // un pestañeo: entrecerrado, cerrado, entrecerrado (~0,2 s); a veces dos seguidos
+    // un pestañeo: entrecerrado, cerrado, entrecerrado (~0,2 s)
     const s = -blinkT; k = s < .05 ? 'half' : s < .15 ? 'shut' : s < .21 ? 'half' : 'open';
     if (s >= .21) blinkT = Math.random() < .18 ? .2 : 2.2 + Math.random() * 3.8;
   }
-  if (k !== eyeKind) { eyeKind = k; headMat.map = eyeMaps[k]; }
+  if (k !== eyeKind) { eyeKind = k; rig.face.eyes(k); }
+  // Boca: al hablar se abre y cierra como sílabas; contento, sonríe con la boca abierta
+  const talking = gesture === 'talk' && gestureT < 2, m = RM ? 0 : talking ? Math.max(0, Math.sin(t * 13) * .6 + Math.sin(t * 7.3) * .4) : gesture === 'happy' && gestureT < 2 ? .7 : 0;
+  mouthCur = lerp(mouthCur, m, Math.min(1, dt * 14));
+  rig.face.mouth(mouthCur);
 }
 
 function holdObject(kind) {
@@ -574,9 +573,9 @@ function holdObject(kind) {
 
 /* ---------- Ropa según el clima ----------
    Los accesorios cuelgan del hueso de la cabeza (en reposo está en
-   (0, 0.67, 0) sin rotación; la cabeza llega de y .71 a .90 y el hocico a
-   z .17), así siguen cada gesto. */
-let acc = null, baseMap = null, guayaMap = null, bearMat = null, rain = null;
+   (0, 0.64, 0) sin rotación; la cabeza llega hasta y .97, las orejas a .99,
+   los ojos están en y .795 y el hocico llega a z .23), así siguen cada gesto. */
+let acc = null, ropaCols = null, rain = null;
 function mat(color, extra) { return new THREE.MeshLambertMaterial(Object.assign({ color, flatShading: true }, extra || {})); }
 function hatPaja() {
   const g = new THREE.Group(), straw = mat('#e9dcb2'), band = mat('#2f2f2f');
@@ -585,7 +584,7 @@ function hatPaja() {
   const top = new THREE.Mesh(new THREE.SphereGeometry(.092, 20, 8, 0, Math.PI * 2, 0, Math.PI / 2), straw); top.position.y = .097; top.scale.y = .25;
   const ribbon = new THREE.Mesh(new THREE.CylinderGeometry(.109, .111, .024, 24), band); ribbon.position.y = .017;
   g.add(brim, crown, top, ribbon);
-  g.position.set(0, .225, -.01); g.rotation.set(-.12, 0, .06);
+  g.scale.setScalar(1.45); g.position.set(0, .345, -.015); g.rotation.set(-.12, 0, .06);
   return g;
 }
 function hatLana() {
@@ -594,7 +593,7 @@ function hatLana() {
   const rim = new THREE.Mesh(new THREE.CylinderGeometry(.128, .13, .04, 24), cuff); rim.position.y = .01;
   const pom = new THREE.Mesh(new THREE.IcosahedronGeometry(.038, 1), cuff); pom.position.y = .125;
   g.add(cap, rim, pom);
-  g.position.set(0, .185, -.01); g.rotation.x = -.1;
+  g.scale.setScalar(1.75); g.position.set(0, .19, -.02); g.rotation.x = -.1;
   return g;
 }
 /* Paraguas en la mano derecha: vive en la escena y cada cuadro se apoya en
@@ -614,8 +613,8 @@ function umbrella() {
 const _h = new THREE.Vector3(), _t = new THREE.Vector3(), _d = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
 function placeUmbrella() {
   if (!umb || !bones.hand_R || !bones.head) return;
-  bones.hand_R.localToWorld(_h.set(-.03, -.05, .03)); // centro de la palma
-  bones.head.getWorldPosition(_t); _t.x = _h.x * .45; _t.y += .37; _t.z += .03; // sobre la cabeza, un poco hacia la mano
+  bones.hand_R.localToWorld(_h.set(-.009, -.037, .008)); // centro de la pata
+  bones.head.getWorldPosition(_t); _t.x = _h.x * .45; _t.y += .3; _t.z += .03; // sobre la cabeza, un poco hacia la mano
   _d.subVectors(_t, _h); const L = _d.length(); _d.normalize();
   umb.position.copy(_h); umb.quaternion.setFromUnitVectors(_up, _d);
   const u = umb.userData; u.pole.scale.y = L; u.pole.position.y = L / 2; u.canopy.position.y = L;
@@ -627,46 +626,24 @@ function shades() {
     const l = new THREE.Mesh(new THREE.CircleGeometry(.034, 20), lens); l.position.set(s * .047, 0, 0); l.rotation.y = s * .18; g.add(l);
   });
   const bridge = new THREE.Mesh(new THREE.BoxGeometry(.028, .006, .004), frame); g.add(bridge);
-  g.position.set(0, .132, .142);
+  g.scale.setScalar(1.55); g.position.set(0, .155, .205);
   return g;
 }
-// Guayabera: el suéter amarillo (y la bufanda azul) se repintan en lino claro
-function guayabera() {
-  if (guayaMap || !baseMap || !baseMap.image) return guayaMap;
-  const img = baseMap.image, c = document.createElement('canvas');
-  c.width = img.width; c.height = img.height;
-  const x = c.getContext('2d'); x.drawImage(img, 0, 0);
-  const d = x.getImageData(0, 0, c.width, c.height), a = d.data, W = c.width, H = c.height;
-  // Máscara del suéter cerrada (dilatar y erosionar 6 px): así entran también
-  // las líneas grises del zigzag, que quedan rodeadas de amarillo.
-  const yel = new Uint8Array(W * H);
-  for (let i = 0, j = 0; i < a.length; i += 4, j++) { const r = a[i], g = a[i + 1], b = a[i + 2]; yel[j] = r > 140 && g > 120 && r - b > 70 ? 1 : 0; }
-  const pass = (src, R, op) => {
-    const h = new Uint8Array(W * H), v = new Uint8Array(W * H);
-    for (let y = 0; y < H; y++) for (let x0 = 0; x0 < W; x0++) {
-      let m = op; for (let k = -R; k <= R; k++) { const xx = x0 + k; const val = xx < 0 || xx >= W ? 0 : src[y * W + xx]; m = op ? Math.min(m, val) : Math.max(m, val); }
-      h[y * W + x0] = m;
-    }
-    for (let y = 0; y < H; y++) for (let x0 = 0; x0 < W; x0++) {
-      let m = op; for (let k = -R; k <= R; k++) { const yy = y + k; const val = yy < 0 || yy >= H ? 0 : h[yy * W + x0]; m = op ? Math.min(m, val) : Math.max(m, val); }
-      v[y * W + x0] = m;
-    }
-    return v;
-  };
-  const shirt = pass(pass(yel, 6, 0), 6, 1);
-  for (let i = 0, j = 0; i < a.length; i += 4, j++) {
-    if (shirt[j] && !yel[j]) { a[i] = 255; a[i + 1] = 210; a[i + 2] = 40; } // se pinta como suéter y abajo pasa a lino
-    const r = a[i], g = a[i + 1], b = a[i + 2], l = (r + g + b) / 765;
-    // lino parejo (sin el zigzag del suéter): apenas se conserva el sombreado
-    if (r > 140 && g > 120 && r - b > 70) { const k = .95 + (l - .62) * .12; a[i] = 247 * k; a[i + 1] = 244 * k; a[i + 2] = 234 * k; }
-    // la bufanda pasa a ser el cuello de la guayabera, del mismo lino
-    else if (b > r + 35 && b > g + 5) { const k = .9 + (l - .3) * .1; a[i] = 240 * k; a[i + 1] = 236 * k; a[i + 2] = 224 * k; }
+// Guayabera: el suéter se repinta en lino claro (los puños y el zigzag quedan apenas marcados) y la bufanda se guarda
+const LINO = [231, 220, 194];
+function guayabera(on) {
+  const ropa = rig && rig.skinned.find(m => m.name === 'ropa'), buf = rig && rig.skinned.find(m => m.name === 'bufanda');
+  if (buf) buf.visible = !on;
+  if (!ropa || !ropa.geometry.attributes.color) return;
+  const a = ropa.geometry.attributes.color, v = a.array, n = a.itemSize;
+  if (!ropaCols) ropaCols = v.slice();
+  for (let i = 0; i < a.count; i++) {
+    const o = i * n;
+    if (!on) { v[o] = ropaCols[o]; v[o + 1] = ropaCols[o + 1]; v[o + 2] = ropaCols[o + 2]; continue; }
+    const f = (ropaCols[o + 2] > 60 ? .9 : 1) * Math.min(1, .82 + .18 * ropaCols[o] / 250);
+    v[o] = LINO[0] * f; v[o + 1] = LINO[1] * f; v[o + 2] = LINO[2] * f;
   }
-  x.putImageData(d, 0, 0);
-  guayaMap = new THREE.CanvasTexture(c);
-  guayaMap.flipY = baseMap.flipY; guayaMap.colorSpace = baseMap.colorSpace;
-  guayaMap.wrapS = baseMap.wrapS; guayaMap.wrapT = baseMap.wrapT; guayaMap.anisotropy = baseMap.anisotropy;
-  return guayaMap;
+  a.needsUpdate = true;
 }
 function dressBear() {
   if (!bear || !bones.head) return;
@@ -678,10 +655,8 @@ function dressBear() {
   bones.head.add(acc);
   if (umb && look.hat !== 'paraguas') { scene.remove(umb); umb.traverse(c => { c.geometry && c.geometry.dispose(); c.material && c.material.dispose(); }); umb = null; }
   if (!umb && look.hat === 'paraguas') { umb = umbrella(); scene.add(umb); }
-  if (bearMat) {
-    const m = look.shirt === 'guayabera' ? guayabera() : baseMap;
-    if (m && bearMat.map !== m) { bearMat.map = m; bearMat.needsUpdate = true; }
-  }
+  guayabera(look.shirt === 'guayabera');
+  const lentes = rig.N('lentes'); if (lentes) lentes.visible = !look.shades; // con gafas de sol se guarda los lentes
 }
 function buildRain() {
   const n = 220, pos = new Float32Array(n * 6), r = rng(71);
@@ -727,15 +702,19 @@ function frame(now) {
     const c = clipFor();
     rig.playClip(c[0], .8, { speed: c[1], calm: c[2], keep: c[4] });
     rig.update(dt);
-    // Respira despacio y, quieto, se mece apenas; sobre la esfera su eje vertical es la normal del planeta
-    const still = !moving && !gesture && !RM && !focus, breath = RM || moving ? 0 : Math.sin(t * 1.3) * .004;
+    // Los pies siempre en el suelo (el rig apoya el pie más bajo); quieto, se mece apenas.
+    // Sobre la esfera su eje vertical es la normal del planeta
+    const still = !moving && !gesture && !RM && !focus;
     swayB = lerp(swayB, still ? Math.sin(t * .35) * .035 : 0, Math.min(1, dt * 2));
     surf(pos.x, pos.z, _sp);
-    bear.position.copy(PLANET_C).addScaledVector(_sp, PLANET_R + .45 * BEAR_S + breath);
+    bear.position.copy(PLANET_C).addScaledVector(_sp, PLANET_R);
+    // Sombra de contacto: lo asienta en el suelo
+    shadow.position.copy(bear.position).addScaledVector(_sp, .004); shadow.quaternion.setFromUnitVectors(_nrm, _sp);
+    shadow.scale.setScalar(bear.scale.x / BEAR_S * (gesture === 'plant' ? 1.15 : 1)); shadow.visible = !focus;
     bear.quaternion.setFromUnitVectors(_nrm, _sp).multiply(_yaw.setFromAxisAngle(_nrm, heading + swayB));
     bear.updateMatrixWorld(true);
     lookAround(dt);
-    eyes(dt);
+    eyes(dt, t);
     if (umb) placeUmbrella();
   }
   if (forest) forest.children.slice().forEach(o => {
@@ -796,9 +775,15 @@ function frame(now) {
   camera.position.set(Math.sin(yaw) * cd + Math.cos(yaw) * sway + fx, ch + fy, Math.cos(yaw) * cd - Math.sin(yaw) * sway + fz);
   camera.up.set(0, 1, 0);
   camera.lookAt(fx, .32 + .04 * focusAmt + fy, fz);
-  renderer.render(scene, camera);
+  draw();
 }
 
+// El mundo es una ilustración plana; Uku va encima con su propia luz suave (como un muñeco de verdad),
+// sin borrar la profundidad: lo que está delante de él lo sigue tapando
+function draw() {
+  renderer.render(scene, camera);
+  renderer.autoClear = false; renderer.render(bearScene, camera); renderer.autoClear = true;
+}
 function resize() {
   if (!host) return;
   const w = host.clientWidth, h = host.clientHeight;
@@ -838,33 +823,30 @@ function init() {
   smokeM = new THREE.MeshBasicMaterial({ color: pal.dust, transparent: true, opacity: .85 });
   ground = new THREE.Mesh(new THREE.SphereGeometry(PLANET_R, 64, 32), new THREE.MeshLambertMaterial({ color: pal.ground }));
   ground.position.copy(PLANET_C); scene.add(ground);
-  stage = new THREE.Group(); scene.add(stage); // el claro de Uku: arriba del planeta, sin giro
+  // Uku tiene su escena con su luz: un cielo claro, un rebote del suelo y un sol suave arriba a la izquierda
+  bearScene = new THREE.Scene();
+  bearScene.add(new THREE.HemisphereLight('#ffffff', '#c9ccd6', 2.2));
+  const sun = new THREE.DirectionalLight('#ffffff', 1.4); sun.position.set(-1.5, 3, 3); bearScene.add(sun);
+  stage = new THREE.Group(); bearScene.add(stage); // el claro de Uku: arriba del planeta, sin giro
+  shadow = new THREE.Mesh(new THREE.CircleGeometry(.17, 32).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: dotTexture(), color: '#4e5870', transparent: true, opacity: .28, depthWrite: false, fog: false }));
+  shadow.scale.set(1, 1, .8); shadow.visible = false; scene.add(shadow);
   clock = new THREE.Clock();
   loadUkuGltf().then(g => {
     rig = ukuFrom(g);
-    // El modelo va dentro de un pivote: el pivote es lo que camina y respira.
+    // El modelo va dentro de un pivote apoyado en sus pies: el pivote es lo que camina (y crece desde el suelo).
     // Se escala a 0.9 m (la altura del oso anterior) y se centra en x y z.
     const model = g.scene, box = rig.box, mid = box.getCenter(new THREE.Vector3());
     const k = .9 / box.getSize(new THREE.Vector3()).y;
     model.scale.setScalar(k);
-    model.position.set(-mid.x * k, -.45 - box.min.y * k, -mid.z * k);
+    model.position.set(-mid.x * k, -box.min.y * k, -mid.z * k);
     bear = new THREE.Group(); bear.add(model); bear.userData.grow = 0; bear.scale.setScalar(.001);
     bear.traverse(o => {
       if (o.isMesh) {
         o.frustumCulled = false;
-        // Color plano: la textura y los colores de vértice tal cual, sin luz ni sombras
-        const src = o.material, flat = new THREE.MeshBasicMaterial({ map: src.map || null, color: src.map ? 0xffffff : (src.color || 0xffffff), transparent: !!src.transparent, opacity: src.opacity, fog: false });
-        if (o.geometry.attributes.color) flat.vertexColors = true;
-        o.material = flat; src.dispose && src.dispose();
-        const name = (flat.map && flat.map.name) || '';
-        if (/cabeza/.test(name)) headMat = flat;
-        if (flat.map && (/ropa/.test(name) || !bearMat)) { bearMat = flat; baseMap = flat.map; } // la ropa (para la guayabera)
+        // Sus colores están en los vértices; la luz suave de su escena le da volumen
+        const src = o.material; o.material = new THREE.MeshLambertMaterial({ vertexColors: !!o.geometry.attributes.color, color: o.geometry.attributes.color ? 0xffffff : src.color }); src.dispose && src.dispose();
       }
     });
-    // Los ojos: el mapa original más las variantes para pestañear (se suben ya para que el primer pestañeo no se trabe)
-    if (headMat && headMat.map && headMat.map.image) {
-      try { eyeMaps = { open: headMat.map, half: eyeMap(headMat.map, 'half'), shut: eyeMap(headMat.map, 'shut'), happy: eyeMap(headMat.map, 'happy') }; ['half', 'shut', 'happy'].forEach(n => renderer.initTexture(eyeMaps[n])); } catch (e) { eyeMaps = null; }
-    }
     stage.add(bear);
     if (target != null) { score = target; target = null; buildForest(); }
     // Lo que se sostiene, se pone o se atacha usa estos huesos
@@ -970,7 +952,7 @@ export function setFocus(on) {
 export function snapshot() {
   if (!renderer || !scene) return null;
   // La foto es de su mundo, sin él: Uku queda delante, nítido, no repetido en el fondo
-  try { if (bear) bear.visible = false; renderer.render(scene, camera); const u = renderer.domElement.toDataURL('image/png'); if (bear) bear.visible = true; return u; } catch (e) { if (bear) bear.visible = true; return null; }
+  try { const sv = shadow.visible; shadow.visible = false; renderer.render(scene, camera); const u = renderer.domElement.toDataURL('image/png'); shadow.visible = sv; return u; } catch (e) { return null; }
 }
 // El encuadre se mueve con suavidad hacia su destino; con `instant` salta de una (antes de mostrarse)
 export function setShift(f, fy, instant) { shiftTo = { x: +f || 0, y: +fy || 0 }; if (instant) { shiftCur.x = shiftTo.x; shiftCur.y = shiftTo.y; camVel.x = camVel.y = 0; if (camera) applyShift(); } }
