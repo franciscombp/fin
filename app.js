@@ -84,6 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Sin internet solo entra con Face ID o huella: sin ellas, el botón principal se apaga
   const pintarEtiqueta = () => {
     if (!btnLoginBiometric || window.__authBusy) return;
+    // Acceso bloqueado por seguridad: el botón lleva a desbloquear (assets/seguridad.js)
+    if (window.Seguridad && Seguridad.estado().acceso) { btnLoginBiometric.disabled = false; btnLoginBiometric.textContent = 'Desbloquear y entrar'; return; }
     btnLoginBiometric.disabled = !window.Ingreso.enLinea() && !platformOk;
     btnLoginBiometric.textContent = btnLoginBiometric.disabled ? 'Sin internet' : window.Ingreso.etiqueta(platformOk);
   };
@@ -143,6 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Lo usa Ingreso al identificar a la persona: misma bienvenida que el login biométrico
   window.BPLogin = {
+    repintar: pintarEtiqueta, // assets/seguridad.js, al bloquear o desbloquear el acceso
     entrar(usuario) {
       if (window.Persona) Persona.set(usuario);
       if (welcomeSplash) welcomeSplash.classList.add('show');

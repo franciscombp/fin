@@ -122,6 +122,7 @@
     <!-- Biometría real (WebAuthn). Debe cargar antes del script inline y app.js. -->
     <script src="./webauthn.js"></script>
     <script src="./assets/ingreso.js"></script>
+    <script src="./assets/seguridad.js"></script>
     <script src="./assets/flujos.js"></script>
 
     <title>Pichibank app</title>
@@ -2402,18 +2403,12 @@
 .qr-key { display: grid; place-items: center; height: 56px; border: 0; border-radius: var(--bp-semantic-radius-lg); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: 600 24px/32px var(--sol-font); cursor: pointer; }
 .qr-key:active { transform: scale(.96); }
 
-        /* Sin sesión: la ayuda y los accesos públicos se abren por encima del inicio de sesión */
-        html body.sin-sesion .sp,
-        html body.sin-sesion .push-page, html body.sin-sesion #push-page { z-index: 600; }
-        html body.sin-sesion .pf-toast { z-index: 690; }
+        /* Sin sesión, lo que se abre por encima del inicio de sesión: ver assets/ingreso.css */
         /* Sin internet: solo entra con Face ID o huella y se ven los accesos que funcionan sin red */
         html body.sin-red #btn-login-other { display: none !important; }
         .cta-dashed[hidden] { display: none !important; }
         html body.sin-red .quick-action[data-online-only]:disabled { opacity: .4; }
         #login-offline[hidden] { display: none; }
-        /* El selector de idioma también se abre desde el login */
-        html body.sin-sesion .as-sheet-back { z-index: 650; }
-        html body.sin-sesion .as-sheet { z-index: 651; }
         .login-screen.active {
             display: flex;
         }
@@ -3426,6 +3421,7 @@
     <!-- Versión asistente, la principal (la anterior: ?app=clasica; ver assets/uku-app.js) -->
     <link rel="stylesheet" href="./assets/uku-app.css">
     <link rel="stylesheet" href="./assets/ingreso.css">
+    <link rel="stylesheet" href="./assets/seguridad.css">
     <link rel="stylesheet" href="./assets/flujos.css">
     <link rel="stylesheet" href="./assets/analisis.css">
     <link rel="stylesheet" href="./assets/soporte.css">
@@ -3500,6 +3496,16 @@
                         </div>
                     </div>
                 </div>
+                <!-- Acceso bloqueado desde "Seguridad y emergencias" (assets/seguridad.js) -->
+                <div class="bp-alert bp-alert--error" id="login-bloqueo" role="status" hidden>
+                    <div class="bp-alert__content">
+                        <span class="bp-alert__icon material-symbols-rounded" aria-hidden="true">lock</span>
+                        <div class="bp-alert__text">
+                            <p class="bp-alert__title">Tu acceso está bloqueado</p>
+                            <p class="bp-alert__body"></p>
+                        </div>
+                    </div>
+                </div>
                 <button class="login-button login-button--primary" id="btn-login-biometric">
                     Ingresar
                 </button>
@@ -3507,6 +3513,12 @@
                 <button class="login-button login-button--tertiary" id="btn-login-other">
                     Otro método de ingreso
                 </button>
+                <!-- Emergencias: bloquear sin ingresar (assets/seguridad.js) -->
+                <button class="login-sos" id="btn-seguridad" type="button">
+                    <span class="material-symbols-rounded" aria-hidden="true">emergency_home</span>
+                    Seguridad y emergencias
+                </button>
+                <p class="login-ultimo" id="login-ultimo" hidden></p>
             </div>
         </div>
     </div>
@@ -5442,7 +5454,7 @@
         // página (push o resumen); el resto sólo confirma con un toast.
         // Sin sesión: los accesos públicos responden; los que usan tu cuenta
         // inician el ingreso al instante y se abren al entrar (window.__pendingAction).
-        const ACCESOS_PUBLICOS = ['Soporte', 'Ayuda', 'Clave digital', 'Idioma', 'Cobrar con QR'];
+        const ACCESOS_PUBLICOS = ['Soporte', 'Ayuda', 'Clave digital', 'Idioma', 'Cobrar con QR', 'Seguridad'];
         // Delegado en el documento: también responden las filas que los hubs pintan después
         document.addEventListener('click', (e) => {
             const el = e.target.closest && e.target.closest('[data-action]');

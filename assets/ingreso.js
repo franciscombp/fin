@@ -191,6 +191,12 @@
     return (await resumen('clave|' + id, p)) === guardada;
   }
 
+  // Tras MAX_INTENTOS contraseñas incorrectas, el ingreso con contraseña se
+  // bloquea BLOQUEO_MIN minutos en este celular. Recuperar la contraseña lo quita.
+  var FALLOS_KEY = 'pb_clave_fallos', HASTA_KEY = 'pb_clave_hasta', BLOQUEO_MIN = 5;
+  function bloqueadoHasta() { var t = +leer(HASTA_KEY) || 0; return t > Date.now() ? t : 0; }
+  function quitarBloqueoClave() { borrar(HASTA_KEY); borrar(FALLOS_KEY); }
+
   function clave(aviso, alEntrar) {
     abrir('Usuario y contraseña', function (cuerpo) {
       var usuario = h('input', { class: 'ing__campo', type: 'text', name: 'usuario', placeholder: 'Usuario', autocomplete: 'username', autocapitalize: 'none', spellcheck: 'false', 'aria-label': 'Usuario' });
@@ -204,15 +210,41 @@
       ]);
       var recuperarBtn = h('button', { class: 'login-button login-button--tertiary', type: 'button', text: 'Recuperar usuario y contraseña' });
       recuperarBtn.addEventListener('click', function () { recuperar(alEntrar); });
+      var enviar = form.querySelector('[type="submit"]');
+      // Bloqueo temporal: el formulario queda apagado con la cuenta regresiva
+      function pintarBloqueo() {
+        var hasta = bloqueadoHasta();
+        [usuario, contrasena, enviar].forEach(function (n) { n.disabled = !!hasta; });
+        if (!hasta) return false;
+        var s = Math.ceil((hasta - Date.now()) / 1000);
+        error.textContent = 'Por tu seguridad pausamos el ingreso con contraseña. Intenta en ' +
+          Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + ' o recupera tu contraseña.';
+        return true;
+      }
+      if (pintarBloqueo()) {
+        var iv = setInterval(function () { if (!pintarBloqueo()) { clearInterval(iv); error.textContent = ''; } }, 1000);
+        limpiar = function () { clearInterval(iv); };
+      }
       form.addEventListener('submit', async function (e) {
         e.preventDefault();
+        if (bloqueadoHasta()) return;
         var id = usuario.value.trim().toLowerCase();
         var existe = window.Persona && id ? await Persona.persona(id) : null;
         if (existe && await validarClave(id, contrasena.value)) {
+          quitarBloqueoClave();
           if (alEntrar) alEntrar();
           return entrarCon(id);
         }
-        error.textContent = 'Usuario o contraseña incorrectos.';
+        var fallos = (+leer(FALLOS_KEY) || 0) + 1;
+        if (fallos >= MAX_INTENTOS) {
+          guardar(HASTA_KEY, String(Date.now() + BLOQUEO_MIN * 60000));
+          borrar(FALLOS_KEY);
+          clave('', alEntrar); // se repinta con la cuenta regresiva
+          return;
+        }
+        guardar(FALLOS_KEY, String(fallos));
+        var quedan = MAX_INTENTOS - fallos;
+        error.textContent = 'Usuario o contraseña incorrectos. ' + (quedan === 1 ? 'Te queda 1 intento.' : 'Te quedan ' + quedan + ' intentos.');
         sacudir(form);
       });
       cuerpo.append(
@@ -273,6 +305,7 @@
         if (nueva.value.length < CLAVE_MIN) { error.textContent = 'La contraseña debe tener al menos ' + CLAVE_MIN + ' caracteres.'; sacudir(cambio); return; }
         if (nueva.value !== repite.value) { error.textContent = 'Las contraseñas no coinciden.'; sacudir(cambio); return; }
         guardar('pb_clave_' + cuenta.usuario, await resumen('clave|' + cuenta.usuario, nueva.value));
+        quitarBloqueoClave(); // con contraseña nueva ya no hace falta esperar
         cambio.remove();
         soloUsuario.remove();
         buscar.remove();
@@ -534,10 +567,8 @@
   }
   function mostrarAyuda(cuerpo) {
     cuerpo.append(h('p', { class: 'ing-hoja__seccion', text: 'Sin ingresar puedes' }));
+    cuerpo.append(fila('shield', 'Seguridad y emergencias', function () { if (window.Seguridad) Seguridad.abrir(); }));
     cuerpo.append(fila('lock_reset', 'No puedo ingresar', function () { hoja('No puedo ingresar', mostrarNoPuedo); }));
-    cuerpo.append(fila('block', 'Bloquear mis tarjetas', function () { flujoBloqueo(FLUJOS.propio); }));
-    cuerpo.append(fila('emergency', 'Me robaron el celular', function () { flujoBloqueo(FLUJOS.robo); }));
-    cuerpo.append(fila('group', 'Ayudar a un amigo', function () { flujoBloqueo(FLUJOS.amigo); }));
     cuerpo.append(h('p', { class: 'ing-hoja__seccion', text: 'Preguntas frecuentes' }));
     var temas = window.Soporte && Soporte.faqs ? Soporte.faqs(5) : [];
     temas.forEach(function (t) {
@@ -569,7 +600,16 @@
       rostro: 'Confirma que eres tú mirando la cámara.', confirma: 'Vas a bloquear tus tarjetas y el acceso a la app.', final: 'Listo. Bloqueamos tus tarjetas y tu acceso. Cuando recuperes tu celular, ingresa con tu usuario y contraseña.' },
     amigo: { titulo: 'Ayudar a un amigo', tipo: 'amigo', paraAmigo: true,
       intro: 'Si a tu amigo le robaron el celular, bloqueamos sus tarjetas. Pide su cédula y que confirme con su rostro.',
-      rostro: 'Tu amigo debe mirar la cámara para confirmar que es él.', confirma: 'Vas a bloquear las tarjetas de tu amigo.', final: 'Listo. Bloqueamos las tarjetas de tu amigo.' }
+      rostro: 'Tu amigo debe mirar la cámara para confirmar que es él.', confirma: 'Vas a bloquear las tarjetas de tu amigo.', final: 'Listo. Bloqueamos las tarjetas de tu amigo.' },
+    acceso: { titulo: 'Bloquear el acceso a la app', tipo: 'acceso',
+      intro: 'Nadie podrá entrar a tu cuenta desde la app, en ningún celular, hasta que tú la desbloquees. Necesitamos tu cédula y confirmar con tu rostro.',
+      rostro: 'Confirma que eres tú mirando la cámara.', confirma: 'Vas a bloquear el acceso a la app.', final: 'Listo. Bloqueamos el acceso a la app. Para volver a entrar, usa tu usuario y contraseña.' },
+    transferencias: { titulo: 'Pausar transferencias y pagos', tipo: 'transferencias',
+      intro: 'Mientras esté en pausa, no sale dinero de tus cuentas por transferencias, pagos ni retiros sin tarjeta. Sí puedes recibir dinero. Necesitamos tu cédula y confirmar con tu rostro.',
+      rostro: 'Confirma que eres tú mirando la cámara.', confirma: 'Vas a pausar las transferencias y pagos.', final: 'Listo. Pausamos tus transferencias y pagos.' },
+    fraude: { titulo: 'No reconozco un movimiento', tipo: 'fraude',
+      intro: 'Bloqueamos tus tarjetas, pausamos tus transferencias y abrimos un caso para revisar el movimiento. Necesitamos tu cédula y confirmar con tu rostro.',
+      rostro: 'Confirma que eres tú mirando la cámara.', confirma: 'Vas a bloquear tus tarjetas, pausar tus transferencias y abrir un caso.', final: 'Listo. Te llamamos en menos de 2 horas desde el 1700 742 424 para revisar el caso. Nadie del banco te pedirá tus claves.' }
   };
 
   // Cédula ecuatoriana: 10 dígitos, provincia 01-24, tercer dígito menor que 6 y verificador (módulo 10)
@@ -582,8 +622,10 @@
     return (10 - s % 10) % 10 === +c[9];
   }
 
-  function flujoBloqueo(f) {
+  function flujoBloqueo(f, volver) {
     var cedula = '';
+    // "Volver" regresa a la hoja desde la que se abrió (Seguridad o Ayuda)
+    volver = volver || function () { hoja('Ayuda', mostrarAyuda); };
     function paso1(c) {
       var campo = h('input', { class: 'ing__campo', type: 'text', inputmode: 'numeric', maxlength: '10', placeholder: f.paraAmigo ? 'Cédula de tu amigo' : 'Tu cédula', 'aria-label': 'Cédula' });
       var error = h('p', { class: 'ing__error', role: 'alert' });
@@ -596,7 +638,7 @@
       c.append(h('p', { class: 'ing__texto', text: f.intro }), campo, error, seguir,
         h('p', { class: 'ing__texto', text: 'Demo: cédula 1712345675' }),
         h('button', { class: 'login-button login-button--tertiary', type: 'button', text: 'Volver a ayuda', 'data-ing-volver-ayuda': '' }));
-      c.querySelector('[data-ing-volver-ayuda]').addEventListener('click', function () { hoja('Ayuda', mostrarAyuda); });
+      c.querySelector('[data-ing-volver-ayuda]').addEventListener('click', volver);
     }
     function paso2(c) {
       c.textContent = '';
@@ -616,7 +658,7 @@
       confirmar.addEventListener('click', function () { parar(); limpiar = null; paso3(c); });
       c.append(h('p', { class: 'ing__texto', text: 'Verificación facial (demostración)' }), video, estado, confirmar,
         h('button', { class: 'login-button login-button--tertiary', type: 'button', text: 'Volver a ayuda', 'data-ing-volver-ayuda': '' }));
-      c.querySelector('[data-ing-volver-ayuda]').addEventListener('click', function () { hoja('Ayuda', mostrarAyuda); });
+      c.querySelector('[data-ing-volver-ayuda]').addEventListener('click', volver);
     }
     function paso3(c) {
       c.textContent = '';
@@ -625,13 +667,16 @@
         h('button', { class: 'login-button login-button--primary', type: 'button', text: 'Bloquear', 'data-ing-bloquear': '' }),
         h('button', { class: 'login-button login-button--tertiary', type: 'button', text: 'Cancelar', 'data-ing-volver-ayuda': '' })
       );
-      c.querySelector('[data-ing-volver-ayuda]').addEventListener('click', function () { hoja('Ayuda', mostrarAyuda); });
+      c.querySelector('[data-ing-volver-ayuda]').addEventListener('click', volver);
       c.querySelector('[data-ing-bloquear]').addEventListener('click', function () {
         var reg = JSON.parse(leer('pb_bloqueos') || '[]');
-        reg.push({ tipo: f.tipo, fecha: new Date().toISOString(), cedula: cedula.slice(0, 2) + '••••••' + cedula.slice(8) });
+        var caso = f.tipo === 'fraude' ? 'FR-' + String(Date.now()).slice(-6) : null;
+        reg.push({ tipo: f.tipo, fecha: new Date().toISOString(), cedula: cedula.slice(0, 2) + '••••••' + cedula.slice(8), caso: caso });
         guardar('pb_bloqueos', JSON.stringify(reg));
+        // assets/seguridad.js aplica el bloqueo (tarjetas, acceso, transferencias)
+        document.dispatchEvent(new CustomEvent('seguridad:bloqueo', { detail: { tipo: f.tipo, caso: caso } }));
         c.textContent = '';
-        c.append(h('p', { class: 'ing__texto', text: f.final }),
+        c.append(h('p', { class: 'ing__texto', text: (caso ? 'Caso ' + caso + '. ' : '') + f.final }),
           h('button', { class: 'login-button login-button--primary', type: 'button', text: 'Listo', 'data-ing-listo': '' }));
         c.querySelector('[data-ing-listo]').addEventListener('click', cerrarHoja);
       });
@@ -644,6 +689,7 @@
     'Cobrar con QR': function () { hoja('Mostrar mi QR', mostrarQR); },
     'Clave digital': function () { token(); },
     'Soporte': function () { hoja('Ayuda', mostrarAyuda); },
+    'Seguridad': function () { if (window.Seguridad) Seguridad.abrir(); },
     'Pagar transporte': function () { hoja('Tickets transporte', mostrarTickets); }
   };
   document.addEventListener('click', function (e) {
@@ -669,6 +715,9 @@
 
   window.Ingreso = {
     enLinea: enLinea, etiqueta: etiqueta, pin: pin, otro: otro, clave: clave, recuperar: recuperar,
-    token: token, totp: totp, aBytes: aBytes, aBase32: aBase32
+    token: token, totp: totp, aBytes: aBytes, aBase32: aBase32,
+    // Para el centro de seguridad (assets/seguridad.js)
+    hoja: hoja, cerrarHoja: cerrarHoja, fila: fila, bloquear: function (tipo, volver) { flujoBloqueo(FLUJOS[tipo], volver); },
+    claveBloqueadaHasta: bloqueadoHasta
   };
 })();
