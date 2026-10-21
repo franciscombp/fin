@@ -157,6 +157,10 @@ html:not(.theme-y2k) .sx .sx-app__ic { width: 56px !important; height: 56px !imp
 .sx-card > h3 + .sx-row, .sx-card > .sx-row:first-child { border-radius: var(--bp-semantic-radius-md, 12px) var(--bp-semantic-radius-md, 12px) 0 0 !important; }
 .sx-card > .sx-row:last-child, .sx-card > .sx-row:has(+ .sx-link) { border-radius: 0 0 var(--bp-semantic-radius-md, 12px) var(--bp-semantic-radius-md, 12px) !important; }
 .sx-card > h3 + .sx-row:last-child, .sx-card > .sx-row:only-child { border-radius: var(--bp-semantic-radius-md, 12px) !important; }
+/* Figma: icono plano de 24 px en un hueco de 32, sin círculo */
+.sx .sx-row .sx-row__ic, .sx .sx-row__ic { width: 32px !important; height: 32px !important; flex: 0 0 32px !important; background: none !important; color: var(--bp-interaction-tertiary-fg) !important; box-shadow: none !important; }
+.sx .sx-row__ic.material-symbols-rounded { font-size: 24px !important; }
+.sx .sx-ask .sx-row__ic--ai { background: none !important; }
 /* Respuesta de la base de conocimiento dentro del buscador: una tarjeta con el texto, los datos del
    producto (si es uno), los pasos y lo que puedes hacer; mismo porte que las filas de resultados */
 .sx-kb__body { padding: 16px var(--bp-layout-card-padding, 16px); border-radius: 16px; background: var(--bp-theme-color-surface-container-default, #fff); color: var(--bp-theme-color-text-primary); }
