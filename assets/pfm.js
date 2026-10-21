@@ -1292,7 +1292,7 @@
   }
   /* ---------- Hojas ---------- */
   var sheet, back;
-  function showSheet(html) {
+  function showSheet(html, kind) {
     if (!sheet) {
       back = document.createElement('div'); back.className = 'as-sheet-back';
       sheet = document.createElement('div'); sheet.className = 'as-sheet pfm-sheet'; sheet.setAttribute('role', 'dialog');
@@ -1300,6 +1300,7 @@
       back.addEventListener('click', closeSheet);
       sheet.addEventListener('click', onClick);
     }
+    sheet.classList.toggle('pfm-sheet--wiz', kind === 'wiz');
     sheet.innerHTML = '<div class="as-sheet__handle"></div>' + html; sheet.scrollTop = 0;
     if (!sheet.classList.contains('open')) fx('open');
     back.classList.add('open'); sheet.classList.add('open');
@@ -1468,42 +1469,82 @@
     PRES_G.forEach(function (k) { var v = grupos[k] || 0; if (v >= 20) cats[k] = round(v * (FIJO.indexOf(k) >= 0 ? 1 : f), 10); });
     return cats;
   }
+  // Hoja del asistente: cabecera con el avance, cuerpo y pie fijo con las acciones
+  function wizShell(paso, t, lead, body, back, next) {
+    var enter = !wiz.shown || wiz.shown !== paso; wiz.shown = paso;
+    var steps = [1, 2, 3].map(function (n) { return '<i' + (n <= paso ? ' class="is-on"' : '') + '></i>'; }).join('');
+    return showSheet('<div class="pfm-wiz' + (enter ? ' is-enter' : '') + (paso ? '' : ' is-vacio') + '" data-paso="' + paso + '">' +
+      '<header class="pfm-wiz__head">' + (paso ? '<div class="pfm-wiz__steps" role="progressbar" aria-valuemin="1" aria-valuemax="3" aria-valuenow="' + paso + '" aria-label="' + T('Paso {n} de 3', { n: paso }) + '">' + steps + '</div>' +
+        '<p class="pfm-wiz__kicker">' + T('Paso {n} de 3', { n: paso }) + '</p>' : '') + '<h3>' + t + '</h3>' + (lead ? '<p class="pfm-wiz__lead">' + lead + '</p>' : '') + '</header>' +
+      '<div class="pfm-wiz__body">' + body + '</div>' +
+      '<footer class="pfm-wiz__foot">' + back + next + '</footer></div>', 'wiz');
+  }
+  function wizBtn(k, l, sec) { return '<button class="' + (sec ? 'bp-button bp-button--secondary pfm-wiz__back' : 'pf-cta') + '" data-pfm="' + k + '">' + l + '</button>'; }
+  // Barra de un plan: lo que gastarías, lo que ahorras y, si te pasas, lo que falta
+  function planBar(v, ing) {
+    var mx = Math.max(v, ing, 1), g = Math.min(v, ing) / mx * 100, a = Math.max(0, ing - v) / mx * 100, o = Math.max(0, v - ing) / mx * 100;
+    return '<span class="pfm-plan__bar" aria-hidden="true"><i style="width:' + g.toFixed(1) + '%"></i>' + (a ? '<i class="is-save" style="width:' + a.toFixed(1) + '%"></i>' : '') + (o ? '<i class="is-over" style="width:' + o.toFixed(1) + '%"></i>' : '') + '</span>';
+  }
   function presWizard(paso) {
     var P = planes();
     if (!wiz) { var r = P.L.filter(function (x) { return x.rec; })[0]; wiz = { plan: r.id }; }
     wiz.paso = paso || wiz.paso || 1;
     var plan = P.L.filter(function (x) { return x.id === wiz.plan; })[0];
+    // Sin ingresos ni gastos todavía no hay con qué proponer
+    if (P.ing < 1 && P.prom < 1) {
+      wiz.shown = -1;
+      return wizShell(0, T('Arma tu presupuesto'), T('Cuando recibas tu primer dinero y empieces a usar tu cuenta, te propongo un presupuesto con tus datos.'),
+        '<div class="pfm-wiz__empty"><span class="material-symbols-rounded" aria-hidden="true">potted_plant</span><p>' + T('Tu bosque recién empieza. Volvemos a esto en unas semanas.') + '</p></div>', '', wizBtn('cerrar', T('Entendido')));
+    }
     if (wiz.paso === 1) {
       draft = null;
-      return showSheet('<p class="as-sheet__label">' + T('Paso 1 de 3') + '</p><h3>' + T('Arma tu presupuesto') + '</h3>' +
-        '<p>' + T('Recibes unos {i} al mes y gastas en promedio {g}. ¿Cuánto quieres gastar?', { i: money0(Math.round(P.ing)), g: money0(Math.round(P.prom)) }) + '</p>' +
-        '<div class="as-rows pfm-planes">' + P.L.map(function (x) {
-          return '<button class="as-row as-row--btn" data-pfm="presw:plan:' + x.id + '" aria-pressed="' + (x.id === wiz.plan) + '"><span class="as-row__main"><b>' + esc(x.t) + ' · ' + money0(x.v) + '</b><small>' +
-            (x.rec ? '<span class="pfm-rec">' + T('Recomendado') + '</span> ' : '') +
-            (x.libre >= 0 ? T('Te quedan {m} libres al mes', { m: money0(x.libre) }) : T('Gastarías {m} más de lo que recibes', { m: money0(-x.libre) })) + '</small></span><span class="as-radio"></span></button>'; }).join('') + '</div>' +
-        '<p class="pf-note">' + T('Uku lo calcula con tus últimos tres meses. Lo puedes cambiar cuando quieras.') + '</p>' +
-        '<button class="pf-cta" data-pfm="presw:2">' + T('Siguiente') + '</button><button class="pf-link pf-link--block" data-pfm="cerrar">' + T('Ahora no') + '</button>');
+      return wizShell(1, T('¿Cuánto quieres gastar al mes?'), T('Uku lo calcula con tus últimos tres meses. Lo puedes cambiar cuando quieras.'),
+        '<div class="pfm-wiz__mes"><div><small>' + T('Recibes al mes') + '</small><b>' + money0(Math.round(P.ing)) + '</b></div><div><small>' + T('Gastas en promedio') + '</small><b>' + money0(Math.round(P.prom)) + '</b></div></div>' +
+        '<div class="pfm-planes" role="radiogroup" aria-label="' + T('Cuánto gastar') + '">' + P.L.map(function (x) {
+          var on = x.id === wiz.plan;
+          return '<button class="pfm-plan" role="radio" aria-checked="' + on + '" aria-pressed="' + on + '" data-pfm="presw:plan:' + x.id + '">' +
+            '<span class="pfm-plan__top"><b class="pfm-plan__t">' + esc(x.t) + '</b>' + (x.rec ? '<span class="bp-tag bp-tag--success">' + T('Recomendado') + '</span>' : '') + '<span class="as-radio"></span></span>' +
+            '<span class="pfm-plan__m">' + money0(x.v) + '<small>' + T('al mes') + '</small></span>' + planBar(x.v, P.ing) +
+            '<small class="pfm-plan__s' + (x.libre < 0 ? ' is-over' : '') + '">' + (x.libre >= 0 ? T('Ahorras {m} al mes · {a} al año', { m: money0(Math.round(x.libre)), a: money0(Math.round(x.libre * 12)) }) : T('Gastarías {m} más de lo que recibes', { m: money0(Math.round(-x.libre)) })) + '</small></button>'; }).join('') + '</div>',
+        wizBtn('cerrar', T('Ahora no'), 1), wizBtn('presw:2', T('Siguiente')));
     }
     if (!draft) draft = { general: plan.v, cats: repartir(plan.v, P.grupos) };
     if (wiz.paso === 2) {
-      var suma = sumv(Object.keys(draft.cats), function (k) { return draft.cats[k]; });
-      return showSheet('<p class="as-sheet__label">' + T('Paso 2 de 3') + '</p><h3>' + T('Así lo repartiría') + '</h3>' +
-        '<p>' + T('Lo fijo, como tu casa y tus deudas, queda como está. Lo que puedes mover, como gustos y comida, se ajusta a {m}.', { m: money0(draft.general) }) + '</p>' +
-        '<div class="pf-steps">' + PRES_G.filter(function (k) { return draft.cats[k] || P.grupos[k] >= 20; }).map(function (k) {
-          return '<div class="pf-step"><span>' + esc(T(k)) + '<small>' + T('Promedio {m}', { m: money0(P.grupos[k] || 0) }) + '</small></span><button class="pf-step__btn" data-pfm="bud:' + esc(k) + ':-10" aria-label="' + T('Bajar') + '"><span class="material-symbols-rounded">remove</span></button>' +
-            '<b>' + (draft.cats[k] ? money0(draft.cats[k]) : '—') + '</b><button class="pf-step__btn" data-pfm="bud:' + esc(k) + ':10" aria-label="' + T('Subir') + '"><span class="material-symbols-rounded">add</span></button></div>'; }).join('') + '</div>' +
-        '<p class="pf-note">' + (suma > draft.general ? T('Los grupos suman {s}: {d} más que tu total.', { s: money0(suma), d: money0(suma - draft.general) }) : T('Los grupos suman {s}. Quedan {r} para lo que aún no está clasificado.', { s: money0(suma), r: money0(draft.general - suma) })) + '</p>' +
-        (animo().n ? '<button class="pf-link pf-link--block" data-pfm="game">' + T('Clasificar mis gastos para repartir mejor') + '</button>' : '') +
-        '<button class="pf-cta" data-pfm="presw:3">' + T('Siguiente') + '</button><button class="pf-link pf-link--block" data-pfm="presw:1">' + T('Atrás') + '</button>');
+      var vis = PRES_G.filter(function (k) { return draft.cats[k] || P.grupos[k] >= 20; });
+      var suma = sumv(Object.keys(draft.cats), function (k) { return draft.cats[k]; }), libre = draft.general - suma;
+      var fijo = sumv(vis.filter(function (k) { return FIJO.indexOf(k) >= 0; }), function (k) { return draft.cats[k] || 0; }), mover = suma - fijo, tot = Math.max(draft.general, suma, 1);
+      var fila = function (k) {
+        var v = draft.cats[k] || 0, avg = Math.round(P.grupos[k] || 0), d = v - avg;
+        return '<div class="pfm-reparto__row"><span class="pfm-reparto__ic material-symbols-rounded" aria-hidden="true">' + GRUPOS[k].ic + '</span>' +
+          '<span class="pfm-reparto__main"><b>' + esc(T(k)) + '</b><small>' + T('Promedio {m}', { m: money0(avg) }) + (Math.abs(d) >= 10 ? ' · <em class="' + (d < 0 ? 'is-down' : 'is-up') + '">' + (d < 0 ? '−' : '+') + money0(Math.abs(d)) + '</em>' : '') + '</small></span>' +
+          '<span class="pfm-stepper"><button data-pfm="bud:' + esc(k) + ':-10" aria-label="' + T('Bajar {g}', { g: T(k) }) + '"' + (v ? '' : ' disabled') + '><span class="material-symbols-rounded" aria-hidden="true">remove</span></button>' +
+          '<b>' + (v ? money0(v) : '—') + '</b><button data-pfm="bud:' + esc(k) + ':10" aria-label="' + T('Subir {g}', { g: T(k) }) + '"><span class="material-symbols-rounded" aria-hidden="true">add</span></button></span></div>';
+      };
+      var grupo2 = function (t, s, ks) { return ks.length ? '<section class="pfm-reparto"><h4>' + t + '<small>' + s + '</small></h4>' + ks.map(fila).join('') + '</section>' : ''; };
+      var seg = function (v, c) { return v > 0 ? '<i class="' + c + '" style="width:' + (v / tot * 100).toFixed(1) + '%"></i>' : ''; };
+      return wizShell(2, T('Así lo repartiría'), T('Lo fijo queda como está. Lo que puedes mover se ajusta a tu total.'),
+        '<div class="pfm-wiz__sum"><div class="pfm-wiz__sumtop"><small>' + T('Tu presupuesto') + '</small><b>' + money0(draft.general) + '<small>' + T('al mes') + '</small></b></div>' +
+          '<span class="pfm-wiz__stack" aria-hidden="true">' + seg(fijo, 'is-fijo') + seg(mover, 'is-mover') + seg(Math.max(0, libre), 'is-libre') + '</span>' +
+          '<span class="pfm-wiz__legend"><span><i class="is-fijo"></i>' + T('Fijo') + ' ' + money0(fijo) + '</span><span><i class="is-mover"></i>' + T('Para mover') + ' ' + money0(mover) + '</span>' + (libre > 0 ? '<span><i class="is-libre"></i>' + T('Libre') + ' ' + money0(libre) + '</span>' : '') + '</span></div>' +
+        grupo2(T('Lo fijo'), T('Tu casa, tus deudas y lo que no cambia'), vis.filter(function (k) { return FIJO.indexOf(k) >= 0; })) +
+        grupo2(T('Lo que puedes mover'), T('Aquí está tu margen para ahorrar'), vis.filter(function (k) { return FIJO.indexOf(k) < 0; })) +
+        '<p class="pfm-wiz__callout' + (libre < 0 ? ' is-over' : '') + '"><span class="material-symbols-rounded" aria-hidden="true">' + (libre < 0 ? 'error' : 'info') + '</span><span>' +
+          (libre < 0 ? T('Los grupos suman {d} más que tu total. Baja alguno para que cuadre.', { d: money0(-libre) }) : libre > 0 ? T('Quedan {r} para lo que aún no está clasificado.', { r: money0(libre) }) : T('Todo tu presupuesto está repartido.')) + '</span></p>' +
+        (animo().n ? '<button class="pf-link pfm-wiz__more" data-pfm="game"><span class="material-symbols-rounded" aria-hidden="true">category</span>' + T('Clasificar mis gastos para repartir mejor') + '</button>' : ''),
+        wizBtn('presw:1', T('Atrás'), 1), wizBtn('presw:3', T('Siguiente')));
     }
-    var m = curMes(), g = month(m).gast, dias = diasMes(m) - +HOY.slice(8, 10) + 1, queda = draft.general - g;
-    return showSheet('<p class="as-sheet__label">' + T('Paso 3 de 3') + '</p><h3>' + T('Tu presupuesto') + '</h3>' +
-      '<div class="pfm-tx__amt">' + money0(draft.general) + '</div><p>' + T('al mes') + '</p>' +
-      '<div class="pfm-confirm"><div><small>' + T('Este mes llevas') + '</small><b>' + money0(g) + '</b></div>' +
-        '<div><small>' + T('Te quedan') + '</small><b>' + (queda > 0 ? money0(queda) : T('Te excediste por {m}', { m: money0(-queda) })) + '</b></div>' +
-        (queda > 0 ? '<div><small>' + T('Para gastar al día') + '</small><b>' + T('{m} por {d} días', { m: money0(queda / dias), d: dias }) + '</b></div>' : '') + '</div>' +
-      '<p class="pf-note">' + T('Uku te avisa cuando llegues al 80% de un grupo, y cada lunes te cuenta cómo vas.') + '</p>' +
-      '<button class="pf-cta" data-pfm="presw:save">' + T('Guardar presupuesto') + '</button><button class="pf-link pf-link--block" data-pfm="presw:2">' + T('Atrás') + '</button>');
+    var m = curMes(), g = month(m).gast, hoy = +HOY.slice(8, 10), dias = diasMes(m) - hoy + 1, queda = draft.general - g, aho = Math.round(P.ing - draft.general);
+    var u = Math.min(100, g / Math.max(1, draft.general) * 100), f = hoy / diasMes(m) * 100;
+    var acomp = [['notifications_active', T('Te aviso cuando llegues al 80% de un grupo')], ['calendar_month', T('Cada lunes te cuento cómo vas')], ['tune', T('Lo puedes cambiar cuando quieras')]];
+    return wizShell(3, T('Tu presupuesto está listo'), '',
+      '<div class="pfm-wiz__hero"><small>' + T('Gastarás hasta') + '</small><b>' + money0(draft.general) + '<small>' + T('al mes') + '</small></b>' +
+        '<span class="pfm-wiz__prog' + (queda <= 0 ? ' is-over' : '') + '" aria-hidden="true"><i style="width:' + u.toFixed(1) + '%"></i><em style="left:' + f.toFixed(1) + '%"></em></span>' +
+        '<span class="pfm-wiz__progl"><span>' + T('En {mes} llevas {m}', { mes: mesName(m), m: '<b>' + money0(Math.round(g)) + '</b>' }) + '</span><span>' + (queda > 0 ? T('Te quedan {m}', { m: '<b>' + money0(Math.round(queda)) + '</b>' }) : T('Te pasaste por {m}', { m: '<b>' + money0(Math.round(-queda)) + '</b>' })) + '</span></span></div>' +
+      '<div class="pfm-wiz__tiles">' +
+        (queda > 0 ? '<div><small>' + T('Para gastar al día') + '</small><b>' + money0(queda / dias) + '</b><span>' + T('durante {d} días', { d: dias }) + '</span></div>' : '') +
+        (aho > 0 ? '<div class="is-save"><small>' + T('Ahorrarías') + '</small><b>' + money0(aho) + '</b><span>' + T('al mes · {a} al año', { a: money0(aho * 12) }) + '</span></div>' : '') + '</div>' +
+      '<section class="pfm-wiz__acomp"><h4>' + T('Uku te acompaña') + '</h4>' + acomp.map(function (x) { return '<p><span class="material-symbols-rounded" aria-hidden="true">' + x[0] + '</span>' + x[1] + '</p>'; }).join('') + '</section>',
+      wizBtn('presw:2', T('Atrás'), 1), wizBtn('presw:save', T('Guardar presupuesto')));
   }
 
   var toastT;

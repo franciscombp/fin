@@ -338,9 +338,117 @@ button.pfm-tx { width: 100%; border-left: 0; border-right: 0; border-top: 0; bac
 .pfm-dock__ask .material-symbols-rounded { color: var(--bp-interaction-tertiary-fg); }
 .pf-host .pfm .pf-scroll { padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px)); }
 
-/* Arma tu presupuesto: planes recomendados y reparto por grupo */
-.pfm-planes { margin-top: var(--bp-semantic-spacing-micro-lg, 16px); text-align: left; }
-.pfm-rec { display: inline-block; margin-right: 4px; padding: 0 8px; border-radius: 999px; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: var(--cx-caption); font-weight: 600; }
+/* Arma tu presupuesto: hoja de tres pasos con cabecera de avance, cuerpo y pie fijo.
+   La hoja tiene alto estable (no salta entre pasos); el contenido corre por debajo del pie. */
+.as-sheet.pfm-sheet--wiz { display: flex; flex-direction: column; height: min(90dvh, 760px); max-height: none; padding-bottom: 0; }
+.as-sheet.pfm-sheet--wiz:has(.is-vacio) { height: auto; }
+.pfm-sheet--wiz .as-sheet__handle { flex: 0 0 auto; margin-bottom: var(--bp-semantic-spacing-micro-lg); }
+.pfm-wiz { flex: 1 0 auto; display: flex; flex-direction: column; }
+.pfm-wiz__head { padding-bottom: var(--bp-semantic-spacing-micro-lg); }
+.pfm-wiz__steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--bp-semantic-spacing-micro-xs); margin-bottom: var(--bp-semantic-spacing-micro-lg); }
+.pfm-wiz__steps i { position: relative; height: 4px; border-radius: var(--bp-semantic-radius-full); background: var(--bp-theme-color-data-chart-track); overflow: hidden; }
+.pfm-wiz__steps i::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--bp-interaction-accent-bg); transform: scaleX(0); transform-origin: left; transition: transform .45s var(--sol-ease, ease); }
+.pfm-wiz__steps i.is-on::after { transform: none; }
+.pfm-wiz__kicker { margin: 0 0 var(--bp-semantic-spacing-micro-xs); font: var(--sol-body-xs-semibold); color: var(--bp-theme-color-text-helper); }
+.pfm-wiz .pfm-wiz__head h3 { margin: 0; font: var(--sol-title-md); }
+.pfm-wiz__lead { margin: var(--bp-semantic-spacing-micro-md) 0 0; font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-secondary); }
+.pfm-wiz__body { flex: 1 0 auto; display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-lg); padding-bottom: var(--bp-semantic-spacing-macro-sm); }
+.pfm-wiz.is-enter .pfm-wiz__head > :not(.pfm-wiz__steps), .pfm-wiz.is-enter .pfm-wiz__body > * { animation: pfmWizIn .42s cubic-bezier(.32, .72, 0, 1) both; }
+.pfm-wiz.is-enter .pfm-wiz__body > :nth-child(1) { animation-delay: .04s; }
+.pfm-wiz.is-enter .pfm-wiz__body > :nth-child(2) { animation-delay: .08s; }
+.pfm-wiz.is-enter .pfm-wiz__body > :nth-child(3) { animation-delay: .12s; }
+.pfm-wiz.is-enter .pfm-wiz__body > :nth-child(n+4) { animation-delay: .16s; }
+@keyframes pfmWizIn { from { opacity: 0; transform: translateY(8px); } }
+/* Pie: atrás (secundario) y la acción principal; queda fijo sobre el contenido */
+.pfm-wiz__foot {
+  position: sticky; bottom: 0; z-index: 1; display: flex; gap: var(--bp-semantic-spacing-micro-md); margin: 0 calc(-1 * var(--bp-layout-grid-margin));
+  padding: var(--bp-semantic-spacing-micro-lg) var(--bp-layout-grid-margin) calc(var(--bp-semantic-spacing-micro-lg) + env(safe-area-inset-bottom, 0px));
+  border-top: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); background: var(--bp-theme-color-surface-container-default);
+}
+.pfm-wiz__foot .pf-cta { flex: 1 1 auto; width: auto; }
+.pfm-wiz__foot .pfm-wiz__back { flex: 0 0 auto; }
+
+/* Paso 1: tu mes y los tres planes */
+.pfm-wiz__mes { display: grid; grid-template-columns: 1fr 1fr; border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-page-alt); }
+.pfm-wiz__mes > div { padding: var(--bp-semantic-spacing-micro-lg) var(--bp-layout-card-padding); }
+.pfm-wiz__mes > div + div { border-left: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); }
+.pfm-wiz__mes small, .pfm-wiz__sumtop small, .pfm-wiz__hero > small, .pfm-wiz__tiles small { display: block; font: var(--sol-body-xs-medium); color: var(--bp-theme-color-text-helper); }
+.pfm-wiz__mes b { display: block; margin-top: 2px; font: var(--sol-body-md-semibold); font-variant-numeric: tabular-nums; }
+.pfm-planes { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md); text-align: left; }
+.pfm-plan {
+  display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-sm); width: 100%; padding: var(--bp-layout-card-padding); box-sizing: border-box;
+  border: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-default); border-radius: var(--bp-semantic-radius-md);
+  background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); text-align: left; font: inherit; cursor: pointer;
+  transition: border-color .2s ease, background-color .2s ease; -webkit-tap-highlight-color: transparent;
+}
+.pfm-plan:active { background: var(--bp-interaction-tertiary-bg--active); }
+.pfm-plan[aria-pressed="true"] { border: 2px solid var(--bp-interaction-accent-bg); padding: calc(var(--bp-layout-card-padding) - 1px); }
+.pfm-plan[aria-pressed="true"] .as-radio { border: 7px solid var(--bp-interaction-accent-bg); }
+.pfm-plan__top { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md); }
+.pfm-plan__t { flex: 1; min-width: 0; font: var(--sol-body-md-semibold); }
+.pfm-plan__m { display: flex; align-items: baseline; gap: var(--bp-semantic-spacing-micro-xs); font: var(--sol-numeric-xs); font-variant-numeric: tabular-nums; }
+.pfm-plan__m small, .pfm-wiz__sumtop b small, .pfm-wiz__hero > b small { font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-helper); }
+.pfm-plan__bar, .pfm-wiz__stack, .pfm-wiz__prog { position: relative; display: flex; height: 8px; margin: 2px 0; border-radius: var(--bp-semantic-radius-full); background: var(--bp-theme-color-data-chart-track); overflow: hidden; }
+.pfm-plan__bar i, .pfm-wiz__stack i { height: 100%; transition: width .35s var(--sol-ease, ease); }
+.pfm-plan__bar i + i, .pfm-wiz__stack i + i { margin-left: 2px; }
+.pfm-plan__bar i { background: var(--bp-theme-color-data-chart-primary-1); }
+.pfm-plan__bar i.is-save { background: var(--bp-theme-color-data-positive); }
+.pfm-plan__bar i.is-over { background: var(--bp-theme-color-status-warning-bg); }
+.pfm-plan__s { font: var(--sol-body-xs-medium); color: var(--bp-theme-color-status-success-text); }
+.pfm-plan__s.is-over { color: var(--bp-theme-color-text-secondary); }
+
+/* Paso 2: resumen apilado (fijo · para mover · libre) y grupos con stepper */
+.pfm-wiz__sum { padding: var(--bp-layout-card-padding); border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-page-alt); }
+.pfm-wiz__sumtop { margin-bottom: var(--bp-semantic-spacing-micro-md); }
+.pfm-wiz__sumtop b, .pfm-wiz__hero > b { display: flex; align-items: baseline; gap: var(--bp-semantic-spacing-micro-xs); font: var(--sol-numeric-xs); font-variant-numeric: tabular-nums; }
+.pfm-wiz__stack i.is-fijo, .pfm-wiz__legend i.is-fijo { background: var(--bp-theme-color-data-chart-primary-1); }
+.pfm-wiz__stack i.is-mover, .pfm-wiz__legend i.is-mover { background: var(--bp-theme-color-data-chart-primary-3); }
+.pfm-wiz__stack i.is-libre, .pfm-wiz__legend i.is-libre { background: var(--bp-theme-color-data-positive); }
+.pfm-wiz__legend { display: flex; flex-wrap: wrap; gap: var(--bp-semantic-spacing-micro-xs) var(--bp-semantic-spacing-micro-lg); margin-top: var(--bp-semantic-spacing-micro-md); font: var(--sol-body-xs-medium); color: var(--bp-theme-color-text-secondary); font-variant-numeric: tabular-nums; }
+.pfm-wiz__legend span { display: inline-flex; align-items: center; gap: 6px; }
+.pfm-wiz__legend i { width: 8px; height: 8px; border-radius: var(--bp-semantic-radius-full); }
+.pfm-reparto h4, .pfm-wiz__acomp h4 { margin: 0 0 var(--bp-semantic-spacing-micro-xs); font: var(--sol-body-md-semibold); color: var(--bp-theme-color-text-primary); }
+.pfm-reparto h4 small { display: block; font: var(--sol-body-xs-medium); color: var(--bp-theme-color-text-helper); }
+.pfm-reparto__row { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md); min-height: 64px; border-bottom: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); }
+.pfm-reparto__row:last-child { border-bottom: 0; }
+.pfm-reparto__ic { flex: 0 0 40px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-surface-page-alt); color: var(--bp-theme-color-icon-primary, var(--bp-theme-color-text-primary)); font-size: 20px; }
+.pfm-reparto__main { flex: 1; min-width: 0; }
+.pfm-reparto__main b { display: block; font: var(--sol-body-md-semibold); }
+.pfm-reparto__main small { display: block; font: var(--sol-body-xs-medium); color: var(--bp-theme-color-text-helper); font-variant-numeric: tabular-nums; }
+.pfm-reparto__main em { font-style: normal; }
+.pfm-reparto__main em.is-down { color: var(--bp-theme-color-status-success-text); }
+.pfm-stepper { flex: 0 0 auto; display: flex; align-items: center; height: 40px; border-radius: var(--bp-semantic-radius-full); background: var(--bp-theme-color-surface-page-alt); }
+.pfm-stepper button { width: 40px; height: 40px; display: grid; place-items: center; padding: 0; border: 0; border-radius: var(--bp-semantic-radius-full); background: transparent; color: var(--bp-interaction-tertiary-fg); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pfm-stepper button:active { background: var(--bp-interaction-tertiary-bg--active); }
+.pfm-stepper button:disabled { color: var(--bp-theme-color-text-disabled, var(--bp-theme-color-text-helper)); opacity: .4; cursor: default; }
+.pfm-stepper button .material-symbols-rounded { font-size: 20px; }
+.pfm-stepper b { min-width: 56px; text-align: center; font: var(--sol-body-sm-semibold); font-variant-numeric: tabular-nums; }
+.pfm-wiz__callout { display: flex; gap: var(--bp-semantic-spacing-micro-md); margin: 0; padding: var(--bp-semantic-spacing-micro-lg) var(--bp-layout-card-padding); border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-status-info-bg-subtle); color: var(--bp-theme-color-text-primary); font: var(--sol-body-sm-medium); }
+.pfm-wiz__callout .material-symbols-rounded { font-size: 20px; color: var(--bp-theme-color-status-info-text); }
+.pfm-wiz__callout.is-over { background: var(--bp-theme-color-status-warning-bg-subtle); }
+.pfm-wiz__callout.is-over .material-symbols-rounded { color: var(--bp-theme-color-status-warning-text); }
+.pfm-wiz__more { align-self: flex-start; }
+
+/* Paso 3: lo que significa hoy y cómo te acompaña Uku */
+.pfm-wiz__hero > b { margin: 2px 0 var(--bp-semantic-spacing-micro-lg); font: var(--sol-numeric-md); }
+.pfm-wiz__prog { overflow: visible; }
+.pfm-wiz__prog i { height: 100%; border-radius: inherit; background: var(--bp-theme-color-data-chart-primary-1); animation: pfmWizBar .5s ease-out .2s both; transform-origin: left; }
+@keyframes pfmWizBar { from { transform: scaleX(0); } }
+.pfm-wiz__prog.is-over i { background: var(--bp-theme-color-status-warning-bg); }
+.pfm-wiz__prog em { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--bp-theme-color-text-primary); }
+.pfm-wiz__progl { display: flex; justify-content: space-between; gap: var(--bp-semantic-spacing-micro-md); margin-top: var(--bp-semantic-spacing-micro-md); font: var(--sol-body-xs-medium); color: var(--bp-theme-color-text-helper); }
+.pfm-wiz__progl b { color: var(--bp-theme-color-text-primary); font-weight: 600; font-variant-numeric: tabular-nums; }
+.pfm-wiz__tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: var(--bp-semantic-spacing-micro-md); }
+.pfm-wiz__tiles:empty { display: none; }
+.pfm-wiz__tiles > div { padding: var(--bp-layout-card-padding); border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-page-alt); }
+.pfm-wiz__tiles b { display: block; margin-top: 2px; font: var(--sol-body-md-semibold); font-size: 20px; line-height: 28px; font-variant-numeric: tabular-nums; }
+.pfm-wiz__tiles .is-save b { color: var(--bp-theme-color-status-success-text); }
+.pfm-wiz__tiles span { font: var(--sol-body-xs-medium); color: var(--bp-theme-color-text-helper); }
+.pfm-wiz__acomp p { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md); margin: 0; padding: 10px 0; font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-primary); }
+.pfm-wiz__acomp .material-symbols-rounded { font-size: 20px; color: var(--bp-interaction-accent-bg); }
+.pfm-wiz__empty { display: flex; flex-direction: column; align-items: center; gap: var(--bp-semantic-spacing-micro-md); padding: var(--bp-semantic-spacing-macro-sm) 0; text-align: center; font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-secondary); }
+.pfm-wiz__empty .material-symbols-rounded { font-size: 40px; color: var(--bp-theme-color-data-positive); }
+@media (prefers-reduced-motion: reduce) { .pfm-wiz.is-enter *, .pfm-wiz__prog i { animation: none !important; } }
 .pf-step > span small { display: block; font: var(--cx-caption); color: var(--cx-muted); }
 
 /* Semana: la cifra de cada día sobre su barra */

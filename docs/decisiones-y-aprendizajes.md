@@ -174,6 +174,15 @@ finanzas; se oculta en el chat y en las páginas a pantalla completa.
 - **Mensajes según el perfil** (hogar, negocio, joven, jubilado, al día, nuevo), siempre en positivo y
   con una propuesta: no «tu cuenta llega casi a cero», sino «te puedo ayudar a armar un presupuesto
   para ver en qué se va tu dinero».
+- **Arma tu presupuesto** (hoja de tres pasos, alto estable): arriba la barra de avance y «Paso n de 3»;
+  abajo un pie fijo con «Atrás»/«Ahora no» (secundario) y la acción principal (azul de Uku).
+  1. Cuánto gastar: tu mes (recibes / gastas) y tres planes en tarjetas con radio, el monto, una barra
+     gasto · ahorro (o lo que te pasarías, en ámbar) y «Ahorras $ x al mes · $ y al año».
+  2. Cómo repartirlo: resumen apilado (fijo · para mover · libre), grupos «Lo fijo» y «Lo que puedes
+     mover» con stepper en píldora y la diferencia contra tu promedio; aviso si los grupos se pasan.
+  3. Lo que significa hoy: el monto, la barra del mes con la marca de hoy, «Para gastar al día» y
+     «Ahorrarías», y cómo te acompaña Uku.
+  Sin ingresos ni gastos (persona nueva) no hay pasos: un aviso corto y «Entendido».
 - **Bosque ↔ historia financiera**: árboles = un mes de historia cada uno (el más reciente, al frente;
   los meses flojos, más pequeños); flores = ahorro; guayacanes = inversiones; casa, tienda, etc. =
   créditos; **mariposas = sugerencias** (siempre hay, mínimo dos). Una persona nueva (Camila) no tiene
@@ -283,6 +292,9 @@ Cómo queda:
 - **Un observador que escribe lo mismo se dispara solo.** `privacidad.js` reescribía el mismo ícono y
   `aria-*` cada 60 ms desde su propio `MutationObserver` y congelaba la página al entrar a Mis finanzas.
   Todo observador debe escribir solo cuando el valor cambia.
+- **Las variables `--uk-*` viven en `.uk`.** Las hojas (`.as-sheet`) cuelgan de `body`, así que una regla
+  de hoja que use `var(--uk-accent)` queda sin valor (el botón principal salía transparente). En hojas se
+  usan los tokens `--bp-*` directamente.
 - **Efecto de escritura:** se parte el texto en `span.uk-w` con `animation-delay` después de un
   `setTimeout 0`, para que el traductor (`MutationObserver` de i18n) traduzca la frase completa antes.
 - **Fondo amarillo y círculo amarillo** no se distinguen: en el splash se usa la variante azul.
