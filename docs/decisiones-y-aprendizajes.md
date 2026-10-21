@@ -146,8 +146,12 @@ hay un solo control arriba a la izquierda y, cuando la pantalla tiene nombre, el
 (`.uk-chathead`). Nunca una flecha y una X a la vez. La barra inferior sigue visible en Inicio y Mis
 finanzas; se oculta en el chat y en las páginas a pantalla completa.
 
-- **Inicio** (`is-home`): sin flecha (se sale con la barra inferior). Globo de Uku con saludo, chips de
-  propuestas, buscador con micrófono y dos accesos: Mis finanzas y Soporte.
+- **Inicio** (`is-home`): sin flecha (se sale con la barra inferior). El globo muestra **una sugerencia
+  a la vez** (etiqueta, «1 de n», flecha para pasar a la siguiente y X para ocultarla, con «Deshacer»).
+  Los chips de abajo son **sobre esa sugerencia**: su acción y algo relacionado (p. ej. «Programar el
+  pago» y «Ver todos mis pagos»). Sin sugerencias (o todas ocultas) se muestra **solo el saludo**
+  («Buenas tardes, Andrés. ¿En qué te ayudo hoy?»), sin chips. Debajo, el buscador con micrófono y dos
+  accesos: Mis finanzas y Soporte.
 - **Buscador**: hoja a pantalla completa que abre el campo; la X vuelve al inicio.
 - **Chat** (`is-chat`): la flecha vuelve al inicio. Uku asoma abajo a la izquierda, sobre la barra
   «Escríbele a Uku». Mensajes del usuario en gris, respuestas en blanco, acciones en tarjeta y
@@ -155,9 +159,10 @@ finanzas; se oculta en el chat y en las páginas a pantalla completa.
   como un chat de IA; las filas y botones entran cuando termina el texto.
 - **Mis finanzas** (`is-fin`): título «Mis finanzas», la flecha vuelve al inicio, la «i» abre la leyenda
   del mundo. Uku se ve en **plano general** dentro de su bosque, con un globo que escribe su mensaje.
-  Abajo hay una **sección fija** (sin scroll ni handle; su fondo solo separa del mundo y da contraste):
-  la tarjeta «Gastaste en…» (abre **Mis gastos**), hasta dos acciones recomendadas y «Mi dinero en
-  Pichibank» (abre su hoja).
+  Abajo hay una **sección fija** (sin scroll ni handle; su fondo solo separa del mundo y da contraste),
+  en este orden: **una sola sugerencia** de Uku (tarjeta con ícono, acción, por qué y flecha; tocar a
+  Uku o deslizar pasa a la siguiente), «Gastaste en…» (abre **Mis gastos**) y «Mi dinero en Pichibank»
+  con dos columnas: dinero en cuentas e inversiones y deuda total acumulada (abre su hoja).
 - **Mis gastos** (`is-page`): página a pantalla completa con título y X que vuelve a Mis finanzas. Hallazgo
   del mes, periodos, tarjeta con total y gráfico, categorías con barras.
 - **Soporte** (`is-ayuda`): título «Soporte», la flecha vuelve al inicio. Tarjeta de Solicitudes, tres
@@ -167,8 +172,8 @@ finanzas; se oculta en el chat y en las páginas a pantalla completa.
 #### Lógica de Mis finanzas
 
 - **Gastos sin categorizar** → Uku pide ordenarlos («Clasificar n»). Es la primera recomendación.
-- **Sin presupuesto** → Uku recomienda armarlo, y la tarjeta del mes muestra solo lo gastado, sin barra
-  ni comparación («Todavía no tienes presupuesto · Armar mi presupuesto»). Mis gastos hace lo mismo.
+- **Sin presupuesto** → Uku recomienda armarlo (en el globo y la tarjeta de sugerencia), y la tarjeta del
+  mes muestra solo lo gastado, sin barra ni comparación. Mis gastos muestra «Armar mi presupuesto».
   «Sin presupuesto» es que no haya uno guardado; el que calcula Uku solo como propuesta no cuenta.
 - **Con presupuesto** → barra de avance y «Te queda…» / «Vas … por encima».
 - **Mensajes según el perfil** (hogar, negocio, joven, jubilado, al día, nuevo), siempre en positivo y

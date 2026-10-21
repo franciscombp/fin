@@ -106,6 +106,13 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 .uk-globo__h { margin: 0 0 8px; font: var(--uk-body-semibold); }
 .uk-globo__t { font: var(--uk-body); }
 .uk-globo__tag { margin: 0 0 4px; font: var(--uk-caption); color: var(--uk-muted); }
+/* Cabecera de la sugerencia: etiqueta y «1 de n» a la izquierda; pasar y ocultar a la derecha */
+.uk-globo__top { display: flex; align-items: center; gap: 4px; margin: -8px -10px 4px 0; }
+.uk-globo__top .uk-globo__tag { flex: 1; min-width: 0; margin: 0; }
+.uk-globo__tag span { color: var(--uk-muted); font-weight: 400; }
+.uk-globo__ib { flex: 0 0 auto; width: 36px; height: 36px; display: grid; place-items: center; padding: 0; border: 0; border-radius: var(--bp-semantic-radius-full, 999px); background: transparent; color: var(--uk-icon); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.uk-globo__ib:active { background: var(--bp-interaction-tertiary-bg--active, rgba(0, 0, 0, .06)); }
+.uk-globo__ib .material-symbols-rounded { font-size: 20px; }
 .uk-globo__acts { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
 .uk-globo__skip, .uk-globo__next, .uk-globo__x { border: 0; background: none; color: var(--uk-navy); font: var(--uk-sm-semibold); cursor: pointer; }
 .uk-globo__dots, .uk-globo__foot { display: none; }
@@ -248,14 +255,17 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 .uk-panel .pfm-hub__bar i { animation: ukBar .3s ease-out .42s both; transform-origin: left; }
 .uk-panel .pfm-hub__bar:has(i.is-warn) { --tone: var(--bp-theme-color-status-warning-bg); }
 .uk-panel .pfm-hub__s { margin: 8px 0 0 !important; font: var(--uk-caption); color: var(--uk-muted); }
-.uk-panel .pfm-hub__slot { display: contents; }
-.uk-panel .pfm-hub__list { display: flex; flex-direction: column; border-radius: var(--uk-r); background: var(--uk-white); overflow: hidden; }
-.uk-panel .pfm-hub__list > .pfm-hub__dinero { border-bottom: 0; }
-.uk-panel .pfm-hub__list > *, .uk-panel .pfm-hub__slot > * { background: var(--uk-white); }
-.uk-panel .pfm-hub__list > :active, .uk-panel .pfm-hub__slot > :active { background: var(--bp-interaction-row-bg--active); }
-.uk-panel .pfm-hub__hero { cursor: pointer; }
-.uk-panel .pfm-hub__s--pres { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.uk-panel .pfm-hub__s--pres .section__link { flex: none; }
+/* La sugerencia de Uku: una sola, como tarjeta propia arriba (vacía, no ocupa lugar) */
+.uk-panel .pfm-hub__slot { border-radius: var(--uk-r); background: var(--uk-white); overflow: hidden; }
+.uk-panel .pfm-hub__slot:empty { display: none; }
+.uk-panel .pfm-hub__slot > * { background: var(--uk-white); border-bottom: 0; }
+.uk-panel .pfm-hub__slot > :active { background: var(--bp-interaction-row-bg--active); }
+.uk-panel .pfm-hub__hero, .uk-panel .pfm-hub__dinero { cursor: pointer; }
+/* Mi dinero en Pichibank: lo que tienes y lo que debes, lado a lado */
+.uk-panel .pfm-hub__cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.uk-panel .pfm-hub__cols p { display: flex; flex-direction: column; justify-content: space-between; margin: 0; min-width: 0; }
+.uk-panel .pfm-hub__cols small { display: block; font: var(--uk-caption); color: var(--uk-muted); }
+.uk-panel .pfm-hub__cols b { display: block; margin-top: 4px; font: var(--uk-body-semibold); font-size: 18px; line-height: 24px; font-variant-numeric: tabular-nums; }
 .uk-panel .pfm-hub__act-ic { flex: 0 0 32px; width: 32px; text-align: center; font-size: 24px; color: var(--uk-navy); }
 
 /* ---------- 6. Mis gastos (página dentro de Mis finanzas): hallazgo, periodos, gráfica y categorías ---------- */
@@ -285,6 +295,8 @@ html.app-uku .pfm-choice.is-picked, html.app-uku .pfm-allcat:active, html.app-uk
 /* El aviso del PFM («Lo dejo para después · Deshacer») en una línea, abajo en Mis finanzas y arriba en el chat */
 html.uk-chatting .pf-toast { top: calc(64px + env(safe-area-inset-top, 0px)) !important; bottom: auto !important; width: max-content !important; max-width: min(440px, calc(100vw - 32px)) !important; }
 html.uk-chatting.uk-fin .pf-toast { top: auto !important; bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important; }
+/* Con la barra de abajo a la vista, el aviso va sobre ella (arriba taparía el globo de Uku) */
+html.uk-chatting:not(.uk-nonav) .pf-toast { top: auto !important; bottom: calc(var(--uk-navh, 0px) + 16px) !important; }
 
 /* ---------- 7. Soporte (página): tu solicitud, preguntas frecuentes, todas las categorías; Uku abajo y la barra ---------- */
 .uk.is-ayuda .uk-chat { justify-content: flex-start; gap: 0; padding: 8px 0 24px; -webkit-mask-image: none; mask-image: none; }

@@ -1578,17 +1578,17 @@
   function hubHTML() {
     var m = curMes(), s = month(m), g = s.gast, hay = hayPres(), p = hay ? pres().general : 0, pat = patrimonio(), vacio = !(DB.mov[ST.u] || []).length;
     var pe = hay ? presEstado(m) : null, u = hay && p ? Math.min(1, g / p) : 0, cls = !hay ? '' : pe.k === 'ok' ? 'is-ok' : 'is-warn';
-    // Con presupuesto: la barra y lo que te queda. Sin presupuesto: solo lo gastado, sin comparar, y Uku propone armarlo.
+    // Con presupuesto: la barra y lo que te queda. Sin presupuesto: solo lo gastado, sin comparar (armarlo lo propone Uku arriba).
     var pie = hay ? '<div class="pfm-hub__bar" aria-hidden="true"><i class="' + cls + '" style="width:' + (u * 100).toFixed(1) + '%"></i></div><p class="pfm-hub__s">' + (g > p ? T('Vas {m} por encima de tu presupuesto', { m: money(g - p) }) : T('Te queda de tu presupuesto: {m}', { m: money(p - g) })) + '</p>'
-      : vacio ? '<p class="pfm-hub__s">' + T('Cuando uses tu cuenta, aquí verás en qué se va tu dinero.') + '</p>'
-      : '<p class="pfm-hub__s pfm-hub__s--pres"><span>' + T('Todavía no tienes presupuesto') + '</span><button class="section__link" data-pfm="pres">' + T('Armar mi presupuesto') + '</button></p>';
-    // Una sección fija (sin scroll ni asa): el gasto del mes (abre Mis gastos), lo que Uku recomienda y tu dinero en el banco
-    return '<section class="pf-sec pfm-hub">' +
+      : vacio ? '<p class="pfm-hub__s">' + T('Cuando uses tu cuenta, aquí verás en qué se va tu dinero.') + '</p>' : '';
+    // Una sección fija (sin scroll ni asa), como el wireframe: la sugerencia de Uku (una sola, la llena el asistente),
+    // el gasto del mes (abre Mis gastos) y tu dinero en el banco (abre su hoja)
+    return '<section class="pf-sec pfm-hub"><div class="pfm-hub__slot"></div>' +
       '<div class="pfm-hub__card pfm-hub__hero" role="button" tabindex="0" data-pfm="gastos"><h3 class="pfm-hub__h">' + T('Gastaste en {mes}', { mes: mesName(m).toLowerCase() }) + '</h3>' +
       '<b class="pfm-hub__m" data-v="' + g + '">' + money(g) + '</b>' + pie + '</div>' +
-      '<div class="pfm-hub__list"><div class="pfm-hub__slot"></div>' +
-      '<button class="pfm-hub__dinero" data-pfm="dinero"><span class="material-symbols-rounded pfm-hub__act-ic" aria-hidden="true">account_balance_wallet</span><span class="pfm-hub__act-t"><b>' + T('Mi dinero en Pichibank') + '</b>' +
-      '<small>' + T('Tienes {a} · Debes {d}', { a: money(pat.tienes), d: money(pat.debes) }) + '</small></span><span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></button></div>' +
+      '<div class="pfm-hub__card pfm-hub__dinero" role="button" tabindex="0" data-pfm="dinero"><h3 class="pfm-hub__h">' + T('Mi dinero en Pichibank') + '</h3>' +
+        '<div class="pfm-hub__cols"><p><small>' + T('Dinero en mis cuentas e inversiones') + '</small><b>' + money(pat.tienes) + '</b></p>' +
+        '<p><small>' + T('Deuda total acumulada') + '</small><b>' + money(pat.debes) + '</b></p></div></div>' +
       '</section>';
   }
   function hubSec(t, sub, k, l, rows) { return '<div class="pfm-hub__label"><div><h3>' + t + '</h3>' + (sub ? '<p>' + sub + '</p>' : '') + '</div>' + (k ? '<button class="pfm-hub__link" data-pfm="' + k + '">' + l + '</button>' : '') + '</div><div class="pfm-hub__card">' + rows.join('') + '</div>'; }
@@ -1663,6 +1663,9 @@
       case 'hecho': { if (/^ahorro/.test(p.slice(1).join(':'))) document.dispatchEvent(new CustomEvent('uku:ahorro')); var hid = p.slice(1).join(':'), hx = consejo(hid); setHecho(hid, HOY); closeSheet(); fx('success'); refresh(); return toast(hx && hx.ok ? hx.ok : T('Listo.'), 'deshacer:' + hid); }
       case 'deshacer': { var did = p.slice(1).join(':'); setHecho(did, null); if (did === 'pres' && ST.presG) { delete ST.presG[ST.u]; persist(); } fx('tap'); refresh(); if (sheetOpen()) insightsSheet(); return; }
       case 'luego': { var lid = p.slice(1).join(':'); ((ST.oculto || (ST.oculto = {}))[ST.u] = ST.oculto[ST.u] || {})[lid] = HOY; persist(); fx('tap'); refresh(); if (sheetOpen()) insightsSheet(); return toast(T('Lo dejo para después.'), 'verluego'); }
+      // Desde el globo de Uku: ocultar una sugerencia sin abrir hojas, con «Deshacer» en el aviso
+      case 'ocultar': { var oid = p.slice(1).join(':'); ((ST.oculto || (ST.oculto = {}))[ST.u] = ST.oculto[ST.u] || {})[oid] = HOY; persist(); fx('tap'); refresh(); return toast(T('Listo, ya no te la muestro.'), 'desocultar:' + oid); }
+      case 'desocultar': { var did2 = p.slice(1).join(':'); if (ST.oculto && ST.oculto[ST.u]) delete ST.oculto[ST.u][did2]; persist(); fx('tap'); return refresh(); }
       case 'verluego': { if (ST.oculto) delete ST.oculto[ST.u]; persist(); refresh(); return insightsSheet(); }
       case 'mesada': return mesadaSheet(p.slice(1).join(':'));
       case 'mesa': {
