@@ -79,21 +79,19 @@
   color: var(--bp-theme-color-text-primary);
 }
 .ing__puntos span {
-  width: 14px;
-  height: 14px;
-  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  border: 2px solid currentColor;
-  opacity: .35;
+  background: color-mix(in srgb, var(--bp-theme-color-text-primary, #0f265c) 18%, transparent);
 }
-.ing__puntos span.on {
-  background: currentColor;
-  opacity: 1;
-}
+.ing__puntos span.on { background: var(--bp-theme-color-text-primary, #0f265c); }
 .ing__teclas {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: var(--bp-semantic-spacing-micro-md, 8px);
+  padding: var(--bp-semantic-spacing-micro-md, 8px);
+  border-radius: var(--bp-semantic-radius-lg, 16px);
+  background: var(--bp-theme-color-surface-page-alt, #e4e7ee);
 }
 .ing__teclas > span { display: block; }
 /* PIN: todo centrado en una columna; el teclado va pegado al fondo */
@@ -101,14 +99,16 @@
 .ing__body--pin > * { width: 100%; }
 .ing__body--pin .ing__teclas {
   width: 100%;
-  max-width: 300px;
+  max-width: 320px;
   margin-top: auto;
 }
+/* Olvidé mi PIN: enlace de texto, como en el diseño */
+.ing-olvide { align-self: center; border: 0; background: none; padding: var(--bp-semantic-spacing-micro-md, 8px); font: 600 16px/24px var(--sol-font, Roboto, sans-serif); color: var(--bp-theme-color-text-primary); cursor: pointer; }
 .ing__tecla {
-  height: 64px;
+  height: 56px;
   border: none;
   border-radius: 16px;
-  background: var(--bp-surface-container, rgba(0, 0, 0, .05));
+  background: var(--bp-theme-color-surface-container-default, #fff);
   color: var(--bp-theme-color-text-primary);
   font: inherit;
   font-size: 24px;
@@ -171,6 +171,25 @@
 .ing-hoja { max-height: 86vh; }
 .ing-hoja__titulo { margin: 0 0 16px; font-size: 20px; line-height: 26px; font-weight: 700; color: var(--bp-theme-color-text-primary); }
 .ing-hoja__body { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-macro-sm, 16px); }
+/* Mostrar mi QR: tarjeta del código y acciones */
+.ing-card { padding: var(--bp-layout-card-padding, 16px); border-radius: var(--bp-semantic-radius-lg, 16px); background: var(--bp-theme-color-surface-container-default, #fff); }
+.ing-card--qr { display: flex; flex-direction: column; align-items: center; gap: var(--bp-semantic-spacing-macro-sm, 16px); text-align: center; }
+.ing-qr__cuenta { margin: 0; font: var(--ui-body-md-semibold, 600 16px/24px sans-serif); color: var(--bp-theme-color-text-primary); }
+.ing-card--acciones { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--bp-semantic-spacing-micro-md, 8px); }
+.ing-accion { display: flex; flex-direction: column; align-items: center; gap: var(--bp-semantic-spacing-micro-md, 8px); border: 0; background: none; padding: 0; font: inherit; cursor: pointer; }
+.ing-accion__icono { display: grid; place-items: center; width: 56px; height: 56px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-secondary-bg, #eef1f6); color: var(--bp-interaction-secondary-fg, #0f265c); }
+.ing-accion__texto { font: var(--ui-body-sm-medium, 500 14px/20px sans-serif); color: var(--bp-theme-color-text-primary); text-align: center; }
+/* Clave digital: anillo que se vacía en 30 s, copiar y aviso */
+.ing-ring { position: relative; width: 200px; height: 200px; margin: var(--bp-semantic-spacing-macro-sm, 16px) auto; }
+.ing-ring__svg { display: block; width: 100%; height: 100%; }
+.ing-ring__svg svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ing-ring__track { fill: none; stroke: var(--bp-theme-color-surface-page-alt, #f2f2f2); stroke-width: 12; }
+.ing-ring__bar { fill: none; stroke: var(--bp-theme-color-brand-main, #ffdd00); stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset .25s linear; }
+.ing-ring__codigo { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; font: var(--ui-numeric-lg, 700 32px/38px sans-serif); font-size: 40px; letter-spacing: .04em; font-variant-numeric: tabular-nums; color: var(--bp-theme-color-text-primary); }
+.ing-copiar__fila { display: flex; justify-content: center; }
+.ing-copiar { width: auto; padding: 0 var(--bp-semantic-spacing-macro-md, 24px); gap: var(--bp-semantic-spacing-micro-md, 8px); display: inline-flex; align-items: center; }
+.ing-copiar .material-symbols-rounded { font-size: 20px; }
+.ing-aviso { margin-top: var(--bp-semantic-spacing-macro-sm, 16px); }
 .ing-qr { display: flex; justify-content: center; padding: 8px 0; }
 .ing-qr svg { width: 240px; height: 240px; }
 .ing-ticket { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md, 8px); padding: 16px; border-radius: 16px; background: var(--bp-theme-color-surface-container-default, #fff); }
