@@ -30,7 +30,7 @@
   var EMPRESA = /c[ií]a|s\.a|s\.a\.s|ltda|cooperativa|universidad|unidad educativa|distribuidora|hnos|banco|municipio|cuota|matr[ií]cula|pensi[oó]n|cr[eé]dito|intermex|western/i;
   var ENVIO = [[/^Transf\. Directa a (.+)$/, 'Pichibank'], [/^Transf\. Interbancaria a (.+)$/, 'Otro banco'], [/^Pago a persona (.+)$/, 'Deuna']];
   var RECIBO = [[/^Transf\. Directa de (.+)$/, 'Pichibank'], [/^Transferencia recibida de (.+)$/, 'Pichibank'], [/^Transf\. Interbancaria de (.+)$/, 'Otro banco'], [/^Transf\. Deuna de .+? \((.+)\)$/, 'Deuna'], [/^Transferencia internacional recibida .*?[-–] (.+)$/, 'Exterior'], [/^Transferencia internacional recibida desde (.+?) - (.+)$/, 'Exterior']];
-  var SERVICIO = [[/^Pago por servicio de (.+)$/], [/^D[eé]bito autom[aá]tico (.+)$/], [/^(CLARO|MOVISTAR|CNT) (PLAN .+)$/], [/^Pago a comercio (Claro recargas)$/], [/^(CLARO RECARGA ONLINE)$/]];
+  var SERVICIO = [[/^Pago por servicio de (.+)$/], [/^D[eé]bito autom[aá]tico (?!hacia)(.+)$/], [/^((?:CLARO|MOVISTAR|CNT) PLAN .+)$/], [/^Pago a comercio (Claro recargas)$/], [/^(CLARO RECARGA ONLINE)$/]];
   function limpiarEmpresa(s) { return s.replace(/\s+(pensi[oó]n|matr[ií]cula|tarjeta.*|cr[eé]dito.*|impuesto predial|recarga prepago)$/i, '').trim(); }
 
   function derivar(id) {

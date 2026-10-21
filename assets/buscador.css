@@ -149,6 +149,9 @@ html:not(.theme-y2k) .sx .sx-app__ic { width: 56px !important; height: 56px !imp
 /* Ajustes: filas pegadas dentro de la tarjeta, chips blancos, campo limpio mientras escribes */
 .sx-card { display: flex; flex-direction: column; gap: 0 !important; }
 .sx .sx-chips .sx-chip { background: var(--bp-theme-color-surface-container-default) !important; }
+/* El chip elegido (Grabar un atajo, formularios) conserva su estado seleccionado del DS; dentro de una tarjeta blanca, los chips van en gris claro */
+.sx .sx-chips .sx-chip[aria-pressed="true"] { background: var(--bp-interaction-selectable-selected-bg) !important; color: var(--bp-interaction-selectable-selected-fg) !important; }
+.sx .sx-kb__body .sx-chips .sx-chip:not([aria-pressed="true"]) { background: var(--bp-interaction-selectable-bg) !important; }
 .sx.has-q .sx-mic { display: none; }
 .sx-card > .sx-row { border-radius: 0 !important; }
 .sx-card > h3 + .sx-row, .sx-card > .sx-row:first-child { border-radius: var(--bp-semantic-radius-md, 12px) var(--bp-semantic-radius-md, 12px) 0 0 !important; }
