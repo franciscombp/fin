@@ -1,67 +1,91 @@
 /**
- * Solar Design System · "Components 4 [Beta]" — tokens globales (CSS custom properties)
- * Origen: variables de Figma (colecciones base · semantic · theme · layout · componente).
- *
- * Arquitectura (ver Figma › Guías › Token Architecture):
- *   base      → primitivos privados. Los componentes NUNCA los consumen directo.
- *   semantic  → API pública: tamaños, espaciado, radios, tipografía, elevación.
- *   theme     → color por modo: light y dark (data-theme en <html>).
- *   layout    → grilla por breakpoint (mode = data-layout).
- *   interaction → estados (default/hover/active/focus) como sufijos --hover/--active/--focus.
- *   bp-*      → recetas por componente: sólo remapean tokens semánticos por tamaño.
- *
+ * @sistema Components 4 [Beta]
+ * @tipo tokens globales (custom properties CSS)
+ * @generado 2026-10-21T01:27:39.843Z
+ * @origen Figma — archivo autogenerado, no editar manualmente
+ * @colecciones base (259), layout (7), theme (192), semantic (338), interaction (30)
+ * @total 826 tokens
+ * @compatibilidad modern (color-mix, calc)
+ * @nota 95 tokens usan color-mix() para transparencias compuestas
  */
 
-@layer tokens.base, tokens.layout, tokens.semantic, tokens.theme, tokens.interaction, tokens.product;
+@layer tokens.base, tokens.layout, tokens.semantic, tokens.theme, tokens.product;
 
 @layer tokens.base {
   :root {
-    --bp-base-color-amber-50: #fffcf2;
+    --bp-base-blur-0: 0px;
+    --bp-base-blur-16: 16px;
+    --bp-base-blur-24: 24px;
+    --bp-base-blur-32: 32px;
+    --bp-base-blur-4: 4px;
+    --bp-base-blur-8: 8px;
+
+    /* border */
+    --bp-base-border-0: 0px;
+    --bp-base-border-1: 1px;
+    --bp-base-border-2: 2px;
+
+    /* breakpoint */
+    --bp-base-breakpoint-1024: 1024px;
+    --bp-base-breakpoint-1280: 1280px;
+    --bp-base-breakpoint-1366: 1366px;
+    --bp-base-breakpoint-360: 360px;
+    --bp-base-breakpoint-390: 390px;
+    --bp-base-breakpoint-402: 402px;
+    --bp-base-breakpoint-440: 440px;
+    --bp-base-breakpoint-480: 480px;
+    --bp-base-breakpoint-768: 768px;
+
+    /* color */
     --bp-base-color-amber-100: #fff3cd;
     --bp-base-color-amber-200: #ffe69c;
     --bp-base-color-amber-300: #ffda6a;
     --bp-base-color-amber-400: #ffcd39;
+    --bp-base-color-amber-50: #fffcf2;
     --bp-base-color-amber-500: #ffc108;
     --bp-base-color-amber-600: #ffb705;
     --bp-base-color-amber-700: #ffae02;
     --bp-base-color-amber-800: #ffa400;
     --bp-base-color-amber-900: #ff9b00;
-    --bp-base-color-blue-50: #e7e9ee;
-    --bp-base-color-blue-75: #dbdfe6;
     --bp-base-color-blue-100: #cfd4de;
     --bp-base-color-blue-200: #9fa8be;
     --bp-base-color-blue-300: #6f7d9d;
     --bp-base-color-blue-400: #3f517d;
+    --bp-base-color-blue-50: #e7e9ee;
     --bp-base-color-blue-500: #0f265c;
     --bp-base-color-blue-600: #0c1f50;
     --bp-base-color-blue-700: #091944;
+    --bp-base-color-blue-75: #dbdfe6;
     --bp-base-color-blue-800: #061239;
     --bp-base-color-blue-900: #030c2d;
-    --bp-base-color-green-50: #ecf6ee;
     --bp-base-color-green-100: #daeedf;
     --bp-base-color-green-200: #b4dcbe;
     --bp-base-color-green-300: #8bc89d;
     --bp-base-color-green-400: #61b679;
+    --bp-base-color-green-50: #ecf6ee;
     --bp-base-color-green-500: #31a451;
     --bp-base-color-green-600: #299846;
     --bp-base-color-green-700: #218c3b;
     --bp-base-color-green-800: #19812f;
     --bp-base-color-green-900: #107524;
-    --bp-base-color-indigo-50: #e1e3e9;
     --bp-base-color-indigo-100: #b1bad3;
     --bp-base-color-indigo-200: #9ba6c7;
     --bp-base-color-indigo-300: #8592ba;
     --bp-base-color-indigo-400: #717fac;
+    --bp-base-color-indigo-50: #e1e3e9;
     --bp-base-color-indigo-500: #5d6c9d;
     --bp-base-color-indigo-600: #4a598d;
     --bp-base-color-indigo-700: #37477d;
     --bp-base-color-indigo-800: #25366d;
+    --bp-base-color-indigo-900: var(--bp-base-color-blue-500);
     --bp-base-color-neutral-0: #ffffff;
-    --bp-base-color-neutral-50: #fafafa;
     --bp-base-color-neutral-100: #f5f5f5;
+    --bp-base-color-neutral-1000: #121212;
+    --bp-base-color-neutral-1050: #000000;
     --bp-base-color-neutral-200: #ececec;
     --bp-base-color-neutral-300: #e0e0e0;
     --bp-base-color-neutral-400: #d0d0d0;
+    --bp-base-color-neutral-50: #fafafa;
     --bp-base-color-neutral-500: #bdbdbd;
     --bp-base-color-neutral-600: #9e9e9e;
     --bp-base-color-neutral-700: #7a7a7a;
@@ -69,141 +93,167 @@
     --bp-base-color-neutral-850: #404040;
     --bp-base-color-neutral-900: #303030;
     --bp-base-color-neutral-950: #1f1f1f;
-    --bp-base-color-neutral-1000: #121212;
-    --bp-base-color-neutral-1050: #000000;
-    --bp-base-color-orange-50: #fff4e5;
     --bp-base-color-orange-100: #ffeacc;
     --bp-base-color-orange-200: #ffd699;
     --bp-base-color-orange-300: #ffc166;
     --bp-base-color-orange-400: #ffad33;
+    --bp-base-color-orange-50: #fff4e5;
     --bp-base-color-orange-500: #ff9800;
     --bp-base-color-orange-600: #ff8c00;
     --bp-base-color-orange-700: #ff7f00;
     --bp-base-color-orange-800: #ff7300;
     --bp-base-color-orange-900: #ff6700;
-    --bp-base-color-purple-50: #fbf2fe;
     --bp-base-color-purple-100: #f6e6fc;
     --bp-base-color-purple-200: #dc99f4;
     --bp-base-color-purple-300: #cb66ee;
     --bp-base-color-purple-400: #b933e9;
+    --bp-base-color-purple-50: #fbf2fe;
     --bp-base-color-purple-500: #a800e3;
     --bp-base-color-purple-600: #9700d0;
     --bp-base-color-purple-700: #8700bc;
     --bp-base-color-purple-800: #7700a9;
     --bp-base-color-purple-900: #670096;
-    --bp-base-color-red-50: #fceded;
     --bp-base-color-red-100: #f7cdcd;
     --bp-base-color-red-200: #ee9c9c;
     --bp-base-color-red-300: #e66a6a;
     --bp-base-color-red-400: #dd3939;
+    --bp-base-color-red-50: #fceded;
     --bp-base-color-red-500: #d50707;
     --bp-base-color-red-600: #c20505;
     --bp-base-color-red-700: #b90404;
     --bp-base-color-red-800: #ac0202;
     --bp-base-color-red-900: #980101;
-    --bp-base-color-sky-50: #eaf1f8;
     --bp-base-color-sky-100: #d5e4f2;
     --bp-base-color-sky-200: #accae5;
     --bp-base-color-sky-300: #82afd9;
     --bp-base-color-sky-400: #5995cc;
+    --bp-base-color-sky-50: #eaf1f8;
     --bp-base-color-sky-500: #2f7abf;
     --bp-base-color-sky-600: #276db6;
     --bp-base-color-sky-700: #1f60ac;
     --bp-base-color-sky-800: #1854a2;
     --bp-base-color-sky-900: #104798;
-    --bp-base-color-tangerine-50: #fef0e5;
     --bp-base-color-tangerine-100: #fde1cc;
     --bp-base-color-tangerine-200: #fcc399;
     --bp-base-color-tangerine-300: #faa466;
     --bp-base-color-tangerine-400: #f98633;
+    --bp-base-color-tangerine-50: #fef0e5;
     --bp-base-color-tangerine-500: #f76800;
     --bp-base-color-tangerine-600: #f65b00;
     --bp-base-color-tangerine-700: #f44f00;
     --bp-base-color-tangerine-800: #f34300;
     --bp-base-color-tangerine-900: #f13700;
-    --bp-base-color-teal-50: #f2f9f9;
     --bp-base-color-teal-100: #e5f4f3;
     --bp-base-color-teal-200: #99d5cf;
     --bp-base-color-teal-300: #66c0b8;
     --bp-base-color-teal-400: #33aba0;
+    --bp-base-color-teal-50: #f2f9f9;
     --bp-base-color-teal-500: #009688;
     --bp-base-color-teal-600: #00897b;
     --bp-base-color-teal-700: #007d6e;
     --bp-base-color-teal-800: #007062;
     --bp-base-color-teal-900: #006455;
-    --bp-base-color-yellow-50: #fffbe5;
+    --bp-base-color-transparent: rgb(0 0 0 / 0);
     --bp-base-color-yellow-100: #fff8cc;
     --bp-base-color-yellow-200: #fff199;
     --bp-base-color-yellow-300: #ffeb66;
     --bp-base-color-yellow-400: #ffe433;
+    --bp-base-color-yellow-50: #fffbe5;
     --bp-base-color-yellow-500: #ffdd00;
     --bp-base-color-yellow-600: #ffd700;
     --bp-base-color-yellow-700: #ffd100;
     --bp-base-color-yellow-800: #ffcb00;
     --bp-base-color-yellow-900: #ffc500;
-    --bp-base-color-indigo-900: var(--bp-base-color-blue-500);
-    --bp-base-color-transparent: rgb(0 0 0 / 0);
+
+    /* count */
+    --bp-base-count-0: 0;
+    --bp-base-count-1: 1;
+    --bp-base-count-12: 12;
+    --bp-base-count-2: 2;
+    --bp-base-count-4: 4;
+    --bp-base-count-8: 8;
+
+    /* dimension */
     --bp-base-dimension-0: 0px;
-    --bp-base-dimension-2: 2px;
-    --bp-base-dimension-4: 4px;
-    --bp-base-dimension-8: 8px;
     --bp-base-dimension-12: 12px;
+    --bp-base-dimension-128: 128px;
+    --bp-base-dimension-144: 144px;
     --bp-base-dimension-16: 16px;
+    --bp-base-dimension-2: 2px;
     --bp-base-dimension-20: 20px;
     --bp-base-dimension-24: 24px;
+    --bp-base-dimension-240: 240px;
     --bp-base-dimension-28: 28px;
     --bp-base-dimension-32: 32px;
+    --bp-base-dimension-4: 4px;
     --bp-base-dimension-40: 40px;
+    --bp-base-dimension-440: 440px;
     --bp-base-dimension-48: 48px;
+    --bp-base-dimension-480: 480px;
     --bp-base-dimension-52: 52px;
     --bp-base-dimension-56: 56px;
     --bp-base-dimension-64: 64px;
     --bp-base-dimension-72: 72px;
+    --bp-base-dimension-8: 8px;
     --bp-base-dimension-80: 80px;
-    --bp-base-dimension-96: 96px;
-    --bp-base-dimension-128: 128px;
-    --bp-base-dimension-144: 144px;
-    --bp-base-dimension-240: 240px;
-    --bp-base-dimension-440: 440px;
-    --bp-base-dimension-480: 480px;
     --bp-base-dimension-896: 896px;
-    --bp-base-blur-0: 0px;
-    --bp-base-blur-4: 4px;
-    --bp-base-blur-8: 8px;
-    --bp-base-blur-16: 16px;
-    --bp-base-blur-24: 24px;
-    --bp-base-blur-32: 32px;
-    --bp-base-border-0: 0px;
-    --bp-base-border-1: 1px;
-    --bp-base-border-2: 2px;
-    --bp-base-radius-0: 0px;
-    --bp-base-radius-4: 4px;
-    --bp-base-radius-8: 8px;
-    --bp-base-radius-12: 12px;
-    --bp-base-radius-16: 16px;
-    --bp-base-radius-24: 24px;
-    --bp-base-radius-full: 9999px;
+    --bp-base-dimension-96: 96px;
+
+    /* height */
+    --bp-base-height-1024: 1024px;
+    --bp-base-height-667: 667px;
+    --bp-base-height-768: 768px;
+    --bp-base-height-800: 800px;
+    --bp-base-height-844: 844px;
+    --bp-base-height-874: 874px;
+    --bp-base-height-900: 900px;
+    --bp-base-height-917: 917px;
+    --bp-base-height-956: 956px;
+
+    /* opacity */
     --bp-base-opacity-0: 0;
-    --bp-base-opacity-4: 0.04;
-    --bp-base-opacity-6: 0.06;
-    --bp-base-opacity-8: 0.08;
     --bp-base-opacity-10: 0.1;
+    --bp-base-opacity-100: 1;
     --bp-base-opacity-12: 0.12;
     --bp-base-opacity-16: 0.16;
     --bp-base-opacity-20: 0.2;
     --bp-base-opacity-24: 0.24;
     --bp-base-opacity-32: 0.32;
+    --bp-base-opacity-4: 0.04;
     --bp-base-opacity-40: 0.4;
     --bp-base-opacity-48: 0.48;
+    --bp-base-opacity-6: 0.06;
     --bp-base-opacity-64: 0.64;
+    --bp-base-opacity-8: 0.08;
     --bp-base-opacity-80: 0.8;
     --bp-base-opacity-88: 0.88;
     --bp-base-opacity-96: 0.96;
-    --bp-base-opacity-100: 1;
-    --bp-base-typography-font-family-sans: Roboto; /* Prelo en Figma (comercial) */
-    --bp-base-typography-font-family-slab: "Roboto Slab", Roboto, serif; /* Prelo Slab en Figma */
+
+    /* overlap */
+    --bp-base-overlap-10: -10px;
+    --bp-base-overlap-12: -12px;
+    --bp-base-overlap-16: -16px;
+    --bp-base-overlap-2: -2px;
+    --bp-base-overlap-20: -20px;
+    --bp-base-overlap-24: -24px;
+    --bp-base-overlap-32: -32px;
+    --bp-base-overlap-4: -4px;
+    --bp-base-overlap-6: -6px;
+    --bp-base-overlap-8: -8px;
+
+    /* radius */
+    --bp-base-radius-0: 0px;
+    --bp-base-radius-12: 12px;
+    --bp-base-radius-16: 16px;
+    --bp-base-radius-24: 24px;
+    --bp-base-radius-4: 4px;
+    --bp-base-radius-8: 8px;
+    --bp-base-radius-full: 9999px;
+
+    /* typography */
+    --bp-base-typography-font-family-sans: Prelo, Roboto, sans-serif; /* Prelo (comercial) con respaldo */
+    --bp-base-typography-font-family-slab: "Prelo Slab", "Roboto Slab", serif;
     --bp-base-typography-font-family-system: Arial;
-    --bp-base-typography-font-size-8: 8px;
     --bp-base-typography-font-size-12: 12px;
     --bp-base-typography-font-size-14: 14px;
     --bp-base-typography-font-size-16: 16px;
@@ -217,11 +267,13 @@
     --bp-base-typography-font-size-34: 34px;
     --bp-base-typography-font-size-40: 40px;
     --bp-base-typography-font-size-52: 52px;
+    --bp-base-typography-font-size-8: 8px;
     --bp-base-typography-font-weight-300: 300;
     --bp-base-typography-font-weight-400: 400;
     --bp-base-typography-font-weight-500: 500;
     --bp-base-typography-font-weight-600: 600;
     --bp-base-typography-font-weight-700: 700;
+    --bp-base-typography-letter-spacing-0: 0px;
     --bp-base-typography-line-height-12: 12px;
     --bp-base-typography-line-height-16: 16px;
     --bp-base-typography-line-height-18: 18px;
@@ -233,481 +285,503 @@
     --bp-base-typography-line-height-40: 40px;
     --bp-base-typography-line-height-48: 48px;
     --bp-base-typography-line-height-60: 60px;
-    --bp-base-typography-letter-spacing-0: 0px;
+
+    /* z-index */
     --bp-base-z-index-0: 0;
     --bp-base-z-index-10: 10;
     --bp-base-z-index-100: 100;
-    --bp-base-z-index-200: 200;
-    --bp-base-z-index-500: 500;
     --bp-base-z-index-1000: 1000;
     --bp-base-z-index-1100: 1100;
+    --bp-base-z-index-200: 200;
+    --bp-base-z-index-500: 500;
   }
-    --bp-base-breakpoint-360: 360px;
-    --bp-base-breakpoint-390: 390px;
-    --bp-base-breakpoint-402: 402px;
-    --bp-base-breakpoint-440: 440px;
-    --bp-base-breakpoint-480: 480px;
-    --bp-base-breakpoint-768: 768px;
-    --bp-base-breakpoint-1024: 1024px;
-    --bp-base-breakpoint-1280: 1280px;
-    --bp-base-breakpoint-1366: 1366px;
-    --bp-base-count-0: 0;
-    --bp-base-count-1: 1;
-    --bp-base-count-2: 2;
-    --bp-base-count-4: 4;
-    --bp-base-count-8: 8;
-    --bp-base-count-12: 12;
-    --bp-base-height-667: 667px;
-    --bp-base-height-768: 768px;
-    --bp-base-height-800: 800px;
-    --bp-base-height-844: 844px;
-    --bp-base-height-874: 874px;
-    --bp-base-height-900: 900px;
-    --bp-base-height-917: 917px;
-    --bp-base-height-956: 956px;
-    --bp-base-height-1024: 1024px;
-    --bp-base-overlap-2: -2px;
-    --bp-base-overlap-4: -4px;
-    --bp-base-overlap-6: -6px;
-    --bp-base-overlap-8: -8px;
-    --bp-base-overlap-10: -10px;
-    --bp-base-overlap-12: -12px;
-    --bp-base-overlap-16: -16px;
-    --bp-base-overlap-20: -20px;
-    --bp-base-overlap-24: -24px;
-    --bp-base-overlap-32: -32px;
 }
 
 @layer tokens.layout {
-  :root, :root[data-layout="mobile-sm"] {
-    --bp-layout-breakpoint: var(--bp-base-breakpoint-390);
-    --bp-layout-grid-columns: var(--bp-base-count-4);
-    --bp-layout-grid-gutter: var(--bp-base-dimension-24);
-    --bp-layout-grid-inset: var(--bp-base-dimension-8);
-    --bp-layout-grid-margin: var(--bp-base-dimension-16);
-    --bp-layout-card-padding: var(--bp-base-dimension-16);
-    --bp-layout-height-android: var(--bp-base-height-844);
-    --bp-layout-height-ios: var(--bp-base-height-844);
-  }
   :root[data-layout="mobile-xs"] {
     --bp-layout-breakpoint: var(--bp-base-breakpoint-360);
+
+    /* grid */
+    --bp-layout-grid-columns: var(--bp-base-count-4);
     --bp-layout-grid-gutter: var(--bp-base-dimension-16);
+    --bp-layout-grid-inset: var(--bp-base-dimension-8);
     --bp-layout-grid-margin: var(--bp-base-dimension-16);
+
+    /* height */
     --bp-layout-height-android: var(--bp-base-height-800);
     --bp-layout-height-ios: var(--bp-base-height-667);
   }
+
+  :root, :root[data-layout="mobile-sm"] { /* mobile-sm es el modo por defecto */
+    --bp-layout-breakpoint: var(--bp-base-breakpoint-390);
+
+    /* grid */
+    --bp-layout-grid-columns: var(--bp-base-count-4);
+    --bp-layout-grid-gutter: var(--bp-base-dimension-16);
+    --bp-layout-grid-inset: var(--bp-base-dimension-8);
+    --bp-layout-grid-margin: var(--bp-base-dimension-16);
+
+    /* height */
+    --bp-layout-height-android: var(--bp-base-height-844);
+    --bp-layout-height-ios: var(--bp-base-height-844);
+  }
+
   :root[data-layout="mobile-md"] {
     --bp-layout-breakpoint: var(--bp-base-breakpoint-402);
+
+    /* grid */
+    --bp-layout-grid-columns: var(--bp-base-count-4);
+    --bp-layout-grid-gutter: var(--bp-base-dimension-16);
+    --bp-layout-grid-inset: var(--bp-base-dimension-8);
+    --bp-layout-grid-margin: var(--bp-base-dimension-16);
+
+    /* height */
     --bp-layout-height-android: var(--bp-base-height-917);
     --bp-layout-height-ios: var(--bp-base-height-874);
   }
+
   :root[data-layout="mobile-lg"] {
     --bp-layout-breakpoint: var(--bp-base-breakpoint-440);
-    --bp-layout-grid-inset: var(--bp-base-dimension-16);
+
+    /* grid */
+    --bp-layout-grid-columns: var(--bp-base-count-4);
+    --bp-layout-grid-gutter: var(--bp-base-dimension-24);
+    --bp-layout-grid-inset: var(--bp-base-dimension-12);
+    --bp-layout-grid-margin: var(--bp-base-dimension-24);
+
+    /* height */
     --bp-layout-height-android: var(--bp-base-height-956);
     --bp-layout-height-ios: var(--bp-base-height-956);
   }
+
   :root[data-layout="tablet-md"] {
-    --bp-layout-card-padding: var(--bp-base-dimension-24);
-    --bp-layout-grid-margin: var(--bp-base-dimension-24);
     --bp-layout-breakpoint: var(--bp-base-breakpoint-768);
+
+    /* grid */
     --bp-layout-grid-columns: var(--bp-base-count-8);
+    --bp-layout-grid-gutter: var(--bp-base-dimension-24);
     --bp-layout-grid-inset: var(--bp-base-dimension-16);
+    --bp-layout-grid-margin: var(--bp-base-dimension-24);
+
+    /* height */
     --bp-layout-height-android: var(--bp-base-height-1024);
     --bp-layout-height-ios: var(--bp-base-height-1024);
   }
+
   :root[data-layout="desktop-sm"] {
-    --bp-layout-card-padding: var(--bp-base-dimension-24);
     --bp-layout-breakpoint: var(--bp-base-breakpoint-1024);
+
+    /* grid */
     --bp-layout-grid-columns: var(--bp-base-count-12);
+    --bp-layout-grid-gutter: var(--bp-base-dimension-24);
     --bp-layout-grid-inset: var(--bp-base-dimension-24);
     --bp-layout-grid-margin: var(--bp-base-dimension-40);
+
+    /* height */
     --bp-layout-height-android: var(--bp-base-height-768);
     --bp-layout-height-ios: var(--bp-base-height-768);
   }
+
   :root[data-layout="desktop-lg"] {
-    --bp-layout-card-padding: var(--bp-base-dimension-24);
     --bp-layout-breakpoint: var(--bp-base-breakpoint-1280);
+
+    /* grid */
     --bp-layout-grid-columns: var(--bp-base-count-12);
+    --bp-layout-grid-gutter: var(--bp-base-dimension-24);
     --bp-layout-grid-inset: var(--bp-base-dimension-24);
     --bp-layout-grid-margin: var(--bp-base-dimension-40);
+
+    /* height */
     --bp-layout-height-android: var(--bp-base-height-900);
     --bp-layout-height-ios: var(--bp-base-height-900);
   }
+
   :root[data-layout="desktop-xl"] {
-    --bp-layout-card-padding: var(--bp-base-dimension-24);
     --bp-layout-breakpoint: var(--bp-base-breakpoint-1366);
+
+    /* grid */
     --bp-layout-grid-columns: var(--bp-base-count-12);
+    --bp-layout-grid-gutter: var(--bp-base-dimension-24);
     --bp-layout-grid-inset: var(--bp-base-dimension-24);
     --bp-layout-grid-margin: var(--bp-base-dimension-40);
+
+    /* height */
     --bp-layout-height-android: var(--bp-base-height-900);
     --bp-layout-height-ios: var(--bp-base-height-900);
   }
+
 }
 
 @layer tokens.semantic {
   :root {
+    --bp-semantic-border-medium: var(--bp-base-border-2);
     --bp-semantic-border-none: var(--bp-base-border-0);
     --bp-semantic-border-thin: var(--bp-base-border-1);
-    --bp-semantic-border-medium: var(--bp-base-border-2);
+
+    /* effects */
+    --bp-semantic-effects-blur-background: var(--bp-base-blur-16);
     --bp-semantic-effects-blur-none: var(--bp-base-blur-0);
+    --bp-semantic-effects-blur-overlay: var(--bp-base-blur-24);
     --bp-semantic-effects-blur-soft: var(--bp-base-blur-4);
     --bp-semantic-effects-blur-subdued: var(--bp-base-blur-8);
-    --bp-semantic-effects-blur-background: var(--bp-base-blur-16);
-    --bp-semantic-effects-blur-overlay: var(--bp-base-blur-24);
+
+    /* elevation */
+    --bp-semantic-elevation-high-blur: var(--bp-base-blur-24);
+    --bp-semantic-elevation-high-color: color-mix(in srgb, var(--bp-base-color-neutral-900) 16%, transparent);
+    --bp-semantic-elevation-high-offset-y: var(--bp-base-dimension-12);
     --bp-semantic-elevation-low-blur: var(--bp-base-blur-8);
     --bp-semantic-elevation-low-color: color-mix(in srgb, var(--bp-base-color-neutral-900) 8%, transparent);
     --bp-semantic-elevation-low-offset-y: var(--bp-base-dimension-4);
     --bp-semantic-elevation-mid-blur: var(--bp-base-blur-16);
     --bp-semantic-elevation-mid-color: color-mix(in srgb, var(--bp-base-color-neutral-900) 12%, transparent);
     --bp-semantic-elevation-mid-offset-y: var(--bp-base-dimension-8);
-    --bp-semantic-elevation-high-blur: var(--bp-base-blur-24);
-    --bp-semantic-elevation-high-color: color-mix(in srgb, var(--bp-base-color-neutral-900) 16%, transparent);
-    --bp-semantic-elevation-high-offset-y: var(--bp-base-dimension-12);
-    --bp-semantic-elevation-overlay-blur: var(--bp-base-blur-32);
-    --bp-semantic-elevation-overlay-color: color-mix(in srgb, var(--bp-base-color-neutral-900) 24%, transparent);
-    --bp-semantic-elevation-overlay-offset-y: var(--bp-base-dimension-16);
-    --bp-semantic-opacity-transparent: var(--bp-base-opacity-0);
-    --bp-semantic-opacity-subtle: var(--bp-base-opacity-10);
-    --bp-semantic-opacity-soft: var(--bp-base-opacity-20);
-    --bp-semantic-opacity-subdued: var(--bp-base-opacity-40);
-    --bp-semantic-opacity-overlay: var(--bp-base-opacity-80);
-    --bp-semantic-opacity-opaque: var(--bp-base-opacity-100);
-    --bp-semantic-radius-none: var(--bp-base-radius-0);
-    --bp-semantic-radius-xs: var(--bp-base-radius-4);
-    --bp-semantic-radius-sm: var(--bp-base-radius-8);
-    --bp-semantic-radius-md: var(--bp-base-radius-12);
-    --bp-semantic-radius-lg: var(--bp-base-radius-16);
-    --bp-semantic-radius-full: var(--bp-base-radius-full);
-    --bp-semantic-size-avatar-xs: var(--bp-base-dimension-32);
-    --bp-semantic-size-avatar-sm: var(--bp-base-dimension-40);
-    --bp-semantic-size-avatar-md: var(--bp-base-dimension-48);
-    --bp-semantic-size-avatar-lg: var(--bp-base-dimension-64);
-    --bp-semantic-size-avatar-xl: var(--bp-base-dimension-96);
-    --bp-semantic-size-avatar-xxl: var(--bp-base-dimension-128);
-    --bp-semantic-size-icon-xxs: var(--bp-base-dimension-12);
-    --bp-semantic-size-icon-xs: var(--bp-base-dimension-16);
-    --bp-semantic-size-icon-sm: var(--bp-base-dimension-20);
-    --bp-semantic-size-icon-md: var(--bp-base-dimension-24);
-    --bp-semantic-size-icon-lg: var(--bp-base-dimension-32);
-    --bp-semantic-size-icon-xl: var(--bp-base-dimension-48);
-    --bp-semantic-size-icon-xxl: var(--bp-base-dimension-64);
-    --bp-semantic-size-interactive-xxs: var(--bp-base-dimension-32);
-    --bp-semantic-size-interactive-xs: var(--bp-base-dimension-40);
-    --bp-semantic-size-interactive-sm: var(--bp-base-dimension-48);
-    --bp-semantic-size-interactive-md: var(--bp-base-dimension-56);
-    --bp-semantic-size-interactive-lg: var(--bp-base-dimension-64);
-    --bp-semantic-size-logo-xs: var(--bp-base-dimension-24);
-    --bp-semantic-size-logo-sm: var(--bp-base-dimension-28);
-    --bp-semantic-size-logo-md: var(--bp-base-dimension-32);
-    --bp-semantic-size-logo-lg: var(--bp-base-dimension-40);
-    --bp-semantic-size-touch-target-min: var(--bp-base-dimension-48);
-    --bp-semantic-size-touch-target-comfortable: var(--bp-base-dimension-56);
-    --bp-semantic-spacing-none: var(--bp-base-dimension-0);
-    --bp-semantic-spacing-micro-xs: var(--bp-base-dimension-2);
-    --bp-semantic-spacing-micro-sm: var(--bp-base-dimension-4);
-    --bp-semantic-spacing-micro-md: var(--bp-base-dimension-8);
-    --bp-semantic-spacing-micro-lg: var(--bp-base-dimension-12);
-    --bp-semantic-spacing-macro-sm: var(--bp-base-dimension-16);
-    --bp-semantic-spacing-macro-md: var(--bp-base-dimension-24);
-    --bp-semantic-spacing-macro-lg: var(--bp-base-dimension-32);
-    --bp-semantic-spacing-macro-xl: var(--bp-base-dimension-48);
-    --bp-semantic-spacing-xl: var(--bp-base-dimension-20);
-    --bp-semantic-spacing-gap-related: var(--bp-base-dimension-8);
-    --bp-semantic-spacing-gap-title: var(--bp-base-dimension-8);
-    --bp-semantic-spacing-gap-item: var(--bp-base-dimension-12);
-    --bp-semantic-spacing-gap-content: var(--bp-base-dimension-16);
-    --bp-semantic-spacing-padding-inset: var(--bp-base-dimension-12);
-    --bp-semantic-spacing-padding-container-compact: var(--bp-base-dimension-16);
-    --bp-semantic-z-index-base: var(--bp-base-z-index-0);
-    --bp-semantic-z-index-docked: var(--bp-base-z-index-10);
-    --bp-semantic-z-index-dropdown: var(--bp-base-z-index-100);
-    --bp-semantic-z-index-sticky: var(--bp-base-z-index-200);
-    --bp-semantic-z-index-overlay: var(--bp-base-z-index-500);
-    --bp-semantic-z-index-modal: var(--bp-base-z-index-1000);
-    --bp-semantic-z-index-popover: var(--bp-base-z-index-1100);
-    --bp-semantic-typography-brand-body-md-medium-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-body-md-medium-font-size: var(--bp-base-typography-font-size-16);
-    --bp-semantic-typography-brand-body-md-medium-font-weight: var(--bp-base-typography-font-weight-500);
-    --bp-semantic-typography-brand-body-md-medium-line-height: var(--bp-base-typography-line-height-24);
-    --bp-semantic-typography-brand-body-md-medium-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-body-md-regular-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-body-md-regular-font-size: var(--bp-base-typography-font-size-16);
-    --bp-semantic-typography-brand-body-md-regular-font-weight: var(--bp-base-typography-font-weight-400);
-    --bp-semantic-typography-brand-body-md-regular-line-height: var(--bp-base-typography-line-height-24);
-    --bp-semantic-typography-brand-body-md-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-body-md-semibold-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-body-md-semibold-font-size: var(--bp-base-typography-font-size-16);
-    --bp-semantic-typography-brand-body-md-semibold-font-weight: var(--bp-base-typography-font-weight-600);
-    --bp-semantic-typography-brand-body-md-semibold-line-height: var(--bp-base-typography-line-height-24);
-    --bp-semantic-typography-brand-body-md-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-body-sm-medium-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-body-sm-medium-font-size: var(--bp-base-typography-font-size-14);
-    --bp-semantic-typography-brand-body-sm-medium-font-weight: var(--bp-base-typography-font-weight-500);
-    --bp-semantic-typography-brand-body-sm-medium-line-height: var(--bp-base-typography-line-height-20);
-    --bp-semantic-typography-brand-body-sm-medium-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-body-sm-regular-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-body-sm-regular-font-size: var(--bp-base-typography-font-size-14);
-    --bp-semantic-typography-brand-body-sm-regular-font-weight: var(--bp-base-typography-font-weight-400);
-    --bp-semantic-typography-brand-body-sm-regular-line-height: var(--bp-base-typography-line-height-20);
-    --bp-semantic-typography-brand-body-sm-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-body-sm-semibold-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-body-sm-semibold-font-size: var(--bp-base-typography-font-size-14);
-    --bp-semantic-typography-brand-body-sm-semibold-font-weight: var(--bp-base-typography-font-weight-600);
-    --bp-semantic-typography-brand-body-sm-semibold-line-height: var(--bp-base-typography-line-height-20);
-    --bp-semantic-typography-brand-body-sm-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-body-xs-medium-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-body-xs-medium-font-size: var(--bp-base-typography-font-size-12);
-    --bp-semantic-typography-brand-body-xs-medium-font-weight: var(--bp-base-typography-font-weight-500);
-    --bp-semantic-typography-brand-body-xs-medium-line-height: var(--bp-base-typography-line-height-16);
-    --bp-semantic-typography-brand-body-xs-medium-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-body-xs-semibold-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-body-xs-semibold-font-size: var(--bp-base-typography-font-size-12);
-    --bp-semantic-typography-brand-body-xs-semibold-font-weight: var(--bp-base-typography-font-weight-600);
-    --bp-semantic-typography-brand-body-xs-semibold-line-height: var(--bp-base-typography-line-height-16);
-    --bp-semantic-typography-brand-body-xs-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-display-md-regular-font-family: var(--bp-base-typography-font-family-slab);
-    --bp-semantic-typography-brand-display-md-regular-font-size: var(--bp-base-typography-font-size-40);
-    --bp-semantic-typography-brand-display-md-regular-font-weight: var(--bp-base-typography-font-weight-400);
-    --bp-semantic-typography-brand-display-md-regular-line-height: var(--bp-base-typography-line-height-48);
-    --bp-semantic-typography-brand-display-md-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-display-md-semibold-font-family: var(--bp-base-typography-font-family-slab);
-    --bp-semantic-typography-brand-display-md-semibold-font-size: var(--bp-base-typography-font-size-40);
-    --bp-semantic-typography-brand-display-md-semibold-font-weight: var(--bp-base-typography-font-weight-600);
-    --bp-semantic-typography-brand-display-md-semibold-line-height: var(--bp-base-typography-line-height-48);
-    --bp-semantic-typography-brand-display-md-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-label-lg-medium-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-label-lg-medium-font-size: var(--bp-base-typography-font-size-16);
-    --bp-semantic-typography-brand-label-lg-medium-font-weight: var(--bp-base-typography-font-weight-500);
-    --bp-semantic-typography-brand-label-lg-medium-line-height: var(--bp-base-typography-line-height-20);
-    --bp-semantic-typography-brand-label-lg-medium-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-label-lg-semibold-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-label-lg-semibold-font-size: var(--bp-base-typography-font-size-16);
-    --bp-semantic-typography-brand-label-lg-semibold-font-weight: var(--bp-base-typography-font-weight-600);
-    --bp-semantic-typography-brand-label-lg-semibold-line-height: var(--bp-base-typography-line-height-20);
-    --bp-semantic-typography-brand-label-lg-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-label-md-medium-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-label-md-medium-font-size: var(--bp-base-typography-font-size-14);
-    --bp-semantic-typography-brand-label-md-medium-font-weight: var(--bp-base-typography-font-weight-500);
-    --bp-semantic-typography-brand-label-md-medium-line-height: var(--bp-base-typography-line-height-18);
-    --bp-semantic-typography-brand-label-md-medium-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-label-md-semibold-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-label-md-semibold-font-size: var(--bp-base-typography-font-size-14);
-    --bp-semantic-typography-brand-label-md-semibold-font-weight: var(--bp-base-typography-font-weight-600);
-    --bp-semantic-typography-brand-label-md-semibold-line-height: var(--bp-base-typography-line-height-18);
-    --bp-semantic-typography-brand-label-md-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-label-sm-medium-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-label-sm-medium-font-size: var(--bp-base-typography-font-size-12);
-    --bp-semantic-typography-brand-label-sm-medium-font-weight: var(--bp-base-typography-font-weight-500);
-    --bp-semantic-typography-brand-label-sm-medium-line-height: var(--bp-base-typography-line-height-16);
-    --bp-semantic-typography-brand-label-sm-medium-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-label-sm-semibold-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-label-sm-semibold-font-size: var(--bp-base-typography-font-size-12);
-    --bp-semantic-typography-brand-label-sm-semibold-font-weight: var(--bp-base-typography-font-weight-600);
-    --bp-semantic-typography-brand-label-sm-semibold-line-height: var(--bp-base-typography-line-height-16);
-    --bp-semantic-typography-brand-label-sm-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-label-xs-semibold-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-label-xs-semibold-font-size: var(--bp-base-typography-font-size-8);
-    --bp-semantic-typography-brand-label-xs-semibold-font-weight: var(--bp-base-typography-font-weight-600);
-    --bp-semantic-typography-brand-label-xs-semibold-line-height: var(--bp-base-typography-line-height-12);
-    --bp-semantic-typography-brand-label-xs-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-headline-md-font-family: var(--bp-base-typography-font-family-slab);
-    --bp-semantic-typography-brand-headline-md-font-size: var(--bp-base-typography-font-size-32);
-    --bp-semantic-typography-brand-headline-md-font-weight: var(--bp-base-typography-font-weight-600);
-    --bp-semantic-typography-brand-headline-md-line-height: var(--bp-base-typography-line-height-38);
-    --bp-semantic-typography-brand-headline-md-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-headline-sm-font-family: var(--bp-base-typography-font-family-slab);
-    --bp-semantic-typography-brand-headline-sm-font-size: var(--bp-base-typography-font-size-28);
-    --bp-semantic-typography-brand-headline-sm-font-weight: var(--bp-base-typography-font-weight-600);
-    --bp-semantic-typography-brand-headline-sm-line-height: var(--bp-base-typography-line-height-32);
-    --bp-semantic-typography-brand-headline-sm-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-link-lg-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-link-lg-font-size: var(--bp-base-typography-font-size-16);
-    --bp-semantic-typography-brand-link-lg-font-weight: var(--bp-base-typography-font-weight-600);
-    --bp-semantic-typography-brand-link-lg-line-height: var(--bp-base-typography-line-height-20);
-    --bp-semantic-typography-brand-link-lg-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-link-md-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-link-md-font-size: var(--bp-base-typography-font-size-14);
-    --bp-semantic-typography-brand-link-md-font-weight: var(--bp-base-typography-font-weight-600);
-    --bp-semantic-typography-brand-link-md-line-height: var(--bp-base-typography-line-height-18);
-    --bp-semantic-typography-brand-link-md-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-numeric-lg-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-numeric-lg-font-size: var(--bp-base-typography-font-size-52);
-    --bp-semantic-typography-brand-numeric-lg-font-weight: var(--bp-base-typography-font-weight-600);
-    --bp-semantic-typography-brand-numeric-lg-line-height: var(--bp-base-typography-line-height-60);
-    --bp-semantic-typography-brand-numeric-lg-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-numeric-md-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-numeric-md-font-size: var(--bp-base-typography-font-size-40);
-    --bp-semantic-typography-brand-numeric-md-font-weight: var(--bp-base-typography-font-weight-600);
-    --bp-semantic-typography-brand-numeric-md-line-height: var(--bp-base-typography-line-height-48);
-    --bp-semantic-typography-brand-numeric-md-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-numeric-sm-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-numeric-sm-font-size: var(--bp-base-typography-font-size-32);
-    --bp-semantic-typography-brand-numeric-sm-font-weight: var(--bp-base-typography-font-weight-600);
-    --bp-semantic-typography-brand-numeric-sm-line-height: var(--bp-base-typography-line-height-40);
-    --bp-semantic-typography-brand-numeric-sm-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-numeric-xs-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-numeric-xs-font-size: var(--bp-base-typography-font-size-24);
-    --bp-semantic-typography-brand-numeric-xs-font-weight: var(--bp-base-typography-font-weight-600);
-    --bp-semantic-typography-brand-numeric-xs-line-height: var(--bp-base-typography-line-height-32);
-    --bp-semantic-typography-brand-numeric-xs-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-title-lg-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-title-lg-font-size: var(--bp-base-typography-font-size-28);
-    --bp-semantic-typography-brand-title-lg-font-weight: var(--bp-base-typography-font-weight-600);
-    --bp-semantic-typography-brand-title-lg-line-height: var(--bp-base-typography-line-height-32);
-    --bp-semantic-typography-brand-title-lg-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-title-md-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-title-md-font-size: var(--bp-base-typography-font-size-22);
-    --bp-semantic-typography-brand-title-md-font-weight: var(--bp-base-typography-font-weight-600);
-    --bp-semantic-typography-brand-title-md-line-height: var(--bp-base-typography-line-height-28);
-    --bp-semantic-typography-brand-title-md-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-title-sm-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-title-sm-font-size: var(--bp-base-typography-font-size-18);
-    --bp-semantic-typography-brand-title-sm-font-weight: var(--bp-base-typography-font-weight-600);
-    --bp-semantic-typography-brand-title-sm-line-height: var(--bp-base-typography-line-height-24);
-    --bp-semantic-typography-brand-title-sm-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-  }
     --bp-semantic-elevation-none-blur: var(--bp-base-blur-0);
     --bp-semantic-elevation-none-color: var(--bp-base-color-transparent);
     --bp-semantic-elevation-none-offset-y: var(--bp-base-dimension-0);
+    --bp-semantic-elevation-overlay-blur: var(--bp-base-blur-32);
+    --bp-semantic-elevation-overlay-color: color-mix(in srgb, var(--bp-base-color-neutral-900) 24%, transparent);
+    --bp-semantic-elevation-overlay-offset-y: var(--bp-base-dimension-16);
+
+    /* opacity */
+    --bp-semantic-opacity-opaque: var(--bp-base-opacity-100);
+    --bp-semantic-opacity-overlay: var(--bp-base-opacity-80);
+    --bp-semantic-opacity-soft: var(--bp-base-opacity-20);
+    --bp-semantic-opacity-subdued: var(--bp-base-opacity-40);
+    --bp-semantic-opacity-subtle: var(--bp-base-opacity-10);
+    --bp-semantic-opacity-transparent: var(--bp-base-opacity-0);
+
+    /* radius */
+    --bp-semantic-radius-full: var(--bp-base-radius-full);
+    --bp-semantic-radius-lg: var(--bp-base-radius-16);
+    --bp-semantic-radius-md: var(--bp-base-radius-12);
+    --bp-semantic-radius-none: var(--bp-base-radius-0);
+    --bp-semantic-radius-sm: var(--bp-base-radius-8);
+    --bp-semantic-radius-xs: var(--bp-base-radius-4);
+
+    /* size */
+    --bp-semantic-size-avatar-lg: var(--bp-base-dimension-64);
+    --bp-semantic-size-avatar-md: var(--bp-base-dimension-48);
+    --bp-semantic-size-avatar-sm: var(--bp-base-dimension-40);
+    --bp-semantic-size-avatar-xl: var(--bp-base-dimension-96);
+    --bp-semantic-size-avatar-xs: var(--bp-base-dimension-32);
+    --bp-semantic-size-avatar-xxl: var(--bp-base-dimension-128);
+    --bp-semantic-size-container-full: var(--bp-base-breakpoint-1280);
     --bp-semantic-size-container-narrow: var(--bp-base-breakpoint-480);
     --bp-semantic-size-container-wide: var(--bp-base-dimension-896);
-    --bp-semantic-size-container-full: var(--bp-base-breakpoint-1280);
-    --bp-semantic-size-illustration-sm: var(--bp-base-dimension-64);
-    --bp-semantic-size-illustration-md: var(--bp-base-dimension-96);
+    --bp-semantic-size-icon-lg: var(--bp-base-dimension-32);
+    --bp-semantic-size-icon-md: var(--bp-base-dimension-24);
+    --bp-semantic-size-icon-sm: var(--bp-base-dimension-20);
+    --bp-semantic-size-icon-xl: var(--bp-base-dimension-48);
+    --bp-semantic-size-icon-xs: var(--bp-base-dimension-16);
+    --bp-semantic-size-icon-xxl: var(--bp-base-dimension-64);
+    --bp-semantic-size-icon-xxs: var(--bp-base-dimension-12);
     --bp-semantic-size-illustration-lg: var(--bp-base-dimension-128);
+    --bp-semantic-size-illustration-md: var(--bp-base-dimension-96);
+    --bp-semantic-size-illustration-sm: var(--bp-base-dimension-64);
     --bp-semantic-size-illustration-xl: var(--bp-base-dimension-144);
+    --bp-semantic-size-interactive-lg: var(--bp-base-dimension-64);
+    --bp-semantic-size-interactive-md: var(--bp-base-dimension-56);
+    --bp-semantic-size-interactive-sm: var(--bp-base-dimension-48);
+    --bp-semantic-size-interactive-xs: var(--bp-base-dimension-40);
+    --bp-semantic-size-interactive-xxs: var(--bp-base-dimension-32);
+    --bp-semantic-size-logo-lg: var(--bp-base-dimension-40);
+    --bp-semantic-size-logo-md: var(--bp-base-dimension-32);
+    --bp-semantic-size-logo-sm: var(--bp-base-dimension-28);
     --bp-semantic-size-logo-xl: var(--bp-base-dimension-48);
-    --bp-semantic-spacing-overlap-2: var(--bp-base-overlap-2);
-    --bp-semantic-spacing-overlap-4: var(--bp-base-overlap-4);
-    --bp-semantic-spacing-overlap-6: var(--bp-base-overlap-6);
-    --bp-semantic-spacing-overlap-8: var(--bp-base-overlap-8);
+    --bp-semantic-size-logo-xs: var(--bp-base-dimension-24);
+    --bp-semantic-size-touch-target-comfortable: var(--bp-base-dimension-56);
+    --bp-semantic-size-touch-target-min: var(--bp-base-dimension-48);
+
+    /* spacing */
+    --bp-semantic-spacing-macro-lg: var(--bp-base-dimension-32);
+    --bp-semantic-spacing-macro-md: var(--bp-base-dimension-24);
+    --bp-semantic-spacing-macro-sm: var(--bp-base-dimension-16);
+    --bp-semantic-spacing-macro-xl: var(--bp-base-dimension-48);
+    --bp-semantic-spacing-micro-lg: var(--bp-base-dimension-12);
+    --bp-semantic-spacing-micro-md: var(--bp-base-dimension-8);
+    --bp-semantic-spacing-micro-sm: var(--bp-base-dimension-4);
+    --bp-semantic-spacing-micro-xs: var(--bp-base-dimension-2);
+    --bp-semantic-spacing-none: var(--bp-base-dimension-0);
     --bp-semantic-spacing-overlap-10: var(--bp-base-overlap-10);
     --bp-semantic-spacing-overlap-12: var(--bp-base-overlap-12);
     --bp-semantic-spacing-overlap-16: var(--bp-base-overlap-16);
+    --bp-semantic-spacing-overlap-2: var(--bp-base-overlap-2);
     --bp-semantic-spacing-overlap-20: var(--bp-base-overlap-20);
     --bp-semantic-spacing-overlap-24: var(--bp-base-overlap-24);
     --bp-semantic-spacing-overlap-32: var(--bp-base-overlap-32);
-    --bp-semantic-typography-brand-initial-xs-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-initial-xs-font-size: var(--bp-base-typography-font-size-12);
-    --bp-semantic-typography-brand-initial-xs-font-weight: var(--bp-base-typography-font-weight-500);
-    --bp-semantic-typography-brand-initial-xs-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-initial-xs-line-height: var(--bp-base-typography-line-height-16);
-    --bp-semantic-typography-brand-initial-sm-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-initial-sm-font-size: var(--bp-base-typography-font-size-16);
-    --bp-semantic-typography-brand-initial-sm-font-weight: var(--bp-base-typography-font-weight-500);
-    --bp-semantic-typography-brand-initial-sm-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-initial-sm-line-height: var(--bp-base-typography-line-height-20);
-    --bp-semantic-typography-brand-initial-md-font-family: var(--bp-base-typography-font-family-sans);
-    --bp-semantic-typography-brand-initial-md-font-size: var(--bp-base-typography-font-size-22);
-    --bp-semantic-typography-brand-initial-md-font-weight: var(--bp-base-typography-font-weight-500);
-    --bp-semantic-typography-brand-initial-md-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-brand-initial-md-line-height: var(--bp-base-typography-line-height-24);
+    --bp-semantic-spacing-overlap-4: var(--bp-base-overlap-4);
+    --bp-semantic-spacing-overlap-6: var(--bp-base-overlap-6);
+    --bp-semantic-spacing-overlap-8: var(--bp-base-overlap-8);
+
+    /* typography */
+    --bp-semantic-typography-brand-body-md-medium-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-body-md-medium-font-size: var(--bp-base-typography-font-size-16);
+    --bp-semantic-typography-brand-body-md-medium-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-body-md-medium-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-body-md-medium-line-height: var(--bp-base-typography-line-height-24);
+    --bp-semantic-typography-brand-body-md-regular-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-body-md-regular-font-size: var(--bp-base-typography-font-size-16);
+    --bp-semantic-typography-brand-body-md-regular-font-weight: var(--bp-base-typography-font-weight-400);
+    --bp-semantic-typography-brand-body-md-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-body-md-regular-line-height: var(--bp-base-typography-line-height-24);
+    --bp-semantic-typography-brand-body-md-semibold-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-body-md-semibold-font-size: var(--bp-base-typography-font-size-16);
+    --bp-semantic-typography-brand-body-md-semibold-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-body-md-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-body-md-semibold-line-height: var(--bp-base-typography-line-height-24);
+    --bp-semantic-typography-brand-body-sm-medium-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-body-sm-medium-font-size: var(--bp-base-typography-font-size-14);
+    --bp-semantic-typography-brand-body-sm-medium-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-body-sm-medium-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-body-sm-medium-line-height: var(--bp-base-typography-line-height-20);
+    --bp-semantic-typography-brand-body-sm-regular-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-body-sm-regular-font-size: var(--bp-base-typography-font-size-14);
+    --bp-semantic-typography-brand-body-sm-regular-font-weight: var(--bp-base-typography-font-weight-400);
+    --bp-semantic-typography-brand-body-sm-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-body-sm-regular-line-height: var(--bp-base-typography-line-height-20);
+    --bp-semantic-typography-brand-body-sm-semibold-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-body-sm-semibold-font-size: var(--bp-base-typography-font-size-14);
+    --bp-semantic-typography-brand-body-sm-semibold-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-body-sm-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-body-sm-semibold-line-height: var(--bp-base-typography-line-height-20);
+    --bp-semantic-typography-brand-body-xs-medium-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-body-xs-medium-font-size: var(--bp-base-typography-font-size-12);
+    --bp-semantic-typography-brand-body-xs-medium-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-body-xs-medium-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-body-xs-medium-line-height: var(--bp-base-typography-line-height-16);
+    --bp-semantic-typography-brand-body-xs-semibold-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-body-xs-semibold-font-size: var(--bp-base-typography-font-size-12);
+    --bp-semantic-typography-brand-body-xs-semibold-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-body-xs-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-body-xs-semibold-line-height: var(--bp-base-typography-line-height-16);
+    --bp-semantic-typography-brand-display-md-regular-font-family: var(--bp-base-typography-font-family-slab);
+    --bp-semantic-typography-brand-display-md-regular-font-size: var(--bp-base-typography-font-size-40);
+    --bp-semantic-typography-brand-display-md-regular-font-weight: var(--bp-base-typography-font-weight-400);
+    --bp-semantic-typography-brand-display-md-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-display-md-regular-line-height: var(--bp-base-typography-line-height-48);
+    --bp-semantic-typography-brand-display-md-semibold-font-family: var(--bp-base-typography-font-family-slab);
+    --bp-semantic-typography-brand-display-md-semibold-font-size: var(--bp-base-typography-font-size-40);
+    --bp-semantic-typography-brand-display-md-semibold-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-display-md-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-display-md-semibold-line-height: var(--bp-base-typography-line-height-48);
+    --bp-semantic-typography-brand-headline-md-font-family: var(--bp-base-typography-font-family-slab);
+    --bp-semantic-typography-brand-headline-md-font-size: var(--bp-base-typography-font-size-32);
+    --bp-semantic-typography-brand-headline-md-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-headline-md-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-headline-md-line-height: var(--bp-base-typography-line-height-38);
+    --bp-semantic-typography-brand-headline-sm-font-family: var(--bp-base-typography-font-family-slab);
+    --bp-semantic-typography-brand-headline-sm-font-size: var(--bp-base-typography-font-size-28);
+    --bp-semantic-typography-brand-headline-sm-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-headline-sm-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-headline-sm-line-height: var(--bp-base-typography-line-height-32);
     --bp-semantic-typography-brand-initial-lg-font-family: var(--bp-base-typography-font-family-sans);
     --bp-semantic-typography-brand-initial-lg-font-size: var(--bp-base-typography-font-size-28);
     --bp-semantic-typography-brand-initial-lg-font-weight: var(--bp-base-typography-font-weight-500);
     --bp-semantic-typography-brand-initial-lg-letter-spacing: var(--bp-base-typography-letter-spacing-0);
     --bp-semantic-typography-brand-initial-lg-line-height: var(--bp-base-typography-line-height-32);
+    --bp-semantic-typography-brand-initial-md-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-initial-md-font-size: var(--bp-base-typography-font-size-22);
+    --bp-semantic-typography-brand-initial-md-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-initial-md-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-initial-md-line-height: var(--bp-base-typography-line-height-24);
+    --bp-semantic-typography-brand-initial-sm-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-initial-sm-font-size: var(--bp-base-typography-font-size-16);
+    --bp-semantic-typography-brand-initial-sm-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-initial-sm-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-initial-sm-line-height: var(--bp-base-typography-line-height-20);
     --bp-semantic-typography-brand-initial-xl-font-family: var(--bp-base-typography-font-family-sans);
     --bp-semantic-typography-brand-initial-xl-font-size: var(--bp-base-typography-font-size-40);
     --bp-semantic-typography-brand-initial-xl-font-weight: var(--bp-base-typography-font-weight-500);
     --bp-semantic-typography-brand-initial-xl-letter-spacing: var(--bp-base-typography-letter-spacing-0);
     --bp-semantic-typography-brand-initial-xl-line-height: var(--bp-base-typography-line-height-48);
+    --bp-semantic-typography-brand-initial-xs-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-initial-xs-font-size: var(--bp-base-typography-font-size-12);
+    --bp-semantic-typography-brand-initial-xs-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-initial-xs-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-initial-xs-line-height: var(--bp-base-typography-line-height-16);
     --bp-semantic-typography-brand-initial-xxl-font-family: var(--bp-base-typography-font-family-sans);
     --bp-semantic-typography-brand-initial-xxl-font-size: var(--bp-base-typography-font-size-52);
     --bp-semantic-typography-brand-initial-xxl-font-weight: var(--bp-base-typography-font-weight-500);
     --bp-semantic-typography-brand-initial-xxl-letter-spacing: var(--bp-base-typography-letter-spacing-0);
     --bp-semantic-typography-brand-initial-xxl-line-height: var(--bp-base-typography-line-height-60);
-    --bp-semantic-typography-system-headline-lg-regular-font-family: var(--bp-base-typography-font-family-system);
-    --bp-semantic-typography-system-headline-lg-regular-font-size: var(--bp-base-typography-font-size-32);
-    --bp-semantic-typography-system-headline-lg-regular-font-weight: var(--bp-base-typography-font-weight-400);
-    --bp-semantic-typography-system-headline-lg-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-system-headline-lg-regular-line-height: var(--bp-base-typography-line-height-40);
-    --bp-semantic-typography-system-headline-lg-bold-font-family: var(--bp-base-typography-font-family-system);
-    --bp-semantic-typography-system-headline-lg-bold-font-size: var(--bp-base-typography-font-size-32);
-    --bp-semantic-typography-system-headline-lg-bold-font-weight: var(--bp-base-typography-font-weight-700);
-    --bp-semantic-typography-system-headline-lg-bold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-system-headline-lg-bold-line-height: var(--bp-base-typography-line-height-40);
-    --bp-semantic-typography-system-headline-md-regular-font-family: var(--bp-base-typography-font-family-system);
-    --bp-semantic-typography-system-headline-md-regular-font-size: var(--bp-base-typography-font-size-28);
-    --bp-semantic-typography-system-headline-md-regular-font-weight: var(--bp-base-typography-font-weight-400);
-    --bp-semantic-typography-system-headline-md-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-system-headline-md-regular-line-height: var(--bp-base-typography-line-height-32);
-    --bp-semantic-typography-system-headline-md-bold-font-family: var(--bp-base-typography-font-family-system);
-    --bp-semantic-typography-system-headline-md-bold-font-size: var(--bp-base-typography-font-size-28);
-    --bp-semantic-typography-system-headline-md-bold-font-weight: var(--bp-base-typography-font-weight-700);
-    --bp-semantic-typography-system-headline-md-bold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-system-headline-md-bold-line-height: var(--bp-base-typography-line-height-32);
-    --bp-semantic-typography-system-headline-sm-regular-font-family: var(--bp-base-typography-font-family-system);
-    --bp-semantic-typography-system-headline-sm-regular-font-size: var(--bp-base-typography-font-size-24);
-    --bp-semantic-typography-system-headline-sm-regular-font-weight: var(--bp-base-typography-font-weight-400);
-    --bp-semantic-typography-system-headline-sm-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-system-headline-sm-regular-line-height: var(--bp-base-typography-line-height-32);
-    --bp-semantic-typography-system-headline-sm-bold-font-family: var(--bp-base-typography-font-family-system);
-    --bp-semantic-typography-system-headline-sm-bold-font-size: var(--bp-base-typography-font-size-24);
-    --bp-semantic-typography-system-headline-sm-bold-font-weight: var(--bp-base-typography-font-weight-700);
-    --bp-semantic-typography-system-headline-sm-bold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-system-headline-sm-bold-line-height: var(--bp-base-typography-line-height-32);
-    --bp-semantic-typography-system-title-md-regular-font-family: var(--bp-base-typography-font-family-system);
-    --bp-semantic-typography-system-title-md-regular-font-size: var(--bp-base-typography-font-size-20);
-    --bp-semantic-typography-system-title-md-regular-font-weight: var(--bp-base-typography-font-weight-400);
-    --bp-semantic-typography-system-title-md-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-system-title-md-regular-line-height: var(--bp-base-typography-line-height-24);
-    --bp-semantic-typography-system-title-md-bold-font-family: var(--bp-base-typography-font-family-system);
-    --bp-semantic-typography-system-title-md-bold-font-size: var(--bp-base-typography-font-size-20);
-    --bp-semantic-typography-system-title-md-bold-font-weight: var(--bp-base-typography-font-weight-700);
-    --bp-semantic-typography-system-title-md-bold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-system-title-md-bold-line-height: var(--bp-base-typography-line-height-24);
-    --bp-semantic-typography-system-body-md-regular-font-family: var(--bp-base-typography-font-family-system);
-    --bp-semantic-typography-system-body-md-regular-font-size: var(--bp-base-typography-font-size-16);
-    --bp-semantic-typography-system-body-md-regular-font-weight: var(--bp-base-typography-font-weight-400);
-    --bp-semantic-typography-system-body-md-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-system-body-md-regular-line-height: var(--bp-base-typography-line-height-24);
+    --bp-semantic-typography-brand-label-lg-medium-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-label-lg-medium-font-size: var(--bp-base-typography-font-size-16);
+    --bp-semantic-typography-brand-label-lg-medium-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-label-lg-medium-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-label-lg-medium-line-height: var(--bp-base-typography-line-height-20);
+    --bp-semantic-typography-brand-label-lg-semibold-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-label-lg-semibold-font-size: var(--bp-base-typography-font-size-16);
+    --bp-semantic-typography-brand-label-lg-semibold-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-label-lg-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-label-lg-semibold-line-height: var(--bp-base-typography-line-height-20);
+    --bp-semantic-typography-brand-label-md-medium-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-label-md-medium-font-size: var(--bp-base-typography-font-size-14);
+    --bp-semantic-typography-brand-label-md-medium-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-label-md-medium-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-label-md-medium-line-height: var(--bp-base-typography-line-height-18);
+    --bp-semantic-typography-brand-label-md-semibold-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-label-md-semibold-font-size: var(--bp-base-typography-font-size-14);
+    --bp-semantic-typography-brand-label-md-semibold-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-label-md-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-label-md-semibold-line-height: var(--bp-base-typography-line-height-18);
+    --bp-semantic-typography-brand-label-sm-medium-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-label-sm-medium-font-size: var(--bp-base-typography-font-size-12);
+    --bp-semantic-typography-brand-label-sm-medium-font-weight: var(--bp-base-typography-font-weight-500);
+    --bp-semantic-typography-brand-label-sm-medium-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-label-sm-medium-line-height: var(--bp-base-typography-line-height-16);
+    --bp-semantic-typography-brand-label-sm-semibold-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-label-sm-semibold-font-size: var(--bp-base-typography-font-size-12);
+    --bp-semantic-typography-brand-label-sm-semibold-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-label-sm-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-label-sm-semibold-line-height: var(--bp-base-typography-line-height-16);
+    --bp-semantic-typography-brand-label-xs-semibold-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-label-xs-semibold-font-size: var(--bp-base-typography-font-size-8);
+    --bp-semantic-typography-brand-label-xs-semibold-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-label-xs-semibold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-label-xs-semibold-line-height: var(--bp-base-typography-line-height-12);
+    --bp-semantic-typography-brand-link-lg-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-link-lg-font-size: var(--bp-base-typography-font-size-16);
+    --bp-semantic-typography-brand-link-lg-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-link-lg-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-link-lg-line-height: var(--bp-base-typography-line-height-20);
+    --bp-semantic-typography-brand-link-md-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-link-md-font-size: var(--bp-base-typography-font-size-14);
+    --bp-semantic-typography-brand-link-md-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-link-md-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-link-md-line-height: var(--bp-base-typography-line-height-18);
+    --bp-semantic-typography-brand-numeric-lg-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-numeric-lg-font-size: var(--bp-base-typography-font-size-52);
+    --bp-semantic-typography-brand-numeric-lg-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-numeric-lg-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-numeric-lg-line-height: var(--bp-base-typography-line-height-60);
+    --bp-semantic-typography-brand-numeric-md-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-numeric-md-font-size: var(--bp-base-typography-font-size-40);
+    --bp-semantic-typography-brand-numeric-md-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-numeric-md-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-numeric-md-line-height: var(--bp-base-typography-line-height-48);
+    --bp-semantic-typography-brand-numeric-sm-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-numeric-sm-font-size: var(--bp-base-typography-font-size-32);
+    --bp-semantic-typography-brand-numeric-sm-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-numeric-sm-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-numeric-sm-line-height: var(--bp-base-typography-line-height-40);
+    --bp-semantic-typography-brand-numeric-xs-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-numeric-xs-font-size: var(--bp-base-typography-font-size-24);
+    --bp-semantic-typography-brand-numeric-xs-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-numeric-xs-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-numeric-xs-line-height: var(--bp-base-typography-line-height-32);
+    --bp-semantic-typography-brand-title-lg-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-title-lg-font-size: var(--bp-base-typography-font-size-26);
+    --bp-semantic-typography-brand-title-lg-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-title-lg-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-title-lg-line-height: var(--bp-base-typography-line-height-32);
+    --bp-semantic-typography-brand-title-md-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-title-md-font-size: var(--bp-base-typography-font-size-22);
+    --bp-semantic-typography-brand-title-md-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-title-md-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-title-md-line-height: var(--bp-base-typography-line-height-28);
+    --bp-semantic-typography-brand-title-sm-font-family: var(--bp-base-typography-font-family-sans);
+    --bp-semantic-typography-brand-title-sm-font-size: var(--bp-base-typography-font-size-18);
+    --bp-semantic-typography-brand-title-sm-font-weight: var(--bp-base-typography-font-weight-600);
+    --bp-semantic-typography-brand-title-sm-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-brand-title-sm-line-height: var(--bp-base-typography-line-height-24);
     --bp-semantic-typography-system-body-md-bold-font-family: var(--bp-base-typography-font-family-system);
     --bp-semantic-typography-system-body-md-bold-font-size: var(--bp-base-typography-font-size-16);
     --bp-semantic-typography-system-body-md-bold-font-weight: var(--bp-base-typography-font-weight-700);
     --bp-semantic-typography-system-body-md-bold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
     --bp-semantic-typography-system-body-md-bold-line-height: var(--bp-base-typography-line-height-24);
-    --bp-semantic-typography-system-body-sm-regular-font-family: var(--bp-base-typography-font-family-system);
-    --bp-semantic-typography-system-body-sm-regular-font-size: var(--bp-base-typography-font-size-14);
-    --bp-semantic-typography-system-body-sm-regular-font-weight: var(--bp-base-typography-font-weight-400);
-    --bp-semantic-typography-system-body-sm-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-system-body-sm-regular-line-height: var(--bp-base-typography-line-height-20);
+    --bp-semantic-typography-system-body-md-regular-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-body-md-regular-font-size: var(--bp-base-typography-font-size-16);
+    --bp-semantic-typography-system-body-md-regular-font-weight: var(--bp-base-typography-font-weight-400);
+    --bp-semantic-typography-system-body-md-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-body-md-regular-line-height: var(--bp-base-typography-line-height-24);
     --bp-semantic-typography-system-body-sm-bold-font-family: var(--bp-base-typography-font-family-system);
     --bp-semantic-typography-system-body-sm-bold-font-size: var(--bp-base-typography-font-size-14);
     --bp-semantic-typography-system-body-sm-bold-font-weight: var(--bp-base-typography-font-weight-700);
     --bp-semantic-typography-system-body-sm-bold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
     --bp-semantic-typography-system-body-sm-bold-line-height: var(--bp-base-typography-line-height-20);
-    --bp-semantic-typography-system-body-xs-regular-font-family: var(--bp-base-typography-font-family-system);
-    --bp-semantic-typography-system-body-xs-regular-font-size: var(--bp-base-typography-font-size-12);
-    --bp-semantic-typography-system-body-xs-regular-font-weight: var(--bp-base-typography-font-weight-400);
-    --bp-semantic-typography-system-body-xs-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
-    --bp-semantic-typography-system-body-xs-regular-line-height: var(--bp-base-typography-line-height-16);
+    --bp-semantic-typography-system-body-sm-regular-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-body-sm-regular-font-size: var(--bp-base-typography-font-size-14);
+    --bp-semantic-typography-system-body-sm-regular-font-weight: var(--bp-base-typography-font-weight-400);
+    --bp-semantic-typography-system-body-sm-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-body-sm-regular-line-height: var(--bp-base-typography-line-height-20);
     --bp-semantic-typography-system-body-xs-bold-font-family: var(--bp-base-typography-font-family-system);
     --bp-semantic-typography-system-body-xs-bold-font-size: var(--bp-base-typography-font-size-12);
     --bp-semantic-typography-system-body-xs-bold-font-weight: var(--bp-base-typography-font-weight-700);
     --bp-semantic-typography-system-body-xs-bold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
     --bp-semantic-typography-system-body-xs-bold-line-height: var(--bp-base-typography-line-height-16);
+    --bp-semantic-typography-system-body-xs-regular-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-body-xs-regular-font-size: var(--bp-base-typography-font-size-12);
+    --bp-semantic-typography-system-body-xs-regular-font-weight: var(--bp-base-typography-font-weight-400);
+    --bp-semantic-typography-system-body-xs-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-body-xs-regular-line-height: var(--bp-base-typography-line-height-16);
+    --bp-semantic-typography-system-headline-lg-bold-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-headline-lg-bold-font-size: var(--bp-base-typography-font-size-32);
+    --bp-semantic-typography-system-headline-lg-bold-font-weight: var(--bp-base-typography-font-weight-700);
+    --bp-semantic-typography-system-headline-lg-bold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-headline-lg-bold-line-height: var(--bp-base-typography-line-height-40);
+    --bp-semantic-typography-system-headline-lg-regular-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-headline-lg-regular-font-size: var(--bp-base-typography-font-size-32);
+    --bp-semantic-typography-system-headline-lg-regular-font-weight: var(--bp-base-typography-font-weight-400);
+    --bp-semantic-typography-system-headline-lg-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-headline-lg-regular-line-height: var(--bp-base-typography-line-height-40);
+    --bp-semantic-typography-system-headline-md-bold-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-headline-md-bold-font-size: var(--bp-base-typography-font-size-28);
+    --bp-semantic-typography-system-headline-md-bold-font-weight: var(--bp-base-typography-font-weight-700);
+    --bp-semantic-typography-system-headline-md-bold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-headline-md-bold-line-height: var(--bp-base-typography-line-height-32);
+    --bp-semantic-typography-system-headline-md-regular-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-headline-md-regular-font-size: var(--bp-base-typography-font-size-28);
+    --bp-semantic-typography-system-headline-md-regular-font-weight: var(--bp-base-typography-font-weight-400);
+    --bp-semantic-typography-system-headline-md-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-headline-md-regular-line-height: var(--bp-base-typography-line-height-32);
+    --bp-semantic-typography-system-headline-sm-bold-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-headline-sm-bold-font-size: var(--bp-base-typography-font-size-24);
+    --bp-semantic-typography-system-headline-sm-bold-font-weight: var(--bp-base-typography-font-weight-700);
+    --bp-semantic-typography-system-headline-sm-bold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-headline-sm-bold-line-height: var(--bp-base-typography-line-height-32);
+    --bp-semantic-typography-system-headline-sm-regular-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-headline-sm-regular-font-size: var(--bp-base-typography-font-size-24);
+    --bp-semantic-typography-system-headline-sm-regular-font-weight: var(--bp-base-typography-font-weight-400);
+    --bp-semantic-typography-system-headline-sm-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-headline-sm-regular-line-height: var(--bp-base-typography-line-height-32);
     --bp-semantic-typography-system-numeric-md-font-family: var(--bp-base-typography-font-family-system);
     --bp-semantic-typography-system-numeric-md-font-size: var(--bp-base-typography-font-size-40);
     --bp-semantic-typography-system-numeric-md-font-weight: var(--bp-base-typography-font-weight-600);
     --bp-semantic-typography-system-numeric-md-letter-spacing: var(--bp-base-typography-letter-spacing-0);
     --bp-semantic-typography-system-numeric-md-line-height: var(--bp-base-typography-line-height-48);
+    --bp-semantic-typography-system-title-md-bold-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-title-md-bold-font-size: var(--bp-base-typography-font-size-20);
+    --bp-semantic-typography-system-title-md-bold-font-weight: var(--bp-base-typography-font-weight-700);
+    --bp-semantic-typography-system-title-md-bold-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-title-md-bold-line-height: var(--bp-base-typography-line-height-24);
+    --bp-semantic-typography-system-title-md-regular-font-family: var(--bp-base-typography-font-family-system);
+    --bp-semantic-typography-system-title-md-regular-font-size: var(--bp-base-typography-font-size-20);
+    --bp-semantic-typography-system-title-md-regular-font-weight: var(--bp-base-typography-font-weight-400);
+    --bp-semantic-typography-system-title-md-regular-letter-spacing: var(--bp-base-typography-letter-spacing-0);
+    --bp-semantic-typography-system-title-md-regular-line-height: var(--bp-base-typography-line-height-24);
+
+    /* z-index */
+    --bp-semantic-z-index-base: var(--bp-base-z-index-0);
+    --bp-semantic-z-index-docked: var(--bp-base-z-index-10);
+    --bp-semantic-z-index-dropdown: var(--bp-base-z-index-100);
+    --bp-semantic-z-index-modal: var(--bp-base-z-index-1000);
+    --bp-semantic-z-index-overlay: var(--bp-base-z-index-500);
+    --bp-semantic-z-index-popover: var(--bp-base-z-index-1100);
+    --bp-semantic-z-index-sticky: var(--bp-base-z-index-200);
+  }
 }
 
 @layer tokens.theme {
-  :root, :root[data-theme="light"] {
+  :root, :root[data-theme="light"] { /* light es el modo por defecto */
     --bp-theme-color-avatar-bg: color-mix(in srgb, var(--bp-base-color-neutral-1000) 4%, transparent);
     --bp-theme-color-avatar-fg: var(--bp-base-color-blue-500);
     --bp-theme-color-border-default: var(--bp-base-color-neutral-400);
     --bp-theme-color-border-divider: var(--bp-theme-color-surface-page-alt);
     --bp-theme-color-border-divider-alt: var(--bp-theme-color-surface-page-default);
     --bp-theme-color-border-focus: var(--bp-base-color-blue-900);
-    --bp-theme-color-border-strong: #c7cfe1;
     --bp-theme-color-border-subtle: var(--bp-base-color-neutral-300);
     --bp-theme-color-brand-main: var(--bp-base-color-yellow-500);
     --bp-theme-color-brand-support: var(--bp-base-color-blue-500);
-    --bp-theme-color-brand-on-solid: var(--bp-base-color-neutral-0);
     --bp-theme-color-data-accent: var(--bp-base-color-yellow-500);
     --bp-theme-color-data-accent-dim: var(--bp-base-color-yellow-300);
     --bp-theme-color-data-chart-alt-1: var(--bp-base-color-amber-900);
@@ -716,6 +790,9 @@
     --bp-theme-color-data-chart-alt-4: var(--bp-base-color-amber-100);
     --bp-theme-color-data-chart-comparison: var(--bp-base-color-neutral-700);
     --bp-theme-color-data-chart-reference: var(--bp-base-color-neutral-400);
+    --bp-theme-color-data-negative: var(--bp-base-color-red-700);
+    --bp-theme-color-data-neutral: var(--bp-base-color-blue-200);
+    --bp-theme-color-data-positive: var(--bp-base-color-green-700);
     --bp-theme-color-data-chart-primary-1: var(--bp-base-color-blue-500);
     --bp-theme-color-data-chart-primary-2: var(--bp-base-color-blue-400);
     --bp-theme-color-data-chart-primary-3: var(--bp-base-color-blue-300);
@@ -724,9 +801,6 @@
     --bp-theme-color-data-chart-primary-6: var(--bp-base-color-blue-75);
     --bp-theme-color-data-chart-track: var(--bp-base-color-neutral-100);
     --bp-theme-color-data-chart-grid: var(--bp-base-color-blue-75);
-    --bp-theme-color-data-negative: var(--bp-base-color-red-700);
-    --bp-theme-color-data-neutral: var(--bp-base-color-blue-200);
-    --bp-theme-color-data-positive: var(--bp-base-color-green-700);
     --bp-theme-color-data-surface-raised: var(--bp-base-color-neutral-50);
     --bp-theme-color-data-text-default: var(--bp-base-color-blue-500);
     --bp-theme-color-data-text-muted: var(--bp-base-color-blue-300);
@@ -754,7 +828,6 @@
     --bp-theme-color-icon-placeholder: var(--bp-base-color-neutral-400);
     --bp-theme-color-icon-primary: var(--bp-base-color-neutral-950);
     --bp-theme-color-icon-secondary: var(--bp-base-color-neutral-850);
-    --bp-theme-color-icon-subtle: var(--bp-base-color-blue-300);
     --bp-theme-color-icon-tertiary: var(--bp-base-color-neutral-600);
     --bp-theme-color-interaction-accent-bg: var(--bp-base-color-blue-900);
     --bp-theme-color-interaction-accent-bg-disabled: var(--bp-base-color-blue-100);
@@ -780,26 +853,39 @@
     --bp-theme-color-interaction-secondary-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-400) 80%, transparent);
     --bp-theme-color-interaction-secondary-fg: var(--bp-base-color-blue-500);
     --bp-theme-color-interaction-secondary-fg-disabled: color-mix(in srgb, var(--bp-base-color-blue-500) 32%, transparent);
+    --bp-theme-color-interaction-segmented-selected-bg: var(--bp-theme-color-interaction-selection-bg-elevated);
+    --bp-theme-color-interaction-segmented-selected-bg-hover: var(--bp-theme-color-interaction-selection-bg-hover);
+    --bp-theme-color-interaction-segmented-selected-bg-pressed: var(--bp-theme-color-interaction-selection-bg-pressed);
+    --bp-theme-color-interaction-segmented-selected-fg: var(--bp-theme-color-interaction-selection-fg);
+    --bp-theme-color-interaction-segmented-bg: color-mix(in srgb, var(--bp-base-color-neutral-1000) 4%, transparent);
+    --bp-theme-color-interaction-selectable-selected-bg: var(--bp-theme-color-interaction-accent-bg);
+    --bp-theme-color-interaction-selectable-selected-bg-hover: var(--bp-theme-color-interaction-accent-bg-hover);
+    --bp-theme-color-interaction-selectable-selected-bg-pressed: var(--bp-theme-color-interaction-accent-bg-pressed);
+    --bp-theme-color-interaction-selectable-selected-fg: var(--bp-theme-color-interaction-accent-fg);
+    --bp-theme-color-interaction-selectable-bg: color-mix(in srgb, var(--bp-base-color-neutral-1000) 4%, transparent);
+    --bp-theme-color-interaction-selectable-bg-hover: color-mix(in srgb, var(--bp-base-color-neutral-1000) 6%, transparent);
+    --bp-theme-color-interaction-selectable-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-1000) 8%, transparent);
+    --bp-theme-color-interaction-selectable-fg: var(--bp-theme-color-text-brand);
     --bp-theme-color-interaction-selection-bg: color-mix(in srgb, var(--bp-base-color-neutral-1050) 4%, transparent);
-    --bp-theme-color-interaction-selection-bg-active: var(--bp-theme-color-interaction-accent-bg);
-    --bp-theme-color-interaction-selection-bg-active-subtle: var(--bp-base-color-neutral-300);
     --bp-theme-color-interaction-selection-bg-disabled: var(--bp-theme-color-interaction-tertiary-bg-disabled);
     --bp-theme-color-interaction-selection-bg-elevated: var(--bp-base-color-neutral-0);
     --bp-theme-color-interaction-selection-bg-hover: var(--bp-base-color-neutral-50);
     --bp-theme-color-interaction-selection-bg-pressed: var(--bp-base-color-neutral-100);
     --bp-theme-color-interaction-selection-fg: var(--bp-theme-color-text-brand);
     --bp-theme-color-interaction-selection-fg-disabled: var(--bp-base-color-neutral-500);
-    --bp-theme-color-interaction-selection-fg-on-active: var(--bp-theme-color-interaction-accent-fg);
     --bp-theme-color-interaction-selection-fg-subtle: var(--bp-base-color-neutral-800);
     --bp-theme-color-interaction-tertiary-bg: var(--bp-base-color-transparent);
-    --bp-theme-color-interaction-tertiary-bg-adaptive: color-mix(in srgb, var(--bp-base-color-neutral-200) 64%, transparent);
     --bp-theme-color-interaction-tertiary-bg-disabled: var(--bp-base-color-neutral-0);
     --bp-theme-color-interaction-tertiary-bg-hover: color-mix(in srgb, var(--bp-base-color-neutral-800) 4%, transparent);
     --bp-theme-color-interaction-tertiary-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-800) 8%, transparent);
     --bp-theme-color-interaction-tertiary-fg: var(--bp-base-color-blue-500);
     --bp-theme-color-interaction-tertiary-fg-disabled: color-mix(in srgb, var(--bp-base-color-blue-500) 32%, transparent);
+    --bp-theme-color-loading-backdrop-on-brand: color-mix(in srgb, var(--bp-base-color-neutral-900) 16%, transparent);
+    --bp-theme-color-loading-backdrop-on-inverse: color-mix(in srgb, var(--bp-base-color-neutral-0) 48%, transparent);
     --bp-theme-color-loading-backdrop-on-page: color-mix(in srgb, var(--bp-base-color-neutral-900) 16%, transparent);
+    --bp-theme-color-loading-backdrop-on-solid: color-mix(in srgb, var(--bp-base-color-neutral-0) 48%, transparent);
     --bp-theme-color-loading-spinner-on-brand: var(--bp-theme-color-icon-on-brand);
+    --bp-theme-color-loading-spinner-on-inverse: var(--bp-theme-color-icon-inverse);
     --bp-theme-color-loading-spinner-on-page: var(--bp-theme-color-icon-brand);
     --bp-theme-color-loading-spinner-on-solid: var(--bp-theme-color-icon-on-solid);
     --bp-theme-color-row-bg: var(--bp-base-color-neutral-0);
@@ -816,7 +902,6 @@
     --bp-theme-color-status-error-border: var(--bp-base-color-red-500);
     --bp-theme-color-status-error-icon: var(--bp-base-color-red-500);
     --bp-theme-color-status-error-text: var(--bp-base-color-red-500);
-    --bp-theme-color-status-important-bg: var(--bp-base-color-red-600);
     --bp-theme-color-status-info-bg: var(--bp-base-color-sky-500);
     --bp-theme-color-status-info-bg-subtle: var(--bp-base-color-sky-50);
     --bp-theme-color-status-info-border: var(--bp-base-color-sky-500);
@@ -880,38 +965,8 @@
     --bp-theme-color-text-primary: var(--bp-base-color-neutral-950);
     --bp-theme-color-text-secondary: var(--bp-base-color-neutral-850);
     --bp-theme-color-text-tertiary: var(--bp-base-color-neutral-600);
-    --bp-theme-color-data-series-1: var(--bp-base-color-blue-500);
-    --bp-theme-color-data-series-2: var(--bp-base-color-blue-400);
-    --bp-theme-color-data-series-3: var(--bp-base-color-blue-300);
-    --bp-theme-color-data-series-4: var(--bp-base-color-blue-200);
-    --bp-theme-color-data-series-5: var(--bp-base-color-blue-100);
-    --bp-theme-color-data-series-6: var(--bp-base-color-blue-75);
-    --bp-theme-color-data-surface-default: var(--bp-base-color-neutral-100);
-    --bp-theme-color-data-surface-grid: var(--bp-base-color-blue-75);
-    --bp-theme-color-interaction-segmented-bg: color-mix(in srgb, var(--bp-base-color-neutral-1000) 4%, transparent);
-    --bp-theme-color-interaction-segmented-selected-bg: var(--bp-theme-color-interaction-selection-bg-elevated);
-    --bp-theme-color-interaction-segmented-selected-bg-hover: var(--bp-theme-color-interaction-selection-bg-hover);
-    --bp-theme-color-interaction-segmented-selected-bg-pressed: var(--bp-theme-color-interaction-selection-bg-pressed);
-    --bp-theme-color-interaction-segmented-selected-fg: var(--bp-theme-color-interaction-selection-fg);
-    --bp-theme-color-interaction-selectable-bg: color-mix(in srgb, var(--bp-base-color-neutral-1000) 4%, transparent);
-    --bp-theme-color-interaction-selectable-bg-hover: color-mix(in srgb, var(--bp-base-color-neutral-1000) 6%, transparent);
-    --bp-theme-color-interaction-selectable-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-1000) 8%, transparent);
-    --bp-theme-color-interaction-selectable-fg: var(--bp-theme-color-text-brand);
-    --bp-theme-color-interaction-selectable-selected-bg: var(--bp-theme-color-interaction-accent-bg);
-    --bp-theme-color-interaction-selectable-selected-bg-hover: var(--bp-theme-color-interaction-accent-bg-hover);
-    --bp-theme-color-interaction-selectable-selected-bg-pressed: var(--bp-theme-color-interaction-accent-bg-pressed);
-    --bp-theme-color-interaction-selectable-selected-fg: var(--bp-theme-color-interaction-accent-fg);
-    --bp-theme-color-loading-backdrop-on-brand: color-mix(in srgb, var(--bp-base-color-neutral-900) 16%, transparent);
-    --bp-theme-color-loading-backdrop-on-inverse: color-mix(in srgb, var(--bp-base-color-neutral-0) 48%, transparent);
-    --bp-theme-color-loading-backdrop-on-solid: color-mix(in srgb, var(--bp-base-color-neutral-0) 48%, transparent);
-    --bp-theme-color-loading-spinner-on-inverse: var(--bp-theme-color-icon-inverse);
-    /* Anillo de foco (efecto interaction/focus: 2px gap + 4px color) */
-    --bp-focus-ring-gap: var(--bp-theme-color-surface-page-default);
-    --bp-focus-ring-color: var(--bp-theme-color-border-focus);
-    color-scheme: light;
   }
 
-  /* Tema oscuro — export de Figma (theme · mode "dark"). */
   :root[data-theme="dark"] {
     --bp-theme-color-avatar-bg: color-mix(in srgb, var(--bp-base-color-neutral-0) 4%, transparent);
     --bp-theme-color-avatar-fg: var(--bp-base-color-blue-50);
@@ -933,13 +988,13 @@
     --bp-theme-color-data-negative: var(--bp-base-color-red-400);
     --bp-theme-color-data-neutral: var(--bp-base-color-blue-200);
     --bp-theme-color-data-positive: var(--bp-base-color-green-400);
-    --bp-theme-color-data-chart-primary-1: var(--bp-base-color-blue-500);
-    --bp-theme-color-data-chart-primary-2: var(--bp-base-color-blue-400);
-    --bp-theme-color-data-chart-primary-3: var(--bp-base-color-blue-300);
+    --bp-theme-color-data-chart-primary-1: var(--bp-base-color-sky-300);
+    --bp-theme-color-data-chart-primary-2: var(--bp-base-color-yellow-300);
+    --bp-theme-color-data-chart-primary-3: var(--bp-base-color-purple-300);
     --bp-theme-color-data-chart-primary-4: var(--bp-base-color-blue-200);
     --bp-theme-color-data-chart-primary-5: var(--bp-base-color-blue-100);
     --bp-theme-color-data-chart-primary-6: var(--bp-base-color-blue-75);
-    --bp-theme-color-data-chart-track: var(--bp-base-color-neutral-100);
+    --bp-theme-color-data-chart-track: var(--bp-base-color-neutral-850);
     --bp-theme-color-data-chart-grid: var(--bp-base-color-blue-75);
     --bp-theme-color-data-surface-raised: var(--bp-base-color-neutral-50);
     --bp-theme-color-data-text-default: var(--bp-base-color-blue-500);
@@ -993,16 +1048,26 @@
     --bp-theme-color-interaction-secondary-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-0) 32%, transparent);
     --bp-theme-color-interaction-secondary-fg: var(--bp-base-color-sky-50);
     --bp-theme-color-interaction-secondary-fg-disabled: color-mix(in srgb, var(--bp-base-color-neutral-0) 32%, transparent);
+    --bp-theme-color-interaction-segmented-selected-bg: color-mix(in srgb, var(--bp-base-color-neutral-0) 32%, transparent);
+    --bp-theme-color-interaction-segmented-selected-bg-hover: color-mix(in srgb, var(--bp-base-color-neutral-0) 40%, transparent);
+    --bp-theme-color-interaction-segmented-selected-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-0) 48%, transparent);
+    --bp-theme-color-interaction-segmented-selected-fg: var(--bp-theme-color-text-on-solid);
+    --bp-theme-color-interaction-segmented-bg: color-mix(in srgb, var(--bp-base-color-neutral-0) 10%, transparent);
+    --bp-theme-color-interaction-selectable-selected-bg: var(--bp-theme-color-interaction-accent-bg);
+    --bp-theme-color-interaction-selectable-selected-bg-hover: var(--bp-theme-color-interaction-accent-bg-hover);
+    --bp-theme-color-interaction-selectable-selected-bg-pressed: var(--bp-theme-color-interaction-accent-bg-pressed);
+    --bp-theme-color-interaction-selectable-selected-fg: var(--bp-theme-color-interaction-accent-fg);
+    --bp-theme-color-interaction-selectable-bg: color-mix(in srgb, var(--bp-base-color-neutral-0) 20%, transparent);
+    --bp-theme-color-interaction-selectable-bg-hover: color-mix(in srgb, var(--bp-base-color-neutral-0) 24%, transparent);
+    --bp-theme-color-interaction-selectable-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-0) 32%, transparent);
+    --bp-theme-color-interaction-selectable-fg: var(--bp-theme-color-text-on-solid);
     --bp-theme-color-interaction-selection-bg: color-mix(in srgb, var(--bp-base-color-neutral-0) 6%, transparent);
-    --bp-theme-color-interaction-selection-bg-active: var(--bp-theme-color-interaction-accent-bg);
-    --bp-theme-color-interaction-selection-bg-active-subtle: color-mix(in srgb, var(--bp-base-color-neutral-0) 16%, transparent);
     --bp-theme-color-interaction-selection-bg-disabled: color-mix(in srgb, var(--bp-base-color-neutral-0) 4%, transparent);
     --bp-theme-color-interaction-selection-bg-elevated: var(--bp-base-color-neutral-800);
     --bp-theme-color-interaction-selection-bg-hover: color-mix(in srgb, var(--bp-base-color-neutral-0) 10%, transparent);
     --bp-theme-color-interaction-selection-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-0) 16%, transparent);
     --bp-theme-color-interaction-selection-fg: var(--bp-theme-color-text-primary);
     --bp-theme-color-interaction-selection-fg-disabled: var(--bp-base-color-neutral-500);
-    --bp-theme-color-interaction-selection-fg-on-active: var(--bp-theme-color-interaction-accent-fg);
     --bp-theme-color-interaction-selection-fg-subtle: var(--bp-theme-color-text-secondary);
     --bp-theme-color-interaction-tertiary-bg: var(--bp-base-color-transparent);
     --bp-theme-color-interaction-tertiary-bg-disabled: color-mix(in srgb, var(--bp-base-color-neutral-0) 4%, transparent);
@@ -1095,36 +1160,34 @@
     --bp-theme-color-text-primary: var(--bp-base-color-neutral-0);
     --bp-theme-color-text-secondary: var(--bp-base-color-neutral-300);
     --bp-theme-color-text-tertiary: var(--bp-base-color-neutral-500);
-    /* No exportados en el CSS; equivalentes de la paleta (pendiente confirmar en Figma) */
-    --bp-theme-color-border-strong: var(--bp-base-color-neutral-800);
-    --bp-theme-color-icon-subtle: var(--bp-base-color-blue-200);
-    --bp-theme-color-interaction-tertiary-bg-adaptive: color-mix(in srgb, var(--bp-base-color-neutral-0) 12%, transparent);
-    --bp-theme-color-status-important-bg: var(--bp-base-color-red-600);
-    --bp-theme-color-brand-on-solid: var(--bp-base-color-neutral-0);
-    --bp-theme-color-data-series-1: var(--bp-base-color-sky-300);
-    --bp-theme-color-data-series-2: var(--bp-base-color-yellow-300);
-    --bp-theme-color-data-series-3: var(--bp-base-color-purple-300);
-    --bp-theme-color-data-series-4: var(--bp-base-color-blue-200);
-    --bp-theme-color-data-series-5: var(--bp-base-color-blue-100);
-    --bp-theme-color-data-series-6: var(--bp-base-color-blue-75);
-    --bp-theme-color-data-surface-default: var(--bp-base-color-neutral-850);
-    --bp-theme-color-data-surface-grid: var(--bp-base-color-blue-75);
-    --bp-theme-color-interaction-segmented-bg: color-mix(in srgb, var(--bp-base-color-neutral-0) 10%, transparent);
-    --bp-theme-color-interaction-segmented-selected-bg: color-mix(in srgb, var(--bp-base-color-neutral-0) 32%, transparent);
-    --bp-theme-color-interaction-segmented-selected-bg-hover: color-mix(in srgb, var(--bp-base-color-neutral-0) 40%, transparent);
-    --bp-theme-color-interaction-segmented-selected-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-0) 48%, transparent);
-    --bp-theme-color-interaction-segmented-selected-fg: var(--bp-theme-color-text-on-solid);
-    --bp-theme-color-interaction-selectable-bg: color-mix(in srgb, var(--bp-base-color-neutral-0) 20%, transparent);
-    --bp-theme-color-interaction-selectable-bg-hover: color-mix(in srgb, var(--bp-base-color-neutral-0) 24%, transparent);
-    --bp-theme-color-interaction-selectable-bg-pressed: color-mix(in srgb, var(--bp-base-color-neutral-0) 32%, transparent);
-    --bp-theme-color-interaction-selectable-fg: var(--bp-theme-color-text-on-solid);
-    --bp-theme-color-interaction-selectable-selected-bg: var(--bp-theme-color-interaction-accent-bg);
-    --bp-theme-color-interaction-selectable-selected-bg-hover: var(--bp-theme-color-interaction-accent-bg-hover);
-    --bp-theme-color-interaction-selectable-selected-bg-pressed: var(--bp-theme-color-interaction-accent-bg-pressed);
-    --bp-theme-color-interaction-selectable-selected-fg: var(--bp-theme-color-interaction-accent-fg);
-    --bp-focus-ring-gap: var(--bp-theme-color-surface-page-alt);
+  }
+
+}
+
+/* =====================================================================
+   Capa de producto (mantenida a mano, no viene del export).
+   Alias que la app ya usa y el export de Figma no trae: espaciados de
+   composición, un par de colores de tema y el anillo de foco. Si el DS los
+   incorpora, se borran de aquí.
+   ===================================================================== */
+@layer tokens.product {
+  :root {
+    --bp-layout-card-padding: var(--bp-layout-grid-margin);
+    --bp-semantic-spacing-xl: var(--bp-base-dimension-20);
+    --bp-semantic-spacing-gap-related: var(--bp-base-dimension-8);
+    --bp-semantic-spacing-gap-title: var(--bp-base-dimension-8);
+    --bp-semantic-spacing-gap-item: var(--bp-base-dimension-12);
+    --bp-semantic-spacing-gap-content: var(--bp-base-dimension-16);
+    --bp-semantic-spacing-padding-inset: var(--bp-base-dimension-12);
+    --bp-semantic-spacing-padding-container-compact: var(--bp-base-dimension-16);
+    --bp-theme-color-border-strong: var(--bp-base-color-neutral-500);
+    --bp-theme-color-icon-subtle: var(--bp-base-color-blue-300);
+    --bp-theme-color-data-surface-default: var(--bp-base-color-neutral-100);
+    --bp-theme-color-interaction-selection-bg-active: var(--bp-theme-color-interaction-accent-bg);
+    --bp-theme-color-interaction-selection-bg-active-subtle: var(--bp-base-color-neutral-300);
+    /* Anillo de foco (efecto interaction/focus: 2px gap + 4px color) */
+    --bp-focus-ring-gap: var(--bp-theme-color-surface-page-default);
     --bp-focus-ring-color: var(--bp-theme-color-border-focus);
-    color-scheme: dark;
   }
 }
 
@@ -1132,7 +1195,7 @@
    En web los modos son pseudo-clases: el valor base es "default" y los demás
    llevan sufijo --hover / --active / --focus para usarlos en :hover, :active
    y :focus-visible. Sólo se listan los estados que cambian. */
-@layer tokens.interaction {
+@layer tokens.product {
   :root {
     --bp-interaction-accent-bg: var(--bp-theme-color-interaction-accent-bg);
     --bp-interaction-accent-fg: var(--bp-theme-color-interaction-accent-fg);
@@ -1202,132 +1265,5 @@
     --bp-interaction-focus-ring-color--focus: var(--bp-theme-color-border-focus);
     --bp-interaction-focus-ring-gap--focus: var(--bp-theme-color-surface-page-default);
     --bp-interaction-selection-subtle-fg--focus: var(--bp-theme-color-interaction-selection-fg);
-  }
-}
-
-@layer tokens.product {
-  /* Recetas bp-* de Figma: sólo remapean semánticos. Los modos de cada
-     colección se eligen con data-size (o data-context en el spinner).
-     El :root fija el tamaño que más usa la app; los demás modos van abajo. */
-  :root {
-    /* bp-button · md 56 · lg 64 */
-    --bp-button-size: var(--bp-semantic-size-interactive-md);
-    --bp-button-padding-x: var(--bp-semantic-spacing-macro-md);
-    --bp-button-padding-icon: var(--bp-semantic-spacing-micro-lg);
-    /* bp-action-button · sm 32 · md 40 · lg 48 */
-    --bp-action-button-size: var(--bp-semantic-size-interactive-xs);
-    --bp-action-button-padding-x: var(--bp-semantic-spacing-macro-sm);
-    --bp-action-button-padding-x-icon: var(--bp-semantic-spacing-micro-lg);
-    --bp-action-button-icon-size: var(--bp-semantic-size-icon-sm);
-    --bp-icon-switch-size: var(--bp-semantic-size-interactive-xs);
-    /* bp-tag · sm 16 · md 24 */
-    --bp-tag-height: var(--bp-semantic-size-icon-md);
-    --bp-tag-icon-size: var(--bp-semantic-size-icon-xs);
-    /* bp-avatar · xs 32 en la app (Figma default md 48) */
-    --bp-avatar-size: var(--bp-semantic-size-avatar-xs);
-    --bp-avatar-icon-size: var(--bp-semantic-size-icon-xs);
-    --bp-avatar-optical-size: var(--bp-semantic-size-icon-md);
-    --bp-avatar-emblem-size: var(--bp-semantic-size-icon-xs);
-    --bp-avatar-emblem-icon-size: var(--bp-semantic-size-icon-xxs);
-    --bp-avatar-font-size: var(--bp-semantic-typography-brand-initial-xs-font-size);
-    --bp-avatar-line-height: var(--bp-semantic-typography-brand-initial-xs-line-height);
-    --bp-avatar-overlap: var(--bp-semantic-spacing-overlap-8);
-    /* bp-spinner · size md 24 · context on-page */
-    --bp-spinner-size-size: var(--bp-semantic-size-icon-md);
-    --bp-spinner-context-backdrop-color: var(--bp-theme-color-loading-backdrop-on-page);
-    --bp-spinner-context-spinner-color: var(--bp-theme-color-loading-spinner-on-page);
-    /* bp-guided-tour (modo light/dark) */
-    --bp-guided-tour-background: var(--bp-base-color-neutral-900);
-    --bp-guided-tour-icon: var(--bp-theme-color-icon-inverse);
-    --bp-guided-tour-text-primary: var(--bp-theme-color-text-inverse);
-    --bp-guided-tour-text-secondary: var(--bp-theme-color-text-tertiary);
-    --bp-component-interactive-icon-size: var(--bp-semantic-size-icon-md);
-  }
-  :root[data-theme="dark"] {
-    --bp-guided-tour-background: var(--bp-base-color-neutral-0);
-    --bp-guided-tour-icon: var(--bp-theme-color-icon-primary);
-    --bp-guided-tour-text-primary: var(--bp-theme-color-text-primary);
-    --bp-guided-tour-text-secondary: var(--bp-theme-color-text-helper);
-  }
-
-  .bp-button[data-size="lg"] {
-    --bp-button-size: var(--bp-semantic-size-interactive-lg);
-    --bp-button-padding-x: var(--bp-semantic-spacing-macro-lg);
-  }
-
-  .bp-action-button[data-size="sm"] {
-    --bp-action-button-size: var(--bp-semantic-size-interactive-xxs);
-    --bp-action-button-padding-x: var(--bp-semantic-spacing-micro-lg);
-    --bp-action-button-padding-x-icon: var(--bp-semantic-spacing-micro-md);
-  }
-  .bp-action-button[data-size="lg"] {
-    --bp-action-button-size: var(--bp-semantic-size-interactive-sm);
-    --bp-action-button-icon-size: var(--bp-semantic-size-icon-md);
-  }
-
-  .bp-tag[data-size="sm"] {
-    --bp-tag-height: var(--bp-semantic-size-icon-xs);
-    --bp-tag-icon-size: var(--bp-semantic-size-icon-xxs);
-  }
-
-  .bp-avatar[data-size="sm"] {
-    --bp-avatar-size: var(--bp-semantic-size-avatar-sm);
-    --bp-avatar-icon-size: var(--bp-semantic-size-icon-sm);
-    --bp-avatar-font-size: var(--bp-semantic-typography-brand-initial-sm-font-size);
-    --bp-avatar-line-height: var(--bp-semantic-typography-brand-initial-sm-line-height);
-    --bp-avatar-overlap: var(--bp-semantic-spacing-overlap-10);
-  }
-  .bp-avatar[data-size="md"] {
-    --bp-avatar-size: var(--bp-semantic-size-avatar-md);
-    --bp-avatar-icon-size: var(--bp-semantic-size-icon-md);
-    --bp-avatar-emblem-size: var(--bp-semantic-size-icon-sm);
-    --bp-avatar-emblem-icon-size: var(--bp-semantic-size-icon-xs);
-    --bp-avatar-font-size: var(--bp-semantic-typography-brand-initial-md-font-size);
-    --bp-avatar-line-height: var(--bp-semantic-typography-brand-initial-md-line-height);
-    --bp-avatar-overlap: var(--bp-semantic-spacing-overlap-12);
-  }
-  .bp-avatar[data-size="lg"] {
-    --bp-avatar-size: var(--bp-semantic-size-avatar-lg);
-    --bp-avatar-icon-size: var(--bp-semantic-size-icon-lg);
-    --bp-avatar-emblem-size: var(--bp-semantic-size-icon-md);
-    --bp-avatar-emblem-icon-size: var(--bp-semantic-size-icon-sm);
-    --bp-avatar-font-size: var(--bp-semantic-typography-brand-initial-lg-font-size);
-    --bp-avatar-line-height: var(--bp-semantic-typography-brand-initial-lg-line-height);
-    --bp-avatar-overlap: var(--bp-semantic-spacing-overlap-16);
-  }
-  .bp-avatar[data-size="xl"] {
-    --bp-avatar-size: var(--bp-semantic-size-avatar-xl);
-    --bp-avatar-icon-size: var(--bp-semantic-size-icon-xl);
-    --bp-avatar-optical-size: var(--bp-semantic-size-icon-xl);
-    --bp-avatar-emblem-size: var(--bp-semantic-size-icon-lg);
-    --bp-avatar-emblem-icon-size: var(--bp-semantic-size-icon-md);
-    --bp-avatar-font-size: var(--bp-semantic-typography-brand-initial-xl-font-size);
-    --bp-avatar-line-height: var(--bp-semantic-typography-brand-initial-xl-line-height);
-    --bp-avatar-overlap: var(--bp-semantic-spacing-overlap-24);
-  }
-  .bp-avatar[data-size="xxl"] {
-    --bp-avatar-size: var(--bp-semantic-size-avatar-xxl);
-    --bp-avatar-icon-size: var(--bp-semantic-size-icon-xxl);
-    --bp-avatar-optical-size: var(--bp-semantic-size-icon-xl);
-    --bp-avatar-emblem-size: var(--bp-semantic-size-avatar-sm);
-    --bp-avatar-emblem-icon-size: var(--bp-semantic-size-avatar-xs);
-    --bp-avatar-font-size: var(--bp-semantic-typography-brand-initial-xxl-font-size);
-    --bp-avatar-line-height: var(--bp-semantic-typography-brand-initial-xxl-line-height);
-    --bp-avatar-overlap: var(--bp-semantic-spacing-overlap-32);
-  }
-
-  .bp-spinner[data-size="sm"] { --bp-spinner-size-size: var(--bp-semantic-size-icon-sm); }
-  .bp-spinner[data-size="lg"] { --bp-spinner-size-size: var(--bp-semantic-size-icon-lg); }
-  [data-context="on-brand"] {
-    --bp-spinner-context-backdrop-color: var(--bp-theme-color-loading-backdrop-on-brand);
-    --bp-spinner-context-spinner-color: var(--bp-theme-color-loading-spinner-on-brand);
-  }
-  [data-context="on-solid"] {
-    --bp-spinner-context-backdrop-color: var(--bp-theme-color-loading-backdrop-on-solid);
-    --bp-spinner-context-spinner-color: var(--bp-theme-color-loading-spinner-on-solid);
-  }
-  [data-context="on-inverse"] {
-    --bp-spinner-context-backdrop-color: var(--bp-theme-color-loading-backdrop-on-inverse);
-    --bp-spinner-context-spinner-color: var(--bp-theme-color-loading-spinner-on-inverse);
   }
 }
