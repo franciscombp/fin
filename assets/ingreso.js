@@ -424,17 +424,30 @@
     if (aviso) aviso.hidden = en;
     if (cambio) document.dispatchEvent(new CustomEvent('red:cambio', { detail: en }));
   }
+  // Una petición: true si la red respondió. Espera hasta 8 s (red lenta o despertando de segundo plano)
+  function sondaUnaVez() {
+    var ctl = new AbortController();
+    var t = setTimeout(function () { ctl.abort(); }, 8000);
+    return fetch(SONDA + '?t=' + Date.now(), { cache: 'no-store', signal: ctl.signal })
+      .then(function () { clearTimeout(t); return true; }, function () { clearTimeout(t); return false; });
+  }
+  // Una sola falla no basta para decir "sin internet": iOS suele fallar la primera
+  // petición al volver a la app. Se reintenta antes de avisar.
   function sonda() {
     if (!navigator.onLine) return pintarRed(false);
-    var ctl = new AbortController();
-    var t = setTimeout(function () { ctl.abort(); }, 4000);
-    fetch(SONDA + '?t=' + Date.now(), { cache: 'no-store', signal: ctl.signal })
-      .then(function () { clearTimeout(t); pintarRed(true); }, function () { clearTimeout(t); pintarRed(false); });
+    sondaUnaVez().then(function (ok) {
+      if (ok) return pintarRed(true);
+      return new Promise(function (r) { setTimeout(r, 1500); })
+        .then(sondaUnaVez)
+        .then(function (ok2) { pintarRed(ok2); });
+    });
   }
+  // Sin red se vuelve a comprobar cada 5 s para recuperarse rápido; con red, cada 30 s
+  function ciclo() { sonda(); setTimeout(ciclo, en ? 30000 : 5000); }
   window.addEventListener('online', sonda);
   window.addEventListener('offline', function () { pintarRed(false); });
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') sonda(); });
-  document.addEventListener('DOMContentLoaded', function () { pintarRed(en); sonda(); });
+  document.addEventListener('DOMContentLoaded', function () { pintarRed(en); ciclo(); });
 
   // Sin internet, las acciones que mueven dinero no se abren; lo informativo sigue igual.
   // Va en captura sobre el documento: también frena los clics que hace el buscador.
@@ -449,7 +462,6 @@
     e.stopImmediatePropagation();
     if (typeof showToast === 'function') showToast('Sin internet: esta función necesita conexión');
   }, true);
-  setInterval(sonda, 30000);
 
   /* ---------- Bottom sheets del login (no piden ingreso) ---------- */
   var hojaEl = null, hojaBk = null;
