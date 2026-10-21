@@ -128,6 +128,7 @@
     <!-- Biometría real (WebAuthn). Debe cargar antes del script inline y app.js. -->
     <script src="./webauthn.js"></script>
     <script src="./assets/ingreso.js"></script>
+    <script src="./assets/flujos.js"></script>
 
     <title>Pichibank app</title>
     <style>
@@ -4010,6 +4011,7 @@
     <!-- Versión asistente, la principal (la anterior: ?app=clasica; ver assets/uku-app.js) -->
     <link rel="stylesheet" href="./assets/uku-app.css">
     <link rel="stylesheet" href="./assets/ingreso.css">
+    <link rel="stylesheet" href="./assets/flujos.css">
     <link rel="stylesheet" href="./assets/analisis.css">
     <link rel="stylesheet" href="./assets/soporte.css">
     <link rel="stylesheet" href="./assets/componentes.css">
@@ -5481,7 +5483,6 @@
             ['MJ', 'María José', '4521'], ['CA', 'Carlos A.', '7734'],
             ['LP', 'Luis P.', '2290'], ['SG', 'Sofía G.', '6015'], ['DR', 'Diego R.', '3348'],
         ];
-        const TRANSFER_AMOUNT_CHIPS = [20, 50, 100, 200];
         // Cada servicio se puede pagar identificándose de más de una forma
         // (número de cuenta, de medidor, cédula del titular...) — antes la
         // lista de servicios no llevaba a ningún lado (data-action genérico,
@@ -5517,7 +5518,6 @@
             { name: 'Cuenta Ahorro transaccional', acct: '7980', balance: 100.00 },
         ];
         const CARRIERS = ['Claro', 'Movistar', 'CNT'];
-        const RECHARGE_AMOUNTS = ['$ 3', '$ 5', '$ 10', '$ 15'];
 
         // Algunas acciones rápidas en la banca real abren un micrositio de
         // un tercero (proveedor de servicios, operador celular) que tarda
@@ -5537,6 +5537,7 @@
             if (k === 'back') return '<button class="qr-key" data-qr-key="back" aria-label="Borrar"><span class="material-symbols-rounded">backspace</span></button>';
             return `<button class="qr-key" data-qr-key="${k}">${k}</button>`;
         }).join('');
+        const FLUJOS_CON_ENTRADA = new Set(['Transferir dinero', 'Pagar servicios', 'Recargar celular', 'Pagar tarjeta', 'Retirar sin tarjeta', 'Pagar con QR']);
         const ACTION_EXTRAS = {
             'Pagar con QR': () => `
                 <div class="qr-pay">
@@ -5608,11 +5609,7 @@
             'Transferir dinero': () => transferPickHTML(),
             'Pagar servicios': () => servicePickHTML(),
             'Retirar sin tarjeta': () => `
-                <p class="finance-subtitle" style="margin-top:0;">Monto</p>
-                <div class="push-chip-row">
-                    ${[20, 40, 60, 100].map((m, i) => `<button class="push-chip${i === 1 ? ' is-selected' : ''}" data-action="Retirar ${m}">$ ${m}</button>`).join('')}
-                </div>
-                <p class="finance-subtitle">Puntos de retiro cercanos</p>
+                <p class="finance-subtitle" style="margin-top:0;">Puntos de retiro cercanos</p>
                 <div class="retiro-map" aria-label="Mapa esquemático de puntos de retiro">
                     <svg viewBox="0 0 320 170" aria-hidden="true">
                         <path d="M0 120 C70 90 120 150 200 110 S300 60 320 80" class="retiro-map__road"/>
@@ -5622,48 +5619,59 @@
                     </svg>
                 </div>
                 <div class="card">
-                    <button class="sub-item" data-action="Punto de retiro">
+                    <button class="sub-item" data-retiro="Cajero Pichibank · Norte">
                         <span class="sub-item__logo"><span class="material-symbols-rounded">atm</span></span>
                         <span class="sub-item__info"><span class="sub-item__name">Cajero Pichibank · Norte</span><span class="sub-item__meta">A 300 m · 24 horas</span></span>
                     </button>
-                    <button class="sub-item" data-action="Punto de retiro">
+                    <button class="sub-item" data-retiro="Punto de retiro en tienda">
                         <span class="sub-item__logo"><span class="material-symbols-rounded">storefront</span></span>
                         <span class="sub-item__info"><span class="sub-item__name">Punto de retiro en tienda</span><span class="sub-item__meta">A 1,1 km · hasta 18:00</span></span>
                     </button>
-                    <button class="sub-item" data-action="Punto de retiro">
+                    <button class="sub-item" data-retiro="Cajero Pichibank · Centro">
                         <span class="sub-item__logo"><span class="material-symbols-rounded">atm</span></span>
                         <span class="sub-item__info"><span class="sub-item__name">Cajero Pichibank · Centro</span><span class="sub-item__meta">A 2,4 km · 24 horas</span></span>
                     </button>
                 </div>`,
             'Recargar celular': () => `
-                <div class="push-field" style="margin-top:4px;">
-                    <label class="push-field__label" for="recharge-phone">Número de celular</label>
-                    <input class="push-input" type="tel" inputmode="numeric" id="recharge-phone" placeholder="099 123 4567" value="099 *** 4521" autocomplete="off">
-                    <p class="push-field__hint">Tu número, o el de alguien más.</p>
-                </div>
-                <p class="finance-subtitle">Operador</p>
-                <div class="push-chip-row">
-                    ${CARRIERS.map((c, i) => `<button class="push-chip${i === 0 ? ' is-selected' : ''}" data-action="Operador ${c}">${c}</button>`).join('')}
-                </div>
-                <p class="finance-subtitle">Monto</p>
-                <div class="push-chip-row">
-                    ${RECHARGE_AMOUNTS.map((a, i) => `<button class="push-chip${i === 1 ? ' is-selected' : ''}" data-action="Recargar ${a}">${a}</button>`).join('')}
-                </div>
-                <div class="push-field" style="margin-top:20px;">
-                    <label class="push-field__label" for="recharge-account">Cuenta de origen</label>
-                    <div class="push-select-wrap">
-                        <select class="push-select" id="recharge-account" data-saldo>
-                            ${ORIGIN_ACCOUNTS.map((a, i) => `<option value="${i}">${a.name} ****${a.acct} · $ ${fmtMoney(a.balance)}</option>`).join('')}
-                        </select>
-                        <span class="material-symbols-rounded push-select-wrap__chevron">expand_more</span>
-                    </div>
+                <p class="finance-subtitle" style="margin-top:0;">¿A qué operador?</p>
+                <div class="card">
+                    ${CARRIERS.map(c => `
+                        <button class="sub-item" data-recarga="${c}">
+                            <span class="sub-item__logo"><span class="material-symbols-rounded">smartphone</span></span>
+                            <span class="sub-item__info"><span class="sub-item__name">${c}</span><span class="sub-item__meta">Recargas desde $ 3</span></span>
+                            <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
+                        </button>`).join('')}
                 </div>`,
+            'Pagar tarjeta': () => `
+                <p class="finance-subtitle" style="margin-top:0;">Tus tarjetas</p>
+                <div class="card" id="pago-tarjetas"><p style="margin:0;padding:16px;color:var(--bp-text-helper);">Buscando tus tarjetas…</p></div>`,
         };
 
         // ---------- Transferir dinero: flujo de pago simulado de inicio a
         // fin (beneficiario -> monto -> confirmar -> procesando -> éxito) ----------
-        let transferFlow = null; // { beneficiary: {initials,name,acct}, amount }
-        const fmtMoney = n => n.toFixed(2).replace('.', ',');
+        // ---------- Entradas de pago: cada selector abre el flujo de pantalla
+        // completa (assets/flujos.js: datos, revisar, procesando, éxito o error).
+        // "Listo" en un éxito cierra también la página de la acción. ----------
+        const alListo = mensaje => () => { closePushPage(); showToast(mensaje); };
+        let tarjetasPago = [];
+
+        // Las tarjetas a pagar salen de las deudas de la persona activa
+        function pintarTarjetasPago() {
+            if (!window.Persona) return;
+            Persona.deudas(Persona.get()).then(ds => {
+                tarjetasPago = ds.filter(d => d.clase === 'tarjeta').map(d => ({ nombre: d.producto, institucion: d.institucion, saldo: d.saldo }));
+                const lista = document.getElementById('pago-tarjetas');
+                if (!lista) return;
+                lista.innerHTML = tarjetasPago.length
+                    ? tarjetasPago.map((t, i) => `
+                        <button class="sub-item" data-tarjeta="${i}">
+                            <span class="sub-item__logo"><span class="material-symbols-rounded">credit_card</span></span>
+                            <span class="sub-item__info"><span class="sub-item__name">${t.nombre}</span><span class="sub-item__meta">${t.institucion} · Saldo a pagar ${Flujos.dinero(t.saldo)}</span></span>
+                            <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
+                        </button>`).join('')
+                    : '<p style="margin:0;padding:16px;color:var(--bp-text-helper);">No tienes tarjetas para pagar.</p>';
+            });
+        }
 
         function transferPickHTML() {
             const avatar = b => `
@@ -5692,74 +5700,9 @@
                 <div class="card">
                     ${otra('add', 'Nueva cuenta', 'Otro banco o cuenta', 'data-beneficiary="__new"')}
                     ${otra('public', 'Transferencia al exterior', 'Envía a otro país', 'data-soon="Transferencia al exterior"')}
-                    ${otra('smartphone', 'Transferencia por celular', 'Usa el número de celular', 'data-soon="Transferencia por número de celular"')}
+                    ${otra('smartphone', 'Transferencia por celular', 'Usa el número de celular', 'data-celular')}
                 </div>`;
         }
-
-        function transferAmountHTML(b) {
-            return `
-                <button class="push-transfer-back" data-transfer-back>
-                    <span class="material-symbols-rounded">arrow_back</span>Cambiar beneficiario
-                </button>
-                <div class="push-transfer-target">
-                    <span class="push-beneficiary__avatar">${b.initials}</span>
-                    <div>
-                        <div class="push-transfer-target__name">${b.name}</div>
-                        <div class="push-transfer-target__meta">Cuenta de ahorros ******${b.acct}</div>
-                    </div>
-                </div>
-                <p class="finance-subtitle" style="margin-top:20px;">¿Cuánto quieres transferir?</p>
-                <div class="push-transfer-amount" id="transfer-amount-display">$ 0,00</div>
-                <div class="push-chip-row">
-                    ${TRANSFER_AMOUNT_CHIPS.map(a => `<button class="push-chip" data-transfer-chip="${a}">$ ${a}</button>`).join('')}
-                </div>
-                <button class="login-button login-button--primary" data-transfer-continue disabled>Continuar</button>`;
-        }
-
-        function transferConfirmHTML(b, amount) {
-            return `
-                <button class="push-transfer-back" data-transfer-back-amount>
-                    <span class="material-symbols-rounded">arrow_back</span>Editar monto
-                </button>
-                <p class="finance-subtitle" style="margin-top:20px;">Revisa los datos antes de confirmar</p>
-                <div class="card">
-                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">Para</span><span class="sub-item__meta">${b.name} · ******${b.acct}</span></span></div>
-                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">Desde</span><span class="sub-item__meta">Cuenta PRINCIPAL ******7890</span></span></div>
-                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">Monto</span></span><span class="sub-item__price">$ ${fmtMoney(amount)}</span></div>
-                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">Comisión</span></span><span class="sub-item__price">$ 0,00</span></div>
-                </div>
-                <button class="login-button login-button--primary" data-transfer-confirm>Confirmar transferencia</button>`;
-        }
-
-        function transferProcessingHTML() {
-            return `
-                <div class="push-transfer-center">
-                    <div class="push-loading__spinner"></div>
-                    <p class="push-transfer-processing-text">Procesando tu transferencia…</p>
-                </div>`;
-        }
-
-        function transferSuccessHTML(b, amount) {
-            const ref = Math.floor(100000000 + Math.random() * 900000000);
-            return `
-                <div class="push-transfer-center push-transfer-success">
-                    <span class="material-symbols-rounded push-transfer-success__icon">check_circle</span>
-                    <h2 class="push-transfer-success__title">¡Transferencia exitosa!</h2>
-                    <div class="push-transfer-success__amount">$ ${fmtMoney(amount)}</div>
-                    <p class="push-transfer-success__meta">Enviado a ${b.name}</p>
-                    <p class="push-transfer-success__ref">Comprobante Nro. ${ref}</p>
-                    <button class="login-button login-button--primary" data-transfer-done>Listo</button>
-                </div>`;
-        }
-
-        // ---------- Pagar servicios: flujo de pago simulado de inicio a fin
-        // (servicio -> tipo de identificación + valor -> consultar factura
-        // -> revisar monto y elegir cuenta -> pagar -> procesando -> éxito).
-        // A diferencia de transferir (un solo campo, monto), cada servicio
-        // puede identificarse de más de una forma (número de cuenta, de
-        // medidor, cédula...) — de ahí el selector de tipo de identificación
-        // antes del campo de valor. ----------
-        let serviceFlow = null; // { biller, idTypeIdx, idValue, bill, account }
 
         function servicePickHTML() {
             const fila = s => `
@@ -5788,180 +5731,45 @@
                 ${categorias.map(c => `<p class="finance-subtitle">${c}</p><div class="card">${SERVICE_BILLERS.filter(s => s.category === c).map(fila).join('')}</div>`).join('')}`;
         }
 
-        function serviceFormHTML(biller, idTypeIdx, idValue) {
-            const idType = biller.idTypes[idTypeIdx];
-            return `
-                <button class="push-transfer-back" data-service-back>
-                    <span class="material-symbols-rounded">arrow_back</span>Cambiar servicio
-                </button>
-                <div class="push-transfer-target">
-                    <span class="push-beneficiary__avatar"><span class="material-symbols-rounded">${biller.icon}</span></span>
-                    <div>
-                        <div class="push-transfer-target__name">${biller.name}</div>
-                        <div class="push-transfer-target__meta">${biller.category}</div>
-                    </div>
-                </div>
-                <p class="finance-subtitle" style="margin-top:20px;">¿Cómo quieres identificarte?</p>
-                <div class="push-field">
-                    <label class="push-field__label" for="service-id-type">Tipo de identificación</label>
-                    <div class="push-select-wrap">
-                        <select class="push-select" id="service-id-type" data-service-idtype>
-                            ${biller.idTypes.map((t, i) => `<option value="${i}"${i === idTypeIdx ? ' selected' : ''}>${t.label}</option>`).join('')}
-                        </select>
-                        <span class="material-symbols-rounded push-select-wrap__chevron">expand_more</span>
-                    </div>
-                </div>
-                <div class="push-field">
-                    <label class="push-field__label" for="service-id-value">${idType.label}</label>
-                    <input class="push-input" type="text" inputmode="numeric" id="service-id-value" placeholder="${idType.placeholder}" value="${idValue || ''}" data-service-idvalue autocomplete="off">
-                    <p class="push-field__hint">${idType.hint || ''}</p>
-                </div>
-                <button class="login-button login-button--primary" data-service-consult${(idValue || '').trim().length >= 4 ? '' : ' disabled'}>Consultar</button>`;
-        }
-
-        function serviceConsultingHTML() {
-            return `
-                <div class="push-transfer-center">
-                    <div class="push-loading__spinner"></div>
-                    <p class="push-transfer-processing-text">Consultando tu factura…</p>
-                </div>`;
-        }
-
-        // Genera una factura "real" pero determinista a partir del valor
-        // ingresado (mismo id => misma factura), en vez de puro azar en
-        // cada consulta — se siente como datos de verdad, no ruido.
-        function generateBill(idValue) {
-            let seed = 7;
-            for (let i = 0; i < idValue.length; i++) seed = (seed * 31 + idValue.charCodeAt(i)) >>> 0;
-            const rand = () => { seed = (seed * 1103515245 + 12345) >>> 0; return (seed >>> 8) / 0xffffff; };
-            const HOLDERS = ['Juan Carlos Pazmiño', 'María Fernanda López', 'Andrés Santacruz', 'Ana Belén Vélez', 'Diego Ramírez'];
-            return {
-                holder: HOLDERS[Math.floor(rand() * HOLDERS.length)],
-                period: 'Consumo de mayo 2026',
-                amount: 8 + rand() * 55, // tope bajo: siempre cubierto por ambas cuentas de origen
-                dueDate: `${String(5 + Math.floor(rand() * 20)).padStart(2, '0')} jun 2026`,
-            };
-        }
-
-        function serviceBillHTML(biller, idType, idValue, bill) {
-            return `
-                <button class="push-transfer-back" data-service-back-form>
-                    <span class="material-symbols-rounded">arrow_back</span>Editar datos
-                </button>
-                <p class="finance-subtitle" style="margin-top:20px;">Factura encontrada</p>
-                <div class="card">
-                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">Titular</span><span class="sub-item__meta">${bill.holder}</span></span></div>
-                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">${idType.label}</span><span class="sub-item__meta">${idValue}</span></span></div>
-                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">Concepto</span><span class="sub-item__meta">${bill.period}</span></span></div>
-                    <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">Fecha límite</span><span class="sub-item__meta">${bill.dueDate}</span></span></div>
-                </div>
-                <p class="finance-subtitle">Monto a pagar</p>
-                <div class="push-transfer-amount">$ ${fmtMoney(bill.amount)}</div>
-                <div class="push-field">
-                    <label class="push-field__label" for="service-account">Cuenta de origen</label>
-                    <div class="push-select-wrap">
-                        <select class="push-select" id="service-account" data-service-account data-saldo>
-                            ${ORIGIN_ACCOUNTS.map((a, i) => `<option value="${i}">${a.name} ****${a.acct} · $ ${fmtMoney(a.balance)}</option>`).join('')}
-                        </select>
-                        <span class="material-symbols-rounded push-select-wrap__chevron">expand_more</span>
-                    </div>
-                    <p class="push-field__hint" id="service-account-hint"></p>
-                </div>
-                <button class="login-button login-button--primary" data-service-pay>Pagar $ ${fmtMoney(bill.amount)}</button>`;
-        }
-
-        function serviceProcessingHTML() {
-            return `
-                <div class="push-transfer-center">
-                    <div class="push-loading__spinner"></div>
-                    <p class="push-transfer-processing-text">Procesando tu pago…</p>
-                </div>`;
-        }
-
-        function serviceSuccessHTML(biller, bill, account) {
-            const ref = Math.floor(100000000 + Math.random() * 900000000);
-            return `
-                <div class="push-transfer-center push-transfer-success">
-                    <span class="material-symbols-rounded push-transfer-success__icon">check_circle</span>
-                    <h2 class="push-transfer-success__title">¡Pago realizado!</h2>
-                    <div class="push-transfer-success__amount">$ ${fmtMoney(bill.amount)}</div>
-                    <p class="push-transfer-success__meta">Pagado a ${biller.name}</p>
-                    <p class="push-transfer-success__meta">Debitado de ${account.name} ****${account.acct}</p>
-                    <p class="push-transfer-success__ref">Comprobante Nro. ${ref}</p>
-                    <button class="login-button login-button--primary" data-service-done>Listo</button>
-                </div>`;
-        }
-
-        // Revalida fondos cada vez que cambia la cuenta de origen elegida
-        // (poco probable con estos montos, pero la cuenta Ahorro sólo
-        // tiene $ 100 — mejor no dejar pagar de una cuenta sin saldo).
-        function updateServiceAccountHint() {
-            const sel = document.getElementById('service-account');
-            const hint = document.getElementById('service-account-hint');
-            const payBtn = document.querySelector('[data-service-pay]');
-            if (!sel || !serviceFlow || !serviceFlow.bill) return;
-            const account = ORIGIN_ACCOUNTS[parseInt(sel.value, 10)];
-            const insufficient = account.balance < serviceFlow.bill.amount;
-            if (hint) {
-                hint.textContent = insufficient ? 'Fondos insuficientes en esta cuenta' : '';
-                hint.classList.toggle('push-field__hint--error', insufficient);
-            }
-            if (payBtn) payBtn.disabled = insufficient;
-        }
-
-        // Delegado (una sola vez): #push-extra se re-renderiza en cada paso,
-        // así que escuchar en el contenedor evita recablear tras cada cambio.
         document.getElementById('push-extra').addEventListener('click', (e) => {
             const extra = document.getElementById('push-extra');
+            const cuentas = ORIGIN_ACCOUNTS;
 
-            const billerBtn = e.target.closest('[data-biller]');
-            if (billerBtn) {
-                const biller = SERVICE_BILLERS.find(s => s.name === billerBtn.dataset.biller);
-                serviceFlow = { biller, idTypeIdx: 0, idValue: '' };
-                extra.innerHTML = serviceFormHTML(biller, 0, '');
+            const destino = e.target.closest('[data-beneficiary]');
+            if (destino) {
+                // "Nueva cuenta" no tiene datos previos: el flujo pide titular y número
+                const found = BENEFICIARIES.find(x => x[1] === destino.dataset.beneficiary);
+                const beneficiario = found ? { name: found[1], acct: found[2] } : null;
+                Flujos.abrir(Flujos.transferencia({ cuentas, beneficiario, alListo: alListo('Transferencia registrada') }));
                 return;
             }
 
-            if (e.target.closest('[data-service-back]')) {
-                serviceFlow = null;
-                extra.innerHTML = servicePickHTML();
+            if (e.target.closest('[data-celular]')) {
+                Flujos.abrir(Flujos.transferencia({ cuentas, porCelular: true, alListo: alListo('Transferencia registrada') }));
                 return;
             }
 
-            if (e.target.closest('[data-service-back-form]')) {
-                extra.innerHTML = serviceFormHTML(serviceFlow.biller, serviceFlow.idTypeIdx, serviceFlow.idValue);
+            const biller = e.target.closest('[data-biller]');
+            if (biller) {
+                Flujos.abrir(Flujos.servicio({ cuentas, biller: SERVICE_BILLERS.find(s => s.name === biller.dataset.biller), alListo: alListo('Pago registrado') }));
                 return;
             }
 
-            const consultBtn = e.target.closest('[data-service-consult]');
-            if (consultBtn && !consultBtn.disabled) {
-                extra.innerHTML = serviceConsultingHTML();
-                setTimeout(() => {
-                    if (!serviceFlow) return; // se cerró el push-page mientras consultaba
-                    serviceFlow.bill = generateBill(serviceFlow.idValue);
-                    const idType = serviceFlow.biller.idTypes[serviceFlow.idTypeIdx];
-                    extra.innerHTML = serviceBillHTML(serviceFlow.biller, idType, serviceFlow.idValue, serviceFlow.bill);
-                    updateServiceAccountHint();
-                }, 1100);
+            const recarga = e.target.closest('[data-recarga]');
+            if (recarga) {
+                Flujos.abrir(Flujos.recarga({ cuentas, operador: recarga.dataset.recarga, alListo: alListo('Recarga registrada') }));
                 return;
             }
 
-            const payBtn = e.target.closest('[data-service-pay]');
-            if (payBtn && !payBtn.disabled) {
-                const account = ORIGIN_ACCOUNTS[parseInt(document.getElementById('service-account').value, 10)];
-                serviceFlow.account = account;
-                extra.innerHTML = serviceProcessingHTML();
-                setTimeout(() => {
-                    if (!serviceFlow) return; // se cerró el push-page mientras procesaba
-                    extra.innerHTML = serviceSuccessHTML(serviceFlow.biller, serviceFlow.bill, serviceFlow.account);
-                }, 1600);
+            const retiro = e.target.closest('[data-retiro]');
+            if (retiro) {
+                Flujos.abrir(Flujos.retiro({ cuentas, punto: retiro.dataset.retiro, alListo: alListo('Retiro listo') }));
                 return;
             }
 
-            if (e.target.closest('[data-service-done]')) {
-                serviceFlow = null;
-                closePushPage();
-                showToast('Pago registrado');
+            const tarjeta = e.target.closest('[data-tarjeta]');
+            if (tarjeta) {
+                Flujos.abrir(Flujos.tarjeta({ cuentas, tarjeta: tarjetasPago[Number(tarjeta.dataset.tarjeta)], alListo: alListo('Pago de tarjeta registrado') }));
                 return;
             }
 
@@ -5971,88 +5779,6 @@
             if (soonBtn) { extra.innerHTML = soonHTML(soonBtn.dataset.soon); return; }
             const goBtn = e.target.closest('[data-go]');
             if (goBtn) { openPushPage(goBtn.dataset.go); return; }
-
-            const benBtn = e.target.closest('[data-beneficiary]');
-            if (benBtn) {
-                const key = benBtn.dataset.beneficiary;
-                const found = BENEFICIARIES.find(x => x[1] === key);
-                const b = found
-                    ? { initials: found[0], name: found[1], acct: found[2] }
-                    : { initials: 'NB', name: 'Nuevo beneficiario', acct: '0000' };
-                transferFlow = { beneficiary: b, amount: 0 };
-                extra.innerHTML = transferAmountHTML(b);
-                return;
-            }
-
-            const chip = e.target.closest('[data-transfer-chip]');
-            if (chip) {
-                chip.parentElement.querySelectorAll('[data-transfer-chip]').forEach(c => c.classList.remove('is-selected'));
-                chip.classList.add('is-selected');
-                transferFlow.amount = parseFloat(chip.dataset.transferChip);
-                document.getElementById('transfer-amount-display').textContent = `$ ${fmtMoney(transferFlow.amount)}`;
-                extra.querySelector('[data-transfer-continue]').disabled = false;
-                return;
-            }
-
-            if (e.target.closest('[data-transfer-back]')) {
-                transferFlow = null;
-                extra.innerHTML = transferPickHTML();
-                return;
-            }
-
-            if (e.target.closest('[data-transfer-back-amount]')) {
-                extra.innerHTML = transferAmountHTML(transferFlow.beneficiary);
-                return;
-            }
-
-            const cont = e.target.closest('[data-transfer-continue]');
-            if (cont && !cont.disabled) {
-                extra.innerHTML = transferConfirmHTML(transferFlow.beneficiary, transferFlow.amount);
-                return;
-            }
-
-            if (e.target.closest('[data-transfer-confirm]')) {
-                extra.innerHTML = transferProcessingHTML();
-                setTimeout(() => {
-                    if (!transferFlow) return; // se cerró el push-page mientras procesaba
-                    extra.innerHTML = transferSuccessHTML(transferFlow.beneficiary, transferFlow.amount);
-                }, 1800);
-                return;
-            }
-
-            if (e.target.closest('[data-transfer-done]')) {
-                transferFlow = null;
-                closePushPage();
-                showToast('Transferencia registrada');
-            }
-        });
-
-        // Los <select> del flujo de Pagar servicios (tipo de identificación,
-        // cuenta de origen) no disparan "click" de forma útil para su
-        // propio valor — se escuchan aparte con "change" sobre el mismo
-        // contenedor delegado.
-        document.getElementById('push-extra').addEventListener('change', (e) => {
-            const extra = document.getElementById('push-extra');
-            if (e.target.matches('[data-service-idtype]')) {
-                serviceFlow.idTypeIdx = parseInt(e.target.value, 10);
-                serviceFlow.idValue = '';
-                extra.innerHTML = serviceFormHTML(serviceFlow.biller, serviceFlow.idTypeIdx, '');
-                return;
-            }
-            if (e.target.matches('[data-service-account]')) {
-                updateServiceAccountHint();
-            }
-        });
-
-        // El botón "Consultar" arranca deshabilitado hasta escribir algo
-        // con pinta de identificador real (mismo criterio que "Continuar"
-        // en transferir, pero sobre el campo de texto en vez de un chip).
-        document.getElementById('push-extra').addEventListener('input', (e) => {
-            if (e.target.matches('[data-service-idvalue]')) {
-                serviceFlow.idValue = e.target.value;
-                const btn = document.querySelector('[data-service-consult]');
-                if (btn) btn.disabled = e.target.value.trim().length < 4;
-            }
         });
 
         // Escáner: cámara trasera + lectura de QR si el navegador la soporta
@@ -6072,7 +5798,7 @@
                     det.detect(video).then(codes => {
                         if (!codes.length) return;
                         stopQrScan(); setQrMsg('Código leído');
-                        showToast('Código leído: ' + codes[0].rawValue.slice(0, 30));
+                        Flujos.abrir(Flujos.qr({ cuentas: ORIGIN_ACCOUNTS, comercio: codes[0].rawValue.slice(0, 30), alListo: alListo('Pago registrado') }));
                     }).catch(() => {});
                 }, 400);
             }).catch(() => setQrMsg('Permite el acceso a la cámara para escanear'));
@@ -6108,7 +5834,7 @@
             if (k === 'back') qrCodigo = qrCodigo.slice(0, -1);
             else if (qrCodigo.length < 6) qrCodigo += k;
             qrPintarCodigo();
-            if (qrCodigo.length === 6) showToast('Código ingresado');
+            if (qrCodigo.length === 6) Flujos.abrir(Flujos.qr({ cuentas: ORIGIN_ACCOUNTS, comercio: 'Código único ' + qrCodigo, codigo: qrCodigo, alListo: alListo('Pago registrado') }));
         }
         function qrCambiarTab(tab) {
             const extra = document.getElementById('push-extra');
@@ -6129,6 +5855,7 @@
             const extra = document.getElementById('push-extra');
             const hero = document.getElementById('push-hero');
             extra.innerHTML = build ? build() : '';
+            if (title === 'Pagar tarjeta') pintarTarjetasPago();
             if (title === 'Pagar con QR') { qrCodigo = ''; startQrScan(); } else stopQrScan();
             extra.onclick = title === 'Pagar con QR' ? qrClick : null;
             // Con una plantilla propia, el ícono genérico amarillo sobra —
@@ -6163,10 +5890,7 @@
                     const ben = [...extra.querySelectorAll('[data-beneficiary]')].find(b => fold(b.dataset.beneficiary).startsWith(fold(sc.who)));
                     if (ben) {
                         ben.click();
-                        if (sc.amount > 0 && transferFlow) {
-                            transferFlow.amount = sc.amount;
-                            extra.innerHTML = transferConfirmHTML(transferFlow.beneficiary, sc.amount);
-                        }
+                        if (sc.amount > 0) Flujos.precargar(sc.amount);
                         return;
                     }
                 } else if (sc.action === 'Pagar servicios' && sc.biller) {
@@ -6226,14 +5950,11 @@
             pushPage.classList.remove('is-product', 'is-account');
             pushTitle.textContent = title;
             pushTopbarTitle.textContent = title;
-            transferFlow = null; // reinicia el flujo si había quedado a medias
-            serviceFlow = null;
             renderPushExtra(title);
-            // El flujo de transferencia y el de pagar servicios traen su
-            // propio CTA por paso (Continuar/Confirmar/Pagar/Listo); el
-            // "Continuar" genérico de abajo sobra y quedaría flotando
-            // debajo del paso que sea.
-            pushCta.style.display = (title === 'Transferir dinero' || title === 'Pagar servicios') ? 'none' : '';
+            // Estas pantallas son selectores: al elegir una opción abren el
+            // flujo de pantalla completa (assets/flujos.js), que trae su
+            // propio CTA por paso. El "Continuar" genérico de abajo sobra.
+            pushCta.style.display = FLUJOS_CON_ENTRADA.has(title) ? 'none' : '';
             // Pagar servicios simula el micrositio propio del proveedor:
             // fondo blanco en vez del grisáceo por defecto de #push-page
             // (ver CSS .is-form-flow) — el resto de acciones no cambia.
