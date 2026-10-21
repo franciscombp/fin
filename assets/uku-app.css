@@ -56,7 +56,7 @@
 .uk [hidden] { display: none !important; }
 /* El asistente ocupa la pantalla entre la parte de arriba y la barra de navegación; sin la cabecera de la app */
 html.uk-chatting .header { display: none !important; }
-/* La barra de abajo (con la pestaña Asistente) queda a la vista; se oculta en las páginas a pantalla completa y con el teclado */
+/* La barra de abajo (con la pestaña Asistente) queda a la vista; se oculta en Mis finanzas, en las páginas a pantalla completa y con el teclado */
 html.uk-nonav .nav-bar { display: none !important; }
 html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--uk-kb, 0px); }
 .app-uku .view--finanzas:not(.uk-fin):not(.uk-ayuda) .uk-panel { display: none; }
@@ -241,7 +241,7 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 .uk.is-fin.is-page .uk-panel { top: var(--uk-top); border-radius: 0; box-shadow: none; animation: none; }
 .uk.is-fin .uk-panel .uk-head { display: none; }
 .uk-panel .pf-host { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; padding-bottom: calc(16px + var(--uk-safeb, 0px)); }
-.uk.is-fin:not(.is-page) .uk-panel .pf-host { flex: none; overflow: visible; padding-bottom: 0; }
+.uk.is-fin:not(.is-page) .uk-panel .pf-host { flex: none; overflow: visible; padding-bottom: var(--uk-safeb, 0px); }
 .uk-panel .pf-host::-webkit-scrollbar { display: none; }
 .uk-panel .pf-head, .uk-panel .pf-back, .uk-panel .pfm-tiles, .uk-panel .pfm-foot, .uk-panel .pfm-resumen__go { display: none; }
 .uk-panel .pf-host .pfm .pf-scroll { padding-bottom: 0; }

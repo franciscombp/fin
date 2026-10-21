@@ -143,8 +143,9 @@ Dónde está aplicado: en toda la app, porque cada primitiva se define una sola 
 El asistente vive en la barra inferior (pestaña **Asistente**, entre Beneficios y Perfil). Arriba de la
 app quedan solo la búsqueda (abre el **Buscador** universal) y las notificaciones. Dentro del asistente
 hay un solo control arriba a la izquierda y, cuando la pantalla tiene nombre, el título centrado
-(`.uk-chathead`). Nunca una flecha y una X a la vez. La barra inferior sigue visible en Inicio y Mis
-finanzas; se oculta en el chat y en las páginas a pantalla completa.
+(`.uk-chathead`). Nunca una flecha y una X a la vez. La barra inferior sigue visible en el inicio del
+asistente; se oculta en Mis finanzas (Uku y su mundo ganan espacio), en el chat y en las páginas a
+pantalla completa.
 
 - **Inicio** (`is-home`): sin flecha (se sale con la barra inferior). El globo muestra **una sugerencia
   a la vez** (etiqueta, «1 de n», flecha para pasar a la siguiente y X para ocultarla, con «Deshacer»).

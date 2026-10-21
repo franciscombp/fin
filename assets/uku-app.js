@@ -174,7 +174,8 @@
   function medirNav() { var nb = document.querySelector('.nav-bar'); if (!nb) return; var h = nb.getBoundingClientRect().height; if (h > 0) root.style.setProperty('--uk-navh', h + 'px'); }
   // Se ve siempre, salvo en las páginas a pantalla completa (Mis gastos, la ayuda completa) y con el teclado abierto
   function navVisible() {
-    var sin = view.classList.contains('active') && (host.classList.contains('is-page') || view.classList.contains('uk-ayuda') || host.classList.contains('is-kb'));
+    // Mis finanzas también la oculta: Uku y su mundo ganan espacio (se vuelve con la flecha de arriba)
+    var sin = view.classList.contains('active') && (view.classList.contains('uk-fin') || host.classList.contains('is-page') || view.classList.contains('uk-ayuda') || host.classList.contains('is-kb'));
     root.classList.toggle('uk-nonav', !!sin);
     if (!sin) medirNav();
   }
