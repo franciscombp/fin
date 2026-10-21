@@ -160,7 +160,8 @@ pantalla completa.
   como un chat de IA; las filas y botones entran cuando termina el texto.
 - **Mis finanzas** (`is-fin`): título «Mis finanzas», la flecha vuelve al inicio, la «i» abre la leyenda
   del mundo. Uku se ve en **plano general** dentro de su bosque, con un globo que escribe su mensaje.
-  Abajo hay una **sección fija** (sin scroll ni handle; su fondo solo separa del mundo y da contraste),
+  Abajo hay una **sección fija** (sin scroll ni handle; su fondo es translúcido, con degradado y desenfoque, para que se integre con el
+  escenario y aun así dé contraste),
   en este orden: **una sola sugerencia** de Uku (tarjeta con ícono, acción, por qué y flecha; tocar a
   Uku o deslizar pasa a la siguiente), «Gastaste en…» (abre **Mis gastos**) y «Mi dinero en Pichibank»
   con dos columnas: dinero en cuentas e inversiones y deuda total acumulada (abre su hoja).

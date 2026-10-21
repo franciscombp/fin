@@ -235,9 +235,15 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 /* La hoja */
 .uk-panel { position: absolute; z-index: 3; left: 0; right: 0; top: 50%; bottom: 0; display: flex; flex-direction: column; margin: 0; padding: 0; border-radius: var(--uk-r-lg) var(--uk-r-lg) 0 0; background: var(--uk-page); box-shadow: 0 -8px 32px rgba(15, 38, 92, .12); transition: top .32s cubic-bezier(.2, .8, .2, 1), border-radius .32s ease, transform .28s cubic-bezier(.2, .8, .2, 1), opacity .28s ease; }
 /* En Mis finanzas la hoja es una sección fija: sin asa, sin scroll, sin subir ni bajar. Su fondo solo separa a Uku del contenido. */
-.uk.is-fin:not(.is-page) .uk-panel { top: auto; bottom: 0; height: auto; border-top: 1px solid var(--uk-line); box-shadow: none; transition: none; animation: ukSheet .42s cubic-bezier(.2, .8, .2, 1) both; touch-action: none; }
+.uk.is-fin:not(.is-page) .uk-panel { top: auto; bottom: 0; height: auto; border-top: 1px solid color-mix(in srgb, var(--uk-white) 60%, transparent); box-shadow: none; transition: none; animation: ukSheet .42s cubic-bezier(.2, .8, .2, 1) both; touch-action: none; }
 .uk-panel.is-drag { transition: none !important; animation: none !important; }
 .uk.is-out .uk-panel { animation: ukCardOut .22s ease-in both !important; }
+/* El fondo de la sección fija es translúcido: degradado del gris de la página (casi transparente arriba,
+   sólido abajo) con desenfoque, así el escenario de Uku se adivina detrás y la sección se integra */
+.uk.is-fin:not(.is-page) .uk-panel {
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--uk-page) 35%, transparent), color-mix(in srgb, var(--uk-page) 78%, transparent) 45%, color-mix(in srgb, var(--uk-page) 92%, transparent));
+  -webkit-backdrop-filter: blur(20px) saturate(1.3); backdrop-filter: blur(20px) saturate(1.3);
+}
 .uk.is-fin.is-page .uk-panel { top: var(--uk-top); border-radius: 0; box-shadow: none; animation: none; }
 .uk.is-fin .uk-panel .uk-head { display: none; }
 .uk-panel .pf-host { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; padding-bottom: calc(16px + var(--uk-safeb, 0px)); }
