@@ -64,7 +64,10 @@
       g.filas.forEach(function (f) {
         var rows = [['Institución', f.sub || 'Pichibank']];
         if (f.masked) rows.push(['Número', f.masked]);
-        ProductView.registrar(f.nombre, { kind: f.nombre, label: f.label || 'Saldo', value: f.monto || '', sub: f.sub || '', acts: [], rows: rows, list: [], listTitle: '' });
+        var fila = { kind: f.nombre, label: f.label || 'Saldo', value: f.monto || '', sub: f.sub || '', acts: [], rows: rows, list: [], listTitle: '' };
+        // Cuentas y metas se dibujan con su propio diseño (assets/producto.js)
+        if (f.tipo) { fila.cuenta = true; fila.tipo = f.tipo; fila.saldoNum = f.saldoNum; fila.meta = f.metaNum; fila.numero = f.numero || ''; }
+        ProductView.registrar(f.nombre, fila);
       });
     });
   }
@@ -87,10 +90,12 @@
     Cuentas: function (id) {
       return Persona.cuentas(id).then(function (cs) {
         var cuentas = cs.filter(function (c) { return c.tipo === 'transaccional' || c.tipo === 'ahorro'; }).map(function (c) {
-          return { nombre: c.nombre, sub: 'Pichibank', masked: ultimos(c.fuente) || ('******' + c.numero), monto: money(c.saldo), ic: 'account_balance' };
+          return { nombre: c.nombre, sub: 'Pichibank', masked: ultimos(c.fuente) || ('******' + c.numero), monto: money(c.saldo), ic: 'account_balance',
+            tipo: c.tipo, saldoNum: c.saldo, numero: c.numero };
         });
         var metas = cs.filter(function (c) { return c.tipo === 'meta'; }).map(function (c) {
-          return { nombre: c.nombre, sub: 'Meta: ' + money(c.meta), monto: money(c.saldo), label: 'Llevas', ic: 'savings' };
+          return { nombre: c.nombre, sub: 'Meta: ' + money(c.meta), monto: money(c.saldo), label: 'Llevas', ic: 'savings',
+            tipo: 'meta', saldoNum: c.saldo, metaNum: c.meta };
         });
         return { grupos: [
             { titulo: 'Cuentas', filas: cuentas, ph: { t: 'Aún no tienes cuentas. ', s: 'Abre una cuenta de ahorro para empezar.' } },
@@ -102,7 +107,8 @@
     Metas: function (id) {
       return Persona.cuentas(id).then(function (cs) {
         var metas = cs.filter(function (c) { return c.tipo === 'meta'; }).map(function (c) {
-          return { nombre: c.nombre, sub: 'Meta: ' + money(c.meta), monto: money(c.saldo), label: 'Llevas', ic: 'savings' };
+          return { nombre: c.nombre, sub: 'Meta: ' + money(c.meta), monto: money(c.saldo), label: 'Llevas', ic: 'savings',
+            tipo: 'meta', saldoNum: c.saldo, metaNum: c.meta };
         });
         return { grupos: [{ titulo: 'Metas', filas: metas }],
           hero: { ic: 'savings', t: 'Sin metas todavía', s: 'Una meta de ahorro te muestra cuánto te falta. Uku te ayuda a ponerla.' } };
