@@ -58,7 +58,7 @@ const IGN = /ERR_CONNECTION_REFUSED|ERR_FAILED|ERR_NAME_NOT_RESOLVED|ERR_TUNNEL|
     await step('10asistente2', async () => { await p.keyboard.press('Escape'); await p.waitForTimeout(500); await p.click('.uk-chathead__x'); }, 1500);
     await step('11ocultar', async () => { const x = await p.$('.uk-globo__ib[data-k^="ocultar:"]'); if (!x) return; await x.click(); await p.waitForTimeout(700); await p.click('.pf-toast.show .pfm-undo', { timeout: 3000 }); }, 1000);
     await step('12buscador', async () => { await p.click('.uk-bar__f'); await p.waitForTimeout(600); await p.keyboard.type('transferir'); }, 1500);
-    await step('13soporte', async () => { await p.keyboard.press('Escape'); await p.waitForTimeout(600); const x = await p.$('.sx.open .sx-cancel'); if (x) await x.click(); await p.waitForTimeout(500); await p.click('.uk-pill[data-k="soporte"]'); }, 1500);
+    await step('13soporte', async () => { await p.keyboard.press('Escape'); await p.waitForTimeout(600); const x = await p.$('.sx.open .sx-cancel'); if (x) await x.click(); await p.waitForTimeout(500); await p.click('.uk-pill[data-k="soporte"]'); }, 1500, async () => { if (await navVisible()) errs.push(paso + ' · la barra de abajo debería ocultarse en Soporte'); });
     await step('14ayuda', () => p.click('[data-k="ayudatoda"]'), 1500);
     // La barra «Busca o pregunta» abre el buscador universal; una pregunta con Enter la responde Uku en el chat
     await step('15pregunta', async () => { await p.click('[data-k="ayudacerrar"]'); await p.waitForTimeout(600); await p.click('.uk-chathead__x'); await p.waitForTimeout(800); await p.click('.uk-bar__f'); await p.waitForTimeout(600); await p.keyboard.type('¿En qué gasto más?'); await p.keyboard.press('Enter'); }, 2500);

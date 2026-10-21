@@ -142,8 +142,8 @@ El asistente vive en la barra inferior (pestaña **Asistente**, entre Beneficios
 app quedan solo la búsqueda (abre el **Buscador** universal) y las notificaciones. Dentro del asistente
 hay un solo control arriba a la izquierda y, cuando la pantalla tiene nombre, el título centrado
 (`.uk-chathead`). Nunca una flecha y una X a la vez. La barra inferior sigue visible en el inicio del
-asistente; se oculta en Mis finanzas (Uku y su mundo ganan espacio), en el chat y en las páginas a
-pantalla completa.
+asistente; se oculta en Mis finanzas y Soporte (secciones a pantalla completa), en el chat y en las
+páginas a pantalla completa.
 
 - **Inicio** (`is-home`): sin flecha (se sale con la barra inferior). El globo muestra **una sugerencia
   a la vez** (etiqueta, «1 de n», flecha para pasar a la siguiente y X para ocultarla, con «Deshacer»).
@@ -165,9 +165,13 @@ pantalla completa.
   con dos columnas: dinero en cuentas e inversiones y deuda total acumulada (abre su hoja).
 - **Mis gastos** (`is-page`): página a pantalla completa con título y X que vuelve a Mis finanzas. Hallazgo
   del mes, periodos, tarjeta con total y gráfico, categorías con barras.
-- **Soporte** (`is-ayuda`): título «Soporte», la flecha vuelve al inicio. Tarjeta de Solicitudes, tres
-  preguntas frecuentes (cada una se responde en el chat) y «Ver todas las categorías», que abre la
-  **ayuda completa**: hoja a pantalla completa con título y X que vuelve a Soporte.
+- **Soporte** (`is-ayuda`): pantalla completa (sin barra de abajo), título «Soporte», la flecha vuelve al
+  inicio. Arriba la tarjeta de **Solicitudes**: ícono, cuántas hay y «Ver todas»; la última en curso con su
+  estado (etiqueta) y tres pasos (Recibida · En revisión · Resuelta), o, sin ninguna, «Revisar un consumo» y
+  «Hablar con una persona». Debajo tres preguntas frecuentes (cada una se responde en el chat) y «Ver todas
+  las categorías», que abre la **ayuda completa**: hoja a pantalla completa con título y X que vuelve a
+  Soporte. Abajo, como en el inicio, la barra «Busca o pregunta» y el micrófono: abren el buscador
+  universal con los temas de ayuda primero.
 
 #### Lógica de Mis finanzas
 
