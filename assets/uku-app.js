@@ -132,7 +132,8 @@
     // En su mundo, el campo de abajo es el buscador (como deslizar desde arriba): responde o lleva a la acción.
     // En la conversación sigue siendo el campo para hablar con Uku.
     // Tocar la barra en la pantalla inicial abre el buscador universal de la app (el mismo en todas partes)
-    input.addEventListener('focus', function () { if (host.classList.contains('is-home') && window.Buscador) { input.blur(); Buscador.open('uku'); } });
+    // En el inicio y en Soporte la barra es la entrada al buscador universal (en Soporte, con su ayuda primero)
+    input.addEventListener('focus', function () { var home = host.classList.contains('is-home'), sop = host.classList.contains('is-ayuda'); if ((home || sop) && window.Buscador) { input.blur(); Buscador.open(sop ? 'ayuda' : 'uku'); } });
     // Dictado: el mismo del buscador, con la frase como búsqueda o pregunta
     view.addEventListener('click', onClick);
     gestos();
@@ -145,6 +146,7 @@
     var enSec = view.classList.contains('uk-fin') || view.classList.contains('uk-ayuda') || host.classList.contains('uk-in-sec');
     var era = host.classList.contains('is-chat'), es = msgs.length > 0 || enSec || ayudaPage;
     host.classList.toggle('is-ayuda', ayudaPage && !msgs.length);
+    if (!agente) input.placeholder = es && !(ayudaPage && !msgs.length) ? 'Escríbele a Uku' : 'Busca o pregunta';
     host.classList.toggle('is-typing', !!input.value.trim());
     host.classList.toggle('is-chat', es);
     var fin = view.classList.contains('uk-fin'); host.classList.toggle('is-fin', fin);
@@ -165,7 +167,6 @@
       if (!es) setTimeout(function () { if (!msgs.length) bg.style.backgroundImage = ''; }, 500);
     }
     if (era !== es) {
-      input.placeholder = es ? (ayudaPage ? 'Pregúntale a Uku' : 'Escríbele a Uku') : 'Busca o pregunta';
       if (!es && b3d) setTimeout(function () { b3d.play('wave'); setTimeout(function () { if (!msgs.length) b3d.play('walk'); }, 2200); }, 350); // vuelve a su mundo, saluda y camina
       if (es && b3d) b3d.play(null); // en la conversación se queda quieto
     }
@@ -174,8 +175,8 @@
   function medirNav() { var nb = document.querySelector('.nav-bar'); if (!nb) return; var h = nb.getBoundingClientRect().height; if (h > 0) root.style.setProperty('--uk-navh', h + 'px'); }
   // Se ve siempre, salvo en las páginas a pantalla completa (Mis gastos, la ayuda completa) y con el teclado abierto
   function navVisible() {
-    // Mis finanzas también la oculta: Uku y su mundo ganan espacio (se vuelve con la flecha de arriba)
-    var sin = view.classList.contains('active') && (view.classList.contains('uk-fin') || host.classList.contains('is-page') || view.classList.contains('uk-ayuda') || host.classList.contains('is-kb'));
+    // Mis finanzas y Soporte también la ocultan: son secciones a pantalla completa (se vuelve con la flecha de arriba)
+    var sin = view.classList.contains('active') && (view.classList.contains('uk-fin') || host.classList.contains('is-ayuda') || host.classList.contains('is-page') || view.classList.contains('uk-ayuda') || host.classList.contains('is-kb'));
     root.classList.toggle('uk-nonav', !!sin);
     if (!sin) medirNav();
   }
@@ -392,9 +393,25 @@
   function ayudaPageHTML() {
     var S = window.Soporte || {}, fq = S.faqs ? S.faqs() : [];
     var fila = function (k, icon, t) { return '<button class="uk-ay2__row" data-k="' + esc(k) + '" data-l="' + esc(t) + '">' + (icon ? '<span class="material-symbols-rounded uk-ay2__ic" aria-hidden="true">' + esc(icon) + '</span>' : '') + '<b>' + esc(t) + '</b>' + ic('chevron_right') + '</button>'; };
-    var c = casos[0], h = '';
-    if (c) h += '<section class="uk-ay2__card" data-k="caso:' + esc(c.id) + '"><p class="uk-ay2__cap">Solicitud en curso</p><b class="uk-ay2__big">Caso ' + esc(c.id) + '</b><div class="uk-ay2__bar" aria-hidden="true"><i style="width:' + (c.como === 'agent' ? 40 : 65) + '%"></i></div><small>' + esc(c.t) + ' · ' + (c.como === 'agent' ? 'en revisión, respuesta en máximo 48 horas' : c.como === 'call' ? 'abierto, llamaste al call center' : 'te llamamos con el resumen') + '</small></section>';
-    else h += '<section class="uk-ay2__card"><p class="uk-ay2__cap">Solicitudes</p><b class="uk-ay2__big">Nada pendiente</b><small>Lo que pidas desde aquí lo sigues en esta tarjeta.</small></section>';
+    // Solicitudes: cabecera con ícono, cuántas hay y «Ver todas»; la última en curso con su estado y sus pasos,
+    // o, sin ninguna, lo que se puede pedir desde aquí
+    var c = casos[0], n = casos.length, h = '<section class="uk-ay2__card uk-ay2__sol">' +
+      '<div class="uk-ay2__solhead"><span class="uk-ay2__solic" aria-hidden="true">' + ic('assignment') + '</span><span class="uk-ay2__soltt"><b>Solicitudes</b><small>' +
+        (n ? (n === 1 ? '1 en curso' : n + ' en curso') : 'No tienes solicitudes abiertas') + '</small></span>' +
+        (n ? '<button class="section__link" data-k="sol" data-l="Ver todas">Ver todas</button>' : '') + '</div>';
+    if (c) {
+      var paso = c.como === 'call' ? 1 : 2, est = c.como === 'agent' ? 'En revisión' : c.como === 'call' ? 'Abierta' : 'Te llamamos';
+      var cuando = c.como === 'agent' ? 'Respuesta en máximo 48 horas' : c.como === 'call' ? 'La abriste con el call center' : 'Te llamamos con el resumen';
+      h += '<button class="uk-ay2__caso" data-k="caso:' + esc(c.id) + '" data-l="Caso ' + esc(c.id) + '">' +
+        '<span class="uk-ay2__casotop"><b>Caso ' + esc(c.id) + '</b><span class="bp-tag bp-tag--info">' + est + '</span></span>' +
+        '<span class="uk-ay2__casot">' + esc(c.t) + '</span>' +
+        '<span class="uk-ay2__pasos" aria-label="Paso ' + paso + ' de 3">' + ['Recibida', est === 'Abierta' ? 'En revisión' : est, 'Resuelta'].map(function (l, i) {
+          return '<span class="' + (i < paso ? 'is-on' : '') + (i === paso - 1 ? ' is-now' : '') + '"><i></i>' + esc(l) + '</span>'; }).join('') + '</span>' +
+        '<small>' + cuando + '</small></button>';
+    } else {
+      h += '<div class="uk-ay2__solacts">' + fila('rev', 'receipt_long', 'Revisar un consumo') + fila('persona', 'support_agent', 'Hablar con una persona') + '</div>';
+    }
+    h += '</section>';
     h += '<p class="uk-ay2__label">Preguntas frecuentes</p><section class="uk-ay2__card uk-ay2__list">' + [0, 5, 6].filter(function (i) { return fq[i]; }).map(function (i) { return fila('faq:' + i, fq[i].icon, fq[i].t); }).join('') + '</section>';
     h += '<section class="uk-ay2__card uk-ay2__list">' + fila('ayudatoda', 'help', 'Ver todas las categorías') + '</section>';
     return h;

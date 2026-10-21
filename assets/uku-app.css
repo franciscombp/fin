@@ -327,6 +327,33 @@ html.uk-chatting:not(.uk-nonav) .pf-toast { top: auto !important; bottom: calc(v
 /* ---------- 7. Soporte (página): tu solicitud, preguntas frecuentes, todas las categorías; Uku abajo y la barra ---------- */
 .uk.is-ayuda .uk-chat { justify-content: flex-start; gap: 0; padding: 8px 0 24px; -webkit-mask-image: none; mask-image: none; }
 .uk-ay2__card + .uk-ay2__card { margin-top: 12px; }
+/* Soporte es pantalla completa (sin barra de abajo) y su barra es la entrada al buscador, como en el inicio */
+.uk.is-chat.is-ayuda .uk-bar { padding: 0; background: none; box-shadow: none; }
+.uk.is-chat.is-ayuda .uk-bar__f { box-shadow: var(--uk-elev-low); padding: 0 var(--uk-pad); cursor: text; }
+.uk.is-chat.is-ayuda .uk-bar__f > .material-symbols-rounded, .uk.is-chat.is-ayuda .uk-bar__mic:not(.uk-bar__add):not(.uk-bar__cerrar) { display: grid; }
+.uk.is-chat.is-ayuda .uk-bar__send { display: none !important; }
+/* Solicitudes: cabecera con ícono y conteo; el caso en curso con su estado y tres pasos; o lo que puedes pedir */
+.uk-ay2__sol { padding: 0 !important; overflow: hidden; }
+.uk-ay2__solhead { display: flex; align-items: center; gap: 12px; padding: var(--uk-pad); }
+.uk-ay2__solic { flex: 0 0 40px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--uk-page); color: var(--uk-navy); }
+.uk-ay2__solic .material-symbols-rounded { font-size: 22px; }
+.uk-ay2__soltt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.uk-ay2__soltt b { font: var(--uk-title); color: var(--uk-text); }
+.uk-ay2__soltt small { font: var(--uk-caption); color: var(--uk-muted); }
+.uk-ay2__solhead .section__link { flex: none; }
+.uk-ay2__solacts { border-top: 1px solid var(--uk-line); }
+.uk-ay2__solacts .uk-ay2__row { background: transparent; }
+.uk-ay2__caso { display: flex; flex-direction: column; gap: 8px; width: 100%; margin: 0; padding: 14px var(--uk-pad) var(--uk-pad); border: 0; border-top: 1px solid var(--uk-line); background: transparent; color: var(--uk-text); text-align: left; font: inherit; cursor: pointer; }
+.uk-ay2__caso:active { background: var(--bp-interaction-row-bg--active, var(--uk-grey)); }
+.uk-ay2__casotop { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.uk-ay2__casotop b { font: var(--uk-body-semibold); }
+.uk-ay2__casot { font: var(--uk-sm); color: var(--uk-text); }
+.uk-ay2__caso > small { font: var(--uk-caption); color: var(--uk-muted); }
+.uk-ay2__pasos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 4px; }
+.uk-ay2__pasos > span { display: flex; flex-direction: column; gap: 6px; font: var(--uk-caption); color: var(--uk-muted); }
+.uk-ay2__pasos i { display: block; height: 4px; border-radius: 2px; background: var(--bp-theme-color-data-chart-track, var(--uk-grey)); }
+.uk-ay2__pasos .is-on i { background: var(--uk-navy); }
+.uk-ay2__pasos .is-now { color: var(--uk-text); font-weight: 600; }
 .uk-ay2__cap { margin: 0 0 4px; font: var(--uk-sm); }
 .uk-ay2__card > small { font: var(--uk-caption); color: var(--uk-muted); }
 
