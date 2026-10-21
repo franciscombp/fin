@@ -26,7 +26,7 @@
   'use strict';
   var K = window.Conocimiento, P = window.DemoPersona, L = window.Lector;
   var $ = function (s) { return document.querySelector(s); };
-  var q = $('#q'), out = $('#out'), toast = $('#toast'), sx = $('.sx');
+  var q = $('#q'), out = $('#out'), toast = $('#toast'), sx = $('.sx'), cancelBtn = $('#cancel'), cancelIc = cancelBtn.querySelector('span');
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function money(v) { var s = Math.abs(+v || 0).toFixed(2).split('.'); return '$ ' + s[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + s[1]; }
   function norm(s) { return K.norm(s); }
@@ -158,24 +158,36 @@
     var sub = c.exterior ? c.banco + ' · ' + c.swift + (c.veces ? ' · te envía ' + money(c.montoTipico) + ', la última ' + c.ult : '') : c.banco + ' ' + c.cuenta + (c.deuna ? ' · Deuna ' + c.tel : '') + (c.veces ? ' · ' + c.veces + (c.veces === 1 ? ' vez' : ' veces') + ', la última ' + c.ult : ' · sin movimientos') + (c.montoTipico && !c.exterior ? ' · suele ser ' + money(c.montoTipico) : '');
     return row('data-transferir="' + esc(c.n) + '"', c.exterior ? 'public' : c.favorito ? 'star' : 'person', esc(c.n), esc(sub), c.exterior ? 'Enviar' : 'Transferir') + (c.tel ? '<button class="sx-link" data-recargar="' + esc(c.n) + '"><span class="material-symbols-rounded">smartphone</span>Recargar su celular</button>' : '');
   }
-  function personas() {
-    if (!persona) return '';
-    return '<section class="sx-card"><h3>Persona de la demo</h3><div class="sx-chips">' + P.lista().map(function (u) { return chip('data-persona="' + u.id + '" title="' + esc(u.tipo) + '"', u.nombre.split(' ')[0], u.id === persona.id); }).join('') + '</div></section>' +
-      nota('<b>Hola, ' + esc(persona.primerNombre) + '.</b> ' + esc(persona.tipo) + ' · ' + esc(persona.ciudad) + ' · ' + (persona.movimientos ? persona.movimientos + ' movimientos' : 'sin movimientos todavía') + (persona.deuna && persona.deuna.mi_numero ? ' · Deuna ' + esc(persona.deuna.mi_numero) : '') + '.');
+  // Ajustes de la demo (bajo el botón de la cabecera): la persona, sus datos y los atajos guardados
+  function ajustes() {
+    if (!persona) return volver();
+    var h = volver() + '<section class="sx-card"><h3>Persona de la demo</h3><div class="sx-chips">' + P.lista().map(function (u) { return chip('data-persona="' + u.id + '" title="' + esc(u.tipo) + '"', u.nombre.split(' ')[0], u.id === persona.id); }).join('') + '</div></section>' +
+      nota('<b>' + esc(persona.nombre) + '</b> · ' + esc(persona.tipo) + ' · ' + esc(persona.ciudad) + '<br>' + (persona.movimientos ? persona.movimientos + ' movimientos' : 'Sin movimientos todavía') + (persona.deuna && persona.deuna.mi_numero ? ' · Deuna ' + esc(persona.deuna.mi_numero) : '') + (persona.necesita ? '<br>Lo que necesita: ' + esc(persona.necesita.toLowerCase()) : '') + '.');
+    h += sec('Sus datos', row('data-ver="contactos"', 'group', 'Contactos', CONTACTOS.length ? CONTACTOS.length + ' personas · ' + CONTACTOS.filter(function (c) { return c.favorito; }).length + ' favoritos · ' + CONTACTOS.filter(function (c) { return c.exterior; }).length + ' en el exterior' : 'Ninguno todavía') +
+      row('data-ver="servicios"', 'receipt_long', 'Servicios', persona.servicios.filter(function (x) { return x.contrato; }).length ? persona.domiciliados.length + ' domiciliados · ' + persona.recurrentes.length + ' recurrentes' : 'Ninguno todavía') +
+      row('data-ver="productos"', 'account_balance', 'Productos', persona.cuentas.length + (persona.cuentas.length === 1 ? ' cuenta' : ' cuentas') + ' · ' + persona.tarjetas.length + (persona.tarjetas.length === 1 ? ' tarjeta' : ' tarjetas') + ' · ' + (persona.prestamos.length + (persona.hipoteca ? 1 : 0)) + ' préstamos · ' + persona.inversiones.length + ' inversiones') +
+      row('data-catalogo', 'apps', 'Todas las acciones', K.lista('accion').length + ' acciones de la banca móvil, por tema'));
+    h += sec('Atajos', (atajos.length ? row('data-borrar-atajos', 'delete', 'Borrar mis atajos', atajos.length + ' guardados en este navegador') : row('data-nuevo-atajo', 'add', 'Grabar un atajo', 'Todavía no has guardado ninguno')));
+    return h;
   }
+  function verLista(cual) {
+    if (cual === 'contactos') return volver() + sec('Contactos', CONTACTOS.length ? CONTACTOS.map(filaContacto).join('') : '') + (CONTACTOS.length ? '' : nota('Sin contactos todavía.'));
+    if (cual === 'servicios') { var S = persona.servicios.filter(function (x) { return x.contrato; }); return volver() + (S.length ? sec('Tus servicios', S.map(filaServicio).join('')) : nota('Sin servicios todavía.')) + (persona.recargas.length ? sec('Recargas', persona.recargas.map(function (r) { return row('data-recarga-num="' + esc(r.numero) + '" data-op="' + esc(r.operadora) + '" data-monto="' + r.monto_tipico + '"', 'smartphone', esc(r.nombre), esc(r.numero + ' · ' + r.operadora + ' · suele ser ' + money(r.monto_tipico))); }).join('')) : ''); }
+    var h = volver();
+    h += sec('Cuentas', persona.cuentas.map(function (c) { return row('data-q="mis cuentas"', 'account_balance', esc(c.nombre + ' ···' + c.numero), 'Saldo ' + money(c.saldo)); }).join('') || '');
+    if (persona.tarjetas.length) h += sec('Tarjetas', persona.tarjetas.map(function (t) { return row('data-accion="accion.pagar-tarjeta"', 'credit_card', esc(t.nombre), esc(t.banco + ' · debes ' + money(t.saldo) + (t.mvp ? ' · cupo ' + money(t.limite) : ''))); }).join(''));
+    var pr = (persona.hipoteca ? [{ nombre: 'Hipoteca', saldo: persona.hipoteca.saldo_capital, cuota: persona.hipoteca.cuota, banco: 'Pichibank' }] : []).concat(persona.prestamos);
+    if (pr.length) h += sec('Préstamos', pr.map(function (x) { return row('data-accion="accion.pagar-prestamo"', 'payments', esc(x.nombre), esc(x.banco + ' · cuota ' + money(x.cuota) + ' · debes ' + money(x.saldo))); }).join(''));
+    if (persona.inversiones.length || persona.metas.length) h += sec('Ahorro e inversiones', persona.inversiones.map(function (x) { return row('data-q="inversiones"', 'trending_up', esc(x.nombre), money(x.saldo)); }).join('') + persona.metas.map(function (x) { return row('data-q="meta de ahorro"', 'flag', esc(x.nombre), money(x.saldo) + ' de ' + money(x.meta)); }).join(''));
+    return h;
+  }
+  function filaServicio(s) { return row('data-servicio="' + esc(s.empresa) + '"', s.auto ? 'autorenew' : 'receipt_long', esc(s.empresa), esc((s.auto ? 'Domiciliado: se paga solo el ' + s.dia : 'Cada mes') + ' · ' + money(s.monto))); }
+  // El inicio, como la hoja del buscador de la app: sugerencias, lo tuyo y poco más
   function inicio() {
-    var h = personas(), A = listaAtajos();
-    h += chips(EJ.map(function (e) { return chip('data-q="' + esc(e) + '"', e); }));
-    if (persona && persona.paraTi.length) h += sec('Para ti', persona.paraTi.map(function (x, i) { return row('data-parati="' + i + '"', x.accion ? (K.entrada(x.accion) || {}).icon || 'bolt' : 'lightbulb', esc(x.t), esc(x.s)); }).join(''));
-    if (persona && persona.favoritos.length) h += sec('Tus accesos favoritos', '<div class="sx-chips">' + persona.favoritos.map(function (f) { var a = K.lista('accion').filter(function (x) { return x.t === f || x.go === 'do:' + f; })[0]; return a ? chip('data-accion="' + a.id + '"', a.t) : ''; }).join('') + '</div>');
-    h += sec(atajos.length ? 'Tus atajos' : 'Atajos sugeridos para ti', A.map(filaAtajo).join('') + row('data-nuevo-atajo', 'add', 'Grabar un atajo', 'Guarda una acción con sus datos y repítela con un toque'));
-    var S = persona ? persona.servicios.filter(function (s) { return s.contrato; }) : [];
-    if (S.length) h += sec('Tus servicios', S.map(function (s) { return row('data-servicio="' + esc(s.empresa) + '"', s.auto ? 'autorenew' : 'receipt_long', esc(s.empresa), esc('Contrato ' + s.contrato + ' · ' + (s.auto ? 'Domiciliado: se paga solo el ' + s.dia + ' · tope ' + money(s.tope) : 'Cada mes' + (s.dia ? ', el ' + s.dia : '')) + ' · ' + money(s.monto))); }).join(''));
-    h += sec('Con una foto o un archivo', row('data-accion="accion.pagar-factura"', 'document_scanner', 'Pagar una factura', 'Foto, imagen o PDF: la app lee la empresa, el contrato y el valor') + row('data-accion="accion.leer-documento"', 'description', 'Analizar un documento', 'Comprobantes, estados de cuenta, recibos'));
-    if (CONTACTOS.length) h += sec('Con quién te mueves dinero', CONTACTOS.slice(0, 5).map(filaContacto).join('') + (CONTACTOS.length > 5 ? row('data-q="contactos"', 'group', 'Ver todos', CONTACTOS.length + ' contactos') : ''));
-    else h += nota('Todavía no te has movido dinero con nadie. Cuando transfieras o recibas, aquí aparecen esas personas.');
-    if (persona && persona.recargas.length) h += sec('Recargas', persona.recargas.map(function (r) { return row('data-recarga-num="' + esc(r.numero) + '" data-op="' + esc(r.operadora) + '" data-monto="' + r.monto_tipico + '"', 'smartphone', esc(r.nombre), esc(r.numero + ' · ' + r.operadora + ' · suele ser ' + money(r.monto_tipico))); }).join(''));
-    h += sec('Todo lo que puedes hacer', row('data-catalogo', 'apps', 'Todas las acciones', K.lista('accion').length + ' acciones de la banca móvil, por tema'));
+    var h = chips(EJ.slice(0, 4).map(function (e) { return chip('data-q="' + esc(e) + '"', e); })), A = listaAtajos();
+    if (persona && persona.paraTi.length) h += sec('Para ti', persona.paraTi.slice(0, 3).map(function (x, i) { return row('data-parati="' + i + '"', x.accion ? (K.entrada(x.accion) || {}).icon || 'bolt' : 'lightbulb', esc(x.t), esc(x.s)); }).join(''));
+    h += sec(atajos.length ? 'Tus atajos' : 'Atajos sugeridos', A.slice(0, 3).map(filaAtajo).join('') + row('data-nuevo-atajo', 'add', 'Grabar un atajo', 'Guarda una acción con sus datos y repítela con un toque'));
+    h += sec('Con una foto', row('data-accion="accion.pagar-factura"', 'document_scanner', 'Pagar una factura', 'Foto, imagen o PDF: la app lee la empresa, el contrato y el valor'));
     return h;
   }
   function catalogo() {
@@ -188,26 +200,25 @@
   function render() {
     var t = q.value.trim();
     fl = null; lec = null;
-    sx.classList.toggle('has-q', !!t);
+    sx.classList.toggle('has-q', !!t); cancelIc.textContent = t ? 'close' : 'tune'; cancelBtn.setAttribute('aria-label', t ? 'Limpiar' : 'Ajustes de la demo');
     if (!K.cargada()) { out.innerHTML = nota('Cargando la base…'); return; }
     if (!t) { out.innerHTML = inicio(); abierta = null; return; }
-    if (norm(t) === 'contactos') { out.innerHTML = sec('Contactos', CONTACTOS.length ? CONTACTOS.map(filaContacto).join('') : '') + (CONTACTOS.length ? '' : nota('Sin contactos todavía.')); return; }
     var html = '', ws = norm(t).split(' ').filter(function (w) { return w.length > 2; });
     var it = intencion(t);
     if (it && it.lleno) html += sec('Hacer ahora', row('data-hacer', it.accion.icon || 'bolt', esc(it.nombre), 'Abre el flujo con los datos puestos') + '<button class="sx-link" data-guardar><span class="material-symbols-rounded">bookmark_add</span>Guardar como atajo</button>');
     var at = listaAtajos().filter(function (a) { var s = norm(a.nombre + ' ' + subAtajo(a)); return ws.some(function (w) { return s.indexOf(w) >= 0; }); });
-    if (at.length) html += sec('Tus atajos', at.map(filaAtajo).join(''));
-    var cs = contactos(t, 3);
+    if (at.length) html += sec('Tus atajos', at.slice(0, 2).map(filaAtajo).join(''));
+    var cs = contactos(t, 2);
     if (cs.length) html += sec('Contactos', cs.map(filaContacto).join(''));
-    var sv = persona ? persona.servicios.filter(function (s) { return s.contrato && ws.some(function (w) { return norm(s.empresa).indexOf(w) >= 0 || (servicioDe(s.empresa) && servicioDe(s.empresa)[0].test(w)); }); }).slice(0, 2) : [];
-    if (sv.length && !(it && it.lleno)) html += sec('Tus servicios', sv.map(function (s) { return row('data-servicio="' + esc(s.empresa) + '"', s.auto ? 'autorenew' : 'receipt_long', esc(s.empresa), esc((s.auto ? 'Domiciliado: se paga solo el ' + s.dia : 'Cada mes') + ' · ' + money(s.monto))); }).join(''));
+    var sv = persona ? persona.servicios.filter(function (s) { return s.contrato && ws.some(function (w) { return norm(s.empresa).indexOf(w) >= 0 || (servicioDe(s.empresa) && servicioDe(s.empresa)[0].test(w)); }); }).slice(0, 1) : [];
+    if (sv.length && !(it && it.lleno)) html += sec('Tus servicios', sv.map(filaServicio).join(''));
     var r = K.buscar(t, { n: 10 }), max = r.length ? r[0].s : 0;
     r = r.filter(function (x) { return x.s >= max * .3; });
-    var acc = r.filter(function (x) { return x.tipo === 'accion' && !(it && it.lleno && x.id === it.accion.id); }).slice(0, 4);
+    var acc = r.filter(function (x) { return x.tipo === 'accion' && !(it && it.lleno && x.id === it.accion.id); }).slice(0, 3);
     if (acc.length) html += sec('Acciones', acc.map(function (x) { return row('data-accion="' + x.id + '"', x.icon || 'bolt', esc(x.t), esc(x.e.r || '')); }).join(''));
     var top = K.responder(t), v = abierta ? K.entrada(abierta) : (top && top.conf === 'alta' && top.tipo !== 'accion' && !(it && it.lleno) ? top : null);
     if (v) html += kbCard(v);
-    var resto = r.filter(function (x) { return x.tipo !== 'accion' && (!v || x.id !== v.id); }).slice(0, 5);
+    var resto = r.filter(function (x) { return x.tipo !== 'accion' && (!v || x.id !== v.id); }).slice(0, 3);
     if (resto.length) html += sec(v ? 'También' : 'Preguntas y productos', resto.map(function (x) { return row('data-id="' + esc(x.id) + '"', x.tipo === 'producto' ? 'inventory_2' : 'help', esc(x.t), TIPO[x.tipo]); }).join(''));
     if (!html) html = nota('No encontramos «' + esc(t) + '» en la app.', row('data-q=""', 'help', 'Volver al inicio', 'Prueba con otras palabras, un contacto o una acción'));
     out.innerHTML = html;
@@ -356,13 +367,15 @@
   /* ---------- Eventos ---------- */
   q.addEventListener('input', function () { abierta = null; render(); });
   $('#form').addEventListener('submit', function (e) { e.preventDefault(); var first = out.querySelector('[data-hacer], [data-accion], [data-id]'); if (first) first.click(); else q.blur(); });
-  $('#cancel').addEventListener('click', function () { cerrar(); q.focus(); });
+  cancelBtn.addEventListener('click', function () { if (q.value.trim() || fl || lec) { cerrar(); q.focus(); return; } fl = null; lec = null; out.innerHTML = ajustes(); out.scrollTop = 0; });
   $('#cam').addEventListener('click', function () { abrirLector('pagar'); });
   document.addEventListener('change', function (e) { var i = e.target.closest('[data-archivo]'); if (i && i.files && i.files[0]) leerArchivo(i.files[0]); });
   document.addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b) return;
     var d = b.dataset;
-    if (d.persona) { P.set(d.persona); aplicarPersona(); cerrar(); return; }
+    if (d.persona) { P.set(d.persona); aplicarPersona(); out.innerHTML = ajustes(); aviso('Ahora eres ' + persona.primerNombre); return; }
+    if (d.ver) { out.innerHTML = verLista(d.ver); out.scrollTop = 0; return; }
+    if (d.borrarAtajos != null) { atajos = []; guardarAtajos(); out.innerHTML = ajustes(); aviso('Atajos borrados'); return; }
     if (d.q != null) { q.value = d.q; abierta = null; render(); if (d.q) q.focus(); return; }
     if (d.id) { fl = null; lec = null; abierta = d.id; var v0 = K.entrada(d.id); if (v0 && !q.value.trim()) q.value = v0.t; render(); return; }
     if (d.hacer != null) { var it = intencion(q.value); if (it) abrirFlujo(it.accion.id, it.datos); return; }
