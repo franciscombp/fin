@@ -634,6 +634,10 @@ html.is-title-small .top-bar__title { opacity: 1; transform: translate(-50%, -50
 .pfm-row__bar { height: 6px; background: color-mix(in srgb, var(--tone, var(--bp-interaction-tertiary-fg)) 18%, transparent); }
 
 /* ---------- 9. Foco y sin sombras ---------- */
+/* Lo que tiene el atributo hidden no se ve nunca. Esta hoja va al final y sin capa, así que su display
+   (p. ej. .bp-alert { display: flex }) le ganaba a las reglas [hidden] del CSS base de index.html:
+   el aviso «Sin internet» del login se veía aunque hubiera conexión. */
+[hidden] { display: none !important; }
 button:focus-visible, a:focus-visible, [role="button"]:focus-visible, .tab:focus-visible, .quick-action:focus-visible .quick-action__icon { outline: none; box-shadow: var(--sol-focus); }
 .quick-action:focus-visible { outline: none; box-shadow: none; }
 /* La app no usa sombras de profundidad; sólo el anillo de foco para teclado. */
