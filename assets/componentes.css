@@ -72,6 +72,9 @@ html:not(.theme-y2k) .btn--tertiary { background: transparent; color: var(--bp-t
 .prod-hero { display: flex; flex-direction: column; align-items: center; gap: var(--bp-semantic-spacing-micro-md, 8px); padding: var(--bp-semantic-spacing-macro-sm, 24px) var(--bp-layout-card-padding, 16px); border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-theme-color-surface-container-default); text-align: center; }
 .prod-hero__ic { display: grid; place-items: center; width: 56px; height: 56px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font-size: 28px; }
 .prod-hero__t { font: var(--cx-headline); color: var(--bp-theme-color-text-primary); }
+.prod-hero--vacio { padding: var(--bp-semantic-spacing-macro-md, 24px) var(--bp-layout-card-padding, 16px); border: 1.5px dashed #c7cedd; background: rgba(233, 236, 243, 0.35); }
+.prod-hero__ilustra { display: grid; place-items: center; width: 112px; height: 112px; margin-bottom: var(--bp-semantic-spacing-micro-md, 8px); border-radius: 50%; background: var(--bp-theme-color-brand-main, #ffdd00); color: #0f265c; }
+.prod-hero__ilustra .material-symbols-rounded { font-size: 56px; }
 .prod-hero__s { margin: 0; font: var(--ui-body-sm-regular); color: var(--bp-theme-color-text-helper); }
 .prod-total { display: flex; justify-content: space-between; align-items: center; margin-top: var(--bp-semantic-spacing-micro-md, 8px); }
 .prod-total span { font: var(--ui-body-md-medium); color: var(--bp-theme-color-text-helper); }
