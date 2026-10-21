@@ -1905,6 +1905,32 @@
             animation: cardRise 0.4s cubic-bezier(0.25, 0.8, 0.35, 1) 0.18s backwards;
         }
 
+        /* Story con foto: tarjeta de CTA abajo, sobre la imagen */
+        .story-slide--foto {
+            justify-content: flex-end;
+            align-items: stretch;
+            padding: 0 16px calc(32px + env(safe-area-inset-bottom, 0px));
+            background: linear-gradient(to bottom, rgba(0, 0, 0, .25) 0%, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0) 70%, rgba(0, 0, 0, .35) 100%);
+        }
+        .story-cta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
+            padding: 16px;
+            border: 0;
+            border-radius: 16px;
+            background: var(--bp-theme-color-surface-container-default, #fff);
+            color: var(--bp-theme-color-text-primary, #0f265c);
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+        }
+        .story-cta__tarjeta { display: grid; place-items: center; flex: 0 0 auto; width: 72px; height: 48px; border-radius: 8px; background: linear-gradient(135deg, #1a1a1a 0%, #000 100%); }
+        .story-cta__tarjeta img { width: 40px; height: auto; }
+        .story-cta__texto { font-size: 16px; line-height: 22px; }
+        .story-cta__marca { display: block; font-size: 16px; line-height: 22px; opacity: .8; }
+
         .story-slide p {
             font-size: 15px;
             opacity: 0.85;
@@ -7194,10 +7220,18 @@
                 desc: 'Tu meta de ahorro va por buen camino. ¡Sigue así!'
             },
             {
+                photo: './assets/stories/familia.webp',
+                cta: { titulo: 'Solicita tu <strong>Tarjeta de Crédito</strong>', marca: 'Pichibank' }
+            },
+            {
                 bg: 'linear-gradient(160deg, #7a0930 0%, #b31237 60%, #f76800 100%)',
                 icon: 'local_fire_department',
                 title: '30% dcto. en restaurantes',
                 desc: 'Este fin de semana paga con tu tarjeta y acumula beneficios.'
+            },
+            {
+                photo: './assets/stories/pareja.webp',
+                cta: { titulo: 'Abre tu <strong>Cuenta Flexible</strong>', marca: 'Pichibank' }
             },
             {
                 bg: 'linear-gradient(160deg, #073d27 0%, #0f7a4d 60%, #1e9e5a 100%)',
@@ -7221,11 +7255,21 @@
         function showStory(index) {
             storyIndex = index;
             const s = storiesData[index];
-            storyViewer.style.background = s.bg;
-            storySlide.innerHTML = `
-                <span class="material-symbols-rounded">${s.icon}</span>
-                <h2>${s.title}</h2>
-                <p>${s.desc}</p>`;
+            storySlide.classList.toggle('story-slide--foto', !!s.photo);
+            if (s.photo) {
+                storyViewer.style.background = `url("${s.photo}") center / cover no-repeat, #000`;
+                storySlide.innerHTML = `
+                    <button class="story-cta" type="button" data-story-cta>
+                        <span class="story-cta__tarjeta"><img src="./assets/pichibank-logo--white.svg" alt="" width="40" height="24"></span>
+                        <span class="story-cta__texto">${s.cta.titulo}<span class="story-cta__marca">${s.cta.marca}</span></span>
+                    </button>`;
+            } else {
+                storyViewer.style.background = s.bg;
+                storySlide.innerHTML = `
+                    <span class="material-symbols-rounded">${s.icon}</span>
+                    <h2>${s.title}</h2>
+                    <p>${s.desc}</p>`;
+            }
             // reinicia la animación de entrada del slide
             storySlide.style.animation = 'none';
             void storySlide.offsetWidth;
@@ -7263,6 +7307,10 @@
         document.querySelector('.profile-story').addEventListener('click', openStories);
         document.getElementById('story-close').addEventListener('click', closeStories);
         document.getElementById('story-next').addEventListener('click', nextStory);
+        storySlide.addEventListener('click', e => {
+            if (!e.target.closest('[data-story-cta]')) return;
+            showToast('Solicitud de tarjeta: próximamente');
+        });
         document.getElementById('story-prev').addEventListener('click', prevStory);
         window.addEventListener('keydown', e => {
             if (!storyViewer.classList.contains('open')) return;
