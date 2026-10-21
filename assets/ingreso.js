@@ -169,7 +169,7 @@
       });
       var nodos = [ui.texto, ui.puntos, ui.error];
       if (seisDigitos && !creando) {
-        var olvide = h('button', { class: 'login-button login-button--tertiary', type: 'button', text: 'Olvidé mi PIN' });
+        var olvide = h('button', { class: 'ing-olvide', type: 'button', text: 'Olvidé mi PIN' });
         olvide.addEventListener('click', function () { clave('', borrarPin6); });
         nodos.push(olvide);
       }
@@ -300,24 +300,32 @@
       guardar(TOTP_KEY, secreto);
     }
     hoja('Clave digital', function (cuerpo) {
-      var codigo = h('p', { class: 'ing__codigo', text: '··· ···' });
-      var barra = h('div', { class: 'ing__barra' }, [h('i')]);
-      var cuenta = h('p', { class: 'ing__texto' });
-      var copiar = h('button', { class: 'login-button login-button--tertiary', type: 'button', text: 'Copiar código' });
+      var codigo = h('p', { class: 'ing-ring__codigo', text: '······' });
+      var anillo = h('div', { class: 'ing-ring' }, [
+        h('span', { class: 'ing-ring__svg' }, [
+          // Anillo: se vacía en 30 segundos (la circunferencia de r=90 es 565.49)
+          svgEl('<svg viewBox="0 0 200 200" aria-hidden="true"><circle class="ing-ring__track" cx="100" cy="100" r="90"/><circle class="ing-ring__bar" cx="100" cy="100" r="90" stroke-dasharray="565.49" stroke-dashoffset="0"/></svg>')
+        ]),
+        codigo
+      ]);
+      var barra = anillo.querySelector('.ing-ring__bar');
+      var copiar = h('button', { class: 'login-button login-button--secondary ing-copiar', type: 'button' }, [
+        h('span', { class: 'material-symbols-rounded', text: 'content_copy', 'aria-hidden': 'true' }),
+        h('span', { text: 'Copiar clave digital' })
+      ]);
       var valor = '';
       var ultimo = -1;
 
       function actualizar() {
         var ms = Date.now();
         var resta = PASO - (ms / 1000) % PASO;
-        barra.firstChild.style.width = (resta / PASO * 100) + '%';
-        cuenta.textContent = 'Cambia en ' + Math.ceil(resta) + ' s';
+        barra.setAttribute('stroke-dashoffset', String(565.49 * (1 - resta / PASO)));
         var paso = Math.floor(ms / 1000 / PASO);
         if (paso === ultimo) return;
         ultimo = paso;
         totp(aBytes(secreto), ms).then(function (c) {
           valor = c;
-          codigo.textContent = c.slice(0, 3) + ' ' + c.slice(3);
+          codigo.textContent = c;
         }).catch(function () {
           codigo.textContent = '------';
         });
@@ -328,17 +336,25 @@
       limpiar = function () { clearInterval(iv); };
 
       copiar.addEventListener('click', async function () {
-        try { await navigator.clipboard.writeText(valor); copiar.textContent = 'Copiado'; }
-        catch (e) { copiar.textContent = 'No se pudo copiar'; }
-        setTimeout(function () { copiar.textContent = 'Copiar código'; }, 1500);
+        var texto = copiar.querySelector('span:last-child');
+        try { await navigator.clipboard.writeText(valor); texto.textContent = 'Copiado'; }
+        catch (e) { texto.textContent = 'No se pudo copiar'; }
+        setTimeout(function () { texto.textContent = 'Copiar clave digital'; }, 1500);
       });
 
       cuerpo.append(
-        h('p', { class: 'ing__texto', text: 'Úsala para confirmar tus operaciones. Cambia cada 30 segundos.' }),
-        codigo,
-        barra,
-        cuenta,
-        copiar,
+        h('p', { class: 'ing__texto', text: 'Usa esta clave únicamente para ingresar y confirmar operaciones.' }),
+        anillo,
+        h('div', { class: 'ing-copiar__fila' }, [copiar]),
+        h('div', { class: 'bp-alert bp-alert--info ing-aviso' }, [
+          h('div', { class: 'bp-alert__content' }, [
+            h('span', { class: 'bp-alert__icon material-symbols-rounded', text: 'shield_lock', 'aria-hidden': 'true' }),
+            h('div', { class: 'bp-alert__text' }, [
+              h('p', { class: 'bp-alert__title', text: 'No compartas esta clave con nadie' }),
+              h('p', { class: 'bp-alert__body', text: 'Pichibank nunca te la pedirá por llamada, SMS o correo.' })
+            ])
+          ])
+        ]),
         h('details', { class: 'ing__detalle' }, [
           h('summary', { text: 'Configurar en otra app' }),
           h('p', { class: 'ing__texto', text: 'Agrega esta clave en tu app de autenticación:' }),
@@ -346,6 +362,13 @@
         ])
       );
     });
+  }
+
+  // Elemento SVG a partir de su texto (createElement no sirve para SVG)
+  function svgEl(markup) {
+    var t = document.createElement('template');
+    t.innerHTML = markup.trim();
+    return t.content.firstChild;
   }
 
   /* TOTP (RFC 6238 con HMAC-SHA1). ms: instante; digitos: 6 por defecto. */
@@ -455,13 +478,40 @@
     if (hojaEl) { hojaEl.classList.remove('open'); hojaBk.classList.remove('open'); }
   }
 
-  // El QR de demostración lo arma index.html (FAKE_QR_SVG); si no está, no se muestra nada
+  // Cobrar: la cuenta que recibe el dinero, el QR de demostración (index.html) y tres acciones
   function mostrarQR(cuerpo) {
+    var cuenta = h('p', { class: 'ing-qr__cuenta', text: 'El dinero llegará a tu cuenta' });
+    var qr = h('div', { class: 'ing-qr' });
+    qr.innerHTML = typeof FAKE_QR_SVG === 'string' ? FAKE_QR_SVG : '';
+    var numero = '';
+    if (window.Persona) {
+      Persona.cuentas(Persona.get()).then(function (cs) {
+        var t = cs.filter(function (c) { return c.tipo === 'transaccional'; })[0];
+        if (t) { numero = '******' + t.numero; cuenta.textContent = 'El dinero llegará a tu cuenta: ' + numero; }
+      });
+    }
+    var accion = function (icono, texto, alTocar) {
+      var b = h('button', { class: 'ing-accion', type: 'button' }, [
+        h('span', { class: 'ing-accion__icono' }, [h('span', { class: 'material-symbols-rounded', text: icono, 'aria-hidden': 'true' })]),
+        h('span', { class: 'ing-accion__texto', text: texto })
+      ]);
+      b.addEventListener('click', alTocar);
+      return b;
+    };
     cuerpo.append(
-      h('div', { class: 'ing-qr' }),
-      h('p', { class: 'ing__texto', text: 'Muéstralo para que te paguen desde cualquier banco.' })
+      h('div', { class: 'ing-card ing-card--qr' }, [cuenta, qr]),
+      h('div', { class: 'ing-card ing-card--acciones' }, [
+        accion('share', 'Compartir cuenta', function () {
+          var texto = 'Pichibank · cuenta ' + (numero || '');
+          if (navigator.share) navigator.share({ title: 'Mi cuenta Pichibank', text: texto }).catch(function () {});
+          else if (navigator.clipboard) navigator.clipboard.writeText(texto).catch(function () {});
+        }),
+        accion('swap_horiz', 'Cambiar cuenta', function () {
+          if (typeof showToast === 'function') showToast('Ingresa para cambiar de cuenta');
+        }),
+        accion('help', 'Buscar ayuda', function () { cerrarHoja(); if (window.Soporte) Soporte.open(); })
+      ])
     );
-    cuerpo.querySelector('.ing-qr').innerHTML = typeof FAKE_QR_SVG === 'string' ? FAKE_QR_SVG : '';
   }
 
   // Tickets de transporte ya comprados: se muestran sin internet (demo local)
