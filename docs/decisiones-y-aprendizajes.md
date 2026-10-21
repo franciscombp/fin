@@ -35,12 +35,10 @@ Si una decisión cambia, actualiza esta página en el mismo cambio.
 
 ## 3. Sin internet
 
-- **La conexión se comprueba con una sonda real**, no con `navigator.onLine`: `assets/sonda.txt`,
-  del mismo sitio, que el service worker no guarda en caché. Se revisa al abrir, al volver a la app,
-  al recuperar la red y cada 30 s.
-  - Por qué no `navigator.onLine`: un Wi-Fi sin salida sigue marcado como conectado.
-  - Por qué no un host externo (gstatic): algunas redes lo bloquean y dejarían el login cerrado.
-  - Por qué no una ruta de la app: el service worker responde desde caché y devolvería `index.html`.
+- **La conexión la dice el navegador** (`navigator.onLine` y sus eventos `online`/`offline`). Antes se
+  sondeaba un archivo del mismo sitio (`sonda.txt`, ahora en `respaldo/sin-uso/`), pero en el teléfono
+  esa petición fallaba aunque hubiera red (caché del service worker, app instalada) y mostraba
+  "Sin internet" por error.
 - **Login sin internet:** solo entra con Face ID o huella. Sin ninguna de las dos, el botón principal
   queda en "Sin internet" (apagado), y "Otro método de ingreso" se oculta.
 - **Accesos que necesitan red:** se ven deshabilitados (`disabled`), no ocultos. Un aviso bp-alert
@@ -304,6 +302,14 @@ Cómo queda:
   usan los tokens `--bp-*` directamente.
 - **Efecto de escritura:** se parte el texto en `span.uk-w` con `animation-delay` después de un
   `setTimeout 0`, para que el traductor (`MutationObserver` de i18n) traduzca la frase completa antes.
+- **Barrido antes de publicar:** `node tools/barrido.js <carpeta>` recorre todas las pantallas con las
+  seis personas y revisa los errores que ya vimos: errores de JS y de consola, archivos que no cargan,
+  que la página siga respondiendo, scroll horizontal, el botón principal de las hojas sin fondo, la
+  barra de abajo (oculta en Mis finanzas) y el aviso con «Deshacer». Con `BASE=` apunta a otra copia
+  (p. ej. `main` en otro puerto) para comparar las capturas.
+- **Componentes sin estilo:** al rehacer una pantalla desde cero se perdieron estilos que el código
+  seguía usando («Lo que encontré», barras y datos de las respuestas). Antes de borrar CSS, buscar
+  también lo contrario: clases que el JS genera y que no tienen ninguna regla.
 - **Fondo amarillo y círculo amarillo** no se distinguen: en el splash se usa la variante azul.
 
 ## 11. Pendientes y preguntas abiertas
@@ -317,5 +323,5 @@ Cómo queda:
 - Préstamos e inversiones se consideran informativos sin internet. Si se contratan sin internet,
   pasan a la lista transaccional.
 - Mostrar mi QR se considera informativo. Si el equipo decide lo contrario, se agrega a la lista.
-- Las pruebas headless que usamos viven fuera del repo. Conviene moverlas a `tools/` para que
-  cada cambio se pueda verificar igual.
+- ~~Las pruebas headless viven fuera del repo~~: el barrido completo ya está en `tools/barrido.js`
+  (ver §10).

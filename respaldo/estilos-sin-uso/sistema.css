@@ -209,3 +209,6 @@ html:not(.theme-y2k) .ai-page .ai-chip--ai {
 .pf-months [role="tab"] {
   border-radius: var(--ui-r-btn) !important;
 }
+
+/* ---- Revisión del 21 de octubre: clases que ya no aparecen en ningún HTML ni JS ---- */
+.prod-hero__ic { width: var(--bp-semantic-size-interactive-md); height: var(--bp-semantic-size-interactive-md); flex-basis: auto; border-radius: var(--bp-semantic-radius-md); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font-size: 28px; }

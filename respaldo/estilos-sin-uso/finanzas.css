@@ -80,3 +80,10 @@
 .pf-ins--good .pf-ins__ic {
   background: var(--bp-theme-color-avatar-bg) !important; color: var(--bp-theme-color-avatar-fg) !important;
 }
+
+/* ---- Revisión del 21 de octubre: clases que ya no aparecen en ningún HTML ni JS ---- */
+.pf-meter { --tone: var(--bp-interaction-tertiary-fg); display: flex; flex-direction: column; gap: 10px; width: 100%; padding: 20px 0; border: 0; border-bottom: 1px solid var(--cx-line); background: none; color: var(--bp-theme-color-text-primary); text-align: left; font: inherit; }
+button.pf-meter { cursor: pointer; }
+.pf-meter:last-child { border-bottom: 0; }
+.pf-sec .pf-meter { padding: 16px; }
+.pf-mcard .pf-meter { height: auto !important; min-height: 0 !important; max-height: none !important; overflow: visible !important; border-radius: 0 !important; }

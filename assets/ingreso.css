@@ -121,15 +121,6 @@
 .ing__tecla:active { transform: scale(.96); }
 
 /* Clave digital */
-.ing__codigo {
-  margin: 8px 0 0;
-  text-align: center;
-  font-size: 44px;
-  font-weight: 700;
-  letter-spacing: .06em;
-  font-variant-numeric: tabular-nums;
-  color: var(--bp-theme-color-text-primary);
-}
 
 .ing__detalle {
   font-size: 14px;

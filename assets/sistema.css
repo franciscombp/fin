@@ -130,7 +130,7 @@
 .prod-ph p { margin: 0; font: var(--sol-body-sm-regular); color: var(--bp-theme-color-text-helper); }
 .prod-ph b { font: var(--sol-body-md-semibold); color: var(--bp-theme-color-text-primary); }
 .prod-hero { display: flex; flex-direction: column; align-items: center; gap: var(--bp-semantic-spacing-micro-md); padding: var(--bp-semantic-spacing-macro-sm) var(--bp-layout-card-padding); text-align: center; }
-.prod-hero__ic { width: var(--bp-semantic-size-interactive-md); height: var(--bp-semantic-size-interactive-md); flex-basis: auto; border-radius: var(--bp-semantic-radius-md); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font-size: 28px; }
+
 .prod-hero--vacio { position: relative; padding: var(--bp-semantic-spacing-macro-md) var(--bp-layout-card-padding); }
 .prod-hero--vacio::before { content: ''; position: absolute; inset: var(--bp-semantic-spacing-micro-md); pointer-events: none; border: var(--bp-semantic-border-thin) dashed var(--bp-theme-color-border-default); border-radius: var(--bp-semantic-radius-sm); }
 .prod-hero__ilustra { display: grid; place-items: center; width: 112px; height: 112px; margin-bottom: var(--bp-semantic-spacing-micro-md); border-radius: var(--bp-semantic-radius-full); background: var(--bp-theme-color-brand-main); color: var(--bp-theme-color-text-on-brand); }
@@ -221,7 +221,6 @@
 
 /* Beneficios: aún no hay contenido → estado "Próximamente" en vez de skeleton */
 .placeholder-view { padding: var(--bp-semantic-spacing-micro-md) var(--bp-layout-grid-margin) var(--bp-semantic-spacing-macro-xl, 40px) !important; }
-
 
 /* Banners de foto: cada slide ocupa el ancho disponible (pantalla menos el
    margen a cada lado) y su alto sale de la proporción de la imagen. */

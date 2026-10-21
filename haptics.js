@@ -303,6 +303,8 @@
     if (!enabled) return;
     var p = PATTERNS[name] || PATTERNS.tap;
     if (!canVibrate) return; // iOS y escritorio: sin háptica, sólo sonido
+    // Antes del primer toque el navegador bloquea la vibración (y lo anota como error en la consola)
+    if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
     try { navigator.vibrate(p.android); } catch (e) {}
   }
 
