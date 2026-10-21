@@ -4,7 +4,7 @@
    (assets/pfm/datos.json). Aquí se puede ver con los datos reales o forzar cada señal para probar. */
 (function () {
   'use strict';
-  var S = window.Sandbox, out = document.getElementById('out'), q = document.getElementById('q'), esc = S.esc;
+  var S = window.Sandbox, out = document.getElementById('out'), esc = S.esc;
   var m3 = null, escena = null, manual = { score: null, bloom: null, mood: null }, poseActual = null, filtro = '';
   var POSES = [['wave', 'Saluda'], ['happy', 'Contento'], ['nod', 'Asiente'], ['talk', 'Habla'], ['worried', 'Preocupado'], ['water', 'Riega'], ['walk', 'Camina']];
   var MOODS = [['feliz', 'Contento'], ['tranquilo', 'Tranquilo'], ['pensativo', 'Pensativo']];
@@ -15,8 +15,8 @@
   function pintar() {
     var p = window.DemoPersona && DemoPersona.datos(), s = resumen(), e = efectivo(), h = '';
     h += p ? S.chipsPersona(DemoPersona.lista(), p.id) : '';
+    h += S.nota('El bosque crece con la salud financiera, las flores son el ahorro y el ánimo de Uku depende de los consumos por ordenar. Fuerza cada señal para ver cómo cambia su mundo.');
     // La escena: un contenedor con alto fijo (el único estilo propio de la página)
-    h += '<div id="scene-slot"></div>';
     if (s) h += S.card('Lo que ve Uku en ' + s.mes, S.datos([['Salud financiera (el bosque)', s.score + ' / 100'], ['Flores (el ahorro)', s.bloom + ' %'], ['Ánimo (consumos por ordenar)', s.moodL + (s.n ? ' · ' + s.n + ' sin clasificar' : '')], ['Gastó', S.money(s.gast) + (s.pres ? ' de ' + S.money(s.pres) + ' de presupuesto' : ' · sin presupuesto')], ['Disponible', S.money(s.saldo)]]), 'Datos de la persona');
     h += S.chips([0, 25, 50, 75, 100].map(function (v) { return S.chip('data-score="' + v + '"', v + '', e.score === v && manual.score != null); }).concat([S.chip('data-score=""', 'Dato real', manual.score == null)]), 'Bosque: salud financiera');
     h += S.chips([0, 25, 50, 75, 100].map(function (v) { return S.chip('data-bloom="' + v + '"', v + ' %', e.bloom === v && manual.bloom != null); }).concat([S.chip('data-bloom=""', 'Dato real', manual.bloom == null)]), 'Flores: ahorro');
@@ -30,17 +30,14 @@
       h += S.nota('Las recomendaciones salen de <b>assets/pfm.js › consejos()</b>: pagos cercanos, consumos por ordenar, el mínimo de la tarjeta, el presupuesto, el colchón de ahorro, mesadas repetidas y hallazgos del mes. El bosque usa <b>salud()</b>, las flores <b>flores()</b> y el ánimo <b>animo()</b>.');
     } else h += S.nota('Cargando los movimientos de la persona…');
     h += S.versionRow();
+    h += S.sec('', S.link('./', 'arrow_back', 'Volver al sandbox', ''));
     out.innerHTML = h;
-    // La escena vive en un nodo que no se vuelve a crear: el canvas sigue siendo el mismo entre repintados
-    var slot = document.getElementById('scene-slot'); if (slot) slot.replaceWith(sceneCard);
-    sceneCard.querySelector('h3').textContent = 'Su mundo' + (manual.score != null || manual.bloom != null || manual.mood ? ' · forzado' : s ? ' · con los datos de ' + s.nombre : '');
+    document.querySelector('#hoja h3').textContent = 'El mundo de Uku' + (manual.score != null || manual.bloom != null || manual.mood ? ' · forzado' : s ? ' · con los datos de ' + s.nombre : '');
     montar();
   }
-  var sceneCard = document.createElement('section'); sceneCard.className = 'sx-card sx-kb';
-  sceneCard.innerHTML = '<h3>Su mundo</h3><div class="sx-kb__body"><div class="b3d" id="b3d" style="height:360px"></div><p class="sx-kb__p" id="b3d-nota">Cargando el bosque…</p></div>';
   var cargando = false;
   function montar() {
-    var el = document.getElementById('b3d'), nota = document.getElementById('b3d-nota'); if (!el || cargando) return;
+    var el = document.getElementById('b3d'), nota = { set textContent(t) { S.aviso(t); }, remove: function () {} }; if (!el || cargando) return;
     if (!escena) {
       cargando = true;
       import('../assets/bosque3d.js?v=' + S.BUILD).then(function (mod) {
@@ -59,11 +56,10 @@
     if (d.score != null) manual.score = d.score === '' ? null : +d.score;
     if (d.bloom != null) manual.bloom = d.bloom === '' ? null : +d.bloom;
     if (d.mood != null) manual.mood = d.mood || null;
-    if (d.pose) { poseActual = d.pose; if (m3) { if (d.pose === 'water') m3.play('water', { hold: 'can' }); else if (d.pose === 'walk') m3.setAmbient('walk'); else m3.play(d.pose); } }
+    if (d.pose) { poseActual = d.pose; if (m3) { if (d.pose === 'water') m3.play('water', { hold: 'can' }); else if (d.pose === 'walk') m3.setAmbient('walk'); else m3.play(d.pose); } S.cerrarHoja(); }
+    if (d.score != null || d.bloom != null || d.mood != null) S.cerrarHoja();
     pintar(); aplicar();
   });
-  q.addEventListener('input', function () { filtro = q.value.trim().toLowerCase(); pintar(); });
-  document.getElementById('form').addEventListener('submit', function (e) { e.preventDefault(); });
   pintar();
   Promise.all([DemoPersona.cargar('../assets/pfm/datos.json?v=' + S.BUILD), window.PFM ? PFM.load() : Promise.resolve()]).then(function () {
     var g = S.persona(); DemoPersona.set(g); if (window.PFM && PFM.setPersona) PFM.setPersona(g);
