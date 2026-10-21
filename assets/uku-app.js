@@ -204,7 +204,7 @@
     var hola = hoy && hace > 1 ? 'Qué bueno verte otra vez' + n + '.' : hoy ? 'Hola otra vez' + n + '.'
       : h < 7 ? 'Hola' + n + '. ¿Madrugando?' : h < 12 ? 'Buenos días' + n + '.' : h < 19 ? 'Buenas tardes' + n + '.' : 'Buenas noches' + n + '.';
     var pagos = A.filter(function (c) { return c.id.indexOf('pago:') === 0; });
-    return (SAL = sal());
+    SAL = sal(); SAL.hola = hola; return SAL;
     function sal() {
     if (pagos.length) return { t: hola + ' ' + (pagos.length === 1 ? 'Tienes un pago pendiente, ¿te ayudo con eso?' : 'Tienes ' + pagos.length + ' pagos pendientes, ¿te ayudo con eso?'), k: 'prop:' + pagos[0].id, l: 'Ver el pago' };
     if (d === 1 || d === 0) return { t: hola + ' ¿Quieres ver cómo va tu semana?', k: 'gastos:sem', l: 'Ver mi semana' };
@@ -220,43 +220,34 @@
   function quiet() { try { return localStorage.getItem(QUIET) === '1'; } catch (e) { return false; } }
   function propuestas() {
     if (quiet()) return [];
-    var S = window.PFM && PFM.world && resumen() ? PFM.world().filter(function (x) { return /warn|over|pensativo/.test(x.cls || ''); }).map(function (x) { return { id: 'mundo', tag: x.l, t: x.d, k: 'mundo', l: 'Cuéntame' }; }) : [];
-    return consejos().map(function (x) { return { id: x.id, tag: x.tag, t: x.di || x.t, k: x.act ? 'pfm:' + x.act : 'prop:' + x.id, l: x.actl || 'Cuéntame', luego: 'pfm:luego:' + x.id, kind: x.kind }; }).concat(S);
+    // Solo los consejos que proponen algo que hacer; los hallazgos sueltos y las señales del mundo se cuentan en Mis finanzas
+    return consejos().filter(function (x) { return x.act; }).map(function (x) { return { id: x.id, tag: x.tag, t: x.di || x.t, act: true, k: /^app:/.test(x.act || '') ? 'act:' + x.act.slice(4) : x.act ? 'pfm:' + x.act : 'prop:' + x.id, l: x.actl || 'Cuéntame', luego: 'pfm:luego:' + x.id, kind: x.kind }; });
   }
   function pintarGlobo() {
     if (onbActivo) return; // mientras Uku se presenta, el globo muestra sus pasos
     var fin = view.classList.contains('uk-fin'), home = host.classList.contains('is-home');
     if (!fin && !home && !mundoOn && !host.classList.contains('is-onb')) { globoEl.hidden = true; return; }
+    if (home && !nota) return globoHome();
     // En Mis finanzas, Uku recomienda: una cosa a la vez (pagos, orden, presupuesto, ahorro), con su acción
     var P = fin ? recomendaciones() : propuestas(), n = P.length, hola = !fin && !saludado && !nota, sal = hola ? saludo() : null, x = !hola && !nota && n ? P[gi % n] : null;
     if (fin && !x && !nota) return globoFin();
-    // En el inicio, sin propuestas, Uku cuenta lo que ve en su mundo o propone ver la semana
-    var sinNada = null;
-    if (home && !hola && !nota && !x) { var W = window.PFM && PFM.world && resumen() ? PFM.world() : [], ok = W.filter(function (w) { return !/warn|over|pensativo/.test(w.cls || ''); })[0]; sinNada = ok ? { t: ok.d, k: 'gastos:sem', l: 'Ver mi semana' } : { t: 'Todo en orden. ¿Vemos tu semana?', k: 'gastos:sem', l: 'Ver mi semana' }; }
-    var t = nota || (hola ? sal.t : x ? x.t : sinNada ? sinNada.t : 'Todo está en orden por ahora. ¿Quieres hacer algo hoy?');
-    // En el inicio el nombre ya está en la cabecera: el globo no vuelve a saludar
-    var titulo = '';
-    if (home && hola) {
-      // Wireframe: «¡Qué gusto verte por aquí, Fran!» arriba y debajo lo que Uku propone hacer
-      var mm = t.match(/^((?:hola|qué bueno verte|buen[oa]s (?:d[ií]as|tardes|noches))[^.?!]*[.?!])\s*([\s\S]*)$/i);
-      titulo = mm ? mm[1] : ''; t = mm ? mm[2] : t;
-      if (!t || /^¿en qué te ayudo\?$/i.test(t)) t = '¿Vemos tus finanzas, resolvemos una duda o revisamos tus gastos? Cuéntame qué tienes en mente.';
-    }
-    var go = hola ? (home ? null : sal) : x ? { k: x.k, l: x.l } : sinNada ? sinNada : null;
+    // (el inicio sin nota lo pinta globoHome: la sugerencia o el saludo)
+    var t = nota || (hola ? sal.t : x ? x.t : 'Todo está en orden por ahora. ¿Quieres hacer algo hoy?');
+    var go = hola ? (home ? null : sal) : x ? { k: x.k, l: x.l } : null;
     // Sin nada que decir (o en silencio), el globo se va y Uku se queda tranquilo
-    if (!hola && !nota && !x && !sinNada) { if (b3d) b3d.play('happy'); return ocultarGlobo(); }
+    if (!hola && !nota && !x) { if (b3d) b3d.play('happy'); return ocultarGlobo(); }
     globoOff = false; globoEl.hidden = false; globoEl.classList.remove('is-off');
     if (b3d && b3d.setFront) b3d.setFront(true); // con algo que decir, Uku te mira
-    var tag = x ? '<p class="uk-globo__tag">' + esc(x.tag) + '</p>' : titulo ? '<p class="uk-globo__h">' + esc(titulo) + '</p>' : '', txt = '<p class="uk-globo__t">' + esc(t) + '</p>';
+    var tag = x ? '<p class="uk-globo__tag">' + esc(x.tag) + '</p>' : '', txt = '<p class="uk-globo__t">' + esc(t) + '</p>';
     var goBtn = go && !nota ? '<button class="btn btn--tertiary uk-globo__go" data-k="' + esc(go.k) + '" data-l="' + esc(go.l) + '">' + esc(go.l) + '</button>' : '';
     var html;
     if (home) {
-      // Inicio: una frase y un botón. Pasar a la siguiente propuesta es tocar a Uku.
+      // Inicio con una nota de Uku («Listo, ya quedó…»): solo la frase
       html = tag + txt + (goBtn ? '<div class="uk-globo__acts">' + goBtn + '</div>' : '');
     } else if (fin) {
       // Mis finanzas (Figma): el globo solo dice; la acción es una tarjeta en la hoja. Tocar a Uku o deslizar pasa a la siguiente.
       html = txt;
-      recActual = x || null; recSig = x && n > 1 ? P[(gi + 1) % n] : null; llenarSlot();
+      recActual = x || null; llenarSlot();
     } else {
       html = '<button class="uk-globo__x" data-k="globo:cerrar" aria-label="Cerrar">' + ic('close') + '</button>' + tag + txt +
         '<div class="uk-globo__acts">' + goBtn +
@@ -272,6 +263,38 @@
     reencuadrar();
     // Uku hace lo que dice: saluda, habla, se preocupa o celebra según el mensaje
     if (b3d) b3d.play(hola ? 'wave' : nota ? 'happy' : !x ? 'happy' : x.kind === 'warn' ? 'worried' : 'talk');
+  }
+  /* Inicio: el globo es una sugerencia de Uku a la vez (su etiqueta, «1 de n», pasar a la siguiente
+     y ocultarla) y los chips de abajo son sobre esa sugerencia. Sin sugerencias, solo el saludo. */
+  function globoHome() {
+    var P = propuestas(), n = P.length, x = n ? P[gi % n] : null, html;
+    globoOff = false; globoEl.hidden = false; globoEl.classList.remove('is-off');
+    if (b3d && b3d.setFront) b3d.setFront(true);
+    if (x) {
+      saludado = true; // pasar a la siguiente (tocar a Uku, deslizar o la flecha) ya no vuelve al saludo
+      html = '<div class="uk-globo__top"><p class="uk-globo__tag">' + esc(x.tag) + (n > 1 ? '<span> · ' + (gi % n + 1) + ' de ' + n + '</span>' : '') + '</p>' +
+        (n > 1 ? '<button class="uk-globo__ib" data-k="siguiente" data-l="Siguiente sugerencia" aria-label="Siguiente sugerencia">' + ic('chevron_right') + '</button>' : '') +
+        '<button class="uk-globo__ib" data-k="ocultar:' + esc(x.id) + '" data-l="Ocultar sugerencia" aria-label="Ocultar sugerencia">' + ic('close') + '</button></div>' +
+        '<p class="uk-globo__t">' + esc(x.t) + '</p>';
+    } else {
+      var sal = saludo();
+      html = '<p class="uk-globo__h">' + esc(sal.hola || 'Hola, soy Uku.') + '</p><p class="uk-globo__t">¿En qué te ayudo hoy?</p>';
+    }
+    host.setAttribute('data-rec', '');
+    if (!ponerGlobo(html)) return;
+    reencuadrar();
+    if (b3d) b3d.play(!x ? 'wave' : x.kind === 'warn' ? 'worried' : 'talk');
+  }
+  // Los chips de una sugerencia: su acción (o «Cuéntame más») y algo relacionado con ella
+  function chipsDe(x, P) {
+    var s = resumen(), gasta = s && s.gast > 0, id = x.id, L = [x.act ? { k: x.k, t: x.l } : { k: 'prop:' + id, t: 'Cuéntame más' }], rel = null;
+    if (/^pago:/.test(id)) rel = { k: 'pfm:bills', t: 'Ver todos mis pagos' };
+    else if (id === 'tarjeta') rel = { k: 'pfm:debt', t: 'Ver mis deudas' };
+    else if (id === 'pres') rel = gasta ? { k: 'ask:¿En qué gasto más?', t: '¿En qué gasto más?' } : null;
+    else if (/^nuevo:/.test(id)) { var o = P.filter(function (y) { return /^nuevo:/.test(y.id) && y.id !== id; })[0]; rel = o ? { k: o.k, t: o.l } : null; }
+    else if (gasta) rel = { k: 'gastos', t: 'Ver mis gastos' };
+    if (rel && !L.some(function (c) { return c.k === rel.k || c.t === rel.t; })) L.push(rel);
+    return L;
   }
   // Escribe el globo solo si cambió, y lo escribe palabra a palabra; devuelve si hubo cambio
   function ponerGlobo(html) {
@@ -310,12 +333,7 @@
   function pintarChips() {
     if (!chipsEl) chipsEl = host.querySelector('.uk-chips');
     if (!host.classList.contains('is-home')) { chipsEl.hidden = true; return; }
-    var P = propuestas(), n = P.length, sal = saludo(), enGlobo = !saludado ? null : (n ? P[gi % n].k : null);
-    var L = [];
-    if (!saludado && sal && sal.k) L.push({ k: sal.k, t: sal.l }); // el saludo ya no lleva botón: su acción es el primer chip
-    P.forEach(function (x) { if (L.length < 2 && x.k !== enGlobo && !L.some(function (c) { return c.k === x.k || c.t === x.l; })) L.push({ k: x.k, t: x.l }); });
-    if (!L.length && saludado && n) L.push({ k: 'dinero', t: 'Cómo va mi dinero' });
-    if (L.length < 3 && resumen()) L.push({ k: 'ask:¿En qué gasto más?', t: '¿En qué gasto más?' }); // una pregunta, para que se entienda que también se le pregunta
+    var P = propuestas(), n = P.length, L = n ? chipsDe(P[gi % n], P) : [];
     chipsEl.hidden = !L.length;
     chipsEl.innerHTML = L.map(function (c, i) { return '<button class="uk-chip-s" style="--d:' + (i * 60) + 'ms" data-k="' + esc(c.k) + '" data-l="' + esc(c.t) + '">' + esc(c.t) + '</button>'; }).join('');
   }
@@ -325,7 +343,7 @@
     var t = !s ? 'Estoy mirando tus movimientos…' : pf === 'nuevo' ? '¡Qué bueno tenerte aquí! Cuando tengas tus primeros movimientos, esto se llena de vida.'
       : 'Todo en orden por ahora. Tu mundo florece contigo.';
     globoEl.hidden = false; globoEl.classList.remove('is-off');
-    recActual = null; recSig = null; llenarSlot();
+    recActual = null; llenarSlot();
     if (!ponerGlobo('<p class="uk-globo__t">' + esc(t) + '</p>')) return;
     reencuadrar();
     // El mundo sigue vivo aunque no haya tarea: planta un brote (si hay flores) y se va a pasear
@@ -360,11 +378,11 @@
     return h;
   }
   // Mis finanzas: la acción que Uku recomienda, como tarjeta en la hoja (icono, qué hacer y por qué)
-  var recActual = null, recSig = null;
+  var recActual = null;
   function llenarSlot() {
     var slot = panel && panel.querySelector('.pfm-hub__slot'); if (!slot) return;
     var fila = function (x) { return '<button class="pfm-hub__act" data-k="' + esc(x.k) + '" data-l="' + esc(x.l) + '"><span class="material-symbols-rounded pfm-hub__act-ic" aria-hidden="true">' + esc(x.icon || 'category') + '</span><span class="pfm-hub__act-t"><b>' + esc(x.l) + '</b><small>' + esc(x.sub || x.tag) + '</small></span>' + ic('chevron_right') + '</button>'; };
-    var h = (recActual ? fila(recActual) : '') + (recActual && recSig && recSig.id !== recActual.id ? fila(recSig) : '');
+    var h = recActual ? fila(recActual) : ''; // una sola sugerencia a la vez: Uku no pierde espacio
     // Se compara contra lo último que se pintó, no contra innerHTML: el navegador lo reescribe distinto y
     // cada diferencia reabría el observador del panel, que volvía a llamar aquí (bucle que congelaba la página)
     if (slot.dataset.h !== h) { slot.dataset.h = h; slot.innerHTML = h; }
@@ -1342,7 +1360,9 @@
       case 'voto': return votar(v);
       case 'ia': if (!enChat) me('Que Uku IA lo revise'); uku('Lo reviso…'); pintarChat(); return setTimeout(function () { msgs.pop(); iaResponde(v); }, 1400);
       case 'onb': if (v === 'fin') return onboardingFin(); return onboarding(+v);
-      case 'siguiente': fx('tap'); nota = null; if (saludado) gi++; saludado = true; return pintarGlobo();
+      case 'siguiente': fx('tap'); nota = null; if (saludado) gi++; saludado = true; pintarGlobo(); return pintarChips();
+      // Ocultar una sugerencia: no vuelve a aparecer (con «Deshacer» en el aviso); el globo pasa a la siguiente o al saludo
+      case 'ocultar': nota = null; if (window.PFM) PFM.key('ocultar:' + v); return;
       case 'globo': if (onbActivo) return; fx('tap'); saludado = true; nota = null; return ocultarGlobo();
       case 'leyenda': fx('select'); return explicar(+v);
       case 'prop': return propuesta(v);
