@@ -68,9 +68,18 @@
     try { atajos = JSON.parse(localStorage.getItem(atajosKey())) || []; } catch (e) { atajos = []; }
     K.datos(function (k) { return persona.valores[k] != null ? persona.valores[k] : null; });
     construirFlujos();
-    var c1 = CONTACTOS.filter(function (c) { return !c.exterior; })[0], c2 = CONTACTOS.filter(function (c) { return c.tel; })[0];
-    EJ[0] = 'transferir 20 a ' + (c1 ? c1.alias.toLowerCase() : 'juan'); EJ[2] = 'recargar 5 a ' + (c2 ? c2.alias.toLowerCase() : 'mamá');
-    if (CONTACTOS.some(function (c) { return c.exterior; })) EJ[5] = 'enviar 100 a ' + CONTACTOS.filter(function (c) { return c.exterior; })[0].alias.toLowerCase();
+    // Frases para probar: solo las que tienen sentido para esta persona (sus contactos, sus servicios, su tarjeta)
+    var c1 = CONTACTOS.filter(function (c) { return !c.exterior; })[0], c2 = CONTACTOS.filter(function (c) { return c.tel; })[0], ext = CONTACTOS.filter(function (c) { return c.exterior; })[0];
+    var luz = persona.servicios.filter(function (x) { return x.contrato && /electric|energia|centrosur|cnel/.test(norm(x.empresa)); })[0], otroServ = persona.servicios.filter(function (x) { return x.contrato; })[0];
+    EJ = [];
+    if (c1) EJ.push('transferir 20 a ' + c1.alias.toLowerCase());
+    if (TARJETAS.length) EJ.push('pagar tarjeta');
+    if (c2) EJ.push('recargar 5 a ' + c2.alias.toLowerCase()); else EJ.push('recargar 5 a mi celular');
+    if (luz) EJ.push('pagar la luz'); else if (otroServ) EJ.push('pagar ' + otroServ.empresa.toLowerCase());
+    if (ext) EJ.push('enviar 100 a ' + ext.alias.toLowerCase());
+    if (!persona.movimientos) EJ.push('recibir dinero', 'pagar con qr', 'abrir una cuenta de ahorros');
+    EJ.push('pagar una factura con foto'); if (TARJETAS.length) EJ.push('bloquear tarjeta'); EJ.push('que es la cuenta joven');
+    EJ = EJ.slice(0, 7);
   }
   function guardarAtajos() { try { localStorage.setItem(atajosKey(), JSON.stringify(atajos)); } catch (e) {} }
   function subAtajo(a) { var d = a.datos || {}, e = K.entrada(a.accion); return [e ? e.t : a.accion, d.contacto || d.empresa || d.numero || '', d.monto ? money(d.monto) : ''].filter(Boolean).join(' · '); }
@@ -116,15 +125,16 @@
     var e = K.entrada(accionId), datos = {};
     if (quien && (accionId === 'accion.transferir' || accionId === 'accion.transferir-exterior')) Object.assign(datos, datosContacto(quien));
     if (quien && accionId === 'accion.recargar') { datos.numero = quien.tel; datos.contacto = quien.n; }
+    if (accionId === 'accion.recargar' && !quien && !tel && /mi (celular|numero|telefono)/.test(nq) && persona && persona.recargas[0]) { datos.numero = persona.recargas[0].numero; datos.operadora = datos.operadora || persona.recargas[0].operadora; }
     if (tel) datos.numero = tel;
     if (operadora) datos.operadora = operadora;
     if (monto) datos.monto = monto;
-    if (servicio && FLUJO_DE[accionId] === 'servicios') { datos.empresa = servicio[1]; datos.monto = datos.monto || servicio[2]; if (servicio[3]) datos.contrato = servicio[3]; }
+    if (servicio && FLUJO_DE[accionId] === 'servicios') { datos.empresa = servicio[1]; if (servicio[3]) { datos.contrato = servicio[3]; datos.monto = datos.monto || servicio[2]; } }
     var nombre = e.t;
     if (accionId === 'accion.transferir') nombre = 'Transferir' + (monto ? ' ' + money(monto) : '') + (quien ? ' a ' + quien.n : '');
     else if (accionId === 'accion.transferir-exterior') nombre = 'Enviar' + (monto ? ' ' + money(monto) : '') + (quien ? ' a ' + quien.alias + ' en ' + quien.pais : ' al exterior');
     else if (accionId === 'accion.recargar') nombre = 'Recargar' + (monto ? ' ' + money(monto) : '') + (quien ? ' a ' + quien.alias : tel ? ' al ' + tel : '');
-    else if (accionId === 'accion.pagar-servicios' && servicio) nombre = 'Pagar ' + servicio[1] + (servicio[2] ? ' · ' + money(servicio[2]) : '') + (servicio[4] ? ' (se paga solo el ' + servicio[5] + ')' : '');
+    else if (accionId === 'accion.pagar-servicios' && servicio) nombre = 'Pagar ' + servicio[1] + (servicio[3] && servicio[2] ? ' · ' + money(servicio[2]) : '') + (servicio[4] ? ' (se paga solo el ' + servicio[5] + ')' : '');
     else if (accionId === 'accion.pagar-tarjeta' && monto) nombre = 'Pagar ' + money(monto) + ' a la tarjeta';
     var lleno = !!(datos.contacto || datos.monto || datos.empresa || datos.numero);
     return { accion: e, datos: datos, nombre: nombre, lleno: lleno };
@@ -277,7 +287,7 @@
     if (def && def.requiere === 'tarjeta' && !TARJETAS.length) fl.falta = { t: 'No tienes tarjeta de crédito', s: 'Pídela desde la app: la respuesta llega en minutos.', id: 'prod.tarjetas.credito', b: 'Solicitar tarjeta' };
     if (def && def.requiere === 'prestamo' && !(persona && (persona.hipoteca || persona.prestamos.length))) fl.falta = { t: 'No tienes préstamos', s: 'Si necesitas dinero, simula un crédito sin compromiso.', id: 'prod.prestamos.consumo', b: 'Ver préstamos' };
     if (def) def.campos.forEach(function (c) { if (fl.datos[c[0]] == null && c[2] === 'chips') fl.datos[c[0]] = c[3][0]; });
-    if (def && FLUJO_DE[accionId] === 'servicios') { var s = servicioDe(fl.datos.empresa); if (!fl.datos.contrato) fl.datos.contrato = (s && s[3]) || '1234567'; if (!fl.datos.monto && s && s[2]) fl.datos.monto = Math.round(s[2] * 100) / 100; }
+    if (def && FLUJO_DE[accionId] === 'servicios') { var s = servicioDe(fl.datos.empresa); if (!fl.datos.contrato && s && s[3]) fl.datos.contrato = s[3]; if (!fl.datos.monto && s && s[3] && s[2]) fl.datos.monto = Math.round(s[2] * 100) / 100; }
     if (def && FLUJO_DE[accionId] === 'exterior' && fl.datos.contacto && !fl.datos.swift) { var cx = CONTACTOS.filter(function (c) { return c.exterior && c.n === fl.datos.contacto; })[0]; if (cx) Object.assign(fl.datos, datosContacto(cx)); }
     pintarFlujo();
   }
