@@ -2,7 +2,7 @@
    Persona activa (datos de demostración): una sola fuente para toda la app.
    Lo elige la persona en Perfil; Mis finanzas, el saldo de Inicio y el
    saludo del asistente la leen de aquí. Los datos están en
-   assets/pfm/datos.json (cuatro usuarios ficticios).
+   assets/pfm/datos.json (usuarios ficticios; una persona nueva sin movimientos).
    ===================================================================== */
 (function () {
   'use strict';

@@ -1,0 +1,350 @@
+/* =====================================================================
+   Tokens de componente de "Components 4 [Beta]" (bp-button, bp-avatar, bp-tag,
+   bp-spinner, bp-action-button, bp-guided-tour).
+
+   Primera parte: el export literal de Figma, pensado para web components
+   (selectores :host([size=…])). Segunda parte: la misma receta adaptada al DOM
+   plano del prototipo, con alias --bp-<componente>-* y modos por data-size /
+   data-context; es lo que consumen sistema.css y las hojas de Uku.
+   ===================================================================== */
+
+/* === bp-button.tokens.css === */
+/**
+ * @componente bp-button
+ * @tipo tokens de componente (custom properties CSS)
+ * @generado 2026-10-21T01:27:39.844Z
+ * @origen Figma — archivo autogenerado, no editar manualmente
+ * @total 4 tokens
+ */
+
+:host([size="md"]) {
+  --padding-x: var(--bp-semantic-spacing-macro-md);
+  --size: var(--bp-semantic-size-interactive-md);
+}
+
+:host([size="lg"]) {
+  --padding-x: var(--bp-semantic-spacing-macro-lg);
+  --size: var(--bp-semantic-size-interactive-lg);
+}
+
+
+/* === bp-avatar.tokens.css === */
+/**
+ * @componente bp-avatar
+ * @tipo tokens de componente (custom properties CSS)
+ * @generado 2026-10-21T01:27:39.845Z
+ * @origen Figma — archivo autogenerado, no editar manualmente
+ * @total 48 tokens
+ */
+
+:host([size="md"]) {
+  --emblem-icon-size: var(--bp-semantic-size-icon-xs);
+  --emblem-size: var(--bp-semantic-size-icon-sm);
+  --font-size: var(--bp-semantic-typography-brand-initial-md-font-size);
+  --icon-size: var(--bp-semantic-size-icon-md);
+  --line-height: var(--bp-semantic-typography-brand-initial-md-line-height);
+  --optical-size: var(--bp-semantic-size-icon-md);
+  --overlap: var(--bp-semantic-spacing-overlap-12);
+  --size: var(--bp-semantic-size-avatar-md);
+}
+
+:host([size="xs"]) {
+  --emblem-icon-size: var(--bp-semantic-size-icon-xxs);
+  --emblem-size: var(--bp-semantic-size-icon-xs);
+  --font-size: var(--bp-semantic-typography-brand-initial-xs-font-size);
+  --icon-size: var(--bp-semantic-size-icon-xs);
+  --line-height: var(--bp-semantic-typography-brand-initial-xs-line-height);
+  --optical-size: var(--bp-semantic-size-icon-md);
+  --overlap: var(--bp-semantic-spacing-overlap-8);
+  --size: var(--bp-semantic-size-avatar-xs);
+}
+
+:host([size="sm"]) {
+  --emblem-icon-size: var(--bp-semantic-size-icon-xxs);
+  --emblem-size: var(--bp-semantic-size-icon-xs);
+  --font-size: var(--bp-semantic-typography-brand-initial-sm-font-size);
+  --icon-size: var(--bp-semantic-size-icon-sm);
+  --line-height: var(--bp-semantic-typography-brand-initial-sm-line-height);
+  --optical-size: var(--bp-semantic-size-icon-md);
+  --overlap: var(--bp-semantic-spacing-overlap-10);
+  --size: var(--bp-semantic-size-avatar-sm);
+}
+
+:host([size="lg"]) {
+  --emblem-icon-size: var(--bp-semantic-size-icon-sm);
+  --emblem-size: var(--bp-semantic-size-icon-md);
+  --font-size: var(--bp-semantic-typography-brand-initial-lg-font-size);
+  --icon-size: var(--bp-semantic-size-icon-lg);
+  --line-height: var(--bp-semantic-typography-brand-initial-lg-line-height);
+  --optical-size: var(--bp-semantic-size-icon-md);
+  --overlap: var(--bp-semantic-spacing-overlap-16);
+  --size: var(--bp-semantic-size-avatar-lg);
+}
+
+:host([size="xl"]) {
+  --emblem-icon-size: var(--bp-semantic-size-icon-md);
+  --emblem-size: var(--bp-semantic-size-icon-lg);
+  --font-size: var(--bp-semantic-typography-brand-initial-xl-font-size);
+  --icon-size: var(--bp-semantic-size-icon-xl);
+  --line-height: var(--bp-semantic-typography-brand-initial-xl-line-height);
+  --optical-size: var(--bp-semantic-size-icon-xl);
+  --overlap: var(--bp-semantic-spacing-overlap-24);
+  --size: var(--bp-semantic-size-avatar-xl);
+}
+
+:host([size="xxl"]) {
+  --emblem-icon-size: var(--bp-semantic-size-avatar-xs);
+  --emblem-size: var(--bp-semantic-size-avatar-sm);
+  --font-size: var(--bp-semantic-typography-brand-initial-xxl-font-size);
+  --icon-size: var(--bp-semantic-size-icon-xxl);
+  --line-height: var(--bp-semantic-typography-brand-initial-xxl-line-height);
+  --optical-size: var(--bp-semantic-size-icon-xl);
+  --overlap: var(--bp-semantic-spacing-overlap-32);
+  --size: var(--bp-semantic-size-avatar-xxl);
+}
+
+
+/* === bp-tag.tokens.css === */
+/**
+ * @componente bp-tag
+ * @tipo tokens de componente (custom properties CSS)
+ * @generado 2026-10-21T01:27:39.845Z
+ * @origen Figma — archivo autogenerado, no editar manualmente
+ * @total 4 tokens
+ */
+
+:host([size="sm"]) {
+  --height: var(--bp-semantic-size-icon-xs);
+  --icon-size: var(--bp-semantic-size-icon-xxs);
+}
+
+:host([size="md"]) {
+  --height: var(--bp-semantic-size-icon-md);
+  --icon-size: var(--bp-semantic-size-icon-xs);
+}
+
+
+/* === bp-spinner.tokens.css === */
+/**
+ * @componente bp-spinner
+ * @tipo tokens de componente (custom properties CSS)
+ * @generado 2026-10-21T01:27:39.845Z
+ * @origen Figma — archivo autogenerado, no editar manualmente
+ * @total 11 tokens
+ */
+
+:host {
+  --backdrop-color: var(--bp-theme-color-loading-backdrop-on-page);
+  --size: var(--bp-semantic-size-icon-md);
+  --spinner-color: var(--bp-theme-color-loading-spinner-on-page);
+}
+
+:host([size="sm"]) {
+  --size: var(--bp-semantic-size-icon-sm);
+}
+
+:host([size="lg"]) {
+  --size: var(--bp-semantic-size-icon-lg);
+}
+
+:host([context="on-brand"]) {
+  --backdrop-color: var(--bp-theme-color-loading-backdrop-on-brand);
+  --spinner-color: var(--bp-theme-color-loading-spinner-on-brand);
+}
+
+:host([context="on-solid"]) {
+  --backdrop-color: var(--bp-theme-color-loading-backdrop-on-solid);
+  --spinner-color: var(--bp-theme-color-loading-spinner-on-solid);
+}
+
+:host([context="on-inverse"]) {
+  --backdrop-color: var(--bp-theme-color-loading-backdrop-on-inverse);
+  --spinner-color: var(--bp-theme-color-loading-spinner-on-inverse);
+}
+
+
+/* === bp-action-button.tokens.css === */
+/**
+ * @componente bp-action-button
+ * @tipo tokens de componente (custom properties CSS)
+ * @generado 2026-10-21T01:27:39.845Z
+ * @origen Figma — archivo autogenerado, no editar manualmente
+ * @total 12 tokens
+ */
+
+:host([size="sm"]) {
+  --icon-size: var(--bp-semantic-size-icon-sm);
+  --padding-x: var(--bp-semantic-spacing-micro-lg);
+  --padding-x-icon: var(--bp-semantic-spacing-micro-md);
+  --size: var(--bp-semantic-size-interactive-xxs);
+}
+
+:host([size="md"]) {
+  --icon-size: var(--bp-semantic-size-icon-sm);
+  --padding-x: var(--bp-semantic-spacing-macro-sm);
+  --padding-x-icon: var(--bp-semantic-spacing-micro-lg);
+  --size: var(--bp-semantic-size-interactive-xs);
+}
+
+:host([size="lg"]) {
+  --icon-size: var(--bp-semantic-size-icon-md);
+  --padding-x: var(--bp-semantic-spacing-macro-sm);
+  --padding-x-icon: var(--bp-semantic-spacing-micro-lg);
+  --size: var(--bp-semantic-size-interactive-sm);
+}
+
+
+/* === bp-guided-tour.tokens.css === */
+/**
+ * @componente bp-guided-tour
+ * @tipo tokens de componente (custom properties CSS)
+ * @generado 2026-10-21T01:27:39.845Z
+ * @origen Figma — archivo autogenerado, no editar manualmente
+ * @total 8 tokens
+ */
+
+:host([size="light"]) {
+  --background: var(--bp-base-color-neutral-900);
+  --icon: var(--bp-theme-color-icon-inverse);
+  --text-primary: var(--bp-theme-color-text-inverse);
+  --text-secondary: var(--bp-theme-color-text-tertiary);
+}
+
+:host([size="dark"]) {
+  --background: var(--bp-base-color-neutral-0);
+  --icon: var(--bp-theme-color-icon-primary);
+  --text-primary: var(--bp-theme-color-text-primary);
+  --text-secondary: var(--bp-theme-color-text-helper);
+}
+
+
+/* =====================================================================
+   Adaptación al DOM plano (misma tabla que arriba; el :root fija el modo
+   que más usa la app y los demás se eligen con data-size o data-context).
+   ===================================================================== */
+@layer tokens.product {
+  /* Recetas bp-* de Figma: sólo remapean semánticos. Los modos de cada
+     colección se eligen con data-size (o data-context en el spinner).
+     El :root fija el tamaño que más usa la app; los demás modos van abajo. */
+  :root {
+    /* bp-button · md 56 · lg 64 */
+    --bp-button-size: var(--bp-semantic-size-interactive-md);
+    --bp-button-padding-x: var(--bp-semantic-spacing-macro-md);
+    --bp-button-padding-icon: var(--bp-semantic-spacing-micro-lg);
+    /* bp-action-button · sm 32 · md 40 · lg 48 */
+    --bp-action-button-size: var(--bp-semantic-size-interactive-xs);
+    --bp-action-button-padding-x: var(--bp-semantic-spacing-macro-sm);
+    --bp-action-button-padding-x-icon: var(--bp-semantic-spacing-micro-lg);
+    --bp-action-button-icon-size: var(--bp-semantic-size-icon-sm);
+    --bp-icon-switch-size: var(--bp-semantic-size-interactive-xs);
+    /* bp-tag · sm 16 · md 24 */
+    --bp-tag-height: var(--bp-semantic-size-icon-md);
+    --bp-tag-icon-size: var(--bp-semantic-size-icon-xs);
+    /* bp-avatar · xs 32 en la app (Figma default md 48) */
+    --bp-avatar-size: var(--bp-semantic-size-avatar-xs);
+    --bp-avatar-icon-size: var(--bp-semantic-size-icon-xs);
+    --bp-avatar-optical-size: var(--bp-semantic-size-icon-md);
+    --bp-avatar-emblem-size: var(--bp-semantic-size-icon-xs);
+    --bp-avatar-emblem-icon-size: var(--bp-semantic-size-icon-xxs);
+    --bp-avatar-font-size: var(--bp-semantic-typography-brand-initial-xs-font-size);
+    --bp-avatar-line-height: var(--bp-semantic-typography-brand-initial-xs-line-height);
+    --bp-avatar-overlap: var(--bp-semantic-spacing-overlap-8);
+    /* bp-spinner · size md 24 · context on-page */
+    --bp-spinner-size-size: var(--bp-semantic-size-icon-md);
+    --bp-spinner-context-backdrop-color: var(--bp-theme-color-loading-backdrop-on-page);
+    --bp-spinner-context-spinner-color: var(--bp-theme-color-loading-spinner-on-page);
+    /* bp-guided-tour (modo light/dark) */
+    --bp-guided-tour-background: var(--bp-base-color-neutral-900);
+    --bp-guided-tour-icon: var(--bp-theme-color-icon-inverse);
+    --bp-guided-tour-text-primary: var(--bp-theme-color-text-inverse);
+    --bp-guided-tour-text-secondary: var(--bp-theme-color-text-tertiary);
+    --bp-component-interactive-icon-size: var(--bp-semantic-size-icon-md);
+  }
+  :root[data-theme="dark"] {
+    --bp-guided-tour-background: var(--bp-base-color-neutral-0);
+    --bp-guided-tour-icon: var(--bp-theme-color-icon-primary);
+    --bp-guided-tour-text-primary: var(--bp-theme-color-text-primary);
+    --bp-guided-tour-text-secondary: var(--bp-theme-color-text-helper);
+  }
+
+  .bp-button[data-size="lg"] {
+    --bp-button-size: var(--bp-semantic-size-interactive-lg);
+    --bp-button-padding-x: var(--bp-semantic-spacing-macro-lg);
+  }
+
+  .bp-action-button[data-size="sm"] {
+    --bp-action-button-size: var(--bp-semantic-size-interactive-xxs);
+    --bp-action-button-padding-x: var(--bp-semantic-spacing-micro-lg);
+    --bp-action-button-padding-x-icon: var(--bp-semantic-spacing-micro-md);
+  }
+  .bp-action-button[data-size="lg"] {
+    --bp-action-button-size: var(--bp-semantic-size-interactive-sm);
+    --bp-action-button-icon-size: var(--bp-semantic-size-icon-md);
+  }
+
+  .bp-tag[data-size="sm"] {
+    --bp-tag-height: var(--bp-semantic-size-icon-xs);
+    --bp-tag-icon-size: var(--bp-semantic-size-icon-xxs);
+  }
+
+  .bp-avatar[data-size="sm"] {
+    --bp-avatar-size: var(--bp-semantic-size-avatar-sm);
+    --bp-avatar-icon-size: var(--bp-semantic-size-icon-sm);
+    --bp-avatar-font-size: var(--bp-semantic-typography-brand-initial-sm-font-size);
+    --bp-avatar-line-height: var(--bp-semantic-typography-brand-initial-sm-line-height);
+    --bp-avatar-overlap: var(--bp-semantic-spacing-overlap-10);
+  }
+  .bp-avatar[data-size="md"] {
+    --bp-avatar-size: var(--bp-semantic-size-avatar-md);
+    --bp-avatar-icon-size: var(--bp-semantic-size-icon-md);
+    --bp-avatar-emblem-size: var(--bp-semantic-size-icon-sm);
+    --bp-avatar-emblem-icon-size: var(--bp-semantic-size-icon-xs);
+    --bp-avatar-font-size: var(--bp-semantic-typography-brand-initial-md-font-size);
+    --bp-avatar-line-height: var(--bp-semantic-typography-brand-initial-md-line-height);
+    --bp-avatar-overlap: var(--bp-semantic-spacing-overlap-12);
+  }
+  .bp-avatar[data-size="lg"] {
+    --bp-avatar-size: var(--bp-semantic-size-avatar-lg);
+    --bp-avatar-icon-size: var(--bp-semantic-size-icon-lg);
+    --bp-avatar-emblem-size: var(--bp-semantic-size-icon-md);
+    --bp-avatar-emblem-icon-size: var(--bp-semantic-size-icon-sm);
+    --bp-avatar-font-size: var(--bp-semantic-typography-brand-initial-lg-font-size);
+    --bp-avatar-line-height: var(--bp-semantic-typography-brand-initial-lg-line-height);
+    --bp-avatar-overlap: var(--bp-semantic-spacing-overlap-16);
+  }
+  .bp-avatar[data-size="xl"] {
+    --bp-avatar-size: var(--bp-semantic-size-avatar-xl);
+    --bp-avatar-icon-size: var(--bp-semantic-size-icon-xl);
+    --bp-avatar-optical-size: var(--bp-semantic-size-icon-xl);
+    --bp-avatar-emblem-size: var(--bp-semantic-size-icon-lg);
+    --bp-avatar-emblem-icon-size: var(--bp-semantic-size-icon-md);
+    --bp-avatar-font-size: var(--bp-semantic-typography-brand-initial-xl-font-size);
+    --bp-avatar-line-height: var(--bp-semantic-typography-brand-initial-xl-line-height);
+    --bp-avatar-overlap: var(--bp-semantic-spacing-overlap-24);
+  }
+  .bp-avatar[data-size="xxl"] {
+    --bp-avatar-size: var(--bp-semantic-size-avatar-xxl);
+    --bp-avatar-icon-size: var(--bp-semantic-size-icon-xxl);
+    --bp-avatar-optical-size: var(--bp-semantic-size-icon-xl);
+    --bp-avatar-emblem-size: var(--bp-semantic-size-avatar-sm);
+    --bp-avatar-emblem-icon-size: var(--bp-semantic-size-avatar-xs);
+    --bp-avatar-font-size: var(--bp-semantic-typography-brand-initial-xxl-font-size);
+    --bp-avatar-line-height: var(--bp-semantic-typography-brand-initial-xxl-line-height);
+    --bp-avatar-overlap: var(--bp-semantic-spacing-overlap-32);
+  }
+
+  .bp-spinner[data-size="sm"] { --bp-spinner-size-size: var(--bp-semantic-size-icon-sm); }
+  .bp-spinner[data-size="lg"] { --bp-spinner-size-size: var(--bp-semantic-size-icon-lg); }
+  [data-context="on-brand"] {
+    --bp-spinner-context-backdrop-color: var(--bp-theme-color-loading-backdrop-on-brand);
+    --bp-spinner-context-spinner-color: var(--bp-theme-color-loading-spinner-on-brand);
+  }
+  [data-context="on-solid"] {
+    --bp-spinner-context-backdrop-color: var(--bp-theme-color-loading-backdrop-on-solid);
+    --bp-spinner-context-spinner-color: var(--bp-theme-color-loading-spinner-on-solid);
+  }
+  [data-context="on-inverse"] {
+    --bp-spinner-context-backdrop-color: var(--bp-theme-color-loading-backdrop-on-inverse);
+    --bp-spinner-context-spinner-color: var(--bp-theme-color-loading-spinner-on-inverse);
+  }
+}

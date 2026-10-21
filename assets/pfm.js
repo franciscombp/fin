@@ -132,7 +132,7 @@
     var s = {}; rows().forEach(function (r) { s[r.mes] = 1; });
     return Object.keys(s).sort().reverse();
   }
-  function curMes() { return meses()[0]; } // el mes en curso (ya no hay pestañas de meses)
+  function curMes() { return meses()[0] || HOY.slice(0, 7); } // el mes en curso (ya no hay pestañas de meses); sin movimientos, el mes de hoy
 
   /* ---------- Preguntas de Uku (Por revisar) ----------
      Una pregunta por persona y sentido. Las opciones dependen de lo que el
@@ -1147,9 +1147,12 @@
       (L.length ? L.slice(0, 6).map(txHTML).join('') : '<p class="pf-note">' + T('Este día no gastaste nada.') + '</p>') + '</div>';
   }
   function gastosHTML() {
-    var P = per(), s = P.o, pr = pres(), mb = P.m ? pr : null;
+    var P = per(), s = P.o, pr = pres(), mb = P.m ? pr : null, app = document.documentElement.classList.contains('app-uku');
+    // En el asistente, arriba va el hallazgo de Uku sobre el periodo (wireframe «Mis gastos»): una frase con lo que cambió
+    var H = app ? hallazgos(P.m || curMes()).filter(function (x) { return x.t && x.icon !== 'hourglass_top'; })[0] : null;
+    var insight = H ? '<div class="pfm-insight"><span class="pfm-insight__ic"><span class="material-symbols-rounded" aria-hidden="true">lightbulb</span></span><p><b>' + H.t + '.</b>' + (H.s ? ' ' + H.s : '') + '</p></div>' : '';
     // El periodo queda fijo arriba: todo lo de abajo (gráfica, destacado, grupos) cambia con él
-    var html = '<div class="pfm-per"><section class="pf-sec pfm-flow"><div class="pf-sec__head"><h2>' + T('Cuánto gastaste') + '</h2><button class="section__link" data-pfm="alltx">' + T('Movimientos') + '</button></div></section>' +
+    var html = insight + '<div class="pfm-per"><section class="pf-sec pfm-flow"><div class="pf-sec__head"><h2>' + T('Cuánto gastaste') + '</h2><button class="section__link" data-pfm="alltx">' + T('Movimientos') + '</button></div></section>' +
       '<div class="pfm-tabs" role="tablist" aria-label="' + T('Periodo') + '">' + PER.map(function (x) {
         return '<button class="tab' + (ST.per === x[0] ? ' active' : '') + '" role="tab" aria-selected="' + (ST.per === x[0]) + '" data-pfm="per:' + x[0] + '">' + T(x[1]) + '</button>'; }).join('') + '</div>' +
       '<section class="pf-sec pfm-flow__body">' + chartHTML(P);
@@ -1163,7 +1166,7 @@
     // En qué grupos se fue, en el mismo periodo
     var ks = Object.keys(s.grupos).sort(function (a, b) { return (GRUPOS[a].gris ? 1 : 0) - (GRUPOS[b].gris ? 1 : 0) || s.grupos[b] - s.grupos[a]; });
     var max = Math.max.apply(null, ks.map(function (k) { return s.grupos[k]; }).concat([1])), nIt = items().length;
-    html += '<section class="pf-sec pfm-groups"><div class="pf-sec__head"><h2>' + T('En qué se fue') + '</h2></div><p class="pf-sec__sub">' + T('Por grupo, {cuando}.', { cuando: P.l }) + '</p>' +
+    html += '<section class="pf-sec pfm-groups"><div class="pf-sec__head"><h2>' + T('Categorías') + '</h2><button class="section__link" data-pfm="alltx">' + T('Movimientos') + '</button></div><p class="pf-sec__sub">' + T('Por grupo, {cuando}.', { cuando: P.l }) + '</p>' +
       '<div class="pf-mcard pfm-list">' + ks.map(function (g) {
         var b = mb && mb.cats[g], v = s.grupos[g], gris = GRUPOS[g].gris;
         var sub = gris ? (nIt ? T('No sabemos en qué fue · Clasifícalo') : T('Efectivo y lo que no tiene categoría')) : b ? (v > b ? T('{m} más de {p}', { m: money0(v - b), p: money0(b) }) : T('Te quedan {m} de {p}', { m: money0(b - v), p: money0(b) }))
@@ -1222,7 +1225,7 @@
     var body = vistaGastos === 'gastos'
       ? '<button class="pf-back" data-pfm="inicio"><span class="material-symbols-rounded" aria-hidden="true">chevron_left</span>' + T('Mis finanzas') + '</button>' + gastosHTML() + dineroHTML()
       : (document.documentElement.classList.contains('app-uku') ? hubHTML() : resumenGastosHTML() + footHTML());
-    scroll.innerHTML = '<header class="pf-head"><h1>' + (vistaGastos === 'gastos' ? T('Tus gastos') : 'Mis finanzas') + '</h1></header>' + body;
+    scroll.innerHTML = '<header class="pf-head"><h1>' + (vistaGastos === 'gastos' ? T('Mis gastos') : 'Mis finanzas') + '</h1></header>' + body;
     window.scrollTo({ top: vistaGastos ? 0 : keep });
   }
   /* ---------- Hojas ---------- */
@@ -1469,21 +1472,21 @@
   /* La hoja de Mis finanzas en el asistente (el mundo de Uku va arriba): una cifra, una línea de estado,
      dos acciones y dos filas. Nada más en el primer pantallazo; los gráficos viven en Gastos. */
   function hubHTML() {
-    var m = curMes(), s = month(m), pr = pres(), g = s.gast, p = pr.general, a = animo();
-    var pe = p ? presEstado(m) : null, dias = isCur(m) ? diasMes(m) - +HOY.slice(8, 10) : 0;
-    var u = p ? Math.min(1, g / p) : 0, cls = !p ? '' : pe.k === 'ok' ? 'is-ok' : 'is-warn';
-    var estado = !p ? T('Todavía no tienes presupuesto.') : g > p ? T('Vas {m} por encima de tu presupuesto', { m: money0(g - p) }) : T('Te quedan {m}', { m: money0(p - g) }) + (dias ? ' · ' + T(dias === 1 ? '1 día' : '{d} días', { d: dias }) : '');
+    var m = curMes(), s = month(m), pr = pres(), g = s.gast, p = pr.general, pat = patrimonio();
+    var pe = p ? presEstado(m) : null, u = p ? Math.min(1, g / p) : 0, cls = !p ? '' : pe.k === 'ok' ? 'is-ok' : 'is-warn';
+    var resta = !p ? T('Todavía no tienes presupuesto.') : g > p ? T('Vas {m} por encima de tu presupuesto', { m: money(g - p) }) : T('Te queda de tu presupuesto: {m}', { m: money(p - g) });
+    // Figma: tres tarjetas. Lo gastado del mes, la acción que Uku recomienda (la pone el asistente) y tu dinero en el banco.
     return '<section class="pf-sec pfm-hub">' +
-      '<div class="pfm-hub__hero"><p class="pfm-hub__cap">' + T('Gastaste en {mes}', { mes: mesName(m).toLowerCase() }) + '</p>' +
+      '<button class="pfm-hub__card pfm-hub__hero" data-pfm="gastos"><h3 class="pfm-hub__h">' + T('Gastaste en {mes}', { mes: mesName(m).toLowerCase() }) + '</h3>' +
       '<b class="pfm-hub__m" data-v="' + g + '">' + money(g) + '</b>' +
       (p ? '<div class="pfm-hub__bar" aria-hidden="true"><i class="' + cls + '" style="width:' + (u * 100).toFixed(1) + '%"></i></div>' : '') +
-      '<p class="pfm-hub__s">' + estado + '</p></div>' +
-      '<div class="pfm-hub__acts"><button class="pfm-hub__btn" data-pfm="gastos"><span class="material-symbols-rounded" aria-hidden="true">bar_chart</span>' + T('Gastos') + '</button><button class="pfm-hub__btn" data-pfm="pres"><span class="material-symbols-rounded" aria-hidden="true">tune</span>' + T('Presupuesto') + '</button></div>' +
-      (a.n ? '<div class="pfm-hub__card"><button class="pfm-hub__row pfm-hub__task" data-pfm="game"><span class="pfm-hub__ic is-accent"><span class="material-symbols-rounded" aria-hidden="true">category</span></span><span class="pfm-hub__pl"><b>' + T('Ordenar mis gastos') + '</b><small>' + T(a.n === 1 ? '1 consumo sin clasificar' : '{n} consumos sin clasificar', { n: a.n }) + '</small></span><span class="material-symbols-rounded pfm-hub__chev" aria-hidden="true">chevron_right</span></button></div>' : '') +
-      hubGruposHTML(s, m) + hubPagosHTML() + hubUltimosHTML() +
+      '<p class="pfm-hub__s">' + resta + '</p></button>' +
+      '<div class="pfm-hub__slot"></div>' +
+      '<button class="pfm-hub__card" data-pfm="dinero"><h3 class="pfm-hub__h">' + T('Mi dinero en Pichibank') + '</h3><div class="pfm-hub__stats">' +
+      '<div><small>' + T('Dinero en mis cuentas e inversiones') + '</small><b>' + money(pat.tienes) + '</b></div>' +
+      '<div><small>' + T('Deuda total acumulada') + '</small><b>' + money(pat.debes) + '</b></div></div></button>' +
       '</section>';
   }
-  // Patrón de la app (como Perfil): etiqueta de sección en gris (con enlace a la derecha) y tarjeta blanca con filas
   function hubSec(t, sub, k, l, rows) { return '<div class="pfm-hub__label"><div><h3>' + t + '</h3>' + (sub ? '<p>' + sub + '</p>' : '') + '</div>' + (k ? '<button class="pfm-hub__link" data-pfm="' + k + '">' + l + '</button>' : '') + '</div><div class="pfm-hub__card">' + rows.join('') + '</div>'; }
   function hubRow(k, icon, t, sm, right, extra) { return '<button class="pfm-hub__row" data-pfm="' + k + '"><span class="pfm-hub__ic"><span class="material-symbols-rounded" aria-hidden="true">' + icon + '</span></span><span class="pfm-hub__pl"><b>' + t + '</b>' + (sm ? '<small>' + sm + '</small>' : '') + (extra || '') + '</span>' + right + '</button>'; }
   // Tus gastos por grupo: los tres que más pesan este mes, con su barra proporcional
@@ -1527,6 +1530,7 @@
     var p = k.split(':');
     switch (p[0]) {
       case 'who': return whoSheet();
+      case 'dinero': return showSheet('<h3>' + T('Mi dinero en Pichibank') + '</h3>' + dineroHTML());
       case 'modo': if (ST.modo !== p[1]) { ST.modo = p[1]; persist(); fx('toggle'); refresh(); if (sheetOpen()) whoSheet(); } return;
       case 'u': if (ST.u !== p[1]) { ST.u = p[1]; persist(); fx('toggle'); refresh(); } closeSheet(); return;
       case 'reset': ST.resp[ST.u] = {}; ST.cats[ST.u] = {}; if (ST.hecho) delete ST.hecho[ST.u]; if (ST.oculto) delete ST.oculto[ST.u]; if (ST.rules) delete ST.rules[ST.u]; if (ST.mesadas) delete ST.mesadas[ST.u]; if (ST.presG) delete ST.presG[ST.u]; if (ST.seed) delete ST.seed[ST.u]; sembrar(ST.u); persist(); refresh(); closeSheet(); toast(T('Listo, volviste al inicio.')); return;

@@ -590,6 +590,21 @@
    "fuera_de_bp": "Celular a crédito en Artefacta, que paga en efectivo",
    "casos": "Saldo promedio de unos $20, sueldo retirado en efectivo, tarjeta pagada apenas cobra (a veces solo el mínimo), sin ahorro, mesada a su mamá, pagos chicos con Deuna",
    "lo_que_necesita": "Saber en qué se le va el efectivo, dejar de pagar el mínimo y juntar un pequeño colchón"
+  },
+  {
+   "usuario": "camila",
+   "nombre": "Camila Reyes",
+   "edad": 19,
+   "ciudad": "Ambato",
+   "tipo": "Cliente nueva: acaba de abrir su primera cuenta",
+   "grupo_investigacion": "Clientes nuevos",
+   "ingreso_mensual": "Sin ingresos fijos todavía; sus padres le pasan algo cada mes",
+   "hogar": "Vive con sus padres; empieza la universidad",
+   "digitalizacion": "Alta: abrió la cuenta desde la app, sin ir a una agencia",
+   "productos_bp": "Cuenta transaccional",
+   "fuera_de_bp": "Ninguno",
+   "casos": "Primera cuenta, sin movimientos todavía: no sabe qué puede hacer con la app ni cómo recibir su primer pago",
+   "lo_que_necesita": "Empezar: recibir dinero, pagar con QR y entender qué productos le convienen"
   }
  ],
  "deudas": [
@@ -52051,7 +52066,8 @@
     0,
     null
    ]
-  ]
+  ],
+  "camila": []
  },
  "cuentas": {
   "andres": [
@@ -52171,6 +52187,734 @@
     "saldo": 120.0,
     "meta": 240.0
    }
+  ],
+  "camila": [
+   {
+    "tipo": "transaccional",
+    "nombre": "Cuenta transaccional",
+    "numero": "3350",
+    "saldo": 0.0,
+    "fuente": "Cuenta transaccional Pichibank ···3350"
+   }
   ]
+ },
+ "agenda": {
+  "andres": {
+   "contactos": [
+    {
+     "nombre": "Kevin Tipán Lasso",
+     "alias": "Kevin",
+     "banco": "Pichibank",
+     "cuenta": "2857537773",
+     "tipo_cuenta": "Corriente",
+     "cedula": "2018013537",
+     "celular": "0951468663",
+     "deuna": true,
+     "favorito": true,
+     "veces": 35,
+     "ultimo": "2026-10-06",
+     "monto_tipico": 5.59
+    },
+    {
+     "nombre": "Pablo Toapanta Ruiz",
+     "alias": "Pablo",
+     "banco": "Pichibank",
+     "cuenta": "2951932726",
+     "tipo_cuenta": "Corriente",
+     "cedula": "2245571099",
+     "celular": "0939916103",
+     "deuna": true,
+     "favorito": false,
+     "veces": 28,
+     "ultimo": "2026-10-14",
+     "monto_tipico": 0
+    },
+    {
+     "nombre": "Carlos Peña Rivas",
+     "alias": "Carlos",
+     "banco": "Pichibank",
+     "cuenta": "2799508317",
+     "tipo_cuenta": "Corriente",
+     "cedula": "2008596854",
+     "celular": "0925092493",
+     "deuna": true,
+     "favorito": false,
+     "veces": 28,
+     "ultimo": "2026-10-13",
+     "monto_tipico": 0
+    },
+    {
+     "nombre": "Verónica Cueva Salas",
+     "alias": "Verónica",
+     "banco": "Pichibank",
+     "cuenta": "3196673783",
+     "tipo_cuenta": "Ahorros",
+     "cedula": "2262403091",
+     "celular": "0916469239",
+     "deuna": true,
+     "favorito": false,
+     "veces": 23,
+     "ultimo": "2026-09-24",
+     "monto_tipico": 0
+    },
+    {
+     "nombre": "Carolina Paredes Ruiz",
+     "alias": "Carolina",
+     "banco": "Banco Bolivariano",
+     "cuenta": "2877180491",
+     "tipo_cuenta": "Ahorros",
+     "cedula": "1824026739",
+     "celular": "",
+     "deuna": false,
+     "favorito": false,
+     "veces": 13,
+     "ultimo": "2026-10-02",
+     "monto_tipico": 0
+    },
+    {
+     "nombre": "Luz María Villacís Ochoa",
+     "alias": "Luz",
+     "banco": "Pichibank",
+     "cuenta": "2924117205",
+     "tipo_cuenta": "Corriente",
+     "cedula": "2102676980",
+     "celular": "0965468529",
+     "deuna": true,
+     "favorito": true,
+     "veces": 13,
+     "ultimo": "2026-10-10",
+     "monto_tipico": 120.0
+    },
+    {
+     "nombre": "Gabriela Villacís Ochoa",
+     "alias": "Gabriela",
+     "banco": "Pichibank",
+     "cuenta": "2316307677",
+     "tipo_cuenta": "Ahorros",
+     "cedula": "2365684229",
+     "celular": "0912601521",
+     "deuna": true,
+     "favorito": true,
+     "veces": 7,
+     "ultimo": "2026-09-16",
+     "monto_tipico": 250.0
+    },
+    {
+     "nombre": "Diego Lemos Guanín",
+     "alias": "Diego",
+     "banco": "Pichibank",
+     "cuenta": "2947765002",
+     "tipo_cuenta": "Ahorros",
+     "cedula": "2504096223",
+     "celular": "0976689885",
+     "deuna": true,
+     "favorito": false,
+     "veces": 4,
+     "ultimo": "2026-09-25",
+     "monto_tipico": 300.0
+    }
+   ],
+   "favoritos": [
+    "Transferir dinero",
+    "Pagar servicios",
+    "Pagar tarjeta"
+   ],
+   "exterior": [],
+   "deuna": {
+    "mi_numero": "0983469565",
+    "contactos": [
+     {
+      "nombre": "Kevin Tipán Lasso",
+      "celular": "0951468663"
+     },
+     {
+      "nombre": "Pablo Toapanta Ruiz",
+      "celular": "0939916103"
+     },
+     {
+      "nombre": "Carlos Peña Rivas",
+      "celular": "0925092493"
+     },
+     {
+      "nombre": "Verónica Cueva Salas",
+      "celular": "0916469239"
+     },
+     {
+      "nombre": "Luz María Villacís Ochoa",
+      "celular": "0965468529"
+     },
+     {
+      "nombre": "Gabriela Villacís Ochoa",
+      "celular": "0912601521"
+     },
+     {
+      "nombre": "Diego Lemos Guanín",
+      "celular": "0976689885"
+     }
+    ]
+   },
+   "recargas": [
+    {
+     "nombre": "Mi celular",
+     "numero": "0983469565",
+     "operadora": "Claro",
+     "monto_tipico": 5
+    },
+    {
+     "nombre": "Kevin",
+     "numero": "0951468663",
+     "operadora": "Claro",
+     "monto_tipico": 5
+    },
+    {
+     "nombre": "Luz",
+     "numero": "0965468529",
+     "operadora": "Claro",
+     "monto_tipico": 5
+    }
+   ],
+   "domiciliados": [
+    {
+     "empresa": "NETLIFE internet hogar",
+     "contrato": "363431",
+     "monto_tipico": 31.99,
+     "dia": 3,
+     "veces": 13,
+     "ultimo": "2026-10-03",
+     "cuenta": "transaccional",
+     "tope": 47.98,
+     "aviso_previo": true
+    }
+   ],
+   "recurrentes": [
+    {
+     "empresa": "EPMAPS Agua Potable",
+     "contrato": "394389",
+     "monto_tipico": 13.57,
+     "dia": 12,
+     "veces": 13,
+     "ultimo": "2026-10-12",
+     "frecuencia": "mensual",
+     "recordatorio": true
+    },
+    {
+     "empresa": "Empresa Eléctrica Quito",
+     "contrato": "914811",
+     "monto_tipico": 29.56,
+     "dia": 12,
+     "veces": 13,
+     "ultimo": "2026-10-12",
+     "frecuencia": "mensual",
+     "recordatorio": true
+    },
+    {
+     "empresa": "CLARO PLAN POSPAGO",
+     "contrato": "697512",
+     "monto_tipico": 18.5,
+     "dia": 12,
+     "veces": 13,
+     "ultimo": "2026-10-12",
+     "frecuencia": "mensual",
+     "recordatorio": true
+    },
+    {
+     "empresa": "Unidad Educativa San Gabriel",
+     "contrato": "544380",
+     "monto_tipico": 95.0,
+     "dia": 6,
+     "veces": 12,
+     "ultimo": "2026-10-06",
+     "frecuencia": "mensual",
+     "recordatorio": true
+    },
+    {
+     "empresa": "DE PRATI",
+     "contrato": "415630",
+     "monto_tipico": 62.4,
+     "dia": 12,
+     "veces": 10,
+     "ultimo": "2026-10-12",
+     "frecuencia": "mensual",
+     "recordatorio": true
+    }
+   ]
+  },
+  "rosa": {
+   "contactos": [
+    {
+     "nombre": "Mercedes Quizhpi Loja",
+     "alias": "Mercedes",
+     "banco": "Pichibank",
+     "cuenta": "3179107146",
+     "tipo_cuenta": "Ahorros",
+     "cedula": "2390347116",
+     "celular": "0990237687",
+     "deuna": true,
+     "favorito": false,
+     "veces": 1,
+     "ultimo": "2026-02-12",
+     "monto_tipico": 200.0
+    },
+    {
+     "nombre": "Carmen Guamán Pintado",
+     "alias": "Carmen",
+     "banco": "Pichibank",
+     "cuenta": "2289795496",
+     "tipo_cuenta": "Corriente",
+     "cedula": "2277083207",
+     "celular": "0911323134",
+     "deuna": true,
+     "favorito": false,
+     "veces": 0,
+     "ultimo": "",
+     "monto_tipico": 0
+    },
+    {
+     "nombre": "Luis Pintado Sari",
+     "alias": "Luis",
+     "banco": "Pichibank",
+     "cuenta": "2775370704",
+     "tipo_cuenta": "Ahorros",
+     "cedula": "2287531748",
+     "celular": "0983591747",
+     "deuna": true,
+     "favorito": false,
+     "veces": 0,
+     "ultimo": "",
+     "monto_tipico": 0
+    }
+   ],
+   "favoritos": [
+    "Transferir dinero",
+    "Pagar servicios",
+    "Cobrar con QR"
+   ],
+   "exterior": [
+    {
+     "nombre": "Kevin Guamán Pintado",
+     "pais": "Estados Unidos",
+     "moneda": "USD",
+     "banco": "Bank of America",
+     "swift": "BOFAUS3N",
+     "cuenta": "US9035840499884599",
+     "relacion": "familiar",
+     "recibe_de": true,
+     "veces": 15,
+     "ultimo": "2026-10-03",
+     "monto_tipico": 368.93
+    }
+   ],
+   "deuna": {
+    "mi_numero": "0915162071",
+    "contactos": [
+     {
+      "nombre": "Mercedes Quizhpi Loja",
+      "celular": "0990237687"
+     },
+     {
+      "nombre": "Carmen Guamán Pintado",
+      "celular": "0911323134"
+     },
+     {
+      "nombre": "Luis Pintado Sari",
+      "celular": "0983591747"
+     }
+    ]
+   },
+   "recargas": [
+    {
+     "nombre": "Mi celular",
+     "numero": "0915162071",
+     "operadora": "Claro",
+     "monto_tipico": 5
+    }
+   ],
+   "domiciliados": [
+    {
+     "empresa": "CENTROSUR energía",
+     "contrato": "970180",
+     "monto_tipico": 22.19,
+     "dia": 14,
+     "veces": 13,
+     "ultimo": "2026-10-14",
+     "frecuencia": "mensual",
+     "recordatorio": true,
+     "cuenta": "transaccional",
+     "tope": 33.29,
+     "aviso_previo": true
+    }
+   ],
+   "recurrentes": []
+  },
+  "daniela": {
+   "contactos": [
+    {
+     "nombre": "Mateo Burgos Pinto",
+     "alias": "Mateo",
+     "banco": "Pichibank",
+     "cuenta": "2568233392",
+     "tipo_cuenta": "Ahorros",
+     "cedula": "1920286273",
+     "celular": "0924055900",
+     "deuna": true,
+     "favorito": true,
+     "veces": 32,
+     "ultimo": "2026-10-03",
+     "monto_tipico": 5.95
+    },
+    {
+     "nombre": "Sofía Aragundi Vera",
+     "alias": "Sofía",
+     "banco": "Pichibank",
+     "cuenta": "2972142041",
+     "tipo_cuenta": "Ahorros",
+     "cedula": "1960566048",
+     "celular": "0910364027",
+     "deuna": true,
+     "favorito": false,
+     "veces": 26,
+     "ultimo": "2026-10-06",
+     "monto_tipico": 0
+    },
+    {
+     "nombre": "Jorge Cevallos Zambrano",
+     "alias": "Jorge",
+     "banco": "Pichibank",
+     "cuenta": "3047159931",
+     "tipo_cuenta": "Ahorros",
+     "cedula": "1889640190",
+     "celular": "0944750938",
+     "deuna": true,
+     "favorito": true,
+     "veces": 13,
+     "ultimo": "2026-10-01",
+     "monto_tipico": 420.0
+    },
+    {
+     "nombre": "Mónica Ortiz Mera",
+     "alias": "Mónica",
+     "banco": "Pichibank",
+     "cuenta": "2417382566",
+     "tipo_cuenta": "Ahorros",
+     "cedula": "2126217978",
+     "celular": "0920457464",
+     "deuna": true,
+     "favorito": true,
+     "veces": 13,
+     "ultimo": "2026-10-02",
+     "monto_tipico": 50.0
+    }
+   ],
+   "favoritos": [
+    "Transferir dinero",
+    "Pagar servicios",
+    "Pagar tarjeta",
+    "Recargar celular"
+   ],
+   "exterior": [],
+   "deuna": {
+    "mi_numero": "0985618435",
+    "contactos": [
+     {
+      "nombre": "Mateo Burgos Pinto",
+      "celular": "0924055900"
+     },
+     {
+      "nombre": "Sofía Aragundi Vera",
+      "celular": "0910364027"
+     },
+     {
+      "nombre": "Jorge Cevallos Zambrano",
+      "celular": "0944750938"
+     },
+     {
+      "nombre": "Mónica Ortiz Mera",
+      "celular": "0920457464"
+     }
+    ]
+   },
+   "recargas": [
+    {
+     "nombre": "Mi celular",
+     "numero": "0985618435",
+     "operadora": "Claro",
+     "monto_tipico": 10.0
+    },
+    {
+     "nombre": "Mateo",
+     "numero": "0924055900",
+     "operadora": "CNT",
+     "monto_tipico": 5
+    },
+    {
+     "nombre": "Jorge",
+     "numero": "0944750938",
+     "operadora": "Movistar",
+     "monto_tipico": 5
+    }
+   ],
+   "domiciliados": [
+    {
+     "empresa": "CLARO",
+     "contrato": "845667",
+     "monto_tipico": 10.0,
+     "dia": 20,
+     "veces": 12,
+     "ultimo": "2026-09-20",
+     "frecuencia": "mensual",
+     "recordatorio": true,
+     "cuenta": "transaccional",
+     "tope": 15.0,
+     "aviso_previo": true
+    }
+   ],
+   "recurrentes": [
+    {
+     "empresa": "ETAFASHION",
+     "contrato": "219530",
+     "monto_tipico": 28.6,
+     "dia": 15,
+     "veces": 5,
+     "ultimo": "2026-05-15",
+     "frecuencia": "mensual",
+     "recordatorio": true
+    }
+   ]
+  },
+  "jorge": {
+   "contactos": [
+    {
+     "nombre": "Santiago Salazar Andrade",
+     "alias": "Santiago",
+     "banco": "Pichibank",
+     "cuenta": "3079946077",
+     "tipo_cuenta": "Ahorros",
+     "cedula": "2437985492",
+     "celular": "0974491532",
+     "deuna": true,
+     "favorito": false,
+     "veces": 5,
+     "ultimo": "2026-09-28",
+     "monto_tipico": 2000.0
+    },
+    {
+     "nombre": "Marlene Andrade Coello",
+     "alias": "Marlene",
+     "banco": "Pichibank",
+     "cuenta": "2458933777",
+     "tipo_cuenta": "Corriente",
+     "cedula": "1961085249",
+     "celular": "0917851383",
+     "deuna": true,
+     "favorito": false,
+     "veces": 0,
+     "ultimo": "",
+     "monto_tipico": 0
+    },
+    {
+     "nombre": "Mateo Salazar Andrade",
+     "alias": "Mateo",
+     "banco": "Pichibank",
+     "cuenta": "2251449159",
+     "tipo_cuenta": "Ahorros",
+     "cedula": "2219507605",
+     "celular": "0990493017",
+     "deuna": true,
+     "favorito": false,
+     "veces": 0,
+     "ultimo": "",
+     "monto_tipico": 0
+    }
+   ],
+   "favoritos": [
+    "Transferir dinero",
+    "Pagar servicios",
+    "Pagar tarjeta"
+   ],
+   "exterior": [
+    {
+     "nombre": "Andrea Salazar Andrade",
+     "pais": "España",
+     "moneda": "EUR",
+     "banco": "Banco Santander",
+     "swift": "BSCHESMM",
+     "cuenta": "ES6480872612874369",
+     "relacion": "familiar",
+     "recibe_de": true,
+     "veces": 13,
+     "ultimo": "2026-10-08",
+     "monto_tipico": 234.94
+    }
+   ],
+   "deuna": {
+    "mi_numero": "0918360792",
+    "contactos": [
+     {
+      "nombre": "Santiago Salazar Andrade",
+      "celular": "0974491532"
+     },
+     {
+      "nombre": "Marlene Andrade Coello",
+      "celular": "0917851383"
+     },
+     {
+      "nombre": "Mateo Salazar Andrade",
+      "celular": "0990493017"
+     }
+    ]
+   },
+   "recargas": [
+    {
+     "nombre": "Mi celular",
+     "numero": "0918360792",
+     "operadora": "Claro",
+     "monto_tipico": 5
+    }
+   ],
+   "domiciliados": [
+    {
+     "empresa": "CNT telefonía e internet",
+     "contrato": "255113",
+     "monto_tipico": 34.2,
+     "dia": 15,
+     "veces": 13,
+     "ultimo": "2026-10-15",
+     "frecuencia": "mensual",
+     "recordatorio": true,
+     "cuenta": "transaccional",
+     "tope": 51.3,
+     "aviso_previo": true
+    }
+   ],
+   "recurrentes": [
+    {
+     "empresa": "Empresa Eléctrica Quito",
+     "contrato": "468866",
+     "monto_tipico": 30.91,
+     "dia": 15,
+     "veces": 13,
+     "ultimo": "2026-10-15",
+     "frecuencia": "mensual",
+     "recordatorio": true
+    },
+    {
+     "empresa": "CLARO PLAN FAMILIAR",
+     "contrato": "344628",
+     "monto_tipico": 24.0,
+     "dia": 10,
+     "veces": 12,
+     "ultimo": "2026-09-12",
+     "frecuencia": "mensual",
+     "recordatorio": true
+    },
+    {
+     "empresa": "LA GANGA",
+     "contrato": "349116",
+     "monto_tipico": 52.4,
+     "dia": 8,
+     "veces": 8,
+     "ultimo": "2026-10-08",
+     "frecuencia": "mensual",
+     "recordatorio": true
+    }
+   ]
+  },
+  "luis": {
+   "contactos": [
+    {
+     "nombre": "Jefferson Quiñónez Bone",
+     "alias": "Jefferson",
+     "banco": "Pichibank",
+     "cuenta": "2856869791",
+     "tipo_cuenta": "Ahorros",
+     "cedula": "2454711672",
+     "celular": "0923175696",
+     "deuna": true,
+     "favorito": true,
+     "veces": 14,
+     "ultimo": "2026-10-07",
+     "monto_tipico": 3.57
+    },
+    {
+     "nombre": "Carmen Cedeño Mora",
+     "alias": "Carmen",
+     "banco": "Pichibank",
+     "cuenta": "2499818387",
+     "tipo_cuenta": "Corriente",
+     "cedula": "2381645796",
+     "celular": "0921240747",
+     "deuna": true,
+     "favorito": true,
+     "veces": 12,
+     "ultimo": "2026-10-02",
+     "monto_tipico": 40.0
+    }
+   ],
+   "favoritos": [
+    "Transferir dinero",
+    "Pagar servicios",
+    "Pagar tarjeta",
+    "Recargar celular"
+   ],
+   "exterior": [],
+   "deuna": {
+    "mi_numero": "0928414772",
+    "contactos": [
+     {
+      "nombre": "Jefferson Quiñónez Bone",
+      "celular": "0923175696"
+     },
+     {
+      "nombre": "Carmen Cedeño Mora",
+      "celular": "0921240747"
+     }
+    ]
+   },
+   "recargas": [
+    {
+     "nombre": "Mi celular",
+     "numero": "0928414772",
+     "operadora": "Claro",
+     "monto_tipico": 2.49
+    },
+    {
+     "nombre": "Jefferson",
+     "numero": "0923175696",
+     "operadora": "Movistar",
+     "monto_tipico": 5
+    },
+    {
+     "nombre": "Carmen",
+     "numero": "0921240747",
+     "operadora": "Claro",
+     "monto_tipico": 5
+    }
+   ],
+   "domiciliados": [],
+   "recurrentes": []
+  },
+  "camila": {
+   "contactos": [],
+   "favoritos": [
+    "Recibir dinero",
+    "Pagar con QR",
+    "Transferir dinero"
+   ],
+   "exterior": [],
+   "deuna": {
+    "mi_numero": "0968139209",
+    "contactos": []
+   },
+   "recargas": [
+    {
+     "nombre": "Mi celular",
+     "numero": "0968139209",
+     "operadora": "Claro",
+     "monto_tipico": 5
+    }
+   ],
+   "domiciliados": [],
+   "recurrentes": []
+  }
  }
 }

@@ -63,6 +63,21 @@ Si una decisión cambia, actualiza esta página en el mismo cambio.
 
 ## 5. Design system (DS) y medidas
 
+**Fuente de verdad.** Los estilos y los componentes salen de la biblioteca de Figma «Components 4 [Beta]»
+(`figma.com/design/Q8Xzu4JzCGv5OnXANT04WA`). Los wireframes (archivo «Oso») dan la estructura y la
+navegación de cada pantalla; nunca sus estilos. En código:
+
+- `assets/tokens.css` es el export autogenerado de la biblioteca (capas `tokens.base`, `layout`, `semantic`
+  y `theme`, con modos `data-theme` light/dark y `data-layout` por dispositivo). No se edita a mano salvo
+  dos ajustes marcados con comentario: el modo por defecto sin atributo y el respaldo de fuente
+  (`Prelo, Roboto, sans-serif`, porque Prelo es comercial y no viaja con el prototipo). Al final va una
+  capa `tokens.product`, mantenida a mano, con los alias que la app usa y el export no trae (interacción
+  por estado `--hover/--active/--focus`, espaciados de composición, anillo de foco).
+- `assets/componentes-tokens.css` trae los tokens de componente (bp-button, bp-avatar, bp-tag, bp-spinner,
+  bp-action-button, bp-guided-tour) tal cual los exporta Figma (`:host([size=…])`) y, debajo, la misma
+  tabla adaptada al DOM plano con alias `--bp-<componente>-*` y modos por `data-size` / `data-context`.
+- Cuando llegue un export nuevo, se reemplaza la parte generada y se conservan las dos capas manuales.
+
 Usar siempre los tokens, nunca valores fijos:
 
 - **Márgenes de página y relleno de contenedores: con los tokens de layout, nunca con un número.**
@@ -123,6 +138,26 @@ Dónde está aplicado: Perfil (`index.html`), las hojas de Mis finanzas (`hubHTM
 Soporte (`ayudaHTML` en `assets/uku-app.js`), con las clases `.pfm-hub__*` y `.uk-ay__*` en
 `assets/uku-app.css`.
 
+### 5.2 Mapa de navegación del asistente (Uku)
+
+Un solo control arriba a la izquierda y, cuando la pantalla tiene nombre, el título centrado
+(`.uk-chathead`). Nunca una flecha y una X a la vez.
+
+- **Inicio** (`is-home`): la flecha sale del asistente a la app. Globo de Uku con saludo, chips de
+  propuestas, buscador con micrófono y dos accesos: Mis finanzas y Soporte.
+- **Buscador**: hoja a pantalla completa que abre el campo; la X vuelve al inicio.
+- **Chat** (`is-chat`): la flecha vuelve al inicio. Uku asoma abajo a la izquierda, sobre la barra
+  «Escríbele a Uku». Mensajes del usuario en gris, respuestas en blanco, acciones en tarjeta y
+  «¿Te sirvió?» con pulgar abajo y pulgar arriba.
+- **Mis finanzas** (`is-fin`): título «Mis finanzas», la flecha vuelve al inicio. Globo con la
+  recomendación, Uku en escena y una hoja a media altura con tres tarjetas: gasto del mes (abre
+  **Mis gastos**), la acción recomendada y «Mi dinero en Pichibank» (abre su hoja).
+- **Mis gastos** (`is-page`): página completa con título y X que vuelve a Mis finanzas. Hallazgo del mes,
+  periodos, tarjeta con total y gráfico, categorías con barras.
+- **Soporte** (`is-ayuda`): título «Soporte», la flecha vuelve al inicio. Tarjeta de Solicitudes, tres
+  preguntas frecuentes (cada una se responde en el chat) y «Ver todas las categorías», que abre la
+  **ayuda completa**: hoja a pantalla completa con título y X que vuelve a Soporte.
+
 ## 6. Buscador
 
 - Sin título ni subtítulo: la hoja es el campo, el micrófono, la cámara y "Cancelar".
@@ -143,6 +178,12 @@ Soporte (`ayudaHTML` en `assets/uku-app.js`), con las clases `.pfm-hub__*` y `.u
 - Las preguntas que también existen en `assets/soporte.js` llevan el mismo título y la misma
   respuesta; `tools/conocimiento-validar.js` avisa si se desalinean. `tools/conocimiento-probar.js`
   mide el buscador con 190 consultas reales: no bajar del 90 % en primer lugar.
+
+- La demo pública del buscador vive en `buscador/` y se publica con el workflow de Pages (solo
+  acepta `main`). Cambia según la persona de `assets/pfm/datos.json`; la agenda de cada persona
+  (contactos, exterior, Deuna, domiciliados, recurrentes) la genera `tools/pfm-agenda.py`, no se
+  edita a mano. `camila` es la persona nueva sin movimientos: cualquier pantalla debe aguantar una
+  persona sin historial (en `pfm.js`, `curMes()` cae al mes de hoy).
 
 ## 7. Escáner de Pagar con QR
 
