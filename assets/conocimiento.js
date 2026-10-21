@@ -254,7 +254,7 @@
     };
     // La base está junto a este archivo (assets/conocimiento/base.json), se cargue desde la página que sea
     var me = win.document.currentScript && win.document.currentScript.src;
-    cargarDesde(me ? me.replace(/conocimiento\.js(\?.*)?$/, 'conocimiento/base.json') : './assets/conocimiento/base.json').catch(function () {});
+    cargarDesde(me ? me.replace(/conocimiento\.js(\?.*)?$/, 'conocimiento/base.json$1') : './assets/conocimiento/base.json').catch(function () {}); // conserva el ?v= del script: la base se versiona igual
   }
   return api;
 });

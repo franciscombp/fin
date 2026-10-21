@@ -24,9 +24,9 @@
    ===================================================================== */
 (function () {
   'use strict';
-  var K = window.Conocimiento, P = window.DemoPersona, L = window.Lector;
+  var K = window.Conocimiento, P = window.DemoPersona, L = window.Lector, BUILD = '__BUILD__'; // lo reemplaza el workflow de Pages: cada despliegue cambia el ?v= y el navegador no reutiliza nada viejo
   var $ = function (s) { return document.querySelector(s); };
-  var q = $('#q'), out = $('#out'), toast = $('#toast'), sx = $('.sx');
+  var q = $('#q'), out = $('#out'), toast = $('#toast'), sx = $('.sx'), cancelBtn = $('#cancel'), cancelIc = cancelBtn.querySelector('span');
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function money(v) { var s = Math.abs(+v || 0).toFixed(2).split('.'); return '$ ' + s[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + s[1]; }
   function norm(s) { return K.norm(s); }
@@ -52,6 +52,11 @@
     var ws = n.split(' ').filter(function (w) { return w.length > 3 && !/^(hogar|plan|internet|telefonia|energia|potable|agua)$/.test(w); });
     return new RegExp('\\b(' + (ws.length ? ws.map(function (w) { return w.replace(/[^a-z0-9]/g, ''); }).join('|') : n.replace(/[^a-z0-9]/g, '')) + extra.replace(/^\|/, '|') + ')');
   }
+  // Desde dónde se abrió el buscador (en la app sería la sección activa): ajustes o ?desde=tarjetas
+  var SEC_KEY = 'kbdemo_seccion';
+  function seccion() { var m = location.search.match(/[?&]desde=([a-z]+)/); if (m) return m[1]; try { return localStorage.getItem(SEC_KEY) || 'inicio'; } catch (e) { return 'inicio'; } }
+  function setSeccion(id) { try { localStorage.setItem(SEC_KEY, id); } catch (e) {} if (location.search) history.replaceState(null, '', location.pathname); }
+  function nombreSeccion(id) { var x = P.secciones().filter(function (s) { return s[0] === id; })[0]; return x ? x[1] : 'Inicio'; }
   function atajosKey() { return 'kbdemo_atajos_' + (persona ? persona.id : 'x'); }
   function aplicarPersona() {
     persona = P.datos(); if (!persona) return;
@@ -63,9 +68,18 @@
     try { atajos = JSON.parse(localStorage.getItem(atajosKey())) || []; } catch (e) { atajos = []; }
     K.datos(function (k) { return persona.valores[k] != null ? persona.valores[k] : null; });
     construirFlujos();
-    var c1 = CONTACTOS.filter(function (c) { return !c.exterior; })[0], c2 = CONTACTOS.filter(function (c) { return c.tel; })[0];
-    EJ[0] = 'transferir 20 a ' + (c1 ? c1.alias.toLowerCase() : 'juan'); EJ[2] = 'recargar 5 a ' + (c2 ? c2.alias.toLowerCase() : 'mamá');
-    if (CONTACTOS.some(function (c) { return c.exterior; })) EJ[5] = 'enviar 100 a ' + CONTACTOS.filter(function (c) { return c.exterior; })[0].alias.toLowerCase();
+    // Frases para probar: solo las que tienen sentido para esta persona (sus contactos, sus servicios, su tarjeta)
+    var c1 = CONTACTOS.filter(function (c) { return !c.exterior; })[0], c2 = CONTACTOS.filter(function (c) { return c.tel; })[0], ext = CONTACTOS.filter(function (c) { return c.exterior; })[0];
+    var luz = persona.servicios.filter(function (x) { return x.contrato && /electric|energia|centrosur|cnel/.test(norm(x.empresa)); })[0], otroServ = persona.servicios.filter(function (x) { return x.contrato; })[0];
+    EJ = [];
+    if (c1) EJ.push('transferir 20 a ' + c1.alias.toLowerCase());
+    if (TARJETAS.length) EJ.push('pagar tarjeta');
+    if (c2) EJ.push('recargar 5 a ' + c2.alias.toLowerCase()); else EJ.push('recargar 5 a mi celular');
+    if (luz) EJ.push('pagar la luz'); else if (otroServ) EJ.push('pagar ' + otroServ.empresa.toLowerCase());
+    if (ext) EJ.push('enviar 100 a ' + ext.alias.toLowerCase());
+    if (!persona.movimientos) EJ.push('recibir dinero', 'pagar con qr', 'abrir una cuenta de ahorros');
+    EJ.push('pagar una factura con foto'); if (TARJETAS.length) EJ.push('bloquear tarjeta'); EJ.push('que es la cuenta joven');
+    EJ = EJ.slice(0, 7);
   }
   function guardarAtajos() { try { localStorage.setItem(atajosKey(), JSON.stringify(atajos)); } catch (e) {} }
   function subAtajo(a) { var d = a.datos || {}, e = K.entrada(a.accion); return [e ? e.t : a.accion, d.contacto || d.empresa || d.numero || '', d.monto ? money(d.monto) : ''].filter(Boolean).join(' · '); }
@@ -111,15 +125,16 @@
     var e = K.entrada(accionId), datos = {};
     if (quien && (accionId === 'accion.transferir' || accionId === 'accion.transferir-exterior')) Object.assign(datos, datosContacto(quien));
     if (quien && accionId === 'accion.recargar') { datos.numero = quien.tel; datos.contacto = quien.n; }
+    if (accionId === 'accion.recargar' && !quien && !tel && /mi (celular|numero|telefono)/.test(nq) && persona && persona.recargas[0]) { datos.numero = persona.recargas[0].numero; datos.operadora = datos.operadora || persona.recargas[0].operadora; }
     if (tel) datos.numero = tel;
     if (operadora) datos.operadora = operadora;
     if (monto) datos.monto = monto;
-    if (servicio && FLUJO_DE[accionId] === 'servicios') { datos.empresa = servicio[1]; datos.monto = datos.monto || servicio[2]; if (servicio[3]) datos.contrato = servicio[3]; }
+    if (servicio && FLUJO_DE[accionId] === 'servicios') { datos.empresa = servicio[1]; if (servicio[3]) { datos.contrato = servicio[3]; datos.monto = datos.monto || servicio[2]; } }
     var nombre = e.t;
     if (accionId === 'accion.transferir') nombre = 'Transferir' + (monto ? ' ' + money(monto) : '') + (quien ? ' a ' + quien.n : '');
     else if (accionId === 'accion.transferir-exterior') nombre = 'Enviar' + (monto ? ' ' + money(monto) : '') + (quien ? ' a ' + quien.alias + ' en ' + quien.pais : ' al exterior');
     else if (accionId === 'accion.recargar') nombre = 'Recargar' + (monto ? ' ' + money(monto) : '') + (quien ? ' a ' + quien.alias : tel ? ' al ' + tel : '');
-    else if (accionId === 'accion.pagar-servicios' && servicio) nombre = 'Pagar ' + servicio[1] + (servicio[2] ? ' · ' + money(servicio[2]) : '') + (servicio[4] ? ' (se paga solo el ' + servicio[5] + ')' : '');
+    else if (accionId === 'accion.pagar-servicios' && servicio) nombre = 'Pagar ' + servicio[1] + (servicio[3] && servicio[2] ? ' · ' + money(servicio[2]) : '') + (servicio[4] ? ' (se paga solo el ' + servicio[5] + ')' : '');
     else if (accionId === 'accion.pagar-tarjeta' && monto) nombre = 'Pagar ' + money(monto) + ' a la tarjeta';
     var lleno = !!(datos.contacto || datos.monto || datos.empresa || datos.numero);
     return { accion: e, datos: datos, nombre: nombre, lleno: lleno };
@@ -158,24 +173,48 @@
     var sub = c.exterior ? c.banco + ' · ' + c.swift + (c.veces ? ' · te envía ' + money(c.montoTipico) + ', la última ' + c.ult : '') : c.banco + ' ' + c.cuenta + (c.deuna ? ' · Deuna ' + c.tel : '') + (c.veces ? ' · ' + c.veces + (c.veces === 1 ? ' vez' : ' veces') + ', la última ' + c.ult : ' · sin movimientos') + (c.montoTipico && !c.exterior ? ' · suele ser ' + money(c.montoTipico) : '');
     return row('data-transferir="' + esc(c.n) + '"', c.exterior ? 'public' : c.favorito ? 'star' : 'person', esc(c.n), esc(sub), c.exterior ? 'Enviar' : 'Transferir') + (c.tel ? '<button class="sx-link" data-recargar="' + esc(c.n) + '"><span class="material-symbols-rounded">smartphone</span>Recargar su celular</button>' : '');
   }
-  function personas() {
-    if (!persona) return '';
-    return '<section class="sx-card"><h3>Persona de la demo</h3><div class="sx-chips">' + P.lista().map(function (u) { return chip('data-persona="' + u.id + '" title="' + esc(u.tipo) + '"', u.nombre.split(' ')[0], u.id === persona.id); }).join('') + '</div></section>' +
-      nota('<b>Hola, ' + esc(persona.primerNombre) + '.</b> ' + esc(persona.tipo) + ' · ' + esc(persona.ciudad) + ' · ' + (persona.movimientos ? persona.movimientos + ' movimientos' : 'sin movimientos todavía') + (persona.deuna && persona.deuna.mi_numero ? ' · Deuna ' + esc(persona.deuna.mi_numero) : '') + '.');
+  // Ajustes de la demo (bajo el botón de la cabecera): la persona, sus datos y los atajos guardados
+  function ajustes() {
+    if (!persona) return volver();
+    var h = volver() + '<section class="sx-card"><h3>Persona de la demo</h3><div class="sx-chips">' + P.lista().map(function (u) { return chip('data-persona="' + u.id + '" title="' + esc(u.tipo) + '"', u.nombre.split(' ')[0], u.id === persona.id); }).join('') + '</div></section>' +
+      nota('<b>' + esc(persona.nombre) + '</b> · ' + esc(persona.tipo) + ' · ' + esc(persona.ciudad) + '<br>' + (persona.movimientos ? persona.movimientos + ' movimientos' : 'Sin movimientos todavía') + (persona.deuna && persona.deuna.mi_numero ? ' · Deuna ' + esc(persona.deuna.mi_numero) : '') + (persona.necesita ? '<br>Lo que necesita: ' + esc(persona.necesita.toLowerCase()) : '') + '.');
+    h += sec('Sus datos', row('data-ver="contactos"', 'group', 'Contactos', CONTACTOS.length ? CONTACTOS.length + ' personas · ' + CONTACTOS.filter(function (c) { return c.favorito; }).length + ' favoritos · ' + CONTACTOS.filter(function (c) { return c.exterior; }).length + ' en el exterior' : 'Ninguno todavía') +
+      row('data-ver="servicios"', 'receipt_long', 'Servicios', persona.servicios.filter(function (x) { return x.contrato; }).length ? persona.domiciliados.length + ' domiciliados · ' + persona.recurrentes.length + ' recurrentes' : 'Ninguno todavía') +
+      row('data-ver="productos"', 'account_balance', 'Productos', persona.cuentas.length + (persona.cuentas.length === 1 ? ' cuenta' : ' cuentas') + ' · ' + persona.tarjetas.length + (persona.tarjetas.length === 1 ? ' tarjeta' : ' tarjetas') + ' · ' + (persona.prestamos.length + (persona.hipoteca ? 1 : 0)) + ' préstamos · ' + persona.inversiones.length + ' inversiones') +
+      row('data-catalogo', 'apps', 'Todas las acciones', K.lista('accion').length + ' acciones de la banca móvil, por tema') +
+      row('data-ir="../sandbox/"', 'science', 'Sandbox de pruebas', 'El mundo de Uku, animaciones, bases y repositorio'));
+    h += sec('Abierto desde', '<div class="sx-chips">' + P.secciones().map(function (x) { return chip('data-seccion="' + x[0] + '"', x[1], x[0] === seccion()); }).join('') + '</div>') +
+      sec('Frases para probar', '<div class="sx-chips">' + EJ.map(function (e) { return chip('data-q="' + esc(e) + '"', e); }).join('') + '</div>');
+    h += nota('Versión ' + esc(BUILD.indexOf('__') === 0 ? 'de desarrollo' : BUILD) + ' · cada despliegue renueva scripts, estilos y datos; si ves algo viejo, recarga.');
+    h += sec('Atajos', (atajos.length ? row('data-borrar-atajos', 'delete', 'Borrar mis atajos', atajos.length + ' guardados en este navegador') : row('data-nuevo-atajo', 'add', 'Grabar un atajo', 'Todavía no has guardado ninguno')));
+    return h;
   }
+  function verLista(cual) {
+    if (cual === 'contactos') return volver() + sec('Contactos', CONTACTOS.length ? CONTACTOS.map(filaContacto).join('') : '') + (CONTACTOS.length ? '' : nota('Sin contactos todavía.'));
+    if (cual === 'servicios') { var S = persona.servicios.filter(function (x) { return x.contrato; }); return volver() + (S.length ? sec('Tus servicios', S.map(filaServicio).join('')) : nota('Sin servicios todavía.')) + (persona.recargas.length ? sec('Recargas', persona.recargas.map(function (r) { return row('data-recarga-num="' + esc(r.numero) + '" data-op="' + esc(r.operadora) + '" data-monto="' + r.monto_tipico + '"', 'smartphone', esc(r.nombre), esc(r.numero + ' · ' + r.operadora + ' · suele ser ' + money(r.monto_tipico))); }).join('')) : ''); }
+    var h = volver();
+    h += sec('Cuentas', persona.cuentas.map(function (c) { return row('data-q="mis cuentas"', 'account_balance', esc(c.nombre + ' ···' + c.numero), 'Saldo ' + money(c.saldo)); }).join('') || '');
+    if (persona.tarjetas.length) h += sec('Tarjetas', persona.tarjetas.map(function (t) { return row('data-accion="accion.pagar-tarjeta"', 'credit_card', esc(t.nombre), esc(t.banco + ' · debes ' + money(t.saldo) + (t.mvp ? ' · cupo ' + money(t.limite) : ''))); }).join(''));
+    var pr = (persona.hipoteca ? [{ nombre: 'Hipoteca', saldo: persona.hipoteca.saldo_capital, cuota: persona.hipoteca.cuota, banco: 'Pichibank' }] : []).concat(persona.prestamos);
+    if (pr.length) h += sec('Préstamos', pr.map(function (x) { return row('data-accion="accion.pagar-prestamo"', 'payments', esc(x.nombre), esc(x.banco + ' · cuota ' + money(x.cuota) + ' · debes ' + money(x.saldo))); }).join(''));
+    if (persona.inversiones.length || persona.metas.length) h += sec('Ahorro e inversiones', persona.inversiones.map(function (x) { return row('data-q="inversiones"', 'trending_up', esc(x.nombre), money(x.saldo)); }).join('') + persona.metas.map(function (x) { return row('data-q="meta de ahorro"', 'flag', esc(x.nombre), money(x.saldo) + ' de ' + money(x.meta)); }).join(''));
+    return h;
+  }
+  function filaServicio(s) { return row('data-servicio="' + esc(s.empresa) + '"', s.auto ? 'autorenew' : 'receipt_long', esc(s.empresa), esc((s.auto ? 'Domiciliado: se paga solo el ' + s.dia : 'Cada mes') + ' · ' + money(s.monto))); }
+  // Un producto sugerido como duda se muestra como pregunta («¿Cómo solicito una tarjeta de crédito?»), no como nombre
+  function textoPregunta(e) {
+    if (/\?$/.test(e.t) || /^¿/.test(e.t) || e.tipo === 'faq') return e.t;
+    var raw = K.base() ? K.base().entradas.filter(function (x) { return x.id === e.id; })[0] : null, pq = raw && (raw.preguntas || []).filter(function (x) { return /\?/.test(x); })[0];
+    return pq || '¿Qué es ' + e.t.toLowerCase() + '?';
+  }
+  // El inicio, como la hoja del buscador de la app: sugerencias, lo tuyo y poco más
   function inicio() {
-    var h = personas(), A = listaAtajos();
-    h += chips(EJ.map(function (e) { return chip('data-q="' + esc(e) + '"', e); }));
-    if (persona && persona.paraTi.length) h += sec('Para ti', persona.paraTi.map(function (x, i) { return row('data-parati="' + i + '"', x.accion ? (K.entrada(x.accion) || {}).icon || 'bolt' : 'lightbulb', esc(x.t), esc(x.s)); }).join(''));
-    if (persona && persona.favoritos.length) h += sec('Tus accesos favoritos', '<div class="sx-chips">' + persona.favoritos.map(function (f) { var a = K.lista('accion').filter(function (x) { return x.t === f || x.go === 'do:' + f; })[0]; return a ? chip('data-accion="' + a.id + '"', a.t) : ''; }).join('') + '</div>');
-    h += sec(atajos.length ? 'Tus atajos' : 'Atajos sugeridos para ti', A.map(filaAtajo).join('') + row('data-nuevo-atajo', 'add', 'Grabar un atajo', 'Guarda una acción con sus datos y repítela con un toque'));
-    var S = persona ? persona.servicios.filter(function (s) { return s.contrato; }) : [];
-    if (S.length) h += sec('Tus servicios', S.map(function (s) { return row('data-servicio="' + esc(s.empresa) + '"', s.auto ? 'autorenew' : 'receipt_long', esc(s.empresa), esc('Contrato ' + s.contrato + ' · ' + (s.auto ? 'Domiciliado: se paga solo el ' + s.dia + ' · tope ' + money(s.tope) : 'Cada mes' + (s.dia ? ', el ' + s.dia : '')) + ' · ' + money(s.monto))); }).join(''));
-    h += sec('Con una foto o un archivo', row('data-accion="accion.pagar-factura"', 'document_scanner', 'Pagar una factura', 'Foto, imagen o PDF: la app lee la empresa, el contrato y el valor') + row('data-accion="accion.leer-documento"', 'description', 'Analizar un documento', 'Comprobantes, estados de cuenta, recibos'));
-    if (CONTACTOS.length) h += sec('Con quién te mueves dinero', CONTACTOS.slice(0, 5).map(filaContacto).join('') + (CONTACTOS.length > 5 ? row('data-q="contactos"', 'group', 'Ver todos', CONTACTOS.length + ' contactos') : ''));
-    else h += nota('Todavía no te has movido dinero con nadie. Cuando transfieras o recibas, aquí aparecen esas personas.');
-    if (persona && persona.recargas.length) h += sec('Recargas', persona.recargas.map(function (r) { return row('data-recarga-num="' + esc(r.numero) + '" data-op="' + esc(r.operadora) + '" data-monto="' + r.monto_tipico + '"', 'smartphone', esc(r.nombre), esc(r.numero + ' · ' + r.operadora + ' · suele ser ' + money(r.monto_tipico))); }).join(''));
-    h += sec('Todo lo que puedes hacer', row('data-catalogo', 'apps', 'Todas las acciones', K.lista('accion').length + ' acciones de la banca móvil, por tema'));
+    // Primero, las dudas de siempre de esta persona: por la sección desde la que abrió y por lo que hizo hace poco
+    var pq = persona ? P.preguntas(seccion(), 4).map(function (id) { return K.entrada(id); }).filter(Boolean) : [];
+    var h = pq.length ? chips(pq.map(function (e) { return chip('data-pregunta="' + e.id + '"', textoPregunta(e)); })) : '', A = listaAtajos();
+    if (persona && persona.paraTi.length) h += sec('Para ti', persona.paraTi.slice(0, 3).map(function (x, i) { return row('data-parati="' + i + '"', x.accion ? (K.entrada(x.accion) || {}).icon || 'bolt' : 'lightbulb', esc(x.t), esc(x.s)); }).join(''));
+    h += sec(atajos.length ? 'Tus atajos' : 'Atajos sugeridos', A.slice(0, 3).map(filaAtajo).join('') + row('data-nuevo-atajo', 'add', 'Grabar un atajo', 'Guarda una acción con sus datos y repítela con un toque'));
+    h += sec('Con una foto', row('data-accion="accion.pagar-factura"', 'document_scanner', 'Pagar una factura', 'Foto, imagen o PDF: la app lee la empresa, el contrato y el valor'));
     return h;
   }
   function catalogo() {
@@ -188,26 +227,25 @@
   function render() {
     var t = q.value.trim();
     fl = null; lec = null;
-    sx.classList.toggle('has-q', !!t);
+    sx.classList.toggle('has-q', !!t); cancelIc.textContent = t ? 'close' : 'tune'; cancelBtn.setAttribute('aria-label', t ? 'Limpiar' : 'Ajustes de la demo');
     if (!K.cargada()) { out.innerHTML = nota('Cargando la base…'); return; }
     if (!t) { out.innerHTML = inicio(); abierta = null; return; }
-    if (norm(t) === 'contactos') { out.innerHTML = sec('Contactos', CONTACTOS.length ? CONTACTOS.map(filaContacto).join('') : '') + (CONTACTOS.length ? '' : nota('Sin contactos todavía.')); return; }
     var html = '', ws = norm(t).split(' ').filter(function (w) { return w.length > 2; });
     var it = intencion(t);
     if (it && it.lleno) html += sec('Hacer ahora', row('data-hacer', it.accion.icon || 'bolt', esc(it.nombre), 'Abre el flujo con los datos puestos') + '<button class="sx-link" data-guardar><span class="material-symbols-rounded">bookmark_add</span>Guardar como atajo</button>');
     var at = listaAtajos().filter(function (a) { var s = norm(a.nombre + ' ' + subAtajo(a)); return ws.some(function (w) { return s.indexOf(w) >= 0; }); });
-    if (at.length) html += sec('Tus atajos', at.map(filaAtajo).join(''));
-    var cs = contactos(t, 3);
+    if (at.length) html += sec('Tus atajos', at.slice(0, 2).map(filaAtajo).join(''));
+    var cs = contactos(t, 2);
     if (cs.length) html += sec('Contactos', cs.map(filaContacto).join(''));
-    var sv = persona ? persona.servicios.filter(function (s) { return s.contrato && ws.some(function (w) { return norm(s.empresa).indexOf(w) >= 0 || (servicioDe(s.empresa) && servicioDe(s.empresa)[0].test(w)); }); }).slice(0, 2) : [];
-    if (sv.length && !(it && it.lleno)) html += sec('Tus servicios', sv.map(function (s) { return row('data-servicio="' + esc(s.empresa) + '"', s.auto ? 'autorenew' : 'receipt_long', esc(s.empresa), esc((s.auto ? 'Domiciliado: se paga solo el ' + s.dia : 'Cada mes') + ' · ' + money(s.monto))); }).join(''));
+    var sv = persona ? persona.servicios.filter(function (s) { return s.contrato && ws.some(function (w) { return norm(s.empresa).indexOf(w) >= 0 || (servicioDe(s.empresa) && servicioDe(s.empresa)[0].test(w)); }); }).slice(0, 1) : [];
+    if (sv.length && !(it && it.lleno)) html += sec('Tus servicios', sv.map(filaServicio).join(''));
     var r = K.buscar(t, { n: 10 }), max = r.length ? r[0].s : 0;
     r = r.filter(function (x) { return x.s >= max * .3; });
-    var acc = r.filter(function (x) { return x.tipo === 'accion' && !(it && it.lleno && x.id === it.accion.id); }).slice(0, 4);
+    var acc = r.filter(function (x) { return x.tipo === 'accion' && !(it && it.lleno && x.id === it.accion.id); }).slice(0, 3);
     if (acc.length) html += sec('Acciones', acc.map(function (x) { return row('data-accion="' + x.id + '"', x.icon || 'bolt', esc(x.t), esc(x.e.r || '')); }).join(''));
     var top = K.responder(t), v = abierta ? K.entrada(abierta) : (top && top.conf === 'alta' && top.tipo !== 'accion' && !(it && it.lleno) ? top : null);
     if (v) html += kbCard(v);
-    var resto = r.filter(function (x) { return x.tipo !== 'accion' && (!v || x.id !== v.id); }).slice(0, 5);
+    var resto = r.filter(function (x) { return x.tipo !== 'accion' && (!v || x.id !== v.id); }).slice(0, 3);
     if (resto.length) html += sec(v ? 'También' : 'Preguntas y productos', resto.map(function (x) { return row('data-id="' + esc(x.id) + '"', x.tipo === 'producto' ? 'inventory_2' : 'help', esc(x.t), TIPO[x.tipo]); }).join(''));
     if (!html) html = nota('No encontramos «' + esc(t) + '» en la app.', row('data-q=""', 'help', 'Volver al inicio', 'Prueba con otras palabras, un contacto o una acción'));
     out.innerHTML = html;
@@ -251,7 +289,7 @@
     if (def && def.requiere === 'tarjeta' && !TARJETAS.length) fl.falta = { t: 'No tienes tarjeta de crédito', s: 'Pídela desde la app: la respuesta llega en minutos.', id: 'prod.tarjetas.credito', b: 'Solicitar tarjeta' };
     if (def && def.requiere === 'prestamo' && !(persona && (persona.hipoteca || persona.prestamos.length))) fl.falta = { t: 'No tienes préstamos', s: 'Si necesitas dinero, simula un crédito sin compromiso.', id: 'prod.prestamos.consumo', b: 'Ver préstamos' };
     if (def) def.campos.forEach(function (c) { if (fl.datos[c[0]] == null && c[2] === 'chips') fl.datos[c[0]] = c[3][0]; });
-    if (def && FLUJO_DE[accionId] === 'servicios') { var s = servicioDe(fl.datos.empresa); if (!fl.datos.contrato) fl.datos.contrato = (s && s[3]) || '1234567'; if (!fl.datos.monto && s && s[2]) fl.datos.monto = Math.round(s[2] * 100) / 100; }
+    if (def && FLUJO_DE[accionId] === 'servicios') { var s = servicioDe(fl.datos.empresa); if (!fl.datos.contrato && s && s[3]) fl.datos.contrato = s[3]; if (!fl.datos.monto && s && s[3] && s[2]) fl.datos.monto = Math.round(s[2] * 100) / 100; }
     if (def && FLUJO_DE[accionId] === 'exterior' && fl.datos.contacto && !fl.datos.swift) { var cx = CONTACTOS.filter(function (c) { return c.exterior && c.n === fl.datos.contacto; })[0]; if (cx) Object.assign(fl.datos, datosContacto(cx)); }
     pintarFlujo();
   }
@@ -356,13 +394,18 @@
   /* ---------- Eventos ---------- */
   q.addEventListener('input', function () { abierta = null; render(); });
   $('#form').addEventListener('submit', function (e) { e.preventDefault(); var first = out.querySelector('[data-hacer], [data-accion], [data-id]'); if (first) first.click(); else q.blur(); });
-  $('#cancel').addEventListener('click', function () { cerrar(); q.focus(); });
+  cancelBtn.addEventListener('click', function () { if (q.value.trim() || fl || lec) { cerrar(); q.focus(); return; } fl = null; lec = null; out.innerHTML = ajustes(); out.scrollTop = 0; });
   $('#cam').addEventListener('click', function () { abrirLector('pagar'); });
   document.addEventListener('change', function (e) { var i = e.target.closest('[data-archivo]'); if (i && i.files && i.files[0]) leerArchivo(i.files[0]); });
   document.addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b) return;
     var d = b.dataset;
-    if (d.persona) { P.set(d.persona); aplicarPersona(); cerrar(); return; }
+    if (d.ir) { location.href = d.ir; return; }
+    if (d.persona) { P.set(d.persona); aplicarPersona(); out.innerHTML = ajustes(); aviso('Ahora eres ' + persona.primerNombre); return; }
+    if (d.ver) { out.innerHTML = verLista(d.ver); out.scrollTop = 0; return; }
+    if (d.seccion) { setSeccion(d.seccion); out.innerHTML = ajustes(); aviso('Buscador abierto desde ' + nombreSeccion(d.seccion)); return; }
+    if (d.pregunta) { var pe = K.entrada(d.pregunta); if (!pe) return; fl = null; lec = null; abierta = pe.id; q.value = pe.t; render(); return; }
+    if (d.borrarAtajos != null) { atajos = []; guardarAtajos(); out.innerHTML = ajustes(); aviso('Atajos borrados'); return; }
     if (d.q != null) { q.value = d.q; abierta = null; render(); if (d.q) q.focus(); return; }
     if (d.id) { fl = null; lec = null; abierta = d.id; var v0 = K.entrada(d.id); if (v0 && !q.value.trim()) q.value = v0.t; render(); return; }
     if (d.hacer != null) { var it = intencion(q.value); if (it) abrirFlujo(it.accion.id, it.datos); return; }
@@ -425,6 +468,6 @@
 
   /* ---------- Arranque: la base y la persona ---------- */
   construirFlujos();
-  Promise.all([K.listo(), P.cargar('../assets/pfm/datos.json').catch(function () { return null; })]).then(function () { aplicarPersona(); if (location.hash.length > 1) q.value = decodeURIComponent(location.hash.slice(1)); render(); });
+  Promise.all([K.listo(), P.cargar('../assets/pfm/datos.json?v=' + BUILD).catch(function () { return null; })]).then(function () { aplicarPersona(); if (location.hash.length > 1) q.value = decodeURIComponent(location.hash.slice(1)); render(); });
   render();
 })();
