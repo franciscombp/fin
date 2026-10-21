@@ -2368,6 +2368,16 @@
         .qr-scan__frame { position: absolute; inset: 20%; border-radius: 16px; border: 2px solid #FFDD00; box-shadow: 0 0 0 999px rgb(0 0 0 / .35); }
         .qr-scan__msg { margin: 0; font-size: 15px; line-height: 22px; text-align: center; color: var(--bp-theme-color-text-secondary); }
         .qr-scan .login-button { width: 100%; }
+.qr-scan[hidden] { display: none; }
+.qr-pay { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-macro-sm); }
+.qr-pay .bp-segmented { padding: 0; }
+.qr-code { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--bp-semantic-spacing-micro-md); }
+.qr-code__caja { display: grid; place-items: center; height: 56px; border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-container-default); font: 600 24px/32px var(--sol-font); color: var(--bp-theme-color-text-primary); }
+.qr-code__caja.on { box-shadow: inset 0 0 0 2px var(--bp-theme-color-text-primary); }
+.qr-pay__expira { margin: 0; text-align: center; font-size: 15px; line-height: 22px; color: var(--bp-theme-color-text-secondary); }
+.qr-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--bp-semantic-spacing-micro-md); }
+.qr-key { display: grid; place-items: center; height: 56px; border: 0; border-radius: var(--bp-semantic-radius-lg); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: 600 24px/32px var(--sol-font); cursor: pointer; }
+.qr-key:active { transform: scale(.96); }
 
         /* Sin sesión: la ayuda y los accesos públicos se abren por encima del inicio de sesión */
         html body.sin-sesion .sp,
@@ -5409,12 +5419,31 @@
 
         // Plantillas por acción: reemplazan el bloque genérico de
         // ícono+Resumen cuando la acción tiene un flujo propio reconocible.
+        const QR_TECLAS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'back'].map(k => {
+            if (k === '') return '<span></span>';
+            if (k === 'back') return '<button class="qr-key" data-qr-key="back" aria-label="Borrar"><span class="material-symbols-rounded">backspace</span></button>';
+            return `<button class="qr-key" data-qr-key="${k}">${k}</button>`;
+        }).join('');
         const ACTION_EXTRAS = {
             'Pagar con QR': () => `
-                <div class="qr-scan">
-                    <div class="qr-scan__view"><video id="qr-video" playsinline muted></video><span class="qr-scan__frame"></span></div>
-                    <p class="qr-scan__msg" id="qr-msg">Apunta la cámara al código QR del negocio</p>
-                    <button class="login-button login-button--secondary" data-soon="Ingresar código del comercio">Ingresar código</button>
+                <div class="qr-pay">
+                    <div class="bp-segmented">
+                        <div class="bp-segmented__track" role="tablist" aria-label="Forma de pago">
+                            <button class="bp-segmented-item" role="tab" aria-selected="true" data-qr-tab="qr">QR</button>
+                            <button class="bp-segmented-item" role="tab" aria-selected="false" data-qr-tab="codigo">Código único</button>
+                        </div>
+                    </div>
+                    <div class="qr-scan" data-qr-panel="qr">
+                        <div class="qr-scan__view"><video id="qr-video" playsinline muted></video><span class="qr-scan__frame"></span></div>
+                        <p class="qr-scan__msg" id="qr-msg">Apunta la cámara al código QR del negocio</p>
+                        <button class="login-button login-button--secondary" data-action="Cobrar con QR">Mostrar mi Código QR</button>
+                    </div>
+                    <div class="qr-scan" data-qr-panel="codigo" hidden>
+                        <div class="qr-code" aria-label="Código único de 6 dígitos">${'<span class="qr-code__caja"></span>'.repeat(6)}</div>
+                        <p class="qr-pay__expira">Código expira en <strong id="qr-expira">02:00</strong></p>
+                        <div class="qr-keys">${QR_TECLAS}</div>
+                        <button class="login-button login-button--tertiary" data-soon="Código Único de Pago">Conoce cómo pagar con tu Código Único de Pago</button>
+                    </div>
                 </div>`,
             'Recibir dinero': () => `
                 <p class="finance-subtitle" style="margin-top:0;">Compartir mis datos</p>
@@ -5914,7 +5943,7 @@
         });
 
         // Escáner: cámara trasera + lectura de QR si el navegador la soporta
-        let qrStream = null, qrTimer = null;
+        let qrStream = null, qrTimer = null, qrExpiraTimer = null, qrSegundos = 120, qrCodigo = '';
         function setQrMsg(t) { const m = document.getElementById('qr-msg'); if (m) m.textContent = t; }
         function startQrScan() {
             stopQrScan();
@@ -5937,7 +5966,49 @@
         }
         function stopQrScan() {
             clearInterval(qrTimer); qrTimer = null;
+            clearInterval(qrExpiraTimer); qrExpiraTimer = null;
             if (qrStream) { qrStream.getTracks().forEach(t => t.stop()); qrStream = null; }
+        }
+        // Código único: seis casillas, teclado propio y cuenta regresiva de 2 minutos
+        function qrPintarCodigo() {
+            document.querySelectorAll('#push-extra .qr-code__caja').forEach((c, i) => {
+                c.textContent = qrCodigo[i] || '';
+                c.classList.toggle('on', i === qrCodigo.length);
+            });
+        }
+        function qrPintarExpira() {
+            const t = document.getElementById('qr-expira');
+            if (!t) return;
+            const seg = Math.max(qrSegundos, 0);
+            t.textContent = String(Math.floor(seg / 60)).padStart(2, '0') + ':' + String(seg % 60).padStart(2, '0');
+        }
+        function qrIniciarExpira() {
+            clearInterval(qrExpiraTimer);
+            qrSegundos = 120; qrPintarExpira();
+            qrExpiraTimer = setInterval(() => {
+                qrSegundos--; qrPintarExpira();
+                if (qrSegundos <= 0) { clearInterval(qrExpiraTimer); qrExpiraTimer = null; qrCodigo = ''; qrPintarCodigo(); }
+            }, 1000);
+        }
+        function qrTecla(k) {
+            if (qrSegundos <= 0) return;
+            if (k === 'back') qrCodigo = qrCodigo.slice(0, -1);
+            else if (qrCodigo.length < 6) qrCodigo += k;
+            qrPintarCodigo();
+            if (qrCodigo.length === 6) showToast('Código ingresado');
+        }
+        function qrCambiarTab(tab) {
+            const extra = document.getElementById('push-extra');
+            extra.querySelectorAll('[data-qr-tab]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.qrTab === tab)));
+            extra.querySelectorAll('[data-qr-panel]').forEach(p => { p.hidden = p.dataset.qrPanel !== tab; });
+            if (tab === 'qr') startQrScan();
+            else { stopQrScan(); qrIniciarExpira(); }
+        }
+        function qrClick(e) {
+            const tab = e.target.closest('[data-qr-tab]');
+            if (tab) return qrCambiarTab(tab.dataset.qrTab);
+            const tecla = e.target.closest('[data-qr-key]');
+            if (tecla) qrTecla(tecla.dataset.qrKey);
         }
 
         function renderPushExtra(title) {
@@ -5945,7 +6016,8 @@
             const extra = document.getElementById('push-extra');
             const hero = document.getElementById('push-hero');
             extra.innerHTML = build ? build() : '';
-            if (title === 'Pagar con QR') startQrScan(); else stopQrScan();
+            if (title === 'Pagar con QR') { qrCodigo = ''; startQrScan(); } else stopQrScan();
+            extra.onclick = title === 'Pagar con QR' ? qrClick : null;
             // Con una plantilla propia, el ícono genérico amarillo sobra —
             // el QR/los chips/los beneficiarios ya comunican la acción.
             hero.classList.toggle('is-hidden', !!build);
