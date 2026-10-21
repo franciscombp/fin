@@ -49,7 +49,9 @@ function spring(cur, to, velKey, dt) {
   camVel[velKey] = v; return cur + v * dt;
 } // la cámara se acerca y se corre suavemente, nunca de golpe // focus: Uku sale del mundo y se acerca a conversar // ambient: lo que Uku hace cuando no hay gesto (p. ej. pasear)
 // Mundo: un planeta esférico de radio PLANET_R; su punto más alto (0, 0, 0) es el centro del claro de Uku.
-const WORLD_S = 2, PLANET_R = 1.5 * WORLD_S, PLANET_C = new THREE.Vector3(0, -PLANET_R, 0), FOG_NEAR = 4;
+// Con 12 m el suelo se curva lo justo: desde cualquier cámara se ve el piso hasta ~2,5 m detrás de Uku, así nada
+// queda detrás del horizonte con la base escondida (antes, con 3 m, todo lo de atrás parecía flotar).
+const PLANET_R = 12, PLANET_C = new THREE.Vector3(0, -PLANET_R, 0), FOG_NEAR = 4;
 let score = 50; // salud financiera con la que está dibujado el bosque
 let target = null, loadAt = 0, ambLight = null, moodTint = new THREE.Color('#ffffff'); // mientras carga, el bosque crece hasta target; mood tiñe la luz
 // bloom: flores amarillas del campo (0–100, ahorro); mood: ánimo que se queda (feliz, tranquilo, pensativo)
@@ -116,17 +118,26 @@ function scatter(seed, n, r0, r1, ok, gap) {
 }
 // Lo alto (árboles, casas) va siempre detrás de Uku: nunca queda algo delante de la cámara
 const TALL = (x, z) => z < -.4;
+// Todo se apoya donde se ve el suelo: la base de cada cosa tiene que verse desde las cámaras de la app (libre, en
+// primer plano, el plano general de Mis finanzas y alejada, de frente y girada). Si la normal del suelo en ese
+// punto no mira hacia alguna de ellas, el punto está detrás del horizonte y lo que se ponga ahí parecería flotar.
+const CAMS = [[0, .96, 3.14], [0, .78, 2.24], [0, 1.35, 4.26], [0, 1.2, 5.5], [1.4, .96, 2.8], [-1.4, .96, 2.8]];
+const _vn = new THREE.Vector3(), _vp = new THREE.Vector3(), _vc = new THREE.Vector3();
+function VISIBLE(x, z) {
+  surf(x, z, _vn); _vp.copy(PLANET_C).addScaledVector(_vn, PLANET_R);
+  return CAMS.every(c => _vc.set(c[0], c[1], c[2]).sub(_vp).normalize().dot(_vn) > .01);
+}
 // Los lugares principales del fondo: primero lo que tienes por tus créditos, luego los guayacanes y el resto, árboles
-const BIG = [[-.7, -1.25], [.75, -1.35], [.05, -2.1], [-1.35, -1.9], [1.4, -2], [-1.7, -.8], [1.75, -.85]];
+const BIG = [[-.75, -1.05], [.8, -1.15], [.05, -1.6], [-1.4, -1], [1.45, -1.05], [-1.75, -.55], [1.8, -.6]].filter(([x, z]) => VISIBLE(x, z - .25));
 const awayBig = (d) => (x, z) => BIG.every(([bx, bz]) => Math.hypot(x - bx, z - bz) > d);
-const TREES = scatter(11, 24, 1.2, 2.9, (x, z) => TALL(x, z) && awayBig(.75)(x, z), .6);
+const TREES = scatter(11, 24, 1.2, 2.5, (x, z) => TALL(x, z) && VISIBLE(x, z - .3) && awayBig(.75)(x, z), .55);
 // Flores y brotes donde se ven: delante de la cámara solo hasta donde alcanza el encuadre
 const SEEN = (x, z) => z < 1.1 && Math.abs(x) < 1.5 + Math.max(0, -z) * .5;
-const FLOWERS = scatter(71, 56, .38, 2.1, (x, z) => SEEN(x, z) && awayBig(.42)(x, z), .1);
-const SPROUTS = scatter(37, 52, .3, 1.9, (x, z) => SEEN(x, z) && awayBig(.35)(x, z), .09);
+const FLOWERS = scatter(71, 56, .38, 2.1, (x, z) => SEEN(x, z) && VISIBLE(x, z) && awayBig(.42)(x, z), .1);
+const SPROUTS = scatter(37, 52, .3, 1.9, (x, z) => SEEN(x, z) && VISIBLE(x, z) && awayBig(.35)(x, z), .09);
 const DECO = {
-  tufts: scatter(5, 150, .2, 2.9, (x, z) => z < .6, .07), rocks: scatter(17, 12, .6, 2.6, awayBig(.45), .3),
-  bushes: scatter(23, 8, 1.1, 2.6, (x, z) => TALL(x, z) && awayBig(.6)(x, z), .5), daisies: scatter(43, 34, .35, 2.4, awayBig(.35), .1)
+  tufts: scatter(5, 150, .2, 2.9, (x, z) => z < .6 && VISIBLE(x, z), .07), rocks: scatter(17, 12, .6, 2.6, (x, z) => VISIBLE(x, z) && awayBig(.45)(x, z), .3),
+  bushes: scatter(23, 8, 1.1, 2.4, (x, z) => TALL(x, z) && VISIBLE(x, z - .15) && awayBig(.6)(x, z), .5), daisies: scatter(43, 34, .35, 2.4, (x, z) => VISIBLE(x, z) && awayBig(.35)(x, z), .1)
 };
 
 /* ---------- Piezas ----------
@@ -224,7 +235,7 @@ const PARTS = {
   libros: () => [pc(new THREE.BoxGeometry(.24, .05, .17), AZUL, [0, .025, 0], [0, .1, 0]), pc(new THREE.BoxGeometry(.22, .045, .16), CREMA, [.01, .073, 0], [0, -.15, 0]),
     pc(new THREE.BoxGeometry(.2, .045, .15), AMARILLO, [0, .118, 0], [0, .25, 0]), pc(new THREE.BoxGeometry(.16, .04, .12), MARINO, [0, .16, 0], [0, -.1, 0])]
 };
-const PROP_S = { casa: 1.75, carro: 1.3, tienda: 1.4, carretilla: 1.45, nevera: 1.35, tele: 1.35, caja: 1.4, libros: 1.45 };
+const PROP_S = { casa: 1.45, carro: 1.3, tienda: 1.4, carretilla: 1.45, nevera: 1.1, tele: 1.0, caja: 1.4, libros: 1.45 };
 const PROP_ORDER = ['casa', 'carro', 'tienda', 'carretilla', 'nevera', 'tele', 'caja', 'libros'];
 // Qué tienes por cada crédito con saldo (uno de cada tipo, hasta cuatro)
 function propsDe(deudas) {
@@ -272,8 +283,8 @@ function buildForest(full) {
   if (full) { forest.children.slice().forEach(o => forest.remove(o)); clearGeo(); buildGarden(pal); }
   const f = finScene(), want = {}, id = (x, z) => x.toFixed(2) + ',' + z.toFixed(2);
   let spot = 0;
-  f.props.forEach(k => { const [x, z] = BIG[spot++]; want['C' + k + id(x, z)] = () => makeProp(k, pal, x, z); });
-  for (let i = 0; i < f.guayas; i++) { const [x, z] = BIG[spot++]; want['G' + id(x, z)] = () => item('guaya', i % 3, pal, { x, z, rot: i * 1.7 }, 1.1 + (i % 2) * .12, { sway: .015, gs: .7, crown: .95 }); }
+  f.props.forEach(k => { if (spot >= BIG.length) return; const [x, z] = BIG[spot++]; want['C' + k + id(x, z)] = () => makeProp(k, pal, x, z); });
+  for (let i = 0; i < f.guayas && spot < BIG.length; i++) { const [x, z] = BIG[spot++]; want['G' + id(x, z)] = () => item('guaya', i % 3, pal, { x, z, rot: i * 1.7 }, 1.1 + (i % 2) * .12, { sway: .015, gs: .7, crown: .95 }); }
   // Bosque de atrás: lo dice la salud financiera (siempre hay algunos árboles; nunca tocones ni tierra seca)
   // Un árbol por cada mes de tu historia (el más reciente, el más cerca): frondoso si cerraste el mes con saldo a favor,
   // más chico si cerraste justo. Si recién empiezas no hay árboles: solo brotes en el suelo. Sin historia a la mano
@@ -887,7 +898,7 @@ function init() {
   ambLight = new THREE.AmbientLight('#ffffff', Math.PI); scene.add(ambLight);
   LAMB = new THREE.MeshLambertMaterial({ vertexColors: true });
   smokeM = new THREE.MeshBasicMaterial({ color: pal.dust, transparent: true, opacity: .85 });
-  ground = new THREE.Mesh(new THREE.SphereGeometry(PLANET_R, 64, 32), new THREE.MeshLambertMaterial({ color: pal.ground }));
+  ground = new THREE.Mesh(new THREE.SphereGeometry(PLANET_R, 160, 48, 0, Math.PI * 2, 0, .9), new THREE.MeshLambertMaterial({ color: pal.ground }));
   ground.position.copy(PLANET_C); scene.add(ground);
   // Uku tiene su escena con su luz: un cielo claro, un rebote del suelo y un sol suave arriba a la izquierda
   bearScene = new THREE.Scene();
