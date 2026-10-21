@@ -165,13 +165,14 @@ páginas a pantalla completa.
   con dos columnas: dinero en cuentas e inversiones y deuda total acumulada (abre su hoja).
 - **Mis gastos** (`is-page`): página a pantalla completa con título y X que vuelve a Mis finanzas. Hallazgo
   del mes, periodos, tarjeta con total y gráfico, categorías con barras.
-- **Soporte** (`is-ayuda`): pantalla completa (sin barra de abajo), título «Soporte», la flecha vuelve al
-  inicio. Arriba la tarjeta de **Solicitudes**: ícono, cuántas hay y «Ver todas»; la última en curso con su
-  estado (etiqueta) y tres pasos (Recibida · En revisión · Resuelta), o, sin ninguna, «Revisar un consumo» y
-  «Hablar con una persona». Debajo tres preguntas frecuentes (cada una se responde en el chat) y «Ver todas
-  las categorías», que abre la **ayuda completa**: hoja a pantalla completa con título y X que vuelve a
-  Soporte. Abajo, como en el inicio, la barra «Busca o pregunta» y el micrófono: abren el buscador
-  universal con los temas de ayuda primero.
+- **Soporte** (`is-ayuda`): igual que Mis finanzas, que es el modelo de las secciones. Pantalla completa
+  (sin barra de abajo), título «Soporte», la flecha vuelve al inicio. Uku en su mundo, en plano general,
+  con un globo que cuenta cómo va tu solicitud o te invita a contar qué pasó. Abajo la misma sección fija
+  translúcida, con las mismas tarjetas: **Solicitudes** (ícono, cuántas hay y «Ver todas»; la última en
+  curso con su asunto, estado, tres pasos y cuándo hay respuesta) y **Preguntas frecuentes** (título con
+  «Ver todas», que abre la ayuda completa, y las dos más consultadas). Al pie, como en el inicio, «Busca o
+  pregunta» y el micrófono: abren el buscador universal con los temas de ayuda primero. La **ayuda
+  completa** es una hoja a pantalla completa con título y X que vuelve a Soporte.
 
 #### Lógica de Mis finanzas
 
@@ -309,6 +310,9 @@ Cómo queda:
 - **Las variables `--uk-*` viven en `.uk`.** Las hojas (`.as-sheet`) cuelgan de `body`, así que una regla
   de hoja que use `var(--uk-accent)` queda sin valor (el botón principal salía transparente). En hojas se
   usan los tokens `--bp-*` directamente.
+- **Un solo lugar decide si Uku está «en foco»** (conversando, sin su mundo) o en su mundo: `modo()` y, al
+  montar la escena, la misma regla (`is-chat` y no Mis finanzas ni Soporte), anotada en `host._foco`. Al
+  montarla con otra regla, Soporte quedaba sin bosque.
 - **Efecto de escritura:** se parte el texto en `span.uk-w` con `animation-delay` después de un
   `setTimeout 0`, para que el traductor (`MutationObserver` de i18n) traduzca la frase completa antes.
 - **Barrido antes de publicar:** `node tools/barrido.js <carpeta>` recorre todas las pantallas con las
