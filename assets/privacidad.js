@@ -16,7 +16,7 @@
   var NO_TOCAR = /^(SCRIPT|STYLE|TEXTAREA|INPUT|NOSCRIPT)$/;
   // Solo se ocultan los saldos (lo que tienes o debes en una cuenta o tarjeta). Lo que vas a pagar,
   // elegir o confirmar (montos de recarga, cuotas, precios, totales de una compra) se ve siempre.
-  var SALDO = '#balance, .amount-row, .product-row__amount, .product-row__masked, .skeleton--balance, .pfm-saldo, .pfm-net, .pfm-tile, .finance-total, [data-saldo]';
+  var SALDO = '#balance, .amount-row, .product-row__amount, .product-row__masked, .skeleton--balance, .pfm-saldo, .pfm-net, .pfm-tile, .pfm-hub__dinero small, .finance-total, [data-saldo]';
   var oculto = false, timer = null, original = new WeakMap();
   try { oculto = localStorage.getItem(KEY) === '1'; } catch (e) {}
 
@@ -39,11 +39,14 @@
 
   // Los ojos reflejan el estado global
   function iconos() {
+    // Solo se escribe lo que cambia: reescribir lo mismo dispara el observador de abajo, que vuelve a
+    // llamar aquí 60 ms después, para siempre (la página no paraba de trabajar y se llegaba a congelar)
+    var pres = String(oculto), lab = oculto ? 'Mostrar saldos' : 'Ocultar saldos', ico = oculto ? 'visibility_off' : 'visibility';
     document.querySelectorAll('[data-eye]').forEach(function (b) {
-      b.setAttribute('aria-pressed', String(oculto));
-      b.setAttribute('aria-label', oculto ? 'Mostrar saldos' : 'Ocultar saldos');
+      if (b.getAttribute('aria-pressed') !== pres) b.setAttribute('aria-pressed', pres);
+      if (b.getAttribute('aria-label') !== lab) b.setAttribute('aria-label', lab);
       var i = b.querySelector('.material-symbols-rounded');
-      if (i) i.textContent = oculto ? 'visibility_off' : 'visibility';
+      if (i && i.textContent !== ico) i.textContent = ico;
     });
   }
 
