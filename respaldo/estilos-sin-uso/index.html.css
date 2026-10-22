@@ -219,3 +219,169 @@
 @layer base .push-select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 40px; }
 @layer base .push-select-wrap__chevron { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 20px; color: var(--bp-text-helper); pointer-events: none; }
 @layer base .push-transfer-success > .push-transfer-success__icon { animation: transferSuccessPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+/* Detalle de tarjeta antes de assets/tarjetas.css (22 oct 2026): barrido de luz genérico,
+   arte CSS de crédito y tema oscuro escrito a mano. Lo reemplazan el arte real, la tinta UV
+   y los tokens oscuros del DS con data-theme="dark". */
+        /* Destello diagonal sobre la tarjeta del detalle (igual que Destacado) */
+        .cd-shine {
+            position: absolute;
+            top: -50%;
+            left: 0;
+            width: 90px;
+            height: 200%;
+            transform: rotate(24deg) translateX(-160px);
+            background: linear-gradient(90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.55) 45%,
+                rgba(255, 255, 255, 0.75) 50%,
+                rgba(255, 255, 255, 0.55) 55%,
+                rgba(255, 255, 255, 0) 100%);
+            filter: blur(3px);
+            pointer-events: none;
+            opacity: 0;
+            will-change: transform, opacity;
+            animation: cdShineSweep 6s cubic-bezier(0.4, 0, 0.2, 1) 1s infinite;
+        }
+
+        @keyframes cdShineSweep {
+            0% { transform: rotate(24deg) translateX(-160px); opacity: 0; }
+            8% { opacity: 1; }
+            22% { opacity: 1; }
+            38%, 100% { transform: rotate(24deg) translateX(560px); opacity: 0; }
+        }
+
+        /* En modo giroscopio el barrido automático se pausa y la posición
+           la controla el dispositivo (igual que la tarjeta de Destacados) */
+        .cd-shine.gyro-controlled {
+            animation: none;
+            opacity: 0.9;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .cd-shine { animation: none; }
+        }
+
+        .cd-card__img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: var(--bp-radius-md);
+        }
+        .cd-card__img.is-hidden { display: none; }
+
+        /* Arte de tarjeta genérico (CSS, sin foto): tarjetas de crédito que
+           no tienen un asset propio como card-debit.svg. Mismo ratio que
+           esa imagen (1312x827) para que el resto del layout no salte. */
+        .cd-card__art {
+            display: none;
+            flex-direction: column;
+            gap: 28px;
+            aspect-ratio: 1.586;
+            width: 100%;
+            border-radius: var(--bp-radius-md);
+            /* padding-bottom de sobra: deja libre la franja donde flota el
+               pill ".cd-card__hint" ("Desliza para ver datos") para que el
+               número no quede tapado detrás de él */
+            padding: 20px 20px 44px;
+            box-sizing: border-box;
+        }
+        .cd-card__art.is-active { display: flex; }
+        .cd-card__art-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+        .cd-card__art-brand {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            line-height: 1.25;
+        }
+        .cd-card__art-number {
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            font-variant-numeric: tabular-nums;
+        }
+        .cd-card__art--black {
+            background: linear-gradient(135deg, #2b2d33, #060606);
+        }
+        .cd-card__art--black .cd-card__art-brand,
+        .cd-card__art--black .cd-card__art-number { color: #fff; }
+        .cd-card__art--black .cd-card__art-number { opacity: 0.85; }
+
+        .cd-card__art--diners {
+            background: linear-gradient(135deg, #eef1f5, #dfe4ec);
+            border: 1px solid rgba(15, 38, 92, 0.08);
+        }
+        .cd-card__art--diners .cd-card__art-brand { color: #0f265c; }
+        .cd-card__art--diners .cd-card__art-number { color: rgba(15, 38, 92, 0.75); }
+        .cd-card__art-diners-text { font-size: 15px; font-weight: 700; color: #274c8f; }
+
+        /* ---------- Tema oscuro del detalle (tarjetas premium tipo Black) ----------
+           Se activa con .theme-dark sobre #card-detail cuando el tipo de
+           tarjeta lo pide (ver CARD_DETAIL_THEMES). Todo queda scopeado
+           bajo .card-detail.theme-dark para no filtrar el look oscuro a
+           .quick-action/.sub-item en el resto de la app, que siguen claros. */
+        .card-detail.theme-dark {
+            background: #0b0b0d;
+            color-scheme: dark;
+        }
+        .card-detail.theme-dark .cd-title,
+        .card-detail.theme-dark .cd-subtitle {
+            color: #f5f5f7;
+        }
+        .card-detail.theme-dark .detail-topbar {
+            background: transparent;
+        }
+        .card-detail.theme-dark.scrolled .detail-topbar {
+            background: rgba(20, 20, 23, 0.85);
+            border-bottom-color: rgba(255, 255, 255, 0.08);
+        }
+        .card-detail.theme-dark .detail-topbar__title {
+            color: #f5f5f7;
+        }
+        .card-detail.theme-dark .icon-button {
+            color: #f5f5f7;
+        }
+        .card-detail.theme-dark .icon-button:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .card-detail.theme-dark .icon-button:active {
+            background: rgba(255, 255, 255, 0.14);
+        }
+        .card-detail.theme-dark .cd-actions {
+            background: #1c1c1f;
+        }
+        .card-detail.theme-dark .quick-action__icon {
+            background: rgba(255, 255, 255, 0.08);
+            color: #f5f5f7;
+        }
+        .card-detail.theme-dark .quick-action:hover .quick-action__icon {
+            background: rgba(252, 208, 0, 0.16);
+        }
+        .card-detail.theme-dark .quick-action__label {
+            color: #f5f5f7;
+        }
+        .card-detail.theme-dark .cd-subs {
+            background: #1c1c1f;
+        }
+        .card-detail.theme-dark .sub-item {
+            border-bottom-color: rgba(255, 255, 255, 0.08);
+        }
+        .card-detail.theme-dark .sub-item__name {
+            color: #f5f5f7;
+        }
+        .card-detail.theme-dark .sub-item__meta {
+            color: #a3a3ab;
+        }
+        .card-detail.theme-dark .sub-item__price {
+            color: #f5f5f7;
+        }
+        .card-detail.theme-dark .sub-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .card-detail.theme-dark .sub-item:active {
+            background: rgba(255, 255, 255, 0.08);
+        }

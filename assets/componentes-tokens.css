@@ -226,7 +226,7 @@
   /* Recetas bp-* de Figma: sólo remapean semánticos. Los modos de cada
      colección se eligen con data-size (o data-context en el spinner).
      El :root fija el tamaño que más usa la app; los demás modos van abajo. */
-  :root {
+  :root, [data-theme] {
     /* bp-button · md 56 · lg 64 */
     --bp-button-size: var(--bp-semantic-size-interactive-md);
     --bp-button-padding-x: var(--bp-semantic-spacing-macro-md);
@@ -260,7 +260,7 @@
     --bp-guided-tour-text-secondary: var(--bp-theme-color-text-tertiary);
     --bp-component-interactive-icon-size: var(--bp-semantic-size-icon-md);
   }
-  :root[data-theme="dark"] {
+  [data-theme="dark"] {
     --bp-guided-tour-background: var(--bp-base-color-neutral-0);
     --bp-guided-tour-icon: var(--bp-theme-color-icon-primary);
     --bp-guided-tour-text-primary: var(--bp-theme-color-text-primary);

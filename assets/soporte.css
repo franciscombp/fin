@@ -81,9 +81,6 @@
 .cd-review__main { flex: 1; display: flex; flex-direction: column; gap: 2px; }
 .cd-review__main b { font: var(--ui-body-md-medium); }
 .cd-review__main small { font: var(--ui-body-sm-medium); color: var(--bp-theme-color-text-helper); }
-.card-detail.theme-dark .cd-review { background: rgb(255 255 255 / .08); color: #fff; }
-.card-detail.theme-dark .cd-review > .material-symbols-rounded:first-child { color: #fff; }
-.card-detail.theme-dark .cd-review__main small, .card-detail.theme-dark .cd-review > .material-symbols-rounded:last-child { color: rgb(255 255 255 / .7); }
 
 /* ---------- Centro de ayuda: búsqueda, categorías y tutoriales ---------- */
 .sp.is-page .sp-hub, .sp.is-page .sp-log { display: none !important; }

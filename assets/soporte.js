@@ -467,7 +467,7 @@
       var cn = k.slice(5); close();
       setTimeout(function () {
         if (window.__goView) window.__goView(0);
-        var r = document.querySelector('#home-page [data-panel="Tarjetas"] .product-row[data-action="' + cn + '"]'); if (r) r.click();
+        if (window.Tarjetas) Tarjetas.abrir(cn);
       }, 300);
       return;
     }
@@ -644,7 +644,7 @@
       if (k === 'agent') { open(); topic = topic || 'Consulta desde Uku'; return toAgent(); }
       var go = function (fn) { setTimeout(fn, 60); };
       if (k.indexOf('do:') === 0) return go(function () { var x = document.querySelector('#home-page [data-action="' + k.slice(3) + '"]') || document.querySelector('[data-action="' + k.slice(3) + '"]'); if (x) x.click(); });
-      if (k.indexOf('card:') === 0) return go(function () { if (window.__goView) window.__goView(0); var r = document.querySelector('#home-page [data-panel="Tarjetas"] .product-row[data-action="' + k.slice(5) + '"]'); if (r) r.click(); });
+      if (k.indexOf('card:') === 0) return go(function () { if (window.__goView) window.__goView(0); if (window.Tarjetas) Tarjetas.abrir(k.slice(5)); });
       if (k.indexOf('tab:') === 0) return go(function () { if (window.__goView) window.__goView(0); var t = document.querySelector('.tabs .tab[data-panel="' + k.slice(4) + '"]'); if (t) t.click(); });
       if (k === 'pfm') return window.Asistente && Asistente.openPF();
       if (k === 'sol' || k === 'handoff') return window.UkuAsistente && UkuAsistente[k === 'sol' ? 'solicitudes' : 'persona'] && UkuAsistente[k === 'sol' ? 'solicitudes' : 'persona']();
