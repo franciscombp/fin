@@ -89,13 +89,17 @@
   mix-blend-mode: screen; opacity: calc(var(--uv-luz) * .5);
 }
 
-/* Reverso: el color de cada tarjeta (amarillo de la débito, grafito de la Black, el
-   fondo plata de la Siembra) y el texto que contrasta con él */
-.cd-card { --dorso-bg: linear-gradient(150deg, #0f265c, #1a3a7d); --dorso-fg: #fff; }
-.cd-card[data-tarjeta="debito"] { --dorso-bg: linear-gradient(150deg, var(--bp-base-color-yellow-500, #ffdd00), #f2c900); --dorso-fg: var(--bp-base-color-blue-500, #0f265c); }
-.cd-card[data-tarjeta="black"] { --dorso-bg: linear-gradient(150deg, #2b2d33, #060606); --dorso-fg: #f5f5f7; }
-.cd-card[data-tarjeta="siembra"] { --dorso-bg: url('tarjetas/visa-credito/fondo.svg') center / 100% 100%; --dorso-fg: var(--bp-base-color-blue-500, #0f265c); }
-.cd-card .cd-face--back { background: var(--dorso-bg); color: var(--dorso-fg); }
+/* Reverso: el fondo de cada tarjeta (--dorso-img, de tarjetas.js), difuminado y bajo un
+   velo que lo atenúa. data-dorso (medido del fondo) decide el modo: claro (velo blanco,
+   texto azul de marca) u oscuro (velo negro, texto blanco). */
+.cd-card { --dorso-velo: rgb(255 255 255 / .55); --dorso-fg: var(--bp-base-color-blue-500, #0f265c); }
+.cd-card[data-dorso="oscuro"] { --dorso-velo: rgb(0 0 0 / .45); --dorso-fg: #f5f5f7; }
+.cd-card .cd-face--back { background: var(--bp-theme-color-surface-container-default); color: var(--dorso-fg); overflow: hidden; }
+.cd-card .cd-face--back::before, .cd-card .cd-face--back::after { content: ''; position: absolute; inset: 0; pointer-events: none; }
+.cd-card .cd-face--back::before { inset: -32px; background: var(--dorso-img, none) center / cover no-repeat; filter: blur(16px) saturate(.85); }
+.cd-card .cd-face--back::after { background: var(--dorso-velo); }
+.cd-card .cd-data { position: relative; z-index: 1; }
+.cd-card .cd-verify, .cd-card .cd-data__close { z-index: 2; }
 .cd-card .cd-verify { color: inherit; }
 .cd-card .cd-copy, .cd-card .cd-data__close { background: color-mix(in srgb, currentColor 14%, transparent); color: inherit; }
 .cd-card .cd-copy:active, .cd-card .cd-data__close:active { background: color-mix(in srgb, currentColor 26%, transparent); }

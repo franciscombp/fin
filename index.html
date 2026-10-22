@@ -5595,7 +5595,7 @@
             document.getElementById('cd-expiry').textContent = t.vence;
             document.getElementById('cd-cvv').textContent = t.cvv;
             if (t.oscuro) cardDetail.dataset.theme = 'dark'; else delete cardDetail.dataset.theme;
-            cdCard.dataset.tarjeta = key; // el reverso toma el color de la tarjeta (tarjetas.css)
+            Tarjetas.dorso(cdCard, key); // el reverso es el fondo de la tarjeta, atenuado, claro u oscuro
             document.getElementById('cd-ajustes').hidden = !t.ajustes;
             document.getElementById('cd-ojo').hidden = !!t.ajustes;
             cdArte.innerHTML = Tarjetas.arte(key, datos);
