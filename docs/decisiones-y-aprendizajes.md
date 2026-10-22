@@ -273,6 +273,8 @@ Cómo queda:
   de luz y `logos.svg`; en las de imagen, un reflejo encima. Las bandas van casi horizontales porque lo
   común es inclinar el teléfono hacia adelante o atrás (beta, el eje más sensible): así suben y bajan.
   `--uv-x`, `--uv-y` y `--uv-luz` (ángulo) van en cada `.tj-arte`. Sin sensores sigue al dedo o al mouse.
+  El scroll de la pantalla de la tarjeta también mueve la luz (160 px la llevan de un borde al otro) y se
+  suma a la inclinación.
 - **iPhone:** el permiso de movimiento se renueva con `click`, no con `pointerdown` (iOS no cuenta el
   pointerdown de un dedo como gesto y `requestPermission` fallaba en silencio). Si al abrir una tarjeta
   no llegan lecturas, se muestra el aviso (una vez por visita).
