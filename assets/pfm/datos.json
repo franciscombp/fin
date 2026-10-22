@@ -709,6 +709,16 @@
    "clase": "hipoteca"
   },
   {
+   "usuario": "andres",
+   "producto": "Visa Siembra ···2087",
+   "institucion": "Pichibank",
+   "en_mvp": "Sí",
+   "saldo": 0,
+   "cuota_mensual": 0,
+   "nota": "Tarjeta Siembra nueva, todavía sin consumos",
+   "clase": "tarjeta"
+  },
+  {
    "usuario": "jorge",
    "producto": "Visa ···4409",
    "institucion": "Pichibank",

@@ -5415,7 +5415,6 @@
         let targetX = 0, targetY = 0;
         let curX = 0, curY = 0;
         let gyroActive = false;
-        let gyroAsked = localStorage.getItem('gyroAsked') === 'true';
         let gyroGranted = localStorage.getItem('gyroGranted') === 'true';
         const needsGyroPermission = typeof DeviceOrientationEvent !== 'undefined' &&
             typeof DeviceOrientationEvent.requestPermission === 'function';
@@ -5507,29 +5506,23 @@
 
         // Reconexión del giroscopio en visitas posteriores:
         // el permiso ya concedido no persiste el listener entre recargas.
+        // Reconexión del giroscopio en visitas posteriores. Android no pide permiso.
+        // En iPhone el permiso dura la visita: si ya lo dio, se renueva en su primer toque.
+        // Tiene que ser 'click': iOS no cuenta el pointerdown de un dedo como gesto, y
+        // requestPermission fallaba en silencio (no llegaban lecturas). La primera vez se
+        // pregunta al abrir una tarjeta (openCardDetail), no en cualquier toque de la app.
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        if (isMobile) {
-            if (gyroGranted && !needsGyroPermission) {
-                // Android: reactivar directo, sin toast
-                enableGyro(false);
-            } else if (gyroGranted && needsGyroPermission) {
-                // iOS: re-pedir en el primer gesto (requestPermission necesita gesto)
-                window.addEventListener('pointerdown', () => {
-                    DeviceOrientationEvent.requestPermission()
-                        .then(state => { if (state === 'granted') enableGyro(false); })
-                        .catch(() => {});
-                }, { once: true });
-            } else if (!gyroAsked) {
-                // Primera visita: mostrar modal explicativo al primer toque
-                window.addEventListener('pointerdown', () => {
-                    modal.classList.add('show');
-                }, { once: true });
-            }
+        if (gyroGranted && !needsGyroPermission && isMobile) {
+            enableGyro(false);
+        } else if (gyroGranted && needsGyroPermission) {
+            window.addEventListener('click', () => {
+                DeviceOrientationEvent.requestPermission()
+                    .then(state => { if (state === 'granted') enableGyro(false); })
+                    .catch(() => {});
+            }, { once: true });
         }
 
-        // Nota: sin fallback de mouse a propósito — es una app móvil, el
-        // resplandor sólo reacciona al giroscopio real. En escritorio (sin
-        // sensores) la tarjeta queda simplemente estática.
+        // La luz de las tarjetas (assets/tarjetas.js) sigue al giroscopio; sin sensores, al dedo o al mouse.
 
         // ---------- Bottom sheet ----------
         const sheet = document.getElementById('sheet');
@@ -5602,6 +5595,7 @@
             document.getElementById('cd-expiry').textContent = t.vence;
             document.getElementById('cd-cvv').textContent = t.cvv;
             if (t.oscuro) cardDetail.dataset.theme = 'dark'; else delete cardDetail.dataset.theme;
+            cdCard.dataset.tarjeta = key; // el reverso toma el color de la tarjeta (tarjetas.css)
             document.getElementById('cd-ajustes').hidden = !t.ajustes;
             document.getElementById('cd-ojo').hidden = !!t.ajustes;
             cdArte.innerHTML = Tarjetas.arte(key, datos);
@@ -5612,14 +5606,19 @@
         // sistema.css): entra desde la derecha y sale por la derecha. El
         // morph de la tarjeta quedó en respaldo/transiciones-anteriores.
         const CD_MS = 400;
+        let gyroPedido = false; // el aviso del giroscopio sale como mucho una vez por visita
         function openCardDetail(key = 'debito', datos) {
             fx('open');
             const tipo = Tarjetas.tipos[key] ? key : (Tarjetas.tipo(key) || 'debito');
             applyCardTheme(tipo, datos);
-            // La tinta UV necesita el giroscopio: en iPhone, si aún no hay permiso, se pide aquí
-            // (también si antes dijo "Ahora no"); el toque de "Activar" es el gesto que iOS exige
-            if (Tarjetas.tipos[tipo].uv && needsGyroPermission && localStorage.getItem('gyroGranted') !== 'true') {
-                modal.classList.add('show');
+            // La luz de las tarjetas usa el giroscopio: en iPhone, si al abrir no llegan lecturas
+            // (sin permiso, o porque antes dijo "Ahora no"), se pide aquí, una vez por visita.
+            // El toque de "Activar" es el gesto que iOS exige. Se espera un momento porque el
+            // mismo toque que abre la tarjeta puede estar renovando un permiso ya dado.
+            if (needsGyroPermission && !gyroPedido) {
+                setTimeout(() => {
+                    if (!Tarjetas.giroActivo() && cardDetail.classList.contains('open')) { gyroPedido = true; modal.classList.add('show'); }
+                }, 800);
             }
             hideCardData();
             cardDetail.classList.remove('scrolled');

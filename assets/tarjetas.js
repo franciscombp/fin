@@ -4,9 +4,11 @@
    - Débito Digital: arte Visa amarillo, acciones y suscripciones.
    - Crédito Black Miles: arte negro y la página en modo oscuro (tokens
      oscuros del DS solo en esta pantalla, con data-theme="dark").
-   - Crédito Visa: tarjeta en capas (fondo, formas UV y logos). La tinta
-     UV es solo luz: su brillo recorre las formas y sube con la
-     inclinación del teléfono; sin sensores, sigue al dedo o al mouse.
+   - Crédito Siembra (la Visa Pichibank blanca): tarjeta en capas (fondo,
+     formas UV y logos). La tinta UV es solo luz: su brillo recorre las
+     formas y sube con la inclinación del teléfono.
+   Todas las tarjetas reflejan una luz que sigue al giroscopio (sin
+   sensores, al dedo o al mouse). El reverso toma el color de cada tarjeta.
    Las filas del hub Tarjetas (productos.js) llevan data-tarjeta con el
    tipo, y abren este detalle.
    ===================================================================== */
@@ -29,8 +31,8 @@
       numero: '5221 4471 8823 ', ultimos: '5432', vence: '11/28', cvv: '456', cupo: 40000, ir: 'Cupos de tu Black Miles',
       acciones: [['redeem', 'Millas', 'Millas'], ['request_quote', 'Avances', 'Avances'], ['call_split', 'Diferir', 'Diferir consumos'], ['more_horiz', 'Más', 'Más opciones']]
     },
-    visa: {
-      titulo: 'Crédito Visa', uv: true, alt: 'Tarjeta de crédito Visa', credito: true,
+    siembra: {
+      titulo: 'Crédito Siembra', uv: true, alt: 'Tarjeta de crédito Visa Siembra', credito: true,
       numero: '4915 0627 3310 ', ultimos: '4409', vence: '03/30', cvv: '812', cupo: 8000, ir: 'Próximo estado de cuenta',
       acciones: [['stars', 'Puntos', 'Puntos'], ['request_quote', 'Avances', 'Avances'], ['call_split', 'Diferir', 'Diferir consumos'], ['more_horiz', 'Más', 'Más opciones']]
     }
@@ -51,11 +53,16 @@
     var n = String(nombre || '').toLowerCase();
     if (/d[eé]bito/.test(n)) return 'debito';
     if (/black|mastercard/.test(n)) return 'black';
-    if (/visa/.test(n)) return 'visa';
+    if (/siembra|visa/.test(n)) return 'siembra';
     return null;
   }
 
-  // Arte de la tarjeta: imagen, o las capas de la Visa con tinta UV
+  // Nombre en el hub: la Visa Pichibank es la Siembra
+  function nombre(k, ultimos, original) {
+    return k === 'siembra' ? 'Visa Siembra ···' + ultimos : original;
+  }
+
+  // Arte de la tarjeta: imagen con su reflejo, o las capas de la Siembra con tinta UV
   function arte(k, d) {
     var t = TIPOS[k] || TIPOS.debito;
     d = d || {};
@@ -63,14 +70,14 @@
     var estado = t.credito && !Number(d.saldo) ? '<span class="tj-arte__estado">' + ms('check_circle') + 'Estás al día</span>' : '';
     var num = t.credito ? '<span class="tj-arte__num">***' + esc(ult) + '</span>' : '';
     var base = t.uv
-      ? '<div class="tuv" role="img" aria-label="' + esc(t.alt) + '"><span class="tuv__fondo"></span><span class="tuv__formas"></span><span class="tuv__tinta"></span><span class="tuv__luz"></span><span class="tuv__logos"></span></div>'
-      : '<img class="tj-arte__img" src="' + t.img + '" alt="' + esc(t.alt) + '" draggable="false">';
+      ? '<div class="tuv" role="img" aria-label="' + esc(t.alt) + '"><span class="tuv__fondo"></span><span class="tuv__brillo"></span><span class="tuv__formas"></span><span class="tuv__tinta"></span><span class="tuv__luz"></span><span class="tuv__logos"></span></div>'
+      : '<img class="tj-arte__img" src="' + t.img + '" alt="' + esc(t.alt) + '" draggable="false"><span class="tj-luz"></span>';
     return '<div class="tj-arte tj-arte--' + k + '">' + base + estado + num + '</div>';
   }
 
   // Miniatura para la fila del hub
   function mini(k) {
-    var src = k === 'visa' ? A + 'visa-credito/tarjeta.svg' : (TIPOS[k] || TIPOS.debito).img;
+    var src = k === 'siembra' ? A + 'visa-credito/tarjeta.svg' : (TIPOS[k] || TIPOS.debito).img;
     return '<span class="card-thumb card-thumb--img" aria-hidden="true"><img src="' + src + '" alt=""></span>';
   }
 
@@ -111,14 +118,14 @@
     return html;
   }
 
-  /* ---------- Tinta UV: giroscopio, o el dedo/mouse sin sensores ----------
-     --uv-x/--uv-y (-1..1) mueven el degradado y el punto de luz; --uv-luz
-     (0..1) es cuánto se inclina la tarjeta: a más ángulo, más se ve la tinta. */
-  var tx = 0, ty = 0, cx = 0, cy = 0, base = null, conGiro = false, corre = false;
+  /* ---------- Luz con giroscopio (o el dedo/mouse sin sensores) ----------
+     --uv-x/--uv-y (-1..1) mueven el reflejo y la tinta UV; --uv-luz (0..1) es
+     cuánto se inclina la tarjeta: a más ángulo, más luz. Van en cada .tj-arte. */
+  var tx = 0, ty = 0, cx = 0, cy = 0, base = null, vivo = false, corre = false;
   function cuadro() {
-    cx += (tx - cx) * 0.1; cy += (ty - cy) * 0.1;
-    var luz = Math.min(1, Math.hypot(cx, cy) * 1.15);
-    document.querySelectorAll('.tuv').forEach(function (el) {
+    cx += (tx - cx) * 0.12; cy += (ty - cy) * 0.12;
+    var luz = Math.min(1, Math.hypot(cx, cy) * 1.2);
+    document.querySelectorAll('.tj-arte').forEach(function (el) {
       el.style.setProperty('--uv-x', cx.toFixed(3));
       el.style.setProperty('--uv-y', cy.toFixed(3));
       el.style.setProperty('--uv-luz', luz.toFixed(3));
@@ -127,25 +134,28 @@
   }
   function mover(x, y) {
     tx = Math.max(-1, Math.min(1, x)); ty = Math.max(-1, Math.min(1, y));
-    if (!corre && document.querySelector('.tuv')) { corre = true; requestAnimationFrame(cuadro); }
+    if (!corre && document.querySelector('.tj-arte')) { corre = true; requestAnimationFrame(cuadro); }
   }
-  // La primera lectura de beta es la postura de reposo; el reposo sigue despacio a la postura
-  window.addEventListener('deviceorientation', function (e) {
+  // gamma: izquierda/derecha. beta: adelante/atrás respecto de la postura en que se sostiene el
+  // teléfono (la primera lectura, que sigue muy despacio a la postura para no "apagar" la luz)
+  function orientacion(e) {
     if (e.gamma == null && e.beta == null) return;
-    conGiro = true;
+    vivo = true;
     if (base === null) base = e.beta || 0;
-    base += ((e.beta || 0) - base) * 0.005;
-    mover((e.gamma || 0) / 35, ((e.beta || 0) - base) / 25);
-  });
+    base += ((e.beta || 0) - base) * 0.002;
+    // Lo más común es inclinar hacia adelante o atrás: ese eje es el más sensible (15° llegan al tope)
+    mover((e.gamma || 0) / 25, ((e.beta || 0) - base) / 15);
+  }
+  window.addEventListener('deviceorientation', orientacion);
   document.addEventListener('pointermove', function (e) {
-    if (conGiro) return;
-    var el = e.target.closest && e.target.closest('.tuv');
+    if (vivo) return;
+    var el = e.target.closest && e.target.closest('.tj-arte');
     if (!el) return;
     var r = el.getBoundingClientRect();
     mover((e.clientX - r.left) / r.width * 2 - 1, (e.clientY - r.top) / r.height * 2 - 1);
   });
   document.addEventListener('pointerout', function (e) {
-    if (!conGiro && e.target.closest && e.target.closest('.tuv') && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.tuv'))) mover(0, 0);
+    if (!vivo && e.target.closest && e.target.closest('.tj-arte') && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.tj-arte'))) mover(0, 0);
   });
 
   // Abrir una tarjeta por su nombre (accesos de Uku, Soporte y Destacados): su fila del hub si
@@ -159,5 +169,7 @@
     if (r) r.click(); else if (window.openCardDetail) window.openCardDetail(k || 'debito');
   }
 
-  window.Tarjetas = { tipos: TIPOS, tipo: tipo, arte: arte, mini: mini, cuerpo: cuerpo, abrir: abrir, inclinar: mover };
+  window.Tarjetas = { tipos: TIPOS, tipo: tipo, nombre: nombre, arte: arte, mini: mini, cuerpo: cuerpo, abrir: abrir, inclinar: mover,
+    // true cuando ya llegan lecturas del giroscopio (en iPhone, después de dar el permiso)
+    giroActivo: function () { return vivo; } };
 })();
