@@ -2460,10 +2460,10 @@
         html body.sin-red #btn-login-other { display: none !important; }
         .cta-dashed[hidden] { display: none !important; }
         html body.sin-red .quick-action[data-online-only]:disabled { opacity: .4; }
-        #login-offline[hidden] { display: none; }
+        #login-offline[hidden] { display: none !important; }
         /* El selector de idioma también se abre desde el login */
-        html body.sin-sesion .as-sheet-back { z-index: 650; }
-        html body.sin-sesion .as-sheet { z-index: 651; }
+        html body.sin-sesion .as-sheet-back { z-index: 650 !important; }
+        html body.sin-sesion .as-sheet { z-index: 651 !important; }
         .login-screen.active {
             display: flex;
         }
@@ -4410,13 +4410,6 @@
                     </button>
                 </div>
 
-                <div class="bp-tips-security" style="margin-bottom: 12px;" role="note">
-                    <div class="bp-tips-security__content">
-                        <p class="bp-tips-security__title">Nunca compartas tus claves</p>
-                        <p class="bp-tips-security__body">Pichibank no te pide claves ni códigos por llamada, SMS o correo. Si alguien lo hace, repórtalo desde Seguridad.</p>
-                    </div>
-                    <div class="bp-tips-security__art" aria-hidden="true"><span class="material-symbols-rounded">shield_locked</span></div>
-                </div>
                 <div class="card">
                     <button class="list-item" data-action="Datos personales">
                         <span class="avatar-cat"><span class="material-symbols-rounded">person</span></span>

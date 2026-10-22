@@ -543,6 +543,15 @@
     temas.forEach(function (t) {
       cuerpo.append(fila(t.icon || 'help', t.t, function () { cerrarHoja(); if (window.Soporte) Soporte.openFaq(t.i); }));
     });
+    cuerpo.append(h('div', { class: 'bp-alert bp-alert--info ing-aviso' }, [
+      h('div', { class: 'bp-alert__content' }, [
+        h('span', { class: 'bp-alert__icon material-symbols-rounded', text: 'shield_lock', 'aria-hidden': 'true' }),
+        h('div', { class: 'bp-alert__text' }, [
+          h('p', { class: 'bp-alert__title', text: 'Nunca compartas tus claves' }),
+          h('p', { class: 'bp-alert__body', text: 'Pichibank no te pide claves ni códigos por llamada, SMS o correo. Si alguien lo hace, repórtalo desde Seguridad.' })
+        ])
+      ])
+    ]));
     var centro = h('button', { class: 'login-button login-button--tertiary', type: 'button', text: 'Centro de ayuda' });
     centro.addEventListener('click', function () { cerrarHoja(); if (window.Soporte) Soporte.open(); });
     cuerpo.append(centro);
