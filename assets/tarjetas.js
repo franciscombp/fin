@@ -9,7 +9,8 @@
      formas UV y logos). La tinta UV es solo luz: su brillo recorre las
      formas y sube con la inclinación del teléfono.
    Todas las tarjetas reflejan una luz que sigue al giroscopio (sin
-   sensores, al dedo o al mouse). El reverso toma el color de cada tarjeta.
+   sensores, al dedo o al mouse). El reverso es el fondo de cada tarjeta,
+   atenuado, en modo claro u oscuro según ese fondo.
    Las filas del hub Tarjetas (productos.js) llevan data-tarjeta con el
    tipo, y abren este detalle.
    ===================================================================== */
@@ -173,28 +174,36 @@
     if (!vivo && e.target.closest && e.target.closest('.tj-arte') && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.tj-arte'))) mover(0, 0);
   });
 
-  /* ---------- Borde de contraste automático ----------
-     Se mide la orilla del arte (su fondo, o la imagen) y la línea interior sale
-     oscura si la orilla es clara, o clara si es oscura. Al reemplazar un SVG o una
-     imagen, el borde se adapta solo. Se calcula una vez por imagen. */
-  var bordes = {};
-  function orilla(src, listo) {
-    if (bordes[src]) return listo(bordes[src]);
+  /* ---------- Borde y reverso automáticos ----------
+     Se mide el arte de cada tarjeta (su fondo, o la imagen) una vez por imagen:
+     - la orilla decide el borde de contraste: línea oscura y tenue si es clara,
+       clara y tenue si es oscura;
+     - el promedio de todo el fondo decide el reverso: el mismo fondo difuminado
+       y atenuado, en modo claro (velo blanco, texto azul) u oscuro (velo negro,
+       texto blanco).
+     Al reemplazar un SVG o una imagen, todo se adapta solo. */
+  var medidas = {};
+  function medir(src, listo) {
+    if (medidas[src]) return listo(medidas[src]);
     var im = new Image();
     im.onload = function () {
-      var w = 80, h = 50, c = document.createElement('canvas'), x = c.getContext('2d');
+      var w = 80, h = 50, c = document.createElement('canvas'), x = c.getContext('2d'), m = { orilla: true, claro: true };
       c.width = w; c.height = h;
       try {
         x.drawImage(im, 0, 0, w, h);
-        var d = x.getImageData(0, 0, w, h).data, suma = 0, peso = 0;
-        // Un anillo a 2 px de la orilla, sin las esquinas (redondeadas y transparentes)
-        var px = function (i, j) { var k = (j * w + i) * 4, a = d[k + 3] / 255; suma += a * (.2126 * d[k] + .7152 * d[k + 1] + .0722 * d[k + 2]) / 255; peso += a; };
+        var d = x.getImageData(0, 0, w, h).data;
+        var lum = function (k) { return (.2126 * d[k] + .7152 * d[k + 1] + .0722 * d[k + 2]) / 255; };
+        // Orilla: un anillo a 2 px del borde, sin las esquinas (redondeadas y transparentes)
+        var so = 0, po = 0, px = function (i, j) { var k = (j * w + i) * 4, a = d[k + 3] / 255; so += a * lum(k); po += a; };
         for (var i = 12; i < w - 12; i++) { px(i, 2); px(i, h - 3); }
         for (var j = 10; j < h - 10; j++) { px(2, j); px(w - 3, j); }
-        var claro = peso ? suma / peso > .5 : true;
-        bordes[src] = claro ? 'rgb(15 38 92 / .08)' : 'rgb(255 255 255 / .1)';
-      } catch (e) { bordes[src] = 'rgb(15 38 92 / .08)'; }
-      listo(bordes[src]);
+        // Todo el fondo
+        var st = 0, pt = 0;
+        for (var k = 0; k < d.length; k += 4) { var a = d[k + 3] / 255; st += a * lum(k); pt += a; }
+        m = { orilla: po ? so / po > .5 : true, claro: pt ? st / pt > .5 : true };
+      } catch (e) {}
+      medidas[src] = m;
+      listo(m);
     };
     im.src = src;
   }
@@ -203,8 +212,15 @@
     (root || document).querySelectorAll('[data-tj]').forEach(function (el) {
       var t = TIPOS[el.dataset.tj]; if (!t) return;
       var src = el.classList.contains('card-thumb') ? (t.mini || t.img) : (t.fondo || t.img);
-      orilla(src, function (c) { el.style.setProperty('--tj-borde', c); });
+      medir(src, function (m) { el.style.setProperty('--tj-borde', m.orilla ? 'rgb(15 38 92 / .08)' : 'rgb(255 255 255 / .1)'); });
     });
+  }
+  // Reverso de la tarjeta grande: su fondo (URL absoluta: en una variable CSS una URL relativa
+  // se resolvería contra la hoja que la usa) y el modo claro u oscuro según ese fondo
+  function dorso(card, k) {
+    var t = TIPOS[k] || TIPOS.debito, src = t.fondo || t.img;
+    card.style.setProperty('--dorso-img', 'url("' + new URL(src, location.href).href + '")');
+    medir(src, function (m) { card.dataset.dorso = m.claro ? 'claro' : 'oscuro'; });
   }
 
   /* ---------- Vuelo entre la miniatura del hub y la tarjeta grande ----------
@@ -245,7 +261,7 @@
     if (r) r.click(); else if (window.openCardDetail) window.openCardDetail(k || 'debito');
   }
 
-  window.Tarjetas = { tipos: TIPOS, tipo: tipo, nombre: nombre, arte: arte, mini: mini, cuerpo: cuerpo, abrir: abrir, inclinar: mover, ajustar: ajustar, volar: volar,
+  window.Tarjetas = { tipos: TIPOS, tipo: tipo, nombre: nombre, arte: arte, mini: mini, cuerpo: cuerpo, abrir: abrir, inclinar: mover, ajustar: ajustar, dorso: dorso, volar: volar,
     // true cuando ya llegan lecturas del giroscopio (en iPhone, después de dar el permiso)
     giroActivo: function () { return vivo; } };
 })();
