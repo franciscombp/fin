@@ -3,7 +3,6 @@
    Mis finanzas vive en assets/pfm.js; el análisis con IA en assets/analisis.js.
    La versión anterior (Candado y PIA en SVG) está en respaldo/asistente-candado-pia/.
 
-   - Vive en Modo finanzas (PFM) y tiene una entrada en Inicio.
    - Responde preguntas sobre tus finanzas usando SOLO los movimientos de
      los últimos 3 meses (lo único que el banco puede mostrar). De antes
      sólo existen informes mensuales agregados (metas, ahorro, pagos),
@@ -401,21 +400,7 @@
   }
   function lastClosedMi() { return 1; }
 
-  /* ---------- Entradas: Inicio y Modo finanzas ----------
-     Tarjeta aireada: ilustración centrada sobre un círculo neutro,
-     un solo mensaje y un link. */
-  function mountEntries() {
-    // Mis finanzas reemplaza al antiguo "Modo finanzas" (activos/pasivos/
-    // cuentas duplicaban esta vista): el acceso abre directamente el PFM.
-    // En Inicio, Mis finanzas vive como un widget de Destacados.
-    if (mountEntries._done) return; mountEntries._done = true;
-    document.addEventListener('click', function (e) {
-      var b = e.target.closest('[data-action="Modo finanzas"]');
-      if (!b) return;
-      e.stopImmediatePropagation(); e.preventDefault();
-      openPF();
-    }, true);
-  }
+  /* ---------- Inicio: la deuda de la tarjeta y los destacados, con los mismos datos de Uku ---------- */
   // Inicio muestra la misma deuda de la Mastercard Black que usa Uku
   function syncHome() {
     if (!D.card) return;
@@ -505,7 +490,7 @@
   function openPF() { if (window.PFM) PFM.open(); }
 
   function init() {
-    build(); mountEntries(); paintEntries();
+    build(); paintEntries();
     // Al cambiar de idioma: lo que se arma con T() se vuelve a pintar
     document.addEventListener('i18n:change', function () { insCache = {}; paintEntries(); });
   }

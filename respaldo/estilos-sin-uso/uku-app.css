@@ -1,0 +1,4 @@
+
+/* ---- Revisión del 22 de octubre: clases que ya no aparecen en ningún HTML ni JS (tras retirar la versión clásica y Modo finanzas) ---- */
+.uk-panel .pfm-foot, .uk-panel .pfm-resumen__go { display: none; }
+.uk-ay2__cap { margin: 0 0 4px; font: var(--uk-sm); }

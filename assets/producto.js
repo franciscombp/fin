@@ -347,20 +347,24 @@
     }
     var p = V[title] || R[title];
     if (!p) return '';
-    return '<div class="pv">' +
-      '<p class="pv-kind">' + p.kind + '</p>' +
-      '<p class="pv-label">' + p.label + '</p>' +
-      '<p class="pv-value">' + (p.text ? p.value : sens(p.value)) + '</p>' +
-      '<p class="pv-sub">' + p.sub + '</p>' +
-      (p.progress ? '<div class="pv-bar" role="progressbar" aria-valuenow="' + Math.round(p.progress * 100) + '" aria-valuemin="0" aria-valuemax="100"><i style="width:' + Math.round(p.progress * 100) + '%"></i></div>' : '') +
-      acciones(p.acts) +
-      '<section class="pv-sec"><h2>Detalle</h2>' + p.rows.map(function (r) { return '<div class="pv-row"><span>' + r[0] + '</span><b>' + r[1] + '</b></div>'; }).join('') + '</section>' +
-      (p.enlaces ? '<section class="pv-sec">' + p.enlaces.map(function (e) {
+    // Mismo lenguaje que la cuenta: título, tarjeta de saldo, acciones, detalle y lista en tarjetas
+    var filas = function (rs) { return rs.map(function (r) { return '<div class="pv-row"><span>' + r[0] + '</span><b>' + r[1] + '</b></div>'; }).join(''); };
+    return '<div class="pv pv--account pv--generico">' +
+      encabezado(p.kind) +
+      '<section class="pv-card pv-balance">' +
+        '<p class="pv-balance__book">' + p.label + '</p>' +
+        '<p class="pv-balance__value">' + (p.text ? p.value : sens(p.value)) + '</p>' +
+        (p.sub ? '<p class="pv-balance__book">' + p.sub + '</p>' : '') +
+        (p.progress ? '<div class="pv-bar" role="progressbar" aria-valuenow="' + Math.round(p.progress * 100) + '" aria-valuemin="0" aria-valuemax="100"><i style="width:' + Math.round(p.progress * 100) + '%"></i></div>' : '') +
+      '</section>' +
+      (p.acts.length ? '<section class="pv-card pv-acts-card">' + acciones(p.acts) + '</section>' : '') +
+      (p.rows.length ? '<section class="pv-card pv-movs"><div class="pv-movs__head"><h2>Detalle</h2></div><div class="pv-filas">' + filas(p.rows) + '</div></section>' : '') +
+      (p.enlaces ? '<section class="pv-card pv-movs">' + p.enlaces.map(function (e) {
         return '<button class="pv-enlace" data-pv-go="' + e[0] + '" data-pv-label="' + e[1] + '">' + e[1] + ms('chevron_right') + '</button>';
       }).join('') + '</section>' : '') +
-      (p.list.length ? '<section class="pv-sec"><h2>' + p.listTitle + '</h2>' + p.list.map(function (m) {
+      (p.list.length ? '<section class="pv-card pv-movs"><div class="pv-movs__head"><h2>' + p.listTitle + '</h2></div><div class="pv-filas">' + p.list.map(function (m) {
         return '<div class="pv-row pv-row--mov"><span><b>' + m[0] + '</b><small>' + m[1] + '</small></span><b class="' + (m[2][0] === '+' ? 'is-in' : '') + '">' + sens(m[2]) + '</b></div>';
-      }).join('') + '</section>' : '') +
+      }).join('') + '</div></section>' : '') +
     '</div>';
   }
 

@@ -158,7 +158,7 @@ function eyeMap(base, kind) {
   return t;
 }
 
-/* Visor independiente (uku-rig.html): cámara, luz, suelo y Uku con la clip que se pida. */
+/* Visor independiente (sandbox/rig.html): cámara, luz, suelo y Uku con la clip que se pida. */
 export async function loadUkuRig(container, { onLog = console.log, frame = { dist: 3.4, y: .85 } } = {}) {
   const u = ukuFrom(await loadUkuGltf(), { onLog });
   const scene = new THREE.Scene();

@@ -70,7 +70,7 @@ const IGN = /ERR_CONNECTION_REFUSED|ERR_FAILED|ERR_NAME_NOT_RESOLVED|ERR_TUNNEL|
   }
   // Páginas sueltas que también se publican
   const ctx = await b.newContext({ viewport: { width: 390, height: 844 } });
-  for (const u of ['index.html?app=clasica', 'duo.html', 'guia.html', 'principios.html', 'sandbox/index.html', 'sandbox/mundo.html', 'sandbox/animaciones.html', 'sandbox/conocimiento.html', 'buscador/index.html']) {
+  for (const u of ['duo.html', 'guia.html', 'principios.html', 'sandbox/index.html', 'sandbox/mundo.html', 'sandbox/animaciones.html', 'sandbox/conocimiento.html', 'buscador/index.html', 'sandbox/rig.html']) {
     const p = await ctx.newPage(); const errs = [];
     p.on('pageerror', e => errs.push('error de JS: ' + e.message)); p.on('console', m => { if (m.type() === 'error' && !IGN.test(m.text())) errs.push('consola: ' + m.text().slice(0, 160)); });
     p.on('response', r => { if (r.status() >= 400 && r.url().startsWith(BASE)) errs.push('no carga (' + r.status() + '): ' + r.url().slice(BASE.length)); });

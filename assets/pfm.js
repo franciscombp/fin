@@ -1197,9 +1197,9 @@
       (L.length ? L.slice(0, 6).map(txHTML).join('') : '<p class="pf-note">' + T('Este día no gastaste nada.') + '</p>') + '</div>';
   }
   function gastosHTML() {
-    var P = per(), s = P.o, pr = pres(), mb = P.m && hayPres() ? pr : null, app = document.documentElement.classList.contains('app-uku');
+    var P = per(), s = P.o, pr = pres(), mb = P.m && hayPres() ? pr : null;
     // En el asistente, arriba va el hallazgo de Uku sobre el periodo (wireframe «Mis gastos»): una frase con lo que cambió
-    var H = app ? hallazgos(P.m || curMes()).filter(function (x) { return x.t && x.icon !== 'hourglass_top'; })[0] : null;
+    var H = hallazgos(P.m || curMes()).filter(function (x) { return x.t && x.icon !== 'hourglass_top'; })[0];
     var insight = H ? '<div class="pfm-insight"><span class="pfm-insight__ic"><span class="material-symbols-rounded" aria-hidden="true">lightbulb</span></span><p><b>' + H.t + '.</b>' + (H.s ? ' ' + H.s : '') + '</p></div>' : '';
     // El periodo queda fijo arriba: todo lo de abajo (gráfica, destacado, grupos) cambia con él
     var html = insight + '<div class="pfm-per"><section class="pf-sec pfm-flow"><div class="pf-sec__head"><h2>' + T('Cuánto gastaste') + '</h2><button class="section__link" data-pfm="alltx">' + T('Movimientos') + '</button></div></section>' +
@@ -1268,11 +1268,6 @@
       '<span class="pfm-pill is-' + c.k + '">' + T(PILL[c.k]) + (c.cat && c.k !== 'no' ? ' · ' + esc(grupo(c.cat) === 'Sin clasificar' ? c.cat : T(grupo(c.cat))) : '') + '</span></span>' +
       '<span class="pf-tx__amt' + (inc ? ' is-in' : '') + '">' + (inc ? '+' : '−') + money(Math.abs(r.m)) + '</span></button>';
   }
-  function footHTML() {
-    return '<section class="pf-sec pfm-foot"><p class="pf-note pfm-scope"><span class="material-symbols-rounded">visibility</span><span>' +
-      (tobe() ? T('Uku ve Pichibank, Deuna y las tarjetas de otros bancos que conectaste. El efectivo no lo ve.') : T('Solo vemos lo que pasa por Pichibank y Deuna. El efectivo y las tarjetas de otros bancos no aparecen.')) +
-      '</span></p><p class="pf-note">' + T('Datos ficticios de la Base de datos PFM, hasta el {f}.', { f: dshort(HOY) + ' ' + HOY.slice(0, 4) }) + '</p></section>';
-  }
 
   function paint() {
     if (!pf) return;
@@ -1281,7 +1276,7 @@
     // Primero la salud financiera (Uku) y un resumen de gastos; al tocarlo, el detalle
     var body = vistaGastos === 'gastos'
       ? '<button class="pf-back" data-pfm="inicio"><span class="material-symbols-rounded" aria-hidden="true">chevron_left</span>' + T('Mis finanzas') + '</button>' + gastosHTML() + dineroHTML()
-      : (document.documentElement.classList.contains('app-uku') ? hubHTML() : resumenGastosHTML() + footHTML());
+      : hubHTML();
     scroll.innerHTML = '<header class="pf-head"><h1>' + (vistaGastos === 'gastos' ? T('Mis gastos') : 'Mis finanzas') + '</h1></header>' + body;
     window.scrollTo({ top: vistaGastos ? 0 : keep });
   }
@@ -1573,15 +1568,6 @@
         '<div class="pfm-hub__cols"><p><small>' + T('Dinero en mis cuentas e inversiones') + '</small><b>' + money(pat.tienes) + '</b></p>' +
         '<p><small>' + T('Deuda total acumulada') + '</small><b>' + money(pat.debes) + '</b></p></div></div>' +
       '</section>';
-  }
-  function resumenGastosHTML() {
-    var s = month(curMes()), pr = pres(), g = s.gast, p = pr.general;
-    var t = !p ? '' : g > p ? T('Excediste tu presupuesto por {m}', { m: money0(g - p) }) : T('Te quedan {m} de {p}', { m: money0(p - g), p: money0(p) });
-    return '<section class="pf-sec pfm-resumen"><button class="pfm-resumen__card" data-pfm="gastos">' +
-      '<span class="pfm-resumen__t">' + T('Gastaste este mes') + '</span>' +
-      '<b class="pfm-resumen__m">' + money0(g) + '</b>' +
-      (t ? '<span class="pfm-resumen__s">' + t + '</span>' : '') +
-      '<span class="pfm-resumen__go">' + T('Ver en qué gastaste') + '<span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></span></button></section>';
   }
   function refresh() { cache = {}; fijoCache = {}; paint(); document.dispatchEvent(new Event('pfm:change')); }
   function key(k) {

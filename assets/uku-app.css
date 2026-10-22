@@ -279,7 +279,7 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 .uk-panel .pf-host { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; padding-bottom: calc(16px + var(--uk-safeb, 0px)); }
 .uk.is-fin:not(.is-page) .uk-panel .pf-host { flex: none; overflow: visible; padding-bottom: var(--uk-safeb, 0px); }
 .uk-panel .pf-host::-webkit-scrollbar { display: none; }
-.uk-panel .pf-head, .uk-panel .pf-back, .uk-panel .pfm-tiles, .uk-panel .pfm-foot, .uk-panel .pfm-resumen__go { display: none; }
+.uk-panel .pf-head, .uk-panel .pf-back, .uk-panel .pfm-tiles { display: none; }
 .uk-panel .pf-host .pfm .pf-scroll { padding-bottom: 0; }
 /* Tarjetas de la hoja: gasto del mes (abre Mis gastos), la acción que Uku recomienda y tu dinero (abre su detalle) */
 .uk-panel .pf-sec.pfm-hub { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 16px var(--uk-margin); }
@@ -369,7 +369,7 @@ html.uk-chatting:not(.uk-nonav) .pf-toast { top: auto !important; bottom: calc(v
 .uk-ay2__pasos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 .uk-ay2__pasos i { display: block; height: 4px; border-radius: 2px; background: var(--bp-theme-color-data-chart-track, var(--uk-grey)); }
 .uk-ay2__pasos i.is-on { background: var(--uk-navy); }
-.uk-ay2__cap { margin: 0 0 4px; font: var(--uk-sm); }
+
 .uk-ay2__card > small { font: var(--uk-caption); color: var(--uk-muted); }
 
 /* ---------- 8. Ayuda completa (hoja): todas las categorías, con X que vuelve ---------- */
