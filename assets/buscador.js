@@ -232,7 +232,10 @@
     el.querySelector('form').addEventListener('submit', function (e) {
       e.preventDefault();
       addRecent(input.value);
-      var first = results.querySelector('[data-sx-i]');
+      // Una frase («Quiero viajar a Galápagos») se la preguntas a Uku, que la pasa por su orquestador;
+      // una búsqueda corta («tarjeta») abre el primer resultado
+      var frase = input.value.trim().split(/\s+/).length >= 3, ask = frase && results.querySelector('[data-sx-i="ask"]');
+      var first = ask || results.querySelector('[data-sx-i]');
       if (first) first.click();
     });
     el.addEventListener('click', function (e) {
@@ -370,6 +373,7 @@
     { t: 'Mis últimos movimientos', icon: 'swap_horiz', go: { a: 'Mis cuentas' } },
     { t: 'Solicitar una tarjeta de crédito', icon: 'credit_card', go: { ask: 'Cómo solicito una tarjeta de crédito' } },
     { t: 'Mis seguros', icon: 'shield', go: { a: 'Seguros' } },
+    { t: 'Planear un viaje', icon: 'flight', go: { ask: 'Quiero planear un viaje' } },
     { t: 'Necesito ayuda', icon: 'help', go: { help: true } }
   ];
   function sugerencias() {

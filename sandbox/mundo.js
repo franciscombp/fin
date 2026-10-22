@@ -16,6 +16,8 @@
     ['inversion', 'Con inversiones', { ahorro: 2500, inversion: 6000 }],
     ['creditos', 'Con créditos', { ahorro: 800, deudas: [{ clase: 'hipoteca', producto: 'Hipoteca', saldo: 52000 }, { clase: 'prestamo', producto: 'Crédito automotriz', saldo: 9000 }, { clase: 'tarjeta', producto: 'Visa', saldo: 420 }, { clase: 'prestamo', producto: 'Crédito de consumo', saldo: 1500 }] }]
   ];
+  // Al tocar una zona del claro, qué significa
+  var ZONA_L = { ahorro: 'Los canteros: tu ahorro', inversion: 'Los guayacanes: tus inversiones', bosque: 'El bosque: tu presupuesto', credito: 'Lo que tienes por tus créditos' };
   var PROPS = { casa: 'Casa (hipoteca)', carro: 'Carro (crédito automotriz)', tienda: 'Tiendita (tarjetas)', carretilla: 'Carretilla (consumo)', nevera: 'Nevera (a crédito)', tele: 'Televisor (a crédito)', caja: 'Caja (artefacto a crédito)', libros: 'Libros (estudios)' };
   var MOODS = [['feliz', 'Contento'], ['tranquilo', 'Tranquilo'], ['pensativo', 'Pensativo']];
   function resumen() { return window.PFM && PFM.ready() ? PFM.summary() : null; }
@@ -60,7 +62,7 @@
         m3 = mod; cargando = false;
         if (!mod.supported()) { nota.textContent = 'Este navegador no tiene WebGL: el bosque no se puede dibujar.'; return; }
         var e = efectivo(), f = finanzas(); mod.setBloom(e.bloom); mod.setMood(e.mood); if (f) mod.setFinanzas(f);
-        mod.attach(el, { score: e.score, onReady: function () { el.classList.add('is-3d'); if (nota) nota.remove(); mod.play('wave'); setTimeout(function () { mod.setAmbient('walk'); }, 2800); pintar(); } });
+        mod.attach(el, { score: e.score, onPick: function (z) { S.aviso(ZONA_L[z.split(':')[0]] + (z.indexOf(':') > 0 ? ' · ' + (PROPS[z.split(':')[1]] || '') : '')); }, onReady: function () { el.classList.add('is-3d'); if (nota) nota.remove(); mod.play('wave'); setTimeout(function () { mod.setAmbient('walk'); }, 2800); pintar(); } });
         escena = el;
       }).catch(function (err) { cargando = false; nota.textContent = 'No se pudo cargar el mundo 3D: ' + (err && err.message); });
     }

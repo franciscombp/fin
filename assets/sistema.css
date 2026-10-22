@@ -126,25 +126,19 @@
 /* Grupos del hub: cada grupo es su contenedor; los vacíos muestran un placeholder o un hero */
 .prod-group + .prod-group { margin-top: var(--bp-semantic-spacing-macro-sm); }
 .prod-group .card { margin-top: 0; }
-.prod-ph { display: flex; flex-direction: column; align-items: flex-start; gap: var(--bp-semantic-spacing-micro-md); padding: var(--bp-layout-card-padding); border: var(--bp-semantic-border-thin) dashed var(--bp-theme-color-border-default); border-radius: var(--bp-semantic-radius-md); }
-.prod-ph p { margin: 0; font: var(--sol-body-sm-regular); color: var(--bp-theme-color-text-helper); }
-.prod-ph b { font: var(--sol-body-md-semibold); color: var(--bp-theme-color-text-primary); }
-.prod-hero { display: flex; flex-direction: column; align-items: center; gap: var(--bp-semantic-spacing-micro-md); padding: var(--bp-semantic-spacing-macro-sm) var(--bp-layout-card-padding); text-align: center; }
-.prod-hero__ic { width: var(--bp-semantic-size-interactive-md); height: var(--bp-semantic-size-interactive-md); flex-basis: auto; border-radius: var(--bp-semantic-radius-md); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font-size: 28px; }
-.prod-hero--vacio { position: relative; padding: var(--bp-semantic-spacing-macro-md) var(--bp-layout-card-padding); }
-.prod-hero--vacio::before { content: ''; position: absolute; inset: var(--bp-semantic-spacing-micro-md); pointer-events: none; border: var(--bp-semantic-border-thin) dashed var(--bp-theme-color-border-default); border-radius: var(--bp-semantic-radius-sm); }
-.prod-hero__ilustra { display: grid; place-items: center; width: 112px; height: 112px; margin-bottom: var(--bp-semantic-spacing-micro-md); border-radius: var(--bp-semantic-radius-full); background: var(--bp-theme-color-brand-main); color: var(--bp-theme-color-text-on-brand); }
-.prod-hero__ilustra .material-symbols-rounded { font-size: 56px; }
-.prod-hero__s { margin: 0; font: var(--sol-body-sm-regular); color: var(--bp-theme-color-text-helper); }
+/* Hub vacío: tarjeta con ícono en recuadro, título y texto, y su acción a todo el ancho */
+.prod-hero { display: flex; flex-direction: column; align-items: stretch; gap: var(--bp-semantic-spacing-micro-lg); padding: var(--bp-layout-card-padding); text-align: left; }
+.prod-hero__top { display: flex; align-items: flex-start; gap: var(--bp-semantic-spacing-micro-lg); }
+.prod-hero__ilustra { flex: 0 0 48px; display: grid; place-items: center; width: 48px; height: 48px; border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-page-alt); color: var(--bp-theme-color-icon-primary, var(--bp-interaction-tertiary-fg)); }
+.prod-hero__ilustra .material-symbols-rounded { font-size: 24px; }
+.prod-hero__t { display: block; }
+.prod-hero__s { margin: 4px 0 0; font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-helper); }
+.prod-hero .btn, .prod-hero .bp-button { width: 100%; }
 .prod-total { display: flex; justify-content: space-between; align-items: center; min-height: var(--bp-semantic-size-interactive-sm); padding: 0 var(--bp-layout-card-padding); }
 .prod-total span { font: var(--sol-label-lg); color: var(--bp-theme-color-text-secondary); }
 .prod-total b { font: var(--sol-label-lg); color: var(--bp-theme-color-text-secondary); font-variant-numeric: tabular-nums; }
 
 /* Mis finanzas: resumen de gastos en el inicio */
-.pfm-resumen__card { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-xs); width: 100%; margin: 0; padding: var(--bp-layout-card-padding); border: 0; border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; font: inherit; }
-.pfm-resumen__t, .pfm-resumen__s { font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-helper); }
-.pfm-resumen__m { font: var(--sol-numeric-xs); color: var(--bp-theme-color-text-primary); }
-.pfm-resumen__go { display: inline-flex; align-items: center; gap: var(--bp-semantic-spacing-micro-xs); margin-top: var(--bp-semantic-spacing-micro-md); font: var(--sol-body-md-semibold); color: var(--bp-theme-color-text-interactive); }
 
 /* "Disponible para ti" → bp-banner (yellow/50, 136, radius/md) */
 .hub-offer {
@@ -221,7 +215,6 @@
 
 /* Beneficios: aún no hay contenido → estado "Próximamente" en vez de skeleton */
 .placeholder-view { padding: var(--bp-semantic-spacing-micro-md) var(--bp-layout-grid-margin) var(--bp-semantic-spacing-macro-xl, 40px) !important; }
-
 
 /* Banners de foto: cada slide ocupa el ancho disponible (pantalla menos el
    margen a cada lado) y su alto sale de la proporción de la imagen. */
@@ -341,7 +334,7 @@ html.is-title-small .view.active .pf-head h1, html.is-title-small .view.active.p
 .skeleton { background: linear-gradient(90deg, var(--bp-theme-color-interaction-selection-bg-active-subtle) 25%, var(--bp-theme-color-interaction-selection-bg-hover) 50%, var(--bp-theme-color-interaction-selection-bg-active-subtle) 75%); background-size: 200% 100%; }
 .skeleton, .skeleton-card { border-radius: var(--bp-semantic-radius-md); }
 .card-thumb--ghost { background: var(--bp-theme-color-surface-container-default); border-color: var(--bp-theme-color-border-default); }
- .finance-hero__value--positive{ color: var(--bp-theme-color-status-success-text); }
+ 
 .bp-logo { display: block; height: var(--bp-semantic-size-logo-sm); width: auto; }
 .push-loading__spinner { border-top-color: var(--bp-theme-color-loading-spinner-on-page); }
 :root[data-theme="dark"] .push-loading__spinner { border-top-color: var(--bp-theme-color-icon-primary); }

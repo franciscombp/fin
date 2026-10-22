@@ -34,13 +34,15 @@
 .pfm-net b { font: var(--ui-body-sm-semibold); color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
 .pfm-net .material-symbols-rounded { font-size: 16px; }
 .pfm-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--bp-semantic-spacing-micro-md, 8px); margin-top: var(--bp-semantic-spacing-micro-md, 8px); }
+/* En la hoja «Mi dinero» (blanca) las cifras van en tarjetas grises, sin la sangría de la tarjeta que las envuelve */
+.pfm-sheet .pfm-money { margin: var(--bp-semantic-spacing-micro-md, 8px) 0 0 !important; padding: 0; background: none; }
+.pfm-sheet .pfm-saldo, .pfm-sheet .pfm-tile { background: var(--bp-theme-color-surface-page-alt); }
 
 /* ---------- 2. Uku: su mundo y lo que notó ---------- */
 @keyframes pfmGlobo { from { opacity: 0; transform: scale(.6) translateY(8px); } }
 
 /* Las tres señales de su mundo: texto sobre la página, sin cajas */
 /* Las señales de Uku no alarman: un solo tono, el estado lo dice el texto */
-.pf-uku2__row.is-on { margin: 0 -12px; padding-left: 12px; padding-right: 12px; border-radius: var(--bp-semantic-radius-md, 12px); background: var(--bp-interaction-secondary-bg); }
 
 /* El mundo de Uku explicado (hoja) */
 .pfm-world__row { display: flex; gap: var(--bp-semantic-spacing-micro-lg, 16px); padding: var(--bp-semantic-spacing-micro-lg, 16px) 0; border-bottom: var(--bp-semantic-border-thin, 1px) solid var(--bp-theme-color-border-divider, var(--cx-line)); }
@@ -225,21 +227,13 @@
 .pfm-budget__t b { color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
 .pfm-budget__t .section__link { flex: 0 0 auto; margin-right: -8px; }
 
-/
-.pfm-find__main { display: block; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
-.pfm-find__ask { margin-top: var(--bp-semantic-spacing-micro-md, 8px); }
-
-.pfm-dcard { display: flex; flex-direction: column; align-items: stretch; gap: var(--bp-semantic-spacing-micro-md, 8px); width: 100%; margin-top: var(--bp-semantic-spacing-micro-md, 8px); padding: 20px !important; border: 0; color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
-.pfm-dcard__tag { display: flex; align-items: center; gap: 6px; font: var(--ui-body-sm-semibold); color: var(--bp-interaction-tertiary-fg); }
-.pfm-dcard__tag .material-symbols-rounded { font-size: 18px; }
-.pfm-dcard__t { font: var(--cx-headline); letter-spacing: -.2px; }
 .pfm-dcard__cmp { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
 .pfm-dcard__row { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; align-items: baseline; }
 .pfm-dcard__row small { font: var(--cx-sub); color: var(--cx-muted); }
 .pfm-dcard__row b { font: var(--ui-body-md-semibold); font-variant-numeric: tabular-nums; }
 .pfm-dcard__row i { grid-column: 1 / -1; height: 20px; border-radius: 4px; background: color-mix(in srgb, var(--bp-interaction-tertiary-fg) 28%, transparent); }
 .pfm-dcard__row.is-on i { background: var(--bp-interaction-tertiary-fg); }
-.pfm-dcard__go { margin-top: 4px; font: var(--ui-link-md, var(--ui-label-md)); color: var(--bp-theme-color-text-interactive); text-decoration: underline; text-underline-offset: 3px; }
+
 .pfm-groups { margin-top: var(--bp-semantic-spacing-macro-md, 40px) !important; }
 .pfm-groups .pf-sec__head { margin-bottom: 0; }
 
@@ -258,14 +252,13 @@ button.pfm-row { cursor: pointer; }
 .pfm-row.pf-meter--ok { --tone: var(--bp-theme-color-status-info-icon, #3f7be0); }
 .pfm-row.pf-meter--warn { --tone: var(--bp-theme-color-status-caution-icon, #e2bb5c); }
 .pfm-row.pf-meter--over { --tone: var(--bp-theme-color-status-caution-text, #d39b3a); }
+.pfm-row.pf-meter--in { --tone: var(--bp-theme-color-status-success-icon, #1a8a4a); }
+.pfm-row.pf-meter--gris { --tone: var(--bp-theme-color-status-neutral-icon, #9aa1ad); }
+.pfm-row.pf-meter--gris b { color: var(--cx-muted); }
 
 .pfm-list .pf-note { margin: 16px 0; }
 
 /* Pie: qué ve Uku, sin caja */
-.pfm-foot { margin-top: var(--bp-semantic-spacing-macro-md, 40px) !important; padding-bottom: var(--bp-semantic-spacing-macro-md, 40px); }
-.pfm-foot .pf-note { margin: 0 0 var(--bp-semantic-spacing-micro-md, 8px); }
-.pfm-scope { display: flex; gap: 10px; }
-.pfm-scope .material-symbols-rounded { font-size: 20px; color: var(--cx-muted); }
 
 /* ---------- Hojas: deudas, por pagar, score, productos, movimientos ---------- */
 .pfm-sheet .pf-mcard { padding: 0; border-radius: 0 !important; background: none; }
@@ -283,7 +276,7 @@ button.pfm-row { cursor: pointer; }
 .pfm-q__t { font: var(--ui-body-md-semibold); }
 .pfm-q__ctx { margin-top: 6px !important; font: var(--cx-sub); color: var(--cx-muted); }
 .pfm-q .uku-say__replies { margin-top: 12px; }
-.pfm-q .uku-say__reply { cursor: pointer; }
+
 button.pfm-tx { width: 100%; border-left: 0; border-right: 0; border-top: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .pfm-tx.is-no .pf-tx__amt { color: var(--cx-muted); text-decoration: line-through; text-decoration-thickness: 1px; }
 .pfm-sheet .pf-sheet-list .pfm-tx:last-child { border-bottom: 0; }
@@ -331,11 +324,6 @@ button.pfm-tx { width: 100%; border-left: 0; border-right: 0; border-top: 0; bac
 .pfm-tip.is-done { padding-bottom: 8px; }
 .pfm-tip.is-done .pfm-tip__acts { margin-top: 0; }
 
-/
-
-.pfm-dock__ask { flex: 1 1 auto; min-width: 0; height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 18px; border-radius: 99px; font: var(--ui-body-sm-semibold); text-align: left; }
-.pfm-dock__ask > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pfm-dock__ask .material-symbols-rounded { color: var(--bp-interaction-tertiary-fg); }
 .pf-host .pfm .pf-scroll { padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px)); }
 
 /* Arma tu presupuesto: hoja de tres pasos con cabecera de avance, cuerpo y pie fijo.

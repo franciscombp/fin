@@ -56,7 +56,7 @@
 .uk [hidden] { display: none !important; }
 /* El asistente ocupa la pantalla entre la parte de arriba y la barra de navegación; sin la cabecera de la app */
 html.uk-chatting .header { display: none !important; }
-/* La barra de abajo (con la pestaña Asistente) queda a la vista; se oculta en las páginas a pantalla completa y con el teclado */
+/* La barra de abajo (con la pestaña Asistente) queda a la vista; se oculta en Mis finanzas, en las páginas a pantalla completa y con el teclado */
 html.uk-nonav .nav-bar { display: none !important; }
 html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--uk-kb, 0px); }
 .app-uku .view--finanzas:not(.uk-fin):not(.uk-ayuda) .uk-panel { display: none; }
@@ -81,9 +81,9 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 /* Conversando, el mundo queda como foto borrosa detrás de un fondo limpio */
 .uk-chatbg { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; background-size: cover; background-position: center; filter: blur(14px) saturate(.9); transform: scale(1.06); transition: opacity .45s ease; }
 .uk-chatbg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(var(--uk-page) 6%, rgb(245 245 245 / .55) 40%, rgb(245 245 245 / .35)); }
-.uk.is-chat:not(.is-fin) .uk-chatbg { opacity: 1; }
-.uk.is-chat:not(.is-fin) .uk-scene { z-index: 4; pointer-events: none; bottom: calc(var(--uk-bar-h) + 8px + var(--uk-safeb, 0px)); }
-.uk.is-fin .uk-scene { z-index: 1; pointer-events: auto; }
+.uk.is-chat:not(.is-fin):not(.is-ayuda) .uk-chatbg { opacity: 1; }
+.uk.is-chat:not(.is-fin):not(.is-ayuda) .uk-scene { z-index: 4; pointer-events: none; bottom: calc(var(--uk-bar-h) + 8px + var(--uk-safeb, 0px)); }
+.uk.is-fin .uk-scene, .uk.is-ayuda .uk-scene { z-index: 1; pointer-events: auto; }
 .uk.is-page .uk-scene, .uk.is-page .uk-globo { opacity: 0; pointer-events: none; }
 .uk.is-page { background: var(--uk-page); }
 
@@ -106,6 +106,13 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 .uk-globo__h { margin: 0 0 8px; font: var(--uk-body-semibold); }
 .uk-globo__t { font: var(--uk-body); }
 .uk-globo__tag { margin: 0 0 4px; font: var(--uk-caption); color: var(--uk-muted); }
+/* Cabecera de la sugerencia: etiqueta y «1 de n» a la izquierda; pasar y ocultar a la derecha */
+.uk-globo__top { display: flex; align-items: center; gap: 4px; margin: -8px -10px 4px 0; }
+.uk-globo__top .uk-globo__tag { flex: 1; min-width: 0; margin: 0; }
+.uk-globo__tag span { color: var(--uk-muted); font-weight: 400; }
+.uk-globo__ib { flex: 0 0 auto; width: 36px; height: 36px; display: grid; place-items: center; padding: 0; border: 0; border-radius: var(--bp-semantic-radius-full, 999px); background: transparent; color: var(--uk-icon); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.uk-globo__ib:active { background: var(--bp-interaction-tertiary-bg--active, rgba(0, 0, 0, .06)); }
+.uk-globo__ib .material-symbols-rounded { font-size: 20px; }
 .uk-globo__acts { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
 .uk-globo__skip, .uk-globo__next, .uk-globo__x { border: 0; background: none; color: var(--uk-navy); font: var(--uk-sm-semibold); cursor: pointer; }
 .uk-globo__dots, .uk-globo__foot { display: none; }
@@ -169,6 +176,36 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 .uk-msg__q { display: block; font: var(--uk-body-semibold); }
 .uk-msg.is-old .uk-msg__b { color: var(--uk-muted); }
 .uk-msg__acts { display: flex; flex-direction: column; gap: 0; width: 92%; border-radius: var(--uk-r-lg); background: var(--uk-white); overflow: hidden; }
+/* Datos de una respuesta (dt / dd en filas), barras por grupo, mensajes del sistema y el asesor */
+.uk-card__data { margin: 0; display: flex; flex-direction: column; }
+.uk-card__data > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 0; border-top: 1px solid var(--uk-line); }
+.uk-card__data > div:first-child { border-top: 0; padding-top: 0; }
+.uk-card__data dt { font: var(--uk-sm); color: var(--uk-muted); }
+.uk-card__data dd { margin: 0; font: var(--uk-body-semibold); color: var(--uk-text); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.uk-barras { display: flex; flex-direction: column; gap: 12px; }
+.uk-barra { display: grid; grid-template-columns: 1fr auto; row-gap: 6px; align-items: baseline; }
+.uk-barra span { font: var(--uk-sm); color: var(--uk-text); }
+.uk-barra b { font: var(--uk-sm-semibold); font-variant-numeric: tabular-nums; }
+.uk-barra i { grid-column: 1 / -1; display: block; height: 6px; border-radius: 3px; background: var(--uk-navy); }
+.uk-sys { margin: 4px 0; text-align: center; font: var(--uk-caption); color: var(--uk-muted); }
+.uk-av { display: grid; place-items: center; width: 100%; height: 100%; font: var(--uk-caption); font-weight: 700; color: var(--uk-text); }
+/* Lista de medidores (respuestas del orquestador): cada parte con lo usado de su total y su tono */
+.uk-medidores { display: flex; flex-direction: column; gap: 12px; }
+.uk-medidor { display: grid; grid-template-columns: 1fr auto; row-gap: 6px; align-items: baseline; }
+.uk-medidor span { font: var(--uk-sm); color: var(--uk-text); }
+.uk-medidor b { font: var(--uk-sm-semibold); color: var(--uk-muted); font-variant-numeric: tabular-nums; }
+.uk-medidor i { grid-column: 1 / -1; display: block; height: 6px; border-radius: 3px; background: var(--bp-theme-color-data-chart-track, var(--uk-grey)); overflow: hidden; }
+.uk-medidor u { display: block; height: 100%; border-radius: inherit; background: var(--uk-navy); transition: width .4s ease; }
+.uk-medidor.is-ok u { background: var(--bp-theme-color-data-positive, var(--uk-navy)); }
+.uk-medidor.is-warn u, .uk-medidor.is-over u { background: var(--bp-theme-color-status-warning-bg); }
+.uk-medidor.is-warn b, .uk-medidor.is-over b { color: var(--bp-theme-color-status-warning-text, var(--uk-text)); }
+/* «Lo que encontré» (análisis del mes): cada hallazgo en su fila, título y explicación */
+.uk-finds { display: flex; flex-direction: column; }
+.uk-finds__l { margin: 0 0 4px !important; font: var(--uk-caption); color: var(--uk-muted); }
+.uk-find { margin: 0 !important; display: flex; flex-direction: column; gap: 2px; padding: 12px 0; border-top: 1px solid var(--uk-line); }
+.uk-find:first-of-type { border-top: 0; }
+.uk-find b { font: var(--uk-body-semibold); color: var(--uk-text); }
+.uk-find small { font: var(--uk-caption); color: var(--uk-muted); }
 .uk-msg__body .uk-card__nav { width: 92%; border-radius: var(--uk-r-lg); background: var(--uk-white); overflow: hidden; }
 .uk-card__row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 12px var(--uk-pad); border: 0; border-top: var(--bp-semantic-border-thin, 1px) solid var(--uk-line); background: var(--uk-white); color: var(--uk-text); font: var(--uk-body); text-align: left; cursor: pointer; }
 .uk-card__row:first-child { border-top: 0; }
@@ -213,10 +250,10 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 .uk-msg.is-agent .uk-msg__b { background: var(--uk-grey); }
 
 /* ---------- 5. Mis finanzas: barra con título, globo atado a Uku (centrado) y hoja gris con tarjetas ---------- */
-.uk.is-fin .uk-globo { position: absolute; z-index: 3; left: var(--uk-margin); right: var(--uk-margin); top: calc(var(--uk-top) + 8px); max-width: none; margin: 0; padding: 16px var(--uk-pad); border-radius: var(--uk-r-lg); display: block; pointer-events: auto; animation: ukIn .4s cubic-bezier(.2, 1.3, .4, 1) .3s both; }
-.uk.is-fin .uk-globo::after { left: 44%; right: auto; }
-.uk.is-fin .uk-globo::before { left: 48%; right: auto; }
-.uk.is-fin .uk-globo__tag, .uk.is-fin .uk-globo__acts { display: none; }
+.uk.is-fin .uk-globo, .uk.is-ayuda .uk-globo { position: absolute; z-index: 3; left: var(--uk-margin); right: var(--uk-margin); top: calc(var(--uk-top) + 8px); max-width: none; margin: 0; padding: 16px var(--uk-pad); border-radius: var(--uk-r-lg); display: block; pointer-events: auto; animation: ukIn .4s cubic-bezier(.2, 1.3, .4, 1) .3s both; }
+.uk.is-fin .uk-globo::after, .uk.is-ayuda .uk-globo::after { left: 44%; right: auto; }
+.uk.is-fin .uk-globo::before, .uk.is-ayuda .uk-globo::before { left: 48%; right: auto; }
+.uk.is-fin .uk-globo__tag, .uk.is-fin .uk-globo__acts, .uk.is-ayuda .uk-globo__tag, .uk.is-ayuda .uk-globo__acts { display: none; }
 .uk.is-fin .uk-bar, .uk.is-fin .uk-chat, .uk.is-fin .uk-chips, .uk.is-fin .uk-pills { display: none !important; }
 /* Leyenda al tocar a Uku: chips efímeros junto a su cabeza */
 .uk-leyenda { position: absolute; inset: 0; z-index: 4; pointer-events: none; transition: opacity .2s ease; }
@@ -228,15 +265,21 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 /* La hoja */
 .uk-panel { position: absolute; z-index: 3; left: 0; right: 0; top: 50%; bottom: 0; display: flex; flex-direction: column; margin: 0; padding: 0; border-radius: var(--uk-r-lg) var(--uk-r-lg) 0 0; background: var(--uk-page); box-shadow: 0 -8px 32px rgba(15, 38, 92, .12); transition: top .32s cubic-bezier(.2, .8, .2, 1), border-radius .32s ease, transform .28s cubic-bezier(.2, .8, .2, 1), opacity .28s ease; }
 /* En Mis finanzas la hoja es una sección fija: sin asa, sin scroll, sin subir ni bajar. Su fondo solo separa a Uku del contenido. */
-.uk.is-fin:not(.is-page) .uk-panel { top: auto; bottom: 0; height: auto; border-top: 1px solid var(--uk-line); box-shadow: none; transition: none; animation: ukSheet .42s cubic-bezier(.2, .8, .2, 1) both; touch-action: none; }
+.uk.is-fin:not(.is-page) .uk-panel { top: auto; bottom: 0; height: auto; border-top: 1px solid color-mix(in srgb, var(--uk-white) 60%, transparent); box-shadow: none; transition: none; animation: ukSheet .42s cubic-bezier(.2, .8, .2, 1) both; touch-action: none; }
 .uk-panel.is-drag { transition: none !important; animation: none !important; }
 .uk.is-out .uk-panel { animation: ukCardOut .22s ease-in both !important; }
+/* El fondo de la sección fija es translúcido: degradado del gris de la página (casi transparente arriba,
+   sólido abajo) con desenfoque, así el escenario de Uku se adivina detrás y la sección se integra */
+.uk.is-fin:not(.is-page) .uk-panel {
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--uk-page) 35%, transparent), color-mix(in srgb, var(--uk-page) 78%, transparent) 45%, color-mix(in srgb, var(--uk-page) 92%, transparent));
+  -webkit-backdrop-filter: blur(20px) saturate(1.3); backdrop-filter: blur(20px) saturate(1.3);
+}
 .uk.is-fin.is-page .uk-panel { top: var(--uk-top); border-radius: 0; box-shadow: none; animation: none; }
 .uk.is-fin .uk-panel .uk-head { display: none; }
 .uk-panel .pf-host { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; padding-bottom: calc(16px + var(--uk-safeb, 0px)); }
-.uk.is-fin:not(.is-page) .uk-panel .pf-host { flex: none; overflow: visible; padding-bottom: 0; }
+.uk.is-fin:not(.is-page) .uk-panel .pf-host { flex: none; overflow: visible; padding-bottom: var(--uk-safeb, 0px); }
 .uk-panel .pf-host::-webkit-scrollbar { display: none; }
-.uk-panel .pf-head, .uk-panel .pf-back, .uk-panel .pfm-tiles, .uk-panel .pfm-foot, .uk-panel .pfm-resumen__go { display: none; }
+.uk-panel .pf-head, .uk-panel .pf-back, .uk-panel .pfm-tiles { display: none; }
 .uk-panel .pf-host .pfm .pf-scroll { padding-bottom: 0; }
 /* Tarjetas de la hoja: gasto del mes (abre Mis gastos), la acción que Uku recomienda y tu dinero (abre su detalle) */
 .uk-panel .pf-sec.pfm-hub { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 16px var(--uk-margin); }
@@ -248,14 +291,17 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 .uk-panel .pfm-hub__bar i { animation: ukBar .3s ease-out .42s both; transform-origin: left; }
 .uk-panel .pfm-hub__bar:has(i.is-warn) { --tone: var(--bp-theme-color-status-warning-bg); }
 .uk-panel .pfm-hub__s { margin: 8px 0 0 !important; font: var(--uk-caption); color: var(--uk-muted); }
-.uk-panel .pfm-hub__slot { display: contents; }
-.uk-panel .pfm-hub__list { display: flex; flex-direction: column; border-radius: var(--uk-r); background: var(--uk-white); overflow: hidden; }
-.uk-panel .pfm-hub__list > .pfm-hub__dinero { border-bottom: 0; }
-.uk-panel .pfm-hub__list > *, .uk-panel .pfm-hub__slot > * { background: var(--uk-white); }
-.uk-panel .pfm-hub__list > :active, .uk-panel .pfm-hub__slot > :active { background: var(--bp-interaction-row-bg--active); }
-.uk-panel .pfm-hub__hero { cursor: pointer; }
-.uk-panel .pfm-hub__s--pres { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.uk-panel .pfm-hub__s--pres .section__link { flex: none; }
+/* La sugerencia de Uku: una sola, como tarjeta propia arriba (vacía, no ocupa lugar) */
+.uk-panel .pfm-hub__slot { border-radius: var(--uk-r); background: var(--uk-white); overflow: hidden; }
+.uk-panel .pfm-hub__slot:empty { display: none; }
+.uk-panel .pfm-hub__slot > * { background: var(--uk-white); border-bottom: 0; }
+.uk-panel .pfm-hub__slot > :active { background: var(--bp-interaction-row-bg--active); }
+.uk-panel .pfm-hub__hero, .uk-panel .pfm-hub__dinero { cursor: pointer; }
+/* Mi dinero en Pichibank: lo que tienes y lo que debes, lado a lado */
+.uk-panel .pfm-hub__cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.uk-panel .pfm-hub__cols p { display: flex; flex-direction: column; justify-content: space-between; margin: 0; min-width: 0; }
+.uk-panel .pfm-hub__cols small { display: block; font: var(--uk-caption); color: var(--uk-muted); }
+.uk-panel .pfm-hub__cols b { display: block; margin-top: 4px; font: var(--uk-body-semibold); font-size: 18px; line-height: 24px; font-variant-numeric: tabular-nums; }
 .uk-panel .pfm-hub__act-ic { flex: 0 0 32px; width: 32px; text-align: center; font-size: 24px; color: var(--uk-navy); }
 
 /* ---------- 6. Mis gastos (página dentro de Mis finanzas): hallazgo, periodos, gráfica y categorías ---------- */
@@ -285,11 +331,45 @@ html.app-uku .pfm-choice.is-picked, html.app-uku .pfm-allcat:active, html.app-uk
 /* El aviso del PFM («Lo dejo para después · Deshacer») en una línea, abajo en Mis finanzas y arriba en el chat */
 html.uk-chatting .pf-toast { top: calc(64px + env(safe-area-inset-top, 0px)) !important; bottom: auto !important; width: max-content !important; max-width: min(440px, calc(100vw - 32px)) !important; }
 html.uk-chatting.uk-fin .pf-toast { top: auto !important; bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important; }
+/* Con la barra de abajo a la vista, el aviso va sobre ella (arriba taparía el globo de Uku) */
+html.uk-chatting:not(.uk-nonav) .pf-toast { top: auto !important; bottom: calc(var(--uk-navh, 0px) + 16px) !important; }
 
 /* ---------- 7. Soporte (página): tu solicitud, preguntas frecuentes, todas las categorías; Uku abajo y la barra ---------- */
-.uk.is-ayuda .uk-chat { justify-content: flex-start; gap: 0; padding: 8px 0 24px; -webkit-mask-image: none; mask-image: none; }
-.uk-ay2__card + .uk-ay2__card { margin-top: 12px; }
-.uk-ay2__cap { margin: 0 0 4px; font: var(--uk-sm); }
+/* Soporte, como Mis finanzas: Uku en su mundo (plano general) con su globo y abajo una sección fija con el mismo
+   fondo translúcido, las mismas tarjetas y, al pie, la entrada del buscador */
+.uk.is-ayuda .uk-chat {
+  top: auto; left: 0; right: 0; bottom: 0; max-height: calc(100% - var(--uk-top) - 150px); justify-content: flex-start; gap: 12px; overflow-y: auto;
+  padding: 16px var(--uk-margin) calc(16px + var(--uk-bar-h) + 12px + var(--uk-safeb, 0px));
+  border-top: 1px solid color-mix(in srgb, var(--uk-white) 60%, transparent); border-radius: var(--uk-r-lg) var(--uk-r-lg) 0 0;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--uk-page) 35%, transparent), color-mix(in srgb, var(--uk-page) 78%, transparent) 45%, color-mix(in srgb, var(--uk-page) 92%, transparent));
+  -webkit-backdrop-filter: blur(20px) saturate(1.3); backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-mask-image: none; mask-image: none; animation: ukSheet .42s cubic-bezier(.2, .8, .2, 1) both;
+}
+.uk-ay2__hrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: var(--uk-pad) var(--uk-pad) 4px; }
+.uk-ay2__h { margin: 0 !important; font: var(--uk-title) !important; letter-spacing: 0 !important; color: var(--uk-text) !important; }
+/* Soporte es pantalla completa (sin barra de abajo) y su barra es la entrada al buscador, como en el inicio */
+.uk.is-chat.is-ayuda .uk-bar { padding: 0; background: none; box-shadow: none; }
+.uk.is-chat.is-ayuda .uk-bar__f { box-shadow: var(--uk-elev-low); padding: 0 var(--uk-pad); cursor: text; }
+.uk.is-chat.is-ayuda .uk-bar__f > .material-symbols-rounded, .uk.is-chat.is-ayuda .uk-bar__mic:not(.uk-bar__add):not(.uk-bar__cerrar) { display: grid; }
+.uk.is-chat.is-ayuda .uk-bar__send { display: none !important; }
+/* Solicitudes: cabecera con ícono y conteo; el caso en curso con su estado y tres pasos; o lo que puedes pedir */
+.uk-ay2__sol { padding: 0 !important; overflow: hidden; }
+.uk-ay2__solhead { display: flex; align-items: center; gap: 12px; padding: var(--uk-pad); }
+.uk-ay2__solic { flex: 0 0 40px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--uk-page); color: var(--uk-navy); }
+.uk-ay2__solic .material-symbols-rounded { font-size: 22px; }
+.uk-ay2__soltt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.uk-ay2__soltt b { font: var(--uk-title); color: var(--uk-text); }
+.uk-ay2__soltt small { font: var(--uk-caption); color: var(--uk-muted); }
+.uk-ay2__solhead .section__link { flex: none; }
+.uk-ay2__caso { display: flex; flex-direction: column; gap: 8px; width: 100%; margin: 0; padding: 0 var(--uk-pad) var(--uk-pad); border: 0; background: transparent; color: var(--uk-text); text-align: left; font: inherit; cursor: pointer; }
+.uk-ay2__caso:active { background: var(--bp-interaction-row-bg--active, var(--uk-grey)); }
+.uk-ay2__casotop { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.uk-ay2__casotop b { min-width: 0; font: var(--uk-body-semibold); }
+.uk-ay2__caso > small { font: var(--uk-caption); color: var(--uk-muted); }
+.uk-ay2__pasos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.uk-ay2__pasos i { display: block; height: 4px; border-radius: 2px; background: var(--bp-theme-color-data-chart-track, var(--uk-grey)); }
+.uk-ay2__pasos i.is-on { background: var(--uk-navy); }
+
 .uk-ay2__card > small { font: var(--uk-caption); color: var(--uk-muted); }
 
 /* ---------- 8. Ayuda completa (hoja): todas las categorías, con X que vuelve ---------- */

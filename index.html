@@ -122,6 +122,7 @@
     <!-- Biometría real (WebAuthn). Debe cargar antes del script inline y app.js. -->
     <script src="./webauthn.js"></script>
     <script src="./assets/ingreso.js"></script>
+    <script src="./assets/seguridad.js"></script>
     <script src="./assets/flujos.js"></script>
 
     <title>Pichibank app</title>
@@ -330,9 +331,6 @@
         }
 
         /* ---------- Tabs ----------
-           "Modo finanzas" queda fijo fuera de la zona con scroll: es un
-           acceso aparte (cambia de modo), no una sección más de la lista
-           de productos, así que no debe desplazarse junto con ellas.
            Sticky por su cuenta (ya no vive dentro de .header): el offset
            "top" es la altura del top-bar (56px) + su propio safe-area, así
            que al scrollear queda pegado justo debajo del logo, como una
@@ -582,7 +580,6 @@
             transition: opacity 0.18s ease, filter 0.22s ease;
         }
 
-
         .icon-switch {
             width: 32px;
             height: 32px;
@@ -617,15 +614,8 @@
             perspective: 900px;
         }
 
-        /* Estado sin tarjeta de débito activa (cuenta sin Débito Digital):
-           reemplaza a .debit-card cuando se cambia de cuenta con "Cambiar". */
-        .debit-card-disabled {
-            padding: 16px;
-            border: 1.5px dashed #c7cedd;
-            border-radius: var(--bp-radius-sm);
-            background: rgba(233, 236, 243, 0.35);
-        }
-        .debit-card-disabled.is-hidden { display: none; }
+        /* Estado sin tarjeta de débito activa (cuenta sin Débito Digital): reemplaza a .debit-card cuando se
+           cambia de cuenta con "Cambiar". La tarjeta y su enlace vienen de componentes.css */
         .debit-card-disabled__row {
             display: flex;
             align-items: center;
@@ -648,18 +638,6 @@
             font-size: 14px;
             color: var(--bp-text-secondary);
             margin: 0 0 4px;
-        }
-        .debit-card-disabled__link {
-            display: block;
-            border: none;
-            background: transparent;
-            padding: 0;
-            font-family: inherit;
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--bp-text-interactive);
-            cursor: pointer;
-            text-align: left;
         }
 
         .debit-card {
@@ -815,9 +793,7 @@
         @keyframes fxRipple {
             to { transform: scale(1); opacity: 0; }
         }
-        .fx-test__hint { display: block; font-size: 12px; font-weight: 400; color: var(--bp-text-helper); }
-        .fx-test__status { font-size: 12px; color: var(--bp-text-helper); }
-        .fx-test--play { animation: fxPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .list-item__hint { display: block; font-size: 12px; font-weight: 400; color: var(--bp-text-helper); }
         .fx-shake { animation: fxShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
         @keyframes fxShake {
             10%, 90% { transform: translateX(-1px); }
@@ -846,15 +822,10 @@
         .push-chip.is-selected { animation: fxPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         @keyframes fxPop { 0% { transform: scale(0.92); } 100% { transform: scale(1); } }
         /* Check de éxito: aro que se expande tras el pop del ícono */
-        .push-transfer-success__icon { position: relative; }
-        .push-transfer-success__icon::after {
-            content: ''; position: absolute; inset: 0; border-radius: 50%;
-            border: 3px solid #1e9e5a; opacity: 0;
-            animation: fxRing 0.7s 0.15s ease-out;
-        }
+
         @keyframes fxRing { 0% { transform: scale(0.8); opacity: 0.6; } 100% { transform: scale(1.8); opacity: 0; } }
         @media (prefers-reduced-motion: reduce) {
-            .fx-shake, .push-chip.is-selected, .push-transfer-success__icon::after { animation: none; }
+            .fx-shake, .push-chip.is-selected { animation: none; }
         }
 
         /* ---------- Quick actions ---------- */
@@ -1028,8 +999,7 @@
         .section__eye .material-symbols-rounded { font-size: 22px; }
 
         .product-row__amount,
-        .card__footer-value,
-        .goal-row__amount { transition: filter 0.22s ease; }
+.card__footer-value { transition: filter 0.22s ease; }
 
         /* Fila de producto (cuenta / tarjeta): miniatura + info + monto */
         .product-row {
@@ -1066,14 +1036,7 @@
         }
 
         /* Pie de tarjeta con total (Saldo disponible total / Pendiente de pago) */
-        .card__footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px;
-            border-top: 1px solid var(--bp-border-divider);
-        }
-        .card__footer-label { font-size: 16px; font-weight: 600; color: var(--bp-text-secondary); }
+
         .card__footer-value {
             font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;
             color: var(--bp-text-primary);
@@ -1107,54 +1070,14 @@
         .card-thumb--black .card-thumb__brand { color: #fff; }
         .card-thumb__foot { display: flex; justify-content: flex-end; align-items: center; }
         .card-thumb__visa { font-size: 11px; font-weight: 800; font-style: italic; color: #0f265c; }
-        .card-thumb__diners { font-size: 8px; font-weight: 700; color: #274c8f; align-self: center; margin: auto; }
+        
         .mc-dots { display: inline-flex; align-items: center; }
         .mc-dots i { width: 13px; height: 13px; border-radius: 50%; display: block; }
         .mc-dots i:first-child { background: #eb001b; }
         .mc-dots i:last-child { background: #f79e1b; margin-left: -6px; opacity: 0.9; }
 
-        /* CTA con borde punteado (Solicitar / Crear producto) */
-        .cta-dashed {
-            display: flex;
-            gap: 14px;
-            align-items: center;
-            padding: 16px;
-            border: 1.5px dashed #c7cedd;
-            border-radius: var(--bp-radius-md);
-            background: rgba(233, 236, 243, 0.35);
-            margin-bottom: 16px;
-            width: 100%;
-            font-family: inherit;
-            text-align: left;
-            cursor: pointer;
-            transition: background 0.15s ease, transform 0.1s ease;
-        }
-        .cta-dashed:active { background: rgba(233, 236, 243, 0.75); transform: scale(0.99); }
-        .cta-dashed__text { font-size: 15px; color: var(--bp-text-primary); line-height: 1.4; }
-        .cta-dashed__link { display: block; margin-top: 4px; color: var(--bp-text-interactive); font-weight: 600; }
-
         /* Fila de meta de ahorro */
-        .goal-row {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            padding: 14px 16px;
-            width: 100%;
-            background: transparent;
-            border: none;
-            font-family: inherit;
-            text-align: left;
-            cursor: pointer;
-            transition: background 0.15s ease;
-        }
-        .goal-row:hover { background: #fafbfc; }
-        .goal-row__info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-        .goal-row__name { display: block; font-size: 16px; font-weight: 600; color: var(--bp-text-primary); }
-        .goal-row__meta { display: block; font-size: 14px; color: var(--bp-text-secondary); }
-        .goal-row__amount {
-            font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums;
-            color: var(--bp-text-primary); white-space: nowrap; align-self: center;
-        }
+
         .avatar-lg {
             width: 48px; height: 48px; border-radius: 12px;
             background: rgba(47, 122, 191, 0.12); color: var(--bp-status-info-bg);
@@ -1163,15 +1086,6 @@
         .avatar-lg .material-symbols-rounded { font-size: 24px; }
 
         /* Barra de progreso de meta */
-        .goal-progress {
-            height: 6px; border-radius: 100px;
-            background: var(--bp-selection-bg-active-subtle);
-            margin: 8px 0 0; overflow: hidden;
-        }
-        .goal-progress__fill {
-            height: 100%; border-radius: 100px;
-            background: linear-gradient(90deg, #2f7abf, #1e9e5a);
-        }
 
         /* ---------- Promociones ---------- */
         .promos {
@@ -1705,13 +1619,6 @@
 
         .sheet__row-label { color: var(--bp-text-secondary); }
         .sheet__row-value { font-weight: 600; font-variant-numeric: tabular-nums; }
-
-        .sheet__grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px 8px;
-            padding: 8px 0 4px;
-        }
 
         .sheet__cta {
             width: 100%;
@@ -2452,18 +2359,12 @@
 .qr-key { display: grid; place-items: center; height: 56px; border: 0; border-radius: var(--bp-semantic-radius-lg); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: 600 24px/32px var(--sol-font); cursor: pointer; }
 .qr-key:active { transform: scale(.96); }
 
-        /* Sin sesión: la ayuda y los accesos públicos se abren por encima del inicio de sesión */
-        html body.sin-sesion .sp,
-        html body.sin-sesion .push-page, html body.sin-sesion #push-page { z-index: 600; }
-        html body.sin-sesion .pf-toast { z-index: 690; }
+        /* Sin sesión, lo que se abre por encima del inicio de sesión: ver assets/ingreso.css */
         /* Sin internet: solo entra con Face ID o huella y se ven los accesos que funcionan sin red */
         html body.sin-red #btn-login-other { display: none !important; }
         .cta-dashed[hidden] { display: none !important; }
         html body.sin-red .quick-action[data-online-only]:disabled { opacity: .4; }
         #login-offline[hidden] { display: none !important; }
-        /* El selector de idioma también se abre desde el login */
-        html body.sin-sesion .as-sheet-back { z-index: 650 !important; }
-        html body.sin-sesion .as-sheet { z-index: 651 !important; }
         .login-screen.active {
             display: flex;
         }
@@ -2551,11 +2452,6 @@
         }
 
         /* Destacados del login: etiqueta arriba, ícono abajo (2 columnas) */
-        .login-features {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
 
         .login-feature {
             display: flex;
@@ -2576,18 +2472,6 @@
 
         .login-feature:active { transform: scale(0.98); background: var(--bp-selection-bg-active-subtle); }
 
-        .login-feature__label {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--bp-text-primary);
-        }
-
-        .login-feature__icon {
-            font-size: 28px;
-            line-height: 1;
-            color: var(--bp-text-brand);
-        }
-
         /* Acciones: 4 columnas, mismo estilo que Destacado */
         .login-qa {
             display: grid;
@@ -2598,19 +2482,6 @@
 
         /* Badge "Nuevo" sobre el ícono */
         .quick-action__icon { position: relative; }
-        .badge-new {
-            position: absolute;
-            top: -6px;
-            right: -8px;
-            background: var(--bp-surface-brand);
-            color: var(--bp-text-brand);
-            font-size: 9px;
-            font-weight: 700;
-            padding: 2px 6px;
-            border-radius: 999px;
-            line-height: 1.2;
-            white-space: nowrap;
-        }
 
         .login-screen__buttons {
             display: flex;
@@ -2709,10 +2580,7 @@
             visibility: hidden;
         }
 
-        /* #push-page (el genérico) puede abrirse COMO drill-down desde
-           dentro de #finance-page (ambas comparten .push-page, mismo
-           z-index) — sube su índice específicamente para que quede siempre
-           por encima cuando las dos están abiertas a la vez. */
+        /* #push-page (el genérico) sube su índice para quedar siempre por encima de otra página abierta */
         #push-page {
             z-index: 310;
         }
@@ -2842,10 +2710,7 @@
             font-weight: 700;
             font-size: 17px;
         }
-        .push-beneficiary--new .push-beneficiary__avatar {
-            background: var(--bp-secondary-bg);
-            color: var(--bp-text-interactive);
-        }
+        
         .push-beneficiary__name {
             font-size: 12px;
             font-weight: 500;
@@ -2857,12 +2722,6 @@
             max-width: 100%;
         }
 
-        .push-chip-row {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 16px;
-        }
         .push-chip {
             height: 40px;
             padding: 0 16px;
@@ -2884,85 +2743,12 @@
         /* ---------- Transferir dinero: flujo de pago de inicio a fin ----------
            Beneficiario -> monto -> confirmar -> procesando -> éxito, todo
            dentro de #push-extra (mismo contenedor de las otras plantillas). */
-        .push-transfer-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            border: none;
-            background: transparent;
-            font-family: inherit;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--bp-text-interactive);
-            cursor: pointer;
-            padding: 4px 0;
-            margin-bottom: 8px;
-        }
-        .push-transfer-back .material-symbols-rounded { font-size: 18px; }
 
-        .push-transfer-target {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: var(--bp-surface-container);
-            border-radius: var(--bp-radius-md);
-            padding: 12px 16px;
-        }
-        .push-transfer-target__name { font-size: 15px; font-weight: 700; }
-        .push-transfer-target__meta { font-size: 13px; color: var(--bp-text-secondary); }
-
-        .push-transfer-amount {
-            font-size: 36px;
-            font-weight: 700;
-            font-variant-numeric: tabular-nums;
-            margin-bottom: 16px;
-        }
-
-        .push-transfer-center {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            padding: 32px 8px 8px;
-        }
-
-        .push-transfer-center .push-loading__spinner { margin-bottom: 20px; }
-
-        .push-transfer-processing-text {
-            font-size: 15px;
-            color: var(--bp-text-secondary);
-        }
-
-        .push-transfer-success__icon {
-            color: var(--bp-theme-color-status-success-icon, #299846);
-            font-size: 64px;
-            margin-bottom: 12px;
-            animation: transferSuccessPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
         @keyframes transferSuccessPop {
             0% { transform: scale(0.4); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
-        .push-transfer-success__title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-        .push-transfer-success__amount {
-            font-size: 32px;
-            font-weight: 700;
-            font-variant-numeric: tabular-nums;
-            margin-bottom: 4px;
-        }
-        .push-transfer-success__meta {
-            font-size: 14px;
-            color: var(--bp-text-secondary);
-        }
-        .push-transfer-success__ref {
-            font-size: 12px;
-            color: var(--bp-text-helper);
-            margin: 4px 0 24px;
-        }
+
         .push-transfer-success .login-button { width: 100%; }
 
         /* ---------- Pagar servicios: flujo completo con formulario ----------
@@ -2973,121 +2759,11 @@
            de la app, típico de estas pantallas de terceros. */
         .push-page.is-form-flow { background: var(--bp-surface-container); }
         .push-page.is-form-flow .push-loading { background: var(--bp-surface-container); }
-        .push-page.is-form-flow .card,
-        .push-page.is-form-flow .push-transfer-target { background: var(--bp-surface-page); }
+        .push-page.is-form-flow .card { background: var(--bp-surface-page); }
 
         .soon[hidden] { display: none; } /* el aviso «próximamente» vacío no deja una caja en blanco */
-        .push-field { margin-bottom: 16px; }
-        .push-field__label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--bp-text-secondary);
-            margin-bottom: 6px;
-        }
-        .push-field__hint {
-            font-size: 12px;
-            color: var(--bp-text-helper);
-            margin-top: 6px;
-            min-height: 15px;
-        }
+
         .push-field__hint--error { color: var(--bp-theme-color-status-error-text, #d50707); font-weight: 600; }
-
-        .push-input, .push-select {
-            width: 100%;
-            height: 48px;
-            padding: 0 14px;
-            border-radius: var(--bp-radius-sm);
-            border: 1px solid var(--bp-border-divider);
-            background: var(--bp-surface-page);
-            font-family: inherit;
-            font-size: 15px;
-            color: var(--bp-text-primary);
-        }
-        .push-input:focus, .push-select:focus {
-            outline: none;
-            border-color: var(--bp-selection-bg-active);
-        }
-        .push-input::placeholder { color: var(--bp-text-helper); }
-        .push-select-wrap { position: relative; }
-        .push-select {
-            appearance: none;
-            -webkit-appearance: none;
-            cursor: pointer;
-            padding-right: 40px;
-        }
-        .push-select-wrap__chevron {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 20px;
-            color: var(--bp-text-helper);
-            pointer-events: none;
-        }
-
-        /* ---------- Modo finanzas: resumen consolidado ---------- */
-        .finance-subtitle {
-            font-size: 15px;
-            color: var(--bp-text-secondary);
-            margin: -8px 0 16px;
-        }
-
-        .finance-hero {
-            display: flex;
-            align-items: stretch;
-            background: var(--bp-surface-container);
-            border-radius: var(--bp-radius-md);
-            padding: 18px 0;
-            margin-bottom: 12px;
-        }
-
-        .finance-hero__item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .finance-hero__label {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--bp-text-helper);
-        }
-
-        .finance-hero__value {
-            font-size: 20px;
-            font-weight: 700;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .finance-hero__value--positive { color: var(--bp-theme-color-data-positive, #218c3b); }
-        .finance-hero__value--negative { color: var(--bp-status-warning-bg); }
-
-        .finance-hero__divider {
-            width: 1px;
-            background: var(--bp-border-divider);
-        }
-
-        .finance-networth {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 14px;
-            color: var(--bp-text-secondary);
-            padding: 10px 16px;
-            border-radius: 100px;
-            background: var(--bp-status-warning-bg-subtle);
-            margin-bottom: 24px;
-        }
-
-        .finance-networth strong { color: var(--bp-status-warning-bg); font-weight: 700; }
-
-        .finance-networth .material-symbols-rounded { font-size: 18px; }
-
-        #push-cta { margin-top: 8px; }
 
         /* ---------- Cabecera colapsable estilo iOS/Airbnb ---------- */
         .detail-topbar {
@@ -3356,8 +3032,7 @@
                 margin-left: -320px; /* -(640px máx / 2) */
             }
 
-            /* card-detail/push-page (y finance-page, que comparte la misma
-               clase) quedan a ancho completo (su regla base ya es
+            /* card-detail/push-page quedan a ancho completo (su regla base ya es
                position:fixed; inset:0, sin tocar aquí) en vez de angostarse
                también a 640px: como ESE elemento es el que pinta el fondo
                (blanco/negro según el tema), angostarlo dejaba "sangrar" el
@@ -3464,7 +3139,6 @@
         .push-transfer-success > :nth-child(5) { animation-delay: 0.32s; }
         .push-transfer-success > :nth-child(6) { animation-delay: 0.38s; }
         .push-transfer-success > :nth-child(n+7) { animation-delay: 0.44s; }
-        .push-transfer-success > .push-transfer-success__icon { animation: transferSuccessPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 
         /* Saldo: el número se asienta tras el conteo */
         #balance { font-variant-numeric: tabular-nums; }
@@ -3633,9 +3307,10 @@
     <link rel="stylesheet" href="./assets/sistema.css">
     <link rel="stylesheet" href="./assets/finanzas.css">
     <link rel="stylesheet" href="./assets/pfm.css">
-    <!-- Versión asistente, la principal (la anterior: ?app=clasica; ver assets/uku-app.js) -->
+    <!-- La app es la versión con Uku como asistente (assets/uku-app.js) -->
     <link rel="stylesheet" href="./assets/uku-app.css">
     <link rel="stylesheet" href="./assets/ingreso.css">
+    <link rel="stylesheet" href="./assets/seguridad.css">
     <link rel="stylesheet" href="./assets/flujos.css">
     <link rel="stylesheet" href="./assets/analisis.css">
     <link rel="stylesheet" href="./assets/soporte.css">
@@ -3710,6 +3385,16 @@
                         </div>
                     </div>
                 </div>
+                <!-- Acceso bloqueado desde "Seguridad y emergencias" (assets/seguridad.js) -->
+                <div class="bp-alert bp-alert--error" id="login-bloqueo" role="status" hidden>
+                    <div class="bp-alert__content">
+                        <span class="bp-alert__icon material-symbols-rounded" aria-hidden="true">lock</span>
+                        <div class="bp-alert__text">
+                            <p class="bp-alert__title">Tu acceso está bloqueado</p>
+                            <p class="bp-alert__body"></p>
+                        </div>
+                    </div>
+                </div>
                 <button class="login-button login-button--primary" id="btn-login-biometric">
                     Ingresar
                 </button>
@@ -3717,6 +3402,7 @@
                 <button class="login-button login-button--tertiary" id="btn-login-other">
                     Otro método de ingreso
                 </button>
+                <p class="login-ultimo" id="login-ultimo" hidden></p>
             </div>
         </div>
     </div>
@@ -3873,9 +3559,9 @@
                     <span class="quick-action__icon"><span class="material-symbols-rounded">phone_android</span></span>
                     <span class="quick-action__label">Recargar celular</span>
                 </button>
-                <button class="quick-action" data-sheet="actions">
+                <button class="quick-action" data-action="Más transacciones">
                     <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
-                    <span class="quick-action__label">Más transacciones</span>
+                    <span class="quick-action__label">Más transac&shy;ciones</span>
                 </button>
             </div>
         </section>
@@ -3982,7 +3668,7 @@
                     </button>
                     <button class="quick-action" data-action="Más transacciones">
                         <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
-                        <span class="quick-action__label">Más transacciones</span>
+                        <span class="quick-action__label">Más transac&shy;ciones</span>
                     </button>
                 </div>
             </section>
@@ -4060,7 +3746,7 @@
                     </button>
                     <button class="quick-action" data-action="Más transacciones">
                         <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
-                        <span class="quick-action__label">Más transacciones</span>
+                        <span class="quick-action__label">Más transac&shy;ciones</span>
                     </button>
                 </div>
             </section>
@@ -4086,7 +3772,7 @@
                     <div class="hub-promo">
                         <span class="hub-promo__media"><img src="./assets/banners/cashback.webp" alt="" loading="lazy" draggable="false"><span class="hub-promo__badge">-10%</span></span>
                         <span class="hub-promo__content">
-                            <span class="hub-promo__title">Cashback de $ 10,00</span>
+                            <span class="hub-promo__title">Cashback de $&nbsp;10,00</span>
                             <span class="hub-promo__price"><b>1.800 millas</b><s>2.000</s></span>
                             <button class="hub-promo__cta" data-action="Canjear Cashback de $ 10,00">Canjear<span class="material-symbols-rounded">chevron_right</span></button>
                         </span>
@@ -4139,7 +3825,7 @@
                 <button class="cta-dashed" data-action="Simular crédito preaprobado">
                     <span class="avatar-lg"><span class="material-symbols-rounded">savings</span></span>
                     <span class="cta-dashed__text">
-                        Tienes un crédito preaprobado de $ 5.000.
+                        Tienes un crédito preaprobado de $&nbsp;5.000.
                         <span class="cta-dashed__link">Simular mi crédito</span>
                     </span>
                 </button>
@@ -4160,7 +3846,7 @@
                     </button>
                     <button class="quick-action" data-action="Más transacciones">
                         <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
-                        <span class="quick-action__label">Más transacciones</span>
+                        <span class="quick-action__label">Más transac&shy;ciones</span>
                     </button>
                 </div>
             </section>
@@ -4210,7 +3896,7 @@
                 <button class="cta-dashed" data-action="Crear inversión">
                     <span class="avatar-lg"><span class="material-symbols-rounded">savings</span></span>
                     <span class="cta-dashed__text">
-                        Haz crecer tu dinero desde $ 100 con tasas preferenciales.
+                        Haz crecer tu dinero desde $&nbsp;100 con tasas preferenciales.
                         <span class="cta-dashed__link">Invertir ahora</span>
                     </span>
                 </button>
@@ -4231,7 +3917,7 @@
                     </button>
                     <button class="quick-action" data-action="Más transacciones">
                         <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
-                        <span class="quick-action__label">Más transacciones</span>
+                        <span class="quick-action__label">Más transac&shy;ciones</span>
                     </button>
                 </div>
             </section>
@@ -4294,7 +3980,7 @@
                     </button>
                     <button class="quick-action" data-action="Más transacciones">
                         <span class="quick-action__icon"><span class="material-symbols-rounded">apps</span></span>
-                        <span class="quick-action__label">Más transacciones</span>
+                        <span class="quick-action__label">Más transac&shy;ciones</span>
                     </button>
                 </div>
             </section>
@@ -4462,83 +4148,13 @@
                 <div class="card">
                     <button class="list-item" id="uk-quiet-row" aria-pressed="true">
                         <span class="avatar-cat"><span class="material-symbols-rounded">chat_bubble</span></span>
-                        <span class="list-item__title">Propuestas de Uku<small class="fx-test__hint">Apagadas, Uku solo saluda y responde lo que le preguntes</small></span>
+                        <span class="list-item__title">Propuestas de Uku<small class="list-item__hint">Apagadas, Uku solo saluda y responde lo que le preguntes</small></span>
                         <span class="pref-switch" aria-hidden="true"><span class="pref-switch__knob"></span></span>
                     </button>
                     <button class="list-item" id="onb-reset-row">
                         <span class="avatar-cat"><span class="material-symbols-rounded">restart_alt</span></span>
-                        <span class="list-item__title">Volver a empezar<small class="fx-test__hint">Uku se presenta de nuevo y Mis finanzas vuelve al inicio</small></span>
+                        <span class="list-item__title">Volver a empezar<small class="list-item__hint">Uku se presenta de nuevo y Mis finanzas vuelve al inicio</small></span>
                         <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">chevron_right</span>
-                    </button>
-                </div>
-
-                <div class="section__title"><h2>Probar efectos</h2></div>
-                <div class="card" id="fx-test-card">
-                    <div class="list-item fx-test__status" id="fx-test-status" aria-live="polite"></div>
-                    <button class="list-item" data-fx-test="tap">
-                        <span class="avatar-cat"><span class="material-symbols-rounded">touch_app</span></span>
-                        <span class="list-item__title">Tap<small class="fx-test__hint">Pulso corto + clic táctil</small></span>
-                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
-                    </button>
-                    <button class="list-item" data-fx-test="select">
-                        <span class="avatar-cat"><span class="material-symbols-rounded">radio_button_checked</span></span>
-                        <span class="list-item__title">Selección<small class="fx-test__hint">Pulso + tono medio</small></span>
-                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
-                    </button>
-                    <button class="list-item" data-fx-test="toggle">
-                        <span class="avatar-cat"><span class="material-symbols-rounded">toggle_on</span></span>
-                        <span class="list-item__title">Interruptor<small class="fx-test__hint">Doble pulso</small></span>
-                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
-                    </button>
-                    <button class="list-item" data-fx-test="success">
-                        <span class="avatar-cat"><span class="material-symbols-rounded">check_circle</span></span>
-                        <span class="list-item__title">Éxito<small class="fx-test__hint">Golpe + campanas FM + brillo</small></span>
-                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
-                    </button>
-                    <button class="list-item" data-fx-test="warning">
-                        <span class="avatar-cat"><span class="material-symbols-rounded">warning</span></span>
-                        <span class="list-item__title">Aviso<small class="fx-test__hint">Doble pitido</small></span>
-                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
-                    </button>
-                    <button class="list-item" data-fx-test="error">
-                        <span class="avatar-cat"><span class="material-symbols-rounded">error</span></span>
-                        <span class="list-item__title">Error<small class="fx-test__hint">Zumbido + shake</small></span>
-                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
-                    </button>
-                    <button class="list-item" data-fx-test="swipe">
-                        <span class="avatar-cat"><span class="material-symbols-rounded">swipe</span></span>
-                        <span class="list-item__title">Deslizar<small class="fx-test__hint">Barrido + clic de encaje</small></span>
-                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
-                    </button>
-                    <button class="list-item" data-fx-test="open">
-                        <span class="avatar-cat"><span class="material-symbols-rounded">expand_less</span></span>
-                        <span class="list-item__title">Abrir panel<small class="fx-test__hint">Whoosh ascendente + campana</small></span>
-                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
-                    </button>
-                    <button class="list-item" data-fx-test="close">
-                        <span class="avatar-cat"><span class="material-symbols-rounded">expand_more</span></span>
-                        <span class="list-item__title">Cerrar panel<small class="fx-test__hint">Whoosh descendente</small></span>
-                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
-                    </button>
-                    <button class="list-item" data-fx-test="flip">
-                        <span class="avatar-cat"><span class="material-symbols-rounded">flip</span></span>
-                        <span class="list-item__title">Girar tarjeta<small class="fx-test__hint">Doble whoosh estéreo</small></span>
-                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
-                    </button>
-                    <button class="list-item" data-fx-test="reveal">
-                        <span class="avatar-cat"><span class="material-symbols-rounded">auto_awesome</span></span>
-                        <span class="list-item__title">Revelar datos<small class="fx-test__hint">Cascada de campanas</small></span>
-                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
-                    </button>
-                    <button class="list-item" data-fx-test="detent">
-                        <span class="avatar-cat"><span class="material-symbols-rounded">linear_scale</span></span>
-                        <span class="list-item__title">Umbral<small class="fx-test__hint">Clic seco al cruzar un límite</small></span>
-                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
-                    </button>
-                    <button class="list-item" data-fx-test="welcome">
-                        <span class="avatar-cat"><span class="material-symbols-rounded">waving_hand</span></span>
-                        <span class="list-item__title">Bienvenida<small class="fx-test__hint">Barrido, golpe, acorde y lluvia de campanas</small></span>
-                        <span class="material-symbols-rounded" style="color: var(--bp-text-helper);">play_arrow</span>
                     </button>
                 </div>
 
@@ -4819,51 +4435,6 @@
         </div>
     </div>
 
-    <!-- Modo finanzas: resumen consolidado de todos los productos -->
-    <div class="push-page" id="finance-page" role="dialog" aria-modal="true">
-        <div class="detail-topbar" id="finance-topbar">
-            <div class="detail-topbar__row">
-                <button class="icon-button" id="finance-back" aria-label="Volver">
-                    <span class="material-symbols-rounded">arrow_back</span>
-                </button>
-                <span class="detail-topbar__title">Modo finanzas</span>
-            </div>
-        </div>
-        <div class="push-page__inner">
-            <h1 class="detail-title" id="finance-title">Modo finanzas</h1>
-            <p class="finance-subtitle">Todo tu dinero, en un solo lugar</p>
-
-            <div class="finance-hero">
-                <div class="finance-hero__item">
-                    <span class="finance-hero__label">Activos</span>
-                    <span class="finance-hero__value finance-hero__value--positive">$ 5.183,85</span>
-                </div>
-                <div class="finance-hero__divider"></div>
-                <div class="finance-hero__item">
-                    <span class="finance-hero__label">Pasivos</span>
-                    <span class="finance-hero__value finance-hero__value--negative">$ 7.395,50</span>
-                </div>
-            </div>
-            <div class="finance-networth">
-                <span class="material-symbols-rounded">trending_down</span>
-                Patrimonio neto: <strong>-$ 2.211,65</strong>
-            </div>
-
-            <div class="prod-hub" data-hub="Cuentas"></div>
-
-            <div class="prod-hub" data-hub="Metas"></div>
-
-            <div class="prod-hub" data-hub="Tarjetas"></div>
-
-            <div class="prod-hub" data-hub="Prestamos"></div>
-
-            <div class="prod-hub" data-hub="Inversiones"></div>
-
-            <div class="prod-hub" data-hub="Seguros"></div>
-        </div>
-    </div>
-
-    <!-- Visor de stories -->
     <div class="story-viewer" id="story-viewer" role="dialog" aria-modal="true" aria-label="Stories">
         <div class="story-progress" id="story-progress"></div>
         <div class="story-header">
@@ -4973,6 +4544,8 @@
             'Transferir dinero': 'send_money', 'Transferir': 'send_money',
             'Recibir dinero': 'control_point_duplicate', 'Pagar servicios': 'emoji_objects',
             'Pagar tarjeta': 'credit_card', 'Retirar sin tarjeta': 'payments', 'Más transacciones': 'apps',
+            'Datos personales': 'person', 'Mis puntos': 'stars', 'Calificación crediticia': 'speed', 'Notificaciones': 'notifications',
+            'Transferencias sin comisión': 'swap_horiz', 'Descuentos en comercios aliados': 'local_offer',
             'Recargar celular': 'smartphone', 'Más transacciones': 'apps',
             'Pagar transporte': 'directions_transit', 'Tickets transporte': 'directions_transit', 'Mostrar mi QR': 'qr_code_2',
             'Cuenta PRINCIPAL': 'account_balance_wallet'
@@ -5099,8 +4672,7 @@
                 { label: 'Cédula / RUC del propietario', placeholder: 'Ej. 1712345678001', hint: '' },
             ] },
         ];
-        // Cuentas propias desde las que se puede debitar un pago de
-        // servicio — mismos saldos/números que Cuentas en Modo finanzas.
+        // Cuentas propias desde las que se puede debitar un pago de servicio
         const ORIGIN_ACCOUNTS = [
             { name: 'Cuenta Corriente', acct: '1234', balance: 1440.35 },
             { name: 'Cuenta Ahorro transaccional', acct: '7980', balance: 100.00 },
@@ -5148,7 +4720,7 @@
                     </div>
                 </div>`,
             'Recibir dinero': () => `
-                <p class="finance-subtitle" style="margin-top:0;">Compartir mis datos</p>
+                <p class="push-label" style="margin-top:0;">Compartir mis datos</p>
                 <div class="card">
                     <button class="sub-item" data-copy="PRINCIPAL ***7890">
                         <span class="sub-item__logo"><span class="material-symbols-rounded">account_balance</span></span>
@@ -5161,12 +4733,12 @@
                         <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">ios_share</span>
                     </button>
                 </div>
-                <p class="finance-subtitle">Mostrar QR</p>
+                <p class="push-label">Mostrar QR</p>
                 <div class="push-qr">
                     <div class="push-qr__code">${FAKE_QR_SVG}</div>
                     <p class="push-qr__caption">Que te paguen apuntando la cámara a este código.</p>
                 </div>
-                <p class="finance-subtitle">Recibir del exterior</p>
+                <p class="push-label">Recibir del exterior</p>
                 <div class="card">
                     <div class="sub-item"><span class="sub-item__info"><span class="sub-item__name">Banco</span><span class="sub-item__meta">Banco Pichincha C.A.</span></span></div>
                     <button class="sub-item" data-copy="PICHEC2X">
@@ -5181,7 +4753,7 @@
                     ['Efectivo', [['payments', 'Retirar sin tarjeta', 'go'], ['savings', 'Depositar en cajero', 'soon']]],
                     ['Cobros y programados', [['qr_code_2', 'Cobrar con QR', 'go'], ['event_repeat', 'Pagos programados', 'soon'], ['history', 'Historial de transacciones', 'soon']]]
                 ].map(([titulo, filas]) => `
-                    <p class="finance-subtitle">${titulo}</p>
+                    <p class="push-label">${titulo}</p>
                     <div class="card">${filas.map(([icon, nombre, tipo]) => `
                         <button class="sub-item" ${tipo === 'go' ? `data-go="${nombre}"` : `data-soon="${nombre}"`}>
                             <span class="sub-item__logo"><span class="material-symbols-rounded">${icon}</span></span>
@@ -5197,7 +4769,7 @@
             'Transferir dinero': () => transferPickHTML(),
             'Pagar servicios': () => servicePickHTML(),
             'Retirar sin tarjeta': () => `
-                <p class="finance-subtitle" style="margin-top:0;">Puntos de retiro cercanos</p>
+                <p class="push-label" style="margin-top:0;">Puntos de retiro cercanos</p>
                 <div class="retiro-map" aria-label="Mapa esquemático de puntos de retiro">
                     <svg viewBox="0 0 320 170" aria-hidden="true">
                         <path d="M0 120 C70 90 120 150 200 110 S300 60 320 80" class="retiro-map__road"/>
@@ -5221,7 +4793,7 @@
                     </button>
                 </div>`,
             'Recargar celular': () => `
-                <p class="finance-subtitle" style="margin-top:0;">¿A qué operador?</p>
+                <p class="push-label" style="margin-top:0;">¿A qué operador?</p>
                 <div class="card">
                     ${CARRIERS.map(c => `
                         <button class="sub-item" data-recarga="${c}">
@@ -5231,8 +4803,8 @@
                         </button>`).join('')}
                 </div>`,
             'Pagar tarjeta': () => `
-                <p class="finance-subtitle" style="margin-top:0;">Tus tarjetas</p>
-                <div class="card" id="pago-tarjetas"><p style="margin:0;padding:16px;color:var(--bp-text-helper);">Buscando tus tarjetas…</p></div>`,
+                <p class="push-label" style="margin-top:0;">Tus tarjetas</p>
+                <div class="card" id="pago-tarjetas"><p class="push-empty">Buscando tus tarjetas…</p></div>`,
         };
 
         // ---------- Transferir dinero: flujo de pago simulado de inicio a
@@ -5257,7 +4829,7 @@
                             <span class="sub-item__info"><span class="sub-item__name">${t.nombre}</span><span class="sub-item__meta">${t.institucion} · Saldo a pagar ${Flujos.dinero(t.saldo)}</span></span>
                             <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
                         </button>`).join('')
-                    : '<p style="margin:0;padding:16px;color:var(--bp-text-helper);">No tienes tarjetas para pagar.</p>';
+                    : '<p class="push-empty">No tienes tarjetas de crédito para pagar.</p>';
             });
         }
 
@@ -5280,11 +4852,11 @@
                     <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
                 </button>`;
             return `
-                <p class="finance-subtitle" style="margin-top:0;">Favoritos</p>
+                <p class="push-label" style="margin-top:0;">Favoritos</p>
                 <div class="push-beneficiaries">${BENEFICIARIES.slice(0, 3).map(avatar).join('')}</div>
-                <p class="finance-subtitle">Contactos</p>
+                <p class="push-label">Contactos</p>
                 <div class="card">${BENEFICIARIES.map(contacto).join('')}</div>
-                <p class="finance-subtitle">Otras formas</p>
+                <p class="push-label">Otras formas</p>
                 <div class="card">
                     ${otra('add', 'Nueva cuenta', 'Otro banco o cuenta', 'data-beneficiary="__new"')}
                     ${otra('public', 'Transferencia al exterior', 'Envía a otro país', 'data-soon="Transferencia al exterior"')}
@@ -5307,16 +4879,16 @@
                 </button>`;
             const categorias = [...new Set(SERVICE_BILLERS.map(s => s.category))];
             return `
-                <p class="finance-subtitle" style="margin-top:0;">Favoritos</p>
+                <p class="push-label" style="margin-top:0;">Favoritos</p>
                 <div class="card">${SERVICE_BILLERS.slice(0, 2).map(fila).join('')}</div>
-                <p class="finance-subtitle">Programados</p>
+                <p class="push-label">Programados</p>
                 <div class="card"><p style="margin:0;padding:16px;color:var(--bp-text-helper);">No tienes pagos programados.</p></div>
-                <p class="finance-subtitle">Pagos</p>
+                <p class="push-label">Pagos</p>
                 <div class="card">
                     ${pago('credit_card', 'Pagar tarjeta de crédito', 'Pagar tarjeta')}
                     ${pago('smartphone', 'Recargas de celular', 'Recargar celular')}
                 </div>
-                ${categorias.map(c => `<p class="finance-subtitle">${c}</p><div class="card">${SERVICE_BILLERS.filter(s => s.category === c).map(fila).join('')}</div>`).join('')}`;
+                ${categorias.map(c => `<p class="push-label">${c}</p><div class="card">${SERVICE_BILLERS.filter(s => s.category === c).map(fila).join('')}</div>`).join('')}`;
         }
 
         document.getElementById('push-extra').addEventListener('click', (e) => {
@@ -5539,10 +5111,6 @@
             pushTitle.textContent = title;
             pushTopbarTitle.textContent = title;
             renderPushExtra(title);
-            // Estas pantallas son selectores: al elegir una opción abren el
-            // flujo de pantalla completa (assets/flujos.js), que trae su
-            // propio CTA por paso. El "Continuar" genérico de abajo sobra.
-            pushCta.style.display = FLUJOS_CON_ENTRADA.has(title) ? 'none' : '';
             // Pagar servicios simula el micrositio propio del proveedor:
             // fondo blanco en vez del grisáceo por defecto de #push-page
             // (ver CSS .is-form-flow) — el resto de acciones no cambia.
@@ -5568,10 +5136,12 @@
             });
             if (!hasExtra && !soon) renderPushSummary(title);
             renderSoon(title, soon);
-            // Próximamente: solo queda el mensaje de arriba; título, ícono y Continuar no aplican
+            // Próximamente: solo queda el mensaje de arriba; título, ícono y Continuar no aplican.
+            // Los selectores (FLUJOS_CON_ENTRADA) abren al elegir una opción el flujo de
+            // pantalla completa (assets/flujos.js), que trae su propio CTA por paso.
             document.getElementById('push-title').style.display = soon ? 'none' : '';
             document.getElementById('push-hero').style.display = soon ? 'none' : '';
-            pushCta.style.display = (soon || title === 'Transferir dinero' || title === 'Pagar servicios') ? 'none' : '';
+            pushCta.style.display = (soon || FLUJOS_CON_ENTRADA.has(title)) ? 'none' : '';
             pushHeroIcon.textContent = (PRODUCT_DETAILS[title] && PRODUCT_DETAILS[title].icon) || pushIcons[title] || 'bolt';
             pushPage.classList.remove('scrolled');
             pushPage.scrollTop = 0;
@@ -5620,32 +5190,13 @@
         // El gesto de volver (arrastrar desde el borde izquierdo) es el mismo
         // para todas las pantallas: assets/navegacion.js.
 
-        // ---------- Modo finanzas: resumen consolidado de productos ----------
-        const financePage = document.getElementById('finance-page');
-        setupCollapsingHeader(financePage, document.getElementById('finance-title'), document.getElementById('finance-topbar'));
-
-        function openFinancePage() {
-            financePage.classList.remove('scrolled');
-            financePage.scrollTop = 0;
-            document.body.style.overflow = 'hidden';
-            financePage.classList.add('open');
-        }
-        function closeFinancePage() {
-            if (!financePage.classList.contains('open')) return;
-            financePage.classList.remove('open');
-            document.body.style.overflow = '';
-        }
-        document.getElementById('finance-back').addEventListener('click', closeFinancePage);
-        window.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && financePage.classList.contains('open')) closeFinancePage();
-        });
-
         // Cualquier elemento con data-action da feedback.
-        // Las acciones rápidas, destacados y filas de producto abren una
-        // página (push o resumen); el resto sólo confirma con un toast.
+        // Las acciones rápidas, destacados, filas de producto y las filas de
+        // Perfil abren una página (push, resumen o "Próximamente"); el resto
+        // sólo confirma con un toast.
         // Sin sesión: los accesos públicos responden; los que usan tu cuenta
         // inician el ingreso al instante y se abren al entrar (window.__pendingAction).
-        const ACCESOS_PUBLICOS = ['Soporte', 'Ayuda', 'Clave digital', 'Idioma', 'Cobrar con QR'];
+        const ACCESOS_PUBLICOS = ['Soporte', 'Ayuda', 'Clave digital', 'Idioma', 'Cobrar con QR', 'Seguridad'];
         // Delegado en el documento: también responden las filas que los hubs pintan después
         document.addEventListener('click', (e) => {
             const el = e.target.closest && e.target.closest('[data-action]');
@@ -5657,9 +5208,7 @@
                     document.getElementById('btn-login-biometric')?.click();
                     return;
                 }
-                if (el.dataset.action === 'Modo finanzas') {
-                    openFinancePage();
-                } else if (el.dataset.action === 'Cambiar cuenta') {
+                if (el.dataset.action === 'Cambiar cuenta') {
                     toggleAccountSwitch();
                 } else if (el.matches('.product-row') && CARD_DETAIL_THEMES[el.dataset.action] && el.closest('[data-panel="Tarjetas"]')) {
                     // Débito/crédito en Tarjetas: mismo morph "wallet" que la
@@ -5671,6 +5220,12 @@
                     openPushPage(el.dataset.action, el); // crece desde el botón/fila
                 } else if (el.dataset.action === 'Clave digital' && window.Ingreso) {
                     Ingreso.token(); // sóftoken de 30 segundos
+                } else if (el.dataset.action === 'Seguridad' && window.Seguridad) {
+                    Seguridad.abrir(); // el mismo flujo de seguridad que el login
+                } else if (el.dataset.action === 'Uku') {
+                    document.querySelector('.nav-item[data-view="1"]')?.click();
+                } else if (el.closest('.view[data-view="4"]') || el.dataset.action === 'Notificaciones') {
+                    openPushPage(el.dataset.action, el); // sin pantalla propia aún: "Próximamente"
                 } else {
                     showToast(el.dataset.action);
                 }
@@ -6261,13 +5816,6 @@
         const sheetHandle = document.getElementById('sheet-handle');
 
         const sheetTemplates = {
-            card: () => `
-                <h2 class="sheet__title">Tarjeta Débito Digital</h2>
-                <p class="sheet__subtitle">VISA · 1234 **** **** 1234</p>
-                <div class="sheet__row"><span class="sheet__row-label">Estado</span><span class="sheet__row-value">Activa</span></div>
-                <div class="sheet__row"><span class="sheet__row-label">Cupo diario</span><span class="sheet__row-value">$ 500,00</span></div>
-                <div class="sheet__row"><span class="sheet__row-label">Consumo del mes</span><span class="sheet__row-value">$ 312,45</span></div>
-                <button class="sheet__cta" data-toast="Tarjeta congelada temporalmente">Congelar tarjeta</button>`,
             payment: (el) => `
                 <h2 class="sheet__title">${el.dataset.title}</h2>
                 <p class="sheet__subtitle">Servicio básico · Pago pendiente</p>
@@ -6734,6 +6282,7 @@
     <script src="./assets/soporte.js"></script>
     <script src="./assets/uku-util.js"></script>
     <script src="./assets/uku-pagos.js"></script>
+    <script src="./assets/orquestador.js"></script>
     <script src="./assets/uku-app.js"></script>
     <script src="./assets/navegacion.js"></script>
     <script src="./fiesta.js"></script>

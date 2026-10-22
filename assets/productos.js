@@ -1,6 +1,6 @@
 /* =====================================================================
    Hubs de productos (Inicio: Cuentas, Tarjetas, Préstamos, Inversiones,
-   Seguros; y Modo finanzas). Se dibujan desde la base de datos de la
+   Seguros). Se dibujan desde la base de datos de la
    persona activa y se vuelven a dibujar al cambiarla.
    - Cada grupo (Cuentas, Metas, Pichibank…) es su propio contenedor.
    - Si un grupo está vacío y lo marca como "ph", muestra un placeholder.
@@ -12,7 +12,7 @@
   'use strict';
 
   var esc = function (t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
-  var money = function (v) { return '$ ' + Number(Math.abs(v || 0)).toLocaleString('es-EC', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+  var money = function (v) { return '$\u00a0' + Number(Math.abs(v || 0)).toLocaleString('es-EC', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
   var ultimos = function (t) { var m = /(\d{4})\b/.exec(t || ''); return m ? '******' + m[1] : ''; };
   var suma = function (xs) { return xs.reduce(function (t, x) { return t + Number(x.saldo || 0); }, 0); };
 
@@ -20,7 +20,7 @@
   function fila(p) {
     return '<button class="product-row" data-action="' + esc(p.nombre) + '">' +
       (p.thumb
-        ? '<span class="card-thumb card-thumb--' + esc(p.thumb) + '" aria-hidden="true"><span class="card-thumb__brand" translate="no">PICHI<br>BANK</span></span>'
+        ? '<span class="card-thumb card-thumb--' + esc(p.thumb) + '" aria-hidden="true"><span class="card-thumb__brand" translate="no">' + (p.marca ? esc(p.marca) : 'PICHI<br>BANK') + '</span></span>'
         : '<span class="avatar-lg"><span class="material-symbols-rounded">' + esc(p.ic || 'account_balance') + '</span></span>') +
       '<span class="product-row__info"><span class="product-row__name">' + esc(p.nombre) + '</span>' +
       (p.sub ? '<span class="product-row__sub">' + esc(p.sub) + '</span>' : '') +
@@ -28,20 +28,21 @@
       '<span class="product-row__right">' + (p.label ? '<span class="product-row__label">' + esc(p.label) + '</span>' : '') +
       '<span class="product-row__amount">' + esc(p.monto) + '</span></span></button>';
   }
-  // Placeholder de un grupo sin productos: dice qué falta y ofrece hablar con Uku
+  // Un grupo sin productos: la misma tarjeta con acción que las promos del hub (ícono, qué hacer, por qué
+  // y chevron); lleva a Uku
   function placeholder(g) {
-    return '<div class="prod-ph"><p><b>' + esc(g.ph.t) + '</b>' + esc(g.ph.s) + '</p>' +
-      '<button class="btn btn--tertiary prod-go" type="button">Hablar con Uku</button></div>';
+    return '<button class="cta-dashed prod-go" type="button"><span class="avatar-lg"><span class="material-symbols-rounded">' + esc(g.ph.ic || 'add') + '</span></span>' +
+      '<span class="cta-dashed__text">' + esc(g.ph.s) + '<span class="cta-dashed__link">' + esc(g.ph.t) + '</span></span></button>';
   }
-  // Hero de un hub vacío: tarjeta punteada con ilustración, título, texto y la acción principal.
-  // Si el hub tiene acción propia (h.accion) abre esa página; si no, lleva a Uku.
+  // Un hub vacío: tarjeta con ícono, título, texto y su acción. Si el hub tiene acción propia (h.accion), es la
+  // acción principal del banco (amarilla); si no, «Hablar con Uku» lleva al asistente.
   function hero(h) {
     var boton = h.accion
       ? '<button class="btn btn--primary" type="button" data-action="' + esc(h.accion) + '">' + esc(h.cta) + '</button>'
-      : '<button class="btn btn--primary prod-go" type="button">' + esc(h.cta || 'Hablar con Uku') + '</button>';
+      : '<button class="bp-button bp-button--secondary prod-go" type="button">' + esc(h.cta || 'Hablar con Uku') + '</button>';
     return '<div class="prod-hero prod-hero--vacio">' +
-      '<span class="prod-hero__ilustra" aria-hidden="true"><span class="material-symbols-rounded">' + esc(h.ic) + '</span></span>' +
-      '<b class="prod-hero__t">' + esc(h.t) + '</b><p class="prod-hero__s">' + esc(h.s) + '</p>' + boton + '</div>';
+      '<div class="prod-hero__top"><span class="prod-hero__ilustra" aria-hidden="true"><span class="material-symbols-rounded">' + esc(h.ic) + '</span></span>' +
+      '<span><b class="prod-hero__t">' + esc(h.t) + '</b><p class="prod-hero__s">' + esc(h.s) + '</p></span></div>' + boton + '</div>';
   }
   // Un bloque por grupo. El primer grupo no lleva título si el hub ya lo tiene (data-sin-titulo)
   // El total va justo después del grupo que suma (total.tras)
@@ -62,7 +63,9 @@
     if (!window.ProductView || !ProductView.registrar) return;
     data.grupos.forEach(function (g) {
       g.filas.forEach(function (f) {
-        var rows = [['Institución', f.sub || 'Pichibank']];
+        // sub es la institución, salvo en filas que muestran titular o meta
+        var dato = /^(Titular|Meta): (.+)$/.exec(f.sub || '');
+        var rows = dato ? [['Institución', 'Pichibank'], [dato[1], dato[2]]] : [['Institución', f.sub || 'Pichibank']];
         if (f.masked) rows.push(['Número', f.masked]);
         var fila = { kind: f.nombre, label: f.label || 'Saldo', value: f.monto || '', sub: f.sub || '', acts: [], rows: rows, list: [], listTitle: '' };
         // Cuentas y metas se dibujan con su propio diseño (assets/producto.js)
@@ -98,8 +101,8 @@
             tipo: 'meta', saldoNum: c.saldo, metaNum: c.meta };
         });
         return { grupos: [
-            { titulo: 'Cuentas', filas: cuentas, ph: { t: 'Aún no tienes cuentas. ', s: 'Abre una cuenta de ahorro para empezar.' } },
-            { titulo: 'Metas', filas: metas, ph: { t: 'Aún no tienes metas. ', s: 'Ponle nombre a lo que quieres lograr y Uku te acompaña.' } }],
+            { titulo: 'Cuentas', filas: cuentas, ph: { ic: 'account_balance', t: 'Abre tu primera cuenta', s: 'Una cuenta de ahorro para empezar. Uku te guía.' } },
+            { titulo: 'Metas', filas: metas, ph: { ic: 'flag', t: 'Crea tu primera meta', s: 'Ponle nombre a lo que quieres lograr y Uku te acompaña.' } }],
           total: { l: 'Saldo disponible total', v: suma(cs.filter(function (c) { return c.tipo === 'transaccional' || c.tipo === 'ahorro'; })), tras: 0 },
           hero: { ic: 'account_balance', t: 'Tu dinero empieza aquí', s: 'Todavía no tienes cuentas en Pichibank. Uku te ayuda a abrir la primera.' } };
       });
@@ -119,7 +122,10 @@
         var ds = r[0], cs = r[1], persona = r[2];
         var tj = ds.filter(function (d) { return d.clase === 'tarjeta'; });
         var mvp = function (d) { return String(d.en_mvp).indexOf('Sí') === 0; };
-        var fila3 = function (d) { return { nombre: d.producto, sub: d.institucion, masked: ultimos(d.producto), monto: money(d.saldo), label: 'Saldo a pagar', ic: 'credit_card', thumb: 'black' }; };
+        // El nombre ya trae los últimos dígitos («Mastercard ···5520»): no se repiten debajo
+        var fila3 = function (d) { return { nombre: d.producto, sub: d.institucion, masked: /···/.test(d.producto) ? '' : ultimos(d.producto), monto: money(d.saldo), label: 'Saldo a pagar', ic: 'credit_card', thumb: 'black' }; };
+        // En la tarjeta de otro banco va su marca, no la de Pichibank
+        var marca = function (inst) { return String(inst || '').replace(/^Banco\s+/i, '').split(/\s+/).slice(0, 2).join(' ').toUpperCase(); };
         // Débito: la cuenta transaccional, con su titular y los últimos dígitos
         var trans = cs.filter(function (c) { return c.tipo === 'transaccional'; })[0];
         var debito = trans ? [{ nombre: 'Débito Pichibank', sub: 'Titular: ' + (persona ? persona.nombre : ''), masked: '******' + trans.numero, monto: money(trans.saldo), label: 'Disponible', ic: 'account_balance_wallet', thumb: 'visa' }] : [];
@@ -127,7 +133,7 @@
         return { grupos: [
             { titulo: 'Débito', filas: debito },
             { titulo: 'Pichibank', filas: creditos.map(fila3) },
-            { titulo: 'Otros bancos y tiendas', filas: tj.filter(function (d) { return !mvp(d); }).map(function (d) { var f = fila3(d); f.thumb = 'diners'; return f; }) }],
+            { titulo: 'Otros bancos y tiendas', filas: tj.filter(function (d) { return !mvp(d); }).map(function (d) { var f = fila3(d); f.thumb = 'diners'; f.marca = marca(d.institucion); return f; }) }],
           // Los placeholders de débito y crédito de la pantalla solo aparecen si no hay ese producto
           sinDebito: !debito.length, sinCredito: !creditos.length,
           hero: { ic: 'credit_card', t: 'Aún no tienes tarjetas', s: 'Pide una tarjeta Pichibank o registra una de otro banco con Uku.' } };
@@ -170,15 +176,6 @@
     document.querySelectorAll('.prod-hub').forEach(function (el) {
       var f = HUBS[el.dataset.hub]; if (!f) return;
       f(id).then(function (data) { if (Persona.get() === id) pintarHub(el, data); });
-    });
-    // Patrimonio neto de Modo finanzas: lo que tienes menos lo que debes (incluye lo que te deben)
-    var nw = document.querySelector('.finance-networth strong');
-    if (nw) Promise.all([Persona.cuentas(id), Persona.deudas(id)]).then(function (r) {
-      var activos = suma(r[0]);
-      var cobrar = r[1].filter(function (d) { return d.clase === 'cobrar'; }).reduce(function (t, d) { return t + Math.abs(d.saldo); }, 0);
-      var deuda = suma(r[1].filter(function (d) { return d.clase !== 'cobrar'; }));
-      var v = activos + cobrar - deuda;
-      if (Persona.get() === id) nw.textContent = (v < 0 ? '-' : '') + money(v);
     });
     document.dispatchEvent(new CustomEvent('productos:change', { detail: id }));
   }

@@ -121,15 +121,6 @@
 .ing__tecla:active { transform: scale(.96); }
 
 /* Clave digital */
-.ing__codigo {
-  margin: 8px 0 0;
-  text-align: center;
-  font-size: 44px;
-  font-weight: 700;
-  letter-spacing: .06em;
-  font-variant-numeric: tabular-nums;
-  color: var(--bp-theme-color-text-primary);
-}
 
 .ing__detalle {
   font-size: 14px;
@@ -188,3 +179,12 @@
 .ing-ayuda__fila > .material-symbols-rounded { color: #0f265c; }
 .ing-hoja__seccion { margin: 8px 0 0; font-size: 14px; font-weight: 600; color: var(--bp-theme-color-text-secondary); }
 .ing-video { width: 100%; aspect-ratio: 3 / 4; border-radius: 16px; object-fit: cover; background: #000; transform: scaleX(-1); }
+
+/* Sin sesión: la ayuda, los accesos públicos y las hojas del login (idioma,
+   seguridad, ayuda) se abren por encima del inicio de sesión (z 500). Va
+   fuera de @layer base para ganarle a .as-sheet de asistente.css. */
+html body.sin-sesion .sp,
+html body.sin-sesion .push-page, html body.sin-sesion #push-page { z-index: 600; }
+html body.sin-sesion .as-sheet-back { z-index: 650; }
+html body.sin-sesion .as-sheet { z-index: 651; }
+html body.sin-sesion .pf-toast, html body.sin-sesion .toast { z-index: 690; }

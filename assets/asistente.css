@@ -48,7 +48,7 @@
 .pf-done { width: 56px; height: 56px; border-radius: var(--bp-semantic-radius-full); display: grid; place-items: center; background: var(--bp-theme-color-brand-main); color: var(--bp-theme-color-text-on-brand); font-size: 30px; }
 /* Aviso del PFM: posición (el aspecto es el de bp-toast) */
 .pf-toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 400; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; transition: opacity .25s ease, transform .25s ease; }
-.pf-toast.show { opacity: 1; transform: translate(-50%, 0); }
+.pf-toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
 
 /* ---------- Uku, el oso andino: escena 3D (bosque3d.js) y versiones 2D ---------- */
 .as-oso { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; user-select: none; -webkit-user-drag: none; }

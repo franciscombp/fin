@@ -16,7 +16,7 @@
   var NO_TOCAR = /^(SCRIPT|STYLE|TEXTAREA|INPUT|NOSCRIPT)$/;
   // Solo se ocultan los saldos (lo que tienes o debes en una cuenta o tarjeta). Lo que vas a pagar,
   // elegir o confirmar (montos de recarga, cuotas, precios, totales de una compra) se ve siempre.
-  var SALDO = '#balance, .amount-row, .product-row__amount, .product-row__masked, .skeleton--balance, .pfm-saldo, .pfm-net, .pfm-tile, .pfm-hub__dinero small, .finance-total, [data-saldo]';
+  var SALDO = '#balance, .amount-row, .product-row__amount, .product-row__masked, .skeleton--balance, .pfm-saldo, .pfm-net, .pfm-tile, .pfm-hub__cols b, .finance-total, [data-saldo]';
   var oculto = false, timer = null, original = new WeakMap();
   try { oculto = localStorage.getItem(KEY) === '1'; } catch (e) {}
 

@@ -35,12 +35,10 @@ Si una decisión cambia, actualiza esta página en el mismo cambio.
 
 ## 3. Sin internet
 
-- **La conexión se comprueba con una sonda real**, no con `navigator.onLine`: `assets/sonda.txt`,
-  del mismo sitio, que el service worker no guarda en caché. Se revisa al abrir, al volver a la app,
-  al recuperar la red y cada 30 s.
-  - Por qué no `navigator.onLine`: un Wi-Fi sin salida sigue marcado como conectado.
-  - Por qué no un host externo (gstatic): algunas redes lo bloquean y dejarían el login cerrado.
-  - Por qué no una ruta de la app: el service worker responde desde caché y devolvería `index.html`.
+- **La conexión la dice el navegador** (`navigator.onLine` y sus eventos `online`/`offline`). Antes se
+  sondeaba un archivo del mismo sitio (`sonda.txt`, ahora en `respaldo/sin-uso/`), pero en el teléfono
+  esa petición fallaba aunque hubiera red (caché del service worker, app instalada) y mostraba
+  "Sin internet" por error.
 - **Login sin internet:** solo entra con Face ID o huella. Sin ninguna de las dos, el botón principal
   queda en "Sin internet" (apagado), y "Otro método de ingreso" se oculta.
 - **Accesos que necesitan red:** se ven deshabilitados (`disabled`), no ocultos. Un aviso bp-alert
@@ -143,11 +141,16 @@ Dónde está aplicado: en toda la app, porque cada primitiva se define una sola 
 El asistente vive en la barra inferior (pestaña **Asistente**, entre Beneficios y Perfil). Arriba de la
 app quedan solo la búsqueda (abre el **Buscador** universal) y las notificaciones. Dentro del asistente
 hay un solo control arriba a la izquierda y, cuando la pantalla tiene nombre, el título centrado
-(`.uk-chathead`). Nunca una flecha y una X a la vez. La barra inferior sigue visible en Inicio y Mis
-finanzas; se oculta en el chat y en las páginas a pantalla completa.
+(`.uk-chathead`). Nunca una flecha y una X a la vez. La barra inferior sigue visible en el inicio del
+asistente; se oculta en Mis finanzas y Soporte (secciones a pantalla completa), en el chat y en las
+páginas a pantalla completa.
 
-- **Inicio** (`is-home`): sin flecha (se sale con la barra inferior). Globo de Uku con saludo, chips de
-  propuestas, buscador con micrófono y dos accesos: Mis finanzas y Soporte.
+- **Inicio** (`is-home`): sin flecha (se sale con la barra inferior). El globo muestra **una sugerencia
+  a la vez** (etiqueta, «1 de n», flecha para pasar a la siguiente y X para ocultarla, con «Deshacer»).
+  Los chips de abajo son **sobre esa sugerencia**: su acción y algo relacionado (p. ej. «Programar el
+  pago» y «Ver todos mis pagos»). Sin sugerencias (o todas ocultas) se muestra **solo el saludo**
+  («Buenas tardes, Andrés. ¿En qué te ayudo hoy?»), sin chips. Debajo, el buscador con micrófono y dos
+  accesos: Mis finanzas y Soporte.
 - **Buscador**: hoja a pantalla completa que abre el campo; la X vuelve al inicio.
 - **Chat** (`is-chat`): la flecha vuelve al inicio. Uku asoma abajo a la izquierda, sobre la barra
   «Escríbele a Uku». Mensajes del usuario en gris, respuestas en blanco, acciones en tarjeta y
@@ -155,20 +158,27 @@ finanzas; se oculta en el chat y en las páginas a pantalla completa.
   como un chat de IA; las filas y botones entran cuando termina el texto.
 - **Mis finanzas** (`is-fin`): título «Mis finanzas», la flecha vuelve al inicio, la «i» abre la leyenda
   del mundo. Uku se ve en **plano general** dentro de su bosque, con un globo que escribe su mensaje.
-  Abajo hay una **sección fija** (sin scroll ni handle; su fondo solo separa del mundo y da contraste):
-  la tarjeta «Gastaste en…» (abre **Mis gastos**), hasta dos acciones recomendadas y «Mi dinero en
-  Pichibank» (abre su hoja).
+  Abajo hay una **sección fija** (sin scroll ni handle; su fondo es translúcido, con degradado y desenfoque, para que se integre con el
+  escenario y aun así dé contraste),
+  en este orden: **una sola sugerencia** de Uku (tarjeta con ícono, acción, por qué y flecha; tocar a
+  Uku o deslizar pasa a la siguiente), «Gastaste en…» (abre **Mis gastos**) y «Mi dinero en Pichibank»
+  con dos columnas: dinero en cuentas e inversiones y deuda total acumulada (abre su hoja).
 - **Mis gastos** (`is-page`): página a pantalla completa con título y X que vuelve a Mis finanzas. Hallazgo
   del mes, periodos, tarjeta con total y gráfico, categorías con barras.
-- **Soporte** (`is-ayuda`): título «Soporte», la flecha vuelve al inicio. Tarjeta de Solicitudes, tres
-  preguntas frecuentes (cada una se responde en el chat) y «Ver todas las categorías», que abre la
-  **ayuda completa**: hoja a pantalla completa con título y X que vuelve a Soporte.
+- **Soporte** (`is-ayuda`): igual que Mis finanzas, que es el modelo de las secciones. Pantalla completa
+  (sin barra de abajo), título «Soporte», la flecha vuelve al inicio. Uku en su mundo, en plano general,
+  con un globo que cuenta cómo va tu solicitud o te invita a contar qué pasó. Abajo la misma sección fija
+  translúcida, con las mismas tarjetas: **Solicitudes** (ícono, cuántas hay y «Ver todas»; la última en
+  curso con su asunto, estado, tres pasos y cuándo hay respuesta) y **Preguntas frecuentes** (título con
+  «Ver todas», que abre la ayuda completa, y las dos más consultadas). Al pie, como en el inicio, «Busca o
+  pregunta» y el micrófono: abren el buscador universal con los temas de ayuda primero. La **ayuda
+  completa** es una hoja a pantalla completa con título y X que vuelve a Soporte.
 
 #### Lógica de Mis finanzas
 
 - **Gastos sin categorizar** → Uku pide ordenarlos («Clasificar n»). Es la primera recomendación.
-- **Sin presupuesto** → Uku recomienda armarlo, y la tarjeta del mes muestra solo lo gastado, sin barra
-  ni comparación («Todavía no tienes presupuesto · Armar mi presupuesto»). Mis gastos hace lo mismo.
+- **Sin presupuesto** → Uku recomienda armarlo (en el globo y la tarjeta de sugerencia), y la tarjeta del
+  mes muestra solo lo gastado, sin barra ni comparación. Mis gastos muestra «Armar mi presupuesto».
   «Sin presupuesto» es que no haya uno guardado; el que calcula Uku solo como propuesta no cuenta.
 - **Con presupuesto** → barra de avance y «Te queda…» / «Vas … por encima».
 - **Mensajes según el perfil** (hogar, negocio, joven, jubilado, al día, nuevo), siempre en positivo y
@@ -220,6 +230,50 @@ Cómo queda:
 - Antes de agregar una clase nueva, buscar el componente en `componentes.css` y sumarla a su lista de
   alias. Antes de borrar, comprobar que ningún `html`, `js` (también `app.js` en la raíz) ni la demo
   de `buscador/` la usa.
+
+### 5.3.1 Limpieza del 22 de octubre: una sola versión de la app
+
+- **La app es solo la versión con Uku.** `clasica.html`, `asistente.html` y la rama `?app=clasica`
+  se retiraron a `respaldo/version-clasica/`; la página «Modo finanzas» (`#finance-page`) y su
+  intercepción en `asistente.js`, a `respaldo/modo-finanzas/`. Las etiquetas de las páginas push que
+  usaban `.finance-subtitle` ahora son `.push-label` (en `componentes.css`, con el título de sección).
+- **`uku-rig.html` vive en `sandbox/rig.html`**, junto al resto de pruebas. «Probar efectos» salió de
+  Perfil (los mismos efectos se prueban en `sandbox/animaciones.html`); su HTML y su JS quedaron en
+  `respaldo/probar-efectos/`.
+- **Placeholders con el estilo de la app:** los grupos vacíos de los hubs (Cuentas, Metas…) y las
+  sugerencias de Destacados son tarjetas sólidas con ícono en cuadro gris, título y enlace, el mismo
+  componente `.cta-dashed` (ya sin borde punteado). Nada de bordes punteados ni fondos transparentes.
+- **Página de producto genérica** (débito, préstamos, inversiones, seguros y productos de otros bancos):
+  usa el mismo lenguaje que la cuenta (título grande, tarjeta de saldo, acciones, «Detalle» y la lista
+  en tarjetas sobre fondo gris).
+- **Filas de Perfil sin pantalla propia** abren la página «Próximamente» con su ícono, en vez de un toast.
+  Seguridad abre el flujo de seguridad del login; «Uku, tu asistente personal» lleva al asistente.
+
+### 5.4 Orquestador de Uku (acuerdo del 21 de octubre)
+
+**Nada de la lógica de las conversaciones va quemada en el front.** Todo lo que escribes en el chat (y cada
+botón de sus respuestas) pasa primero por el orquestador (`orquestador/`, ver su `LEEME.md`): elige la
+habilidad, esta usa herramientas (hoy `finanzas`, que lee los datos de la persona) y responde mensajes con
+un contrato fijo (texto, título, cifra, barras, filas, medidores y acciones). El front
+(`assets/orquestador.js` + `orqPintar` en `uku-app.js`) solo los dibuja con componentes genéricos.
+Destinos, tarifas y reglas viven en `orquestador/config/`.
+
+- Corre igual en un Web Worker (la demo en Pages, sin servidor) y en `server.js` (`POST /api/orquestador`);
+  con `localStorage.setItem('orq-url', …)` la app usa el servidor.
+- El estado de la conversación es opaco para el front: se guarda por persona y se devuelve en cada petición.
+- Si ninguna habilidad atiende el mensaje (`manejado: false`), el front responde como antes. Lo que hoy
+  responde el front (dinero, ayuda, acciones) se puede ir pasando como habilidades.
+- Lo que el orquestador tiene en marcha (p. ej. un viaje) aparece como sugerencia en el globo del inicio y
+  en Mis finanzas.
+- En el buscador, una frase (tres palabras o más) con Enter se le pregunta a Uku; una búsqueda corta abre
+  el primer resultado.
+
+**Demo: planear un viaje** («Quiero viajar a Galápagos» o «Planear un viaje» en el buscador): destino, días,
+personas y fecha → presupuesto del viaje (pasajes, hospedaje, comida, paseos, movilidad e imprevistos) que se
+guarda como presupuesto específico → si no alcanza sin tocar ahorros ni el colchón de un mes, una meta (o se
+actualiza la que ya existe, como la de Andrés); si alcanza, apartar el dinero → con la meta cumplida
+(«Simular: pasan los meses»), el control del viaje: cuánto puedes gastar hoy, cada parte contra su
+presupuesto (ámbar al 80 %) e imprevistos como reserva → un resumen al volver y pasar lo que sobró al ahorro.
 
 ## 6. Buscador
 
@@ -280,6 +334,11 @@ Cómo queda:
 
 ## 10. Reglas técnicas que nos costaron tiempo
 
+- **`hidden` siempre oculta.** El CSS base de `index.html` está en `@layer base` y `componentes.css` va
+  al final sin capa, así que cualquier `display` de un componente (p. ej. `.bp-alert { display: flex }`)
+  le gana a una regla `#algo[hidden] { display: none }` del base, aunque tenga id. Así se veía «Sin
+  internet» en el login con conexión. Por eso `componentes.css` tiene `[hidden] { display: none
+  !important }`, y el barrido revisa en cada pantalla que nada con `hidden` se vea.
 - **Un id gana sobre una clase.** `#push-page { z-index: 310 }` tapaba al login aunque la clase tuviera 600.
   Para forzar algo sobre el login hay que usar selectores con el mismo nivel de especificidad o mayor.
 - **Capas al abrir sin ingresar** (con `body.sin-sesion`): login 500; páginas de Ayuda y push 600; selector
@@ -295,8 +354,24 @@ Cómo queda:
 - **Las variables `--uk-*` viven en `.uk`.** Las hojas (`.as-sheet`) cuelgan de `body`, así que una regla
   de hoja que use `var(--uk-accent)` queda sin valor (el botón principal salía transparente). En hojas se
   usan los tokens `--bp-*` directamente.
+- **Un solo lugar decide si Uku está «en foco»** (conversando, sin su mundo) o en su mundo: `modo()` y, al
+  montar la escena, la misma regla (`is-chat` y no Mis finanzas ni Soporte), anotada en `host._foco`. Al
+  montarla con otra regla, Soporte quedaba sin bosque.
 - **Efecto de escritura:** se parte el texto en `span.uk-w` con `animation-delay` después de un
   `setTimeout 0`, para que el traductor (`MutationObserver` de i18n) traduzca la frase completa antes.
+- **Barrido antes de publicar:** `node tools/barrido.js <carpeta>` recorre todas las pantallas con las
+  seis personas y revisa los errores que ya vimos: errores de JS y de consola, archivos que no cargan,
+  que la página siga respondiendo, scroll horizontal, el botón principal de las hojas sin fondo, la
+  barra de abajo (oculta en Mis finanzas) y el aviso con «Deshacer». Con `BASE=` apunta a otra copia
+  (p. ej. `main` en otro puerto) para comparar las capturas.
+- **Componentes sin estilo:** al rehacer una pantalla desde cero se perdieron estilos que el código
+  seguía usando («Lo que encontré», barras y datos de las respuestas). Antes de borrar CSS, buscar
+  también lo contrario: clases que el JS genera y que no tienen ninguna regla.
+- **Clases armadas por código:** `'dw--' + w.size`, `'pf-meter--' + tono`, `'pv-tx__em--' + t.em`…
+  no aparecen literales en el código. Una poda anterior borró `.dw--m`/`.dw--l` (los widgets medianos
+  quedaron de media columna) y los tonos de ingresos. El detector de CSS sin uso trata como usada
+  toda clase que empiece con un prefijo que el código completa (`'algo-' +`); al podar a mano, buscar
+  también el prefijo.
 - **Fondo amarillo y círculo amarillo** no se distinguen: en el splash se usa la variante azul.
 
 ## 11. Pendientes y preguntas abiertas
@@ -310,5 +385,5 @@ Cómo queda:
 - Préstamos e inversiones se consideran informativos sin internet. Si se contratan sin internet,
   pasan a la lista transaccional.
 - Mostrar mi QR se considera informativo. Si el equipo decide lo contrario, se agrega a la lista.
-- Las pruebas headless que usamos viven fuera del repo. Conviene moverlas a `tools/` para que
-  cada cambio se pueda verificar igual.
+- ~~Las pruebas headless viven fuera del repo~~: el barrido completo ya está en `tools/barrido.js`
+  (ver §10).

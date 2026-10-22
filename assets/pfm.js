@@ -447,7 +447,7 @@
        tranquilo. Pendiente hace más de una semana: pensativo. Uku es un
        personaje del banco: no se enoja ni se pone triste, te espera. Una
        semana sin gastos no cuenta en contra: no hay nada que clasificar.
-     · Las flores amarillas de su campo = tu ahorro (cuántos meses te alcanza).
+     · Las flores amarillas de sus canteros = tu ahorro (cuántos meses te alcanza).
      · El bosque = tu presupuesto del mes. */
   var MOOD = { feliz: 'contento', tranquilo: 'tranquilo', pensativo: 'pensativo' };
   var MOOD_IC = { feliz: 'sentiment_very_satisfied', tranquilo: 'sentiment_satisfied', pensativo: 'sentiment_neutral' };
@@ -608,11 +608,6 @@
     if (A) { x.go = A[0]; x.gol = T(A[1]); }
     return x;
   }
-  function ukuMsg(a) {
-    if (a.k === 'feliz') return T('¡Todo clasificado! Así da gusto ayudarte.');
-    if (a.k === 'tranquilo') return T(a.n === 1 ? 'Tengo 1 consumo nuevo para ti. ¿Lo vemos?' : 'Tengo {n} consumos nuevos para ti. ¿Los vemos?', { n: a.n });
-    return T(a.n === 1 ? 'Tienes 1 consumo sin clasificar, de hace {d} días. ¿Lo ordenamos?' : 'Tienes {n} consumos sin clasificar, algunos de hace {d} días. ¿Los ordenamos?', { n: a.n, d: a.dias });
-  }
   /* ---------- Uku, tu asesor ----------
      Una sola lista de lo que Uku descubre y te propone, ordenada por lo que
      más importa ahora. Cada consejo dice qué notó, por qué importa y trae su
@@ -691,8 +686,8 @@
       di: T('Este mes vas un poco por encima de tu presupuesto. Revisemos juntos en qué grupo se fue y lo ajustamos.'), act: 'budgets', actl: T('Revisar presupuesto') });
     // 5. Ahorro (con presupuesto): tu cuenta llega casi en cero; separar algo apenas cobras
     if ((hayPres() && col < 1) || hecho('ahorro')) out.push({ id: 'ahorro', p: 60, icon: 'savings', tag: T('Ahorro'), kind: 'info', t: T('Tu cuenta llega casi a cero cada mes'), sub: T('Para tu primer colchón'),
-      s: T('Si separas {q} cada mes, apenas cobras, en 6 meses tienes {t} para un imprevisto. Y su campo empieza a florecer.', { q: money0(q), t: money0(q * 6) }),
-      di: por({ jubilado: 'Si separas {q} cada mes apenas cobras tu pensión, en 6 meses tendrás {t} para un imprevisto. ¡Y mi campo empezará a florecer!' }, 'Tu cuenta llega casi a cero cada mes. Si separas {q} apenas cobras, en 6 meses tendrás {t} para un imprevisto. ¡Y mi campo empezará a florecer!', { q: money0(q), t: money0(q * 6) }),
+      s: T('Si separas {q} cada mes, apenas cobras, en 6 meses tienes {t} para un imprevisto. Y sus canteros empiezan a florecer.', { q: money0(q), t: money0(q * 6) }),
+      di: por({ jubilado: 'Si separas {q} cada mes apenas cobras tu pensión, en 6 meses tendrás {t} para un imprevisto. ¡Y mis canteros empezarán a florecer!' }, 'Tu cuenta llega casi a cero cada mes. Si separas {q} apenas cobras, en 6 meses tendrás {t} para un imprevisto. ¡Y mis canteros empezarán a florecer!', { q: money0(q), t: money0(q * 6) }),
       act: 'ahorro', actl: T('Separar {q} al mes', { q: money0(q) }), ok: T('Listo: cada mes se separan {q} a tu ahorro, apenas cobras.', { q: money0(q) }),
       conf: { para: T('Tu cuenta de ahorro'), monto: q, cuando: T('Cada mes, apenas cobras') } });
     // 6. Mesadas y pagos repetidos
@@ -740,7 +735,7 @@
       { ic: MOOD_IC[a.k], l: T('Tus gastos por ordenar'), v: a.n ? T('{n} sin clasificar', { n: a.n }) : T('Todo en orden'), cls: a.k,
         d: a.n ? T(a.n === 1 ? 'Tienes 1 consumo sin clasificar. Cuando lo ordenes, vuelvo a estar contento.' : 'Tienes {n} consumos sin clasificar. Cuando los ordenes, vuelvo a estar contento.', { n: a.n }) : T('Tus gastos están clasificados. Por eso me ves contento.') },
       { ic: 'local_florist', l: T('Tu ahorro'), v: c >= 1 ? T(Math.floor(c) === 1 ? 'Te alcanza 1 mes' : 'Te alcanza {n} meses', { n: Math.floor(c) }) : T('Menos de 1 mes'), cls: c >= 3 ? 'ok' : c >= 1 ? 'warn' : 'over',
-        d: c >= 3 ? T('Lo que tienes cubre {n} meses de gastos. Por eso el campo está lleno de flores.', { n: Math.floor(c) }) : c >= 1 ? T(Math.floor(c) === 1 ? 'Lo que tienes cubre 1 mes de gastos. Las flores crecen cuando llega a 3 meses.' : 'Lo que tienes cubre {n} meses de gastos. Las flores crecen cuando llega a 3 meses.', { n: Math.floor(c) }) : T('Con ahorro, el campo se llena de flores. Con un primer colchón empiezan a salir.') },
+        d: c >= 3 ? T('Lo que tienes cubre {n} meses de gastos. Por eso tus canteros están llenos de flores.', { n: Math.floor(c) }) : c >= 1 ? T(Math.floor(c) === 1 ? 'Lo que tienes cubre 1 mes de gastos. Las flores crecen cuando llega a 3 meses.' : 'Lo que tienes cubre {n} meses de gastos. Las flores crecen cuando llega a 3 meses.', { n: Math.floor(c) }) : T('Con ahorro, el campo se llena de flores. Con un primer colchón empiezan a salir.') },
       // Tu historia: un árbol por cada mes con movimientos; los frondosos, meses en que te sobró dinero
       F.nuevo ? { ic: 'potted_plant', l: T('Tu historia'), v: T('Recién empieza'), cls: 'ok', d: T('Todavía no hay árboles: tu historia recién empieza. Por ahora solo ves brotes; con tus primeros movimientos crece el bosque.') }
         : { ic: 'park', l: T('Tu historia'), v: T(H.length === 1 ? '1 mes' : '{n} meses', { n: H.length }), cls: H[0] && !H[0].ok ? 'warn' : 'ok',
@@ -1202,9 +1197,9 @@
       (L.length ? L.slice(0, 6).map(txHTML).join('') : '<p class="pf-note">' + T('Este día no gastaste nada.') + '</p>') + '</div>';
   }
   function gastosHTML() {
-    var P = per(), s = P.o, pr = pres(), mb = P.m && hayPres() ? pr : null, app = document.documentElement.classList.contains('app-uku');
+    var P = per(), s = P.o, pr = pres(), mb = P.m && hayPres() ? pr : null;
     // En el asistente, arriba va el hallazgo de Uku sobre el periodo (wireframe «Mis gastos»): una frase con lo que cambió
-    var H = app ? hallazgos(P.m || curMes()).filter(function (x) { return x.t && x.icon !== 'hourglass_top'; })[0] : null;
+    var H = hallazgos(P.m || curMes()).filter(function (x) { return x.t && x.icon !== 'hourglass_top'; })[0];
     var insight = H ? '<div class="pfm-insight"><span class="pfm-insight__ic"><span class="material-symbols-rounded" aria-hidden="true">lightbulb</span></span><p><b>' + H.t + '.</b>' + (H.s ? ' ' + H.s : '') + '</p></div>' : '';
     // El periodo queda fijo arriba: todo lo de abajo (gráfica, destacado, grupos) cambia con él
     var html = insight + '<div class="pfm-per"><section class="pf-sec pfm-flow"><div class="pf-sec__head"><h2>' + T('Cuánto gastaste') + '</h2><button class="section__link" data-pfm="alltx">' + T('Movimientos') + '</button></div></section>' +
@@ -1222,7 +1217,7 @@
           (pu > 1 ? T('{m} más de tu presupuesto', { m: money0(pj - mb.general) }) : T('te sobrarían {m}', { m: money0(mb.general - pj) })) + '</p></div>';
     } else if (P.m && !hayPres() && rows().length) {
       // Sin presupuesto solo se ve lo gastado, sin comparar; Uku propone armarlo
-      html += '<p class="pfm-budget__t pfm-budget__t--sin"><span>' + T('Todavía no tienes presupuesto') + '</span><button class="section__link" data-pfm="pres">' + T('Armar mi presupuesto') + '</button></p>';
+      html += '<p class="pfm-budget__t pfm-budget__t--sin"><span>' + T('Sin presupuesto todavía') + '</span><button class="section__link" data-pfm="pres">' + T('Armar mi presupuesto') + '</button></p>';
     }
     html += '</section>';
     // En qué grupos se fue, en el mismo periodo
@@ -1273,11 +1268,6 @@
       '<span class="pfm-pill is-' + c.k + '">' + T(PILL[c.k]) + (c.cat && c.k !== 'no' ? ' · ' + esc(grupo(c.cat) === 'Sin clasificar' ? c.cat : T(grupo(c.cat))) : '') + '</span></span>' +
       '<span class="pf-tx__amt' + (inc ? ' is-in' : '') + '">' + (inc ? '+' : '−') + money(Math.abs(r.m)) + '</span></button>';
   }
-  function footHTML() {
-    return '<section class="pf-sec pfm-foot"><p class="pf-note pfm-scope"><span class="material-symbols-rounded">visibility</span><span>' +
-      (tobe() ? T('Uku ve Pichibank, Deuna y las tarjetas de otros bancos que conectaste. El efectivo no lo ve.') : T('Solo vemos lo que pasa por Pichibank y Deuna. El efectivo y las tarjetas de otros bancos no aparecen.')) +
-      '</span></p><p class="pf-note">' + T('Datos ficticios de la Base de datos PFM, hasta el {f}.', { f: dshort(HOY) + ' ' + HOY.slice(0, 4) }) + '</p></section>';
-  }
 
   function paint() {
     if (!pf) return;
@@ -1286,7 +1276,7 @@
     // Primero la salud financiera (Uku) y un resumen de gastos; al tocarlo, el detalle
     var body = vistaGastos === 'gastos'
       ? '<button class="pf-back" data-pfm="inicio"><span class="material-symbols-rounded" aria-hidden="true">chevron_left</span>' + T('Mis finanzas') + '</button>' + gastosHTML() + dineroHTML()
-      : (document.documentElement.classList.contains('app-uku') ? hubHTML() : resumenGastosHTML() + footHTML());
+      : hubHTML();
     scroll.innerHTML = '<header class="pf-head"><h1>' + (vistaGastos === 'gastos' ? T('Mis gastos') : 'Mis finanzas') + '</h1></header>' + body;
     window.scrollTo({ top: vistaGastos ? 0 : keep });
   }
@@ -1561,73 +1551,23 @@
   function onClick(e) { var b = e.target.closest('[data-pfm]'); if (b) key(b.dataset.pfm); }
   // Resumen de gastos del mes en el inicio: un toque lleva a gastos y sus gráficas
   var vistaGastos = null;
-  // En el asistente, lo que puedes hacer desde Mis finanzas, a un toque
-  function navHTML() {
-    var a = animo(), pr = pres();
-    var row = function (k, t, s) { return '<button class="pfm-nav__row" data-pfm="' + k + '"><span><b>' + t + '</b>' + (s ? '<small>' + s + '</small>' : '') + '</span><span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></button>'; };
-    var tile = function (k, ic, t, s) { return '<button class="pfm-tile" data-pfm="' + k + '"><span class="material-symbols-rounded" aria-hidden="true">' + ic + '</span><b>' + t + '</b><small>' + s + '</small></button>'; };
-    return '<section class="pf-sec pfm-nav">' +
-      '<div class="pfm-tiles">' + tile('gastos', 'bar_chart', T('Gastos'), T('Por semana, mes o año')) + tile('pres', 'speed', T('Presupuesto'), pr.general ? T('{m} al mes', { m: money0(pr.general) }) : T('Todavía no tienes uno')) + '</div>' +
-      row('alltx', T('Movimientos'), T('Todo lo que entró y salió')) +
-      (a.n ? row('game', T('Ordenar mis gastos'), T(a.n === 1 ? '1 consumo sin clasificar' : '{n} consumos sin clasificar', { n: a.n })) : '') +
-      row('who', T('El mundo de Uku'), T('Qué significa cada cosa')) +
-      '</section>';
-  }
   /* La hoja de Mis finanzas en el asistente (el mundo de Uku va arriba): una cifra, una línea de estado,
      dos acciones y dos filas. Nada más en el primer pantallazo; los gráficos viven en Gastos. */
   function hubHTML() {
     var m = curMes(), s = month(m), g = s.gast, hay = hayPres(), p = hay ? pres().general : 0, pat = patrimonio(), vacio = !(DB.mov[ST.u] || []).length;
     var pe = hay ? presEstado(m) : null, u = hay && p ? Math.min(1, g / p) : 0, cls = !hay ? '' : pe.k === 'ok' ? 'is-ok' : 'is-warn';
-    // Con presupuesto: la barra y lo que te queda. Sin presupuesto: solo lo gastado, sin comparar, y Uku propone armarlo.
+    // Con presupuesto: la barra y lo que te queda. Sin presupuesto: solo lo gastado, sin comparar (armarlo lo propone Uku arriba).
     var pie = hay ? '<div class="pfm-hub__bar" aria-hidden="true"><i class="' + cls + '" style="width:' + (u * 100).toFixed(1) + '%"></i></div><p class="pfm-hub__s">' + (g > p ? T('Vas {m} por encima de tu presupuesto', { m: money(g - p) }) : T('Te queda de tu presupuesto: {m}', { m: money(p - g) })) + '</p>'
-      : vacio ? '<p class="pfm-hub__s">' + T('Cuando uses tu cuenta, aquí verás en qué se va tu dinero.') + '</p>'
-      : '<p class="pfm-hub__s pfm-hub__s--pres"><span>' + T('Todavía no tienes presupuesto') + '</span><button class="section__link" data-pfm="pres">' + T('Armar mi presupuesto') + '</button></p>';
-    // Una sección fija (sin scroll ni asa): el gasto del mes (abre Mis gastos), lo que Uku recomienda y tu dinero en el banco
-    return '<section class="pf-sec pfm-hub">' +
+      : vacio ? '<p class="pfm-hub__s">' + T('Cuando uses tu cuenta, aquí verás en qué se va tu dinero.') + '</p>' : '';
+    // Una sección fija (sin scroll ni asa), como el wireframe: la sugerencia de Uku (una sola, la llena el asistente),
+    // el gasto del mes (abre Mis gastos) y tu dinero en el banco (abre su hoja)
+    return '<section class="pf-sec pfm-hub"><div class="pfm-hub__slot"></div>' +
       '<div class="pfm-hub__card pfm-hub__hero" role="button" tabindex="0" data-pfm="gastos"><h3 class="pfm-hub__h">' + T('Gastaste en {mes}', { mes: mesName(m).toLowerCase() }) + '</h3>' +
       '<b class="pfm-hub__m" data-v="' + g + '">' + money(g) + '</b>' + pie + '</div>' +
-      '<div class="pfm-hub__list"><div class="pfm-hub__slot"></div>' +
-      '<button class="pfm-hub__dinero" data-pfm="dinero"><span class="material-symbols-rounded pfm-hub__act-ic" aria-hidden="true">account_balance_wallet</span><span class="pfm-hub__act-t"><b>' + T('Mi dinero en Pichibank') + '</b>' +
-      '<small>' + T('Tienes {a} · Debes {d}', { a: money(pat.tienes), d: money(pat.debes) }) + '</small></span><span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></button></div>' +
+      '<div class="pfm-hub__card pfm-hub__dinero" role="button" tabindex="0" data-pfm="dinero"><h3 class="pfm-hub__h">' + T('Mi dinero en Pichibank') + '</h3>' +
+        '<div class="pfm-hub__cols"><p><small>' + T('Dinero en mis cuentas e inversiones') + '</small><b>' + money(pat.tienes) + '</b></p>' +
+        '<p><small>' + T('Deuda total acumulada') + '</small><b>' + money(pat.debes) + '</b></p></div></div>' +
       '</section>';
-  }
-  function hubSec(t, sub, k, l, rows) { return '<div class="pfm-hub__label"><div><h3>' + t + '</h3>' + (sub ? '<p>' + sub + '</p>' : '') + '</div>' + (k ? '<button class="pfm-hub__link" data-pfm="' + k + '">' + l + '</button>' : '') + '</div><div class="pfm-hub__card">' + rows.join('') + '</div>'; }
-  function hubRow(k, icon, t, sm, right, extra) { return '<button class="pfm-hub__row" data-pfm="' + k + '"><span class="pfm-hub__ic"><span class="material-symbols-rounded" aria-hidden="true">' + icon + '</span></span><span class="pfm-hub__pl"><b>' + t + '</b>' + (sm ? '<small>' + sm + '</small>' : '') + (extra || '') + '</span>' + right + '</button>'; }
-  // Tus gastos por grupo: los tres que más pesan este mes, con su barra proporcional
-  function hubGruposHTML(s, m) {
-    var G = Object.keys(s.grupos || {}).filter(function (k) { return GRUPOS[k] && !GRUPOS[k].gris && s.grupos[k] > 0; })
-      .sort(function (x, y) { return s.grupos[y] - s.grupos[x]; }).slice(0, 3);
-    if (!G.length) return '';
-    var max = s.grupos[G[0]];
-    return hubSec(T('Gastos por grupo'), T('Lo que más pesa en {mes}', { mes: mesName(m).toLowerCase() }), 'gastos', T('Ver todo'), G.map(function (k) {
-      return hubRow('gastos', GRUPOS[k].ic, esc(T(k)), null, '<em>' + money0(s.grupos[k]) + '</em>', '<i class="pfm-hub__gbar" aria-hidden="true"><u style="width:' + (s.grupos[k] / max * 100).toFixed(0) + '%"></u></i>');
-    }));
-  }
-  // Pagos que vienen en los próximos quince días
-  function hubPagosHTML() {
-    var fs = facturas().filter(function (x) { return diasA(x.f) >= 0 && diasA(x.f) <= 15; }).sort(function (x, y) { return x.f.localeCompare(y.f); }).slice(0, 3);
-    if (!fs.length) return '';
-    return hubSec(T('Pagos que vienen'), T('En los próximos 15 días'), 'bills', T('Ver todos'), fs.map(function (x) {
-      return hubRow('bills', x.ic, esc(x.n), cuandoTxt(x.f) + (x.aprox ? ' · ' + T('aproximado') : ''), '<em>' + money0(x.monto) + '</em>');
-    }));
-  }
-  // Los últimos tres movimientos, con acceso al detalle
-  function hubUltimosHTML() {
-    var R = rows().slice().sort(function (x, y) { return y.f.localeCompare(x.f) || y.i - x.i; }).slice(0, 3);
-    if (!R.length) return '';
-    return hubSec(T('Últimos movimientos'), null, 'alltx', T('Ver todos'), R.map(function (r) {
-      var c = cls(r), icon = (c.cat && CAT[c.cat]) || (r.m > 0 ? 'south_west' : 'receipt_long');
-      return hubRow('tx:' + r.i, icon, esc(desc(r)), dshort(r.f) + (c.cat ? ' · ' + esc(T(c.cat)) : ''), '<em' + (r.m > 0 ? ' class="is-in"' : '') + '>' + (r.m > 0 ? '+' : '−') + money0(Math.abs(r.m)) + '</em>');
-    }));
-  }
-  function resumenGastosHTML() {
-    var s = month(curMes()), pr = pres(), g = s.gast, p = pr.general;
-    var t = !p ? '' : g > p ? T('Excediste tu presupuesto por {m}', { m: money0(g - p) }) : T('Te quedan {m} de {p}', { m: money0(p - g), p: money0(p) });
-    return '<section class="pf-sec pfm-resumen"><button class="pfm-resumen__card" data-pfm="gastos">' +
-      '<span class="pfm-resumen__t">' + T('Gastaste este mes') + '</span>' +
-      '<b class="pfm-resumen__m">' + money0(g) + '</b>' +
-      (t ? '<span class="pfm-resumen__s">' + t + '</span>' : '') +
-      '<span class="pfm-resumen__go">' + T('Ver en qué gastaste') + '<span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></span></button></section>';
   }
   function refresh() { cache = {}; fijoCache = {}; paint(); document.dispatchEvent(new Event('pfm:change')); }
   function key(k) {
@@ -1663,6 +1603,9 @@
       case 'hecho': { if (/^ahorro/.test(p.slice(1).join(':'))) document.dispatchEvent(new CustomEvent('uku:ahorro')); var hid = p.slice(1).join(':'), hx = consejo(hid); setHecho(hid, HOY); closeSheet(); fx('success'); refresh(); return toast(hx && hx.ok ? hx.ok : T('Listo.'), 'deshacer:' + hid); }
       case 'deshacer': { var did = p.slice(1).join(':'); setHecho(did, null); if (did === 'pres' && ST.presG) { delete ST.presG[ST.u]; persist(); } fx('tap'); refresh(); if (sheetOpen()) insightsSheet(); return; }
       case 'luego': { var lid = p.slice(1).join(':'); ((ST.oculto || (ST.oculto = {}))[ST.u] = ST.oculto[ST.u] || {})[lid] = HOY; persist(); fx('tap'); refresh(); if (sheetOpen()) insightsSheet(); return toast(T('Lo dejo para después.'), 'verluego'); }
+      // Desde el globo de Uku: ocultar una sugerencia sin abrir hojas, con «Deshacer» en el aviso
+      case 'ocultar': { var oid = p.slice(1).join(':'); ((ST.oculto || (ST.oculto = {}))[ST.u] = ST.oculto[ST.u] || {})[oid] = HOY; persist(); fx('tap'); refresh(); return toast(T('Listo, ya no te la muestro.'), 'desocultar:' + oid); }
+      case 'desocultar': { var did2 = p.slice(1).join(':'); if (ST.oculto && ST.oculto[ST.u]) delete ST.oculto[ST.u][did2]; persist(); fx('tap'); return refresh(); }
       case 'verluego': { if (ST.oculto) delete ST.oculto[ST.u]; persist(); refresh(); return insightsSheet(); }
       case 'mesada': return mesadaSheet(p.slice(1).join(':'));
       case 'mesa': {

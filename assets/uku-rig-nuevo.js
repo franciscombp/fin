@@ -216,7 +216,7 @@ export function ukuFrom(gltf, { onLog = () => {} } = {}) {
   return { root, body, box, skinned, bones, nodes, clips: Object.keys(GESTOS), playClip, update, face, gest, report, B: n => bones[key(n)], N: n => nodes[key(n)] };
 }
 
-/* Visor independiente (uku-rig.html): cámara, luz, suelo y Uku con el gesto que se pida. */
+/* Visor independiente (sandbox/rig.html): cámara, luz, suelo y Uku con el gesto que se pida. */
 export async function loadUkuRig(container, { onLog = console.log, frame = { dist: 3.4, y: .5 } } = {}) {
   const u = ukuFrom(await loadUkuGltf(), { onLog });
   const scene = new THREE.Scene();
