@@ -124,7 +124,8 @@
   /* ---------- Luz con giroscopio (o el dedo/mouse sin sensores) ----------
      --uv-x/--uv-y (-1..1) mueven el reflejo y la tinta UV; --uv-luz (0..1) es
      cuánto se inclina la tarjeta: a más ángulo, más luz. Van en cada .tj-arte. */
-  var tx = 0, ty = 0, cx = 0, cy = 0, base = null, vivo = false, corre = false;
+  // gx/gy: inclinación (giroscopio, dedo o mouse). sy: lo que suma el scroll de la pantalla
+  var gx = 0, gy = 0, sy = 0, tx = 0, ty = 0, cx = 0, cy = 0, base = null, vivo = false, corre = false;
   function cuadro() {
     cx += (tx - cx) * 0.12; cy += (ty - cy) * 0.12;
     var luz = Math.min(1, Math.hypot(cx, cy) * 1.2);
@@ -135,10 +136,21 @@
     });
     if (Math.abs(tx - cx) + Math.abs(ty - cy) > 0.002) requestAnimationFrame(cuadro); else corre = false;
   }
-  function mover(x, y) {
-    tx = Math.max(-1, Math.min(1, x)); ty = Math.max(-1, Math.min(1, y));
+  var tope = function (v) { return Math.max(-1, Math.min(1, v)); };
+  function aplicar() {
+    tx = tope(gx); ty = tope(gy + sy);
     if (!corre && document.querySelector('.tj-arte')) { corre = true; requestAnimationFrame(cuadro); }
   }
+  function mover(x, y) { gx = tope(x); gy = tope(y); aplicar(); }
+  // Scroll: al deslizar la pantalla de la tarjeta, la luz la recorre (como si la tarjeta pasara
+  // bajo una lámpara). 160 px de scroll llevan la luz de un borde al otro; el rebote de iOS
+  // (scroll negativo) la mueve al revés.
+  document.addEventListener('scroll', function (e) {
+    var el = e.target;
+    if (!el || !el.querySelector || !el.querySelector('.tj-arte')) return;
+    sy = tope(-el.scrollTop / 160);
+    aplicar();
+  }, true);
   // gamma: izquierda/derecha. beta: adelante/atrás respecto de la postura en que se sostiene el
   // teléfono (la primera lectura, que sigue muy despacio a la postura para no "apagar" la luz)
   function orientacion(e) {
