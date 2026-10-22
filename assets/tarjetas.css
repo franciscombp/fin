@@ -29,7 +29,10 @@
    la tinta, recortada con la máscara UV, es más intensa. Las bandas van casi
    horizontales: inclinar el teléfono hacia adelante o atrás (lo más común) las
    sube y baja por la tarjeta; de lado, giran un poco. --uv-luz (el ángulo) sube
-   la luminosidad: en reposo casi no se ve. */
+   la luminosidad: en reposo casi no se ve.
+   Las posiciones de los degradados quedan siempre entre 0% y 100% (50% ± 50%): si
+   se salen, el degradado deja de cubrir la tarjeta y su borde se ve como una línea
+   dura (pasaba al inclinar al tope con el teléfono un poco ladeado). */
 .tuv { position: relative; aspect-ratio: 504 / 325; isolation: isolate; }
 .tuv--black { aspect-ratio: 328 / 200; }
 .tuv > span { position: absolute; inset: 0; background-repeat: no-repeat; background-size: 100% 100%; }
@@ -39,7 +42,7 @@
   background-image: linear-gradient(calc(172deg + var(--uv-x) * 22deg),
     rgb(255 255 255 / 0) 34%, rgb(255 255 255 / .75) 50%, rgb(255 255 255 / 0) 66%) !important;
   background-size: 160% 320% !important;
-  background-position: calc(50% + var(--uv-x) * 30%) calc(50% + var(--uv-y) * 90%) !important;
+  background-position: calc(50% + var(--uv-x) * 30%) calc(50% + var(--uv-y) * 50%) !important;
   opacity: calc(.25 + var(--uv-luz) * .6);
 }
 .tuv--siembra .tuv__formas { background-image: url('tarjetas/visa-credito/uv.svg'); }
@@ -58,7 +61,7 @@
     rgb(255 255 255 / 0) 18%, rgb(255 255 255 / .95) 40%, rgb(255 255 255 / 0) 56%,
     rgb(176 178 190 / .45) 74%, rgb(255 255 255 / 0) 90%) !important;
   background-size: 160% 300% !important;
-  background-position: calc(50% + var(--uv-x) * 30%) calc(50% + var(--uv-y) * 90%) !important;
+  background-position: calc(50% + var(--uv-x) * 30%) calc(50% + var(--uv-y) * 50%) !important;
   opacity: calc(.15 + var(--uv-luz) * .75);
 }
 .tuv__luz {
@@ -82,7 +85,7 @@
     radial-gradient(ellipse 70% 80% at calc(50% - var(--uv-x) * 60%) calc(40% - var(--uv-y) * 75%), rgb(255 255 255 / .9), rgb(255 255 255 / 0) 62%),
     linear-gradient(calc(170deg + var(--uv-x) * 22deg), rgb(255 255 255 / 0) 36%, rgb(255 255 255 / .7) 50%, rgb(255 255 255 / 0) 64%);
   background-size: 100% 100%, 160% 320%;
-  background-position: 0 0, calc(50% + var(--uv-x) * 30%) calc(50% + var(--uv-y) * 90%);
+  background-position: 0 0, calc(50% + var(--uv-x) * 30%) calc(50% + var(--uv-y) * 50%);
   mix-blend-mode: screen; opacity: calc(var(--uv-luz) * .5);
 }
 
