@@ -5,7 +5,7 @@
    - Crédito Black Miles: arte negro y la página en modo oscuro (tokens
      oscuros del DS solo en esta pantalla, con data-theme="dark").
    - Crédito Visa: tarjeta en capas (fondo, formas UV y logos). La tinta
-     UV responde al giroscopio: su brillo y su degradado cambian con la
+     UV es solo luz: su brillo recorre las formas y sube con la
      inclinación del teléfono; sin sensores, sigue al dedo o al mouse.
    Las filas del hub Tarjetas (productos.js) llevan data-tarjeta con el
    tipo, y abren este detalle.

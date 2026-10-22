@@ -266,7 +266,7 @@ Cómo queda:
   alias (`componentes.css`, `componentes-tokens.css`, el `:root` de `index.html`) se declaran también en
   `[data-theme]`: un alias calculado en `:root` llega ya resuelto (claro) a los hijos.
 - **Tinta UV en vez del barrido de luz:** la Visa Crédito son capas `fondo.svg` (degradado),
-  `uv.svg` (formas), la tinta (degradado iridiscente recortado con la máscara `uv.svg`), un punto de luz
+  `uv.svg` (formas), la tinta (un brillo neutro, sin color, recortado con la máscara `uv.svg`), un punto de luz
   y `logos.svg`. El giroscopio (o el dedo/mouse sin sensores) mueve el degradado y la luz
   (`--uv-x`, `--uv-y`) y la inclinación sube su luminosidad (`--uv-luz`): en reposo casi no se ve.
   El barrido genérico anterior quedó en `respaldo/estilos-sin-uso/index.html.css`.
