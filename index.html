@@ -2272,7 +2272,7 @@
         html body.sin-red #btn-login-other { display: none !important; }
         .cta-dashed[hidden] { display: none !important; }
         html body.sin-red .quick-action[data-online-only]:disabled { opacity: .4; }
-        #login-offline[hidden] { display: none; }
+        #login-offline[hidden] { display: none !important; }
         .login-screen.active {
             display: flex;
         }
@@ -3245,11 +3245,6 @@
                 <button class="login-button login-button--tertiary" id="btn-login-other">
                     Otro método de ingreso
                 </button>
-                <!-- Emergencias: bloquear sin ingresar (assets/seguridad.js) -->
-                <button class="login-sos" id="btn-seguridad" type="button">
-                    <span class="material-symbols-rounded" aria-hidden="true">emergency_home</span>
-                    Seguridad y emergencias
-                </button>
                 <p class="login-ultimo" id="login-ultimo" hidden></p>
             </div>
         </div>
@@ -3944,13 +3939,6 @@
                     </button>
                 </div>
 
-                <div class="bp-tips-security" style="margin-bottom: 12px;" role="note">
-                    <div class="bp-tips-security__content">
-                        <p class="bp-tips-security__title">Nunca compartas tus claves</p>
-                        <p class="bp-tips-security__body">Pichibank no te pide claves ni códigos por llamada, SMS o correo. Si alguien lo hace, repórtalo desde Seguridad.</p>
-                    </div>
-                    <div class="bp-tips-security__art" aria-hidden="true"><span class="material-symbols-rounded">shield_locked</span></div>
-                </div>
                 <div class="card">
                     <button class="list-item" data-action="Datos personales">
                         <span class="avatar-cat"><span class="material-symbols-rounded">person</span></span>
