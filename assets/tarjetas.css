@@ -12,7 +12,7 @@
 
 /* La tarjeta */
 .cd-card { border-radius: var(--bp-semantic-radius-md); box-shadow: 0 1px 2px rgb(0 0 0 / .06); }
-.tj-arte { position: relative; line-height: 0; border-radius: var(--bp-semantic-radius-md); overflow: hidden; background: var(--bp-theme-color-surface-container-default); }
+.tj-arte { --uv-x: 0; --uv-y: 0; --uv-luz: 0; position: relative; line-height: 0; border-radius: var(--bp-semantic-radius-md); overflow: hidden; background: var(--bp-theme-color-surface-container-default); }
 .tj-arte__img { display: block; width: 100%; height: auto; -webkit-user-drag: none; }
 .tj-arte__estado {
   position: absolute; top: 5%; right: 3.5%; display: inline-flex; align-items: center; gap: 4px;
@@ -22,39 +22,79 @@
 }
 .tj-arte__estado .material-symbols-rounded { font-size: 16px; font-variation-settings: 'FILL' 1; }
 .tj-arte__num { position: absolute; left: 5%; bottom: 9%; font: var(--sol-body-md-medium); letter-spacing: 1px; line-height: 1; color: #fff; text-shadow: 0 1px 2px rgb(0 0 0 / .3); }
-.tj-arte--visa .tj-arte__num { color: var(--bp-base-color-blue-900, #0f265c); text-shadow: none; }
+.tj-arte--siembra .tj-arte__num { color: var(--bp-base-color-blue-500, #0f265c); text-shadow: none; }
 
-/* ---------- Visa Crédito: capas fondo · formas UV · tinta · luz · logos ----------
-   La tinta es un brillo neutro (sin color) recortado con la máscara UV: el
-   giroscopio (o el dedo) mueve el degradado y un punto de luz, y la
-   inclinación (--uv-luz) sube su luminosidad. En reposo casi no se ve. */
-.tuv { --uv-x: 0; --uv-y: 0; --uv-luz: 0; position: relative; aspect-ratio: 504 / 325; isolation: isolate; }
+/* ---------- Siembra: capas fondo · brillo · formas UV · tinta · luz · logos ----------
+   Todo es luz sin color. El brillo recorre el fondo (se ve aunque la tinta no);
+   la tinta, recortada con la máscara UV, es más intensa. Las bandas van casi
+   horizontales: inclinar el teléfono hacia adelante o atrás (lo más común) las
+   sube y baja por la tarjeta; de lado, giran un poco. --uv-luz (el ángulo) sube
+   la luminosidad: en reposo casi no se ve. */
+.tuv { position: relative; aspect-ratio: 504 / 325; isolation: isolate; }
 .tuv > span { position: absolute; inset: 0; background-repeat: no-repeat; background-size: 100% 100%; }
 .tuv__fondo { background-image: url('tarjetas/visa-credito/fondo.svg'); }
+.tuv__brillo {
+  background-image: linear-gradient(calc(172deg + var(--uv-x) * 22deg),
+    rgb(255 255 255 / 0) 34%, rgb(255 255 255 / .75) 50%, rgb(255 255 255 / 0) 66%) !important;
+  background-size: 160% 320% !important;
+  background-position: calc(50% + var(--uv-x) * 30%) calc(50% + var(--uv-y) * 90%) !important;
+  opacity: calc(.25 + var(--uv-luz) * .6);
+}
 .tuv__formas { background-image: url('tarjetas/visa-credito/uv.svg'); }
 .tuv__tinta, .tuv__luz {
   -webkit-mask: url('tarjetas/visa-credito/uv.svg') center / 100% 100% no-repeat;
   mask: url('tarjetas/visa-credito/uv.svg') center / 100% 100% no-repeat;
 }
 .tuv__tinta {
-  /* Solo luz, sin color: una banda clara y una sombra plata que recorren las formas */
-  background-image: linear-gradient(calc(115deg + var(--uv-x) * 40deg),
-    rgb(255 255 255 / 0) 18%, rgb(255 255 255 / .95) 42%, rgb(255 255 255 / 0) 58%,
-    rgb(176 178 190 / .45) 76%, rgb(255 255 255 / 0) 92%);
-  background-size: 260% 260%;
-  background-position: calc(50% + var(--uv-x) * 50%) calc(50% + var(--uv-y) * 50%);
+  /* Una banda clara y una sombra plata que recorren las formas */
+  background-image: linear-gradient(calc(168deg + var(--uv-x) * 25deg),
+    rgb(255 255 255 / 0) 18%, rgb(255 255 255 / .95) 40%, rgb(255 255 255 / 0) 56%,
+    rgb(176 178 190 / .45) 74%, rgb(255 255 255 / 0) 90%) !important;
+  background-size: 160% 300% !important;
+  background-position: calc(50% + var(--uv-x) * 30%) calc(50% + var(--uv-y) * 90%) !important;
   opacity: calc(.15 + var(--uv-luz) * .75);
 }
 .tuv__luz {
-  background-image: radial-gradient(circle at calc(50% - var(--uv-x) * 55%) calc(45% - var(--uv-y) * 55%), rgb(255 255 255 / .95), rgb(255 255 255 / 0) 42%);
+  background-image: radial-gradient(circle at calc(50% - var(--uv-x) * 55%) calc(45% - var(--uv-y) * 75%), rgb(255 255 255 / .95), rgb(255 255 255 / 0) 42%);
   mix-blend-mode: screen;
   opacity: calc(.25 + var(--uv-luz) * .75);
 }
 .tuv__logos { background-image: url('tarjetas/visa-credito/logos.svg'); }
-@media (prefers-reduced-motion: reduce) { .tuv { --uv-luz: .4 !important; } }
+@media (prefers-reduced-motion: reduce) { .tj-arte { --uv-luz: .4 !important; } }
+
+/* Reflejo de las tarjetas con imagen: el mismo brillo neutro (bandas casi horizontales
+   que suben y bajan al inclinar adelante/atrás) y un punto de luz */
+.tj-luz {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    radial-gradient(ellipse 70% 80% at calc(50% - var(--uv-x) * 60%) calc(40% - var(--uv-y) * 75%), rgb(255 255 255 / .9), rgb(255 255 255 / 0) 62%),
+    linear-gradient(calc(170deg + var(--uv-x) * 22deg), rgb(255 255 255 / 0) 36%, rgb(255 255 255 / .7) 50%, rgb(255 255 255 / 0) 64%);
+  background-size: 100% 100%, 160% 320%;
+  background-position: 0 0, calc(50% + var(--uv-x) * 30%) calc(50% + var(--uv-y) * 90%);
+  mix-blend-mode: screen; opacity: calc(var(--uv-luz) * .5);
+}
+
+/* Reverso: el color de cada tarjeta (amarillo de la débito, grafito de la Black, el
+   fondo plata de la Siembra) y el texto que contrasta con él */
+.cd-card { --dorso-bg: linear-gradient(150deg, #0f265c, #1a3a7d); --dorso-fg: #fff; }
+.cd-card[data-tarjeta="debito"] { --dorso-bg: linear-gradient(150deg, var(--bp-base-color-yellow-500, #ffdd00), #f2c900); --dorso-fg: var(--bp-base-color-blue-500, #0f265c); }
+.cd-card[data-tarjeta="black"] { --dorso-bg: linear-gradient(150deg, #2b2d33, #060606); --dorso-fg: #f5f5f7; }
+.cd-card[data-tarjeta="siembra"] { --dorso-bg: url('tarjetas/visa-credito/fondo.svg') center / 100% 100%; --dorso-fg: var(--bp-base-color-blue-500, #0f265c); }
+.cd-card .cd-face--back { background: var(--dorso-bg); color: var(--dorso-fg); }
+.cd-card .cd-verify { color: inherit; }
+.cd-card .cd-copy, .cd-card .cd-data__close { background: color-mix(in srgb, currentColor 14%, transparent); color: inherit; }
+.cd-card .cd-copy:active, .cd-card .cd-data__close:active { background: color-mix(in srgb, currentColor 26%, transparent); }
+
+/* Borde de contraste: una línea interior de 1 px para que la tarjeta no se pierda en el fondo
+   (oscura y tenue en las claras, clara y tenue en la Black) */
+.tj-arte::after, .card-thumb--img::after {
+  content: ''; position: absolute; inset: 0; z-index: 2; border-radius: inherit; pointer-events: none;
+  box-shadow: inset 0 0 0 1px rgb(15 38 92 / .14);
+}
+.tj-arte--black::after, [data-theme="dark"] .card-thumb--img::after { box-shadow: inset 0 0 0 1px rgb(255 255 255 / .16); }
 
 /* Miniatura en la fila del hub */
-.product-row .card-thumb--img { padding: 0; overflow: hidden; background: none; border: 0; }
+.product-row .card-thumb--img { position: relative; padding: 0; overflow: hidden; background: none; border: 0; }
 .card-thumb--img img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
 /* Contenido */

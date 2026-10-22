@@ -265,11 +265,16 @@ Cómo queda:
   #card-detail. Para que funcione en un solo elemento, los bloques de tokens de tema, de producto y los
   alias (`componentes.css`, `componentes-tokens.css`, el `:root` de `index.html`) se declaran también en
   `[data-theme]`: un alias calculado en `:root` llega ya resuelto (claro) a los hijos.
-- **Tinta UV en vez del barrido de luz:** la Visa Crédito son capas `fondo.svg` (degradado),
-  `uv.svg` (formas), la tinta (un brillo neutro, sin color, recortado con la máscara `uv.svg`), un punto de luz
-  y `logos.svg`. El giroscopio (o el dedo/mouse sin sensores) mueve el degradado y la luz
-  (`--uv-x`, `--uv-y`) y la inclinación sube su luminosidad (`--uv-luz`): en reposo casi no se ve.
-  El barrido genérico anterior quedó en `respaldo/estilos-sin-uso/index.html.css`.
+- **Crédito Siembra** es la Visa Pichibank blanca (Jorge, Luis y Andrés la tienen). El reverso de cada
+  tarjeta toma su color (amarillo, grafito, plata) y todas llevan un borde interior de 1 px de contraste.
+- **Luz con giroscopio en todas las tarjetas, sin color:** en la Siembra son capas `fondo.svg`, un brillo
+  sobre el fondo, `uv.svg` (formas), la tinta (brillo neutro recortado con la máscara `uv.svg`), un punto
+  de luz y `logos.svg`; en las de imagen, un reflejo encima. Las bandas van casi horizontales porque lo
+  común es inclinar el teléfono hacia adelante o atrás (beta, el eje más sensible): así suben y bajan.
+  `--uv-x`, `--uv-y` y `--uv-luz` (ángulo) van en cada `.tj-arte`. Sin sensores sigue al dedo o al mouse.
+- **iPhone:** el permiso de movimiento se renueva con `click`, no con `pointerdown` (iOS no cuenta el
+  pointerdown de un dedo como gesto y `requestPermission` fallaba en silencio). Si al abrir una tarjeta
+  no llegan lecturas, se muestra el aviso (una vez por visita).
 
 ### 5.4 Orquestador de Uku (acuerdo del 21 de octubre)
 

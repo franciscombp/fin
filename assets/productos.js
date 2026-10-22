@@ -127,8 +127,8 @@
         var mvp = function (d) { return String(d.en_mvp).indexOf('Sí') === 0; };
         // El nombre ya trae los últimos dígitos («Mastercard ···5520»): no se repiten debajo
         var fila3 = function (d) { return { nombre: d.producto, sub: d.institucion, masked: /···/.test(d.producto) ? '' : ultimos(d.producto), monto: money(d.saldo), label: 'Saldo a pagar', ic: 'credit_card', thumb: 'black' }; };
-        // Crédito Pichibank: Mastercard es la Black; Visa, la Visa Crédito
-        var credito = function (d) { var f = fila3(d); f.tarjeta = window.Tarjetas ? Tarjetas.tipo(d.producto) : ''; f.saldoNum = d.saldo; f.ultimos = (/(\d{4})\b/.exec(d.producto) || [])[1] || ''; return f; };
+        // Crédito Pichibank: Mastercard es la Black; Visa, la Siembra
+        var credito = function (d) { var f = fila3(d); f.tarjeta = window.Tarjetas ? Tarjetas.tipo(d.producto) : ''; f.saldoNum = d.saldo; f.ultimos = (/(\d{4})\b/.exec(d.producto) || [])[1] || ''; if (f.tarjeta) f.nombre = Tarjetas.nombre(f.tarjeta, f.ultimos, f.nombre); return f; };
         // En la tarjeta de otro banco va su marca, no la de Pichibank
         var marca = function (inst) { return String(inst || '').replace(/^Banco\s+/i, '').split(/\s+/).slice(0, 2).join(' ').toUpperCase(); };
         // Débito: la cuenta transaccional, con su titular y los últimos dígitos
