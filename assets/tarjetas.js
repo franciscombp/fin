@@ -1,0 +1,163 @@
+/* =====================================================================
+   Tarjetas Pichibank: arte, datos y contenido del detalle de tarjeta
+   (#card-detail en index.html).
+   - Débito Digital: arte Visa amarillo, acciones y suscripciones.
+   - Crédito Black Miles: arte negro y la página en modo oscuro (tokens
+     oscuros del DS solo en esta pantalla, con data-theme="dark").
+   - Crédito Visa: tarjeta en capas (fondo, formas UV y logos). La tinta
+     UV responde al giroscopio: su brillo y su degradado cambian con la
+     inclinación del teléfono; sin sensores, sigue al dedo o al mouse.
+   Las filas del hub Tarjetas (productos.js) llevan data-tarjeta con el
+   tipo, y abren este detalle.
+   ===================================================================== */
+(function () {
+  'use strict';
+
+  var esc = function (t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var money = function (v) { return '$ ' + Number(Math.abs(v || 0)).toLocaleString('es-EC', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+  var ms = function (i) { return '<span class="material-symbols-rounded" aria-hidden="true">' + i + '</span>'; };
+  var A = './assets/tarjetas/';
+
+  var TIPOS = {
+    debito: {
+      titulo: 'Débito Digital', img: A + 'debito-visa.webp', alt: 'Tarjeta de débito Visa',
+      numero: '4532 1234 5678 ', ultimos: '1234', vence: '08/29', cvv: '123', ajustes: true,
+      acciones: [['visibility', 'Ver datos', 'ver'], ['lock', 'Bloquear', 'Tarjeta bloqueada'], ['speed', 'Límites', 'Límites'], ['more_horiz', 'Más', 'Más opciones']]
+    },
+    black: {
+      titulo: 'Crédito Black Miles', img: A + 'credito-black.webp', alt: 'Tarjeta de crédito Mastercard Black', oscuro: true, credito: true,
+      numero: '5221 4471 8823 ', ultimos: '5432', vence: '11/28', cvv: '456', cupo: 40000, ir: 'Cupos de tu Black Miles',
+      acciones: [['redeem', 'Millas', 'Millas'], ['request_quote', 'Avances', 'Avances'], ['call_split', 'Diferir', 'Diferir consumos'], ['more_horiz', 'Más', 'Más opciones']]
+    },
+    visa: {
+      titulo: 'Crédito Visa', uv: true, alt: 'Tarjeta de crédito Visa', credito: true,
+      numero: '4915 0627 3310 ', ultimos: '4409', vence: '03/30', cvv: '812', cupo: 8000, ir: 'Próximo estado de cuenta',
+      acciones: [['stars', 'Puntos', 'Puntos'], ['request_quote', 'Avances', 'Avances'], ['call_split', 'Diferir', 'Diferir consumos'], ['more_horiz', 'Más', 'Más opciones']]
+    }
+  };
+
+  // Suscripciones de la débito (logos con el color de cada marca)
+  var SUSCRIPCIONES = [
+    ['uber', 'Uber<br>Eats', 'Uber Eats', 'Se renueva el 11 de abril', 4.99],
+    ['spotify', ms('graphic_eq'), 'Spotify', 'Se renueva el 16 de mayo', 5.99],
+    ['disney', 'D+', 'Disney+ Premium', 'Se renueva el 1 de octubre', 13.99],
+    ['netflix', 'N', 'Netflix', 'Se renueva el 5 de octubre', 10.99]
+  ];
+  // Consumos de ejemplo de una tarjeta de crédito con saldo
+  var CONSUMOS = [['shopping_cart', 'Supermaxi', 'Hoy · 10:24', 48.2], ['restaurant', 'La Petite', '10 oct · 21:48', 62.4], ['local_gas_station', 'Primax', '9 oct · 18:22', 30]];
+
+  // Qué tarjeta Pichibank es, por su nombre (filas del hub, accesos de Uku y del buscador)
+  function tipo(nombre) {
+    var n = String(nombre || '').toLowerCase();
+    if (/d[eé]bito/.test(n)) return 'debito';
+    if (/black|mastercard/.test(n)) return 'black';
+    if (/visa/.test(n)) return 'visa';
+    return null;
+  }
+
+  // Arte de la tarjeta: imagen, o las capas de la Visa con tinta UV
+  function arte(k, d) {
+    var t = TIPOS[k] || TIPOS.debito;
+    d = d || {};
+    var ult = d.ultimos || t.ultimos;
+    var estado = t.credito && !Number(d.saldo) ? '<span class="tj-arte__estado">' + ms('check_circle') + 'Estás al día</span>' : '';
+    var num = t.credito ? '<span class="tj-arte__num">***' + esc(ult) + '</span>' : '';
+    var base = t.uv
+      ? '<div class="tuv" role="img" aria-label="' + esc(t.alt) + '"><span class="tuv__fondo"></span><span class="tuv__formas"></span><span class="tuv__tinta"></span><span class="tuv__luz"></span><span class="tuv__logos"></span></div>'
+      : '<img class="tj-arte__img" src="' + t.img + '" alt="' + esc(t.alt) + '" draggable="false">';
+    return '<div class="tj-arte tj-arte--' + k + '">' + base + estado + num + '</div>';
+  }
+
+  // Miniatura para la fila del hub
+  function mini(k) {
+    var src = k === 'visa' ? A + 'visa-credito/tarjeta.svg' : (TIPOS[k] || TIPOS.debito).img;
+    return '<span class="card-thumb card-thumb--img" aria-hidden="true"><img src="' + src + '" alt=""></span>';
+  }
+
+  // Contenido debajo de la tarjeta
+  function cuerpo(k, d) {
+    var t = TIPOS[k] || TIPOS.debito;
+    d = d || {};
+    var html = '';
+    if (t.credito) {
+      var usado = Math.max(0, Number(d.saldo) || 0), cupo = Math.max(t.cupo, usado), p = Math.round(usado / cupo * 100);
+      html += '<button class="tj-cupo" type="button" data-tj-ir="' + esc(t.ir) + '">' +
+        '<span class="tj-cupo__col"><small>Cupo disponible:</small><b data-saldo>' + money(cupo - usado) + '</b></span>' +
+        '<span class="tj-cupo__col"><small>Cupo utilizado:</small><b data-saldo>' + money(usado) + '</b></span>' +
+        '<span class="tj-anillo" style="--p:' + p + '"><span>' + p + '%</span></span>' + ms('chevron_right') + '</button>';
+    }
+    html += '<div class="cd-actions">' + t.acciones.map(function (a) {
+      var attr = a[2] === 'ver' ? 'id="cd-ver-datos" type="button"' : 'data-action="' + esc(a[2]) + '"';
+      return '<button class="quick-action" ' + attr + '><span class="quick-action__icon">' + ms(a[0]) + '</span><span class="quick-action__label">' + a[1] + '</span></button>';
+    }).join('') + '</div>';
+    if (!t.credito) {
+      html += '<h2 class="cd-subtitle">Tus suscripciones y pagos recurrentes</h2><div class="cd-subs">' + SUSCRIPCIONES.map(function (s) {
+        return '<button class="sub-item" data-action="' + s[2] + '"><span class="sub-item__logo tj-marca tj-marca--' + s[0] + '">' + s[1] + '</span>' +
+          '<span class="sub-item__info"><span class="sub-item__name">' + s[2] + '</span><span class="sub-item__meta">' + s[3] + '</span></span>' +
+          '<span class="sub-item__price">' + money(s[4]) + '</span></button>';
+      }).join('') + '</div>';
+    } else if (!Number(d.saldo)) {
+      html += '<div class="tj-vacio"><span class="tj-vacio__ilustra" aria-hidden="true"><i></i><i></i></span><p>Aún no tienes transacciones</p></div>';
+    } else {
+      html += '<h2 class="cd-subtitle">Últimos consumos</h2><div class="cd-subs">' + CONSUMOS.map(function (c) {
+        return '<button class="sub-item" data-action="' + c[1] + '"><span class="sub-item__logo">' + ms(c[0]) + '</span>' +
+          '<span class="sub-item__info"><span class="sub-item__name">' + c[1] + '</span><span class="sub-item__meta">' + c[2] + '</span></span>' +
+          '<span class="sub-item__price">-' + money(c[3]) + '</span></button>';
+      }).join('') + '</div>';
+    }
+    // Consumo no reconocido: solicitud de revisión (assets/soporte.js)
+    html += '<button class="cd-review" data-action="Revisar consumo">' + ms('report') +
+      '<span class="cd-review__main"><b>¿No reconoces un consumo?</b><small>Pide una revisión · tarda de 2 a 6 semanas</small></span>' + ms('chevron_right') + '</button>';
+    return html;
+  }
+
+  /* ---------- Tinta UV: giroscopio, o el dedo/mouse sin sensores ----------
+     --uv-x/--uv-y (-1..1) mueven el degradado y el punto de luz; --uv-luz
+     (0..1) es cuánto se inclina la tarjeta: a más ángulo, más se ve la tinta. */
+  var tx = 0, ty = 0, cx = 0, cy = 0, base = null, conGiro = false, corre = false;
+  function cuadro() {
+    cx += (tx - cx) * 0.1; cy += (ty - cy) * 0.1;
+    var luz = Math.min(1, Math.hypot(cx, cy) * 1.15);
+    document.querySelectorAll('.tuv').forEach(function (el) {
+      el.style.setProperty('--uv-x', cx.toFixed(3));
+      el.style.setProperty('--uv-y', cy.toFixed(3));
+      el.style.setProperty('--uv-luz', luz.toFixed(3));
+    });
+    if (Math.abs(tx - cx) + Math.abs(ty - cy) > 0.002) requestAnimationFrame(cuadro); else corre = false;
+  }
+  function mover(x, y) {
+    tx = Math.max(-1, Math.min(1, x)); ty = Math.max(-1, Math.min(1, y));
+    if (!corre && document.querySelector('.tuv')) { corre = true; requestAnimationFrame(cuadro); }
+  }
+  // La primera lectura de beta es la postura de reposo; el reposo sigue despacio a la postura
+  window.addEventListener('deviceorientation', function (e) {
+    if (e.gamma == null && e.beta == null) return;
+    conGiro = true;
+    if (base === null) base = e.beta || 0;
+    base += ((e.beta || 0) - base) * 0.005;
+    mover((e.gamma || 0) / 35, ((e.beta || 0) - base) / 25);
+  });
+  document.addEventListener('pointermove', function (e) {
+    if (conGiro) return;
+    var el = e.target.closest && e.target.closest('.tuv');
+    if (!el) return;
+    var r = el.getBoundingClientRect();
+    mover((e.clientX - r.left) / r.width * 2 - 1, (e.clientY - r.top) / r.height * 2 - 1);
+  });
+  document.addEventListener('pointerout', function (e) {
+    if (!conGiro && e.target.closest && e.target.closest('.tuv') && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.tuv'))) mover(0, 0);
+  });
+
+  // Abrir una tarjeta por su nombre (accesos de Uku, Soporte y Destacados): su fila del hub si
+  // existe; si no, la primera del mismo tipo, la primera de crédito, o el detalle directo
+  function abrir(nombre) {
+    var filas = [].slice.call(document.querySelectorAll('#home-page [data-panel="Tarjetas"] .product-row[data-tarjeta]'));
+    var k = tipo(nombre);
+    var r = filas.filter(function (f) { return f.dataset.action === nombre; })[0] ||
+      filas.filter(function (f) { return f.dataset.tarjeta === k; })[0] ||
+      filas.filter(function (f) { return f.dataset.tarjeta !== 'debito'; })[0];
+    if (r) r.click(); else if (window.openCardDetail) window.openCardDetail(k || 'debito');
+  }
+
+  window.Tarjetas = { tipos: TIPOS, tipo: tipo, arte: arte, mini: mini, cuerpo: cuerpo, abrir: abrir, inclinar: mover };
+})();

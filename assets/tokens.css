@@ -967,7 +967,7 @@
     --bp-theme-color-text-tertiary: var(--bp-base-color-neutral-600);
   }
 
-  :root[data-theme="dark"] {
+  :root[data-theme="dark"], [data-theme="dark"] {
     --bp-theme-color-avatar-bg: color-mix(in srgb, var(--bp-base-color-neutral-0) 4%, transparent);
     --bp-theme-color-avatar-fg: var(--bp-base-color-blue-50);
     --bp-theme-color-border-default: var(--bp-base-color-neutral-700);
@@ -1171,7 +1171,7 @@
    incorpora, se borran de aquí.
    ===================================================================== */
 @layer tokens.product {
-  :root {
+  :root, [data-theme] {
     --bp-layout-card-padding: var(--bp-layout-grid-margin);
     --bp-semantic-spacing-xl: var(--bp-base-dimension-20);
     --bp-semantic-spacing-gap-related: var(--bp-base-dimension-8);
@@ -1196,7 +1196,7 @@
    llevan sufijo --hover / --active / --focus para usarlos en :hover, :active
    y :focus-visible. Sólo se listan los estados que cambian. */
 @layer tokens.product {
-  :root {
+  :root, [data-theme] {
     --bp-interaction-accent-bg: var(--bp-theme-color-interaction-accent-bg);
     --bp-interaction-accent-fg: var(--bp-theme-color-interaction-accent-fg);
     --bp-interaction-control-active: var(--bp-theme-color-field-control-active);

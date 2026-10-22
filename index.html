@@ -136,8 +136,10 @@
         /* Los nombres locales de abajo son alias de los tokens oficiales del
            Design System (assets/tokens.css, export de Figma "Components 4").
            Los componentes siguen leyendo estos alias; el valor de respaldo es
-           el del token, por si tokens.css no cargara. */
-        :root {
+           el del token, por si tokens.css no cargara. Se repiten en cualquier
+           elemento con data-theme (la página de la Black es oscura aunque la
+           app no lo sea). */
+        :root, [data-theme] {
             --bp-surface-page: var(--bp-theme-color-surface-page-alt, #f5f5f5);
             --bp-surface-container: var(--bp-theme-color-surface-container-default, #ffffff);
             --bp-surface-fixed: var(--bp-theme-color-surface-container-fixed, rgb(255 255 255 / 0.96));
@@ -1986,44 +1988,6 @@
             line-height: 0;
         }
 
-        /* Destello diagonal sobre la tarjeta del detalle (igual que Destacado) */
-        .cd-shine {
-            position: absolute;
-            top: -50%;
-            left: 0;
-            width: 90px;
-            height: 200%;
-            transform: rotate(24deg) translateX(-160px);
-            background: linear-gradient(90deg,
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 0.55) 45%,
-                rgba(255, 255, 255, 0.75) 50%,
-                rgba(255, 255, 255, 0.55) 55%,
-                rgba(255, 255, 255, 0) 100%);
-            filter: blur(3px);
-            pointer-events: none;
-            opacity: 0;
-            will-change: transform, opacity;
-            animation: cdShineSweep 6s cubic-bezier(0.4, 0, 0.2, 1) 1s infinite;
-        }
-
-        @keyframes cdShineSweep {
-            0% { transform: rotate(24deg) translateX(-160px); opacity: 0; }
-            8% { opacity: 1; }
-            22% { opacity: 1; }
-            38%, 100% { transform: rotate(24deg) translateX(560px); opacity: 0; }
-        }
-
-        /* En modo giroscopio el barrido automático se pausa y la posición
-           la controla el dispositivo (igual que la tarjeta de Destacados) */
-        .cd-shine.gyro-controlled {
-            animation: none;
-            opacity: 0.9;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .cd-shine { animation: none; }
-        }
 
         .cd-face--back {
             position: absolute;
@@ -2038,62 +2002,6 @@
             line-height: normal;
         }
 
-        .cd-card__img {
-            width: 100%;
-            height: auto;
-            display: block;
-            border-radius: var(--bp-radius-md);
-        }
-        .cd-card__img.is-hidden { display: none; }
-
-        /* Arte de tarjeta genérico (CSS, sin foto): tarjetas de crédito que
-           no tienen un asset propio como card-debit.svg. Mismo ratio que
-           esa imagen (1312x827) para que el resto del layout no salte. */
-        .cd-card__art {
-            display: none;
-            flex-direction: column;
-            gap: 28px;
-            aspect-ratio: 1.586;
-            width: 100%;
-            border-radius: var(--bp-radius-md);
-            /* padding-bottom de sobra: deja libre la franja donde flota el
-               pill ".cd-card__hint" ("Desliza para ver datos") para que el
-               número no quede tapado detrás de él */
-            padding: 20px 20px 44px;
-            box-sizing: border-box;
-        }
-        .cd-card__art.is-active { display: flex; }
-        .cd-card__art-top {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-        }
-        .cd-card__art-brand {
-            font-size: 13px;
-            font-weight: 800;
-            letter-spacing: 0.3px;
-            line-height: 1.25;
-        }
-        .cd-card__art-number {
-            font-size: 17px;
-            font-weight: 600;
-            letter-spacing: 2px;
-            font-variant-numeric: tabular-nums;
-        }
-        .cd-card__art--black {
-            background: linear-gradient(135deg, #2b2d33, #060606);
-        }
-        .cd-card__art--black .cd-card__art-brand,
-        .cd-card__art--black .cd-card__art-number { color: #fff; }
-        .cd-card__art--black .cd-card__art-number { opacity: 0.85; }
-
-        .cd-card__art--diners {
-            background: linear-gradient(135deg, #eef1f5, #dfe4ec);
-            border: 1px solid rgba(15, 38, 92, 0.08);
-        }
-        .cd-card__art--diners .cd-card__art-brand { color: #0f265c; }
-        .cd-card__art--diners .cd-card__art-number { color: rgba(15, 38, 92, 0.75); }
-        .cd-card__art-diners-text { font-size: 15px; font-weight: 700; color: #274c8f; }
 
         /* Pista de girar para revelar */
         .cd-card__hint {
@@ -2834,72 +2742,6 @@
             opacity: 0;
         }
 
-        /* ---------- Tema oscuro del detalle (tarjetas premium tipo Black) ----------
-           Se activa con .theme-dark sobre #card-detail cuando el tipo de
-           tarjeta lo pide (ver CARD_DETAIL_THEMES). Todo queda scopeado
-           bajo .card-detail.theme-dark para no filtrar el look oscuro a
-           .quick-action/.sub-item en el resto de la app, que siguen claros. */
-        .card-detail.theme-dark {
-            background: #0b0b0d;
-            color-scheme: dark;
-        }
-        .card-detail.theme-dark .cd-title,
-        .card-detail.theme-dark .cd-subtitle {
-            color: #f5f5f7;
-        }
-        .card-detail.theme-dark .detail-topbar {
-            background: transparent;
-        }
-        .card-detail.theme-dark.scrolled .detail-topbar {
-            background: rgba(20, 20, 23, 0.85);
-            border-bottom-color: rgba(255, 255, 255, 0.08);
-        }
-        .card-detail.theme-dark .detail-topbar__title {
-            color: #f5f5f7;
-        }
-        .card-detail.theme-dark .icon-button {
-            color: #f5f5f7;
-        }
-        .card-detail.theme-dark .icon-button:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
-        .card-detail.theme-dark .icon-button:active {
-            background: rgba(255, 255, 255, 0.14);
-        }
-        .card-detail.theme-dark .cd-actions {
-            background: #1c1c1f;
-        }
-        .card-detail.theme-dark .quick-action__icon {
-            background: rgba(255, 255, 255, 0.08);
-            color: #f5f5f7;
-        }
-        .card-detail.theme-dark .quick-action:hover .quick-action__icon {
-            background: rgba(252, 208, 0, 0.16);
-        }
-        .card-detail.theme-dark .quick-action__label {
-            color: #f5f5f7;
-        }
-        .card-detail.theme-dark .cd-subs {
-            background: #1c1c1f;
-        }
-        .card-detail.theme-dark .sub-item {
-            border-bottom-color: rgba(255, 255, 255, 0.08);
-        }
-        .card-detail.theme-dark .sub-item__name {
-            color: #f5f5f7;
-        }
-        .card-detail.theme-dark .sub-item__meta {
-            color: #a3a3ab;
-        }
-        .card-detail.theme-dark .sub-item__price {
-            color: #f5f5f7;
-        }
-        .card-detail.theme-dark .sub-item:hover {
-            background: rgba(255, 255, 255, 0.04);
-        }
-        .card-detail.theme-dark .sub-item:active {
-            background: rgba(255, 255, 255, 0.08);
-        }
 
         /* Contenido del push: sube con stagger al abrir */
         .push-page.open .push-page__hero,
@@ -3314,6 +3156,7 @@
     <link rel="stylesheet" href="./assets/flujos.css">
     <link rel="stylesheet" href="./assets/analisis.css">
     <link rel="stylesheet" href="./assets/soporte.css">
+    <link rel="stylesheet" href="./assets/tarjetas.css">
     <link rel="stylesheet" href="./assets/componentes.css">
 </head>
 <body>
@@ -4211,7 +4054,7 @@
         <div class="gyro-modal__content">
             <div class="gyro-modal__icon">📱</div>
             <h2 class="gyro-modal__title">Activar efecto de movimiento</h2>
-            <p class="gyro-modal__desc">La tarjeta de débito se adaptará al movimiento de tu dispositivo para un efecto 3D.</p>
+            <p class="gyro-modal__desc">Tus tarjetas reflejan la luz cuando mueves el teléfono, como la tinta UV de una tarjeta real.</p>
             <div class="gyro-modal__buttons">
                 <button class="gyro-modal__btn gyro-modal__btn--secondary" id="gyro-deny">Ahora no</button>
                 <button class="gyro-modal__btn gyro-modal__btn--primary" id="gyro-allow">Activar</button>
@@ -4227,29 +4070,24 @@
                 <button class="icon-button" id="cd-back" aria-label="Volver">
                     <span class="material-symbols-rounded">arrow_back</span>
                 </button>
-                <span class="detail-topbar__title" id="cd-topbar-title">Débito Internacional</span>
-                <button class="icon-button" data-action="Ajustes de tarjeta" aria-label="Ajustes" style="margin-left:auto;">
+                <span class="detail-topbar__title" id="cd-topbar-title">Débito Digital</span>
+                <!-- Débito: ajustes · Crédito: ocultar saldos (el ojo de toda la app, assets/privacidad.js) -->
+                <button class="icon-button cd-top-btn" id="cd-ajustes" data-action="Ajustes de tarjeta" aria-label="Ajustes" style="margin-left:auto;">
                     <span class="material-symbols-rounded">settings</span>
+                </button>
+                <button class="icon-button cd-top-btn" id="cd-ojo" data-eye aria-label="Ocultar saldos" aria-pressed="false" style="margin-left:auto;" hidden>
+                    <span class="material-symbols-rounded">visibility</span>
                 </button>
             </div>
         </div>
         <div class="cd-inner">
-            <h1 class="cd-title" id="cd-title">Débito Internacional</h1>
+            <h1 class="cd-title" id="cd-title">Débito Digital</h1>
 
             <div class="cd-card" id="cd-card">
                 <div class="cd-flip" id="cd-flip">
-                    <!-- Frente: imagen de la tarjeta (Visa Débito) o arte CSS
-                         genérico (tarjetas de crédito sin foto propia) -->
+                    <!-- Frente: el arte de cada tarjeta (assets/tarjetas.js) -->
                     <div class="cd-face cd-face--front">
-                        <img class="cd-card__img" id="cd-card-img" src="./assets/card-debit.svg" alt="Tarjeta de débito internacional">
-                        <div class="cd-card__art" id="cd-card-art">
-                            <div class="cd-card__art-top">
-                                <span class="cd-card__art-brand" translate="no">PICHI<br>BANK</span>
-                                <span class="cd-card__art-mark" id="cd-card-art-mark"></span>
-                            </div>
-                            <span class="cd-card__art-number" id="cd-card-art-number"></span>
-                        </div>
-                        <div class="cd-shine"></div>
+                        <div id="cd-card-arte"></div>
                         <div class="cd-card__hint">
                             <span class="material-symbols-rounded">swipe</span>
                             Desliza para ver datos
@@ -4291,113 +4129,8 @@
                 </div>
             </div>
 
-            <div class="cd-content">
-                <div class="cd-actions">
-                    <button class="quick-action" id="cd-ver-datos" type="button">
-                        <span class="quick-action__icon"><span class="material-symbols-rounded">visibility</span></span>
-                        <span class="quick-action__label">Ver datos</span>
-                    </button>
-                    <button class="quick-action" data-action="Tarjeta bloqueada">
-                        <span class="quick-action__icon"><span class="material-symbols-rounded">lock</span></span>
-                        <span class="quick-action__label">Bloquear</span>
-                    </button>
-                    <button class="quick-action" data-action="Límites">
-                        <span class="quick-action__icon"><span class="material-symbols-rounded">speed</span></span>
-                        <span class="quick-action__label">Límites</span>
-                    </button>
-                    <button class="quick-action" data-action="Más opciones">
-                        <span class="quick-action__icon"><span class="material-symbols-rounded">more_horiz</span></span>
-                        <span class="quick-action__label">Más</span>
-                    </button>
-                </div>
-
-                <!-- Consumo no reconocido: solicitud de revisión (assets/soporte.js) -->
-                <button class="cd-review" data-action="Revisar consumo">
-                    <span class="material-symbols-rounded" aria-hidden="true">report</span>
-                    <span class="cd-review__main"><b>¿No reconoces un consumo?</b><small>Pide una revisión · tarda de 2 a 6 semanas</small></span>
-                    <span class="material-symbols-rounded" aria-hidden="true">chevron_right</span>
-                </button>
-
-                <h2 class="cd-subtitle">Tus suscripciones y pagos recurrentes</h2>
-
-                <div class="cd-subs">
-                    <button class="sub-item" data-action="Uber Eats">
-                        <span class="sub-item__logo" style="font-size:9px; line-height:1.1;">Uber<br>Eats</span>
-                        <span class="sub-item__info">
-                            <span class="sub-item__name">Uber Eats</span>
-                            <div class="sub-item__meta">Se renueva el 11 de abril</div>
-                        </span>
-                        <span class="sub-item__price">$ 4,99</span>
-                    </button>
-                    <button class="sub-item" data-action="Spotify">
-                        <span class="sub-item__logo"><span class="material-symbols-rounded">graphic_eq</span></span>
-                        <span class="sub-item__info">
-                            <span class="sub-item__name">Spotify</span>
-                            <div class="sub-item__meta">Se renueva el 16 de mayo</div>
-                        </span>
-                        <span class="sub-item__price">$ 5,99</span>
-                    </button>
-                    <button class="sub-item" data-action="Disney+ Premium">
-                        <span class="sub-item__logo">D+</span>
-                        <span class="sub-item__info">
-                            <span class="sub-item__name">Disney+ Premium</span>
-                            <div class="sub-item__meta">Se renueva el 1 de octubre</div>
-                        </span>
-                        <span class="sub-item__price">$ 13,99</span>
-                    </button>
-                    <button class="sub-item" data-action="Netflix">
-                        <span class="sub-item__logo">N</span>
-                        <span class="sub-item__info">
-                            <span class="sub-item__name">Netflix</span>
-                            <div class="sub-item__meta">Se renueva el 5 de octubre</div>
-                        </span>
-                        <span class="sub-item__price">$ 10,99</span>
-                    </button>
-                    <button class="sub-item" data-action="YouTube Premium">
-                        <span class="sub-item__logo"><span class="material-symbols-rounded">play_arrow</span></span>
-                        <span class="sub-item__info">
-                            <span class="sub-item__name">YouTube Premium</span>
-                            <div class="sub-item__meta">Se renueva el 9 de octubre</div>
-                        </span>
-                        <span class="sub-item__price">$ 11,99</span>
-                    </button>
-                    <button class="sub-item" data-action="iCloud+">
-                        <span class="sub-item__logo"><span class="material-symbols-rounded">cloud</span></span>
-                        <span class="sub-item__info">
-                            <span class="sub-item__name">iCloud+</span>
-                            <div class="sub-item__meta">Se renueva el 14 de octubre</div>
-                        </span>
-                        <span class="sub-item__price">$ 2,99</span>
-                    </button>
-                    <button class="sub-item" data-action="Gympass">
-                        <span class="sub-item__logo"><span class="material-symbols-rounded">exercise</span></span>
-                        <span class="sub-item__info">
-                            <span class="sub-item__name">Gympass</span>
-                            <div class="sub-item__meta">Se renueva el 20 de octubre</div>
-                        </span>
-                        <span class="sub-item__price">$ 39,99</span>
-                    </button>
-                </div>
-
-                <h2 class="cd-subtitle">Beneficios de tu tarjeta</h2>
-                <div class="cd-subs">
-                    <button class="sub-item" data-action="Millas">
-                        <span class="sub-item__logo"><span class="material-symbols-rounded">flight</span></span>
-                        <span class="sub-item__info"><span class="sub-item__name">Acumula millas</span><span class="sub-item__meta">1 milla por cada $1</span></span>
-                        <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
-                    </button>
-                    <button class="sub-item" data-action="Seguro de compras">
-                        <span class="sub-item__logo"><span class="material-symbols-rounded">verified_user</span></span>
-                        <span class="sub-item__info"><span class="sub-item__name">Seguro de compras</span><span class="sub-item__meta">Protección 90 días</span></span>
-                        <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
-                    </button>
-                    <button class="sub-item" data-action="Salas VIP">
-                        <span class="sub-item__logo"><span class="material-symbols-rounded">weekend</span></span>
-                        <span class="sub-item__info"><span class="sub-item__name">Salas VIP aeropuerto</span><span class="sub-item__meta">2 accesos al año</span></span>
-                        <span class="material-symbols-rounded" style="color:var(--bp-text-helper);">chevron_right</span>
-                    </button>
-                </div>
-            </div>
+            <!-- Cupo, acciones, suscripciones o consumos y revisión: assets/tarjetas.js -->
+            <div class="cd-content" id="cd-cuerpo"></div>
         </div>
     </div>
 
@@ -5222,12 +4955,9 @@
                 }
                 if (el.dataset.action === 'Cambiar cuenta') {
                     toggleAccountSwitch();
-                } else if (el.matches('.product-row') && CARD_DETAIL_THEMES[el.dataset.action] && el.closest('[data-panel="Tarjetas"]')) {
-                    // Débito/crédito en Tarjetas: mismo morph "wallet" que la
-                    // tarjeta destacada de Destacado, creciendo desde su
-                    // propio card-thumb (no toda la fila) y con el detalle
-                    // temático (arte + modo oscuro para la Black).
-                    openCardDetail(el.dataset.action);
+                } else if (el.matches('.product-row') && el.dataset.tarjeta) {
+                    // Tarjetas Pichibank del hub (assets/productos.js): su detalle con su arte
+                    openCardDetail(el.dataset.tarjeta, { saldo: +el.dataset.saldo || 0, ultimos: el.dataset.ultimos });
                 } else if (el.matches('.quick-action, .login-feature, .product-row')) {
                     openPushPage(el.dataset.action, el); // crece desde el botón/fila
                 } else if (el.dataset.action === 'Clave digital' && window.Ingreso) {
@@ -5702,11 +5432,8 @@
             typeof DeviceOrientationEvent.requestPermission === 'function';
 
         const shineEl = document.querySelector('.debit-card__shine');
-        const cdShineEl = document.querySelector('.cd-shine');
         // Rango del barrido del shine (coincide con --shine-from / --shine-to)
         const SHINE_FROM = -80, SHINE_TO = 360;
-        // Rango del shine de la tarjeta del detalle (coincide con cdShineSweep)
-        const CD_SHINE_FROM = -160, CD_SHINE_TO = 560;
 
         function tick() {
             curX += (targetX - curX) * 0.12;
@@ -5726,12 +5453,6 @@
                 const mix = Math.max(-1, Math.min(1, -curX * 0.75 - curY * 0.65));
                 const inv = (mix + 1) / 2; // 0..1
                 shineEl.style.setProperty('--shine-pos', `${(SHINE_FROM + inv * (SHINE_TO - SHINE_FROM)).toFixed(1)}px`);
-                // Mismo control (inverso) para el shine de la tarjeta del detalle
-                if (cdShineEl) {
-                    cdShineEl.classList.add('gyro-controlled');
-                    const cdPos = CD_SHINE_FROM + inv * (CD_SHINE_TO - CD_SHINE_FROM);
-                    cdShineEl.style.transform = `rotate(24deg) translateX(${cdPos.toFixed(1)}px)`;
-                }
             } else {
                 const tiltX = curX * 4;
                 const tiltY = curY * -4;
@@ -5878,60 +5599,33 @@
         const cdFlip = document.getElementById('cd-flip');
         setupCollapsingHeader(cardDetail, cardDetail.querySelector('.cd-title'), document.getElementById('cd-topbar'));
 
-        // Contenido/tema por tarjeta: qué arte mostrar (foto real vs CSS),
-        // los datos falsos del reverso y si el detalle completo pasa a modo
-        // oscuro (las tarjetas "premium" como la Black lo usan de verdad).
-        const CARD_DETAIL_THEMES = {
-            'Visa Débito': {
-                title: 'Débito Internacional', art: null, dark: false,
-                number: '4532 1234 5678 1234', expiry: '08/29', cvv: '123',
-            },
-            'Mastercard Black': {
-                title: 'Mastercard Black', art: 'black', dark: true,
-                number: '5221 4471 8823 7643', expiry: '11/28', cvv: '456',
-            },
-            'Diners Club': {
-                title: 'Diners Club', art: 'diners', dark: false,
-                number: '3295 8610 0044 4863', expiry: '05/27', cvv: '789',
-            },
-        };
+        // Arte, datos y contenido de cada tarjeta: assets/tarjetas.js. La Black
+        // pasa toda la pantalla a los tokens oscuros del DS (data-theme="dark").
+        const cdArte = document.getElementById('cd-card-arte');
+        const cdCuerpo = document.getElementById('cd-cuerpo');
 
-        const cdCardArt = document.getElementById('cd-card-art');
-        const cdCardImg = document.getElementById('cd-card-img');
-        const cdCardArtMark = document.getElementById('cd-card-art-mark');
-        const cdCardArtNumber = document.getElementById('cd-card-art-number');
-
-        function applyCardTheme(key) {
-            const t = CARD_DETAIL_THEMES[key] || CARD_DETAIL_THEMES['Visa Débito'];
-            document.getElementById('cd-title').textContent = t.title;
-            document.getElementById('cd-topbar-title').textContent = t.title;
-            document.getElementById('cd-number').textContent = t.number;
-            document.getElementById('cd-expiry').textContent = t.expiry;
+        function applyCardTheme(key, datos = {}) {
+            const t = Tarjetas.tipos[key] || Tarjetas.tipos.debito;
+            const ultimos = datos.ultimos || t.ultimos;
+            document.getElementById('cd-title').textContent = t.titulo;
+            document.getElementById('cd-topbar-title').textContent = t.titulo;
+            document.getElementById('cd-number').textContent = t.numero + ultimos;
+            document.getElementById('cd-expiry').textContent = t.vence;
             document.getElementById('cd-cvv').textContent = t.cvv;
-            cardDetail.classList.toggle('theme-dark', !!t.dark);
-
-            if (t.art) {
-                cdCardImg.classList.add('is-hidden');
-                cdCardArt.className = `cd-card__art is-active cd-card__art--${t.art}`;
-                const groups = t.number.replace(/\s+/g, '').match(/.{1,4}/g);
-                const masked = `${groups[0]} •••• •••• ${groups[groups.length - 1]}`;
-                cdCardArtNumber.textContent = masked;
-                cdCardArtMark.innerHTML = t.art === 'black'
-                    ? '<span class="mc-dots"><i></i><i></i></span>'
-                    : '<span class="cd-card__art-diners-text">Diners Club</span>';
-            } else {
-                cdCardImg.classList.remove('is-hidden');
-                cdCardArt.classList.remove('is-active');
-            }
+            if (t.oscuro) cardDetail.dataset.theme = 'dark'; else delete cardDetail.dataset.theme;
+            document.getElementById('cd-ajustes').hidden = !t.ajustes;
+            document.getElementById('cd-ojo').hidden = !!t.ajustes;
+            cdArte.innerHTML = Tarjetas.arte(key, datos);
+            cdCuerpo.innerHTML = Tarjetas.cuerpo(key, datos);
         }
 
         // Misma transición que todas las pantallas (assets/navegacion.js y
         // sistema.css): entra desde la derecha y sale por la derecha. El
         // morph de la tarjeta quedó en respaldo/transiciones-anteriores.
         const CD_MS = 400;
-        function openCardDetail(key = 'Visa Débito') {
+        function openCardDetail(key = 'debito', datos) {
             fx('open');
-            applyCardTheme(key);
+            applyCardTheme(Tarjetas.tipos[key] ? key : (Tarjetas.tipo(key) || 'debito'), datos);
             hideCardData();
             cardDetail.classList.remove('scrolled');
             cardDetail.classList.add('open', 'entering');
@@ -5955,11 +5649,12 @@
 
         // ----- Revelar datos sensibles con biometría (WebAuthn) -----
         let cardRevealed = false, verifying = false;
-        const verDatosBtn = document.getElementById('cd-ver-datos');
-        const verDatosIcon = verDatosBtn.querySelector('.material-symbols-rounded');
-        const verDatosLabel = verDatosBtn.querySelector('.quick-action__label');
-
+        // "Ver datos" se pinta con el contenido de cada tarjeta (solo la débito lo tiene)
         function updateVerDatosBtn() {
+            const verDatosBtn = document.getElementById('cd-ver-datos');
+            if (!verDatosBtn) return;
+            const verDatosIcon = verDatosBtn.querySelector('.material-symbols-rounded');
+            const verDatosLabel = verDatosBtn.querySelector('.quick-action__label');
             if (cardRevealed) {
                 verDatosIcon.textContent = 'visibility_off';
                 verDatosLabel.textContent = 'Ocultar';
@@ -6007,8 +5702,10 @@
         }
 
         // "Ver datos" alterna entre revelar y ocultar
-        verDatosBtn.addEventListener('click', () => {
-            if (cardRevealed) hideCardData(); else revealCardData();
+        cdCuerpo.addEventListener('click', e => {
+            if (e.target.closest('#cd-ver-datos')) { if (cardRevealed) hideCardData(); else revealCardData(); return; }
+            const ir = e.target.closest('[data-tj-ir]');
+            if (ir) openPushPage(ir.dataset.tjIr);
         });
         document.getElementById('cd-data-close').addEventListener('click', e => {
             e.stopPropagation();
@@ -6282,6 +5979,7 @@
     <script src="./assets/clima.js"></script>
     <script src="./assets/persona.js"></script>
     <script src="./assets/privacidad.js"></script>
+    <script src="./assets/tarjetas.js"></script>
     <script src="./assets/productos.js"></script>
     <script src="./assets/pfm.js"></script>
     <script src="./assets/asistente.js"></script>

@@ -1,0 +1,5 @@
+
+/* Tema oscuro manual del detalle de tarjeta (lo reemplazan los tokens oscuros del DS) */
+.card-detail.theme-dark .cd-review { background: rgb(255 255 255 / .08); color: #fff; }
+.card-detail.theme-dark .cd-review > .material-symbols-rounded:first-child { color: #fff; }
+.card-detail.theme-dark .cd-review__main small, .card-detail.theme-dark .cd-review > .material-symbols-rounded:last-child { color: rgb(255 255 255 / .7); }

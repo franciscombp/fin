@@ -249,6 +249,28 @@ Cómo queda:
 - **Filas de Perfil sin pantalla propia** abren la página «Próximamente» con su ícono, en vez de un toast.
   Seguridad abre el flujo de seguridad del login; «Uku, tu asistente personal» lleva al asistente.
 
+### 5.3.2 Tarjetas: arte real, detalle por tipo y tinta UV (22 de octubre)
+
+- **Tres tarjetas Pichibank** (`assets/tarjetas.js`, `assets/tarjetas.css`, arte en `assets/tarjetas/`):
+  Débito Digital (arte Visa amarillo), Crédito Black Miles (arte negro) y Crédito Visa (tarjeta en capas).
+  Las filas del hub Tarjetas llevan `data-tarjeta` (`debito`, `black`, `visa`), `data-saldo` y
+  `data-ultimos`, muestran el arte real como miniatura y abren el detalle de tarjeta (#card-detail).
+  Mastercard Pichibank → Black; Visa Pichibank → Visa Crédito. Las de otros bancos usan la página
+  de producto genérica. `Tarjetas.abrir(nombre)` resuelve los accesos por nombre (Uku, Soporte, Destacados).
+- **Detalle:** débito con acciones (Ver datos, Bloquear, Límites, Más) y suscripciones; crédito con
+  «Estás al día» si no debe, número enmascarado, cupo disponible/utilizado con anillo de uso, acciones
+  (Millas o Puntos, Avances, Diferir, Más) y consumos o «Aún no tienes transacciones». Deslizar sigue
+  girando la tarjeta para ver los datos con biometría.
+- **La Black es oscura con los tokens del DS**, no con colores a mano: `data-theme="dark"` sobre
+  #card-detail. Para que funcione en un solo elemento, los bloques de tokens de tema, de producto y los
+  alias (`componentes.css`, `componentes-tokens.css`, el `:root` de `index.html`) se declaran también en
+  `[data-theme]`: un alias calculado en `:root` llega ya resuelto (claro) a los hijos.
+- **Tinta UV en vez del barrido de luz:** la Visa Crédito son capas `fondo.svg` (degradado),
+  `uv.svg` (formas), la tinta (degradado iridiscente recortado con la máscara `uv.svg`), un punto de luz
+  y `logos.svg`. El giroscopio (o el dedo/mouse sin sensores) mueve el degradado y la luz
+  (`--uv-x`, `--uv-y`) y la inclinación sube su luminosidad (`--uv-luz`): en reposo casi no se ve.
+  El barrido genérico anterior quedó en `respaldo/estilos-sin-uso/index.html.css`.
+
 ### 5.4 Orquestador de Uku (acuerdo del 21 de octubre)
 
 **Nada de la lógica de las conversaciones va quemada en el front.** Todo lo que escribes en el chat (y cada

@@ -26,7 +26,7 @@
    ===================================================================== */
 
 /* ---------- 0. Alias tipográficos y de medida ---------- */
-:root {
+:root, [data-theme] {
   --sol-font: var(--bp-base-typography-font-family-sans), -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   --sol-focus: 0 0 0 2px var(--bp-focus-ring-gap), 0 0 0 4px var(--bp-focus-ring-color);
   --sol-blur-fixed: blur(calc(var(--bp-semantic-effects-blur-background) / 2));
@@ -100,7 +100,7 @@
   /* Fondo sólido de íconos decorativos: navy en claro, superficie elevada en oscuro */
   --bp-icon-solid-bg: var(--bp-theme-color-interaction-selection-bg-active);
 }
-:root[data-theme="dark"] { --bp-icon-solid-bg: var(--bp-theme-color-interaction-selection-bg-elevated); }
+[data-theme="dark"] { --bp-icon-solid-bg: var(--bp-theme-color-interaction-selection-bg-elevated); }
 
 html { background: var(--bp-theme-color-surface-page-alt); }
 body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); }
@@ -484,7 +484,7 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 /* Filas sueltas (sin tarjeta) van sin relleno lateral: hojas de Uku, Perfil de producto, lista de movimientos */
 .as-sheet .as-row, .as-sheet .pf-tx, .as-sheet .pfm-tx, .as-sheet .pfm-debt, .as-sheet .pfm-inc, .pv-row, .pf-page--inline .pf-tx { padding-left: 0; padding-right: 0; background: transparent; }
 /* En modo oscuro la fila va sobre la misma superficie que la tarjeta */
-:root[data-theme="dark"] .list-item, :root[data-theme="dark"] .product-row { background: var(--bp-theme-color-surface-container-default); border-color: var(--bp-theme-color-border-divider-alt); }
+[data-theme="dark"] .list-item, [data-theme="dark"] .product-row { background: var(--bp-theme-color-surface-container-default); border-color: var(--bp-theme-color-border-divider-alt); }
 
 /* ---------- 6. Hojas inferiores, toast, alerta, tips ---------- */
 
