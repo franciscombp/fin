@@ -257,6 +257,10 @@ Cómo queda:
   `data-ultimos`, muestran el arte real como miniatura y abren el detalle de tarjeta (#card-detail).
   Mastercard Pichibank → Black; Visa Pichibank → Visa Crédito. Las de otros bancos usan la página
   de producto genérica. `Tarjetas.abrir(nombre)` resuelve los accesos por nombre (Uku, Soporte, Destacados).
+- **Transición desde la miniatura:** al tocar una tarjeta del hub, una copia del arte vuela desde la
+  miniatura hasta su lugar en el detalle (`Tarjetas.volar`), la pantalla aparece con un fundido sin correr
+  Inicio (`.is-morph`, `navegacion.js` no la desplaza) y el contenido sube un instante después. Con el
+  botón de volver hace el camino inverso; con el gesto o el atrás de Safari se cierra deslizando.
 - **Detalle:** débito con acciones (Ver datos, Bloquear, Límites, Más) y suscripciones; crédito con
   «Estás al día» si no debe, número enmascarado, cupo disponible/utilizado con anillo de uso, acciones
   (Millas o Puntos, Avances, Diferir, Más) y consumos o «Aún no tienes transacciones». Deslizar sigue
