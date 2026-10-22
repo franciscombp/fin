@@ -83,6 +83,7 @@
     // Sin ningún producto en el hub: hero. Con productos, los grupos vacíos muestran su placeholder
     var con = data.grupos.some(function (g) { return g.filas.length; });
     el.innerHTML = con ? bloques(data.grupos, el.hasAttribute('data-sin-titulo'), data.total) : hero(data.hero);
+    if (window.Tarjetas) Tarjetas.ajustar(el); // borde de las miniaturas de tarjeta
     // Placeholders de la pantalla de Tarjetas (débito y crédito) según lo que tiene la persona
     if (el.dataset.hub === 'Tarjetas') {
       var ph = function (k, oculto) { var n = document.querySelector('[data-ph="' + k + '"]'); if (n) n.hidden = oculto; };

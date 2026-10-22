@@ -5599,6 +5599,7 @@
             document.getElementById('cd-ajustes').hidden = !t.ajustes;
             document.getElementById('cd-ojo').hidden = !!t.ajustes;
             cdArte.innerHTML = Tarjetas.arte(key, datos);
+            Tarjetas.ajustar(cdArte); // borde de contraste según la orilla del arte
             cdCuerpo.innerHTML = Tarjetas.cuerpo(key, datos);
         }
 
