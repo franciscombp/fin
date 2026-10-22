@@ -1297,9 +1297,9 @@
             position: fixed;
             inset: 0;
             background: rgba(0, 0, 0, 0.5);
-            z-index: 200;
+            z-index: 680; /* sobre el detalle de tarjeta y las páginas, bajo los toasts */
             display: none;
-            align-items: center;
+            align-items: flex-end; /* hoja inferior (bp-bottom-sheet en componentes.css) */
             justify-content: center;
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
@@ -1316,10 +1316,9 @@
         }
 
         .gyro-modal__content {
-            background: white;
-            border-radius: 20px;
-            padding: 32px;
-            max-width: 340px;
+            width: 100%;
+            max-width: 480px;
+            padding: 32px 24px calc(24px + env(safe-area-inset-bottom, 0px));
             text-align: center;
             animation: contentSlideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
@@ -1330,9 +1329,11 @@
         }
 
         .gyro-modal__icon {
-            font-size: 64px;
-            margin-bottom: 12px;
+            display: grid; place-items: center; width: 56px; height: 56px; margin: 0 auto 12px;
+            border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-surface-page-alt);
+            color: var(--bp-theme-color-icon-primary);
         }
+        .gyro-modal__icon .material-symbols-rounded { font-size: 28px; }
 
         .gyro-modal__title {
             font-size: 18px;
@@ -4040,7 +4041,7 @@
     <!-- Modal permiso giroscopio -->
     <div class="gyro-modal" id="gyro-modal">
         <div class="gyro-modal__content">
-            <div class="gyro-modal__icon">📱</div>
+            <div class="gyro-modal__icon"><span class="material-symbols-rounded" aria-hidden="true">screen_rotation</span></div>
             <h2 class="gyro-modal__title">Activar efecto de movimiento</h2>
             <p class="gyro-modal__desc">Tus tarjetas reflejan la luz cuando mueves el teléfono, como la tinta UV de una tarjeta real.</p>
             <div class="gyro-modal__buttons">
@@ -5613,7 +5614,13 @@
         const CD_MS = 400;
         function openCardDetail(key = 'debito', datos) {
             fx('open');
-            applyCardTheme(Tarjetas.tipos[key] ? key : (Tarjetas.tipo(key) || 'debito'), datos);
+            const tipo = Tarjetas.tipos[key] ? key : (Tarjetas.tipo(key) || 'debito');
+            applyCardTheme(tipo, datos);
+            // La tinta UV necesita el giroscopio: en iPhone, si aún no hay permiso, se pide aquí
+            // (también si antes dijo "Ahora no"); el toque de "Activar" es el gesto que iOS exige
+            if (Tarjetas.tipos[tipo].uv && needsGyroPermission && localStorage.getItem('gyroGranted') !== 'true') {
+                modal.classList.add('show');
+            }
             hideCardData();
             cardDetail.classList.remove('scrolled');
             cardDetail.classList.add('open', 'entering');
