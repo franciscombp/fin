@@ -266,6 +266,9 @@ html .card-detail.closing { animation: uxPushOut var(--ux-push) var(--ux-curve) 
 @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .ux-scrim { background: rgb(0 0 0 / .4); } }
 html[data-theme="dark"] .ux-scrim { background: rgb(0 0 0 / .4); }
 html.ux-dragging, html.ux-dragging * { user-select: none; -webkit-user-select: none; }
+/* Atrás del historial cuando Safari ya hizo su propia transición: se cierra sin repetirla */
+html.ux-instant .push-page, html.ux-instant .ai-page, html.ux-instant .sp { transition-duration: 1ms !important; }
+html.ux-instant .card-detail.closing { animation-duration: 1ms !important; }
 @media (prefers-reduced-motion: reduce) {
   html .push-page, html .ai-page, html .sp { transition-duration: 1ms !important; }
   html .card-detail.entering, html .card-detail.closing { animation-duration: 1ms !important; }

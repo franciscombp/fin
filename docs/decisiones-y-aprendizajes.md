@@ -400,6 +400,14 @@ presupuesto (ámbar al 80 %) e imprevistos como reserva → un resumen al volver
   quedaron de media columna) y los tonos de ingresos. El detector de CSS sin uso trata como usada
   toda clase que empiece con un prefijo que el código completa (`'algo-' +`); al podar a mano, buscar
   también el prefijo.
+- **Atrás del navegador y gesto de Safari:** cada pantalla completa abierta deja una entrada en el
+  historial (`navegacion.js` con `window.Overlay` de `sheets.js`), así el atrás del teléfono, del navegador
+  o el gesto desde el borde de Safari cierra la pantalla de arriba en vez de volver a una página anterior
+  (se veía el login detrás). En Safari de iPhone, en el navegador, no se usa el gesto propio: compite con
+  el de Safari. El análisis (`analisis.js`) ya registra su entrada y se excluye.
+- **`reverse()` en una animación en pausa:** Safari no la reanuda. El gesto deja en pausa la animación de
+  la pantalla de abajo; al cerrar quedaba corrida a medio camino (Inicio con una franja gris). Después de
+  `reverse()` se llama `play()`, y al terminar la animación se cancela siempre.
 - **Fondo amarillo y círculo amarillo** no se distinguen: en el splash se usa la variante azul.
 
 ## 11. Pendientes y preguntas abiertas
