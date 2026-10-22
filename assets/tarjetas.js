@@ -207,6 +207,33 @@
     });
   }
 
+  /* ---------- Vuelo entre la miniatura del hub y la tarjeta grande ----------
+     Una copia del arte se pone donde va la tarjeta grande y se anima desde el
+     tamaño y lugar de la miniatura (o al revés al cerrar). Mientras vuela, la
+     miniatura y la tarjeta real se ocultan. Si alguna no está a la vista, no
+     vuela (la pantalla solo hace su fundido) y devuelve false. */
+  var RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function volar(mini, grande, abrir) {
+    if (!mini || !grande || RM) return false;
+    var a = mini.getBoundingClientRect(), b = grande.getBoundingClientRect();
+    var visible = function (r) { return r.width > 0 && r.bottom > 0 && r.top < innerHeight; };
+    var arte = grande.querySelector('.tj-arte');
+    if (!arte || !visible(a) || !visible(b)) return false;
+    var c = arte.cloneNode(true);
+    c.classList.add('tj-vuelo');
+    c.style.left = b.left + 'px'; c.style.top = b.top + 'px'; c.style.width = b.width + 'px'; c.style.height = b.height + 'px';
+    document.body.appendChild(c);
+    var sx = a.width / b.width, sy = a.height / b.height;
+    var radio = parseFloat(getComputedStyle(mini).borderTopLeftRadius) || 8, grandeR = getComputedStyle(arte).borderTopLeftRadius;
+    var chico = { transform: 'translate(' + (a.left - b.left) + 'px, ' + (a.top - b.top) + 'px) scale(' + sx + ', ' + sy + ')', borderRadius: (radio / Math.min(sx, sy)) + 'px' };
+    var real = { transform: 'none', borderRadius: grandeR };
+    mini.style.visibility = 'hidden'; grande.style.visibility = 'hidden';
+    var an = c.animate(abrir ? [chico, real] : [real, chico], { duration: abrir ? 480 : 420, easing: 'cubic-bezier(.32, .72, 0, 1)', fill: 'forwards' });
+    var fin = function () { c.remove(); mini.style.visibility = ''; grande.style.visibility = ''; };
+    an.onfinish = fin; an.oncancel = fin;
+    return true;
+  }
+
   // Abrir una tarjeta por su nombre (accesos de Uku, Soporte y Destacados): su fila del hub si
   // existe; si no, la primera del mismo tipo, la primera de crédito, o el detalle directo
   function abrir(nombre) {
@@ -218,7 +245,7 @@
     if (r) r.click(); else if (window.openCardDetail) window.openCardDetail(k || 'debito');
   }
 
-  window.Tarjetas = { tipos: TIPOS, tipo: tipo, nombre: nombre, arte: arte, mini: mini, cuerpo: cuerpo, abrir: abrir, inclinar: mover, ajustar: ajustar,
+  window.Tarjetas = { tipos: TIPOS, tipo: tipo, nombre: nombre, arte: arte, mini: mini, cuerpo: cuerpo, abrir: abrir, inclinar: mover, ajustar: ajustar, volar: volar,
     // true cuando ya llegan lecturas del giroscopio (en iPhone, después de dar el permiso)
     giroActivo: function () { return vivo; } };
 })();

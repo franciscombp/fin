@@ -4946,7 +4946,7 @@
                     toggleAccountSwitch();
                 } else if (el.matches('.product-row') && el.dataset.tarjeta) {
                     // Tarjetas Pichibank del hub (assets/productos.js): su detalle con su arte
-                    openCardDetail(el.dataset.tarjeta, { saldo: +el.dataset.saldo || 0, ultimos: el.dataset.ultimos });
+                    openCardDetail(el.dataset.tarjeta, { saldo: +el.dataset.saldo || 0, ultimos: el.dataset.ultimos }, el.querySelector('.card-thumb'));
                 } else if (el.matches('.quick-action, .login-feature, .product-row')) {
                     openPushPage(el.dataset.action, el); // crece desde el botón/fila
                 } else if (el.dataset.action === 'Clave digital' && window.Ingreso) {
@@ -5608,7 +5608,9 @@
         // morph de la tarjeta quedó en respaldo/transiciones-anteriores.
         const CD_MS = 400;
         let gyroPedido = false; // el aviso del giroscopio sale como mucho una vez por visita
-        function openCardDetail(key = 'debito', datos) {
+        // Desde una miniatura del hub (mini), la tarjeta vuela de la miniatura a su lugar y la
+        // pantalla aparece con un fundido (Tarjetas.volar); sin miniatura, entra desde la derecha.
+        function openCardDetail(key = 'debito', datos, mini) {
             fx('open');
             const tipo = Tarjetas.tipos[key] ? key : (Tarjetas.tipo(key) || 'debito');
             applyCardTheme(tipo, datos);
@@ -5623,19 +5625,29 @@
             }
             hideCardData();
             cardDetail.classList.remove('scrolled');
+            cardDetail._mini = mini || null;
+            cardDetail.classList.toggle('is-morph', !!mini); // antes de 'open': navegacion.js no corre la pantalla de abajo
             cardDetail.classList.add('open', 'entering');
             cardDetail.scrollTop = 0;
             document.body.style.overflow = 'hidden';
+            if (mini) Tarjetas.volar(mini, cdCard, true);
             setTimeout(() => cardDetail.classList.remove('entering'), CD_MS + 40);
         }
 
         function closeCardDetail() {
             if (!cardDetail.classList.contains('open') || cardDetail.classList.contains('closing')) return;
             hideCardData();
+            // Con el botón, la tarjeta vuelve a su miniatura. Con el gesto (la pantalla ya sigue al
+            // dedo) o el atrás de Safari (que hizo su propia transición) se cierra deslizando.
+            const arrastrada = !!cardDetail.style.getPropertyValue('transform') || document.documentElement.classList.contains('ux-instant');
+            if (cardDetail.classList.contains('is-morph')) {
+                if (arrastrada) cardDetail.classList.remove('is-morph');
+                else Tarjetas.volar(cardDetail._mini, cdCard, false); // si alguna no se ve, queda solo el fundido
+            }
             cardDetail.classList.remove('scrolled', 'entering');
             cardDetail.classList.add('closing');
             setTimeout(() => {
-                cardDetail.classList.remove('open', 'closing');
+                cardDetail.classList.remove('open', 'closing', 'is-morph');
                 cardDetail.scrollTop = 0; // ya oculto, sin salto
                 document.body.style.overflow = '';
                 hideCardData();

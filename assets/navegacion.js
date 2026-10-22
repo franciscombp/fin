@@ -38,7 +38,8 @@
     scrim.style.zIndex = String(zOf(page) - 1);
     document.body.appendChild(scrim);
     var opts = { duration: RM ? 1 : DUR, easing: CURVE, fill: 'forwards' };
-    var anims = under.map(function (el) { return el.animate([{ translate: '0 0' }, { translate: SHIFT + ' 0' }], opts); });
+    // La tarjeta que crece desde su miniatura (.is-morph) no corre la pantalla de abajo: solo el velo
+    var anims = page.classList.contains('is-morph') ? [] : under.map(function (el) { return el.animate([{ translate: '0 0' }, { translate: SHIFT + ' 0' }], opts); });
     anims.push(scrim.animate([{ opacity: 0 }, { opacity: 1 }], opts));
     stack.push({ page: page, under: under, anims: anims, scrim: scrim });
     historial(page);

@@ -156,3 +156,15 @@
 
 /* En crédito el número va abajo a la izquierda: el aviso de deslizar no lo tapa */
 .cd-card:has(.tj-arte__num) .cd-card__hint { display: none; }
+
+/* Vuelo miniatura ↔ tarjeta grande (Tarjetas.volar): la copia del arte va sobre todo y la
+   pantalla de la tarjeta aparece y se va con un fundido en vez de deslizarse */
+.tj-vuelo { position: fixed; z-index: 400; margin: 0; transform-origin: 0 0; pointer-events: none; will-change: transform; box-shadow: 0 8px 24px rgb(0 0 0 / .18); }
+html .card-detail.is-morph.entering { animation: tjAparece .3s ease both !important; }
+html .card-detail.is-morph.closing { animation: tjSeVa .32s ease forwards !important; }
+@keyframes tjAparece { from { opacity: 0; } to { opacity: 1; } }
+@keyframes tjSeVa { from { opacity: 1; } to { opacity: 0; } }
+/* El contenido de abajo entra un instante después: la tarjeta lleva la transición */
+html .card-detail.is-morph.entering .cd-content { animation: tjSube .45s .08s cubic-bezier(.32, .72, 0, 1) both; }
+@keyframes tjSube { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { html .card-detail.is-morph.entering .cd-content { animation: none; } }
