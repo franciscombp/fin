@@ -2,7 +2,8 @@
    Tarjetas Pichibank: arte, datos y contenido del detalle de tarjeta
    (#card-detail en index.html).
    - Débito Digital: arte Visa amarillo, acciones y suscripciones.
-   - Crédito Black Miles: arte negro y la página en modo oscuro (tokens
+   - Crédito Black Miles: tarjeta en capas (fondo con líneas finas, la
+     tinta UV sobre esas líneas y logos) y la página en modo oscuro (tokens
      oscuros del DS solo en esta pantalla, con data-theme="dark").
    - Crédito Siembra (la Visa Pichibank blanca): tarjeta en capas (fondo,
      formas UV y logos). La tinta UV es solo luz: su brillo recorre las
@@ -27,12 +28,12 @@
       acciones: [['visibility', 'Ver datos', 'ver'], ['lock', 'Bloquear', 'Tarjeta bloqueada'], ['speed', 'Límites', 'Límites'], ['more_horiz', 'Más', 'Más opciones']]
     },
     black: {
-      titulo: 'Crédito Black Miles', img: A + 'credito-black.webp', alt: 'Tarjeta de crédito Mastercard Black', oscuro: true, credito: true,
+      titulo: 'Crédito Black Miles', capas: 'black', formas: false, mini: A + 'credito-black.webp', alt: 'Tarjeta de crédito Mastercard Black', oscuro: true, credito: true,
       numero: '5221 4471 8823 ', ultimos: '5432', vence: '11/28', cvv: '456', cupo: 40000, ir: 'Cupos de tu Black Miles',
       acciones: [['redeem', 'Millas', 'Millas'], ['request_quote', 'Avances', 'Avances'], ['call_split', 'Diferir', 'Diferir consumos'], ['more_horiz', 'Más', 'Más opciones']]
     },
     siembra: {
-      titulo: 'Crédito Siembra', uv: true, alt: 'Tarjeta de crédito Visa Siembra', credito: true,
+      titulo: 'Crédito Siembra', capas: 'siembra', mini: A + 'visa-credito/tarjeta.svg', alt: 'Tarjeta de crédito Visa Siembra', credito: true,
       numero: '4915 0627 3310 ', ultimos: '4409', vence: '03/30', cvv: '812', cupo: 8000, ir: 'Próximo estado de cuenta',
       acciones: [['stars', 'Puntos', 'Puntos'], ['request_quote', 'Avances', 'Avances'], ['call_split', 'Diferir', 'Diferir consumos'], ['more_horiz', 'Más', 'Más opciones']]
     }
@@ -69,15 +70,17 @@
     var ult = d.ultimos || t.ultimos;
     var estado = t.credito && !Number(d.saldo) ? '<span class="tj-arte__estado">' + ms('check_circle') + 'Estás al día</span>' : '';
     var num = t.credito ? '<span class="tj-arte__num">***' + esc(ult) + '</span>' : '';
-    var base = t.uv
-      ? '<div class="tuv" role="img" aria-label="' + esc(t.alt) + '"><span class="tuv__fondo"></span><span class="tuv__brillo"></span><span class="tuv__formas"></span><span class="tuv__tinta"></span><span class="tuv__luz"></span><span class="tuv__logos"></span></div>'
+    // En capas (Siembra, Black): fondo, brillo, formas UV (si el fondo no las trae), tinta, luz y logos
+    var base = t.capas
+      ? '<div class="tuv tuv--' + t.capas + '" role="img" aria-label="' + esc(t.alt) + '"><span class="tuv__fondo"></span><span class="tuv__brillo"></span>' +
+        (t.formas === false ? '' : '<span class="tuv__formas"></span>') + '<span class="tuv__tinta"></span><span class="tuv__luz"></span><span class="tuv__logos"></span></div>'
       : '<img class="tj-arte__img" src="' + t.img + '" alt="' + esc(t.alt) + '" draggable="false"><span class="tj-luz"></span>';
     return '<div class="tj-arte tj-arte--' + k + '">' + base + estado + num + '</div>';
   }
 
   // Miniatura para la fila del hub
   function mini(k) {
-    var src = k === 'siembra' ? A + 'visa-credito/tarjeta.svg' : (TIPOS[k] || TIPOS.debito).img;
+    var t = TIPOS[k] || TIPOS.debito, src = t.mini || t.img;
     return '<span class="card-thumb card-thumb--img" aria-hidden="true"><img src="' + src + '" alt=""></span>';
   }
 
