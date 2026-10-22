@@ -11,14 +11,6 @@
    ===================================================================== */
 (function () {
   'use strict';
-  // La versión clásica: la pestaña vuelve a ser Mis finanzas
-  if (new URLSearchParams(location.search).get('app') === 'clasica') {
-    document.addEventListener('DOMContentLoaded', function () {
-      var n = document.querySelector('.nav-item[data-view="1"]'); if (!n) return;
-      n.querySelector('.nav-item__label').textContent = 'Mis finanzas'; n.querySelector('.nav-item__wrap').innerHTML = '<span class="material-symbols-rounded">monitoring</span>';
-    });
-    return;
-  }
   var root = document.documentElement;
   root.classList.add('app-uku');
   var ASSET = (document.currentScript && document.currentScript.src || location.href).replace(/[^/]*$/, '');

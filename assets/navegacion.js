@@ -10,7 +10,7 @@
    clase .open); este módulo solo observa esa clase. */
 (function () {
   var PAGES = '.push-page, .card-detail, .as-page, .ai-page, .sp';
-  var BACKS = '#push-back, #finance-back, #cd-back, [data-as="back"], [data-ai="close"], [data-sp="back"]';
+  var BACKS = '#push-back, #cd-back, [data-as="back"], [data-ai="close"], [data-sp="back"]';
   var DUR = 400, CURVE = 'cubic-bezier(.32, .72, 0, 1)', SHIFT = '-30%', EDGE = 24;
   var RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var stack = []; // { page, under: [elementos], anims: [], scrim }

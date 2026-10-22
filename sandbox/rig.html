@@ -7,7 +7,7 @@
 <pre id="out">cargando…</pre>
 <script type="module">
 // ?oso=nuevo abre el oso de respaldo hecho por código
-const { loadUkuRig } = await import(new URLSearchParams(location.search).get('oso') === 'nuevo' ? './assets/uku-rig-nuevo.js' : './assets/uku-rig.js');
+const { loadUkuRig } = await import(new URLSearchParams(location.search).get('oso') === 'nuevo' ? '../assets/uku-rig-nuevo.js' : '../assets/uku-rig.js');
 const out = document.getElementById('out');
 const lines = [];
 const log = (m) => { lines.push(m); console.log('[uku-rig] ' + m); out.textContent = lines.join('\n'); };

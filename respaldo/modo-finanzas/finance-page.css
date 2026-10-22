@@ -1,0 +1,63 @@
+        /* ---------- Modo finanzas: resumen consolidado ---------- */
+        .finance-subtitle {
+            font-size: 15px;
+            color: var(--bp-text-secondary);
+            margin: -8px 0 16px;
+        }
+
+        .finance-hero {
+            display: flex;
+            align-items: stretch;
+            background: var(--bp-surface-container);
+            border-radius: var(--bp-radius-md);
+            padding: 18px 0;
+            margin-bottom: 12px;
+        }
+
+        .finance-hero__item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .finance-hero__label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--bp-text-helper);
+        }
+
+        .finance-hero__value {
+            font-size: 20px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .finance-hero__value--positive { color: var(--bp-theme-color-data-positive, #218c3b); }
+        .finance-hero__value--negative { color: var(--bp-status-warning-bg); }
+
+        .finance-hero__divider {
+            width: 1px;
+            background: var(--bp-border-divider);
+        }
+
+        .finance-networth {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 14px;
+            color: var(--bp-text-secondary);
+            padding: 10px 16px;
+            border-radius: 100px;
+            background: var(--bp-status-warning-bg-subtle);
+            margin-bottom: 24px;
+        }
+
+        .finance-networth strong { color: var(--bp-status-warning-bg); font-weight: 700; }
+
+        .finance-networth .material-symbols-rounded { font-size: 18px; }
+
+        #push-cta { margin-top: 8px; }
+

@@ -212,3 +212,10 @@ html:not(.theme-y2k) .ai-page .ai-chip--ai {
 
 /* ---- Revisión del 21 de octubre: clases que ya no aparecen en ningún HTML ni JS ---- */
 .prod-hero__ic { width: var(--bp-semantic-size-interactive-md); height: var(--bp-semantic-size-interactive-md); flex-basis: auto; border-radius: var(--bp-semantic-radius-md); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg); font-size: 28px; }
+
+/* ---- Revisión del 22 de octubre: clases que ya no aparecen en ningún HTML ni JS (tras retirar la versión clásica y Modo finanzas) ---- */
+.pfm-resumen__card { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-xs); width: 100%; margin: 0; padding: var(--bp-layout-card-padding); border: 0; border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; font: inherit; }
+.pfm-resumen__t, .pfm-resumen__s { font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-helper); }
+.pfm-resumen__m { font: var(--sol-numeric-xs); color: var(--bp-theme-color-text-primary); }
+.pfm-resumen__go { display: inline-flex; align-items: center; gap: var(--bp-semantic-spacing-micro-xs); margin-top: var(--bp-semantic-spacing-micro-md); font: var(--sol-body-md-semibold); color: var(--bp-theme-color-text-interactive); }
+.finance-hero__value--positive { color: var(--bp-theme-color-status-success-text); }

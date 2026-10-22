@@ -186,7 +186,7 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 
 /* Enlace de acción (bp-action-button tertiary/link): link-md subrayado en
    el azul de interacción, sin fondo. Es la acción de un título de sección. */
-.bp-link, .bp-action-button--link, .bp-section-title__action, .section__link, .cta-dashed__link, .debit-card-disabled__link, .sx-link, .pf-back, .pfm-undo, .uk-globo__go {
+.bp-link, .bp-action-button--link, .bp-section-title__action, .section__link, .sx-link, .pf-back, .pfm-undo, .uk-globo__go {
   display: inline-flex; align-items: center; gap: var(--bp-semantic-spacing-micro-xs);
   min-height: var(--bp-semantic-size-interactive-xxs); margin: 0; padding: 0 var(--bp-semantic-spacing-micro-xs);
   border: 0; border-radius: var(--bp-semantic-radius-sm); background: var(--bp-interaction-tertiary-bg);
@@ -324,12 +324,11 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 .bp-avatar[data-size="md"], .product-row .avatar-lg, .product-row .avatar-cat { width: var(--bp-semantic-size-avatar-md); height: var(--bp-semantic-size-avatar-md); flex-basis: var(--bp-semantic-size-avatar-md); }
 .bp-avatar[data-size="xs"] { width: var(--bp-semantic-size-avatar-xs); height: var(--bp-semantic-size-avatar-xs); flex-basis: var(--bp-semantic-size-avatar-xs); font-size: var(--bp-semantic-size-icon-xs); }
 .bp-avatar img, .avatar-cat img, .avatar-lg img { width: 100%; height: 100%; object-fit: cover; }
-/* Avatar de producto en los hubs y en la invitación punteada: cuadrado 32, radius sm, secondary */
-.tab-panel .product-row .avatar-lg, .cta-dashed .avatar-lg {
+/* Avatar de producto en los hubs: cuadrado 32, radius sm, secondary */
+.tab-panel .product-row .avatar-lg {
   width: var(--bp-semantic-size-avatar-xs); height: var(--bp-semantic-size-avatar-xs); flex: 0 0 var(--bp-semantic-size-avatar-xs);
   border-radius: var(--bp-semantic-radius-sm); background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg);
 }
-.cta-dashed .avatar-lg { background: var(--bp-theme-color-surface-container-default); }
 /* Ícono de fila sin círculo (buscador y Soporte según el cuadro de Figma): 24 en un hueco de 32 */
 .bp-avatar--plain, .sx .sx-row__ic, .uk-ay__ic, .uk-ay2__ic {
   display: inline-grid; place-items: center; flex: 0 0 32px; width: 32px; height: 32px; padding: 0;
@@ -362,19 +361,32 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 
 /* bp-section-title · 40 alto; texto body-sm/medium en text/helper, en frase
    (nunca mayúsculas); a la derecha, un enlace de acción. */
-.bp-section-title, .section__title, .pf-sec__head, .dw-section .section__title, .uk-ay__label, .uk-ay2__label {
+.bp-section-title, .section__title, .pf-sec__head, .dw-section .section__title, .uk-ay__label {
   display: flex; align-items: center; justify-content: space-between; gap: var(--bp-semantic-spacing-micro-lg);
   min-height: var(--bp-semantic-size-interactive-xs); margin: 0; padding: 0;
 }
-.bp-section-title__text, .section__title h2, .pf-sec h2, .pf-sec__head h2, .pv-sec h2, .sp-sec h2, .uk-ay__label h2, .as-sheet__label, .sx-card > h3, .pfm-chart__l, .cd-subtitle {
+.bp-section-title__text, .section__title h2, .pf-sec h2, .pf-sec__head h2, .pv-sec h2, .sp-sec h2, .uk-ay__label h2, .as-sheet__label, .sx-card > h3, .pfm-chart__l, .cd-subtitle, .push-label {
   flex: 1; min-width: 0; margin: 0; color: var(--bp-theme-color-text-helper); font: var(--sol-body-sm-medium);
   letter-spacing: 0; text-transform: none;
 }
 .bp-section-title__action { height: var(--bp-semantic-size-interactive-xxs); }
+/* Etiqueta de un bloque dentro de las páginas de acción (Favoritos, Contactos, Tus tarjetas…) */
+.push-label { display: block; margin: var(--bp-semantic-spacing-macro-sm) 0 var(--bp-semantic-spacing-micro-md); }
+
+/* Estado vacío dentro de una tarjeta de lista (Pagar tarjeta…) */
+.push-empty { margin: 0; padding: var(--bp-layout-card-padding); font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-helper); }
+
+/* Mapa esquemático de Retirar sin tarjeta: calles, tu ubicación y los puntos de retiro */
+.retiro-map { margin-bottom: var(--bp-semantic-spacing-micro-lg); border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-container-default); overflow: hidden; }
+.retiro-map svg { display: block; width: 100%; height: auto; }
+.retiro-map__road { fill: none; stroke: var(--bp-theme-color-surface-page-alt); stroke-width: 14; stroke-linecap: round; }
+.retiro-map__street { fill: none; stroke: var(--bp-theme-color-border-divider); stroke-width: 4; stroke-linecap: round; }
+.retiro-map__pin circle { fill: var(--bp-theme-color-interaction-tertiary-fg); stroke: var(--bp-theme-color-surface-container-default); stroke-width: 3; }
+.retiro-map__you { fill: var(--bp-theme-color-interaction-primary-bg); stroke: var(--bp-theme-color-text-primary); stroke-width: 2; }
 .pf-sec__sub, .uk-ay__label p { margin: 0; font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-helper); }
-.uk-ay2__label { flex: 0 0 auto; color: var(--bp-theme-color-text-helper); font: var(--sol-body-sm-medium); }
+
 /* Título de bloque (title/sm) cuando una tarjeta lleva encabezado propio */
-.bp-widget__title, .card__header-title, .as-sheet h3, .sheet__title, .uk-ay2__big, .soon__title, .prod-hero__t { margin: 0; color: var(--bp-theme-color-text-primary); font: var(--sol-title-sm); }
+.bp-widget__title, .card__header-title, .as-sheet h3, .sheet__title, .soon__title, .prod-hero__t { margin: 0; color: var(--bp-theme-color-text-primary); font: var(--sol-title-sm); }
 
 /* bp-section · 8 arriba, 16 abajo, margen de grilla a los lados */
 .bp-section, .section, .pf-sec, .pv-sec, .sp-sec { padding: var(--bp-semantic-spacing-micro-md) var(--bp-layout-grid-margin) var(--bp-semantic-spacing-macro-sm); margin: 0; }
@@ -412,18 +424,27 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 .card__header-meta .material-symbols-rounded { color: var(--bp-theme-color-icon-helper); font-size: var(--bp-semantic-size-icon-sm); }
 
 .card__footer-value { font: var(--sol-label-lg); font-variant-numeric: tabular-nums; color: var(--bp-theme-color-text-secondary); }
-.bp-widget--dashed, .cta-dashed, .debit-card-disabled {
-  position: relative; display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-lg); width: 100%; margin: 0;
-  border: 0; border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-container-default);
-  padding: calc(var(--bp-semantic-spacing-micro-md) + var(--bp-semantic-spacing-macro-sm)) calc(var(--bp-semantic-spacing-micro-md) * 2);
-  font: inherit; text-align: left; cursor: pointer;
+/* Tarjeta con acción (promos y grupos vacíos de los hubs): como las filas de Mis finanzas y Soporte. Ícono en
+   recuadro, la acción como título, por qué debajo y chevron. Sin recuadros punteados. */
+.bp-widget--dashed, .cta-dashed {
+  display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-lg); width: 100%; min-height: 72px; margin: 0; box-sizing: border-box;
+  padding: var(--bp-semantic-spacing-micro-lg) var(--bp-layout-card-padding); border: 0; border-radius: var(--bp-semantic-radius-md);
+  background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: inherit; text-align: left; cursor: pointer;
+  transition: background-color .15s var(--sol-ease);
 }
-.cta-dashed::before, .debit-card-disabled::before { content: ''; position: absolute; inset: var(--bp-semantic-spacing-micro-md); z-index: 0; pointer-events: none; border: var(--bp-semantic-border-thin) dashed var(--bp-theme-color-border-default); border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-surface-page-alt); }
-.cta-dashed > *, .debit-card-disabled > * { position: relative; z-index: 1; }
-.cta-dashed__text { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md); font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-brand); }
-.cta-dashed__link, .debit-card-disabled__link { font: var(--sol-label-md); color: var(--bp-theme-color-text-interactive); text-decoration: none; padding: 0; }
-.cta-dashed:active { transform: none; }
-.cta-dashed[hidden], .debit-card-disabled.is-hidden { display: none; }
+.cta-dashed::after { content: 'chevron_right'; flex: none; font-family: 'Material Symbols Rounded'; font-size: var(--bp-semantic-size-icon-md); line-height: 1; color: var(--bp-theme-color-icon-secondary); font-feature-settings: 'liga'; -webkit-font-feature-settings: 'liga'; }
+.cta-dashed:hover { background: var(--bp-interaction-row-bg--hover, var(--bp-theme-color-surface-container-default)); }
+.cta-dashed:active { background: var(--bp-interaction-row-bg--active); transform: none; }
+.cta-dashed .avatar-lg { flex: 0 0 40px; width: 40px; height: 40px; border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-surface-page-alt); color: var(--bp-theme-color-icon-primary, var(--bp-interaction-tertiary-fg)); }
+.cta-dashed .avatar-lg .material-symbols-rounded { font-size: 22px; }
+.cta-dashed .card-thumb { flex: none; }
+.cta-dashed__text { flex: 1; min-width: 0; display: flex; flex-direction: column-reverse; gap: 2px; font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-helper); }
+.cta-dashed__link { font: var(--sol-body-md-semibold); color: var(--bp-theme-color-text-primary); text-decoration: none; padding: 0; }
+.cta-dashed[hidden] { display: none; }
+/* Débito Digital sin activar (Destacado, al cambiar a una cuenta sin débito): una tarjeta gris, sin recuadro punteado */
+.debit-card-disabled { padding: var(--bp-layout-card-padding); border: 0; border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-page-alt); }
+.debit-card-disabled__link { font: var(--sol-label-md); color: var(--bp-theme-color-text-interactive); text-decoration: underline; text-underline-offset: 4px; padding: 0; }
+.debit-card-disabled.is-hidden { display: none; }
 
 /* bp-list-item (también bp-product-item y bp-transaction-item) · fila de
    tarjeta: 64 mínimo, relleno 12 arriba y abajo por el token de layout a los
@@ -623,11 +644,11 @@ html.is-title-small .top-bar__title { opacity: 1; transform: translate(-50%, -50
 /* bp-progress · barra 8 alto, radius full, pista data/chart/track, relleno
    en --tone (azul de interacción por defecto; verde al día, naranja al
    límite, rojo excedido). */
-.bp-progress, .uk-ay2__bar, .pfm-hub__bar, .pfm-row__bar, .pfm-play__bar {
+.bp-progress, .pfm-hub__bar, .pfm-row__bar, .pfm-play__bar {
   display: block; width: 100%; height: 8px; border-radius: var(--bp-semantic-radius-full); overflow: hidden;
   background: var(--bp-theme-color-data-chart-track);
 }
-.bp-progress > i, .uk-ay2__bar i, .pfm-hub__bar i, .pfm-row__bar i, .pfm-play__bar i { display: block; height: 100%; border-radius: inherit; background: var(--tone, var(--bp-interaction-tertiary-fg)); }
+.bp-progress > i, .pfm-hub__bar i, .pfm-row__bar i, .pfm-play__bar i { display: block; height: 100%; border-radius: inherit; background: var(--tone, var(--bp-interaction-tertiary-fg)); }
 .pf-meter--ok, .bp-progress--ok { --tone: var(--bp-theme-color-data-positive, var(--bp-theme-color-status-success-icon)); }
 .pf-meter--warn, .bp-progress--warn { --tone: var(--bp-theme-color-status-caution-icon); }
 .pf-meter--over, .bp-progress--over { --tone: var(--bp-theme-color-status-error-icon); }

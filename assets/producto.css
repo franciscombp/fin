@@ -18,6 +18,19 @@
 .pv-row--mov small { font: var(--cx-sub); color: var(--cx-muted); }
 .pv-row b.is-in { color: var(--cx-ink); }
 
+/* Producto genérico (débito, préstamos, inversiones, seguros, otros bancos): mismo lenguaje que la cuenta */
+.push-page.is-product:has(.pv--generico) { background: var(--bp-theme-color-surface-page-alt); }
+.push-page.is-product:has(.pv--generico) .push-eye { display: inline-grid !important; }
+.pv--generico .pv-balance { padding-top: var(--bp-semantic-spacing-macro-sm); }
+.pv--generico .pv-balance__value { margin: var(--bp-semantic-spacing-micro-xs) 0 !important; }
+.pv--generico .pv-bar { margin: var(--bp-semantic-spacing-micro-lg) auto 0; max-width: 240px; background: var(--bp-theme-color-data-chart-track); }
+.pv--generico .pv-bar i { background: var(--bp-theme-color-interaction-tertiary-fg); }
+.pv--generico .pv-filas { padding: var(--bp-semantic-spacing-micro-sm) var(--bp-semantic-spacing-macro-sm); }
+.pv--generico .pv-row { display: flex; justify-content: space-between; align-items: center; gap: var(--bp-semantic-spacing-micro-lg); }
+.pv--generico .pv-row + .pv-row { border-top: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); }
+.pv--generico .pv-movs > .pv-enlace { justify-content: space-between; padding: var(--bp-semantic-spacing-macro-sm); }
+.pv--generico .pv-movs > .pv-enlace + .pv-enlace { border-top: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); }
+
 /* ---------------------------------------------------------------------
    Cuenta (concepto "Principal") — composición con componentes Solar:
    bp-page-header · bp-widget (saldo, mes, movimientos) · bp-amount ·
@@ -76,6 +89,8 @@
   box-shadow: 0 0 0 2px var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-on-solid);
 }
 .pv-tx__em .material-symbols-rounded { font-size: var(--bp-semantic-size-icon-xxs); }
+.pv-tx__em--in { background: var(--bp-theme-color-status-success-bg); }
+.pv-tx__em--swap { background: var(--bp-theme-color-status-info-bg); }
 
 .pv-tx__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-sm); }
 .pv-tx__row, .pv-tx__det > span, .pv-tx__foot { display: flex; justify-content: space-between; gap: var(--bp-semantic-spacing-micro-lg); }

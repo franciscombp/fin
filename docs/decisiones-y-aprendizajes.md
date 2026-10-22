@@ -231,6 +231,24 @@ Cómo queda:
   alias. Antes de borrar, comprobar que ningún `html`, `js` (también `app.js` en la raíz) ni la demo
   de `buscador/` la usa.
 
+### 5.3.1 Limpieza del 22 de octubre: una sola versión de la app
+
+- **La app es solo la versión con Uku.** `clasica.html`, `asistente.html` y la rama `?app=clasica`
+  se retiraron a `respaldo/version-clasica/`; la página «Modo finanzas» (`#finance-page`) y su
+  intercepción en `asistente.js`, a `respaldo/modo-finanzas/`. Las etiquetas de las páginas push que
+  usaban `.finance-subtitle` ahora son `.push-label` (en `componentes.css`, con el título de sección).
+- **`uku-rig.html` vive en `sandbox/rig.html`**, junto al resto de pruebas. «Probar efectos» salió de
+  Perfil (los mismos efectos se prueban en `sandbox/animaciones.html`); su HTML y su JS quedaron en
+  `respaldo/probar-efectos/`.
+- **Placeholders con el estilo de la app:** los grupos vacíos de los hubs (Cuentas, Metas…) y las
+  sugerencias de Destacados son tarjetas sólidas con ícono en cuadro gris, título y enlace, el mismo
+  componente `.cta-dashed` (ya sin borde punteado). Nada de bordes punteados ni fondos transparentes.
+- **Página de producto genérica** (débito, préstamos, inversiones, seguros y productos de otros bancos):
+  usa el mismo lenguaje que la cuenta (título grande, tarjeta de saldo, acciones, «Detalle» y la lista
+  en tarjetas sobre fondo gris).
+- **Filas de Perfil sin pantalla propia** abren la página «Próximamente» con su ícono, en vez de un toast.
+  Seguridad abre el flujo de seguridad del login; «Uku, tu asistente personal» lleva al asistente.
+
 ### 5.4 Orquestador de Uku (acuerdo del 21 de octubre)
 
 **Nada de la lógica de las conversaciones va quemada en el front.** Todo lo que escribes en el chat (y cada
@@ -349,6 +367,11 @@ presupuesto (ámbar al 80 %) e imprevistos como reserva → un resumen al volver
 - **Componentes sin estilo:** al rehacer una pantalla desde cero se perdieron estilos que el código
   seguía usando («Lo que encontré», barras y datos de las respuestas). Antes de borrar CSS, buscar
   también lo contrario: clases que el JS genera y que no tienen ninguna regla.
+- **Clases armadas por código:** `'dw--' + w.size`, `'pf-meter--' + tono`, `'pv-tx__em--' + t.em`…
+  no aparecen literales en el código. Una poda anterior borró `.dw--m`/`.dw--l` (los widgets medianos
+  quedaron de media columna) y los tonos de ingresos. El detector de CSS sin uso trata como usada
+  toda clase que empiece con un prefijo que el código completa (`'algo-' +`); al podar a mano, buscar
+  también el prefijo.
 - **Fondo amarillo y círculo amarillo** no se distinguen: en el splash se usa la variante azul.
 
 ## 11. Pendientes y preguntas abiertas

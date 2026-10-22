@@ -252,14 +252,13 @@ button.pfm-row { cursor: pointer; }
 .pfm-row.pf-meter--ok { --tone: var(--bp-theme-color-status-info-icon, #3f7be0); }
 .pfm-row.pf-meter--warn { --tone: var(--bp-theme-color-status-caution-icon, #e2bb5c); }
 .pfm-row.pf-meter--over { --tone: var(--bp-theme-color-status-caution-text, #d39b3a); }
+.pfm-row.pf-meter--in { --tone: var(--bp-theme-color-status-success-icon, #1a8a4a); }
+.pfm-row.pf-meter--gris { --tone: var(--bp-theme-color-status-neutral-icon, #9aa1ad); }
+.pfm-row.pf-meter--gris b { color: var(--cx-muted); }
 
 .pfm-list .pf-note { margin: 16px 0; }
 
 /* Pie: qué ve Uku, sin caja */
-.pfm-foot { margin-top: var(--bp-semantic-spacing-macro-md, 40px) !important; padding-bottom: var(--bp-semantic-spacing-macro-md, 40px); }
-.pfm-foot .pf-note { margin: 0 0 var(--bp-semantic-spacing-micro-md, 8px); }
-.pfm-scope { display: flex; gap: 10px; }
-.pfm-scope .material-symbols-rounded { font-size: 20px; color: var(--cx-muted); }
 
 /* ---------- Hojas: deudas, por pagar, score, productos, movimientos ---------- */
 .pfm-sheet .pf-mcard { padding: 0; border-radius: 0 !important; background: none; }

@@ -15,7 +15,9 @@ copia la raíz y `assets/`.
 | `vistas/` | Vistas sin acceso desde la app (Tienda). |
 | `codigo-sin-uso/` | Funciones JS que ya nadie llama, una por archivo de origen (p. ej. las secciones viejas del hub de Mis finanzas y la tarjeta de Solicitudes). |
 | `sin-uso/` | Archivos que la app dejó de pedir (`sonda.txt`: la conexión ahora la dice el navegador). |
-| (versión anterior de la app) | No es una carpeta: la versión anterior, con Mis finanzas, el buscador y la ayuda por separado, sigue publicada en `clasica.html` (`index.html?app=clasica`). La principal es la versión asistente con Uku (`assets/uku-app.js`). |
+| `version-clasica/` | La versión anterior de la app (Mis finanzas como pestaña, el buscador y la ayuda por separado), que se abría con `?app=clasica`, y sus enlaces. La app tiene una sola versión: la de Uku. |
+| `modo-finanzas/` | La página antigua «Modo finanzas» (activos, pasivos y patrimonio): Mis finanzas la reemplazó. |
+| `probar-efectos/` | La sección «Probar efectos» que estaba en Perfil (HTML, enlace en `haptics.js` y estilos). Los efectos se prueban en `sandbox/animaciones.html`. |
 
 `tokens.css` y los nombres canónicos `bp-*` (y las utilidades `t-*`) de `componentes.css` no se
 limpian: son el vocabulario del design system de Figma, aunque la app todavía no use algunos.

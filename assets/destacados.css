@@ -36,6 +36,8 @@
   color: var(--cx-ink); text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .15s ease, box-shadow .2s ease;
 }
 .dw--s { grid-column: span 1; grid-row: span 1; }
+.dw--m { grid-column: span 2; grid-row: span 1; }
+.dw--l { grid-column: span 2; grid-row: span 2; }
 .dw:active { transform: scale(.985); }
 .dw p { margin: 0; }
 .dw-h { display: flex; align-items: center; gap: 6px; min-height: 20px; margin-bottom: 8px !important; font: var(--ui-body-sm-semibold, 600 13px/18px sans-serif); color: var(--cx-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -143,7 +145,7 @@ html.pb-masked .dw-s__m { display: inline; }
 
 /* Huecos con sugerencias: el espacio de Destacados nunca desaparece */
 .is-editing .dw--sug { animation: none; cursor: default; box-shadow: 0 0 0 1px var(--cx-line); }
-.dw-grid .dw.dw-slot { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 1.5px dashed color-mix(in srgb, currentColor 40%, transparent) !important; background: transparent !important; box-shadow: none !important; color: var(--bp-interaction-tertiary-fg); font: var(--ui-label-md, 600 14px/1 sans-serif); cursor: pointer; animation: none !important; }
+.dw-grid .dw.dw-slot { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--bp-theme-color-text-interactive); font: var(--ui-label-md, 600 14px/1 sans-serif); cursor: pointer; animation: none !important; }
 
 /* Sugerencia (slot fantasma): la × la descarta por un tiempo */
 .dw-grid .dw-dismiss { display: grid; place-items: center; position: absolute; top: 8px; right: 8px; z-index: 2; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--cx-muted); cursor: pointer; }
@@ -156,22 +158,21 @@ html.pb-masked .dw-s__m { display: inline; }
 @keyframes dwSkel { 50% { opacity: .45; } }
 @media (prefers-reduced-motion: reduce) { .dw-skel { animation: none; } }
 
-/* Slot fantasma y "Agregar widget": patrón bp-sale_of_products de los hubs */
+/* Sugerencias y "Agregar widget": misma tarjeta sólida que los placeholders de los hubs (.cta-dashed) */
 .dw-grid .dw.dw--hub, .dw-grid .dw.dw-slot {
-  background: transparent !important; box-shadow: none !important;
-  border: var(--bp-semantic-border-thin, 1px) dashed var(--bp-theme-color-border-default, #c7cedd) !important;
+  background: var(--bp-theme-color-surface-container-default) !important; box-shadow: none !important; border: 0 !important;
   border-radius: var(--bp-semantic-radius-md) !important;
 }
 .dw-grid .dw.dw--hub { display: flex; flex-direction: row; align-items: center; gap: var(--bp-semantic-spacing-micro-lg, 12px); padding: 16px 40px 16px 16px; cursor: pointer; }
 .dw-grid .dw--s.dw--hub { flex-direction: column; align-items: flex-start; justify-content: center; padding: 14px; }
-.dw-ghost__ic { display: grid; place-items: center; flex: 0 0 auto; width: var(--bp-semantic-size-avatar-xs, 40px); height: var(--bp-semantic-size-avatar-xs, 40px); border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-surface-container-default); color: var(--bp-interaction-secondary-fg); font-size: var(--bp-semantic-size-icon-md, 24px) !important; }
-.dw-ghost__t { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md, 8px); min-width: 0; font: var(--ui-body-sm-medium); color: var(--bp-theme-color-text-brand); }
+.dw-ghost__ic { display: grid; place-items: center; flex: 0 0 auto; width: var(--bp-semantic-size-avatar-xs, 40px); height: var(--bp-semantic-size-avatar-xs, 40px); border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-surface-page-alt); color: var(--bp-theme-color-text-primary); font-size: var(--bp-semantic-size-icon-md, 24px) !important; }
+.dw-ghost__t { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md, 8px); min-width: 0; font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-helper); }
 .dw-ghost__link { font: var(--ui-label-md); color: var(--bp-theme-color-text-interactive); }
 .is-editing .dw--sug, .is-editing .dw--wsug { animation: none; cursor: default; }
 .is-editing .dw--hub:not(.dw--sug):not(.dw--wsug) { padding-right: 40px; }
 
 /* Sugerencia de widget: nombre, ejemplo sin datos y acciones */
-.dw-ghost__name { font: var(--ui-label-md); color: var(--bp-theme-color-text-brand); }
+.dw-ghost__name { font: var(--sol-body-md-semibold); color: var(--bp-theme-color-text-primary); }
 .dw-ghost__acts { display: flex; gap: 16px; align-items: center; }
 button.dw-ghost__link { padding: 0; border: 0; background: none; cursor: pointer; }
 .dw-ghost__link--2 { color: var(--bp-theme-color-text-secondary) !important; }
@@ -181,7 +182,7 @@ button.dw-ghost__link { padding: 0; border: 0; background: none; cursor: pointer
 /* ---------- Fantasma con lo que ganarías (figurita por pegar) ---------- */
 .dw-grid .dw.dw--ghost { align-items: center; gap: 16px; padding: 20px 44px 20px 20px; }
 .dw--ghost .dw-ghost__t { flex: 1; gap: 10px; }
-.dw--ghost .dw-ghost__head { font: 600 16px/22px var(--sol-font, Roboto, sans-serif); color: var(--bp-theme-color-text-brand); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.dw--ghost .dw-ghost__head { font: var(--sol-body-md-semibold); color: var(--bp-theme-color-text-primary); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .dw--ghost .dw-ghost__link { display: inline-flex; align-items: center; gap: 2px; }
 .dw--ghost .dw-ghost__link .material-symbols-rounded { font-size: 20px; }
 .dw-ghost__fig { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 2px; max-width: 42%; text-align: center; }
@@ -197,5 +198,6 @@ button.dw-ghost__link { padding: 0; border: 0; background: none; cursor: pointer
 .dw--s.dw--ghost .dw-ghost__link { font-size: 13px; }
 .dw--wsug .dw-ghost__fig { margin-left: auto; opacity: .85; }
 .dw-grid .dw--m.dw--wsug { padding-right: 44px; }
-.dw-grid .dw--m.dw--wsug .dw-ghost__ic { display: none; }
+/* «Otros widgets» una sola vez aunque haya dos sugerencias */
+.dw--wsug ~ .dw--wsug .dw-ghost__link--2 { display: none; }
 .dw-ghost__acts button { white-space: nowrap; }
