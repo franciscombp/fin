@@ -28,12 +28,12 @@
       acciones: [['visibility', 'Ver datos', 'ver'], ['lock', 'Bloquear', 'Tarjeta bloqueada'], ['speed', 'Límites', 'Límites'], ['more_horiz', 'Más', 'Más opciones']]
     },
     black: {
-      titulo: 'Crédito Black Miles', capas: 'black', formas: false, mini: A + 'credito-black.webp', alt: 'Tarjeta de crédito Mastercard Black', oscuro: true, credito: true,
+      titulo: 'Crédito Black Miles', capas: 'black', fondo: A + 'black/fondo.svg', formas: false, mini: A + 'credito-black.webp', alt: 'Tarjeta de crédito Mastercard Black', oscuro: true, credito: true,
       numero: '5221 4471 8823 ', ultimos: '5432', vence: '11/28', cvv: '456', cupo: 40000, ir: 'Cupos de tu Black Miles',
       acciones: [['redeem', 'Millas', 'Millas'], ['request_quote', 'Avances', 'Avances'], ['call_split', 'Diferir', 'Diferir consumos'], ['more_horiz', 'Más', 'Más opciones']]
     },
     siembra: {
-      titulo: 'Crédito Siembra', capas: 'siembra', mini: A + 'visa-credito/tarjeta.svg', alt: 'Tarjeta de crédito Visa Siembra', credito: true,
+      titulo: 'Crédito Siembra', capas: 'siembra', fondo: A + 'visa-credito/fondo.svg', mini: A + 'visa-credito/tarjeta.svg', alt: 'Tarjeta de crédito Visa Siembra', credito: true,
       numero: '4915 0627 3310 ', ultimos: '4409', vence: '03/30', cvv: '812', cupo: 8000, ir: 'Próximo estado de cuenta',
       acciones: [['stars', 'Puntos', 'Puntos'], ['request_quote', 'Avances', 'Avances'], ['call_split', 'Diferir', 'Diferir consumos'], ['more_horiz', 'Más', 'Más opciones']]
     }
@@ -75,13 +75,13 @@
       ? '<div class="tuv tuv--' + t.capas + '" role="img" aria-label="' + esc(t.alt) + '"><span class="tuv__fondo"></span><span class="tuv__brillo"></span>' +
         (t.formas === false ? '' : '<span class="tuv__formas"></span>') + '<span class="tuv__tinta"></span><span class="tuv__luz"></span><span class="tuv__logos"></span></div>'
       : '<img class="tj-arte__img" src="' + t.img + '" alt="' + esc(t.alt) + '" draggable="false"><span class="tj-luz"></span>';
-    return '<div class="tj-arte tj-arte--' + k + '">' + base + estado + num + '</div>';
+    return '<div class="tj-arte tj-arte--' + k + '" data-tj="' + k + '">' + base + estado + num + '</div>';
   }
 
   // Miniatura para la fila del hub
   function mini(k) {
     var t = TIPOS[k] || TIPOS.debito, src = t.mini || t.img;
-    return '<span class="card-thumb card-thumb--img" aria-hidden="true"><img src="' + src + '" alt=""></span>';
+    return '<span class="card-thumb card-thumb--img" data-tj="' + k + '" aria-hidden="true"><img src="' + src + '" alt=""></span>';
   }
 
   // Contenido debajo de la tarjeta
@@ -173,6 +173,40 @@
     if (!vivo && e.target.closest && e.target.closest('.tj-arte') && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.tj-arte'))) mover(0, 0);
   });
 
+  /* ---------- Borde de contraste automático ----------
+     Se mide la orilla del arte (su fondo, o la imagen) y la línea interior sale
+     oscura si la orilla es clara, o clara si es oscura. Al reemplazar un SVG o una
+     imagen, el borde se adapta solo. Se calcula una vez por imagen. */
+  var bordes = {};
+  function orilla(src, listo) {
+    if (bordes[src]) return listo(bordes[src]);
+    var im = new Image();
+    im.onload = function () {
+      var w = 80, h = 50, c = document.createElement('canvas'), x = c.getContext('2d');
+      c.width = w; c.height = h;
+      try {
+        x.drawImage(im, 0, 0, w, h);
+        var d = x.getImageData(0, 0, w, h).data, suma = 0, peso = 0;
+        // Un anillo a 2 px de la orilla, sin las esquinas (redondeadas y transparentes)
+        var px = function (i, j) { var k = (j * w + i) * 4, a = d[k + 3] / 255; suma += a * (.2126 * d[k] + .7152 * d[k + 1] + .0722 * d[k + 2]) / 255; peso += a; };
+        for (var i = 12; i < w - 12; i++) { px(i, 2); px(i, h - 3); }
+        for (var j = 10; j < h - 10; j++) { px(2, j); px(w - 3, j); }
+        var claro = peso ? suma / peso > .5 : true;
+        bordes[src] = claro ? 'rgb(15 38 92 / .08)' : 'rgb(255 255 255 / .1)';
+      } catch (e) { bordes[src] = 'rgb(15 38 92 / .08)'; }
+      listo(bordes[src]);
+    };
+    im.src = src;
+  }
+  // Pinta el borde de todas las tarjetas y miniaturas dentro de root
+  function ajustar(root) {
+    (root || document).querySelectorAll('[data-tj]').forEach(function (el) {
+      var t = TIPOS[el.dataset.tj]; if (!t) return;
+      var src = el.classList.contains('card-thumb') ? (t.mini || t.img) : (t.fondo || t.img);
+      orilla(src, function (c) { el.style.setProperty('--tj-borde', c); });
+    });
+  }
+
   // Abrir una tarjeta por su nombre (accesos de Uku, Soporte y Destacados): su fila del hub si
   // existe; si no, la primera del mismo tipo, la primera de crédito, o el detalle directo
   function abrir(nombre) {
@@ -184,7 +218,7 @@
     if (r) r.click(); else if (window.openCardDetail) window.openCardDetail(k || 'debito');
   }
 
-  window.Tarjetas = { tipos: TIPOS, tipo: tipo, nombre: nombre, arte: arte, mini: mini, cuerpo: cuerpo, abrir: abrir, inclinar: mover,
+  window.Tarjetas = { tipos: TIPOS, tipo: tipo, nombre: nombre, arte: arte, mini: mini, cuerpo: cuerpo, abrir: abrir, inclinar: mover, ajustar: ajustar,
     // true cuando ya llegan lecturas del giroscopio (en iPhone, después de dar el permiso)
     giroActivo: function () { return vivo; } };
 })();

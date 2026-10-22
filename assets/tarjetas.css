@@ -100,13 +100,13 @@
 .cd-card .cd-copy, .cd-card .cd-data__close { background: color-mix(in srgb, currentColor 14%, transparent); color: inherit; }
 .cd-card .cd-copy:active, .cd-card .cd-data__close:active { background: color-mix(in srgb, currentColor 26%, transparent); }
 
-/* Borde de contraste: una línea interior de 1 px para que la tarjeta no se pierda en el fondo
-   (oscura y tenue en las claras, clara y tenue en la Black) */
+/* Borde de contraste: una línea interior de 1 px para que la tarjeta no se pierda en el fondo.
+   El color lo calcula tarjetas.js midiendo la orilla del arte (--tj-borde): oscura y tenue en
+   las tarjetas claras, clara y tenue en las oscuras. */
 .tj-arte::after, .card-thumb--img::after {
   content: ''; position: absolute; inset: 0; z-index: 2; border-radius: inherit; pointer-events: none;
-  box-shadow: inset 0 0 0 1px rgb(15 38 92 / .08);
+  box-shadow: inset 0 0 0 1px var(--tj-borde, rgb(15 38 92 / .08));
 }
-.tj-arte--black::after, [data-theme="dark"] .card-thumb--img::after { box-shadow: inset 0 0 0 1px rgb(255 255 255 / .1); }
 
 /* Miniatura en la fila del hub */
 .product-row .card-thumb--img { position: relative; padding: 0; overflow: hidden; background: none; border: 0; }

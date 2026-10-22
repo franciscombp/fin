@@ -267,6 +267,8 @@ Cómo queda:
   `[data-theme]`: un alias calculado en `:root` llega ya resuelto (claro) a los hijos.
 - **Crédito Siembra** es la Visa Pichibank blanca (Jorge, Luis y Andrés la tienen). El reverso de cada
   tarjeta toma su color (amarillo, grafito, plata) y todas llevan un borde interior de 1 px de contraste.
+  El color de ese borde se calcula midiendo la orilla del arte (`Tarjetas.ajustar`): oscuro y tenue si
+  la orilla es clara, claro y tenue si es oscura. Al reemplazar un SVG o una imagen se adapta solo.
 - **Luz con giroscopio en todas las tarjetas, sin color:** la Siembra (`assets/tarjetas/visa-credito/`) y la
   Black (`assets/tarjetas/black/`, cuyo fondo ya trae las líneas: la tinta va sobre esas líneas finas) son capas `fondo.svg`, un brillo
   sobre el fondo, `uv.svg` (formas), la tinta (brillo neutro recortado con la máscara `uv.svg`), un punto
