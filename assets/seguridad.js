@@ -12,13 +12,12 @@
      · transferencias en pausa: dentro de la app no se abren las acciones
        que sacan dinero;
      · tarjetas bloqueadas: se avisa al entrar.
-   - Último ingreso en este celular, con "¿No fuiste tú?".
    Todo es local (localStorage), como el resto del ingreso.
    ===================================================================== */
 (function () {
   'use strict';
 
-  var KEY = 'pb_seguridad', ULTIMO_KEY = 'pb_ultimo_ingreso';
+  var KEY = 'pb_seguridad';
   var TELEFONO = '1700 742 424';
   // Acciones que sacan dinero: se frenan con las transferencias en pausa
   var SALIDAS = ['Transferir dinero', 'Transferir', 'Pagar servicios', 'Recargar celular', 'Pagar tarjeta',
@@ -57,13 +56,6 @@
     if (d.toDateString() === hoy.toDateString()) return 'hoy, ' + hora;
     if (d.toDateString() === ayer.toDateString()) return 'ayer, ' + hora;
     return d.getDate() + ' ' + MESES[d.getMonth()] + ', ' + hora;
-  }
-  function equipo() {
-    var ua = navigator.userAgent || '';
-    if (/iPhone/.test(ua)) return 'iPhone';
-    if (/iPad/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) return 'iPad';
-    if (/Android/.test(ua)) return 'celular Android';
-    return 'computadora';
   }
 
   /* ---------- Centro de seguridad (bottom sheet) ---------- */
@@ -163,19 +155,6 @@
     else if (btn && e.acceso && !window.__authBusy) { btn.disabled = false; btn.textContent = 'Desbloquear y entrar'; }
     var otro = document.getElementById('btn-login-other');
     if (otro) otro.hidden = !!e.acceso;
-    pintarUltimo();
-  }
-  function pintarUltimo() {
-    var p = document.getElementById('login-ultimo');
-    if (!p) return;
-    var u = null;
-    try { u = JSON.parse(leer(ULTIMO_KEY) || 'null'); } catch (x) {}
-    p.hidden = !u;
-    if (!u) return;
-    p.textContent = '';
-    var no = h('button', { type: 'button', class: 'login-ultimo__link', text: '¿No fuiste tú?' });
-    no.addEventListener('click', function () { Ingreso.bloquear('robo', volver); });
-    p.append(icono('history'), h('span', { text: 'Último ingreso: ' + cuando(u.t) + ' en ' + u.equipo + '. ' }), no);
   }
 
   // Con el acceso bloqueado, todo intento de entrar pasa por usuario y contraseña
@@ -212,9 +191,8 @@
     fijar(e);
   });
 
-  // Al entrar: guarda el último ingreso y recuerda lo que sigue bloqueado
+  // Al entrar: recuerda lo que sigue bloqueado
   function alEntrar() {
-    guardar(ULTIMO_KEY, JSON.stringify({ t: new Date().toISOString(), equipo: equipo() }));
     var e = estado();
     var msj = e.tarjetas && e.transferencias ? 'Tus tarjetas siguen bloqueadas y tus transferencias en pausa'
       : e.tarjetas ? 'Tus tarjetas siguen bloqueadas por seguridad'

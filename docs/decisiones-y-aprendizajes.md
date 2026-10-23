@@ -68,7 +68,9 @@ navegación de cada pantalla; nunca sus estilos. En código:
 - `assets/tokens.css` es el export autogenerado de la biblioteca (capas `tokens.base`, `layout`, `semantic`
   y `theme`, con modos `data-theme` light/dark y `data-layout` por dispositivo). No se edita a mano salvo
   dos ajustes marcados con comentario: el modo por defecto sin atributo y el respaldo de fuente
-  (`Prelo, Roboto, sans-serif`, porque Prelo es comercial y no viaja con el prototipo). Al final va una
+  (`Prelo, Roboto, sans-serif`). Prelo y Prelo Slab viajan con la app en `assets/fonts/prelo` (WOFF2
+  convertidos de los OTF, `prelo.css`); Roboto queda solo como respaldo local. Toda tipografía usa los
+  roles del DS (`--sol-title-*`, `--sol-body-*`, `--sol-label-*`, `--sol-numeric-*`), no tamaños a mano. Al final va una
   capa `tokens.product`, mantenida a mano, con los alias que la app usa y el export no trae (interacción
   por estado `--hover/--active/--focus`, espaciados de composición, anillo de foco).
 - `assets/componentes-tokens.css` trae los tokens de componente (bp-button, bp-avatar, bp-tag, bp-spinner,
@@ -270,8 +272,8 @@ Cómo queda:
   alias (`componentes.css`, `componentes-tokens.css`, el `:root` de `index.html`) se declaran también en
   `[data-theme]`: un alias calculado en `:root` llega ya resuelto (claro) a los hijos.
 - **Crédito Siembra** es la Visa Pichibank blanca (Jorge, Luis y Andrés la tienen). El reverso de cada
-  tarjeta es su propio fondo difuminado bajo un velo (`Tarjetas.dorso`), en modo claro u oscuro según el
-  brillo promedio de ese fondo; todas llevan un borde interior de 1 px de contraste.
+  tarjeta es un color plano con el tono de su borde (`Tarjetas.dorso`): claro con texto azul u oscuro con
+  texto blanco; todas llevan un borde interior de 1 px de contraste.
   El color de ese borde se calcula midiendo la orilla del arte (`Tarjetas.ajustar`): oscuro y tenue si
   la orilla es clara, claro y tenue si es oscura. Al reemplazar un SVG o una imagen se adapta solo.
 - **Luz con giroscopio en todas las tarjetas, sin color:** la Siembra (`assets/tarjetas/visa-credito/`) y la

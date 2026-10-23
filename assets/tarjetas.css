@@ -89,17 +89,12 @@
   mix-blend-mode: screen; opacity: calc(var(--uv-luz) * .5);
 }
 
-/* Reverso: el fondo de cada tarjeta (--dorso-img, de tarjetas.js), difuminado y bajo un
-   velo que lo atenúa. data-dorso (medido del fondo) decide el modo: claro (velo blanco,
-   texto azul de marca) u oscuro (velo negro, texto blanco). */
-.cd-card { --dorso-velo: rgb(255 255 255 / .55); --dorso-fg: var(--bp-base-color-blue-500, #0f265c); }
-.cd-card[data-dorso="oscuro"] { --dorso-velo: rgb(0 0 0 / .45); --dorso-fg: #f5f5f7; }
-.cd-card .cd-face--back { background: var(--bp-theme-color-surface-container-default); color: var(--dorso-fg); overflow: hidden; }
-.cd-card .cd-face--back::before, .cd-card .cd-face--back::after { content: ''; position: absolute; inset: 0; pointer-events: none; }
-.cd-card .cd-face--back::before { inset: -32px; background: var(--dorso-img, none) center / cover no-repeat; filter: blur(16px) saturate(.85); }
-.cd-card .cd-face--back::after { background: var(--dorso-velo); }
-.cd-card .cd-data { position: relative; z-index: 1; }
-.cd-card .cd-verify, .cd-card .cd-data__close { z-index: 2; }
+/* Reverso: un color plano con el tono del borde de la tarjeta (tarjetas.js mide su orilla y
+   pone data-dorso): en las claras, el azul de marca al 8 % sobre blanco con texto azul; en
+   las oscuras, el blanco al 10 % sobre negro con texto blanco. */
+.cd-card { --dorso-bg: color-mix(in srgb, var(--bp-base-color-blue-500, #0f265c) 8%, #fff); --dorso-fg: var(--bp-base-color-blue-500, #0f265c); }
+.cd-card[data-dorso="oscuro"] { --dorso-bg: color-mix(in srgb, #fff 10%, #111); --dorso-fg: #f5f5f7; }
+.cd-card .cd-face--back { background: var(--dorso-bg); color: var(--dorso-fg); }
 .cd-card .cd-verify { color: inherit; }
 .cd-card .cd-copy, .cd-card .cd-data__close { background: color-mix(in srgb, currentColor 14%, transparent); color: inherit; }
 .cd-card .cd-copy:active, .cd-card .cd-data__close:active { background: color-mix(in srgb, currentColor 26%, transparent); }

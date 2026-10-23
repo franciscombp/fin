@@ -14,19 +14,6 @@
 .login-sos:active { background: var(--bp-theme-color-status-error-bg-subtle); transform: scale(.97); }
 .login-sos:focus-visible { outline: 2px solid var(--bp-theme-color-border-focus); outline-offset: 2px; }
 
-.login-ultimo {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 2px 4px;
-  margin: 0; text-align: center;
-  font: var(--sol-body-sm-medium, 500 13px/18px var(--sol-font, Roboto, sans-serif));
-  color: var(--bp-theme-color-text-secondary);
-}
-.login-ultimo[hidden] { display: none; }
-.login-ultimo .material-symbols-rounded { font-size: 16px; }
-.login-ultimo__link {
-  padding: 0; border: 0; background: none; cursor: pointer;
-  font: inherit; font-weight: 600; color: var(--bp-theme-color-text-interactive);
-  text-decoration: underline; text-underline-offset: 2px;
-}
 #login-bloqueo { width: 100%; }
 #login-bloqueo[hidden] { display: none !important; }
 

@@ -103,7 +103,7 @@
 .sp-cat:active, .sp-tut:active { transform: scale(.97); }
 .sp-tutpage { margin-top: 16px; padding: 24px 20px; border-radius: 16px; background: var(--bp-theme-color-surface-container-default); }
 .sp-tutpage__ic { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--bp-theme-color-avatar-bg); color: var(--bp-theme-color-avatar-fg); font-size: 26px; }
-.sp-tutpage h2 { margin: 16px 0 4px; font: 600 22px/28px var(--sol-font, Roboto, sans-serif); color: var(--bp-theme-color-text-primary); }
+.sp-tutpage h2 { margin: 16px 0 4px; font: var(--sol-title-md); color: var(--bp-theme-color-text-primary); }
 .sp-tutpage > p { margin: 0; font: var(--cx-sub); color: var(--bp-theme-color-text-helper); }
 .sp-steps { counter-reset: st; list-style: none; margin: 20px 0 24px; padding: 0; }
 .sp-steps li { counter-increment: st; position: relative; display: flex; gap: 14px; padding: 0 0 20px; font: var(--ui-body-md-regular); }

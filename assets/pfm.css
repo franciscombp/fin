@@ -82,7 +82,7 @@
 .pfm-card__av > .material-symbols-rounded { font-size: 30px; }
 .pfm-card__av.is-mes { background: var(--bp-interaction-primary-bg, #ffdd00); color: var(--bp-interaction-primary-fg, #0f265c); }
 .pfm-card__av em { position: absolute; right: -4px; bottom: -4px; width: 26px; height: 26px; display: grid; place-items: center; border: 2px solid var(--bp-theme-color-surface-page-default, #f5f5f5); border-radius: 50%; background: var(--bp-theme-color-surface-container-default); font-size: 16px; font-style: normal; color: var(--bp-interaction-tertiary-fg); }
-.pfm-card__amt { margin-top: var(--bp-semantic-spacing-micro-lg, 16px) !important; font: 700 48px/56px var(--sol-font, Roboto, sans-serif); letter-spacing: -1.5px; font-variant-numeric: tabular-nums; }
+.pfm-card__amt { margin-top: var(--bp-semantic-spacing-micro-lg, 16px) !important; font: var(--sol-numeric-md); letter-spacing: -1.5px; font-variant-numeric: tabular-nums; }
 .pfm-card__amt.is-pos { color: var(--bp-theme-color-status-success-text, #13703b); }
 .pfm-card__who { margin-top: 4px !important; font: var(--cx-headline); letter-spacing: -.2px; color: var(--bp-interaction-tertiary-fg); }
 .pfm-card__meta { max-width: 300px; margin-top: 6px !important; font: var(--cx-caption); color: var(--cx-muted); }
