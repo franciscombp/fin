@@ -382,6 +382,22 @@ guarde solo», que programa el monto para el día que cobras, en tu Ahorro flexi
 tienes un débito automático con el banco (Andrés: $100 el día 1), lo muestra y usa su día. Se guarda en
 `ST.presG[u].ahorro` y `ST.ahorroProg[u]`; deshacer el presupuesto deshace también el ahorro programado.
 
+### 5.8 Mis gastos: el periodo manda en toda la pantalla (23 de octubre)
+
+Mis gastos abre siempre en **Mes**, porque el gasto se controla por mes. Las pestañas (Semana, Mes, 6 meses,
+Año) y la barra que toques en la gráfica deciden el periodo de toda la pantalla: la cifra grande, las
+categorías («Por grupo, el jueves 15 oct.») y, si es un día, la tarjeta «Movimientos» de ese día debajo de
+las categorías. «Ver todo el mes» (junto a la cifra) o tocar otra vez la barra vuelve al periodo completo, y
+la pantalla no salta arriba al elegir un día.
+
+El presupuesto del mes se lee sin adivinar: «$350,78 de $430», una sola barra (azul a tiempo, ámbar si vas
+más rápido que el mes, rojo si te pasaste), «Te quedan $79,22: unos $4,66 al día por 17 días» y la
+proyección como frase en un aviso («A este ritmo cierras el mes en $724,95: $294,95 más de tu presupuesto»).
+Se quitaron el rayado de la proyección y la marca del día.
+
+Las filas de movimiento muestran el nombre como se lee (sin las MAYÚSCULAS del banco), en qué grupo va y con
+qué lo pagaste en una sola línea de ayuda; la etiqueta queda solo para «Por revisar».
+
 ## 6. Buscador
 
 - Sin título ni subtítulo: la hoja es el campo, el micrófono, la cámara y "Cancelar".
