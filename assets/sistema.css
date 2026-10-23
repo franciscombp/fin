@@ -97,7 +97,6 @@
    Uku conversa: sus recomendaciones son mensajes (burbuja como la del
    chat) con una respuesta sugerida que continúa la charla en el asistente.
    ===================================================================== */
-.uku-say { display: flex; align-items: flex-start; gap: 8px; }
 .uku-say__face { flex: 0 0 32px; width: 32px; height: 32px; border-radius: 50%; overflow: hidden; }
 .uku-say__face:not(:empty) { background: var(--cx-fill); }
 .uku-say__bubble { margin: 0; padding: 12px 16px; border-radius: 4px 16px 16px 16px; background: var(--cx-fill); color: var(--cx-ink); font: var(--bp-semantic-typography-brand-body-md-regular-font-weight) var(--bp-semantic-typography-brand-body-md-regular-font-size)/var(--bp-semantic-typography-brand-body-md-regular-line-height) var(--sol-font, Roboto, sans-serif); }
@@ -333,7 +332,6 @@ html.is-title-small .view.active .pf-head h1, html.is-title-small .view.active.p
    ===================================================================== */
 .skeleton { background: linear-gradient(90deg, var(--bp-theme-color-interaction-selection-bg-active-subtle) 25%, var(--bp-theme-color-interaction-selection-bg-hover) 50%, var(--bp-theme-color-interaction-selection-bg-active-subtle) 75%); background-size: 200% 100%; }
 .skeleton, .skeleton-card { border-radius: var(--bp-semantic-radius-md); }
-.card-thumb--ghost { background: var(--bp-theme-color-surface-container-default); border-color: var(--bp-theme-color-border-default); }
  
 .bp-logo { display: block; height: var(--bp-semantic-size-logo-sm); width: auto; }
 :root[data-theme="dark"] .home-banner__slide--1 { background: color-mix(in srgb, var(--bp-base-color-yellow-500) 14%, var(--bp-theme-color-surface-container-default)); }
@@ -341,7 +339,6 @@ html.is-title-small .view.active .pf-head h1, html.is-title-small .view.active.p
 :root[data-theme="dark"] .home-banner__slide--3 { background: color-mix(in srgb, var(--bp-base-color-green-500, #1e9e5a) 18%, var(--bp-theme-color-surface-container-default)); }
 :root[data-theme="dark"] .home-banner__title { color: var(--bp-theme-color-text-primary); }
  :root[data-theme="dark"] .grow-cta__art { opacity: .35; }
-:root[data-theme="dark"] .card-thumb--diners { background: var(--bp-base-color-neutral-300, #bdbdbd); }
 :root[data-theme="dark"] .push-qr__code { background: #fff; } /* el QR necesita fondo claro para escanearse */
 :root[data-theme="dark"] .login-logo { content: url("./pichibank-logo--white.svg"); }
 

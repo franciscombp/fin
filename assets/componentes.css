@@ -300,7 +300,7 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 .bp-segmented { display: flex; padding: var(--bp-semantic-spacing-micro-md) var(--bp-layout-grid-margin); }
 .bp-segmented__track { flex: 1; display: flex; gap: var(--bp-semantic-spacing-micro-sm); padding: var(--bp-semantic-spacing-micro-sm); border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-interaction-segmented-bg); }
 .bp-segmented-item {
-  flex: 1 1 0; min-width: 0; height: var(--bp-semantic-size-interactive-sm); padding: 0 var(--bp-semantic-spacing-micro-lg);
+  flex: 1 1 0; min-width: 0; height: var(--bp-semantic-size-interactive-sm); padding: 0 var(--bp-semantic-spacing-micro-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   border: 0; border-radius: var(--bp-semantic-radius-sm); cursor: pointer;
   background: var(--bp-interaction-selection-subtle-bg); color: var(--bp-interaction-selection-subtle-fg); font: var(--sol-body-sm-semibold);
   transition: background-color .2s var(--sol-ease), color .2s var(--sol-ease);
@@ -483,7 +483,7 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 /* Filas sueltas (sin tarjeta) van sin relleno lateral: hojas de Uku, Perfil de producto, lista de movimientos */
 .as-sheet .as-row, .as-sheet .pf-tx, .as-sheet .pfm-tx, .as-sheet .pfm-debt, .as-sheet .pfm-inc, .pv-row, .pf-page--inline .pf-tx { padding-left: 0; padding-right: 0; background: transparent; }
 /* En modo oscuro la fila va sobre la misma superficie que la tarjeta */
-[data-theme="dark"] .list-item, [data-theme="dark"] .product-row { background: var(--bp-theme-color-surface-container-default); border-color: var(--bp-theme-color-border-divider-alt); }
+[data-theme="dark"] .bp-list-item, [data-theme="dark"] .list-item, [data-theme="dark"] .product-row { background: var(--bp-theme-color-surface-container-default); border-color: var(--bp-theme-color-border-divider-alt); }
 
 /* ---------- 6. Hojas inferiores, toast, alerta, tips ---------- */
 
@@ -622,10 +622,17 @@ html.is-title-small .top-bar__title { opacity: 1; transform: translate(-50%, -50
 .bp-text-field--disabled .bp-text-field__field, .bp-text-field__field:has(> :disabled) { background: var(--bp-theme-color-field-bg-disabled); border-color: var(--bp-theme-color-field-border-disabled); color: var(--bp-theme-color-text-disabled); }
 .bp-text-field--disabled, .bp-text-field--disabled .bp-text-field__label, .bp-text-field--disabled .bp-text-field__input, .bp-text-field__input:disabled, .bp-text-field--disabled .bp-text-field__leading { color: var(--bp-theme-color-text-disabled); }
 
-/* Interruptor → bp-switch */
-.pref-switch { background: var(--bp-theme-color-field-control-inactive); }
-.pref-switch__knob { background: var(--bp-theme-color-field-thumb); }
-[aria-pressed="true"] .pref-switch { background: var(--bp-theme-color-field-control-active); }
+/* bp-switch · interruptor 44×26 con perilla de 22; se enciende con aria-pressed (o aria-checked) en el botón que lo contiene */
+.bp-switch, .pref-switch {
+  position: relative; flex: none; width: 44px; height: 26px; border-radius: var(--bp-semantic-radius-full);
+  background: var(--bp-theme-color-field-control-inactive); transition: background-color .2s var(--sol-ease);
+}
+.bp-switch__knob, .pref-switch__knob {
+  position: absolute; top: 2px; left: 2px; width: 22px; height: 22px; border-radius: var(--bp-semantic-radius-full);
+  background: var(--bp-theme-color-field-thumb); transition: transform .2s cubic-bezier(.3, 1.4, .5, 1);
+}
+[aria-pressed="true"] .bp-switch, [aria-checked="true"] .bp-switch, [aria-pressed="true"] .pref-switch { background: var(--bp-theme-color-field-control-active); }
+[aria-pressed="true"] .bp-switch__knob, [aria-checked="true"] .bp-switch__knob, [aria-pressed="true"] .pref-switch__knob { transform: translateX(18px); }
 
 /* bp-amount · cifra numeric sm/md/lg con ojo (bp-action-button) */
 .bp-amount { display: inline-flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md); }
