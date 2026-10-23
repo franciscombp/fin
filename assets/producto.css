@@ -111,7 +111,6 @@
   font: var(--bp-semantic-typography-brand-link-md-font-weight) var(--bp-semantic-typography-brand-link-md-font-size)/var(--bp-semantic-typography-brand-link-md-line-height) var(--sol-font);
 }
 .pv-more .material-symbols-rounded { font-size: var(--bp-semantic-size-icon-sm); }
-.pv-more:hover { text-decoration: underline; text-underline-offset: 3px; }
 
 /* ---------------------------------------------------------------------
    Diseños por tipo de cuenta (conceptos): ahorro flexible, meta de

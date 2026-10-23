@@ -344,6 +344,13 @@ ahí es lo que se ve en la app. Tiene modo claro/oscuro, filtro por nombre o cla
 automática que marca con un ícono rojo un componente que no se ve o un token de color sin valor.
 Al agregar un componente, se suma su entrada en el arreglo `S` del catálogo.
 
+**Enlace o botón de acción (23 de octubre).** El enlace subrayado (`bp-link`) es solo para abrir una página
+fuera de la app. Toda acción de texto dentro de la app (Ver más, Cambiar, Borrar, Volver a ayuda, Deshacer,
+Recuperar usuario…) es un `bp-action-button`; si va sin fondo, `bp-action-button--tertiary`: label-md, sin
+subrayado y con fondo solo al pasar o tocar. En un título de sección va en tamaño sm, alineado al borde.
+Las clases viejas (`section__link`, `sx-link`, `pf-back`, `login-button--tertiary`, `btn--tertiary`…) son
+alias de ese terciario en `componentes.css`.
+
 **Margen de página.** La documentación de Layout en Figma dice 16 a 360 px y 24 desde 390 px, pero el
 `tokens.css` exportado del mismo archivo dice 16 para mobile-sm y mobile-md. Se dejan los tokens (16)
 como fuente de verdad hasta que el DS lo aclare.
