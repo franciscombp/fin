@@ -345,8 +345,16 @@
       var fit = function () {
         if (!open_) return;
         var vv = window.visualViewport;
-        el.style.setProperty('--sx-h', vv.height + 'px');
-        el.style.setProperty('--sx-top', vv.offsetTop + 'px');
+        // Sólo se sigue al viewport visual cuando el teclado lo achica. El rebote
+        // elástico de iOS (p. ej. al abrir con el tirón desde Inicio) también lo
+        // mueve, con offsetTop negativo, y el panel quedaba corrido hacia arriba.
+        if (el.clientHeight - vv.height > 100) {
+          el.style.setProperty('--sx-h', vv.height + 'px');
+          el.style.setProperty('--sx-top', Math.max(0, vv.offsetTop) + 'px');
+        } else {
+          el.style.removeProperty('--sx-h');
+          el.style.removeProperty('--sx-top');
+        }
       };
       visualViewport.addEventListener('resize', fit);
       visualViewport.addEventListener('scroll', fit);
