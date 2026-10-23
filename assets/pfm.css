@@ -208,25 +208,37 @@
 .pfm-chart__x.is-days span.is-on { border-radius: var(--bp-semantic-radius-sm, 8px); background: var(--bp-interaction-selectable-selected-bg); }
 .pfm-chart__x.is-days span.is-on b, .pfm-chart__x.is-days span.is-on small { color: var(--bp-interaction-selectable-selected-fg); }
 .pfm-chart__hint { margin: 12px 0 0; font: var(--cx-caption); color: var(--cx-muted); text-align: center; }
-.pfm-dia { margin-top: 16px; padding: 4px 16px !important; animation: pfmUp .3s ease both; }
-.pfm-dia__t { display: flex; justify-content: space-between; align-items: baseline; margin: 12px 0 4px; font: var(--ui-body-md-semibold); }
-.pfm-dia__t span { font: var(--cx-sub); color: var(--cx-muted); }
-.pfm-dia .pfm-tx:last-child { border-bottom: 0; }
-.pfm-budget { margin-top: var(--bp-semantic-spacing-micro-lg, 16px); }
-.pfm-bar { position: relative; display: flex; height: 8px; border-radius: 99px; background: color-mix(in srgb, var(--bp-interaction-tertiary-fg) 12%, transparent); }
-.pfm-bar i { display: block; height: 100%; border-radius: 99px; transition: width .4s ease; }
-.pfm-bar i.is-gast { background: var(--bp-interaction-tertiary-fg); }
-.pfm-bar i.is-gast.is-over { background: var(--bp-theme-color-status-caution-text, #d39b3a); }
-.pfm-bar i.is-proj { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--bp-interaction-tertiary-fg) 45%, transparent) 0 3px, transparent 3px 6px); border-radius: 0 99px 99px 0; }
-.pfm-bar i.is-gast + i.is-proj { margin-left: -4px; padding-left: 4px; }
-.pfm-bar i.is-proj.is-over { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--bp-theme-color-status-caution-text, #d39b3a) 60%, transparent) 0 3px, transparent 3px 6px); }
-.pfm-budget__proj { margin: 4px 0 0 !important; font: var(--cx-sub); color: var(--cx-muted); }
-.pfm-budget__proj b { color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
-.pfm-budget__proj.is-over b { color: var(--bp-theme-color-status-caution-text, #a86b00); }
-.pfm-bar em { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--bp-theme-color-text-primary); opacity: .4; }
-.pfm-budget__t { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: var(--bp-semantic-spacing-micro-md, 8px) 0 0 !important; font: var(--cx-sub); color: var(--cx-muted); }
+/* Movimientos del día elegido: su propia sección, debajo de las categorías */
+.pfm-dia { animation: pfmUp .3s ease both; }
+.pfm-txlist .pfm-tx:first-child { padding-top: 0; }
+.pfm-txlist .pf-tx__main small { white-space: normal; }
+.pfm-txlist .pfm-tx:last-child { border-bottom: 0; }
+.pfm-tx .bp-tag { align-self: flex-start; margin-top: var(--bp-semantic-spacing-micro-sm); }
+/* Junto a «Gasto del día», la vuelta al periodo completo */
+.pfm-chart__head .pfm-chart__l { display: flex; align-items: center; justify-content: space-between; gap: var(--bp-semantic-spacing-micro-md); }
+.pfm-chart__volver { margin-right: calc(-1 * var(--bp-semantic-spacing-micro-lg)); }
+
+/* Presupuesto del mes: «$350 de $430», una sola barra (verde/azul a tiempo, ámbar adelantado, rojo pasado)
+   y en texto cuánto te queda al día y cómo cerrarías. Sin rayados ni marcas que haya que adivinar. */
+.pfm-budget { margin-top: var(--bp-semantic-spacing-macro-md); padding-top: var(--bp-semantic-spacing-macro-sm); border-top: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); }
+.pfm-budget__top { display: flex; align-items: center; justify-content: space-between; gap: var(--bp-semantic-spacing-micro-md); margin: 0; font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-helper); }
+.pfm-budget__v { margin: var(--bp-semantic-spacing-micro-sm) 0 var(--bp-semantic-spacing-micro-md); font: var(--sol-body-md-medium); color: var(--bp-theme-color-text-secondary); font-variant-numeric: tabular-nums; }
+.pfm-budget__v b { font: var(--sol-numeric-xs); color: var(--bp-theme-color-text-primary); }
+.pfm-bar { position: relative; display: flex; height: 8px; border-radius: var(--bp-semantic-radius-full); background: var(--bp-theme-color-data-chart-track); overflow: hidden; }
+.pfm-bar i { display: block; height: 100%; border-radius: inherit; transition: width .4s ease; }
+.pfm-bar i.is-ok { background: var(--bp-interaction-tertiary-fg); }
+.pfm-bar i.is-warn { background: var(--bp-theme-color-status-caution-icon); }
+.pfm-bar i.is-over { background: var(--bp-theme-color-status-error-icon); }
+.pfm-budget__t { margin: var(--bp-semantic-spacing-micro-md, 8px) 0 0 !important; font: var(--cx-sub); color: var(--cx-muted); }
+/* Sin presupuesto: el texto y su acción en una fila */
+.pfm-budget__t--sin { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .pfm-budget__t b { color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
 .pfm-budget__t .section__link { flex: 0 0 auto; }
+.pfm-budget__proj { display: flex; align-items: flex-start; gap: var(--bp-semantic-spacing-micro-md); margin: var(--bp-semantic-spacing-micro-lg) 0 0 !important; padding: var(--bp-semantic-spacing-micro-lg); border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-status-success-bg-subtle); font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-primary); }
+.pfm-budget__proj .material-symbols-rounded { flex: none; font-size: 20px; color: var(--bp-theme-color-status-success-icon); }
+.pfm-budget__proj.is-over { background: var(--bp-theme-color-status-caution-bg-subtle); }
+.pfm-budget__proj.is-over .material-symbols-rounded { color: var(--bp-theme-color-status-caution-icon); }
+.pfm-budget__proj b { font-variant-numeric: tabular-nums; }
 
 .pfm-dcard__cmp { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
 .pfm-dcard__row { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; align-items: baseline; }
@@ -426,8 +438,8 @@ button.pfm-tx { width: 100%; border-left: 0; border-right: 0; border-top: 0; bac
 .pfm-wiz__prog { overflow: visible; }
 .pfm-wiz__prog i { height: 100%; border-radius: inherit; background: var(--bp-theme-color-data-chart-primary-1); animation: pfmWizBar .5s ease-out .2s both; transform-origin: left; }
 @keyframes pfmWizBar { from { transform: scaleX(0); } }
-.pfm-wiz__prog.is-over i { background: var(--bp-theme-color-status-warning-bg); }
-.pfm-wiz__prog em { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--bp-theme-color-text-primary); }
+.pfm-wiz__prog.is-warn i { background: var(--bp-theme-color-status-caution-icon); }
+.pfm-wiz__prog.is-over i { background: var(--bp-theme-color-status-error-icon); }
 .pfm-wiz__progl { display: flex; justify-content: space-between; gap: var(--bp-semantic-spacing-micro-md); margin-top: var(--bp-semantic-spacing-micro-md); font: var(--sol-body-xs-medium); color: var(--bp-theme-color-text-helper); }
 .pfm-wiz__progl b { color: var(--bp-theme-color-text-primary); font-weight: 600; font-variant-numeric: tabular-nums; }
 .pfm-wiz__tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: var(--bp-semantic-spacing-micro-md); }

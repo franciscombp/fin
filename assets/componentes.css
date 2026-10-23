@@ -365,7 +365,7 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 .profile-head__avatar { background: var(--bp-icon-solid-bg); color: var(--bp-theme-color-icon-on-solid); }
 
 /* bp-tag · solo lectura, 24 alto (sm 16), radius full, body-xs/semibold */
-.bp-tag, .tag, .pfm-pill {
+.bp-tag, .tag {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--bp-semantic-spacing-micro-xs); flex-shrink: 0;
   box-sizing: border-box; height: var(--bp-tag-height); padding: 0 var(--bp-semantic-spacing-micro-md);
   border-radius: var(--bp-semantic-radius-full); white-space: nowrap; font: var(--sol-body-xs-semibold);
@@ -377,8 +377,8 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 .bp-tag--pending { background: var(--bp-theme-color-status-pending-bg-subtle); color: var(--bp-theme-color-status-pending-text); }
 .bp-tag--info, .tag--info { background: var(--bp-theme-color-status-info-bg-subtle); color: var(--bp-theme-color-status-info-text); }
 .bp-tag--new { background: var(--bp-theme-color-status-new-bg-subtle); color: var(--bp-theme-color-status-new-text); }
-.bp-tag--success, .tag--success, .pfm-pill.is-ingreso, .pfm-pill.is-reembolso { background: var(--bp-theme-color-status-success-bg-subtle); color: var(--bp-theme-color-status-success-text); }
-.bp-tag--caution, .pfm-pill.is-rin, .pfm-pill.is-rout { background: var(--bp-theme-color-status-caution-bg-subtle); color: var(--bp-theme-color-status-caution-text); }
+.bp-tag--success, .tag--success { background: var(--bp-theme-color-status-success-bg-subtle); color: var(--bp-theme-color-status-success-text); }
+.bp-tag--caution { background: var(--bp-theme-color-status-caution-bg-subtle); color: var(--bp-theme-color-status-caution-text); }
 .bp-tag--warning { background: var(--bp-theme-color-status-warning-bg-subtle); color: var(--bp-theme-color-status-warning-text); }
 .bp-tag--error { background: var(--bp-theme-color-status-error-bg-subtle); color: var(--bp-theme-color-status-error-text); }
 .bp-tag--promo { background: var(--bp-theme-color-status-promo-bg-subtle); color: var(--bp-theme-color-status-promo-text); }
