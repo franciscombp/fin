@@ -20,6 +20,9 @@
 .sx-panel::before { content: ''; position: absolute; left: 50%; top: 6px; width: 36px; height: 4px; margin-left: -18px; border-radius: var(--bp-semantic-radius-full); background: var(--bp-theme-color-border-default); }
 .sx.open .sx-panel { transform: none; }
 html.sx-open #home-page { filter: none; }
+/* Con el buscador abierto la página de atrás no rebota ni se desplaza */
+html.sx-open, html.sx-open body { overscroll-behavior: none; }
+.sx-back { touch-action: none; }
 
 /* Campo y cierre */
 .sx-head { flex: 0 0 auto; display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-lg); }
