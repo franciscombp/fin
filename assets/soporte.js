@@ -314,7 +314,7 @@
         '<span class="sp-top__title"><b>Ayuda</b><small></small></span><button class="pf-round" data-sp="search" aria-label="Buscar"><span class="material-symbols-rounded" aria-hidden="true">search</span></button></header>' +
       '<div class="sp-body">' +
         '<div class="sp-hub">' +
-          '<label class="sp-find"><span class="material-symbols-rounded" aria-hidden="true">search</span><input type="search" placeholder="Busca en la ayuda" aria-label="Busca en la ayuda" data-sp-find></label>' +
+          '<label class="sp-find"><span class="material-symbols-rounded" aria-hidden="true">search</span><input type="search" name="q" autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="off" placeholder="Busca en la ayuda" aria-label="Busca en la ayuda" data-sp-find></label>' +
           '<div class="sp-found" hidden></div>' +
           '<section class="sp-sec"><h2>Solucionar un inconveniente</h2><p class="sp-sec__sub">Uku te pregunta lo justo y te lleva a donde se arregla.</p><div class="sp-list">' + FLOWS.map(function (f, i) {
             return '<button class="sp-row" data-sp="flow:' + i + '"><span class="sp-row__main"><b>' + f.t + '</b></span><span class="material-symbols-rounded">chevron_right</span></button>'; }).join('') + '</div></section>' +
@@ -333,7 +333,7 @@
         '<div class="sp-page" hidden></div>' +
         '<div class="sp-log" aria-live="polite"></div>' +
       '</div>' +
-      '<form class="sp-composer"><input type="text" enterkeyhint="send" autocomplete="off" placeholder="Pregúntame lo que necesites" aria-label="Escribe tu problema">' +
+      '<form class="sp-composer"><input type="text" enterkeyhint="send" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Pregúntame lo que necesites" aria-label="Escribe tu problema">' +
         '<button class="sp-send" aria-label="Enviar"><span class="material-symbols-rounded">arrow_upward</span></button></form>';
     document.body.appendChild(el);
     log = el.querySelector('.sp-log');
