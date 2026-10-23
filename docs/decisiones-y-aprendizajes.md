@@ -405,12 +405,14 @@ Se quitaron el rayado de la proyección y la marca del día.
 Las filas de movimiento muestran el nombre como se lee (sin las MAYÚSCULAS del banco), en qué grupo va y con
 qué lo pagaste en una sola línea de ayuda; la etiqueta queda solo para «Por revisar».
 
-### 5.9 Uku se presenta en su chat y saluda a la persona elegida (23 de octubre)
+### 5.9 Uku se presenta en su globo y saluda a la persona elegida (23 de octubre)
 
-El onboarding de Uku ya no es una tarjeta aparte sobre su mundo: es la primera conversación de su chat, con el
-mismo modelo de siempre. Uku escribe («Hola, Andrés. Soy Uku…»), tus respuestas son chips que quedan como
-burbujas tuyas («¿Qué puedes hacer por mí?», «¿Y cómo te hablo?», «Ya te conozco, empecemos») y, al terminar,
-la conversación sigue en el mismo hilo con el saludo y sus acciones («Listo, Andrés. ¿Por dónde empezamos?»).
+El onboarding, el saludo y las sugerencias de Uku usan un solo formato: el globo del inicio, con su etiqueta
+(«Conóceme · 1 de 3», «Uku», «Presupuesto · 1 de 3»), la flecha para pasar, la X y el texto; debajo, los
+chips con lo que puedes responder o hacer. La primera vez: tres pasos de onboarding («Hola, Rosa. Soy Uku…»,
+chips «¿Qué puedes hacer?», «Ya te conozco», «¿Y cómo te hablo?», «Empecemos»; la X lo salta). Cada vez que
+entras: el saludo («Buenas tardes, Rosa. Tengo 3 sugerencias para ti», chip «Ver sugerencias») y luego sus
+sugerencias. Tocar a Uku o deslizar el globo pasa al siguiente. El chat queda para cuando le escribes.
 
 El nombre siempre es el de la persona elegida en Perfil. Antes, el saludo quedaba guardado en memoria (`SAL`)
 y al cambiar de persona Uku seguía diciendo «Buenas tardes, Andrés» hasta recargar: ahora el asistente escucha
