@@ -722,7 +722,7 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible, .tab:focus
 @media (prefers-reduced-motion: reduce) { .bp-spinner, .pf-spinner, .fl__spin, .push-loading__spinner, .loading-spinner { animation-duration: 2.4s; } }
 
 /* bp-avatar · Display=icon en recuadro (ícono de una fila de acción, placeholder o sugerencia) */
-.bp-avatar--tile, .cta-dashed .avatar-lg, .prod-hero__ilustra, .dw-ghost__ic, .pfm-reparto__ic {
+.bp-avatar--tile, .cta-dashed .avatar-lg, .prod-hero__ilustra, .dw-ghost__ic {
   display: grid; place-items: center; flex: 0 0 var(--bp-semantic-size-avatar-xs);
   width: var(--bp-semantic-size-avatar-xs); height: var(--bp-semantic-size-avatar-xs);
   border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-surface-page-alt);

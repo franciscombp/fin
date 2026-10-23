@@ -346,113 +346,86 @@ button.pfm-tx { width: 100%; border-left: 0; border-right: 0; border-top: 0; bac
 .pfm-sheet--wiz .as-sheet__handle { flex: 0 0 auto; margin-bottom: var(--bp-semantic-spacing-micro-lg); }
 .pfm-wiz { flex: 1 0 auto; display: flex; flex-direction: column; }
 .pfm-wiz__head { padding-bottom: var(--bp-semantic-spacing-macro-md); }
-.pfm-wiz__steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--bp-semantic-spacing-micro-xs); margin-bottom: var(--bp-semantic-spacing-micro-lg); }
+.pfm-wiz__steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--bp-semantic-spacing-micro-xs); margin-bottom: var(--bp-semantic-spacing-macro-md); }
 .pfm-wiz__steps i { position: relative; height: 4px; border-radius: var(--bp-semantic-radius-full); background: var(--bp-theme-color-data-chart-track); overflow: hidden; }
 .pfm-wiz__steps i::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--bp-interaction-accent-bg); transform: scaleX(0); transform-origin: left; transition: transform .45s var(--sol-ease, ease); }
 .pfm-wiz__steps i.is-on::after { transform: none; }
-.pfm-wiz__kicker { margin: 0 0 var(--bp-semantic-spacing-micro-xs); font: var(--sol-body-xs-semibold); color: var(--bp-theme-color-text-helper); }
-.pfm-wiz .pfm-wiz__head h3 { margin: 0; font: var(--sol-title-md); }
-.pfm-wiz__lead { margin: var(--bp-semantic-spacing-gap-title) 0 0; font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-secondary); }
-.pfm-wiz__body { flex: 1 0 auto; display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-macro-md); padding-bottom: var(--bp-semantic-spacing-macro-md); }
-/* En el paso 1 los planes van más juntos (son una sola lista) */
-.pfm-wiz[data-paso="1"] .pfm-wiz__body { gap: var(--bp-semantic-spacing-gap-content); }
+/* Una pregunta grande por pantalla y una línea que la explica */
+.pfm-wiz .pfm-wiz__head h3 { margin: 0; font: var(--sol-title-lg); letter-spacing: -.2px; }
+.pfm-wiz__lead { margin: var(--bp-semantic-spacing-micro-md) 0 0; font: var(--sol-body-md-regular); color: var(--bp-theme-color-text-secondary); }
+.pfm-wiz__body { flex: 1 0 auto; display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-macro-md); padding-bottom: var(--bp-semantic-spacing-macro-lg); }
 .pfm-wiz.is-enter .pfm-wiz__head > :not(.pfm-wiz__steps), .pfm-wiz.is-enter .pfm-wiz__body > * { animation: pfmWizIn .42s cubic-bezier(.32, .72, 0, 1) both; }
 .pfm-wiz.is-enter .pfm-wiz__body > :nth-child(1) { animation-delay: .04s; }
 .pfm-wiz.is-enter .pfm-wiz__body > :nth-child(2) { animation-delay: .08s; }
-.pfm-wiz.is-enter .pfm-wiz__body > :nth-child(3) { animation-delay: .12s; }
-.pfm-wiz.is-enter .pfm-wiz__body > :nth-child(n+4) { animation-delay: .16s; }
+.pfm-wiz.is-enter .pfm-wiz__body > :nth-child(n+3) { animation-delay: .12s; }
 @keyframes pfmWizIn { from { opacity: 0; transform: translateY(8px); } }
-/* Pie: atrás (secundario) y la acción principal; queda fijo sobre el contenido */
+/* Pie: «Atrás» como texto a la izquierda y «Siguiente» a la derecha (como Airbnb) */
 .pfm-wiz__foot {
-  position: sticky; bottom: 0; z-index: 1; display: flex; gap: var(--bp-semantic-spacing-micro-md); margin: 0 calc(-1 * var(--bp-layout-grid-margin));
+  position: sticky; bottom: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: var(--bp-semantic-spacing-macro-sm); margin: 0 calc(-1 * var(--bp-layout-grid-margin));
   padding: var(--bp-semantic-spacing-micro-lg) var(--bp-layout-grid-margin) calc(var(--bp-semantic-spacing-micro-lg) + env(safe-area-inset-bottom, 0px));
   border-top: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); background: var(--bp-theme-color-surface-container-default);
 }
-.pfm-wiz__foot .pf-cta { flex: 1 1 auto; width: auto; }
-.pfm-wiz__foot .pfm-wiz__back { flex: 0 0 auto; }
+.pfm-wiz__foot .pf-cta { flex: 0 1 auto; width: auto; min-width: 156px; margin-left: auto; }
+.pfm-wiz__foot .pfm-wiz__back { flex: 0 0 auto; width: auto; padding: 0; }
 
-/* Paso 1: tu mes y los tres planes */
-.pfm-wiz__mes { display: grid; grid-template-columns: 1fr 1fr; border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-page-alt); }
-.pfm-wiz__mes > div { padding: var(--bp-semantic-spacing-micro-lg) var(--bp-layout-card-padding); }
-.pfm-wiz__mes > div + div { border-left: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); }
-.pfm-wiz__mes small, .pfm-wiz__sumtop small, .pfm-wiz__hero > small, .pfm-wiz__tiles small { display: block; font: var(--sol-body-xs-medium); color: var(--bp-theme-color-text-helper); }
-.pfm-wiz__mes b { display: block; margin-top: 2px; font: var(--sol-body-md-semibold); font-variant-numeric: tabular-nums; }
-.pfm-planes { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md); text-align: left; }
+/* Paso 1: opciones como las tarjetas de Airbnb: nombre y una línea a la izquierda, la cifra grande a la derecha */
+.pfm-planes { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-lg); text-align: left; }
 .pfm-plan {
-  display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-sm); width: 100%; padding: var(--bp-layout-card-padding); box-sizing: border-box;
-  border: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-default); border-radius: var(--bp-semantic-radius-md);
+  display: flex; align-items: center; gap: var(--bp-semantic-spacing-macro-sm); width: 100%; min-height: 88px; padding: var(--bp-semantic-spacing-macro-sm) var(--bp-semantic-spacing-macro-md); box-sizing: border-box;
+  border: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-default); border-radius: var(--bp-semantic-radius-lg);
   background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); text-align: left; font: inherit; cursor: pointer;
   transition: border-color .2s ease, background-color .2s ease; -webkit-tap-highlight-color: transparent;
 }
 .pfm-plan:active { background: var(--bp-interaction-tertiary-bg--active); }
-.pfm-plan[aria-pressed="true"] { border: 2px solid var(--bp-interaction-accent-bg); padding: calc(var(--bp-layout-card-padding) - 1px); }
-.pfm-plan[aria-pressed="true"] .as-radio { border: 7px solid var(--bp-interaction-accent-bg); }
-.pfm-plan__top { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md); }
-.pfm-plan__t { flex: 1; min-width: 0; font: var(--sol-body-md-semibold); }
-.pfm-plan__m { display: flex; align-items: baseline; gap: var(--bp-semantic-spacing-micro-xs); font: var(--sol-numeric-xs); font-variant-numeric: tabular-nums; }
-.pfm-plan__m small, .pfm-wiz__sumtop b small, .pfm-wiz__hero > b small { font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-helper); }
-.pfm-plan__bar, .pfm-wiz__stack, .pfm-wiz__prog { position: relative; display: flex; height: 8px; margin: 2px 0; border-radius: var(--bp-semantic-radius-full); background: var(--bp-theme-color-data-chart-track); overflow: hidden; }
-.pfm-plan__bar i, .pfm-wiz__stack i { height: 100%; transition: width .35s var(--sol-ease, ease); }
-.pfm-plan__bar i + i, .pfm-wiz__stack i + i { margin-left: 2px; }
-.pfm-plan__bar i { background: var(--bp-theme-color-data-chart-primary-1); }
-.pfm-plan__bar i.is-save { background: var(--bp-theme-color-data-positive); }
-.pfm-plan__bar i.is-over { background: var(--bp-theme-color-status-warning-bg); }
-.pfm-plan__s { font: var(--sol-body-xs-medium); color: var(--bp-theme-color-status-success-text); }
-.pfm-plan__s.is-over { color: var(--bp-theme-color-text-secondary); }
+.pfm-plan[aria-pressed="true"] { border: 2px solid var(--bp-theme-color-text-primary); padding: calc(var(--bp-semantic-spacing-macro-sm) - 1px) calc(var(--bp-semantic-spacing-macro-md) - 1px); }
+.pfm-plan__txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-xs); }
+.pfm-plan__t { font: var(--sol-body-md-semibold); }
+.pfm-plan__s { font: var(--sol-body-sm-medium); color: var(--bp-theme-color-status-success-text); }
+.pfm-plan__s.is-over { color: var(--bp-theme-color-text-helper); }
+.pfm-plan__rec { font: var(--sol-body-xs-semibold); color: var(--bp-theme-color-text-primary); }
+.pfm-plan__m { flex: none; font: var(--sol-numeric-xs); font-variant-numeric: tabular-nums; }
 
-/* Paso 2: resumen apilado (fijo · para mover · libre) y grupos con stepper */
-.pfm-wiz__sum { padding: var(--bp-semantic-spacing-macro-sm) var(--bp-layout-card-padding); border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-page-alt); }
-.pfm-wiz__sumtop { margin-bottom: var(--bp-semantic-spacing-micro-lg); }
-.pfm-wiz__sumtop b, .pfm-wiz__hero > b { display: flex; align-items: baseline; gap: var(--bp-semantic-spacing-micro-xs); font: var(--sol-numeric-xs); font-variant-numeric: tabular-nums; }
-.pfm-wiz__stack i.is-fijo, .pfm-wiz__legend i.is-fijo { background: var(--bp-theme-color-data-chart-primary-1); }
-.pfm-wiz__stack i.is-mover, .pfm-wiz__legend i.is-mover { background: var(--bp-theme-color-data-chart-primary-3); }
-.pfm-wiz__stack i.is-libre, .pfm-wiz__legend i.is-libre { background: var(--bp-theme-color-data-chart-primary-5); }
-.pfm-wiz__stack i.is-ahorro, .pfm-wiz__legend i.is-ahorro { background: var(--bp-theme-color-data-positive); }
-.pfm-wiz__legend { display: grid; grid-template-columns: 1fr 1fr; gap: var(--bp-semantic-spacing-micro-md) var(--bp-semantic-spacing-macro-sm); margin-top: var(--bp-semantic-spacing-micro-lg); font: var(--sol-body-xs-medium); color: var(--bp-theme-color-text-secondary); }
-.pfm-wiz__legend span { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md); min-width: 0; }
-.pfm-wiz__legend b { margin-left: auto; font: var(--sol-body-xs-semibold); color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
-.pfm-wiz__legend i { flex: none; width: 8px; height: 8px; border-radius: var(--bp-semantic-radius-full); }
-.pfm-reparto h4, .pfm-wiz__acomp h4 { margin: 0 0 var(--bp-semantic-spacing-gap-title); font: var(--sol-body-md-semibold); color: var(--bp-theme-color-text-primary); }
-.pfm-reparto h4 small { display: block; margin-top: 2px; font: var(--sol-body-xs-medium); color: var(--bp-theme-color-text-helper); }
-.pfm-reparto__row { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-lg); min-height: 72px; padding: var(--bp-semantic-spacing-micro-lg) 0; border-bottom: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); }
+/* La cifra grande al centro (el ahorro con su − y +, o el presupuesto listo) */
+.pfm-hero { display: flex; flex-direction: column; align-items: center; gap: var(--bp-semantic-spacing-micro-md); padding: var(--bp-semantic-spacing-macro-md) 0 var(--bp-semantic-spacing-micro-md); text-align: center; }
+.pfm-hero small { font: var(--sol-body-md-medium); color: var(--bp-theme-color-text-helper); }
+.pfm-hero__v { font: var(--sol-numeric-lg); font-size: 56px; line-height: 64px; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+/* Desglose: filas de texto y la última separada y en negrita (Recibes · Gastas hasta · Ahorras) */
+.pfm-desglose { padding: var(--bp-semantic-spacing-micro-md) var(--bp-semantic-spacing-macro-md); border: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-default); border-radius: var(--bp-semantic-radius-lg); }
+.pfm-desglose p { display: flex; justify-content: space-between; gap: var(--bp-semantic-spacing-macro-sm); margin: 0; padding: var(--bp-semantic-spacing-micro-lg) 0; font: var(--sol-body-md-regular); color: var(--bp-theme-color-text-primary); }
+.pfm-desglose b { font: var(--sol-body-md-medium); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pfm-desglose .is-total, .pfm-desglose .is-save { border-top: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); }
+.pfm-desglose .is-total + .is-save { border-top: 0; }
+.pfm-desglose .is-total span, .pfm-desglose .is-total b { font: var(--sol-body-md-semibold); }
+.pfm-desglose .is-save b { color: var(--bp-theme-color-status-success-text); font-weight: 600; }
+
+/* Selector de monto: botones redondos con borde y la cifra entre ellos */
+.pfm-stepper { flex: 0 0 auto; display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md); }
+.pfm-stepper button { width: 36px; height: 36px; display: grid; place-items: center; padding: 0; border: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-strong); border-radius: var(--bp-semantic-radius-full); background: transparent; color: var(--bp-theme-color-text-primary); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pfm-stepper button:active { background: var(--bp-interaction-tertiary-bg--active); }
+.pfm-stepper button:disabled { border-color: var(--bp-theme-color-border-default); color: var(--bp-theme-color-text-disabled); cursor: default; }
+.pfm-stepper button .material-symbols-rounded { font-size: 20px; }
+.pfm-stepper b { min-width: 72px; text-align: center; font: var(--sol-body-md-semibold); font-variant-numeric: tabular-nums; }
+.pfm-stepper--lg { gap: var(--bp-semantic-spacing-macro-md); }
+.pfm-stepper--lg button { width: 48px; height: 48px; }
+.pfm-stepper--lg button .material-symbols-rounded { font-size: 24px; }
+.pfm-stepper--lg b { min-width: 0; font: var(--sol-numeric-lg); font-size: 56px; line-height: 64px; letter-spacing: -1px; }
+
+/* Paso 3: filas como «Huéspedes − 4 +»: nombre y su promedio, sin íconos ni barras */
+.pfm-reparto h4 { margin: 0; font: var(--sol-title-sm); color: var(--bp-theme-color-text-primary); }
+.pfm-reparto__row { display: flex; align-items: center; gap: var(--bp-semantic-spacing-macro-sm); min-height: 80px; padding: var(--bp-semantic-spacing-macro-sm) 0; border-bottom: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); }
 .pfm-reparto__row:last-child { border-bottom: 0; }
 .pfm-reparto__main { flex: 1; min-width: 0; }
-.pfm-reparto__main b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: var(--sol-body-md-semibold); }
-.pfm-reparto__main small { display: block; margin-top: 2px; font: var(--sol-body-xs-medium); color: var(--bp-theme-color-text-helper); font-variant-numeric: tabular-nums; }
-.pfm-reparto__main em { font-style: normal; }
-.pfm-reparto__main em.is-down { color: var(--bp-theme-color-status-success-text); }
-.pfm-stepper { flex: 0 0 auto; display: flex; align-items: center; height: 36px; border-radius: var(--bp-semantic-radius-full); background: var(--bp-theme-color-surface-page-alt); }
-.pfm-stepper button { width: 36px; height: 36px; display: grid; place-items: center; padding: 0; border: 0; border-radius: var(--bp-semantic-radius-full); background: transparent; color: var(--bp-interaction-tertiary-fg); cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.pfm-stepper button:active { background: var(--bp-interaction-tertiary-bg--active); }
-.pfm-stepper button:disabled { color: var(--bp-theme-color-text-disabled, var(--bp-theme-color-text-helper)); opacity: .4; cursor: default; }
-.pfm-stepper button .material-symbols-rounded { font-size: 20px; }
-.pfm-stepper b { min-width: 64px; text-align: center; font: var(--sol-body-md-semibold); font-variant-numeric: tabular-nums; }
-.pfm-wiz__callout { display: flex; gap: var(--bp-semantic-spacing-micro-md); margin: 0; padding: var(--bp-semantic-spacing-micro-lg) var(--bp-layout-card-padding); border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-status-info-bg-subtle); color: var(--bp-theme-color-text-primary); font: var(--sol-body-sm-medium); }
-.pfm-wiz__callout .material-symbols-rounded { font-size: 20px; color: var(--bp-theme-color-status-info-text); }
-.pfm-wiz__callout.is-over { background: var(--bp-theme-color-status-warning-bg-subtle); }
-.pfm-wiz__callout.is-over .material-symbols-rounded { color: var(--bp-theme-color-status-warning-text); }
-.pfm-wiz__more { align-self: flex-start; }
+.pfm-reparto__main b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: var(--sol-body-md-medium); }
+.pfm-reparto__main small { display: block; margin-top: 2px; font: var(--sol-body-sm-regular); color: var(--bp-theme-color-text-helper); font-variant-numeric: tabular-nums; }
 
-/* Paso 3: lo que significa hoy y cómo te acompaña Uku */
-.pfm-wiz__hero > b { margin: 2px 0 var(--bp-semantic-spacing-micro-lg); font: var(--sol-numeric-md); }
-.pfm-wiz__prog { overflow: visible; }
-.pfm-wiz__prog i { height: 100%; border-radius: inherit; background: var(--bp-theme-color-data-chart-primary-1); animation: pfmWizBar .5s ease-out .2s both; transform-origin: left; }
-@keyframes pfmWizBar { from { transform: scaleX(0); } }
-.pfm-wiz__prog.is-warn i { background: var(--bp-theme-color-status-caution-icon); }
-.pfm-wiz__prog.is-over i { background: var(--bp-theme-color-status-error-icon); }
-.pfm-wiz__progl { display: flex; justify-content: space-between; gap: var(--bp-semantic-spacing-micro-md); margin-top: var(--bp-semantic-spacing-micro-md); font: var(--sol-body-xs-medium); color: var(--bp-theme-color-text-helper); }
-.pfm-wiz__progl b { color: var(--bp-theme-color-text-primary); font-weight: 600; font-variant-numeric: tabular-nums; }
-.pfm-wiz__tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: var(--bp-semantic-spacing-micro-md); }
-.pfm-wiz__tiles:empty { display: none; }
-.pfm-wiz__tiles > div { padding: var(--bp-layout-card-padding); border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-page-alt); }
-.pfm-wiz__tiles b { display: block; margin-top: 2px; font: var(--sol-body-md-semibold); font-size: 20px; line-height: 28px; font-variant-numeric: tabular-nums; }
-.pfm-wiz__tiles .is-save b { color: var(--bp-theme-color-status-success-text); }
-.pfm-wiz__tiles span { font: var(--sol-body-xs-medium); color: var(--bp-theme-color-text-helper); }
-.pfm-wiz__acomp p { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md); margin: 0; padding: 10px 0; font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-primary); }
-.pfm-wiz__acomp .material-symbols-rounded { font-size: 20px; color: var(--bp-interaction-accent-bg); }
+/* Que se guarde solo */
+.pfm-wiz .pfm-prog { padding: var(--bp-semantic-spacing-macro-sm) var(--bp-semantic-spacing-macro-md); border: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-default); border-radius: var(--bp-semantic-radius-lg); background: none; }
+.pfm-prog:disabled { opacity: .5; cursor: default; }
+.pfm-prog .bp-list-item__sub { white-space: normal; }
+.pfm-wiz__nota { margin: 0; font: var(--sol-body-sm-regular); color: var(--bp-theme-color-text-helper); text-align: center; }
 .pfm-wiz__empty { display: flex; flex-direction: column; align-items: center; gap: var(--bp-semantic-spacing-micro-md); padding: var(--bp-semantic-spacing-macro-sm) 0; text-align: center; font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-secondary); }
 .pfm-wiz__empty .material-symbols-rounded { font-size: 40px; color: var(--bp-theme-color-data-positive); }
-@media (prefers-reduced-motion: reduce) { .pfm-wiz.is-enter *, .pfm-wiz__prog i { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .pfm-wiz.is-enter * { animation: none !important; } }
 .pf-step > span small { display: block; font: var(--cx-caption); color: var(--cx-muted); }
 
 /* Semana: la cifra de cada día sobre su barra */
@@ -460,11 +433,3 @@ button.pfm-tx { width: 100%; border-left: 0; border-right: 0; border-top: 0; bac
 .pfm-chart__bar em { position: absolute; left: 0; right: 0; margin-bottom: 4px; font: var(--cx-caption); font-style: normal; font-variant-numeric: tabular-nums; text-align: center; color: var(--cx-muted); white-space: nowrap; }
 .pfm-chart__bar.is-on em { color: var(--bp-theme-color-text-primary); font-weight: 600; }
 
-/* Paso 1: la bajada del plan «a tu ritmo» */
-.pfm-plan__sub { display: block; margin: -2px 0 var(--bp-semantic-spacing-micro-sm); font: var(--sol-body-xs-medium); color: var(--bp-theme-color-text-helper); }
-/* Paso 2: tu ahorro, con el ícono en verde y el interruptor para que se guarde solo */
-.pfm-reparto--ahorro .pfm-reparto__ic { background: var(--bp-theme-color-status-success-bg-subtle); color: var(--bp-theme-color-status-success-icon); }
-.pfm-reparto__v { flex: none; font: var(--sol-body-md-semibold); font-variant-numeric: tabular-nums; }
-.pfm-prog { margin-top: var(--bp-semantic-spacing-micro-md); padding: var(--bp-semantic-spacing-micro-lg) var(--bp-layout-card-padding); border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-page-alt); }
-.pfm-prog:disabled { opacity: .5; cursor: default; }
-.pfm-prog .bp-list-item__sub { white-space: normal; }

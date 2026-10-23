@@ -382,6 +382,13 @@ guarde solo», que programa el monto para el día que cobras, en tu Ahorro flexi
 tienes un débito automático con el banco (Andrés: $100 el día 1), lo muestra y usa su día. Se guarda en
 `ST.presG[u].ahorro` y `ST.ahorroProg[u]`; deshacer el presupuesto deshace también el ahorro programado.
 
+**Asistente al estilo Airbnb (23 de octubre).** Una decisión por pantalla, en 4 pasos: 1) ¿Cuánto quieres
+gastar al mes? (tarjetas con el nombre y una línea a la izquierda y la cifra grande a la derecha), 2) ¿Cuánto
+quieres ahorrar? (la cifra grande al centro con − y + redondos, el desglose Recibes · Gastas hasta · Ahorras
+y «Que se guarde solo»), 3) ¿Cómo lo repartimos? (filas «Hogar − $450 +» con su promedio, sin íconos ni
+barras; si no tocaste los grupos, se reparten con lo que decidiste gastar) y 4) Listo (la cifra y un
+desglose corto). El pie es «Atrás» como texto y «Siguiente» como botón: la misma familia.
+
 ### 5.8 Mis gastos: el periodo manda en toda la pantalla (23 de octubre)
 
 Mis gastos abre siempre en **Mes**, porque el gasto se controla por mes. Las pestañas (Semana, Mes, 6 meses,
