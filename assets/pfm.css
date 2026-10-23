@@ -438,8 +438,8 @@ button.pfm-tx { width: 100%; border-left: 0; border-right: 0; border-top: 0; bac
 .pfm-wiz__prog { overflow: visible; }
 .pfm-wiz__prog i { height: 100%; border-radius: inherit; background: var(--bp-theme-color-data-chart-primary-1); animation: pfmWizBar .5s ease-out .2s both; transform-origin: left; }
 @keyframes pfmWizBar { from { transform: scaleX(0); } }
-.pfm-wiz__prog.is-over i { background: var(--bp-theme-color-status-warning-bg); }
-.pfm-wiz__prog em { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--bp-theme-color-text-primary); }
+.pfm-wiz__prog.is-warn i { background: var(--bp-theme-color-status-caution-icon); }
+.pfm-wiz__prog.is-over i { background: var(--bp-theme-color-status-error-icon); }
 .pfm-wiz__progl { display: flex; justify-content: space-between; gap: var(--bp-semantic-spacing-micro-md); margin-top: var(--bp-semantic-spacing-micro-md); font: var(--sol-body-xs-medium); color: var(--bp-theme-color-text-helper); }
 .pfm-wiz__progl b { color: var(--bp-theme-color-text-primary); font-weight: 600; font-variant-numeric: tabular-nums; }
 .pfm-wiz__tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: var(--bp-semantic-spacing-micro-md); }

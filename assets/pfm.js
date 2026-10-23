@@ -661,12 +661,17 @@
     var v = Object.keys(dias).map(function (k) { return dias[k]; }).sort(function (a, b) { return a - b; });
     return v.length ? v[Math.floor(v.length / 2)] : 1;
   }
-  // Dónde se guarda: tu Ahorro flexible o tu cuenta de ahorro; si no tienes, una meta
+  /* Dónde se guarda (con su artículo, para leerse en la frase): tu Ahorro flexible o tu cuenta de ahorro.
+     Si tu sueldo ya vive en el Ahorro flexible (lo pasas apenas cobras), el ahorro sale de ahí a una meta,
+     que no se mezcla con lo del mes. */
+  function sueldoAlAhorro() { return rows().some(function (r) { return r.e === 'Sueldo al ahorro'; }); }
   function cuentaAhorro() {
-    var C = DB.cuentas[ST.u] || [];
-    var c = C.filter(function (x) { return x.tipo === 'ahorro'; })[0] || C.filter(function (x) { return x.tipo === 'meta'; })[0];
-    return c ? c.nombre : T('Ahorro flexible');
+    var C = DB.cuentas[ST.u] || [], meta = C.filter(function (x) { return x.tipo === 'meta'; })[0];
+    if (sueldoAlAhorro()) return meta ? T('tu meta {n}', { n: meta.nombre }) : T('una meta de ahorro nueva');
+    var c = C.filter(function (x) { return x.tipo === 'ahorro'; })[0] || meta;
+    return c ? T('tu {n}', { n: c.nombre }) : T('un Ahorro flexible nuevo');
   }
+  function desdeAhorro() { var f = sueldoAlAhorro() && (DB.cuentas[ST.u] || []).filter(function (x) { return x.tipo === 'ahorro'; })[0]; return f ? T('de tu {n} ', { n: f.nombre }) : ''; }
   // Lo que ya se guarda solo: el que programaste aquí o el débito automático que ya tienes con el banco
   function ahorroProg() {
     var A = ST.ahorroProg && ST.ahorroProg[ST.u]; if (A) return A;
@@ -1570,7 +1575,7 @@
     showSheet('<h3>' + T('Tu presupuesto') + '</h3><p>' + T('Cuánto quieres gastar al mes. Uku te avisa cuando te acerques al límite.') + '</p>' +
       (tobe() && sg ? '<button class="pfm-sug" data-pfm="bud:sug"><span class="material-symbols-rounded">auto_awesome</span><span><b>' + T('Usar el sugerido: {monto}', { monto: money0(sg.general) }) + '</b><small>' + T('Tu promedio de los últimos tres meses, por grupo, con 5% de margen.') + '</small></span></button>' : '') +
       '<div class="pf-steps">' + step('general', p.general, '<b>' + T('Al mes') + '</b>') + step('ahorro', p.ahorro || 0, '<b>' + T('Ahorro al mes') + '</b>') + '</div>' +
-      (ahorroProg() ? '<p class="pf-note">' + T('Se guardan solos {m} el día {d} en tu {c}.', { m: money0(ahorroProg().monto), d: ahorroProg().dia, c: esc(ahorroProg().para) }) + '</p>' : '') +
+      (ahorroProg() ? '<p class="pf-note">' + T('Se guardan solos {m} el día {d} en {c}.', { m: money0(ahorroProg().monto), d: ahorroProg().dia, c: esc(ahorroProg().para) }) + '</p>' : '') +
       '<p class="as-sheet__label">' + T('Por grupo') + '</p><div class="pf-steps">' + PRES_G.map(function (k) { return step(k, p.cats[k], esc(T(k))); }).join('') + '</div>' +
       '<button class="pf-cta" data-pfm="bud:save">' + T('Guardar') + '</button>');
   }
@@ -1639,7 +1644,7 @@
             '<span class="pfm-plan__top"><b class="pfm-plan__t">' + esc(x.t) + '</b>' + (x.rec ? '<span class="bp-tag bp-tag--success">' + T('Recomendado') + '</span>' : '') + '<span class="as-radio"></span></span>' +
             (x.sub ? '<small class="pfm-plan__sub">' + esc(x.sub) + '</small>' : '') +
             '<span class="pfm-plan__m">' + money0(x.v) + '<small>' + T('al mes') + '</small></span>' + planBar(x.v, P.ing) +
-            '<small class="pfm-plan__s' + (x.libre < 0 ? ' is-over' : '') + '">' + (x.libre >= 0 ? T('Ahorras {m} al mes · {a} al año', { m: money0(Math.round(x.libre)), a: money0(Math.round(x.libre * 12)) }) : T('Gastarías {m} más de lo que recibes', { m: money0(Math.round(-x.libre)) })) + '</small></button>'; }).join('') + '</div>',
+            '<small class="pfm-plan__s' + (x.libre < 5 ? ' is-over' : '') + '">' + (Math.abs(x.libre) < 5 ? T('Gastarías todo lo que recibes: no te queda para ahorrar') : x.libre >= 0 ? T('Ahorras {m} al mes · {a} al año', { m: money0(Math.round(x.libre)), a: money0(Math.round(x.libre * 12)) }) : T('Gastarías {m} más de lo que recibes', { m: money0(Math.round(-x.libre)) })) + '</small></button>'; }).join('') + '</div>',
         wizBtn('cerrar', T('Ahora no'), 1), wizBtn('presw:2', T('Siguiente')));
     }
     var ya = ahorroProg();
@@ -1655,8 +1660,8 @@
           (editable ? stepper('ahorro', a, T('Ahorro')) : '<b class="pfm-reparto__v">' + money0(a) + '</b>') + '</div>' +
         '<button class="bp-list-item pfm-prog" data-pfm="presw:prog" aria-pressed="' + !!draft.prog + '"' + (a ? '' : ' disabled') + '>' +
           '<span class="bp-list-item__main"><span class="bp-list-item__title">' + T('Que se guarde solo') + '</span>' +
-          '<span class="bp-list-item__sub">' + (ya && Math.abs(ya.monto - a) >= 1 ? T('Hoy se guardan {y} el día {d} en tu {c}. Lo cambiamos a {m}', { y: money0(ya.monto), d: dia, m: money0(a), c: esc(para) })
-            : T('El día {d} de cada mes pasamos {m} a tu {c}', { d: dia, m: money0(a), c: esc(para) })) + '</span></span>' +
+          '<span class="bp-list-item__sub">' + (ya && Math.abs(ya.monto - a) >= 1 ? T('Hoy se guardan {y} el día {d} en {c}. Lo cambiamos a {m}', { y: money0(ya.monto), d: dia, m: money0(a), c: esc(para) })
+            : T('El día {d} de cada mes pasamos {m} {desde}a {c}', { d: dia, m: money0(a), desde: esc(desdeAhorro()), c: esc(para) })) + '</span></span>' +
           '<span class="bp-switch"><span class="bp-switch__knob"></span></span></button></section>';
     };
     var stepper = function (id, v, nombre) {
@@ -1693,10 +1698,10 @@
     var m = curMes(), g = month(m).gast, hoy = +HOY.slice(8, 10), dias = diasMes(m) - hoy + 1, queda = draft.general - g, aho = draft.ahorro || 0, lleva = ahorroMes(m);
     var u = Math.min(100, g / Math.max(1, draft.general) * 100), f = hoy / diasMes(m) * 100;
     var acomp = [['notifications_active', T('Te aviso cuando llegues al 80% de un grupo')], ['calendar_month', T('Cada lunes te cuento cómo vas')], ['tune', T('Lo puedes cambiar cuando quieras')]];
-    if (draft.prog && aho) acomp.unshift(['event_repeat', T('El día {d} se guardan {m} en tu {c}, sin que tengas que acordarte', { d: dia, m: money0(aho), c: esc(para) })]);
+    if (draft.prog && aho) acomp.unshift(['event_repeat', T('El día {d} se guardan {m} en {c}, sin que tengas que acordarte', { d: dia, m: money0(aho), c: esc(para) })]);
     return wizShell(3, T('Tu presupuesto está listo'), '',
       '<div class="pfm-wiz__hero"><small>' + T('Gastarás hasta') + '</small><b>' + money0(draft.general) + '<small>' + T('al mes') + '</small></b>' +
-        '<span class="pfm-wiz__prog' + (queda <= 0 ? ' is-over' : '') + '" aria-hidden="true"><i style="width:' + u.toFixed(1) + '%"></i><em style="left:' + f.toFixed(1) + '%"></em></span>' +
+        '<span class="pfm-wiz__prog' + (queda <= 0 ? ' is-over' : u > f + 10 ? ' is-warn' : '') + '" aria-hidden="true"><i style="width:' + u.toFixed(1) + '%"></i></span>' +
         '<span class="pfm-wiz__progl"><span>' + T('En {mes} llevas {m}', { mes: mesName(m), m: '<b>' + money0(Math.round(g)) + '</b>' }) + '</span><span>' + (queda > 0 ? T('Te quedan {m}', { m: '<b>' + money0(Math.round(queda)) + '</b>' }) : T('Te pasaste por {m}', { m: '<b>' + money0(Math.round(-queda)) + '</b>' })) + '</span></span></div>' +
       '<div class="pfm-wiz__tiles">' +
         (queda > 0 ? '<div><small>' + T('Para gastar al día') + '</small><b>' + money0(queda / dias) + '</b><span>' + T('durante {d} días', { d: dias }) + '</span></div>' : '') +
