@@ -57,6 +57,8 @@
 .pfm-game.open { transform: none; visibility: visible; transition: transform .32s cubic-bezier(.2, .8, .2, 1); }
 .pfm-game__top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; min-height: 56px; margin: 0 -8px; }
 .pfm-game__top > :last-child { justify-self: end; }
+/* En la barra superior la acción de texto se alinea como los íconos (inset de la barra), sin margen negativo */
+.pfm-game__top .section__link { margin-right: 0; }
 .pfm-game__count { font: var(--ui-body-sm-semibold); color: var(--cx-muted); font-variant-numeric: tabular-nums; }
 
 /* Uku en la barra de avance */
