@@ -67,7 +67,7 @@
   /* ---------- Acciones ---------- */
   function click(sel) { var e = document.querySelector(sel); if (e) e.click(); }
   function act(a) { click('#home-page [data-action="' + a + '"]'); }
-  function card(n) { click('#home-page [data-panel="Tarjetas"] .product-row[data-action="' + n + '"]'); }
+  function card(n) { if (window.Tarjetas) Tarjetas.abrir(n); }
   function tab(t) { click('.tabs .tab[data-panel="' + t + '"]'); }
   function homeRow(panel) {
     var r = document.querySelector('#home-page [data-panel="' + panel + '"] .product-row[data-action]');

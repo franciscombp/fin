@@ -6,6 +6,13 @@
    - Gesto de regreso: arrastrar desde el borde izquierdo. La pantalla sigue
      al dedo; si pasa del 35 % (o el gesto es rápido) se cierra con su propio
      botón de volver, si no, regresa a su lugar.
+   - "Atrás" del teléfono o del navegador: cada pantalla abierta deja una
+     entrada en el historial (window.Overlay de sheets.js, igual que las
+     hojas), así el atrás cierra la de arriba en vez de salir de la app.
+   - En Safari de iPhone (en el navegador, no instalada) el gesto desde el
+     borde es el del propio Safari: navega el historial. Ahí no se usa el
+     gesto propio, para que no compitan; el atrás del historial cierra la
+     pantalla sin repetir la animación.
    Cada módulo sigue abriendo y cerrando sus pantallas como siempre (con la
    clase .open); este módulo solo observa esa clase. */
 (function () {
@@ -14,6 +21,9 @@
   var DUR = 400, CURVE = 'cubic-bezier(.32, .72, 0, 1)', SHIFT = '-30%', EDGE = 24;
   var RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var stack = []; // { page, under: [elementos], anims: [], scrim }
+  var IOS_SAFARI = /iP(hone|ad|od)/.test(navigator.userAgent) && !navigator.standalone &&
+    !(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+  var uid = 0;
 
   function homeLayer() { return [document.getElementById('home-page'), document.querySelector('.nav-bar')].filter(Boolean); }
   function zOf(el) { return parseInt(getComputedStyle(el).zIndex, 10) || 0; }
@@ -28,9 +38,31 @@
     scrim.style.zIndex = String(zOf(page) - 1);
     document.body.appendChild(scrim);
     var opts = { duration: RM ? 1 : DUR, easing: CURVE, fill: 'forwards' };
-    var anims = under.map(function (el) { return el.animate([{ translate: '0 0' }, { translate: SHIFT + ' 0' }], opts); });
+    // La tarjeta que crece desde su miniatura (.is-morph) no corre la pantalla de abajo: solo el velo
+    var anims = page.classList.contains('is-morph') ? [] : under.map(function (el) { return el.animate([{ translate: '0 0' }, { translate: SHIFT + ' 0' }], opts); });
     anims.push(scrim.animate([{ opacity: 0 }, { opacity: 1 }], opts));
     stack.push({ page: page, under: under, anims: anims, scrim: scrim });
+    historial(page);
+  }
+
+  // Entrada en el historial: el atrás del teléfono/navegador cierra esta pantalla con su botón
+  function historial(page) {
+    if (!window.Overlay || page.matches('.ai-page')) return; // el análisis ya registra su propia entrada (analisis.js)
+    page._uxId = page._uxId || 'pagina-' + (++uid);
+    Overlay.push(page._uxId, function () {
+      if (!isOpen(page)) return;
+      // Safari de iPhone ya mostró su propia transición: ahí se cierra sin repetirla. En Android
+      // (botón o gesto atrás del sistema) y en escritorio se cierra con la animación de siempre.
+      var html = document.documentElement;
+      if (IOS_SAFARI) {
+        html.classList.add('ux-instant');
+        setTimeout(function () { html.classList.remove('ux-instant'); }, DUR + 120);
+      }
+      var back = page.querySelector(BACKS);
+      if (back) back.click();
+      // Volver solo cambió de nivel dentro de la pantalla: sigue abierta y necesita su entrada
+      setTimeout(function () { if (isOpen(page)) historial(page); }, 30);
+    });
   }
 
   function pop(page) {
@@ -38,11 +70,18 @@
     var e = stack.splice(i, 1)[0];
     // Si se cerró una de abajo, la de arriba ahora tapa a la que estaba debajo
     if (stack[i]) stack[i].under = e.under;
+    if (window.Overlay && page._uxId) Overlay.done(page._uxId); // cerrada por la UI: fuera del historial
+    var instant = document.documentElement.classList.contains('ux-instant');
     e.anims.forEach(function (a) {
+      if (instant) { a.cancel(); return; }
       a.onfinish = function () { a.cancel(); };
-      if (a.playState === 'paused' || a.playState === 'finished' || a.playState === 'running') a.reverse();
+      a.reverse();
+      // Safari no reanuda con reverse() una animación en pausa (la deja el gesto): la de abajo
+      // quedaba corrida a medio camino
+      if (a.playState !== 'running') a.play();
     });
-    setTimeout(function () { e.scrim.remove(); }, DUR + 60);
+    // Pase lo que pase con la animación, la pantalla de abajo termina en su lugar
+    setTimeout(function () { e.anims.forEach(function (a) { a.cancel(); }); e.scrim.remove(); }, instant ? 0 : DUR + 60);
   }
 
   function isOpen(el) { return el.classList.contains('open') && !el.classList.contains('closing'); }
@@ -83,7 +122,7 @@
   // mouse sirve para probar en escritorio.
   function start(x, y, t) {
     var e = top();
-    if (!e || x > EDGE) return;
+    if (IOS_SAFARI || !e || x > EDGE) return; // en Safari de iPhone el gesto es el del navegador
     if (document.querySelector('.sheet.open, .as-sheet.open')) return; // con una hoja abierta, el gesto es de la hoja
     g = { e: e, x0: x, y0: y, t: t, x: x, vx: 0, on: false };
   }

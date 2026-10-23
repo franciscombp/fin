@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="es" data-theme="light" data-layout="mobile-sm">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Componentes · Pichibank</title>
+  <meta name="build" content="__BUILD__">
+  <link rel="icon" type="image/svg+xml" href="../assets/pichibank-avatar.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0">
+  <!-- La misma pila de estilos de la app (index.html), en el mismo orden: lo que se ve aquí es lo que se ve allá -->
+  <link rel="stylesheet" href="../assets/fonts/prelo/prelo.css?v=__BUILD__">
+  <link rel="stylesheet" href="../assets/tokens.css?v=__BUILD__">
+  <link rel="stylesheet" href="../assets/componentes-tokens.css?v=__BUILD__">
+  <link rel="stylesheet" href="../assets/asistente.css?v=__BUILD__">
+  <link rel="stylesheet" href="../assets/buscador.css?v=__BUILD__">
+  <link rel="stylesheet" href="../assets/destacados.css?v=__BUILD__">
+  <link rel="stylesheet" href="../assets/producto.css?v=__BUILD__">
+  <link rel="stylesheet" href="../assets/sistema.css?v=__BUILD__">
+  <link rel="stylesheet" href="../assets/pfm.css?v=__BUILD__">
+  <link rel="stylesheet" href="../assets/uku-app.css?v=__BUILD__">
+  <link rel="stylesheet" href="../assets/soporte.css?v=__BUILD__">
+  <link rel="stylesheet" href="../assets/tarjetas.css?v=__BUILD__">
+  <link rel="stylesheet" href="../assets/componentes.css?v=__BUILD__">
+  <!-- Solo el armazón del catálogo (cat-*): todo lo demás son clases de la app -->
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html { background: var(--bp-theme-color-surface-page-alt); }
+    body { margin: 0; font: var(--sol-body-md-medium); color: var(--bp-theme-color-text-primary); background: var(--bp-theme-color-surface-page-alt); }
+    .cat-head { position: sticky; top: 0; z-index: 10; background: var(--bp-theme-color-surface-container-fixed); -webkit-backdrop-filter: var(--sol-blur-fixed); backdrop-filter: var(--sol-blur-fixed); border-bottom: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); }
+    .cat-head .bp-filter { display: flex; gap: var(--bp-semantic-spacing-micro-md); overflow-x: auto; padding: 0 var(--bp-layout-grid-margin) var(--bp-semantic-spacing-micro-lg); scrollbar-width: none; }
+    .cat-head .bp-filter::-webkit-scrollbar { display: none; }
+    .cat-head .bp-filter-item { flex: none; text-decoration: none; }
+    .cat-main { max-width: 760px; margin: 0 auto; padding: var(--bp-semantic-spacing-macro-sm) var(--bp-layout-grid-margin) var(--bp-semantic-spacing-macro-xl); }
+    .cat-main > .bp-text-field { margin-bottom: var(--bp-semantic-spacing-macro-md); }
+    .cat-sec { scroll-margin-top: 120px; }
+    .cat-sec + .cat-sec { margin-top: var(--bp-semantic-spacing-macro-lg); }
+    .cat-sec__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--bp-semantic-spacing-micro-md); margin-bottom: var(--bp-semantic-spacing-gap-title); }
+    .cat-sec__head h2 { margin: 0; font: var(--sol-title-md); color: var(--bp-theme-color-text-primary); }
+    .cat-item + .cat-item { margin-top: var(--bp-semantic-spacing-gap-content); }
+    .cat-item { border: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-container-default); overflow: hidden; }
+    .cat-item__info { padding: var(--bp-semantic-spacing-macro-sm) var(--bp-layout-card-padding) var(--bp-semantic-spacing-micro-lg); }
+    .cat-item__t { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md); margin: 0; font: var(--sol-body-md-semibold); }
+    .cat-item__d { margin: var(--bp-semantic-spacing-micro-sm) 0 0; font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-secondary); }
+    .cat-code { display: flex; flex-wrap: wrap; gap: var(--bp-semantic-spacing-micro-sm); margin-top: var(--bp-semantic-spacing-micro-md); }
+    .cat-code code { padding: 2px 6px; border-radius: var(--bp-semantic-radius-xs); background: var(--bp-theme-color-surface-page-alt); color: var(--bp-theme-color-text-secondary); font: 500 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .cat-code code.is-bp { color: var(--bp-theme-color-text-brand); }
+    /* El escenario: fondo de página para ver el componente como en la app */
+    .cat-stage { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--bp-semantic-spacing-micro-lg); padding: var(--bp-semantic-spacing-macro-sm); background: var(--bp-theme-color-surface-page-alt); }
+    .cat-stage--col { flex-direction: column; flex-wrap: nowrap; align-items: stretch; }
+    .cat-stage--card { background: var(--bp-theme-color-surface-container-default); border-top: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); }
+    .cat-stage > .cat-w { width: 100%; }
+    .cat-warn { display: none; color: var(--bp-theme-color-status-error-icon); font-size: 20px; }
+    .cat-item.is-warn .cat-warn { display: inline-block; }
+    .cat-item[hidden], .cat-sec[hidden] { display: none; }
+    /* Fundamentos */
+    .cat-sw { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--bp-semantic-spacing-micro-lg); width: 100%; }
+    .cat-sw__c { display: block; height: 48px; border-radius: var(--bp-semantic-radius-sm); border: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); }
+    .cat-sw__n { display: block; margin-top: var(--bp-semantic-spacing-micro-sm); font: var(--sol-body-xs-semibold); overflow-wrap: anywhere; }
+    .cat-sw__v { display: block; font: var(--sol-body-xs-medium); color: var(--bp-theme-color-text-helper); }
+    .cat-ty { display: flex; align-items: baseline; justify-content: space-between; gap: var(--bp-semantic-spacing-micro-lg); width: 100%; padding: var(--bp-semantic-spacing-micro-md) 0; border-bottom: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); }
+    .cat-ty small { flex: none; font: var(--sol-body-xs-medium); color: var(--bp-theme-color-text-helper); }
+    .cat-sp { display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-lg); width: 100%; font: var(--sol-body-xs-medium); }
+    .cat-sp b { flex: 0 0 170px; font: var(--sol-body-xs-semibold); }
+    .cat-sp i { flex: none; display: block; height: 12px; border-radius: 2px; background: var(--bp-interaction-tertiary-fg); }
+    .cat-ra { display: grid; place-items: center; width: 72px; height: 72px; background: var(--bp-interaction-secondary-bg); font: var(--sol-body-xs-semibold); }
+    .cat-card { width: 300px; max-width: 100%; }
+  </style>
+  <!-- Rutas de las tarjetas relativas a esta página; los íconos se muestran ya (la app espera a su fuente) -->
+  <script>window.PB_BASE = '../'; document.documentElement.classList.add('icons-ready');</script>
+</head>
+<body>
+  <header class="cat-head">
+    <div class="bp-top-bar">
+      <a class="bp-navigation-button" href="./" aria-label="Volver al sandbox"><span class="material-symbols-rounded">arrow_back</span></a>
+      <span class="bp-top-bar__title">Componentes</span>
+      <div class="bp-top-bar__actions">
+        <button class="bp-icon-switch" id="tema" aria-label="Modo oscuro" aria-pressed="false"><span class="material-symbols-rounded">dark_mode</span></button>
+      </div>
+    </div>
+    <nav class="bp-filter" id="indice" aria-label="Secciones"></nav>
+  </header>
+  <main class="cat-main">
+    <label class="bp-text-field">
+      <span class="bp-text-field__field">
+        <span class="bp-text-field__leading"><span class="material-symbols-rounded">search</span></span>
+        <input class="bp-text-field__input" id="filtro" type="search" placeholder="Busca un componente o una clase" autocomplete="off">
+      </span>
+    </label>
+    <div id="cat"></div>
+  </main>
+  <script src="../assets/tarjetas.js?v=__BUILD__"></script>
+  <script>
+  (function () {
+    'use strict';
+    var FIGMA = 'https://www.figma.com/design/Q8Xzu4JzCGv5OnXANT04WA/Components-4--Beta-?node-id=';
+    function ms(n) { return '<span class="material-symbols-rounded">' + n + '</span>'; }
+    function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+    // La base de la app vive dentro de index.html (@layer base): se trae tal cual para que todo se vea igual
+    fetch('../index.html', { cache: 'no-cache' }).then(function (r) { return r.text(); }).then(function (t) {
+      var m = t.match(/<style>([\s\S]*?)<\/style>/);
+      if (!m) return;
+      var st = document.createElement('style');
+      st.textContent = m[1].replace(/url\((['"]?)\.\/assets\//g, 'url($1../assets/');
+      document.head.insertBefore(st, document.head.querySelector('link[rel="stylesheet"]'));
+      revisar();
+    }).catch(function () {});
+
+    /* ---------- Fundamentos ---------- */
+    var COLORES = ['text-primary', 'text-secondary', 'text-helper', 'text-brand', 'text-disabled', 'icon-primary', 'surface-page-default', 'surface-page-alt', 'surface-container-default', 'surface-container-fixed', 'surface-brand-default', 'border-default', 'border-divider', 'status-success-icon', 'status-warning-icon', 'status-caution-icon', 'status-error-icon', 'status-info-icon', 'status-new-icon', 'status-promo-icon'];
+    var INTERACCION = ['primary-bg', 'primary-fg', 'secondary-bg', 'secondary-fg', 'tertiary-fg', 'selection-fg', 'field-border'];
+    function swatch(v, n) { return '<span><i class="cat-sw__c" style="background:var(' + v + ')" data-var="' + v + '"></i><b class="cat-sw__n">' + n + '</b><small class="cat-sw__v" data-val="' + v + '"></small></span>'; }
+    var TIPOS = [['title-lg', 'Título de pantalla'], ['title-md', 'Título de barra y hoja'], ['title-sm', 'Título de tarjeta'], ['body-md-regular', 'Texto de lectura'], ['body-md-medium', 'Texto por defecto'], ['body-md-semibold', 'Título de fila'], ['body-sm-regular', 'Texto secundario'], ['body-sm-medium', 'Subtítulo de fila'], ['body-sm-semibold', 'Énfasis pequeño'], ['body-xs-medium', 'Ayuda y notas'], ['body-xs-semibold', 'Tag'], ['label-lg', 'Botón'], ['label-md', 'Acción y chip'], ['label-sm', 'Barra inferior'], ['link-md', 'Enlace'], ['numeric-lg', '$ 1.906,04'], ['numeric-md', '$ 1.906,04'], ['numeric-sm', '$ 1.906,04'], ['numeric-xs', '$ 1.906,04']];
+    var ESPACIOS = [['micro-xs', ''], ['micro-sm', ''], ['micro-md', 'gap-related · gap-title'], ['micro-lg', 'gap-item'], ['macro-sm', 'gap-content · margen de página'], ['xl', ''], ['macro-md', 'entre grupos'], ['macro-lg', 'entre secciones'], ['macro-xl', '']];
+    var RADIOS = ['xs', 'sm', 'md', 'lg', 'full'];
+
+    /* ---------- Catálogo: una sección por página del DS en Figma ---------- */
+    var S = [
+      { id: 'fundamentos', t: 'Fundamentos', fig: '12638-64797', items: [
+        { n: 'Color', d: 'Tokens de tema (cambian con el modo oscuro). Un recuadro vacío o sin valor es un token que no existe.', c: '--bp-theme-color-*', fig: '12638-64797', col: 1,
+          h: '<div class="cat-sw">' + COLORES.map(function (k) { return swatch('--bp-theme-color-' + k, k); }).join('') + INTERACCION.map(function (k) { return swatch('--bp-interaction-' + k, 'interaction-' + k); }).join('') + '</div>' },
+        { n: 'Tipografía', d: 'Prelo. Roles del DS como fuente abreviada.', c: '--sol-{rol}', fig: '12638-66606', col: 1,
+          h: TIPOS.map(function (r) { return '<div class="cat-ty"><span style="font:var(--sol-' + r[0] + ')">' + r[1] + '</span><small>' + r[0] + '</small></div>'; }).join('') },
+        { n: 'Espaciado', d: 'Ritmo: 32 entre secciones, 24 entre grupos, 16 entre tarjetas, 12 entre ítems, 8 entre título y su contenido.', c: '--bp-semantic-spacing-*', fig: '12638-67007', col: 1,
+          h: ESPACIOS.map(function (e) { var v = '--bp-semantic-spacing-' + e[0]; return '<div class="cat-sp"><b>' + e[0] + '</b><i style="width:var(' + v + ')"></i><span data-val="' + v + '"></span>&nbsp;<span style="color:var(--bp-theme-color-text-helper)">' + e[1] + '</span></div>'; }).join('') },
+        { n: 'Redondez', c: '--bp-semantic-radius-*', fig: '12639-29',
+          h: RADIOS.map(function (r) { return '<span class="cat-ra" style="border-radius:var(--bp-semantic-radius-' + r + ')">' + r + '</span>'; }).join('') }
+      ] },
+      { id: 'botones', t: 'Botones', fig: '6129-274', items: [
+        { n: 'Botón', d: 'Primary (amarillo, solo la acción del banco), secondary, tertiary (subrayado), accent (Uku) y destructive. 56 de alto; lg 64. Solo se combina con botones de su misma familia: un principal con su terciario (Ingresar con PIN + Otro método de ingreso), nunca con un botón de acción.', c: 'bp-button bp-button--secondary bp-button--tertiary bp-button--accent bp-button--destructive', a: 'btn login-button login-button--tertiary btn--tertiary sheet__cta pf-cta sx-btn gyro-modal__btn', col: 1,
+          h: '<button class="bp-button">Continuar</button><button class="bp-button bp-button--secondary">Ahora no</button><button class="bp-button bp-button--tertiary">Ver detalle</button><button class="bp-button bp-button--accent">' + ms('auto_awesome') + 'Hablar con Uku</button><button class="bp-button bp-button--destructive">Eliminar</button><button class="bp-button" disabled>Deshabilitado</button><button class="bp-button" data-size="lg">Grande (lg)</button>' },
+        { n: 'Combinaciones', d: 'Las familias no se mezclan. Arriba: botones grandes (principal + terciario subrayado, como en el login). Abajo: botones de acción (secundario + terciario, como en una tarjeta).', c: 'bp-button + bp-button--tertiary · bp-action-button + bp-action-button--tertiary', col: 1,
+          h: '<button class="bp-button">Ingresar con PIN</button><button class="bp-button bp-button--tertiary">Otro método de ingreso</button><div style="display:flex;gap:8px"><button class="bp-action-button">Pagar</button><button class="bp-action-button bp-action-button--tertiary">Ahora no</button></div>' },
+        { n: 'Botón de acción', d: 'Acción dentro de un componente: 40 de alto (sm 32, lg 48).', c: 'bp-action-button bp-action-button--tertiary [data-size]', a: 'dw-cta pf-link home-banner__cta hub-offer__cta hub-promo__cta sp-act',
+          h: '<button class="bp-action-button" data-size="sm">Pequeño</button><button class="bp-action-button">Pagar' + ms('chevron_right') + '</button><button class="bp-action-button" data-size="lg">' + ms('add') + 'Grande</button><button class="bp-action-button bp-action-button--tertiary">Terciario</button><button class="bp-action-button" disabled>Deshabilitado</button>' },
+        { n: 'Botón de acción terciario', d: 'Las acciones de texto dentro de un componente o una fila (Ver más, Cambiar, Borrar, Deshacer): sin fondo ni subrayado; el fondo aparece al pasar o tocar. En un título de sección va en sm. Solo junto a otros botones de acción, nunca junto a un botón grande.', c: 'bp-action-button bp-action-button--tertiary', a: 'section__link bp-section-title__action sx-link pf-back pfm-undo uk-globo__go debit-card-disabled__link pv-more',
+          h: '<button class="bp-action-button bp-action-button--tertiary">Cambiar</button><button class="bp-action-button bp-action-button--tertiary">Ver todo' + ms('chevron_right') + '</button><button class="bp-action-button bp-action-button--tertiary">' + ms('bookmark_add') + 'Guardar como atajo</button><button class="bp-action-button bp-action-button--tertiary" data-size="sm">Ver más</button>' },
+        { n: 'Enlace', d: 'Solo para abrir una página fuera de la app (sitio web, documento externo). Dentro de la app se usa el botón de acción.', c: 'bp-link', a: 'bp-action-button--link', h: '<a class="bp-link" href="#" target="_blank" rel="noopener">Términos y condiciones' + ms('open_in_new') + '</a>' },
+        { n: 'Botón de navegación', d: 'Ícono de barra: 48, sin fondo.', c: 'bp-navigation-button', a: 'icon-button pf-round uk-head__x sx-del dw-x', h: '<button class="bp-navigation-button" aria-label="Volver">' + ms('arrow_back') + '</button><button class="bp-navigation-button" aria-label="Buscar">' + ms('search') + '</button><button class="bp-navigation-button" aria-label="Cerrar">' + ms('close') + '</button>' },
+        { n: 'Ícono de dos estados', d: 'El ojo del saldo.', c: 'bp-icon-switch [aria-pressed]', a: 'icon-switch', h: '<button class="bp-icon-switch" aria-pressed="false">' + ms('visibility') + '</button><button class="bp-icon-switch" aria-pressed="true">' + ms('visibility_off') + '</button>' }
+      ] },
+      { id: 'acciones', t: 'Acciones rápidas', fig: '6129-275', items: [
+        { n: 'Menú de acciones rápidas', d: 'Tarjeta con grilla de 4; botón 64 (56 en los hubs).', c: 'bp-quick-actions-menu quick-action quick-action__icon quick-action__label', a: 'quick-actions quick-actions--hub sx-app', col: 1,
+          h: '<div class="quick-actions">' + [['qr_code_scanner', 'Pagar con QR'], ['send_money', 'Transferir dinero'], ['control_point_duplicate', 'Recibir dinero'], ['receipt_long', 'Pagar servicios']].map(function (q) { return '<button class="quick-action"><span class="quick-action__icon">' + ms(q[0]) + '</span><span class="quick-action__label">' + q[1] + '</span></button>'; }).join('') + '</div>' +
+             '<div class="quick-actions quick-actions--hub">' + [['add_card', 'Abrir cuenta'], ['savings', 'Ahorrar'], ['swap_horiz', 'Mover dinero'], ['description', 'Certificados']].map(function (q) { return '<button class="quick-action"><span class="quick-action__icon">' + ms(q[0]) + '</span><span class="quick-action__label">' + q[1] + '</span></button>'; }).join('') + '</div>' }
+      ] },
+      { id: 'navegacion', t: 'Navegación', fig: '6129-276', items: [
+        { n: 'Barra superior', d: '56 de alto; título title/md.', c: 'bp-top-bar bp-top-bar__title bp-top-bar__actions bp-top-bar--center', a: 'top-bar detail-topbar__row detail-topbar__title', col: 1,
+          h: '<div class="bp-top-bar">' + '<button class="bp-navigation-button" aria-label="Volver">' + ms('arrow_back') + '</button><span class="bp-top-bar__title">Débito Digital</span><div class="bp-top-bar__actions"><button class="bp-navigation-button">' + ms('settings') + '</button></div></div>' +
+             '<div class="bp-top-bar bp-top-bar--center"><button class="bp-navigation-button" aria-label="Cerrar">' + ms('close') + '</button><span class="bp-top-bar__title">Mis gastos</span><button class="bp-navigation-button">' + ms('info') + '</button></div>' },
+        { n: 'Encabezado de página', c: 'bp-page-header bp-page-header__title bp-page-header__subtitle', a: 'view-title pf-head detail-title cd-title', col: 1,
+          h: '<div class="bp-page-header"><h1 class="bp-page-header__title">Perfil</h1><p class="bp-page-header__subtitle">Tus datos, seguridad y preferencias.</p></div>' },
+        { n: 'Barra inferior', d: 'El destino activo usa el ícono relleno y el color de selección.', c: 'bp-nav-bar bp-nav-bar__items bp-nav-item [aria-current=page]', a: 'nav-bar nav-item nav-item__wrap nav-item__label', col: 1, card: 1,
+          h: '<nav class="bp-nav-bar" style="padding-bottom:8px"><div class="bp-nav-bar__items">' + [['home', 'Inicio', 1], ['featured_seasonal_and_gifts', 'Beneficios'], ['psychiatry', 'Asistente'], ['account_circle', 'Perfil']].map(function (n) { return '<button class="bp-nav-item"' + (n[2] ? ' aria-current="page"' : '') + '>' + ms(n[0]) + '<span>' + n[1] + '</span></button>'; }).join('') + '</div></nav>' }
+      ] },
+      { id: 'pestanas', t: 'Pestañas y filtros', fig: '7458-202', items: [
+        { n: 'Pestañas', c: 'bp-tabs bp-tabs__scroll bp-tab-item [aria-selected]', a: 'tabs tabs__scroll tab tab.active', col: 1,
+          h: '<div class="bp-tabs"><div class="bp-tabs__scroll" role="tablist"><button class="bp-tab-item" aria-selected="true">Destacado</button><button class="bp-tab-item">Cuentas</button><button class="bp-tab-item">Tarjetas</button><button class="bp-tab-item">Préstamos</button><button class="bp-tab-item">Inversiones</button></div></div>' },
+        { n: 'Filtro (chips)', c: 'bp-filter bp-filter-item [aria-pressed]', a: 'push-chip pf-catchip sx-chip ai-chip uk-chip-s',
+          h: '<div class="bp-filter" style="display:flex;flex-wrap:wrap;gap:8px"><button class="bp-filter-item" aria-pressed="true">Todos</button><button class="bp-filter-item">' + ms('restaurant') + 'Comida</button><button class="bp-filter-item">$ 20</button><button class="bp-filter-item">Más' + ms('expand_more') + '</button><button class="bp-filter-item" disabled>Deshabilitado</button></div>' },
+        { n: 'Segmentado', d: '2 a 5 opciones del mismo ancho, sin scroll.', c: 'bp-segmented bp-segmented__track bp-segmented-item', col: 1,
+          h: '<div class="bp-segmented"><div class="bp-segmented__track" role="tablist"><button class="bp-segmented-item" role="tab">Semana</button><button class="bp-segmented-item" role="tab" aria-selected="true">Mes</button><button class="bp-segmented-item" role="tab">6 meses</button><button class="bp-segmented-item" role="tab">Año</button></div></div>' }
+      ] },
+      { id: 'campos', t: 'Campos de entrada', fig: '6129-277', items: [
+        { n: 'Campo de texto', d: 'Etiqueta, campo 56, ayuda. Estados: error, solo lectura, deshabilitado; variante de monto.', c: 'bp-text-field __label __field __leading __input __trailing __support --currency --error --disabled', a: 'sx-rec__field', col: 1,
+          h: '<label class="bp-text-field"><span class="bp-text-field__label">Alias</span><span class="bp-text-field__field"><input class="bp-text-field__input" placeholder="Ej. Ahorro viaje"></span><span class="bp-text-field__support">Hasta 20 caracteres</span></label>' +
+             '<label class="bp-text-field bp-text-field--currency"><span class="bp-text-field__label">Monto</span><span class="bp-text-field__field"><span class="bp-text-field__leading">$</span><input class="bp-text-field__input" value="125,00" inputmode="decimal"></span></label>' +
+             '<label class="bp-text-field bp-text-field--error"><span class="bp-text-field__label">Cédula</span><span class="bp-text-field__field"><input class="bp-text-field__input" value="17123" aria-invalid="true"></span><span class="bp-text-field__support">Debe tener 10 dígitos</span></label>' +
+             '<label class="bp-text-field bp-text-field--disabled"><span class="bp-text-field__label">Cuenta</span><span class="bp-text-field__field"><input class="bp-text-field__input" value="******7890" disabled></span></label>' },
+        { n: 'Buscador', c: 'bp-text-field__leading + bp-search__input', a: 'sx-field sp-find', col: 1,
+          h: '<label class="bp-text-field"><span class="bp-text-field__field"><span class="bp-text-field__leading">' + ms('search') + '</span><input class="bp-text-field__input" placeholder="Busca o pregunta"><span class="bp-text-field__trailing"><button class="bp-navigation-button" style="width:40px;height:40px" aria-label="Dictar">' + ms('mic') + '</button></span></span></label>' }
+      ] },
+      { id: 'selectores', t: 'Selectores', fig: '2274-52362', items: [
+        { n: 'Interruptor', d: 'Se enciende con aria-pressed en la fila que lo contiene.', c: 'bp-switch bp-switch__knob', a: 'pref-switch pref-switch__knob', col: 1, card: 1,
+          h: '<button class="bp-list-item" aria-pressed="false"><span class="bp-avatar">' + ms('dark_mode') + '</span><span class="bp-list-item__main"><span class="bp-list-item__title">Modo oscuro</span></span><span class="bp-switch"><span class="bp-switch__knob"></span></span></button>' +
+             '<button class="bp-list-item" aria-pressed="true"><span class="bp-avatar">' + ms('vibration') + '</span><span class="bp-list-item__main"><span class="bp-list-item__title">Vibración</span></span><span class="bp-switch"><span class="bp-switch__knob"></span></span></button>' }
+      ] },
+      { id: 'contenido', t: 'Contenido', fig: '7450-202', items: [
+        { n: 'Título de sección', c: 'bp-section-title bp-section-title__text bp-section-title__action', a: 'section__title pf-sec__head push-label uk-ay__label', col: 1,
+          h: '<div class="bp-section-title"><h2 class="bp-section-title__text">Tus productos</h2><button class="bp-section-title__action">Ver todos</button></div>' },
+        { n: 'Tag', c: 'bp-tag --pending --info --new --success --caution --warning --error --promo [data-size=sm]', a: 'tag pfm-pill',
+          h: ['', 'pending', 'info', 'new', 'success', 'caution', 'warning', 'error', 'promo'].map(function (v) { return '<span class="bp-tag' + (v ? ' bp-tag--' + v : '') + '">' + (v || 'neutral') + '</span>'; }).join('') + '<span class="bp-tag bp-tag--success bp-tag--has-icon">' + ms('check_circle') + 'Al día</span><span class="bp-tag" data-size="sm">sm</span>' },
+        { n: 'Avatar', d: 'Ícono en círculo (40; md, xs), en recuadro, sin fondo y con la cara de Uku.', c: 'bp-avatar [data-size] bp-avatar--tile bp-avatar--plain bp-avatar__img', a: 'avatar-cat avatar-lg pf-tx__ic sp-row__ic prod-hero__ilustra dw-ghost__ic',
+          h: '<span class="bp-avatar">' + ms('restaurant') + '</span><span class="bp-avatar" data-size="md">' + ms('savings') + '</span><span class="bp-avatar" data-size="xs">' + ms('bolt') + '</span><span class="bp-avatar--tile">' + ms('add_card') + '</span><span class="bp-avatar--plain material-symbols-rounded">help</span><span class="bp-avatar" style="overflow:hidden"><img class="bp-avatar__img" src="../assets/oso/oso-cara.webp" alt=""></span>' },
+        { n: 'Monto', c: 'bp-amount bp-amount__value bp-amount--md bp-amount--lg bp-amount__toggle', a: 'amount amount-row dw-value',
+          h: '<span class="bp-amount"><span class="bp-amount__value">$ 1.906,04</span><button class="bp-amount__toggle" aria-label="Ocultar">' + ms('visibility') + '</button></span><span class="bp-amount bp-amount--md"><span class="bp-amount__value">$ 851,12</span></span><span class="bp-amount bp-amount--lg"><span class="bp-amount__value">$ 443,32</span></span>' },
+        { n: 'Progreso', d: 'Azul por defecto; ok, warn, over.', c: 'bp-progress bp-progress--ok --warn --over', a: 'pf-meter pfm-hub__bar pfm-row__bar', col: 1,
+          h: '<u class="bp-progress"><i style="width:40%"></i></u><u class="bp-progress bp-progress--ok"><i style="width:62%"></i></u><u class="bp-progress bp-progress--warn"><i style="width:88%"></i></u><u class="bp-progress bp-progress--over"><i style="width:100%"></i></u>' },
+        { n: 'Tarjeta (widget)', d: 'container/default, radius md, sin borde ni sombra. Con encabezado y meta.', c: 'bp-widget bp-widget__header bp-widget__title bp-widget__meta', a: 'card card__header dw as-stat pf-mcard pfm-insight soon', col: 1,
+          h: '<div class="bp-widget" style="padding:var(--bp-layout-card-padding)"><div class="bp-widget__header"><span class="bp-widget__title">PRINCIPAL</span><span class="bp-widget__meta">Nro. ******7890' + ms('chevron_right') + '</span></div><span class="bp-amount"><span class="bp-amount__value">$ 1.906,04</span></span></div>' },
+        { n: 'Tarjeta con acción', d: 'Placeholder de los hubs y promos: ícono en recuadro, texto y enlace, como las filas de Mis finanzas.', c: 'bp-widget--dashed', a: 'cta-dashed cta-dashed__text cta-dashed__link', col: 1,
+          h: '<button class="cta-dashed"><span class="avatar-lg">' + ms('savings') + '</span><span class="cta-dashed__text">Tu dinero siempre disponible, creciendo cada día.<span class="cta-dashed__link">Crear Ahorro Flexible</span></span></button>' }
+      ] },
+      { id: 'listas', t: 'Listas', fig: '9591-8550', items: [
+        { n: 'Fila de lista', d: 'Avatar, título, subtítulo, monto y chevron. Dentro de una tarjeta, separadas por divisor.', c: 'bp-list-item bp-list-item__main __title __sub __amount', a: 'list-item product-row sub-item sx-row as-row pf-tx pfm-tx sp-row pv-row sheet__row', col: 1,
+          h: '<div class="bp-widget" style="padding:0 var(--bp-layout-card-padding)">' +
+             '<button class="bp-list-item"><span class="bp-avatar">' + ms('restaurant') + '</span><span class="bp-list-item__main"><span class="bp-list-item__title">KFC Quicentro</span><span class="bp-list-item__sub">Hoy · Comida</span></span><span class="bp-list-item__amount">-$ 12,40</span></button>' +
+             '<button class="bp-list-item"><span class="bp-avatar">' + ms('payments') + '</span><span class="bp-list-item__main"><span class="bp-list-item__title">Sueldo</span><span class="bp-list-item__sub">1 oct · Ingreso</span></span><span class="bp-list-item__amount">+$ 1.200,00</span></button>' +
+             '<button class="bp-list-item"><span class="bp-avatar">' + ms('shield_lock') + '</span><span class="bp-list-item__main"><span class="bp-list-item__title">Privacidad y seguridad</span></span>' + ms('chevron_right') + '</button></div>' },
+        { n: 'Fila de producto', d: 'La del hub: miniatura de la tarjeta con su arte real, nombre, número y saldo.', c: 'product-row card-thumb card-thumb--img', a: 'product-row__info __name __sub __amount', col: 1, id: 'filas-producto', h: '' },
+        { n: 'Miniatura de tarjeta sin arte', d: 'Placeholder («Pide tu tarjeta») y marcas sin arte.', c: 'card-thumb --ghost --visa --black --diners card-thumb__brand card-thumb__foot',
+          h: ['ghost', 'visa', 'black', 'diners'].map(function (v) { return '<span class="card-thumb card-thumb--' + v + '"><span class="card-thumb__brand">PICHI<br>BANK</span><span class="card-thumb__foot"><span class="card-thumb__visa">VISA</span></span></span>'; }).join('') }
+      ] },
+      { id: 'retro', t: 'Retroalimentación', fig: '6129-280', items: [
+        { n: 'Alerta', c: 'bp-alert bp-alert--success --warning --error --neutral __content __icon __text __title __body', col: 1,
+          h: [['', 'info', 'Tu transferencia está en camino', 'Llega en máximo 24 horas hábiles.'], ['success', 'check_circle', 'Listo', 'Tu pago se registró.'], ['warning', 'warning', 'Sin internet', 'Puedes ver tus saldos guardados.'], ['error', 'error', 'No pudimos completar el pago', 'Inténtalo de nuevo en unos minutos.'], ['neutral', 'info', 'Dato', 'Un aviso neutro.']].map(function (a) { return '<div class="bp-alert' + (a[0] ? ' bp-alert--' + a[0] : '') + '"><div class="bp-alert__content"><span class="bp-alert__icon material-symbols-rounded">' + a[1] + '</span><div class="bp-alert__text"><p class="bp-alert__title">' + a[2] + '</p><p class="bp-alert__body">' + a[3] + '</p></div></div></div>'; }).join('') },
+        { n: 'Toast', c: 'bp-toast', a: 'toast pf-toast pfm-undo', h: '<div class="bp-toast">Copiado al portapapeles</div><div class="bp-toast">Movimiento ocultado<button class="pfm-undo">Deshacer</button></div>' },
+        { n: 'Spinner', d: 'El tamaño lo pone cada contexto.', c: 'bp-spinner', a: 'pf-spinner fl__spin push-loading__spinner loading-spinner', h: '<span class="bp-spinner"></span><span class="pf-spinner"></span><span class="fl__spin"></span><span class="push-loading__spinner"></span>' },
+        { n: 'Tip de seguridad', c: 'bp-tips-security __content __title __body __art', col: 1,
+          h: '<div class="bp-tips-security"><div class="bp-tips-security__content"><p class="bp-tips-security__title">Nunca compartas tu clave</p><p class="bp-tips-security__body">El banco jamás te la pedirá por llamada, chat ni correo.</p></div><span class="bp-tips-security__art">' + ms('shield_lock') + '</span></div>' },
+        { n: 'Uku habla', d: 'Burbuja de recomendación con respuestas sugeridas. Sin cara: la app la oculta en las burbujas (uku-app.css).', c: 'uku-say uku-say__body (bp-message__body) uku-say__bubble uku-say__replies', a: 'sp-msg__body uk-msg__body', col: 1,
+          h: '<div class="uku-say"><div class="uku-say__body"><p class="uku-say__bubble">Este mes gastaste 28% menos en comida. ¿Quieres ver en qué?</p><div class="uku-say__replies"><button class="bp-filter-item">Ver mis gastos</button><button class="bp-filter-item">Ahora no</button></div></div></div>' }
+      ] },
+      { id: 'superposiciones', t: 'Superposiciones', fig: '9415-899', items: [
+        { n: 'Hoja inferior', d: 'Radius lg arriba, uñero 56×4, título title/md, subtítulo.', c: 'bp-sheet bp-sheet__handle bp-sheet__title bp-sheet__subtitle', a: 'sheet as-sheet gyro-modal__content i18n-sheet sheet-backdrop', col: 1,
+          h: '<div class="bp-sheet" style="padding:8px var(--bp-layout-grid-margin) 24px"><span class="bp-sheet__handle"></span><h3 class="bp-sheet__title">Activa el movimiento</h3><p class="bp-sheet__subtitle">Así la luz de tu tarjeta sigue el giro del teléfono.</p><button class="bp-button bp-button--block">Activar</button></div>' }
+      ] },
+      { id: 'promos', t: 'Promociones', fig: '6129-281', items: [
+        { n: 'Oferta del hub', c: 'hub-offer hub-offer__img hub-offer__text hub-offer__title hub-offer__cta', col: 1,
+          h: '<div class="hub-offer"><img class="hub-offer__img" src="../assets/banners/finanzas.webp" alt=""><div class="hub-offer__text"><p class="hub-offer__title">El apoyo que necesitas para hacer realidad tus sueños</p><button class="hub-offer__cta">Solicitar préstamo' + ms('chevron_right') + '</button></div></div>' },
+        { n: 'Promo con precio', c: 'hub-promo __media __badge __content __title __price __cta', a: 'hub-promos',
+          h: '<div class="hub-promo" style="width:180px"><span class="hub-promo__media"><img src="../assets/banners/regalo.webp" alt=""><span class="hub-promo__badge">-10%</span></span><span class="hub-promo__content"><span class="hub-promo__title">Giftcard Sweet &amp; Coffee</span><span class="hub-promo__price"><b>2.400 millas</b><s>2.700</s></span><button class="hub-promo__cta">Canjear' + ms('chevron_right') + '</button></span></div>' },
+        { n: 'Hub vacío', c: 'prod-hero prod-hero__top prod-hero__ilustra prod-hero__t prod-hero__s', col: 1,
+          h: '<div class="prod-hero prod-hero--vacio"><div class="prod-hero__top"><span class="prod-hero__ilustra">' + ms('trending_up') + '</span><span><b class="prod-hero__t">Haz crecer tu dinero</b><p class="prod-hero__s">Invierte desde $ 100 con la tasa que elijas.</p></span></div><button class="bp-button bp-button--secondary">Hablar con Uku</button></div>' }
+      ] },
+      { id: 'widgets', t: 'Widgets', fig: '6129-282', items: [
+        { n: 'Widget de Destacado', d: 'Tamaños s (cuadrado) y m (horizontal).', c: 'dw dw--s dw--m dw-h dw-body dw-label dw-value dw-sub dw-bar', a: 'dw-split dw-btn dw-ring', col: 1,
+          h: '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%"><article class="dw dw--s"><p class="dw-h">' + ms('savings') + '<span class="dw-1">Intereses</span></p><div class="dw-body"><p class="dw-label dw-1">Intereses del mes</p><p class="dw-value">$ 3,12</p><p class="dw-sub dw-1">En tus ahorros</p></div></article>' +
+             '<article class="dw dw--s"><p class="dw-h">' + ms('flag') + '<span class="dw-1">Meta</span></p><div class="dw-body"><p class="dw-label dw-1">Viaje a Galápagos</p><p class="dw-value">$ 640,00</p><u class="dw-bar"><i style="width:64%"></i></u><p class="dw-sub dw-1">64% de $ 1.000,00</p></div></article>' +
+             '<article class="dw dw--m" style="grid-column:1/-1"><p class="dw-h">' + ms('credit_card') + '<span class="dw-1">Tarjeta de crédito</span></p><div class="dw-body"><div class="dw-split"><div><p class="dw-label dw-1">Por pagar</p><p class="dw-value">$ 482,10</p><p class="dw-sub dw-1">Hasta el 10 nov</p></div><div class="dw-split__r"><p class="dw-label dw-1">Cupo disponible</p><p class="dw-value dw-value--sm">$ 7.517,90</p><button class="dw-btn bp-action-button" data-size="sm">Pagar</button></div></div></div></article></div>' }
+      ] },
+      { id: 'tarjetas', t: 'Tarjetas', fig: '6129-290', items: [
+        { n: 'Arte de tarjeta', d: 'Débito (imagen), Black y Siembra (capas UV). Mueve el puntero sobre la tarjeta para ver la luz.', c: 'tj-arte tj-arte--{tipo} tuv tuv--{capas} tj-luz', a: 'Tarjetas.arte(tipo) · Tarjetas.mini(tipo)', id: 'artes', h: '' }
+      ] }
+    ];
+
+    function clases(c, bp) { return c.split(/\s+/).filter(Boolean).map(function (x) { return '<code' + (bp ? ' class="is-bp"' : '') + '>' + esc(x) + '</code>'; }).join(''); }
+    function item(it, sec) {
+      return '<article class="cat-item" data-q="' + esc((it.n + ' ' + it.c + ' ' + (it.a || '') + ' ' + sec.t).toLowerCase()) + '">' +
+        '<div class="cat-item__info"><p class="cat-item__t">' + esc(it.n) + '<span class="cat-warn material-symbols-rounded" title="No se ve: revisar">error</span></p>' + (it.d ? '<p class="cat-item__d">' + esc(it.d) + '</p>' : '') +
+        '<div class="cat-code">' + clases(it.c, 1) + (it.a ? clases(it.a) : '') + '</div></div>' +
+        '<div class="cat-stage' + (it.col ? ' cat-stage--col' : '') + (it.card ? ' cat-stage--card' : '') + '"' + (it.id ? ' id="' + it.id + '"' : '') + '>' + it.h + '</div></article>';
+    }
+    var cat = document.getElementById('cat'), indice = document.getElementById('indice');
+    cat.innerHTML = S.map(function (s) {
+      return '<section class="cat-sec" id="' + s.id + '"><div class="cat-sec__head"><h2>' + esc(s.t) + '</h2><a class="bp-link" href="' + FIGMA + s.fig + '" target="_blank" rel="noopener">Ver en Figma' + ms('open_in_new') + '</a></div>' + s.items.map(function (it) { return item(it, s); }).join('') + '</section>';
+    }).join('');
+    indice.innerHTML = S.map(function (s) { return '<a class="bp-filter-item" href="#' + s.id + '">' + esc(s.t) + '</a>'; }).join('');
+
+    // Tarjetas: el arte y las filas del hub salen del mismo módulo que usa la app
+    if (window.Tarjetas) {
+      document.getElementById('artes').innerHTML = ['debito', 'black', 'siembra'].map(function (k) { return '<div class="cat-card">' + Tarjetas.arte(k, { ultimos: '4821' }) + '</div>'; }).join('');
+      var filas = [['debito', 'Débito Digital', '******7890', '$ 1.906,04'], ['black', 'Mastercard Black ···5517', 'Cupo disponible', '$ 39.517,90'], ['siembra', 'Visa Siembra ···2087', 'Cupo disponible', '$ 8.000,00']];
+      document.getElementById('filas-producto').innerHTML = '<div class="tab-panel is-active cat-w"><div class="bp-widget" style="padding:0 var(--bp-layout-card-padding)">' + filas.map(function (f) {
+        return '<button class="product-row">' + Tarjetas.mini(f[0]) + '<span class="product-row__info"><span class="product-row__name">' + f[1] + '</span><span class="product-row__sub">' + f[2] + '</span></span><span class="product-row__amount">' + f[3] + '</span></button>';
+      }).join('') + '</div></div>';
+      Tarjetas.ajustar(document);
+    }
+
+    // Valores reales de los tokens (cambian con el tema)
+    function valores() {
+      var cs = getComputedStyle(document.documentElement);
+      document.querySelectorAll('[data-val]').forEach(function (el) { var v = cs.getPropertyValue(el.dataset.val).trim(); el.textContent = v || 'sin valor'; });
+    }
+    // Revisión automática: marca lo que no se ve (alto 0) o un token de color sin valor
+    function revisar() {
+      valores();
+      document.querySelectorAll('.cat-item').forEach(function (a) {
+        var st = a.querySelector('.cat-stage'), mal = false;
+        Array.prototype.forEach.call(st.children, function (c) { var r = c.getBoundingClientRect(); if (r.height < 4 || r.width < 4) mal = true; });
+        st.querySelectorAll('[data-var]').forEach(function (c) { if (!getComputedStyle(document.documentElement).getPropertyValue(c.dataset.var).trim()) mal = true; });
+        a.classList.toggle('is-warn', mal);
+      });
+    }
+    var tema = document.getElementById('tema');
+    function setTema(osc) { document.documentElement.setAttribute('data-theme', osc ? 'dark' : 'light'); tema.setAttribute('aria-pressed', String(osc)); tema.firstChild.textContent = osc ? 'light_mode' : 'dark_mode'; try { localStorage.setItem('cat_tema', osc ? 'dark' : 'light'); } catch (e) {} valores(); }
+    tema.addEventListener('click', function () { setTema(document.documentElement.getAttribute('data-theme') !== 'dark'); });
+    try { if (localStorage.getItem('cat_tema') === 'dark') setTema(true); } catch (e) {}
+
+    // Filtro por nombre o clase
+    document.getElementById('filtro').addEventListener('input', function (e) {
+      var q = e.target.value.trim().toLowerCase();
+      document.querySelectorAll('.cat-sec').forEach(function (s) {
+        var alguno = false;
+        s.querySelectorAll('.cat-item').forEach(function (a) { var ok = !q || a.dataset.q.indexOf(q) >= 0; a.hidden = !ok; alguno = alguno || ok; });
+        s.hidden = !alguno;
+      });
+    });
+    // Los segmentados, pestañas y chips del catálogo responden al toque, para probar sus estados
+    cat.addEventListener('click', function (e) {
+      var b = e.target.closest('.bp-segmented-item, .bp-tab-item');
+      if (b) b.parentNode.querySelectorAll('[aria-selected]').forEach(function (x) { x.setAttribute('aria-selected', String(x === b)); });
+      if (!b) b = b || e.target.closest('.bp-filter-item:not([disabled]), .bp-icon-switch, .bp-list-item[aria-pressed]');
+      if (b && b.hasAttribute('aria-pressed')) b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
+      else if (b && b.classList.contains('bp-filter-item')) b.setAttribute('aria-pressed', 'true');
+    });
+    document.fonts && document.fonts.ready.then(revisar);
+    window.addEventListener('load', revisar);
+  })();
+  </script>
+</body>
+</html>

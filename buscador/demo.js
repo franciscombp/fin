@@ -312,10 +312,10 @@
         (fl.modo === 'atajo' ? '<p class="sx-rec__hint">Guarda la acción con sus datos y repítela con un toque.</p>' : '') + def.campos.map(campo).join('') +
         (fl.modo === 'atajo' ? '<label class="sx-rec__field"><span>Nombre del atajo</span><input type="text" maxlength="40" placeholder="Ej. Mensualidad" data-f="nombre" value="' + esc(fl.datos.nombre || '') + '"></label>' : '') +
         '<div class="sx-rec__acts"><button class="sx-btn sx-btn--ghost" data-volver>Cancelar</button><button class="sx-btn" data-confirmar>' + (fl.modo === 'atajo' ? 'Guardar atajo' : 'Confirmar') + '</button></div>' +
-        (fl.modo === 'hacer' ? '<button class="sx-link" data-guardar-flujo><span class="material-symbols-rounded">bookmark_add</span>Guardar como atajo</button>' : '') + '</section>';
+        (fl.modo === 'hacer' ? '<button class="bp-button bp-button--tertiary bp-button--block" data-guardar-flujo>Guardar como atajo</button>' : '') + '</section>';
     } else {
       h += '<section class="sx-card"><div class="sx-kb__body"><div class="pf-linking"><span class="pf-done material-symbols-rounded">check</span><h3>' + (fl.modo === 'atajo' ? 'Atajo guardado' : 'Listo') + '</h3><p>' + esc(fl.msg) + (fl.modo === 'hacer' ? '<br>Comprobante N.º ' + fl.num + ' · ' + new Date().toLocaleString('es-EC') : '') + '</p></div>' +
-        '<button class="pf-cta" data-volver>Listo</button>' + (fl.modo === 'hacer' ? '<button class="sx-link" data-guardar-flujo><span class="material-symbols-rounded">bookmark_add</span>Guardar como atajo</button>' : '') + '</div></section>';
+        '<button class="pf-cta" data-volver>Listo</button>' + (fl.modo === 'hacer' ? '<button class="bp-button bp-button--tertiary bp-button--block" data-guardar-flujo>Guardar como atajo</button>' : '') + '</div></section>';
     }
     out.innerHTML = h; out.scrollTop = 0;
   }

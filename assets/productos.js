@@ -18,8 +18,11 @@
 
   // Fila de producto: avatar con ícono, nombre, detalle, número enmascarado y monto
   function fila(p) {
-    return '<button class="product-row" data-action="' + esc(p.nombre) + '">' +
-      (p.thumb
+    // Tarjetas Pichibank: su arte real y los datos que abren el detalle de tarjeta (assets/tarjetas.js)
+    var tj = p.tarjeta && window.Tarjetas;
+    return '<button class="product-row" data-action="' + esc(p.nombre) + '"' +
+      (tj ? ' data-tarjeta="' + p.tarjeta + '" data-saldo="' + (p.saldoNum || 0) + '" data-ultimos="' + esc(p.ultimos || '') + '"' : '') + '>' +
+      (tj ? Tarjetas.mini(p.tarjeta) : p.thumb
         ? '<span class="card-thumb card-thumb--' + esc(p.thumb) + '" aria-hidden="true"><span class="card-thumb__brand" translate="no">' + (p.marca ? esc(p.marca) : 'PICHI<br>BANK') + '</span></span>'
         : '<span class="avatar-lg"><span class="material-symbols-rounded">' + esc(p.ic || 'account_balance') + '</span></span>') +
       '<span class="product-row__info"><span class="product-row__name">' + esc(p.nombre) + '</span>' +
@@ -80,6 +83,7 @@
     // Sin ningún producto en el hub: hero. Con productos, los grupos vacíos muestran su placeholder
     var con = data.grupos.some(function (g) { return g.filas.length; });
     el.innerHTML = con ? bloques(data.grupos, el.hasAttribute('data-sin-titulo'), data.total) : hero(data.hero);
+    if (window.Tarjetas) Tarjetas.ajustar(el); // borde de las miniaturas de tarjeta
     // Placeholders de la pantalla de Tarjetas (débito y crédito) según lo que tiene la persona
     if (el.dataset.hub === 'Tarjetas') {
       var ph = function (k, oculto) { var n = document.querySelector('[data-ph="' + k + '"]'); if (n) n.hidden = oculto; };
@@ -124,15 +128,17 @@
         var mvp = function (d) { return String(d.en_mvp).indexOf('Sí') === 0; };
         // El nombre ya trae los últimos dígitos («Mastercard ···5520»): no se repiten debajo
         var fila3 = function (d) { return { nombre: d.producto, sub: d.institucion, masked: /···/.test(d.producto) ? '' : ultimos(d.producto), monto: money(d.saldo), label: 'Saldo a pagar', ic: 'credit_card', thumb: 'black' }; };
+        // Crédito Pichibank: Mastercard es la Black; Visa, la Siembra
+        var credito = function (d) { var f = fila3(d); f.tarjeta = window.Tarjetas ? Tarjetas.tipo(d.producto) : ''; f.saldoNum = d.saldo; f.ultimos = (/(\d{4})\b/.exec(d.producto) || [])[1] || ''; if (f.tarjeta) f.nombre = Tarjetas.nombre(f.tarjeta, f.ultimos, f.nombre); return f; };
         // En la tarjeta de otro banco va su marca, no la de Pichibank
         var marca = function (inst) { return String(inst || '').replace(/^Banco\s+/i, '').split(/\s+/).slice(0, 2).join(' ').toUpperCase(); };
         // Débito: la cuenta transaccional, con su titular y los últimos dígitos
         var trans = cs.filter(function (c) { return c.tipo === 'transaccional'; })[0];
-        var debito = trans ? [{ nombre: 'Débito Pichibank', sub: 'Titular: ' + (persona ? persona.nombre : ''), masked: '******' + trans.numero, monto: money(trans.saldo), label: 'Disponible', ic: 'account_balance_wallet', thumb: 'visa' }] : [];
+        var debito = trans ? [{ nombre: 'Débito Digital', sub: 'Titular: ' + (persona ? persona.nombre : ''), masked: '******' + trans.numero, monto: money(trans.saldo), label: 'Disponible', ic: 'account_balance_wallet', thumb: 'visa', tarjeta: 'debito', ultimos: String(trans.numero).slice(-4) }] : [];
         var creditos = tj.filter(mvp);
         return { grupos: [
             { titulo: 'Débito', filas: debito },
-            { titulo: 'Pichibank', filas: creditos.map(fila3) },
+            { titulo: 'Pichibank', filas: creditos.map(credito) },
             { titulo: 'Otros bancos y tiendas', filas: tj.filter(function (d) { return !mvp(d); }).map(function (d) { var f = fila3(d); f.thumb = 'diners'; f.marca = marca(d.institucion); return f; }) }],
           // Los placeholders de débito y crédito de la pantalla solo aparecen si no hay ese producto
           sinDebito: !debito.length, sinCredito: !creditos.length,

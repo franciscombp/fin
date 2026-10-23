@@ -68,7 +68,9 @@ navegación de cada pantalla; nunca sus estilos. En código:
 - `assets/tokens.css` es el export autogenerado de la biblioteca (capas `tokens.base`, `layout`, `semantic`
   y `theme`, con modos `data-theme` light/dark y `data-layout` por dispositivo). No se edita a mano salvo
   dos ajustes marcados con comentario: el modo por defecto sin atributo y el respaldo de fuente
-  (`Prelo, Roboto, sans-serif`, porque Prelo es comercial y no viaja con el prototipo). Al final va una
+  (`Prelo, Roboto, sans-serif`). Prelo y Prelo Slab viajan con la app en `assets/fonts/prelo` (WOFF2
+  convertidos de los OTF, `prelo.css`); Roboto queda solo como respaldo local. Toda tipografía usa los
+  roles del DS (`--sol-title-*`, `--sol-body-*`, `--sol-label-*`, `--sol-numeric-*`), no tamaños a mano. Al final va una
   capa `tokens.product`, mantenida a mano, con los alias que la app usa y el export no trae (interacción
   por estado `--hover/--active/--focus`, espaciados de composición, anillo de foco).
 - `assets/componentes-tokens.css` trae los tokens de componente (bp-button, bp-avatar, bp-tag, bp-spinner,
@@ -249,6 +251,43 @@ Cómo queda:
 - **Filas de Perfil sin pantalla propia** abren la página «Próximamente» con su ícono, en vez de un toast.
   Seguridad abre el flujo de seguridad del login; «Uku, tu asistente personal» lleva al asistente.
 
+### 5.3.2 Tarjetas: arte real, detalle por tipo y tinta UV (22 de octubre)
+
+- **Tres tarjetas Pichibank** (`assets/tarjetas.js`, `assets/tarjetas.css`, arte en `assets/tarjetas/`):
+  Débito Digital (arte Visa amarillo), Crédito Black Miles (arte negro) y Crédito Visa (tarjeta en capas).
+  Las filas del hub Tarjetas llevan `data-tarjeta` (`debito`, `black`, `visa`), `data-saldo` y
+  `data-ultimos`, muestran el arte real como miniatura y abren el detalle de tarjeta (#card-detail).
+  Mastercard Pichibank → Black; Visa Pichibank → Visa Crédito. Las de otros bancos usan la página
+  de producto genérica. `Tarjetas.abrir(nombre)` resuelve los accesos por nombre (Uku, Soporte, Destacados).
+- **Transición desde la miniatura:** al tocar una tarjeta del hub, una copia del arte vuela desde la
+  miniatura hasta su lugar en el detalle (`Tarjetas.volar`), la pantalla aparece con un fundido sin correr
+  Inicio (`.is-morph`, `navegacion.js` no la desplaza) y el contenido sube un instante después. Con el
+  botón de volver hace el camino inverso; con el gesto o el atrás de Safari se cierra deslizando.
+- **Detalle:** débito con acciones (Ver datos, Bloquear, Límites, Más) y suscripciones; crédito con
+  «Estás al día» si no debe, número enmascarado, cupo disponible/utilizado con anillo de uso, acciones
+  (Millas o Puntos, Avances, Diferir, Más) y consumos o «Aún no tienes transacciones». Deslizar sigue
+  girando la tarjeta para ver los datos con biometría.
+- **La Black es oscura con los tokens del DS**, no con colores a mano: `data-theme="dark"` sobre
+  #card-detail. Para que funcione en un solo elemento, los bloques de tokens de tema, de producto y los
+  alias (`componentes.css`, `componentes-tokens.css`, el `:root` de `index.html`) se declaran también en
+  `[data-theme]`: un alias calculado en `:root` llega ya resuelto (claro) a los hijos.
+- **Crédito Siembra** es la Visa Pichibank blanca (Jorge, Luis y Andrés la tienen). El reverso de cada
+  tarjeta es un color plano con el tono de su borde (`Tarjetas.dorso`): claro con texto azul u oscuro con
+  texto blanco; todas llevan un borde interior de 1 px de contraste.
+  El color de ese borde se calcula midiendo la orilla del arte (`Tarjetas.ajustar`): oscuro y tenue si
+  la orilla es clara, claro y tenue si es oscura. Al reemplazar un SVG o una imagen se adapta solo.
+- **Luz con giroscopio en todas las tarjetas, sin color:** la Siembra (`assets/tarjetas/visa-credito/`) y la
+  Black (`assets/tarjetas/black/`, cuyo fondo ya trae las líneas: la tinta va sobre esas líneas finas) son capas `fondo.svg`, un brillo
+  sobre el fondo, `uv.svg` (formas), la tinta (brillo neutro recortado con la máscara `uv.svg`), un punto
+  de luz y `logos.svg`; en las de imagen, un reflejo encima. Las bandas van casi horizontales porque lo
+  común es inclinar el teléfono hacia adelante o atrás (beta, el eje más sensible): así suben y bajan.
+  `--uv-x`, `--uv-y` y `--uv-luz` (ángulo) van en cada `.tj-arte`. Sin sensores sigue al dedo o al mouse.
+  El scroll de la pantalla de la tarjeta también mueve la luz (160 px la llevan de un borde al otro) y se
+  suma a la inclinación.
+- **iPhone:** el permiso de movimiento se renueva con `click`, no con `pointerdown` (iOS no cuenta el
+  pointerdown de un dedo como gesto y `requestPermission` fallaba en silencio). Si al abrir una tarjeta
+  no llegan lecturas, se muestra el aviso (una vez por visita).
+
 ### 5.4 Orquestador de Uku (acuerdo del 21 de octubre)
 
 **Nada de la lógica de las conversaciones va quemada en el front.** Todo lo que escribes en el chat (y cada
@@ -274,6 +313,49 @@ guarda como presupuesto específico → si no alcanza sin tocar ahorros ni el co
 actualiza la que ya existe, como la de Andrés); si alcanza, apartar el dinero → con la meta cumplida
 («Simular: pasan los meses»), el control del viaje: cuánto puedes gastar hoy, cada parte contra su
 presupuesto (ámbar al 80 %) e imprevistos como reserva → un resumen al volver y pasar lo que sobró al ahorro.
+
+### 5.5 Modo wireframe (presentaciones)
+
+Perfil › Preferencias › «Modo wireframe» pone toda la app en blanco y negro (`html.wireframe { filter:
+grayscale(1) }` en `sistema.css`) para presentar la funcionalidad sin que el diseño distraiga. Se guarda en
+`pb_wireframe` y se aplica en el script del `<head>`, antes del primer pintado. El filtro va en `<html>`:
+en la raíz no cambia el contenedor de los elementos `position: fixed`.
+
+### 5.6 Ritmo de espacios, componentes compartidos y catálogo (23 de octubre)
+
+**Ritmo.** Todos los espacios salen de la escala del DS (nada de 10, 14 o 18 sueltos):
+32 entre secciones (`macro-lg`), 24 entre grupos (`macro-md`), 16 entre tarjetas (`gap-content`),
+12 entre ítems de una grilla (`gap-item`) y 8 entre un título y su contenido (`gap-title`/`gap-related`).
+Las fuentes van por rol (`--sol-title-*`, `--sol-body-*`, `--sol-label-*`, `--sol-numeric-*`), nunca
+tamaño y peso a mano.
+
+**Un patrón, una regla.** Lo que se repetía por pantalla ahora es un solo componente en
+`componentes.css` (o en `tarjetas.css` si es de tarjetas), con las clases viejas como alias:
+`bp-spinner`, `bp-avatar--tile` (ícono en recuadro), `bp-avatar__img` (cara de Uku), `bp-message__body`,
+`bp-flow__head`/`__body` (ingreso y flujos), `bp-search__input`, `bp-switch` (antes `.pref-switch` dentro de
+index.html) y la miniatura `card-thumb` (antes en index.html). Un alias nuevo se agrega a la regla del
+componente; si la pantalla necesita otro tamaño, va en la misma sección de `componentes.css`, porque esa
+hoja se carga al final y le gana a la de la pantalla.
+
+**Catálogo.** `sandbox/componentes.html` (en el sandbox: «Componentes») muestra cada componente con su
+marcado real, sus clases `bp-*` y sus alias, ordenado por las páginas del DS en Figma, con enlace a
+cada página. Carga la misma pila de estilos de la app (y la base de `index.html`), así que lo que se ve
+ahí es lo que se ve en la app. Tiene modo claro/oscuro, filtro por nombre o clase y una revisión
+automática que marca con un ícono rojo un componente que no se ve o un token de color sin valor.
+Al agregar un componente, se suma su entrada en el arreglo `S` del catálogo.
+
+**Enlace, botón y botón de acción (23 de octubre).** El enlace subrayado (`bp-link`) es solo para abrir una
+página fuera de la app. Los botones vienen en dos familias que nunca se mezclan: los grandes (`bp-button`:
+primary, secondary, tertiary subrayado; 56 de alto) van solo con otros grandes, como Ingresar con PIN + Otro
+método de ingreso o Confirmar + Ahora no al pie de una hoja; los de acción (`bp-action-button` y su
+`--tertiary` sin fondo ni subrayado; 40, sm 32) van solo con otros de acción, dentro de un componente o de
+una fila (Ver más, Cambiar, Borrar, Deshacer). Alias del terciario grande: `login-button--tertiary`,
+`btn--tertiary`. Alias del terciario de acción: `section__link`, `sx-link`, `pf-back`, `pfm-undo`,
+`uk-globo__go`, `debit-card-disabled__link`, `pv-more`.
+
+**Margen de página.** La documentación de Layout en Figma dice 16 a 360 px y 24 desde 390 px, pero el
+`tokens.css` exportado del mismo archivo dice 16 para mobile-sm y mobile-md. Se dejan los tokens (16)
+como fuente de verdad hasta que el DS lo aclare.
 
 ## 6. Buscador
 
@@ -372,6 +454,14 @@ presupuesto (ámbar al 80 %) e imprevistos como reserva → un resumen al volver
   quedaron de media columna) y los tonos de ingresos. El detector de CSS sin uso trata como usada
   toda clase que empiece con un prefijo que el código completa (`'algo-' +`); al podar a mano, buscar
   también el prefijo.
+- **Atrás del navegador y gesto de Safari:** cada pantalla completa abierta deja una entrada en el
+  historial (`navegacion.js` con `window.Overlay` de `sheets.js`), así el atrás del teléfono, del navegador
+  o el gesto desde el borde de Safari cierra la pantalla de arriba en vez de volver a una página anterior
+  (se veía el login detrás). En Safari de iPhone, en el navegador, no se usa el gesto propio: compite con
+  el de Safari. El análisis (`analisis.js`) ya registra su entrada y se excluye.
+- **`reverse()` en una animación en pausa:** Safari no la reanuda. El gesto deja en pausa la animación de
+  la pantalla de abajo; al cerrar quedaba corrida a medio camino (Inicio con una franja gris). Después de
+  `reverse()` se llama `play()`, y al terminar la animación se cancela siempre.
 - **Fondo amarillo y círculo amarillo** no se distinguen: en el splash se usa la variante azul.
 
 ## 11. Pendientes y preguntas abiertas
@@ -387,3 +477,4 @@ presupuesto (ámbar al 80 %) e imprevistos como reserva → un resumen al volver
 - Mostrar mi QR se considera informativo. Si el equipo decide lo contrario, se agrega a la lista.
 - ~~Las pruebas headless viven fuera del repo~~: el barrido completo ya está en `tools/barrido.js`
   (ver §10).
+- Margen de página: ¿16 (tokens) o 24 desde 390 px (documentación de Layout en Figma)? Ver §5.6.

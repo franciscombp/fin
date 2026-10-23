@@ -103,6 +103,7 @@
         });
       });
       DB = { mov: U, usuarios: d.usuarios, deudas: d.deudas, escenarios: d.escenarios, hipoteca: d.hipoteca, cuentas: d.cuentas || {} };
+      Object.keys(U).forEach(analizar);
       if (!DB.mov[ST.u]) ST.u = 'andres';
       Object.keys(U).forEach(sembrar);
       cache = {}; fijoCache = {};
@@ -110,6 +111,27 @@
     });
     return loading;
   }
+  /* ---------- Lo deduce el front (assets/pfm-analisis.js) ----------
+     Cada movimiento trae, escritos a mano, su tratamiento, categoría, escenario y nota: se conservan en r.dato
+     para comparar, pero la app usa lo que el front deduce del movimiento crudo (r.ia), así una persona nueva
+     o un mes nuevo funcionan sin escribir nada. FUENTE = 'datos' vuelve a las etiquetas escritas (para comparar). */
+  var FUENTE = 'front';
+  function ctxDe(u) { var us = DB.usuarios.filter(function (x) { return x.usuario === u; })[0] || {}; return { nombre: us.nombre, edad: us.edad, deudas: DB.deudas.filter(function (x) { return x.usuario === u; }) }; }
+  function analizar(u) {
+    var rows = DB.mov[u]; if (!rows) return;
+    var ia = window.PFMAnalisis ? PFMAnalisis.analizar(rows.map(function (r) { return r.dato ? Object.assign({}, r, r.dato) : r; }), ctxDe(u)) : null;
+    rows.forEach(function (r, i) { if (!r.dato) r.dato = { t: r.t, c: r.c, e: r.e, n: r.n }; r.ia = ia ? ia[i] : null; aplicar(r); });
+  }
+  function aplicar(r) { var o = FUENTE === 'datos' && r.dato.t != null ? r.dato : r.ia || r.dato; r.t = o.t; r.c = o.c; r.e = o.e || ''; r.n = o.n || ''; }
+  function fuente(m) {
+    if (m && m !== FUENTE && DB) { FUENTE = m === 'datos' ? 'datos' : 'front'; Object.keys(DB.mov).forEach(function (u) { DB.mov[u].forEach(aplicar); }); refresh(); }
+    return FUENTE;
+  }
+  // Qué escenarios del catálogo aplican a la persona (con su evidencia y la recomendación del catálogo) y cuánto
+  // coincide lo deducido con lo escrito a mano
+  function escenariosDe(u) { u = u || ST.u; var rows = DB.mov[u] || []; return window.PFMAnalisis ? PFMAnalisis.escenarios(rows.map(function (r) { return Object.assign({}, r, r.dato); }), ctxDe(u), DB.escenarios, rows.map(function (r) { return r.ia; })) : []; }
+  function analisisDe(u) { u = u || ST.u; var rows = DB.mov[u] || []; return window.PFMAnalisis ? PFMAnalisis.comparar(rows.map(function (r) { return Object.assign({}, r, r.dato); }), rows.map(function (r) { return r.ia; })) : null; }
+
   /* Historial de la demo: cada persona clasificó hasta cierta fecha, así se ven
      los ánimos de Uku. Jorge está al día (contento), Rosa tiene solo lo de
      esta semana (tranquilo), Andrés dejó pasar 10 días y Daniela no clasifica
@@ -724,7 +746,7 @@
       '<div><small>' + T('Para') + '</small><b>' + esc(c.para) + '</b></div><div><small>' + T('Cuándo') + '</small><b>' + esc(c.cuando) + '</b></div>' +
       '<div><small>' + T('Desde') + '</small><b>' + esc((saldos()[0] || { n: 'tu cuenta' }).n.replace(/ Pichibank/, '')) + '</b></div></div>' +
       '<p class="pf-note">' + T('Uku te avisa un día antes si no te alcanza. Lo puedes cancelar cuando quieras.') + '</p>' +
-      '<button class="pf-cta" data-pfm="hecho:' + esc(x.id) + '">' + T('Confirmar') + '</button><button class="pf-link pf-link--block" data-pfm="cerrar">' + T('Ahora no') + '</button>');
+      '<button class="pf-cta" data-pfm="hecho:' + esc(x.id) + '">' + T('Confirmar') + '</button><button class="bp-button bp-button--tertiary bp-button--block" data-pfm="cerrar">' + T('Ahora no') + '</button>');
   }
   function consejo(id) { return consejos().filter(function (x) { return x.id === id; })[0]; }
   // Qué significa cada cosa del mundo de Uku
@@ -1021,7 +1043,7 @@
       '<h2>' + T(n === 1 ? '¿Y el otro pago a {c}?' : '¿Y los otros {n} pagos a {c}?', { n: n, c: R.cp }) + '</h2>' +
       '<p>' + T('Los pongo también en {g} y lo recuerdo para los próximos. Suman {m}.', { g: etiqueta(R.v), m: money(sumv(R.list, function (it) { return -it.r.m; })) }) + '</p>' +
       '<div class="pfm-game__stack">' + R.list.slice(0, 3).map(function (it, i) { return '<span style="--i:' + i + '">' + esc(cuandoDe(it.r.f)) + '<b>' + money(-it.r.m) + '</b></span>'; }).join('') + '</div>' +
-      '<div class="pfm-game__foot"><button class="pf-cta" data-g="rule:si">' + T(n === 1 ? 'Sí, ese también' : 'Sí, los {n}', { n: n }) + '</button><button class="section__link" data-g="rule:no">' + T('Solo este') + '</button></div></div>';
+      '<div class="pfm-game__foot"><button class="pf-cta" data-g="rule:si">' + T(n === 1 ? 'Sí, ese también' : 'Sí, los {n}', { n: n }) + '</button><button class="bp-button bp-button--tertiary" data-g="rule:no">' + T('Solo este') + '</button></div></div>';
     moverBarra();
   }
   // Después de "es una mesada": ¿la programamos?
@@ -1030,7 +1052,7 @@
     gel.innerHTML = topHTML(T('{a} de {b}', { a: Math.min(hechos(), G.list.length), b: G.list.length }), T('Resultado')) + barHTML() +
       '<div class="pfm-game__panel"><span class="pfm-game__big is-ok material-symbols-rounded" aria-hidden="true">event_available</span>' +
       '<h2>' + T('¿La programamos?') + '</h2><p>' + T('Pichibank le envía {m} a {n} cada día {d}, sin que tengas que acordarte. Uku te avisa un día antes si no te alcanza.', { m: money0(x.monto), n: corto(x.cp).split(' ')[0], d: x.dia }) + '</p>' +
-      '<div class="pfm-game__foot"><button class="pf-cta" data-g="prog:si">' + T('Programar cada día {d}', { d: x.dia }) + '</button><button class="section__link" data-g="prog:no">' + T('Ahora no') + '</button></div></div>';
+      '<div class="pfm-game__foot"><button class="pf-cta" data-g="prog:si">' + T('Programar cada día {d}', { d: x.dia }) + '</button><button class="bp-button bp-button--tertiary" data-g="prog:no">' + T('Ahora no') + '</button></div></div>';
     moverBarra();
   }
   // Confirmación antes de activar: el monto, a quién, cuándo y de dónde, y un paso explícito
@@ -1040,7 +1062,7 @@
       '<div class="pfm-game__panel"><span class="pfm-game__big material-symbols-rounded" aria-hidden="true">fact_check</span>' +
       '<h2>' + T('Confirma la programación') + '</h2><p>' + T('Revisa antes de activarla. Podrás dejarla desde el detalle de la mesada.') + '</p>' +
       progDetails(x) +
-      '<div class="pfm-game__foot"><button class="pf-cta" data-g="prog:ok">' + T('Sí, programar {m} cada día {d}', { m: money0(x.monto), d: x.dia }) + '</button><button class="section__link" data-g="prog:back">' + T('Volver') + '</button></div></div>';
+      '<div class="pfm-game__foot"><button class="pf-cta" data-g="prog:ok">' + T('Sí, programar {m} cada día {d}', { m: money0(x.monto), d: x.dia }) + '</button><button class="bp-button bp-button--tertiary" data-g="prog:back">' + T('Volver') + '</button></div></div>';
     moverBarra();
   }
   // Revisar antes de guardar: cuántos van a cada grupo
@@ -1060,7 +1082,7 @@
       }).join('') + (later ? '<div class="pfm-sum__row"><span class="pfm-sum__ic material-symbols-rounded" aria-hidden="true">schedule</span><span>' + T('Más tarde') + '</span><b>' + (later === 1 ? T('1 consumo') : T('{n} consumos', { n: later })) + '</b></div>' : '') + '</div>' +
       (rules.length ? '<p class="pf-note">' + T('Uku recordará: {r}.', { r: rules.map(function (c) { return c + ' → ' + etiqueta(G.rules[c]); }).join(', ') }) + '</p>' : '<p class="pf-note">' + T('Puedes cambiar cada uno después en el detalle del movimiento.') + '</p>') +
       '<div class="pfm-game__foot">' + (n ? '<button class="pf-cta" data-g="save">' + T('Guardar') + '</button>' : '<button class="pf-cta" data-g="close">' + T('Volver') + '</button>') +
-      (G.i < G.list.length ? '<button class="section__link" data-g="resume">' + T('Seguir clasificando') + '</button>' : '') + '</div></div>';
+      (G.i < G.list.length ? '<button class="bp-button bp-button--tertiary" data-g="resume">' + T('Seguir clasificando') + '</button>' : '') + '</div></div>';
   }
   function confeti() {
     if (RM) return '';
@@ -1078,7 +1100,7 @@
       (prog ? '<p>' + T('Programaste la mesada a {n}: {m} cada día {d}.', { n: corto(prog.it.m.cp).split(' ')[0], m: money0(prog.it.m.monto), d: prog.it.m.dia }) + '</p>' : '') +
       '<p>' + (quedan ? T(quedan === 1 ? 'Queda 1 consumo por clasificar.' : 'Quedan {n} consumos por clasificar.', { n: quedan }) : T('Todo está clasificado.')) + '</p>' +
       '<div class="pfm-game__foot">' + (quedan ? '<button class="pf-cta" data-g="more">' + T('Clasificar {n} más', { n: Math.min(TANDA, quedan) }) + '</button>' +
-        '<button class="section__link" data-g="close">' + T('Volver a Mis finanzas') + '</button>' : '<button class="pf-cta" data-g="close">' + T('Volver a Mis finanzas') + '</button>') + '</div></div>';
+        '<button class="bp-button bp-button--tertiary" data-g="close">' + T('Volver a Mis finanzas') + '</button>' : '<button class="pf-cta" data-g="close">' + T('Volver a Mis finanzas') + '</button>') + '</div></div>';
     fx('success');
   }
   function gameKey(k, btn) {
@@ -1303,13 +1325,13 @@
       '<p class="as-sheet__label">' + T('Versión') + '</p><div class="as-rows">' +
         '<button class="as-row as-row--btn" data-pfm="modo:mvp" aria-pressed="' + !tobe() + '"><span class="as-row__main"><b>MVP</b><small>' + T('Fase 1: solo Pichibank y Deuna, con reglas y sin IA. Hay más gastos por ordenar.') + '</small></span><span class="as-radio"></span></button>' +
         '<button class="as-row as-row--btn" data-pfm="modo:tobe" aria-pressed="' + tobe() + '"><span class="as-row__main"><b>To-be</b><small>' + T('La visión: Uku ordena casi todo, anticipa, ve tus otros bancos y analiza con IA.') + '</small></span><span class="as-radio"></span></button></div>' +
-      '<button class="pf-link pf-link--block" data-pfm="reset">' + T('Borrar mis respuestas y presupuestos') + '</button>');
+      '<button class="bp-button bp-button--tertiary bp-button--block" data-pfm="reset">' + T('Borrar mis respuestas y presupuestos') + '</button>');
   }
   function insightsSheet() {
     var L = consejos();
     showSheet('<h3>' + T('Lo que te propone Uku') + '</h3><p>' + T('Lo que descubrió en tus movimientos de {mes}, con lo que puedes hacer.', { mes: mesName(curMes()) }) + '</p>' +
       '<div class="pfm-tips is-sheet">' + L.map(consejoHTML).join('') + '</div>' +
-      (ST.oculto && ST.oculto[ST.u] && Object.keys(ST.oculto[ST.u]).length ? '<button class="pf-link pf-link--block" data-pfm="verluego">' + T('Ver lo que dejé para después') + '</button>' : ''));
+      (ST.oculto && ST.oculto[ST.u] && Object.keys(ST.oculto[ST.u]).length ? '<button class="bp-button bp-button--tertiary bp-button--block" data-pfm="verluego">' + T('Ver lo que dejé para después') + '</button>' : ''));
   }
   function deudasSheet() {
     var d = deudas(), h = DB.hipoteca, row = function (x, extra) {
@@ -1362,11 +1384,11 @@
       '<p>' + dshort(r.f) + ' ' + r.f.slice(0, 4) + ', ' + r.h + ' · ' + esc(r.src) + '</p>' +
       '<div class="uku-say"><span class="uku-say__face">' + face() + '</span><div class="uku-say__body"><p class="uku-say__bubble">' + esc(porque(r)) + '</p></div></div>' +
       (q ? qHTML(q) : '') +
-      (c.ans ? '<button class="pf-link pf-link--block" data-pfm="undo:' + esc(gkey(r)) + '">' + T('Deshacer mi respuesta') + '</button>' : '') +
+      (c.ans ? '<button class="bp-button bp-button--tertiary bp-button--block" data-pfm="undo:' + esc(gkey(r)) + '">' + T('Deshacer mi respuesta') + '</button>' : '') +
       (cambia ? '<p class="as-sheet__label">' + T('Cambiar categoría') + '</p><div class="pf-catchips">' + PFM13.map(function (k) {
         return '<button class="pf-catchip" data-pfm="setcat:' + i + ':' + esc(k) + '" aria-pressed="' + (c.cat === k) + '">' + esc(k) + '</button>';
       }).join('') + '</div><p class="pf-note">' + T('El cambio mueve el monto entre categorías del presupuesto. Se puede deshacer.') + '</p>' +
-      (catOv(r) ? '<button class="pf-link pf-link--block" data-pfm="uncat:' + i + '">' + T('Volver a la categoría original') + '</button>' : '') : '') +
+      (catOv(r) ? '<button class="bp-button bp-button--tertiary bp-button--block" data-pfm="uncat:' + i + '">' + T('Volver a la categoría original') + '</button>' : '') : '') +
       '<p class="as-sheet__label">' + T('Lo que dice la base de datos') + '</p><p class="pf-note pfm-dev">' + T('Tratamiento: {t} · Categoría: {c}', { t: r.t, c: r.c }) + (r.e ? ' · ' + T('Escenario: {e}', { e: r.e }) : '') + '<br>' + esc(r.desc) + (r.n ? '<br>' + esc(r.n) : '') + '</p>');
   }
   // Una pregunta de Uku dentro del detalle de un movimiento
@@ -1399,7 +1421,7 @@
     var x = mesadas().filter(function (m) { return m.cp === cp; })[0]; if (!x) return closeSheet();
     showSheet('<h3>' + T('Confirma la programación') + '</h3><p>' + T('Revisa antes de activarla. Podrás dejarla desde el detalle de la mesada.') + '</p>' + progDetails(x) +
       '<button class="pf-cta" data-pfm="mesa:prog:' + esc(cp) + '">' + T('Sí, programar {m} cada día {d}', { m: money0(x.monto), d: x.dia }) + '</button>' +
-      '<button class="pf-link pf-link--block" data-pfm="mesada:' + esc(cp) + '">' + T('Volver') + '</button>');
+      '<button class="bp-button bp-button--tertiary bp-button--block" data-pfm="mesada:' + esc(cp) + '">' + T('Volver') + '</button>');
   }
   // Mesada: confirmar, clasificar todo de una y programarla
   function mesadaSheet(cp) {
@@ -1408,8 +1430,8 @@
     showSheet('<h3>' + (st.v === 'mesada' ? T('Mesada a {n}', { n: corto(cp) }) : T('¿Es una mesada para {n}?', { n: n })) + '</h3>' +
       '<p>' + T('Le enviaste unos {m} cada mes durante {k} meses, casi siempre el día {d}, desde tu {src}.', { m: money0(x.monto), k: x.n, d: x.dia, src: x.src }) + '</p>' +
       '<span class="pfm-dcard__cmp pfm-mes__cmp">' + x.porMes.map(function (c, i) { return '<span class="pfm-dcard__row' + (i === x.porMes.length - 1 ? ' is-on' : '') + '"><small>' + esc(c.l) + '</small><b>' + (c.v ? money0(c.v) : '—') + '</b><i style="width:' + Math.max(2, c.v / mx * 100).toFixed(1) + '%"></i></span>'; }).join('') + '</span>' +
-      (st.v !== 'mesada' ? '<p class="pf-note">' + T('Si es una mesada, la pongo en Familia, con todos los envíos de antes.') + '</p><button class="pf-cta" ' + a + 'ok:' + esc(cp) + '">' + T('Sí, es una mesada') + '</button><button class="pf-link pf-link--block" ' + a + 'no:' + esc(cp) + '">' + T('Es otra cosa') + '</button>'
-        : st.prog ? '<p class="pfm-prog"><span class="material-symbols-rounded" aria-hidden="true">event_available</span>' + T('Programada: {m} cada día {d} desde tu {src}.', { m: money0(st.prog.monto), d: st.prog.dia, src: x.src }) + '</p><button class="pf-link pf-link--block" ' + a + 'unprog:' + esc(cp) + '">' + T('Dejar de programarla') + '</button>'
+      (st.v !== 'mesada' ? '<p class="pf-note">' + T('Si es una mesada, la pongo en Familia, con todos los envíos de antes.') + '</p><button class="pf-cta" ' + a + 'ok:' + esc(cp) + '">' + T('Sí, es una mesada') + '</button><button class="bp-button bp-button--tertiary bp-button--block" ' + a + 'no:' + esc(cp) + '">' + T('Es otra cosa') + '</button>'
+        : st.prog ? '<p class="pfm-prog"><span class="material-symbols-rounded" aria-hidden="true">event_available</span>' + T('Programada: {m} cada día {d} desde tu {src}.', { m: money0(st.prog.monto), d: st.prog.dia, src: x.src }) + '</p><button class="bp-button bp-button--tertiary bp-button--block" ' + a + 'unprog:' + esc(cp) + '">' + T('Dejar de programarla') + '</button>'
         : '<p class="as-sheet__label">' + T('Programarla') + '</p><p>' + T('Pichibank le envía {m} a {n} cada día {d}, sin que tengas que acordarte. Uku te avisa un día antes si no te alcanza.', { m: money0(x.monto), n: n, d: x.dia }) + '</p>' +
           '<button class="pf-cta" ' + a + 'ask:' + esc(cp) + '">' + T('Programar cada día {d}', { d: x.dia }) + '</button>'));
   }
@@ -1789,6 +1811,8 @@
   window.PFM = { open: open, paint: paint, world: worldSignals, toast: toast, buscar: buscar, contactos: contactos,
     // Para la versión asistente: los consejos de Uku y un resumen de tu dinero
     advice: function () { return DB ? consejos() : []; },
+    fuente: function (m) { return fuente(m); }, escenarios: function (u) { return DB ? escenariosDe(u) : []; }, analisis: function (u) { return DB ? analisisDe(u) : null; },
+    movimientos: function (u) { return DB ? (DB.mov[u || ST.u] || []) : []; },
     finanzas: function () { if (!DB) return null; var f = finanzas(); f.historia = historia(); f.sugerencias = consejos().filter(function (x) { return !x.done; }).length; return f; },
     perfil: function () { return DB ? perfil() : null; }, hayPres: function () { return DB ? hayPres() : false; },
     summary: function () { if (!DB) return null; var s = month(curMes()), a = animo(); return { nombre: nombre(), saldo: sumv(saldos(), function (x) { return x.v; }), gast: s.gast, pres: pres().general, mes: mesName(curMes()), n: a.n, mood: a.k, moodL: T(MOOD[a.k]), moodIc: MOOD_IC[a.k], score: salud(curMes()), bloom: flores() }; }, settings: function () { if (DB) whoSheet(); }, pack: pack, answer: answer, key: key, ready: function () { return !!DB; },

@@ -6,7 +6,7 @@
 //            CHROME=ruta del navegador (por defecto /opt/pw-browsers/chromium si existe).
 // Qué revisa en cada paso: errores de JS y de consola, archivos que no cargan (HTTP ≥ 400), que la página
 // siga respondiendo (el congelamiento al entrar a Mis finanzas), scroll horizontal, el botón principal de
-// las hojas sin fondo, la barra de abajo (oculta en Mis finanzas y visible en el inicio del asistente) y
+// las hojas sin fondo, que no haya botones grandes junto a botones de acción, la barra de abajo (oculta en Mis finanzas y visible en el inicio del asistente) y
 // que el aviso con «Deshacer» se pueda tocar. También que nada con hidden se vea y que el login no diga
 // «Sin internet» con conexión.
 const { chromium } = require(process.env.PW || 'playwright');
@@ -37,6 +37,21 @@ const IGN = /ERR_CONNECTION_REFUSED|ERR_FAILED|ERR_NAME_NOT_RESOLVED|ERR_TUNNEL|
         // Nada con el atributo hidden debe verse (así se colaba «Sin internet» en el login con red)
         const ocultos = await p.evaluate(() => Array.from(document.querySelectorAll('[hidden]')).filter(e => getComputedStyle(e).display !== 'none').map(e => (e.id ? '#' + e.id : e.className)).slice(0, 3));
         if (ocultos.length) errs.push(paso + ' · se ve algo que debería estar oculto: ' + ocultos.join(', '));
+        // Las familias de botones no se mezclan: un botón grande (bp-button) y uno de acción (bp-action-button)
+        // nunca son hermanos visibles (ver docs §5.6)
+        const mezclas = await p.evaluate(() => {
+          const GR = '.bp-button, .login-button, .sheet__cta, .pf-cta, .gyro-modal__btn, .sx-btn, .btn';
+          const AC = '.bp-action-button, .dw-cta, .pf-link, .home-banner__cta, .grow-cta__btn, .hub-offer__cta, .hub-promo__cta, .sp-act, .section__link, .sx-link, .pf-back, .pfm-undo, .uk-globo__go, .debit-card-disabled__link, .pv-more, .bp-link';
+          const ve = e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(e).visibility !== 'hidden'; };
+          const out = new Set();
+          document.querySelectorAll(GR).forEach(g => {
+            if (!ve(g) || !g.parentElement) return;
+            const a = Array.from(g.parentElement.children).find(x => x !== g && x.matches(AC) && !x.matches(GR) && ve(x));
+            if (a) out.add((g.textContent.trim() || g.className).slice(0, 30) + ' + ' + (a.textContent.trim() || a.className).slice(0, 30));
+          });
+          return Array.from(out).slice(0, 3);
+        });
+        if (mezclas.length) errs.push(paso + ' · botones de familias distintas juntos: ' + mezclas.join(' · '));
         if (extra) await extra();
         await p.waitForTimeout(500); await p.screenshot({ path: path.join(OUT, persona + '_' + n + '.png') });
       } catch (e) { errs.push(n + ' · no se pudo: ' + e.message.split('\n')[0].slice(0, 160)); }
@@ -54,7 +69,10 @@ const IGN = /ERR_CONNECTION_REFUSED|ERR_FAILED|ERR_NAME_NOT_RESOLVED|ERR_TUNNEL|
     await step('06gastos', () => p.click('.pfm-hub__hero'));
     await step('07finanzas2', () => p.click('.uk-chathead__x'));
     await step('08presupuesto', () => p.evaluate(() => PFM.key('pres')), 1200, () => check(() => { const c = document.querySelector('.as-sheet.open .pf-cta'); return !c || getComputedStyle(c).backgroundColor !== 'rgba(0, 0, 0, 0)'; }, 'el botón principal de la hoja no tiene fondo'));
-    await step('09dinero', async () => { await p.keyboard.press('Escape'); await p.waitForTimeout(500); await p.click('.pfm-hub__dinero'); });
+    // Clasificar gastos (el juego de Mis finanzas): la primera tarjeta y el resumen con su pie de botones
+    await step('08b-juego', async () => { await p.keyboard.press('Escape'); await p.waitForTimeout(500); await p.evaluate(() => PFM.key('game')); }, 1500);
+    await step('08c-juego-fin', async () => { for (let i = 0; i < 12; i++) { const l = await p.$('[data-g="later"]'); if (!l) break; await l.click(); await p.waitForTimeout(350); } }, 1200);
+    await step('09dinero', async () => { const c = await p.$('[data-g="close"]'); if (c) { await c.click(); await p.waitForTimeout(600); } await p.keyboard.press('Escape'); await p.waitForTimeout(500); await p.click('.pfm-hub__dinero'); });
     await step('10asistente2', async () => { await p.keyboard.press('Escape'); await p.waitForTimeout(500); await p.click('.uk-chathead__x'); }, 1500);
     await step('11ocultar', async () => { const x = await p.$('.uk-globo__ib[data-k^="ocultar:"]'); if (!x) return; await x.click(); await p.waitForTimeout(700); await p.click('.pf-toast.show .pfm-undo', { timeout: 3000 }); }, 1000);
     await step('12buscador', async () => { await p.click('.uk-bar__f'); await p.waitForTimeout(600); await p.keyboard.type('transferir'); }, 1500);
@@ -70,7 +88,7 @@ const IGN = /ERR_CONNECTION_REFUSED|ERR_FAILED|ERR_NAME_NOT_RESOLVED|ERR_TUNNEL|
   }
   // Páginas sueltas que también se publican
   const ctx = await b.newContext({ viewport: { width: 390, height: 844 } });
-  for (const u of ['duo.html', 'guia.html', 'principios.html', 'sandbox/index.html', 'sandbox/mundo.html', 'sandbox/animaciones.html', 'sandbox/conocimiento.html', 'buscador/index.html', 'sandbox/rig.html']) {
+  for (const u of ['duo.html', 'guia.html', 'principios.html', 'sandbox/index.html', 'sandbox/mundo.html', 'sandbox/animaciones.html', 'sandbox/conocimiento.html', 'sandbox/componentes.html', 'buscador/index.html', 'sandbox/rig.html']) {
     const p = await ctx.newPage(); const errs = [];
     p.on('pageerror', e => errs.push('error de JS: ' + e.message)); p.on('console', m => { if (m.type() === 'error' && !IGN.test(m.text())) errs.push('consola: ' + m.text().slice(0, 160)); });
     p.on('response', r => { if (r.status() >= 400 && r.url().startsWith(BASE)) errs.push('no carga (' + r.status() + '): ' + r.url().slice(BASE.length)); });

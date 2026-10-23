@@ -25,6 +25,20 @@
   function finanzas() { var f = manual.esc && ESC.filter(function (x) { return x[0] === manual.esc; })[0]; return f ? f[2] : window.PFM && PFM.finanzas ? PFM.finanzas() : null; }
   function aplicar() { if (!m3) return; var e = efectivo(), f = finanzas(); m3.setScore(e.score); m3.setBloom(e.bloom); m3.setMood(e.mood); if (f) m3.setFinanzas(f); }
 
+  /* Lo que el front deduce de los movimientos crudos (assets/pfm-analisis.js) frente a lo que vino escrito a mano:
+     cuánto coincide, qué escenarios del catálogo detecta (con su recomendación) y cómo dedujo algunos movimientos */
+  function analisisHTML() {
+    if (!PFM.analisis) return '';
+    var F = PFM.fuente(), a = PFM.analisis(), E = PFM.escenarios(), M = PFM.movimientos(), h = '';
+    h += S.chips([S.chip('data-fuente="front"', 'Análisis del front', F === 'front'), S.chip('data-fuente="datos"', 'Etiquetas escritas', F === 'datos')], 'De dónde salen las etiquetas');
+    if (a && a.n) h += S.card('Lo deducido coincide con lo escrito a mano', S.datos([['Movimientos', a.n + ''], ['Tratamiento (si suma y cómo)', a.tratamiento + ' %'], ['Categoría', a.categoria + ' %'], ['Escenario de lo «por revisar» (la pregunta de Uku)', a.porRevisar + ' %'], ['Pagos mínimos', a.minimo + ' %']]), 'assets/pfm-analisis.js');
+    else h += S.nota('Esta persona todavía no tiene movimientos: no hay nada que analizar.');
+    h += S.sec('Escenarios que detecta el front' + (E.length ? ' · ' + E.length : ''), E.length ? E.map(function (x) { return S.row('', 'radar', esc(x.escenario) + ' · ' + esc(x.fase), esc(x.recomendacion) + '<br>' + esc(x.evidencia)); }).join('') : '<p class="sx-kb__p">Ningún escenario del catálogo aplica con estos datos.</p>');
+    var ej = M.filter(function (r) { return r.ia && (r.e || r.t === 'Por revisar'); }).slice(-6).reverse();
+    if (ej.length) h += S.sec('Cómo lo dedujo · últimos movimientos', ej.map(function (r) { return S.row('', r.m > 0 ? 'call_received' : 'call_made', esc(r.desc), esc(r.ia.t + ' · ' + r.ia.c + (r.ia.e ? ' · ' + r.ia.e : '')) + '<br>' + esc(r.ia.por + (r.ia.n ? ' — ' + r.ia.n : '')), S.money(r.m)); }).join(''));
+    h += S.nota('Las etiquetas escritas a mano en <b>assets/pfm/datos.json</b> se conservan para comparar, pero la app usa lo que deduce el front: reglas por movimiento (contraparte, producto, descripción) y patrones de la serie (mesadas, arriendo, reembolsos, préstamos, pagos mínimos). Una persona nueva funciona sin escribir nada.');
+    return h;
+  }
   function pintar() {
     var p = window.DemoPersona && DemoPersona.datos(), s = resumen(), e = efectivo(), h = '';
     h += p ? S.chipsPersona(DemoPersona.lista(), p.id) : '';
@@ -46,6 +60,7 @@
       var W = PFM.world(), A = PFM.advice().filter(function (c) { return !filtro || (c.t + ' ' + (c.s || '') + ' ' + (c.tag || '')).toLowerCase().indexOf(filtro) >= 0; });
       h += S.sec('Qué significa cada cosa', W.map(function (x) { return S.row('data-senal', x.ic, esc(x.l) + ' · ' + esc(x.v), esc(x.d)); }).join(''));
       h += S.sec('Recomendaciones de Uku' + (filtro ? ' · «' + esc(filtro) + '»' : ''), A.length ? A.map(function (c) { return S.row('data-consejo="' + esc(c.id) + '"', c.icon || 'lightbulb', esc(c.t), esc((c.tag ? c.tag + ' · ' : '') + (c.s || c.di || '')) + (c.actl ? ' · <b>' + esc(c.actl) + '</b>' : ''), c.kind === 'warn' ? '!' : ''); }).join('') : '<p class="sx-kb__p">Nada que recomendar con estos datos.</p>');
+      h += analisisHTML();
       h += S.nota('Las recomendaciones salen de <b>assets/pfm.js › consejos()</b>: pagos cercanos, consumos por ordenar, el mínimo de la tarjeta, el presupuesto, el colchón de ahorro, mesadas repetidas y hallazgos del mes. El bosque usa <b>salud()</b>, las flores <b>flores()</b>, el ánimo <b>animo()</b> y lo que tiene <b>finanzas()</b> (brotes, guayacanes y lo de sus créditos).');
     } else h += S.nota('Cargando los movimientos de la persona…');
     h += S.versionRow();
@@ -68,8 +83,9 @@
     }
   }
   document.addEventListener('click', function (e) {
-    var b = e.target.closest('[data-persona],[data-score],[data-bloom],[data-mood],[data-pose],[data-esc],[data-oso]'); if (!b) return;
+    var b = e.target.closest('[data-persona],[data-score],[data-bloom],[data-mood],[data-pose],[data-esc],[data-oso],[data-fuente]'); if (!b) return;
     var d = b.dataset;
+    if (d.fuente) { PFM.fuente(d.fuente); aplicar(); pintar(); S.aviso(d.fuente === 'front' ? 'La app usa lo que deduce el front' : 'La app usa las etiquetas escritas a mano'); return; }
     if (d.oso) { try { if (d.oso === 'nuevo') localStorage.setItem('uku_oso', 'nuevo'); else localStorage.removeItem('uku_oso'); } catch (x) {} location.reload(); return; }
     if (d.persona) {
       DemoPersona.set(d.persona); S.setPersona(d.persona); if (window.PFM && PFM.setPersona) PFM.setPersona(d.persona);

@@ -219,28 +219,63 @@
       '<div class="sx-panel">' +
         '<div class="sx-head"><form class="sx-field" role="search">' +
           '<span class="material-symbols-rounded" aria-hidden="true">search</span>' +
-          '<input type="search" enterkeyhint="search" autocomplete="off" placeholder="Busca o pregunta" aria-label="Buscar o preguntar">' +
+          // Un campo editable y no un <input> ni un <textarea>: Safari en iPhone ofrece
+          // «Autorrellenar contacto» en todo control de formulario de texto (ignora
+          // autocomplete="off"); un elemento editable no es parte de ningún formulario.
+          '<div class="sx-q" contenteditable="plaintext-only" role="searchbox" enterkeyhint="search" autocorrect="off" spellcheck="false" autocapitalize="off" data-placeholder="Busca o pregunta" aria-placeholder="Busca o pregunta" aria-label="Buscar o preguntar"></div>' +
           '<button type="button" class="sx-mic" data-sx="mic" aria-label="Dictar"><span class="material-symbols-rounded">mic</span></button>' +
           '<button type="button" class="sx-mic" data-sx="cam" aria-label="Escanear un QR con la cámara"><span class="material-symbols-rounded">photo_camera</span></button>' +
         '</form><button class="sx-cancel" data-sx="close" aria-label="Cerrar"><span class="material-symbols-rounded" aria-hidden="true">close</span></button></div>' +
         '<div class="sx-results"></div>' +
       '</div>';
     document.body.appendChild(el);
-    input = el.querySelector('input');
+    input = el.querySelector('.sx-q');
     results = el.querySelector('.sx-results');
-    input.addEventListener('input', render);
-    el.querySelector('form').addEventListener('submit', function (e) {
+    // El resto del buscador usa el campo como un <input>: value y placeholder
+    Object.defineProperty(input, 'value', {
+      get: function () { return (input.textContent || '').replace(/\u00a0/g, ' ').replace(/[\r\n]+/g, ' '); },
+      set: function (v) { input.textContent = v == null ? '' : String(v); if (document.activeElement === input) caretEnd(); }
+    });
+    Object.defineProperty(input, 'placeholder', {
+      get: function () { return input.getAttribute('data-placeholder') || ''; },
+      set: function (v) { input.setAttribute('data-placeholder', v); input.setAttribute('aria-placeholder', v); }
+    });
+    function caretEnd() {
+      var r = document.createRange(), s = window.getSelection();
+      r.selectNodeContents(input); r.collapse(false); s.removeAllRanges(); s.addRange(r);
+    }
+    input.addEventListener('input', function () {
+      // Al borrarlo todo puede quedar un <br> o un salto: se vacía para que vuelva el placeholder
+      if (input.textContent === '' || input.textContent === '\n') { if (input.firstChild) input.textContent = ''; }
+      else if (/[\r\n]/.test(input.textContent)) input.value = input.value;
+      render();
+    });
+    // Una sola línea: lo pegado con saltos se une con espacios
+    input.addEventListener('paste', function (e) {
+      var t = e.clipboardData && e.clipboardData.getData('text/plain');
+      if (t == null) return;
       e.preventDefault();
+      document.execCommand('insertText', false, t.replace(/\s*[\r\n]+\s*/g, ' '));
+    });
+    input.addEventListener('drop', function (e) { e.preventDefault(); });
+    // Enter busca (como el <input> de antes) en vez de agregar un salto de línea
+    input.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); submit(); } });
+    input.addEventListener('beforeinput', function (e) {
+      if (e.inputType === 'insertParagraph' || e.inputType === 'insertLineBreak') { e.preventDefault(); submit(); }
+    });
+    el.querySelector('form').addEventListener('submit', function (e) { e.preventDefault(); submit(); });
+    function submit() {
       addRecent(input.value);
       // Una frase («Quiero viajar a Galápagos») se la preguntas a Uku, que la pasa por su orquestador;
       // una búsqueda corta («tarjeta») abre el primer resultado
       var frase = input.value.trim().split(/\s+/).length >= 3, ask = frase && results.querySelector('[data-sx-i="ask"]');
       var first = ask || results.querySelector('[data-sx-i]');
       if (first) first.click();
-    });
+    }
     el.addEventListener('click', function (e) {
       // Tocar el espacio vacío (debajo de los resultados) también cierra
-      if (e.target === results || e.target.classList.contains('sx-back')) return close();
+      if (e.target.classList.contains('sx-back')) return close();
+      if (e.target === results) { var lastR = results.lastElementChild; if (!lastR || e.clientY > lastR.getBoundingClientRect().bottom) close(); return; }
       var b = e.target.closest('[data-sx],[data-sx-i]');
       if (!b) return;
       if (b.dataset.sx === 'close') return close();
@@ -303,14 +338,19 @@
       if (e.touches.length !== 1) { sw = null; return; }
       var t = e.touches[0];
       sw = { x0: t.clientX, y0: t.clientY, dy: 0, on: false, head: !!e.target.closest('.sx-head'),
+        top: results.contains(e.target) && results.scrollTop <= 0,
         end: results.scrollTop + results.clientHeight >= results.scrollHeight - 2, s: [[t.clientY, performance.now()]] };
     }, { passive: true });
     panel.addEventListener('touchmove', function (e) {
       if (!sw) return;
       var t = e.touches[0], dy = t.clientY - sw.y0, dx = t.clientX - sw.x0;
       if (!sw.on) {
-        // Hacia arriba (Spotlight) desde el campo o el final de la lista; hacia abajo desde el campo (como una hoja)
-        if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx) && ((dy < 0 && (sw.head || sw.end)) || (dy > 0 && sw.head))) {
+        // Hacia arriba (Spotlight) desde el campo o el final de la lista; hacia abajo desde el
+        // campo o con la lista arriba del todo (como una hoja de iOS)
+        var want = (dy < 0 && (sw.head || sw.end)) || (dy > 0 && (sw.head || sw.top));
+        // Desde el primer píxel: si la lista empieza su rebote elástico, iOS ya no deja cancelarlo
+        if (want && Math.abs(dy) >= Math.abs(dx)) e.preventDefault();
+        if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx) && want) {
           sw.on = true; sw.down = dy > 0; sw.y0 = t.clientY; dy = 0; input.blur();
           panel.style.transition = 'none'; back.style.transition = 'none';
         } else if (Math.abs(dy) > 10 || Math.abs(dx) > 10) { sw = null; return; }
@@ -340,8 +380,16 @@
       var fit = function () {
         if (!open_) return;
         var vv = window.visualViewport;
-        el.style.setProperty('--sx-h', vv.height + 'px');
-        el.style.setProperty('--sx-top', vv.offsetTop + 'px');
+        // Sólo se sigue al viewport visual cuando el teclado lo achica. El rebote
+        // elástico de iOS (p. ej. al abrir con el tirón desde Inicio) también lo
+        // mueve, con offsetTop negativo, y el panel quedaba corrido hacia arriba.
+        if (el.clientHeight - vv.height > 100) {
+          el.style.setProperty('--sx-h', vv.height + 'px');
+          el.style.setProperty('--sx-top', Math.max(0, vv.offsetTop) + 'px');
+        } else {
+          el.style.removeProperty('--sx-h');
+          el.style.removeProperty('--sx-top');
+        }
       };
       visualViewport.addEventListener('resize', fit);
       visualViewport.addEventListener('scroll', fit);
@@ -408,7 +456,7 @@
       (isT ? '<p class="sx-rec__label">Para</p><div class="sx-chips">' + BENS.map(function (b) { return chip('rec-who:' + b, b, b === r.who); }).join('') + '</div>' : '') +
       (isS ? '<p class="sx-rec__label">Servicio</p><div class="sx-chips">' + BILLERS.map(function (b) { return chip('rec-who:' + b[1], b[1], b[1] === (r.biller || BILLERS[0][1])); }).join('') + '</div>' : '') +
       (!isS ? '<label class="sx-rec__field"><span>Monto (opcional)</span><input type="number" inputmode="decimal" min="0" step="0.01" placeholder="0,00" data-rec="amt" value="' + (r.amount || '') + '"></label>' : '') +
-      '<label class="sx-rec__field"><span>Nombre del atajo</span><input type="text" maxlength="40" placeholder="Ej. Mensualidad" data-rec="name" value="' + esc(r.name || '') + '"></label>' +
+      '<label class="sx-rec__field"><span>Nombre del atajo</span><input type="text" maxlength="40" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Ej. Mensualidad" data-rec="name" value="' + esc(r.name || '') + '"></label>' +
       '<div class="sx-rec__acts"><button class="sx-btn sx-btn--ghost" data-sx-i="rec-cancel">Cancelar</button><button class="sx-btn" data-sx-i="rec-save">Guardar atajo</button></div></section>';
   }
   function render() {

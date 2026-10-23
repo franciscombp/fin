@@ -97,7 +97,7 @@
       '<div class="uk-pills"></div>' +
       '<div class="uk-results"></div>' +
       '<form class="uk-bar" role="search">' +
-        '<label class="uk-bar__f">' + ic('search') + '<input type="text" enterkeyhint="send" autocomplete="off" placeholder="Pregunta o pide algo" aria-label="Pregunta o pide algo"></label>' +
+        '<label class="uk-bar__f">' + ic('search') + '<input type="text" enterkeyhint="send" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Pregunta o pide algo" aria-label="Pregunta o pide algo"></label>' +
         // Foto (un QR, una factura o un estado de cuenta) y voz, siempre a la vista
         '<button type="button" class="uk-bar__mic uk-bar__add" data-k="escanear" aria-label="Tomar una foto de un QR o una factura">' + ic('photo_camera') + '</button>' +
         '<button type="button" class="uk-bar__mic" data-k="voz" aria-label="Hablar">' + ic('mic') + '</button>' +
@@ -245,7 +245,7 @@
     globoOff = false; globoEl.hidden = false; globoEl.classList.remove('is-off');
     if (b3d && b3d.setFront) b3d.setFront(true); // con algo que decir, Uku te mira
     var tag = x ? '<p class="uk-globo__tag">' + esc(x.tag) + '</p>' : '', txt = '<p class="uk-globo__t">' + esc(t) + '</p>';
-    var goBtn = go && !nota ? '<button class="btn btn--tertiary uk-globo__go" data-k="' + esc(go.k) + '" data-l="' + esc(go.l) + '">' + esc(go.l) + '</button>' : '';
+    var goBtn = go && !nota ? '<button class="bp-action-button bp-action-button--tertiary uk-globo__go" data-k="' + esc(go.k) + '" data-l="' + esc(go.l) + '">' + esc(go.l) + '</button>' : '';
     var html;
     if (home) {
       // Inicio con una nota de Uku («Listo, ya quedó…»): solo la frase

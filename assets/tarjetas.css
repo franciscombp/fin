@@ -1,0 +1,187 @@
+/* Detalle de tarjeta (assets/tarjetas.js · #card-detail en index.html).
+   Misma composición que la cuenta: fondo de página gris, tarjetas container
+   radius/md y componentes del DS. La Black usa los tokens oscuros del DS
+   solo en esta pantalla (data-theme="dark" sobre #card-detail). */
+
+.card-detail { background: var(--bp-theme-color-surface-page-alt); color: var(--bp-theme-color-text-primary); }
+.card-detail .detail-topbar__title, .card-detail .cd-title { color: var(--bp-theme-color-text-primary); }
+.card-detail .icon-button { color: var(--bp-theme-color-icon-primary); }
+.card-detail.scrolled .detail-topbar { background: color-mix(in srgb, var(--bp-theme-color-surface-page-alt) 88%, transparent); border-bottom-color: var(--bp-theme-color-border-divider); }
+.card-detail .cd-title { margin: var(--bp-semantic-spacing-micro-sm) 0 var(--bp-semantic-spacing-macro-sm); }
+.cd-top-btn[hidden] { display: none !important; }
+
+/* La tarjeta */
+.cd-card { border-radius: var(--bp-semantic-radius-md); box-shadow: 0 1px 2px rgb(0 0 0 / .06); }
+.tj-arte { --uv-x: 0; --uv-y: 0; --uv-luz: 0; position: relative; line-height: 0; border-radius: var(--bp-semantic-radius-md); overflow: hidden; background: var(--bp-theme-color-surface-container-default); }
+.tj-arte__img { display: block; width: 100%; height: auto; -webkit-user-drag: none; }
+.tj-arte__estado {
+  position: absolute; top: 5%; right: 3.5%; display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px 2px 4px; border-radius: var(--bp-semantic-radius-full); line-height: 20px;
+  background: var(--bp-base-color-green-50, #ecf6ee); color: var(--bp-base-color-green-700, #107524);
+  font: var(--sol-body-xs-semibold); box-shadow: 0 0 0 1px rgb(16 117 36 / .25);
+}
+.tj-arte__estado .material-symbols-rounded { font-size: 16px; font-variation-settings: 'FILL' 1; }
+.tj-arte__num { position: absolute; left: 5%; bottom: 9%; font: var(--sol-body-md-medium); letter-spacing: 1px; line-height: 1; color: #fff; text-shadow: 0 1px 2px rgb(0 0 0 / .3); }
+.tj-arte--siembra .tj-arte__num { color: var(--bp-base-color-blue-500, #0f265c); text-shadow: none; }
+
+/* ---------- Tarjetas en capas (Siembra, Black): fondo · brillo · formas UV · tinta · luz · logos ----------
+   Todo es luz sin color. El brillo recorre el fondo (se ve aunque la tinta no);
+   la tinta, recortada con la máscara UV, es más intensa. Las bandas van casi
+   horizontales: inclinar el teléfono hacia adelante o atrás (lo más común) las
+   sube y baja por la tarjeta; de lado, giran un poco. --uv-luz (el ángulo) sube
+   la luminosidad: en reposo casi no se ve.
+   Las posiciones de los degradados quedan siempre entre 0% y 100% (50% ± 50%): si
+   se salen, el degradado deja de cubrir la tarjeta y su borde se ve como una línea
+   dura (pasaba al inclinar al tope con el teléfono un poco ladeado). */
+.tuv { position: relative; aspect-ratio: 504 / 325; isolation: isolate; }
+.tuv--black { aspect-ratio: 328 / 200; }
+.tuv > span { position: absolute; inset: 0; background-repeat: no-repeat; background-size: 100% 100%; }
+.tuv--siembra .tuv__fondo { background-image: url('tarjetas/visa-credito/fondo.svg'); }
+.tuv--black .tuv__fondo { background-image: url('tarjetas/black/fondo.svg'); }
+.tuv__brillo {
+  background-image: linear-gradient(calc(172deg + var(--uv-x) * 22deg),
+    rgb(255 255 255 / 0) 34%, rgb(255 255 255 / .75) 50%, rgb(255 255 255 / 0) 66%) !important;
+  background-size: 160% 320% !important;
+  background-position: calc(50% + var(--uv-x) * 30%) calc(50% + var(--uv-y) * 50%) !important;
+  opacity: calc(.25 + var(--uv-luz) * .6);
+}
+.tuv--siembra .tuv__formas { background-image: url('tarjetas/visa-credito/uv.svg'); }
+.tuv--siembra .tuv__tinta, .tuv--siembra .tuv__luz {
+  -webkit-mask: url('tarjetas/visa-credito/uv.svg') center / 100% 100% no-repeat;
+  mask: url('tarjetas/visa-credito/uv.svg') center / 100% 100% no-repeat;
+}
+/* Black: la máscara son las líneas finas del patrón (el fondo ya las dibuja, sin capa de formas) */
+.tuv--black .tuv__tinta, .tuv--black .tuv__luz {
+  -webkit-mask: url('tarjetas/black/uv.svg') center / 100% 100% no-repeat;
+  mask: url('tarjetas/black/uv.svg') center / 100% 100% no-repeat;
+}
+.tuv__tinta {
+  /* Una banda clara y una sombra plata que recorren las formas */
+  background-image: linear-gradient(calc(168deg + var(--uv-x) * 25deg),
+    rgb(255 255 255 / 0) 18%, rgb(255 255 255 / .95) 40%, rgb(255 255 255 / 0) 56%,
+    rgb(176 178 190 / .45) 74%, rgb(255 255 255 / 0) 90%) !important;
+  background-size: 160% 300% !important;
+  background-position: calc(50% + var(--uv-x) * 30%) calc(50% + var(--uv-y) * 50%) !important;
+  opacity: calc(.15 + var(--uv-luz) * .75);
+}
+.tuv__luz {
+  background-image: radial-gradient(circle at calc(50% - var(--uv-x) * 55%) calc(45% - var(--uv-y) * 75%), rgb(255 255 255 / .95), rgb(255 255 255 / 0) 42%);
+  mix-blend-mode: screen;
+  opacity: calc(.25 + var(--uv-luz) * .75);
+}
+.tuv--siembra .tuv__logos { background-image: url('tarjetas/visa-credito/logos.svg'); }
+.tuv--black .tuv__logos { background-image: url('tarjetas/black/logos.svg'); }
+/* Sobre el negro, el brillo del fondo es tenue y la tinta de las líneas, plena */
+.tuv--black .tuv__brillo { opacity: calc(.05 + var(--uv-luz) * .16); }
+.tuv--black .tuv__tinta { opacity: calc(.25 + var(--uv-luz) * .75); }
+.tuv--black .tuv__luz { opacity: calc(.15 + var(--uv-luz) * .6); }
+@media (prefers-reduced-motion: reduce) { .tj-arte { --uv-luz: .4 !important; } }
+
+/* Reflejo de las tarjetas con imagen: el mismo brillo neutro (bandas casi horizontales
+   que suben y bajan al inclinar adelante/atrás) y un punto de luz */
+.tj-luz {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    radial-gradient(ellipse 70% 80% at calc(50% - var(--uv-x) * 60%) calc(40% - var(--uv-y) * 75%), rgb(255 255 255 / .9), rgb(255 255 255 / 0) 62%),
+    linear-gradient(calc(170deg + var(--uv-x) * 22deg), rgb(255 255 255 / 0) 36%, rgb(255 255 255 / .7) 50%, rgb(255 255 255 / 0) 64%);
+  background-size: 100% 100%, 160% 320%;
+  background-position: 0 0, calc(50% + var(--uv-x) * 30%) calc(50% + var(--uv-y) * 50%);
+  mix-blend-mode: screen; opacity: calc(var(--uv-luz) * .5);
+}
+
+/* Reverso: un color plano con el tono del borde de la tarjeta (tarjetas.js mide su orilla y
+   pone data-dorso): en las claras, el azul de marca al 8 % sobre blanco con texto azul; en
+   las oscuras, el blanco al 10 % sobre negro con texto blanco. */
+.cd-card { --dorso-bg: color-mix(in srgb, var(--bp-base-color-blue-500, #0f265c) 8%, #fff); --dorso-fg: var(--bp-base-color-blue-500, #0f265c); }
+.cd-card[data-dorso="oscuro"] { --dorso-bg: color-mix(in srgb, #fff 10%, #111); --dorso-fg: #f5f5f7; }
+.cd-card .cd-face--back { background: var(--dorso-bg); color: var(--dorso-fg); }
+.cd-card .cd-verify { color: inherit; }
+.cd-card .cd-copy, .cd-card .cd-data__close { background: color-mix(in srgb, currentColor 14%, transparent); color: inherit; }
+.cd-card .cd-copy:active, .cd-card .cd-data__close:active { background: color-mix(in srgb, currentColor 26%, transparent); }
+
+/* Borde de contraste: una línea interior de 1 px para que la tarjeta no se pierda en el fondo.
+   El color lo calcula tarjetas.js midiendo la orilla del arte (--tj-borde): oscura y tenue en
+   las tarjetas claras, clara y tenue en las oscuras. */
+/* Miniatura de tarjeta (bp-card-thumb): la de la fila del hub lleva el arte real (--img);
+   las de placeholder (--ghost, «Pide tu tarjeta») y las de marca sin arte se dibujan con CSS */
+.card-thumb {
+  flex: none; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden;
+  width: 58px; height: 40px; padding: 5px 7px; border-radius: 6px;
+}
+.product-row .card-thumb { width: 72px; height: 46px; padding: 6px 8px; border-radius: var(--bp-semantic-radius-sm); }
+.card-thumb--visa { background: var(--bp-base-color-yellow-500, #ffdd00); }
+.card-thumb--black { background: linear-gradient(135deg, #2b2d33, #060606); }
+.card-thumb--diners { background: #eef1f5; border: 1px solid rgb(15 38 92 / .1); }
+.card-thumb--ghost { background: var(--bp-theme-color-surface-container-default); border: 1.5px solid var(--bp-theme-color-border-default); opacity: .55; }
+.card-thumb__brand { font: 800 6px/1.1 var(--sol-font); letter-spacing: .2px; color: #0f265c; }
+.product-row .card-thumb__brand { font-size: 7px; }
+.card-thumb--black .card-thumb__brand { color: #fff; }
+.card-thumb__foot { display: flex; justify-content: flex-end; align-items: center; }
+.card-thumb__visa { font: italic 800 11px/1 var(--sol-font); color: #0f265c; }
+[data-theme="dark"] .card-thumb--diners { background: var(--bp-base-color-neutral-300, #bdbdbd); }
+
+.tj-arte::after, .card-thumb--img::after {
+  content: ''; position: absolute; inset: 0; z-index: 2; border-radius: inherit; pointer-events: none;
+  box-shadow: inset 0 0 0 1px var(--tj-borde, rgb(15 38 92 / .08));
+}
+
+/* Miniatura en la fila del hub */
+.product-row .card-thumb--img { position: relative; padding: 0; overflow: hidden; background: none; border: 0; }
+.card-thumb--img img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* Contenido */
+.cd-content { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-macro-sm); margin-top: var(--bp-semantic-spacing-macro-sm); }
+.cd-content > * { margin: 0 !important; }
+.cd-actions { background: var(--bp-theme-color-surface-container-default); border-radius: var(--bp-semantic-radius-md); padding: 20px var(--bp-semantic-spacing-micro-md); }
+.cd-subtitle { margin-top: var(--bp-semantic-spacing-micro-md) !important; }
+.cd-subs { background: var(--bp-theme-color-surface-container-default); border-radius: var(--bp-semantic-radius-md); overflow: hidden; }
+.cd-subs .sub-item { background: transparent; }
+.sub-item__meta { display: block; }
+.cd-review { margin: 0; background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); border-radius: var(--bp-semantic-radius-md); }
+
+/* Cupo: disponible | utilizado · anillo de uso · chevron */
+.tj-cupo {
+  display: flex; align-items: center; gap: var(--bp-semantic-spacing-micro-lg); width: 100%;
+  padding: var(--bp-semantic-spacing-micro-lg) var(--bp-semantic-spacing-macro-sm); border: 0; border-radius: var(--bp-semantic-radius-md);
+  background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); text-align: left; cursor: pointer; font: inherit;
+}
+.tj-cupo__col { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tj-cupo__col + .tj-cupo__col { padding-left: var(--bp-semantic-spacing-micro-lg); border-left: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider-alt, var(--bp-theme-color-border-divider)); }
+.tj-cupo small { font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-helper); }
+.tj-cupo b { font: var(--sol-body-md-semibold); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tj-cupo > .material-symbols-rounded { color: var(--bp-theme-color-icon-primary); }
+.tj-anillo {
+  --p: 0; flex: none; display: grid; place-items: center; width: 44px; height: 44px; margin-left: auto; border-radius: 50%;
+  background: conic-gradient(var(--bp-theme-color-interaction-tertiary-fg) calc(var(--p) * 1%), var(--bp-theme-color-data-chart-track) 0);
+}
+.tj-anillo > span { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--bp-theme-color-surface-container-default); font: var(--sol-body-xs-semibold); color: var(--bp-theme-color-text-secondary); }
+
+/* Sin transacciones */
+.tj-vacio { display: flex; flex-direction: column; align-items: center; gap: var(--bp-semantic-spacing-micro-lg); padding: var(--bp-semantic-spacing-macro-md) var(--bp-semantic-spacing-macro-sm) var(--bp-semantic-spacing-macro-lg); border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-container-default); }
+.tj-vacio p { margin: 0; font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-helper); }
+.tj-vacio__ilustra { position: relative; width: 120px; height: 120px; border-radius: 50%; background: var(--bp-theme-color-surface-page-alt); }
+.tj-vacio__ilustra i { position: absolute; width: 58px; height: 38px; border-radius: 6px; }
+.tj-vacio__ilustra i:first-child { left: 26px; top: 36px; transform: rotate(-8deg); background: var(--bp-base-color-neutral-200, #d0d0d0); }
+.tj-vacio__ilustra i:last-child { left: 38px; top: 44px; background: #fff; box-shadow: 0 2px 6px rgb(0 0 0 / .18); background-image: linear-gradient(var(--bp-base-color-blue-100, #c9d3ea), var(--bp-base-color-blue-100, #c9d3ea)), linear-gradient(var(--bp-base-color-neutral-200, #d0d0d0), var(--bp-base-color-neutral-200, #d0d0d0)), linear-gradient(var(--bp-base-color-neutral-200, #d0d0d0), var(--bp-base-color-neutral-200, #d0d0d0)); background-size: 12px 9px, 30px 3px, 20px 3px; background-position: 7px 8px, 7px 24px, 7px 30px; background-repeat: no-repeat; }
+
+/* Logos de suscripciones con el color de cada marca */
+.tj-marca { font-weight: 700; color: #fff; }
+.tj-marca--uber { background: #06c167 !important; color: #000 !important; font-size: 9px; line-height: 1.05; text-align: center; }
+.tj-marca--spotify { background: #121212 !important; color: #1ed760 !important; }
+.tj-marca--disney { background: linear-gradient(135deg, #0b1f5c, #1b8ab0) !important; color: #fff !important; font-size: 13px; }
+.tj-marca--netflix { background: #111 !important; color: #e50914 !important; font-size: 18px; font-weight: 900; }
+
+/* En crédito el número va abajo a la izquierda: el aviso de deslizar no lo tapa */
+.cd-card:has(.tj-arte__num) .cd-card__hint { display: none; }
+
+/* Vuelo miniatura ↔ tarjeta grande (Tarjetas.volar): la copia del arte va sobre todo y la
+   pantalla de la tarjeta aparece y se va con un fundido en vez de deslizarse */
+.tj-vuelo { position: fixed; z-index: 400; margin: 0; transform-origin: 0 0; pointer-events: none; will-change: transform; box-shadow: 0 8px 24px rgb(0 0 0 / .18); }
+html .card-detail.is-morph.entering { animation: tjAparece .3s ease both !important; }
+html .card-detail.is-morph.closing { animation: tjSeVa .32s ease forwards !important; }
+@keyframes tjAparece { from { opacity: 0; } to { opacity: 1; } }
+@keyframes tjSeVa { from { opacity: 1; } to { opacity: 0; } }
+/* El contenido de abajo entra un instante después: la tarjeta lleva la transición */
+html .card-detail.is-morph.entering .cd-content { animation: tjSube .45s .08s cubic-bezier(.32, .72, 0, 1) both; }
+@keyframes tjSube { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { html .card-detail.is-morph.entering .cd-content { animation: none; } }
