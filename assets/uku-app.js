@@ -273,24 +273,35 @@
   }
   /* Inicio: el globo es una sugerencia de Uku a la vez (su etiqueta, «1 de n», pasar a la siguiente
      y ocultarla) y los chips de abajo son sobre esa sugerencia. Sin sugerencias, solo el saludo. */
+  /* El globo del inicio, en un solo formato: etiqueta (y «1 de n»), la flecha para pasar, la X y el texto;
+     sus chips van debajo. Primero el onboarding (la primera vez), después el saludo y luego las sugerencias. */
+  function globoActual() {
+    var P = propuestas(), n = P.length;
+    if (onb >= 0) {
+      var o = PASOS[onb](nombreCorto()), ult = onb === PASOS.length - 1;
+      return { tag: 'Conóceme', cuenta: (onb + 1) + ' de ' + PASOS.length, t: o.t, chips: o.chips, next: ult ? 'onb:fin' : 'onb:' + (onb + 1), cerrar: 'onb:fin', anim: onb ? 'talk' : 'wave' };
+    }
+    if (!saludado) {
+      var sal = saludo();
+      return { tag: 'Uku', t: (sal.hola || 'Hola, soy Uku.') + ' ' + (n === 1 ? 'Tengo una sugerencia para ti.' : n ? 'Tengo ' + n + ' sugerencias para ti.' : '¿En qué te ayudo hoy?'),
+        chips: n ? [{ k: 'siguiente', t: n === 1 ? 'Ver la sugerencia' : 'Ver sugerencias' }] : [], next: n ? 'siguiente' : null, cerrar: n ? 'globo:cerrar' : null, anim: 'wave' };
+    }
+    var x = n ? P[gi % n] : null;
+    if (!x) { var s2 = saludo(); return { tag: 'Uku', t: (s2.hola || 'Hola, soy Uku.') + ' ¿En qué te ayudo hoy?', chips: [], anim: 'wave' }; }
+    return { tag: x.tag, cuenta: n > 1 ? (gi % n + 1) + ' de ' + n : '', t: x.t, chips: chipsDe(x, P), next: n > 1 ? 'siguiente' : null, cerrar: 'ocultar:' + x.id, anim: x.kind === 'warn' ? 'worried' : 'talk' };
+  }
   function globoHome() {
-    var P = propuestas(), n = P.length, x = n ? P[gi % n] : null, html;
+    var g = globoActual(), html;
     globoOff = false; globoEl.hidden = false; globoEl.classList.remove('is-off');
     if (b3d && b3d.setFront) b3d.setFront(true);
-    if (x) {
-      saludado = true; // pasar a la siguiente (tocar a Uku, deslizar o la flecha) ya no vuelve al saludo
-      html = '<div class="uk-globo__top"><p class="uk-globo__tag">' + esc(x.tag) + (n > 1 ? '<span> · ' + (gi % n + 1) + ' de ' + n + '</span>' : '') + '</p>' +
-        (n > 1 ? '<button class="uk-globo__ib" data-k="siguiente" data-l="Siguiente sugerencia" aria-label="Siguiente sugerencia">' + ic('chevron_right') + '</button>' : '') +
-        '<button class="uk-globo__ib" data-k="ocultar:' + esc(x.id) + '" data-l="Ocultar sugerencia" aria-label="Ocultar sugerencia">' + ic('close') + '</button></div>' +
-        '<p class="uk-globo__t">' + esc(x.t) + '</p>';
-    } else {
-      var sal = saludo();
-      html = '<p class="uk-globo__h">' + esc(sal.hola || 'Hola, soy Uku.') + '</p><p class="uk-globo__t">¿En qué te ayudo hoy?</p>';
-    }
+    html = '<div class="uk-globo__top"><p class="uk-globo__tag">' + esc(g.tag) + (g.cuenta ? '<span> · ' + g.cuenta + '</span>' : '') + '</p>' +
+      (g.next ? '<button class="uk-globo__ib" data-k="' + esc(g.next) + '" data-l="Siguiente" aria-label="Siguiente">' + ic('chevron_right') + '</button>' : '') +
+      (g.cerrar ? '<button class="uk-globo__ib" data-k="' + esc(g.cerrar) + '" data-l="Cerrar" aria-label="' + (onb >= 0 ? 'Saltar' : 'Ocultar') + '">' + ic('close') + '</button>' : '') + '</div>' +
+      '<p class="uk-globo__t">' + esc(g.t) + '</p>';
     host.setAttribute('data-rec', '');
     if (!ponerGlobo(html)) return;
     reencuadrar();
-    if (b3d) b3d.play(!x ? 'wave' : x.kind === 'warn' ? 'worried' : 'talk');
+    if (b3d) b3d.play(g.anim);
   }
   // Soporte: Uku cuenta cómo va tu solicitud o te invita a contarle qué pasó
   function globoSoporte() {
@@ -354,7 +365,7 @@
   function pintarChips() {
     if (!chipsEl) chipsEl = host.querySelector('.uk-chips');
     if (!host.classList.contains('is-home')) { chipsEl.hidden = true; return; }
-    var P = propuestas(), n = P.length, L = n ? chipsDe(P[gi % n], P) : [];
+    var L = globoActual().chips || [];
     chipsEl.hidden = !L.length;
     chipsEl.innerHTML = L.map(function (c, i) { return '<button class="uk-chip-s" style="--d:' + (i * 60) + 'ms" data-k="' + esc(c.k) + '" data-l="' + esc(c.t) + '">' + esc(c.t) + '</button>'; }).join('');
   }
@@ -450,7 +461,8 @@
     var fin = view.classList.contains('uk-fin'), home = host.classList.contains('is-home');
     if (fin) { nota = null; leyenda(); return; } // en su mundo-dashboard, tocar enseña qué significa cada cosa
     if (home) {
-      // Inicio: cada toque trae lo siguiente que tiene para decir, con un leve acercamiento (se inclina)
+      // Inicio: cada toque trae lo siguiente que tiene para decir (el paso del onboarding, el saludo o la próxima sugerencia)
+      if (onb >= 0) { acercar(1.1, 700); return onb < PASOS.length - 1 ? onboarding(onb + 1) : onboardingFin(); }
       if (!saludado) saludado = true; else gi++;
       nota = null; pintarGlobo(); pintarChips(); acercar(1.1, 700); return;
     }
@@ -842,33 +854,28 @@
     mostrar();
   }
   function ultimaPregunta() { for (var i = msgs.length - 1; i >= 0; i--) if (msgs[i].me) return msgs[i].me; return null; }
-  /* Onboarding: la primera vez, Uku se presenta en su propio chat, con el mismo modelo de la conversación:
-     sus mensajes, tus respuestas como burbujas (los chips) y, al terminar, el saludo de siempre con sus
-     acciones en el mismo hilo. Te llama por el nombre de la persona elegida en Perfil. */
-  var ONB = 'uk-onboard', onbActivo = false;
+  /* Onboarding: la primera vez, Uku se presenta en su globo, con el mismo formato de sus sugerencias
+     («Conóceme · 1 de 3», la flecha para pasar, la X para saltarlo y tus respuestas como chips debajo).
+     Después siguen el saludo y sus sugerencias de siempre. Te llama por el nombre de la persona de Perfil. */
+  var ONB = 'uk-onboard', onb = -1;
   function nombreCorto() { var s = resumen(); return s && s.nombre ? s.nombre.split(' ')[0] : ''; }
   var PASOS = [
-    function (n) { return { t: (n ? 'Hola, ' + n + '. ' : 'Hola. ') + 'Soy Uku, tu asistente en Pichibank. Te explico cómo va tu dinero, respondo tus dudas y te ayudo a resolver lo que necesites, sin salir de aquí.',
-      btns: [b('onb:1', '¿Qué puedes hacer por mí?', null, 'is-ask'), b('onb:fin', 'Ya te conozco, empecemos', null, 'is-ask')] }; },
-    function () { return { t: 'Aquí ves tu ahorro, tu presupuesto y tus gastos. Mi mundo cambia con tus finanzas: cuando te va bien, florece. Tócame cuando quieras saber cómo vas.',
-      btns: [b('onb:2', '¿Y cómo te hablo?', null, 'is-ask')] }; },
-    function (n) { return { t: 'Escríbeme, díctame o tómale una foto a un QR o a una factura' + (n ? ', ' + n : '') + '. Si algo no lo sé, lo busco por ti y, solo si hace falta, te paso con una persona del banco.',
-      btns: [b('onb:fin', 'Empecemos', null, 'is-ask')] }; }];
+    function (n) { return { t: (n ? 'Hola, ' + n + '. ' : 'Hola. ') + 'Soy Uku, tu asistente en Pichibank. Te explico cómo va tu dinero, respondo tus dudas y te ayudo con lo que necesites, sin salir de aquí.',
+      chips: [{ k: 'onb:1', t: '¿Qué puedes hacer?' }, { k: 'onb:fin', t: 'Ya te conozco' }] }; },
+    function () { return { t: 'En Mis finanzas ves tu ahorro, tu presupuesto y tus gastos ordenados. Mi mundo cambia con tus finanzas: cuando te va bien, florece.',
+      chips: [{ k: 'onb:2', t: '¿Y cómo te hablo?' }] }; },
+    function (n) { return { t: 'Escríbeme o díctame aquí abajo' + (n ? ', ' + n : '') + ', o tómale una foto a un QR o a una factura. Si algo no lo sé, lo busco por ti.',
+      chips: [{ k: 'onb:fin', t: 'Empecemos' }] }; }];
   function onboarding(i) {
-    i = i || 0;
-    if (!i) { msgs = []; pend = null; agente = null; seccion('uku'); if (b3d) b3d.play('wave'); }
-    onbActivo = true;
-    var p = PASOS[i](nombreCorto());
-    uku(esc(p.t), p.btns);
-    mostrar(); fx('select');
-    if (b3d && i) b3d.play('talk');
+    onb = Math.max(0, Math.min(PASOS.length - 1, i || 0));
+    globoEl.dataset.html = ''; pintarGlobo(); pintarChips(); fx('select');
+    if (b3d) b3d.play(onb ? 'talk' : 'wave');
   }
-  // Al terminar, la conversación sigue: el saludo de siempre, con lo que puede hacer por ti
+  // Al terminar (o al saltarlo), el globo pasa a las sugerencias de siempre
   function onboardingFin() {
     try { localStorage.setItem(ONB, '1'); } catch (e) {}
-    onbActivo = false; fx('success'); if (b3d) b3d.play('happy');
-    var n = nombreCorto();
-    bienvenida('Listo' + (n ? ', ' + n : '') + '. ¿Por dónde empezamos?');
+    onb = -1; saludado = true; gi = 0; nota = null; fx('success'); if (b3d) b3d.play('happy');
+    globoEl.dataset.html = ''; pintarGlobo(); pintarChips();
   }
   // Una pregunta frecuente o un tutorial, respondido por Uku aquí mismo
   function ayudaEn(h, otras, acts) {
@@ -1019,14 +1026,14 @@
     pintar(); abriendo = false; encuadrar(true); mostrarEscena(); reencuadrar();
     if (!RM) setTimeout(function () { if (b3d) b3d.play('wave'); }, 450);
   }
-  function bienvenida(texto) {
-    if (msgs.length && !texto) return;
+  function bienvenida() {
+    if (msgs.length) return;
     var sal = saludo(), P = propuestas(), s = resumen();
     var btns = [b(sal.k, sal.l, null)];
     P.slice(0, 2).forEach(function (x) { if (x.k !== sal.k) btns.push(b(x.k, x.l, null, 'is-ask')); });
     btns.push(b('gastos', 'Mis gastos', 'account_balance_wallet'), b('ayuda', 'Ayuda', 'support_agent'), b('sol', 'Solicitudes', 'assignment'), b('libre', 'Ver mi resumen', 'park'));
     saludado = true;
-    uku(esc(texto || sal.t), btns, '', { title: texto ? '' : 'Tu asistente' });
+    uku(esc(sal.t), btns, '', { title: 'Tu asistente' });
     mostrar();
     if (b3d) b3d.play('wave');
   }
@@ -1092,7 +1099,7 @@
       if (!g) return;
       var dx = e.clientX - g.x, dy = e.clientY - g.y, s = g; g = null;
       if (s.globo) {
-        if (host.classList.contains('is-fin') || host.classList.contains('is-home')) { if (dx < -40 && Math.abs(dy) < 60) { fx('tap'); if (!saludado) saludado = true; else gi++; nota = null; pintarGlobo(); pintarChips(); } else if (dx > 40 && Math.abs(dy) < 60 && gi > 0) { fx('tap'); gi--; nota = null; pintarGlobo(); pintarChips(); } return; }
+        if (host.classList.contains('is-fin') || host.classList.contains('is-home')) { if (dx < -40 && Math.abs(dy) < 60) { fx('tap'); if (onb >= 0) return onb < PASOS.length - 1 ? onboarding(onb + 1) : onboardingFin(); if (!saludado) saludado = true; else gi++; nota = null; pintarGlobo(); pintarChips(); } else if (dx > 40 && Math.abs(dy) < 60 && gi > 0) { fx('tap'); gi--; nota = null; pintarGlobo(); pintarChips(); } return; }
         if (dy < -40 && Math.abs(dx) < 60) { fx('select'); dinero(); mostrar(); } return;
       }
       s.el.classList.remove('is-drag'); s.el.style.transform = ''; s.el.style.opacity = '';
@@ -1522,7 +1529,7 @@
     // Al elegir otra persona en Perfil, Uku la saluda a ella: se olvida el saludo guardado y la conversación anterior
     // (después de que Mis finanzas tome la nueva persona, por eso en el siguiente ciclo)
     document.addEventListener('persona:change', function () {
-      setTimeout(function () { SAL = null; msgs = []; pend = null; agente = null; saludado = false; gi = 0; nota = null; onbActivo = false; globoEl.dataset.html = ''; pintar(); }, 0);
+      setTimeout(function () { SAL = null; msgs = []; pend = null; agente = null; saludado = false; gi = 0; nota = null; globoEl.dataset.html = ''; pintar(); }, 0);
     });
     // Las preguntas con IA desde Mis finanzas se responden aquí, con el mismo estilo
     window.UkuAsistente.ia = function (q) { seccion('uku'); me(q); iaResponde(q); };
