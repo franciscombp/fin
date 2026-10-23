@@ -309,7 +309,7 @@
     }
     var ms = antes(m, 3);
     if (ms.length < 3) {
-      out.push({ icon: 'hourglass_top', kind: 'info', t: T('Todavía te estoy conociendo'), s: hasPrev ? T('Con tres meses de movimientos te cuento tus tendencias. Por ahora solo comparo con el mes anterior.') : T('Con tres meses de movimientos te cuento tus tendencias y te comparo con tus meses anteriores.') });
+      out.push({ icon: 'hourglass_top', kind: 'info', t: T('Todavía tenemos poca información'), s: hasPrev ? T('Con tres meses de movimientos mostraremos tus tendencias. Por ahora comparamos solo con el mes anterior.') : T('Con tres meses de movimientos mostraremos tus tendencias y las compararemos con tus meses anteriores.') });
     } else {
       // Una categoría que subió frente a tu promedio
       var av = prom(m, 3), up = Object.keys(s.grupos).filter(function (k) { return !GRUPOS[k].gris && av.grupos[k] > 15; })
@@ -662,7 +662,7 @@
     if (pf === 'nuevo') {
       out.push({ id: 'nuevo:recibir', p: 95, icon: 'call_received', tag: T('Para empezar'), kind: 'info', t: T('Recibe tu primer dinero'),
         sub: T('Comparte tu número de cuenta'), s: T('Comparte tu número de cuenta y recibe tu primer pago; así empieza a crecer tu mundo.'),
-        di: T('¡Qué bueno tenerte aquí! Empecemos por lo primero: recibir tu primer dinero. Te muestro cómo compartir tu cuenta.'), act: 'app:Recibir dinero', actl: T('Recibir dinero') });
+        di: T('Empecemos por recibir tu primer dinero. Te mostramos cómo compartir tu número de cuenta.'), act: 'app:Recibir dinero', actl: T('Recibir dinero') });
       out.push({ id: 'nuevo:qr', p: 90, icon: 'qr_code_scanner', tag: T('Para empezar'), kind: 'info', t: T('Paga con QR'),
         sub: T('Rápido y sin efectivo'), s: T('Con el QR pagas desde el celular y cada pago queda ordenado en tu mundo.'),
         di: T('Cuando quieras pagar, hazlo con QR desde tu celular: es rápido y cada pago queda ordenado aquí.'), act: 'app:Pagar con QR', actl: T('Pagar con QR') });
@@ -677,11 +677,11 @@
         act: 'pagar:' + x.n, actl: T('Programar el pago'), ok: T('Programado: se paga solo el {f}.', { f: dshort(x.f) }), conf: { para: x.n, monto: x.monto, cuando: dshort(x.f) } });
     });
     // 2. Consumos por clasificar: pedirlo con calma; con eso todo lo demás se ve mejor
-    if (a.n) out.push({ id: 'ordenar', p: a.k === 'pensativo' ? 92 : 90, icon: 'category', tag: T('Por ordenar'), kind: 'info', sub: por({ negocio: 'Separa la tienda de la casa', joven: 'Así ves tu gasto real' }, 'Así tus gastos quedan claros'),
+    if (a.n) out.push({ id: 'ordenar', p: a.k === 'pensativo' ? 92 : 90, icon: 'category', tag: T('Por ordenar'), kind: 'info', sub: por({ negocio: 'Separa la tienda de la casa', joven: 'Así verás tu gasto real' }, 'Así tus gastos quedan claros'),
       t: T(a.n === 1 ? 'Tienes 1 consumo sin clasificar' : 'Tienes {n} consumos sin clasificar', { n: a.n }),
       s: T('Así tu presupuesto y mis consejos reflejan mejor tus gastos. Toma menos de un minuto.'),
-      di: a.k === 'pensativo' ? T('Hay {c} esperando desde hace {d} días. Ordenémoslos juntos: toma un minuto y todo se ve más claro.', { c: cons1(a.n), d: a.dias })
-        : por({ negocio: 'Tengo {c} por clasificar. Con un minuto separamos lo de la tienda de lo de la casa.', joven: 'Tengo {c} por clasificar. Ordenémoslos y veo tu gasto real, sin lo que te devuelven tus amigas.' }, 'Tengo {c} sin clasificar. Si los ordenamos ahora, tus gastos quedan claros en un minuto.', { c: cons1(a.n) }),
+      di: a.k === 'pensativo' ? T('Hay {c} sin clasificar desde hace {d} días. Clasificarlos toma un minuto.', { c: cons1(a.n), d: a.dias })
+        : por({ negocio: 'Tienes {c} por clasificar. Separar los gastos del negocio de los del hogar toma un minuto.', joven: 'Tienes {c} por clasificar. Al clasificarlos verás tu gasto real, sin los reembolsos entre amigos.' }, 'Tienes {c} sin clasificar. Clasificarlos toma un minuto y tus gastos quedan claros.', { c: cons1(a.n) }),
       act: 'game', actl: a.n > TANDA ? T('Clasificar {n} de {t}', { n: TANDA, t: a.n }) : T(a.n === 1 ? 'Clasificar 1 consumo' : 'Clasificar {n} consumos', { n: a.n }) });
     // 3. Tarjeta: pagaste solo el mínimo
     var min = minimoTarjeta();
@@ -692,15 +692,15 @@
     // 4. Presupuesto: sin uno, recomendarlo (con lo que Uku ve de ti); con uno, revisarlo si te pasas
     if ((!hayPres() && tieneHistoria) || hecho('pres')) out.push({ id: 'pres', p: 85, icon: 'speed', tag: T('Presupuesto'), kind: 'info', t: T('Todavía no tienes un presupuesto'), sub: T('Ve en qué se va tu dinero'),
       s: T('Recibes unos {i} al mes. Te propongo cuánto gastar y cómo repartirlo; tú decides.', { i: money0(Math.round(ingresoMes())) }),
-      di: col < 1 ? por({ aldia: 'Tu cuenta llega casi a cero cada mes. Te ayudo a armar un presupuesto para ver en qué se va tu dinero y empezar a ahorrar, aunque sea poquito.',
-          joven: 'Tu cuenta llega casi a cero cada mes, y es un buen punto de partida. Armemos un presupuesto para ver en qué se va tu dinero y apartar algo para ti.',
-          jubilado: 'Tu dinero rinde justo cada mes. Armemos un presupuesto para ver en qué se va y cuánto puedes apartar para imprevistos.',
+      di: col < 1 ? por({ aldia: 'Tu cuenta queda casi en cero cada mes. Podemos armar un presupuesto para ver en qué se gasta tu dinero y empezar a ahorrar, aunque sea poco.',
+          joven: 'Tu cuenta queda casi en cero cada mes. Es un buen punto de partida: armemos un presupuesto para ver en qué se gasta tu dinero y apartar algo para ti.',
+          jubilado: 'Tu dinero alcanza justo cada mes. Armemos un presupuesto para ver en qué se gasta y cuánto puedes apartar para imprevistos.',
           negocio: 'Entra y sale mucho dinero por tu cuenta. Armemos un presupuesto que separe la tienda de la casa y veas cuánto te queda cada mes.' },
-          'Tu cuenta llega casi a cero cada mes. Armemos un presupuesto para ver en qué se va tu dinero y empezar a ahorrar.')
-        : por({ hogar: 'Armemos un presupuesto para ver cuánto te queda cada mes después de la hipoteca y las tarjetas. Lo hacemos juntos en tres pasos.',
+          'Tu cuenta queda casi en cero cada mes. Armemos un presupuesto para ver en qué se gasta tu dinero y empezar a ahorrar.')
+        : por({ hogar: 'Armemos un presupuesto para ver cuánto queda cada mes después de la hipoteca y las tarjetas. Lo hacemos en tres pasos.',
           negocio: 'Armemos un presupuesto que separe la tienda de la casa: así sabes cuánto te queda cada mes sin depender de la remesa.',
-          jubilado: 'Armemos un presupuesto con tus dos pensiones para ver en qué se va el dinero de la casa y cuánto puedes apartar.',
-          joven: 'Armemos un presupuesto para ver tu gasto real y apartar algo para ti. Lo hacemos juntos en tres pasos.' },
+          jubilado: 'Armemos un presupuesto con tus dos pensiones para ver en qué se gasta el dinero de la casa y cuánto puedes apartar.',
+          joven: 'Armemos un presupuesto para ver tu gasto real y apartar algo para ti. Lo hacemos en tres pasos.' },
           'Todavía no tienes presupuesto. Armémoslo juntos: con lo que recibes y lo que gastas, son solo tres pasos.'),
       act: 'pres', actl: T('Armar mi presupuesto'), ok: T('Listo: tu presupuesto es {m} al mes.', { m: money0(pr.general) }) });
     else if (hayPres() && pe.k === 'over') out.push({ id: 'pres:over', p: 72, icon: 'speed', tag: T('Presupuesto'), kind: 'warn', t: T('Vas por encima de tu presupuesto'), sub: T('Revisemos en qué grupo se fue'),
@@ -708,8 +708,8 @@
       di: T('Este mes vas un poco por encima de tu presupuesto. Revisemos juntos en qué grupo se fue y lo ajustamos.'), act: 'budgets', actl: T('Revisar presupuesto') });
     // 5. Ahorro (con presupuesto): tu cuenta llega casi en cero; separar algo apenas cobras
     if ((hayPres() && col < 1) || hecho('ahorro')) out.push({ id: 'ahorro', p: 60, icon: 'savings', tag: T('Ahorro'), kind: 'info', t: T('Tu cuenta llega casi a cero cada mes'), sub: T('Para tu primer colchón'),
-      s: T('Si separas {q} cada mes, apenas cobras, en 6 meses tienes {t} para un imprevisto. Y sus canteros empiezan a florecer.', { q: money0(q), t: money0(q * 6) }),
-      di: por({ jubilado: 'Si separas {q} cada mes apenas cobras tu pensión, en 6 meses tendrás {t} para un imprevisto. ¡Y mis canteros empezarán a florecer!' }, 'Tu cuenta llega casi a cero cada mes. Si separas {q} apenas cobras, en 6 meses tendrás {t} para un imprevisto. ¡Y mis canteros empezarán a florecer!', { q: money0(q), t: money0(q * 6) }),
+      s: T('Si separas {q} cada mes, en 6 meses tendrás {t} para imprevistos.', { q: money0(q), t: money0(q * 6) }),
+      di: por({ jubilado: 'Si separas {q} cada mes de tu pensión, en 6 meses tendrás {t} para imprevistos.' }, 'Tu cuenta queda casi en cero cada mes. Si separas {q} cada mes, en 6 meses tendrás {t} para imprevistos.', { q: money0(q), t: money0(q * 6) }),
       act: 'ahorro', actl: T('Separar {q} al mes', { q: money0(q) }), ok: T('Listo: cada mes se separan {q} a tu ahorro, apenas cobras.', { q: money0(q) }),
       conf: { para: T('Tu cuenta de ahorro'), monto: q, cuando: T('Cada mes, apenas cobras') } });
     // 6. Mesadas y pagos repetidos
@@ -721,7 +721,7 @@
       var t1 = x.t.charAt(0).toLowerCase() + x.t.slice(1);
       out.push({ id: 'h:' + x.t, p: x.kind === 'warn' ? 45 : x.kind === 'good' ? 30 : 20, icon: x.g ? GRUPOS[x.g].ic : x.icon, tag: x.g ? T(x.g) : T('Descubrí'), kind: x.kind, sub: x.s,
         t: x.t, s: x.s, cmp: x.cmp, ask: x.ask, act: x.go, actl: x.gol,
-        di: x.kind === 'good' ? T('¡Buena noticia! {t}.', { t: t1 }) : x.kind === 'warn' ? T('{t}. ¿Lo revisamos juntos?', { t: x.t }) : x.t + '.' });
+        di: x.kind === 'good' ? T('Buena noticia: {t}.', { t: t1 }) : x.kind === 'warn' ? T('{t}. ¿Lo revisamos?', { t: x.t }) : x.t + '.' });
     });
     return out.filter(function (x) { return !oculto(x.id); }).map(function (x) { x.done = hecho(x.id) ? x.ok || T('Listo') : null; return x; })
       .sort(function (a, b) { return (a.done ? 1 : 0) - (b.done ? 1 : 0) || b.p - a.p; });
@@ -757,17 +757,17 @@
       { ic: MOOD_IC[a.k], l: T('Tus gastos por ordenar'), v: a.n ? T('{n} sin clasificar', { n: a.n }) : T('Todo en orden'), cls: a.k,
         d: a.n ? T(a.n === 1 ? 'Tienes 1 consumo sin clasificar. Cuando lo ordenes, vuelvo a estar contento.' : 'Tienes {n} consumos sin clasificar. Cuando los ordenes, vuelvo a estar contento.', { n: a.n }) : T('Tus gastos están clasificados. Por eso me ves contento.') },
       { ic: 'local_florist', l: T('Tu ahorro'), v: c >= 1 ? T(Math.floor(c) === 1 ? 'Te alcanza 1 mes' : 'Te alcanza {n} meses', { n: Math.floor(c) }) : T('Menos de 1 mes'), cls: c >= 3 ? 'ok' : c >= 1 ? 'warn' : 'over',
-        d: c >= 3 ? T('Lo que tienes cubre {n} meses de gastos. Por eso tus canteros están llenos de flores.', { n: Math.floor(c) }) : c >= 1 ? T(Math.floor(c) === 1 ? 'Lo que tienes cubre 1 mes de gastos. Las flores crecen cuando llega a 3 meses.' : 'Lo que tienes cubre {n} meses de gastos. Las flores crecen cuando llega a 3 meses.', { n: Math.floor(c) }) : T('Con ahorro, el campo se llena de flores. Con un primer colchón empiezan a salir.') },
+        d: c >= 3 ? T('Lo que tienes cubre {n} meses de gastos.', { n: Math.floor(c) }) : c >= 1 ? T(Math.floor(c) === 1 ? 'Lo que tienes cubre 1 mes de gastos. Llegar a 3 meses es la meta recomendada.' : 'Lo que tienes cubre {n} meses de gastos. Llegar a 3 meses es la meta recomendada.', { n: Math.floor(c) }) : T('Con ahorro, tu avance se verá aquí. Un primer colchón es el primer paso.') },
       // Tu historia: un árbol por cada mes con movimientos; los frondosos, meses en que te sobró dinero
-      F.nuevo ? { ic: 'potted_plant', l: T('Tu historia'), v: T('Recién empieza'), cls: 'ok', d: T('Todavía no hay árboles: tu historia recién empieza. Por ahora solo ves brotes; con tus primeros movimientos crece el bosque.') }
+      F.nuevo ? { ic: 'potted_plant', l: T('Tu historial'), v: T('Recién empieza'), cls: 'ok', d: T('Todavía no hay suficientes movimientos. Con tus primeros registros se verá tu presupuesto.') }
         : { ic: 'park', l: T('Tu historia'), v: T(H.length === 1 ? '1 mes' : '{n} meses', { n: H.length }), cls: H[0] && !H[0].ok ? 'warn' : 'ok',
           d: T('Cada árbol es un mes de tu historia. Los más frondosos son meses en que te sobró dinero ({n}); los más chicos, meses en que quedaste justo.', { n: ok }) },
       { ic: 'emoji_nature', l: T('Mis sugerencias'), v: T(nSug === 1 ? '1 sugerencia' : '{n} sugerencias', { n: nSug }), cls: 'ok', d: T('Las mariposas son mis sugerencias para ti: siempre hay alguna volando, y cuando haces una, su lugar lo toma la siguiente.') }
     ].concat(
       // Lo que tienes también se ve (y nunca es triste): brotes si recién empiezas, guayacanes por tus inversiones, y lo que lograste con tus créditos
-      F.nuevo ? [{ ic: 'potted_plant', l: T('Recién empiezas'), v: T('Lleno de brotes'), cls: 'ok', d: T('Tu claro está lleno de brotes amarillos. Con tus primeros ahorros salen las flores.') }] : [],
-      F.inversion > 0 ? [{ ic: 'forest', l: T('Tus inversiones'), v: T('Guayacanes en flor'), cls: 'ok', d: T('Tienes {m} invertidos: por eso en tu claro florecen guayacanes.', { m: money0(F.inversion) }) }] : [],
-      F.deudas.length ? [{ ic: 'cottage', l: T('Tus créditos'), v: T(F.deudas.length === 1 ? '1 crédito' : '{n} créditos', { n: F.deudas.length }), cls: 'ok', d: T('Cada crédito pone en tu claro lo que tienes gracias a él: tu casa, tu carro, la tiendita de tus tarjetas o lo que compraste a cuotas.') }] : []);
+      F.nuevo ? [{ ic: 'potted_plant', l: T('Recién empiezas'), v: T('Sin ahorros todavía'), cls: 'ok', d: T('Cuando guardes tu primer ahorro, aquí verás tu avance.') }] : [],
+      F.inversion > 0 ? [{ ic: 'forest', l: T('Tus inversiones'), v: T('Inversiones activas'), cls: 'ok', d: T('Tienes {m} invertidos.', { m: money0(F.inversion) }) }] : [],
+      F.deudas.length ? [{ ic: 'cottage', l: T('Tus créditos'), v: T(F.deudas.length === 1 ? '1 crédito' : '{n} créditos', { n: F.deudas.length }), cls: 'ok', d: T('Cada crédito te permite tener algo hoy: vivienda, vehículo, compras a cuotas o consumo.') }] : []);
   }
   function worldSheet() {
     var row = function (x) { return '<div class="pfm-world__row is-' + x.cls + '"><span class="material-symbols-rounded" aria-hidden="true">' + x.ic + '</span><span><b>' + x.l + ' · ' + x.v + '</b><small>' + x.d + '</small></span></div>'; }, a = animo();
@@ -876,7 +876,7 @@
      Las respuestas se guardan al final, después de revisar el resumen. */
   var OPCATS = [['Alimentación', 'Comida'], ['Transporte', 'Movilidad'], ['Vivienda', 'Hogar'], ['Salud y bienestar', 'Salud y educación'], ['Entretenimiento', 'Gustos'], ['Familia y dependientes', 'Familia'], ['Servicios financieros y deudas', 'Compromisos'], ['Otros', 'Otro']];
   var MESOPT = [['mesada', 'Sí, es una mesada', 'volunteer_activism'], ['pagoDeuda', 'Le estoy pagando un préstamo', 'handshake'], ['otra', 'Es otra cosa', 'more_horiz']];
-  var ANIMO = ['¡Bien!', '¡Eso!', '¡Uno menos!', '¡Vas volando!', '¡Genial!', '¡Así se hace!', '¡Qué orden!'];
+  var ANIMO = ['Bien', 'Correcto', 'Uno menos', 'Muy bien', 'Listo', 'Buen trabajo', 'Orden'];
   var RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var G = null, gel = null;
   function gameOpen() {
@@ -1075,7 +1075,7 @@
       '<div class="pfm-game__result"><span class="pfm-game__check material-symbols-rounded" aria-hidden="true">done_all</span>' +
       '<h2>' + (n === 1 ? T('1 consumo ordenado') : T('{n} consumos ordenados', { n: n })) + '</h2><p>' + T('Revísalo una última vez antes de guardar.') + '</p>' +
       // Uku aprende: cuánto acertó y cuánto le enseñaste
-      (G.tries ? '<p class="pfm-game__iq"><span class="pfm-game__iqface" aria-hidden="true">' + face() + '</span><span>' + T(G.hits === G.tries ? (G.tries === 1 ? '¡Uku acertó!' : '¡Uku acertó las {t}!') : 'Uku acertó {h} de {t}.', { h: G.hits, t: G.tries }) +
+      (G.tries ? '<p class="pfm-game__iq"><span class="pfm-game__iqface" aria-hidden="true">' + face() + '</span><span>' + T(G.hits === G.tries ? (G.tries === 1 ? 'Uku acertó' : 'Uku acertó las {t}') : 'Uku acertó {h} de {t}.', { h: G.hits, t: G.tries }) +
         ' ' + (G.hits < G.tries ? T('Con lo que le enseñaste, la próxima vez adivina mejor.') : T('Ya te conoce bien.')) + '</span></p>' : '') +
       '<div class="pfm-sum">' + Object.keys(by).map(function (k, i) {
         return '<div class="pfm-sum__row" style="--d:' + i * 60 + 'ms"><span class="pfm-sum__ic material-symbols-rounded" aria-hidden="true">' + by[k].ic + '</span><span>' + esc(k) + (by[k].prog ? '<small>' + T('Programada') + '</small>' : '') + '</span><b>' + (by[k].n === 1 ? T('1 consumo') : T('{n} consumos', { n: by[k].n })) + '</b></div>';
@@ -1094,7 +1094,7 @@
   function doneRender() {
     var a = animo(), quedan = a.n, prog = G.ans.filter(function (x) { return x && x.prog; })[0];
     gel.innerHTML = confeti() + topHTML() +
-      '<div class="pfm-game__end"><span class="pfm-game__burst" aria-hidden="true">' + face() + '</span><h2>' + T('¡Gracias!') + '</h2>' +
+      '<div class="pfm-game__end"><span class="pfm-game__burst" aria-hidden="true">' + face() + '</span><h2>' + T('Gracias') + '</h2>' +
       '<p class="pfm-game__mood is-' + a.k + '"><span class="material-symbols-rounded" aria-hidden="true">' + MOOD_IC[a.k] + '</span>' +
         (G.antes !== a.k ? T('Uku pasó de {a} a {b}', { a: T(MOOD[G.antes]), b: T(MOOD[a.k]) }) : T('Uku está {animo}', { animo: T(MOOD[a.k]) })) + '</p>' +
       (prog ? '<p>' + T('Programaste la mesada a {n}: {m} cada día {d}.', { n: corto(prog.it.m.cp).split(' ')[0], m: money0(prog.it.m.monto), d: prog.it.m.dia }) + '</p>' : '') +
@@ -1135,7 +1135,7 @@
       case 'prog':
         if (p[1] === 'si') { G.view = 'progconf'; fx('tap'); return gameRender(); }
         if (p[1] === 'back') { G.view = 'prog'; fx('tap'); return gameRender(); }
-        G.ans[G.i].prog = p[1] === 'ok'; G.i++; G.view = 'card'; fx(p[1] === 'ok' ? 'success' : 'tap'); if (p[1] === 'ok') G.cheer = T('¡Programada!'); return gameRender();
+        G.ans[G.i].prog = p[1] === 'ok'; G.i++; G.view = 'card'; fx(p[1] === 'ok' ? 'success' : 'tap'); if (p[1] === 'ok') G.cheer = T('Programado'); return gameRender();
       case 'rule': {
         var R = G.rule; G.view = 'card';
         if (p[1] === 'si') {
@@ -1144,7 +1144,7 @@
             var j = G.list.indexOf(G.list.filter(function (y) { return y.t === 'r' && y.r.i === x.r.i; })[0]);
             if (j >= 0) G.ans[j] = { it: G.list[j], v: R.v, monto: -x.r.m, auto: 1 }; else G.extra.push({ r: x.r, v: R.v });
           });
-          G.cheer = T(R.list.length === 1 ? '¡+1 de un toque!' : '¡+{n} de un toque!', { n: R.list.length }); fx('success');
+          G.cheer = T(R.list.length === 1 ? '+1 con un toque' : '+{n} con un toque', { n: R.list.length }); fx('success');
         } else fx('tap');
         return gameRender();
       }
@@ -1506,7 +1506,7 @@
     if (P.ing < 1 && P.prom < 1) {
       wiz.shown = -1;
       return wizShell(0, T('Arma tu presupuesto'), T('Cuando recibas tu primer dinero y empieces a usar tu cuenta, te propongo un presupuesto con tus datos.'),
-        '<div class="pfm-wiz__empty"><span class="material-symbols-rounded" aria-hidden="true">potted_plant</span><p>' + T('Tu bosque recién empieza. Volvemos a esto en unas semanas.') + '</p></div>', '', wizBtn('cerrar', T('Entendido')));
+        '<div class="pfm-wiz__empty"><span class="material-symbols-rounded" aria-hidden="true">potted_plant</span><p>' + T('Todavía no hay suficientes movimientos para mostrar tu presupuesto. Volvemos a esto en unas semanas.') + '</p></div>', '', wizBtn('cerrar', T('Entendido')));
     }
     if (wiz.paso === 1) {
       draft = null;
@@ -1547,7 +1547,7 @@
     }
     var m = curMes(), g = month(m).gast, hoy = +HOY.slice(8, 10), dias = diasMes(m) - hoy + 1, queda = draft.general - g, aho = Math.round(P.ing - draft.general);
     var u = Math.min(100, g / Math.max(1, draft.general) * 100), f = hoy / diasMes(m) * 100;
-    var acomp = [['notifications_active', T('Te aviso cuando llegues al 80% de un grupo')], ['calendar_month', T('Cada lunes te cuento cómo vas')], ['tune', T('Lo puedes cambiar cuando quieras')]];
+    var acomp = [['notifications_active', T('Te aviso cuando llegues al 80% de un grupo')], ['calendar_month', T('Cada lunes te enviamos tu avance')], ['tune', T('Lo puedes cambiar cuando quieras')]];
     return wizShell(3, T('Tu presupuesto está listo'), '',
       '<div class="pfm-wiz__hero"><small>' + T('Gastarás hasta') + '</small><b>' + money0(draft.general) + '<small>' + T('al mes') + '</small></b>' +
         '<span class="pfm-wiz__prog' + (queda <= 0 ? ' is-over' : '') + '" aria-hidden="true"><i style="width:' + u.toFixed(1) + '%"></i><em style="left:' + f.toFixed(1) + '%"></em></span>' +
