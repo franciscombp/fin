@@ -9,8 +9,8 @@
      formas UV y logos). La tinta UV es solo luz: su brillo recorre las
      formas y sube con la inclinación del teléfono.
    Todas las tarjetas reflejan una luz que sigue al giroscopio (sin
-   sensores, al dedo o al mouse). El reverso es el fondo de cada tarjeta,
-   atenuado, en modo claro u oscuro según ese fondo.
+   sensores, al dedo o al mouse). El reverso es un color plano con el tono
+   del borde de cada tarjeta.
    Las filas del hub Tarjetas (productos.js) llevan data-tarjeta con el
    tipo, y abren este detalle.
    ===================================================================== */
@@ -178,16 +178,15 @@
      Se mide el arte de cada tarjeta (su fondo, o la imagen) una vez por imagen:
      - la orilla decide el borde de contraste: línea oscura y tenue si es clara,
        clara y tenue si es oscura;
-     - el promedio de todo el fondo decide el reverso: el mismo fondo difuminado
-       y atenuado, en modo claro (velo blanco, texto azul) u oscuro (velo negro,
-       texto blanco).
+     - el reverso usa ese mismo tono: plano claro (texto azul) u oscuro (texto
+       blanco).
      Al reemplazar un SVG o una imagen, todo se adapta solo. */
   var medidas = {};
   function medir(src, listo) {
     if (medidas[src]) return listo(medidas[src]);
     var im = new Image();
     im.onload = function () {
-      var w = 80, h = 50, c = document.createElement('canvas'), x = c.getContext('2d'), m = { orilla: true, claro: true };
+      var w = 80, h = 50, c = document.createElement('canvas'), x = c.getContext('2d'), m = { orilla: true };
       c.width = w; c.height = h;
       try {
         x.drawImage(im, 0, 0, w, h);
@@ -197,10 +196,7 @@
         var so = 0, po = 0, px = function (i, j) { var k = (j * w + i) * 4, a = d[k + 3] / 255; so += a * lum(k); po += a; };
         for (var i = 12; i < w - 12; i++) { px(i, 2); px(i, h - 3); }
         for (var j = 10; j < h - 10; j++) { px(2, j); px(w - 3, j); }
-        // Todo el fondo
-        var st = 0, pt = 0;
-        for (var k = 0; k < d.length; k += 4) { var a = d[k + 3] / 255; st += a * lum(k); pt += a; }
-        m = { orilla: po ? so / po > .5 : true, claro: pt ? st / pt > .5 : true };
+        m = { orilla: po ? so / po > .5 : true };
       } catch (e) {}
       medidas[src] = m;
       listo(m);
@@ -215,12 +211,10 @@
       medir(src, function (m) { el.style.setProperty('--tj-borde', m.orilla ? 'rgb(15 38 92 / .08)' : 'rgb(255 255 255 / .1)'); });
     });
   }
-  // Reverso de la tarjeta grande: su fondo (URL absoluta: en una variable CSS una URL relativa
-  // se resolvería contra la hoja que la usa) y el modo claro u oscuro según ese fondo
+  // Reverso de la tarjeta grande: el mismo tono que su borde (claro u oscuro según la orilla del arte)
   function dorso(card, k) {
-    var t = TIPOS[k] || TIPOS.debito, src = t.fondo || t.img;
-    card.style.setProperty('--dorso-img', 'url("' + new URL(src, location.href).href + '")');
-    medir(src, function (m) { card.dataset.dorso = m.claro ? 'claro' : 'oscuro'; });
+    var t = TIPOS[k] || TIPOS.debito;
+    medir(t.fondo || t.img, function (m) { card.dataset.dorso = m.orilla ? 'claro' : 'oscuro'; });
   }
 
   /* ---------- Vuelo entre la miniatura del hub y la tarjeta grande ----------

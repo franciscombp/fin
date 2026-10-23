@@ -50,7 +50,9 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap">
+    <!-- Tipografía del DS: Prelo (assets/fonts/prelo). Se precargan los dos pesos que más usa la app -->
+    <link rel="preload" href="./assets/fonts/prelo/Prelo-Medium.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="./assets/fonts/prelo/Prelo-SemiBold.woff2" as="font" type="font/woff2" crossorigin>
 
     <!-- Revela los íconos (ocultos por CSS) sólo cuando la fuente real está
          cargada. Si el CDN de Google Fonts está bloqueado o caído, los
@@ -64,6 +66,7 @@
          ancho real de un glifo de prueba: un ícono real es ~cuadrado a un
          tamaño dado; el texto plano de respaldo ("settings") es mucho más
          ancho. Es la señal directa de lo que el usuario vería. -->
+    <link rel="stylesheet" href="./assets/fonts/prelo/prelo.css">
     <link rel="stylesheet" href="./assets/tokens.css">
     <link rel="stylesheet" href="./assets/componentes-tokens.css">
     <script>
@@ -130,8 +133,8 @@
     /* Capa "base": estilos originales de la app. Todo lo que no esté en una capa
        (componentes.css, sistema.css y las hojas por pantalla) gana sobre esto. */
     @layer base {
-        /* Tipografía: Roboto (Google Fonts, abierta) reemplaza a Prelo, que es
-           comercial. Pesos reales 400/500/600/700, sin negrita sintética. */
+        /* Tipografía: Prelo (assets/fonts/prelo, la del DS) con Roboto de respaldo
+           mientras carga. Pesos reales 400/500/600/700, sin negrita sintética. */
 
         /* Los nombres locales de abajo son alias de los tokens oficiales del
            Design System (assets/tokens.css, export de Figma "Components 4").
@@ -228,7 +231,7 @@
 
         body {
             margin: 0; /* elimina el margen por defecto del navegador (8px) */
-            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            font-family: var(--sol-font, Prelo, Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif);
             font-weight: 500; /* peso por defecto = cara Medium, igual que antes */
             background: var(--bp-surface-page);
             color: var(--bp-text-primary);
@@ -1461,7 +1464,7 @@
         .perfil-head__nivel { position: absolute; right: -4px; bottom: -4px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #CD7F32; color: #fff; font-size: 14px; border: 2px solid var(--bp-surface-page, #fff); }
         .perfil-head__nivel-txt { font-size: 14px; font-weight: 600; color: var(--bp-text-primary); }
         .perfil-chips { display: flex; flex-wrap: wrap; gap: var(--bp-semantic-spacing-micro-md, 8px); }
-        .perfil-chip { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--bp-theme-color-interaction-segmented-bg, #eef1f6); color: var(--bp-text-primary); font: 600 14px/20px var(--sol-font); cursor: pointer; }
+        .perfil-chip { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--bp-theme-color-interaction-segmented-bg, #eef1f6); color: var(--bp-text-primary); font: var(--sol-label-md); cursor: pointer; }
         .perfil-chip .material-symbols-rounded { font-size: 18px; }
         .perfil-chip--pro { background: var(--bp-theme-color-brand-main, #ffdd00); color: #0f265c; }
         .perfil-card { display: flex; flex-direction: column; gap: 8px; margin-bottom: var(--bp-semantic-spacing-micro-md, 8px); }
@@ -1476,7 +1479,7 @@
         .perfil-moneda .material-symbols-rounded { font-size: 18px; color: #CD7F32; }
         .perfil-moneda--bonus { color: var(--bp-text-helper); }
         .perfil-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: var(--bp-semantic-spacing-micro-md, 8px); margin: var(--bp-semantic-spacing-macro-sm, 16px) 0; }
-        .perfil-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; min-height: 96px; padding: 16px; border: 0; border-radius: 16px; background: var(--bp-theme-color-surface-container-default, #fff); color: var(--bp-text-primary); font: 600 15px/20px var(--sol-font); text-align: left; cursor: pointer; }
+        .perfil-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; min-height: 96px; padding: 16px; border: 0; border-radius: 16px; background: var(--bp-theme-color-surface-container-default, #fff); color: var(--bp-text-primary); font: var(--sol-body-sm-semibold); text-align: left; cursor: pointer; }
         .perfil-tile .material-symbols-rounded { color: #0f265c; }
 
         .logout-btn {
@@ -2261,11 +2264,11 @@
 .qr-pay { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-macro-sm); }
 .qr-pay .bp-segmented { padding: 0; }
 .qr-code { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--bp-semantic-spacing-micro-md); }
-.qr-code__caja { display: grid; place-items: center; height: 56px; border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-container-default); font: 600 24px/32px var(--sol-font); color: var(--bp-theme-color-text-primary); }
+.qr-code__caja { display: grid; place-items: center; height: 56px; border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-container-default); font: var(--sol-numeric-xs); color: var(--bp-theme-color-text-primary); }
 .qr-code__caja.on { box-shadow: inset 0 0 0 2px var(--bp-theme-color-text-primary); }
 .qr-pay__expira { margin: 0; text-align: center; font-size: 15px; line-height: 22px; color: var(--bp-theme-color-text-secondary); }
 .qr-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--bp-semantic-spacing-micro-md); }
-.qr-key { display: grid; place-items: center; height: 56px; border: 0; border-radius: var(--bp-semantic-radius-lg); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: 600 24px/32px var(--sol-font); cursor: pointer; }
+.qr-key { display: grid; place-items: center; height: 56px; border: 0; border-radius: var(--bp-semantic-radius-lg); background: var(--bp-theme-color-surface-container-default); color: var(--bp-theme-color-text-primary); font: var(--sol-numeric-xs); cursor: pointer; }
 .qr-key:active { transform: scale(.96); }
 
         /* Sin sesión, lo que se abre por encima del inicio de sesión: ver assets/ingreso.css */
@@ -3246,7 +3249,6 @@
                 <button class="login-button login-button--tertiary" id="btn-login-other">
                     Otro método de ingreso
                 </button>
-                <p class="login-ultimo" id="login-ultimo" hidden></p>
             </div>
         </div>
     </div>

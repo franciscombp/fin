@@ -1,0 +1,15 @@
+/* Prelo y Prelo Slab (tipografías comerciales del DS; tokens: --bp-base-typography-font-family-sans/-slab).
+   WOFF2 convertidos de los OTF originales. font-display: swap muestra el respaldo mientras cargan. */
+@font-face { font-family: 'Prelo'; src: url('Prelo-ExtraLight.woff2') format('woff2'); font-weight: 200; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Prelo'; src: url('Prelo-Light.woff2') format('woff2'); font-weight: 300; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Prelo'; src: url('Prelo-Book.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Prelo'; src: url('Prelo-Medium.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Prelo'; src: url('Prelo-SemiBold.woff2') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Prelo'; src: url('Prelo-Bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Prelo'; src: url('Prelo-Exbd.woff2') format('woff2'); font-weight: 800; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Prelo'; src: url('Prelo-Black.woff2') format('woff2'); font-weight: 900; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Prelo Slab'; src: url('PreloSlab-Light.woff2') format('woff2'); font-weight: 300; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Prelo Slab'; src: url('PreloSlab-Book.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Prelo Slab'; src: url('PreloSlab-SemiBold.woff2') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Prelo Slab'; src: url('PreloSlab-Bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Prelo Slab'; src: url('PreloSlab-ExBd.woff2') format('woff2'); font-weight: 800; font-style: normal; font-display: swap; }

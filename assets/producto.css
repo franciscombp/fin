@@ -163,7 +163,7 @@
 .pv-meta__chip { flex: 0 0 auto; padding: 6px 12px; border-radius: var(--bp-semantic-radius-sm); background: var(--bp-theme-color-brand-main, #ffdd00); color: #0f265c; font: var(--sol-body-md-semibold); font-variant-numeric: tabular-nums; }
 .pv-meta { display: flex; flex-direction: column; gap: 4px; }
 .pv-meta__label { margin: 0; font: var(--sol-body-md-regular); color: var(--bp-theme-color-text-secondary); }
-.pv-meta__valor { margin: 0; font: 600 36px/42px var(--sol-font); font-variant-numeric: tabular-nums; }
+.pv-meta__valor { margin: 0; font: var(--sol-numeric-sm); font-variant-numeric: tabular-nums; }
 .pv-meta__pct { margin: 0; font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-secondary); }
 .pv-meta .pv-chart { margin-top: var(--bp-semantic-spacing-macro-sm); }
 .pv-meta__ejex { display: flex; justify-content: space-between; margin-top: var(--bp-semantic-spacing-micro-md); font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-primary); }
@@ -192,7 +192,7 @@
 .pv-estado__head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--bp-semantic-spacing-micro-md); }
 .pv-estado__head > div { display: flex; flex-direction: column; gap: 4px; }
 .pv-estado__head small { font: var(--sol-body-md-regular); color: var(--bp-theme-color-text-secondary); }
-.pv-estado__head b { font: 600 32px/38px var(--sol-font); font-variant-numeric: tabular-nums; }
+.pv-estado__head b { font: var(--sol-numeric-sm); font-variant-numeric: tabular-nums; }
 .pv-leyenda { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-secondary); text-align: right; }
 .pv-leyenda li { display: flex; align-items: center; justify-content: flex-end; gap: 6px; white-space: nowrap; }
 .pv-leyenda i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
@@ -226,7 +226,7 @@
 .pv-anillo__tramo--azul { stroke: var(--pv-azul); }
 .pv-anillo__centro { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; }
 .pv-anillo__centro small { font: var(--sol-body-md-regular); color: var(--bp-theme-color-text-secondary); }
-.pv-anillo__centro .dw-s { font: 600 26px/32px var(--sol-font); font-variant-numeric: tabular-nums; }
+.pv-anillo__centro .dw-s { font: var(--sol-numeric-xs); font-variant-numeric: tabular-nums; }
 .pv-corte__aprobado { flex-direction: row; justify-content: space-between; align-items: center; }
 .pv-corte__aprobado b, .pv-corte__aprobado span { font: var(--sol-body-lg-medium, 500 17px/24px var(--sol-font)); font-variant-numeric: tabular-nums; }
 
