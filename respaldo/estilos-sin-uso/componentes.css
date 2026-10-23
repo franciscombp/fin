@@ -66,3 +66,10 @@
 .uk-ay2__big { margin: 0; color: var(--bp-theme-color-text-primary); font: var(--sol-title-sm); }
 .uk-ay2__bar { display: block; width: 100%; height: 8px; border-radius: var(--bp-semantic-radius-full); overflow: hidden; background: var(--bp-theme-color-data-chart-track); }
 .uk-ay2__bar i { display: block; height: 100%; border-radius: inherit; background: var(--tone, var(--bp-interaction-tertiary-fg)); }
+
+/* ---- Revisión del 22 de octubre: clases que ya no aparecen en ningún HTML ni JS (tras retirar la versión clásica y Modo finanzas) ---- */
+.pv-sec h2 { flex: 1; min-width: 0; margin: 0; color: var(--bp-theme-color-text-helper); font: var(--sol-body-sm-medium); letter-spacing: 0; text-transform: none; }
+.pv-sec { padding: var(--bp-semantic-spacing-micro-md) var(--bp-layout-grid-margin) var(--bp-semantic-spacing-macro-sm); margin: 0; }
+.pv-sec { padding-top: var(--bp-semantic-spacing-macro-sm); padding-bottom: 0; }
+.pv-value { font: var(--sol-numeric-md); letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.pv-label, .pv-sub { font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-helper); }

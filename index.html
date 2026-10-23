@@ -803,9 +803,6 @@
 
         /* ---------- Microinteracciones táctiles (ver haptics.js) ---------- */
 
-        @keyframes fxRipple {
-            to { transform: scale(1); opacity: 0; }
-        }
         .list-item__hint { display: block; font-size: 12px; font-weight: 400; color: var(--bp-text-helper); }
         .fx-shake { animation: fxShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
         @keyframes fxShake {
@@ -836,7 +833,6 @@
         @keyframes fxPop { 0% { transform: scale(0.92); } 100% { transform: scale(1); } }
         /* Check de éxito: aro que se expande tras el pop del ícono */
 
-        @keyframes fxRing { 0% { transform: scale(0.8); opacity: 0.6; } 100% { transform: scale(1.8); opacity: 0; } }
         @media (prefers-reduced-motion: reduce) {
             .fx-shake, .push-chip.is-selected { animation: none; }
         }
@@ -944,35 +940,6 @@
             min-width: 0;
         }
 
-        /* Switch tipo iOS genérico (hoy sólo lo usa el toggle de tema, pero
-           no depende de nada de ese feature) */
-        .pref-switch {
-            width: 44px;
-            height: 26px;
-            border-radius: 999px;
-            background: var(--bp-border-divider);
-            position: relative;
-            flex-shrink: 0;
-            transition: background 0.2s ease;
-        }
-        .pref-switch__knob {
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: #fff;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-            transition: transform 0.2s cubic-bezier(0.3, 1.4, 0.5, 1);
-        }
-        [aria-pressed="true"] .pref-switch {
-            background: var(--bp-selection-bg-active);
-        }
-        [aria-pressed="true"] .pref-switch__knob {
-            transform: translateX(18px);
-        }
-
         .tag {
             height: 24px;
             display: inline-flex;
@@ -1054,40 +1021,6 @@
             font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;
             color: var(--bp-text-primary);
         }
-
-        /* Miniatura de tarjeta */
-        .card-thumb {
-            width: 58px; height: 40px;
-            border-radius: 6px;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 5px 7px;
-            overflow: hidden;
-        }
-        .card-thumb--visa { background: #ffdd00; }
-        /* En las filas de producto la tarjeta se ve a un tamaño que se pueda leer */
-        .product-row .card-thumb { width: 72px; height: 46px; border-radius: 8px; padding: 6px 8px; }
-        .product-row .card-thumb__brand { font-size: 7px; }
-        .card-thumb--black { background: linear-gradient(135deg, #2b2d33, #060606); }
-        /* diners/ghost son claras: necesitan un borde para definirse contra
-           el fondo blanco de la fila (antes era un box-shadow inset) */
-        .card-thumb--diners { background: #eef1f5; border: 1px solid rgba(15, 38, 92, 0.1); }
-        .card-thumb--ghost {
-            background: #fff;
-            border: 1.5px solid rgba(15, 38, 92, 0.12);
-            opacity: 0.55;
-        }
-        .card-thumb__brand { font-size: 6px; font-weight: 800; letter-spacing: 0.2px; color: #0f265c; }
-        .card-thumb--black .card-thumb__brand { color: #fff; }
-        .card-thumb__foot { display: flex; justify-content: flex-end; align-items: center; }
-        .card-thumb__visa { font-size: 11px; font-weight: 800; font-style: italic; color: #0f265c; }
-        
-        .mc-dots { display: inline-flex; align-items: center; }
-        .mc-dots i { width: 13px; height: 13px; border-radius: 50%; display: block; }
-        .mc-dots i:first-child { background: #eb001b; }
-        .mc-dots i:last-child { background: #f79e1b; margin-left: -6px; opacity: 0.9; }
 
         /* Fila de meta de ahorro */
 
@@ -1475,7 +1408,7 @@
         .perfil-chip { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--bp-theme-color-interaction-segmented-bg, #eef1f6); color: var(--bp-text-primary); font: var(--sol-label-md); cursor: pointer; }
         .perfil-chip .material-symbols-rounded { font-size: 18px; }
         .perfil-chip--pro { background: var(--bp-theme-color-brand-main, #ffdd00); color: #0f265c; }
-        .perfil-card { display: flex; flex-direction: column; gap: 8px; margin-bottom: var(--bp-semantic-spacing-micro-md, 8px); }
+        .perfil-card { display: flex; flex-direction: column; gap: 8px; margin-bottom: var(--bp-semantic-spacing-gap-content, 16px); }
         .perfil-fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
         .perfil-card__titulo { font-size: 16px; font-weight: 700; color: var(--bp-text-primary); }
         .perfil-card__icono { color: #CD7F32; }
@@ -1486,7 +1419,7 @@
         .perfil-moneda { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; color: var(--bp-text-primary); }
         .perfil-moneda .material-symbols-rounded { font-size: 18px; color: #CD7F32; }
         .perfil-moneda--bonus { color: var(--bp-text-helper); }
-        .perfil-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: var(--bp-semantic-spacing-micro-md, 8px); margin: var(--bp-semantic-spacing-macro-sm, 16px) 0; }
+        .perfil-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: var(--bp-semantic-spacing-gap-item, 12px); margin: 0 0 var(--bp-semantic-spacing-gap-content, 16px); }
         .perfil-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; min-height: 96px; padding: 16px; border: 0; border-radius: 16px; background: var(--bp-theme-color-surface-container-default, #fff); color: var(--bp-text-primary); font: var(--sol-body-sm-semibold); text-align: left; cursor: pointer; }
         .perfil-tile .material-symbols-rounded { color: #0f265c; }
 
@@ -1497,7 +1430,7 @@
             gap: 8px;
             width: 100%;
             height: 52px;
-            margin-top: 20px;
+            margin-top: var(--bp-semantic-spacing-macro-md, 24px);
             border: none;
             border-radius: var(--bp-radius-md);
             background: var(--bp-status-warning-bg-subtle);
@@ -2000,7 +1933,6 @@
             line-height: 0;
         }
 
-
         .cd-face--back {
             position: absolute;
             inset: 0;
@@ -2013,7 +1945,6 @@
             padding: 24px;
             line-height: normal;
         }
-
 
         /* Pista de girar para revelar */
         .cd-card__hint {
@@ -2228,20 +2159,7 @@
         }
 
         /* ---------- Loading Spinner ---------- */
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
 
-        .loading-spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(15, 38, 92, 0.2);
-            border-top-color: #0f265c;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            display: inline-block;
-            margin-top: 8px;
-        }
 
         .login-button:disabled {
             opacity: 0.7;
@@ -2549,14 +2467,6 @@
             background: var(--bp-surface-page);
         }
         .push-loading.is-active { display: flex; }
-        .push-loading__spinner {
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            border: 3px solid rgba(15, 38, 92, 0.12);
-            border-top-color: var(--bp-selection-bg-active);
-            animation: pushLoadingSpin 0.8s linear infinite;
-        }
         .push-loading__text {
             font-size: 15px;
             font-weight: 600;
@@ -2566,9 +2476,6 @@
             font-size: 13px;
             color: var(--bp-text-helper);
             margin-top: -6px;
-        }
-        @keyframes pushLoadingSpin {
-            to { transform: rotate(360deg); }
         }
 
         /* ---------- Contenido específico por acción rápida ----------
@@ -2664,12 +2571,7 @@
            Beneficiario -> monto -> confirmar -> procesando -> éxito, todo
            dentro de #push-extra (mismo contenedor de las otras plantillas). */
 
-        @keyframes transferSuccessPop {
-            0% { transform: scale(0.4); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
 
-        .push-transfer-success .login-button { width: 100%; }
 
         /* ---------- Pagar servicios: flujo completo con formulario ----------
            A diferencia de QR/transferir (100% nativos del banco), este
@@ -2753,7 +2655,6 @@
         .card-detail.scrolled .cd-title {
             opacity: 0;
         }
-
 
         /* Contenido del push: sube con stagger al abrir */
         .push-page.open .push-page__hero,
@@ -2986,13 +2887,6 @@
         @keyframes fxNavPop { 0% { transform: scale(0.7) translateY(3px); } 60% { transform: scale(1.15); } 100% { transform: none; } }
 
         /* Pantalla de éxito: cada línea entra en secuencia */
-        .push-transfer-success > * { animation: fxRise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
-        .push-transfer-success > :nth-child(2) { animation-delay: 0.12s; }
-        .push-transfer-success > :nth-child(3) { animation-delay: 0.2s; }
-        .push-transfer-success > :nth-child(4) { animation-delay: 0.26s; }
-        .push-transfer-success > :nth-child(5) { animation-delay: 0.32s; }
-        .push-transfer-success > :nth-child(6) { animation-delay: 0.38s; }
-        .push-transfer-success > :nth-child(n+7) { animation-delay: 0.44s; }
 
         /* Saldo: el número se asienta tras el conteo */
         #balance { font-variant-numeric: tabular-nums; }
@@ -3000,7 +2894,6 @@
         @media (prefers-reduced-motion: reduce) {
             .tab-panel.is-active > *, .tab-panel.is-active .quick-action,
             .nav-item.active .nav-item__wrap .material-symbols-rounded,
-            .push-transfer-success > * { animation: none !important; }
         }
 
         /* ======================================================
@@ -5277,16 +5170,29 @@
             setTimeout(() => { home0.style.transition = ''; }, 320);
         }
 
+        // ¿El dedo empezó sobre algo que se desplaza de lado (banners, promos, chips, pestañas)?
+        // Ese gesto es del carrusel, no del cambio de sección.
+        function enCarrusel(el) {
+            for (; el && el !== home0; el = el.parentElement) {
+                if (el.scrollWidth > el.clientWidth + 2 && /auto|scroll/.test(getComputedStyle(el).overflowX)) return true;
+            }
+            return false;
+        }
         home0.addEventListener('touchstart', e => {
-            if (e.target.closest('.debit-card, .tabs, button, a, .dw-stack')) { sw.on = false; return; }
-            sw = { x: e.touches[0].clientX, y: e.touches[0].clientY, axis: null, on: true, dx: 0 };
+            const t = e.touches[0];
+            // Puede empezar sobre filas y botones (casi todo Inicio lo es); no en el borde izquierdo
+            // (gesto de volver del sistema), ni en carruseles, campos o con una pantalla encima
+            if (e.touches.length > 1 || t.clientX < 24 || e.target.closest('.debit-card, .tabs, .dw-stack, input, textarea') || enCarrusel(e.target) ||
+                document.querySelector('.push-page.open, .card-detail.open, .sheet.open, .as-sheet.open')) { sw.on = false; return; }
+            sw = { x: t.clientX, y: t.clientY, axis: null, on: true, dx: 0 };
         }, { passive: true });
 
         home0.addEventListener('touchmove', e => {
             if (!sw.on) return;
             const dx = e.touches[0].clientX - sw.x;
             const dy = e.touches[0].clientY - sw.y;
-            if (!sw.axis && Math.hypot(dx, dy) > 12) sw.axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+            // Solo es horizontal si claramente va de lado: un scroll un poco diagonal sigue siendo scroll
+            if (!sw.axis && Math.hypot(dx, dy) > 12) sw.axis = Math.abs(dx) > Math.abs(dy) * 1.3 ? 'x' : 'y';
             if (sw.axis !== 'x') return;
             e.preventDefault(); // evita el scroll vertical durante el swipe horizontal
             let d = dx;
@@ -5302,6 +5208,10 @@
         home0.addEventListener('touchend', () => {
             if (!sw.on || sw.axis !== 'x') { sw.on = false; return; }
             sw.on = false;
+            // El toque que sigue al deslizar no abre la fila o el botón donde empezó el dedo
+            const tragar = c => { c.stopPropagation(); c.preventDefault(); };
+            window.addEventListener('click', tragar, true);
+            setTimeout(() => window.removeEventListener('click', tragar, true), 350);
             const dx = sw.dx;
             if (Math.abs(dx) > 70 && canGo(dx)) {
                 const w = home0.offsetWidth;
@@ -5324,6 +5234,8 @@
                 resetSwipe();
             }
         }, { passive: true });
+        // Si el sistema interrumpe el gesto (otra app, el gesto de volver), el contenido vuelve a su lugar
+        home0.addEventListener('touchcancel', () => { if (sw.on && sw.axis === 'x') resetSwipe(); sw.on = false; }, { passive: true });
 
         // ---------- Bottom nav + transiciones entre vistas ----------
         const views = document.querySelectorAll('.view');

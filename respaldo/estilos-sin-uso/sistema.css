@@ -219,3 +219,7 @@ html:not(.theme-y2k) .ai-page .ai-chip--ai {
 .pfm-resumen__m { font: var(--sol-numeric-xs); color: var(--bp-theme-color-text-primary); }
 .pfm-resumen__go { display: inline-flex; align-items: center; gap: var(--bp-semantic-spacing-micro-xs); margin-top: var(--bp-semantic-spacing-micro-md); font: var(--sol-body-md-semibold); color: var(--bp-theme-color-text-interactive); }
 .finance-hero__value--positive { color: var(--bp-theme-color-status-success-text); }
+
+/* ---- Revisión del 22 de octubre: clases que ya no aparecen en ningún HTML ni JS (tras retirar la versión clásica y Modo finanzas) ---- */
+.pv-sec h2 { font: var(--ui-label-sm); font-size: 14px; letter-spacing: 0; margin: 0; color: var(--bp-theme-color-text-helper); }
+.pv-sec h2 { margin-bottom: 8px; }

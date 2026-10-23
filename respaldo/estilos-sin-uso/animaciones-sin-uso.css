@@ -1,0 +1,42 @@
+/* Keyframes y animaciones sin elemento que las use (23 oct 2026) */
+/* index.html */
+        @keyframes fxRipple {
+            to { transform: scale(1); opacity: 0; }
+        }
+
+/* index.html */
+        @keyframes fxRing { 0% { transform: scale(0.8); opacity: 0.6; } 100% { transform: scale(1.8); opacity: 0; } }
+
+/* index.html */
+        @keyframes transferSuccessPop {
+            0% { transform: scale(0.4); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+/* assets/pfm.css */
+@keyframes pfmGlobo { from { opacity: 0; transform: scale(.6) translateY(8px); } }
+
+/* assets/uku-app.css */
+@keyframes ukCard { from { opacity: 0; transform: translateY(18px) scale(.98); } }
+
+/* assets/sistema.css */
+@keyframes dwNew { 0%, 100% { outline: 2px solid transparent; outline-offset: 2px; } 40% { outline: 2px solid var(--bp-interaction-focus-ring-color, var(--bp-interaction-selectable-selected-bg)); outline-offset: 2px; } }
+
+/* index.html */
+        .push-transfer-success .login-button { width: 100%; }
+/* index.html */
+        .push-transfer-success > * { animation: fxRise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+/* index.html */
+        .push-transfer-success > :nth-child(2) { animation-delay: 0.12s; }
+/* index.html */
+        .push-transfer-success > :nth-child(3) { animation-delay: 0.2s; }
+/* index.html */
+        .push-transfer-success > :nth-child(4) { animation-delay: 0.26s; }
+/* index.html */
+        .push-transfer-success > :nth-child(5) { animation-delay: 0.32s; }
+/* index.html */
+        .push-transfer-success > :nth-child(6) { animation-delay: 0.38s; }
+/* index.html */
+        .push-transfer-success > :nth-child(n+7) { animation-delay: 0.44s; }
+/* index.html */
+            .push-transfer-success > * { animation: none !important; }
