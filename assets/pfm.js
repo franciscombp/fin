@@ -103,6 +103,7 @@
         });
       });
       DB = { mov: U, usuarios: d.usuarios, deudas: d.deudas, escenarios: d.escenarios, hipoteca: d.hipoteca, cuentas: d.cuentas || {} };
+      Object.keys(U).forEach(analizar);
       if (!DB.mov[ST.u]) ST.u = 'andres';
       Object.keys(U).forEach(sembrar);
       cache = {}; fijoCache = {};
@@ -110,6 +111,27 @@
     });
     return loading;
   }
+  /* ---------- Lo deduce el front (assets/pfm-analisis.js) ----------
+     Cada movimiento trae, escritos a mano, su tratamiento, categoría, escenario y nota: se conservan en r.dato
+     para comparar, pero la app usa lo que el front deduce del movimiento crudo (r.ia), así una persona nueva
+     o un mes nuevo funcionan sin escribir nada. FUENTE = 'datos' vuelve a las etiquetas escritas (para comparar). */
+  var FUENTE = 'front';
+  function ctxDe(u) { var us = DB.usuarios.filter(function (x) { return x.usuario === u; })[0] || {}; return { nombre: us.nombre, edad: us.edad, deudas: DB.deudas.filter(function (x) { return x.usuario === u; }) }; }
+  function analizar(u) {
+    var rows = DB.mov[u]; if (!rows) return;
+    var ia = window.PFMAnalisis ? PFMAnalisis.analizar(rows.map(function (r) { return r.dato ? Object.assign({}, r, r.dato) : r; }), ctxDe(u)) : null;
+    rows.forEach(function (r, i) { if (!r.dato) r.dato = { t: r.t, c: r.c, e: r.e, n: r.n }; r.ia = ia ? ia[i] : null; aplicar(r); });
+  }
+  function aplicar(r) { var o = FUENTE === 'datos' && r.dato.t != null ? r.dato : r.ia || r.dato; r.t = o.t; r.c = o.c; r.e = o.e || ''; r.n = o.n || ''; }
+  function fuente(m) {
+    if (m && m !== FUENTE && DB) { FUENTE = m === 'datos' ? 'datos' : 'front'; Object.keys(DB.mov).forEach(function (u) { DB.mov[u].forEach(aplicar); }); refresh(); }
+    return FUENTE;
+  }
+  // Qué escenarios del catálogo aplican a la persona (con su evidencia y la recomendación del catálogo) y cuánto
+  // coincide lo deducido con lo escrito a mano
+  function escenariosDe(u) { u = u || ST.u; var rows = DB.mov[u] || []; return window.PFMAnalisis ? PFMAnalisis.escenarios(rows.map(function (r) { return Object.assign({}, r, r.dato); }), ctxDe(u), DB.escenarios, rows.map(function (r) { return r.ia; })) : []; }
+  function analisisDe(u) { u = u || ST.u; var rows = DB.mov[u] || []; return window.PFMAnalisis ? PFMAnalisis.comparar(rows.map(function (r) { return Object.assign({}, r, r.dato); }), rows.map(function (r) { return r.ia; })) : null; }
+
   /* Historial de la demo: cada persona clasificó hasta cierta fecha, así se ven
      los ánimos de Uku. Jorge está al día (contento), Rosa tiene solo lo de
      esta semana (tranquilo), Andrés dejó pasar 10 días y Daniela no clasifica
@@ -1789,6 +1811,8 @@
   window.PFM = { open: open, paint: paint, world: worldSignals, toast: toast, buscar: buscar, contactos: contactos,
     // Para la versión asistente: los consejos de Uku y un resumen de tu dinero
     advice: function () { return DB ? consejos() : []; },
+    fuente: function (m) { return fuente(m); }, escenarios: function (u) { return DB ? escenariosDe(u) : []; }, analisis: function (u) { return DB ? analisisDe(u) : null; },
+    movimientos: function (u) { return DB ? (DB.mov[u || ST.u] || []) : []; },
     finanzas: function () { if (!DB) return null; var f = finanzas(); f.historia = historia(); f.sugerencias = consejos().filter(function (x) { return !x.done; }).length; return f; },
     perfil: function () { return DB ? perfil() : null; }, hayPres: function () { return DB ? hayPres() : false; },
     summary: function () { if (!DB) return null; var s = month(curMes()), a = animo(); return { nombre: nombre(), saldo: sumv(saldos(), function (x) { return x.v; }), gast: s.gast, pres: pres().general, mes: mesName(curMes()), n: a.n, mood: a.k, moodL: T(MOOD[a.k]), moodIc: MOOD_IC[a.k], score: salud(curMes()), bloom: flores() }; }, settings: function () { if (DB) whoSheet(); }, pack: pack, answer: answer, key: key, ready: function () { return !!DB; },
