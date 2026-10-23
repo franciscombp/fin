@@ -314,6 +314,13 @@ actualiza la que ya existe, como la de Andrés); si alcanza, apartar el dinero �
 («Simular: pasan los meses»), el control del viaje: cuánto puedes gastar hoy, cada parte contra su
 presupuesto (ámbar al 80 %) e imprevistos como reserva → un resumen al volver y pasar lo que sobró al ahorro.
 
+### 5.5 Modo wireframe (presentaciones)
+
+Perfil › Preferencias › «Modo wireframe» pone toda la app en blanco y negro (`html.wireframe { filter:
+grayscale(1) }` en `sistema.css`) para presentar la funcionalidad sin que el diseño distraiga. Se guarda en
+`pb_wireframe` y se aplica en el script del `<head>`, antes del primer pintado. El filtro va en `<html>`:
+en la raíz no cambia el contenedor de los elementos `position: fixed`.
+
 ## 6. Buscador
 
 - Sin título ni subtítulo: la hoja es el campo, el micrófono, la cámara y "Cancelar".

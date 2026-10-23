@@ -349,3 +349,7 @@ html.is-title-small .view.active .pf-head h1, html.is-title-small .view.active.p
 :root[data-theme="dark"] .card-thumb--diners { background: var(--bp-base-color-neutral-300, #bdbdbd); }
 :root[data-theme="dark"] .push-qr__code { background: #fff; } /* el QR necesita fondo claro para escanearse */
 :root[data-theme="dark"] .login-logo { content: url("./pichibank-logo--white.svg"); }
+
+/* Modo wireframe (Perfil › Preferencias): toda la app en blanco y negro para presentar la
+   funcionalidad. Va en <html>: en la raíz, filter no cambia el contenedor de los fixed. */
+html.wireframe { filter: grayscale(1); }

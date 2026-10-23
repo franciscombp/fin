@@ -36,6 +36,14 @@
                 get: function () { return root.getAttribute('data-theme'); },
                 set: function (t) { try { localStorage.setItem(KEY, t); } catch (e) {} apply(t); }
             };
+            // Modo wireframe (Perfil › Preferencias): toda la app en blanco y negro, para presentar
+            // la funcionalidad sin que el diseño distraiga. También antes del primer pintado.
+            var WF = 'pb_wireframe';
+            try { root.classList.toggle('wireframe', localStorage.getItem(WF) === '1'); } catch (e) {}
+            window.PBWireframe = {
+                get: function () { return root.classList.contains('wireframe'); },
+                set: function (on) { try { localStorage.setItem(WF, on ? '1' : '0'); } catch (e) {} root.classList.toggle('wireframe', on); }
+            };
         })();
     </script>
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -3978,6 +3986,11 @@
                         <span class="list-item__title">Modo oscuro</span>
                         <span class="pref-switch" aria-hidden="true"><span class="pref-switch__knob"></span></span>
                     </button>
+                    <button class="list-item" id="wireframe-toggle-row" aria-pressed="false">
+                        <span class="avatar-cat"><span class="material-symbols-rounded">filter_b_and_w</span></span>
+                        <span class="list-item__title">Modo wireframe<small class="list-item__hint">Todo en blanco y negro, para presentar la funcionalidad</small></span>
+                        <span class="pref-switch" aria-hidden="true"><span class="pref-switch__knob"></span></span>
+                    </button>
                     <button class="list-item" id="pref-haptics" aria-pressed="true">
                         <span class="avatar-cat"><span class="material-symbols-rounded">vibration</span></span>
                         <span class="list-item__title">Vibración</span>
@@ -4221,6 +4234,17 @@
             const on = PBTheme.get() !== 'dark';
             PBTheme.set(on ? 'dark' : 'light');
             showToast(on ? 'Modo oscuro activado' : 'Modo claro activado');
+        });
+
+        // ---------- Modo wireframe (blanco y negro; lo aplica el script del <head>) ----------
+        const wireframeRow = document.getElementById('wireframe-toggle-row');
+        const syncWireframeRow = () => wireframeRow.setAttribute('aria-pressed', String(PBWireframe.get()));
+        syncWireframeRow();
+        wireframeRow.addEventListener('click', () => {
+            const on = !PBWireframe.get();
+            PBWireframe.set(on);
+            syncWireframeRow();
+            showToast(on ? 'Modo wireframe activado' : 'Modo wireframe desactivado');
         });
 
         /* ---------- Cabecera colapsable (título grande → barra fija) ---------- */
