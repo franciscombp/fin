@@ -219,25 +219,30 @@
       '<div class="sx-panel">' +
         '<div class="sx-head"><form class="sx-field" role="search">' +
           '<span class="material-symbols-rounded" aria-hidden="true">search</span>' +
-          '<input type="search" name="q" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="off" placeholder="Busca o pregunta" aria-label="Buscar o preguntar">' +
+          // Un <textarea> de una línea y no un <input>: Safari en iPhone ofrece «Autorrellenar
+          // contacto» en cualquier <input> de texto (ignora autocomplete="off"), no en un textarea
+          '<textarea rows="1" wrap="off" name="q" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="off" aria-multiline="false" placeholder="Busca o pregunta" aria-label="Buscar o preguntar"></textarea>' +
           '<button type="button" class="sx-mic" data-sx="mic" aria-label="Dictar"><span class="material-symbols-rounded">mic</span></button>' +
           '<button type="button" class="sx-mic" data-sx="cam" aria-label="Escanear un QR con la cámara"><span class="material-symbols-rounded">photo_camera</span></button>' +
         '</form><button class="sx-cancel" data-sx="close" aria-label="Cerrar"><span class="material-symbols-rounded" aria-hidden="true">close</span></button></div>' +
         '<div class="sx-results"></div>' +
       '</div>';
     document.body.appendChild(el);
-    input = el.querySelector('input');
+    input = el.querySelector('.sx-field textarea');
     results = el.querySelector('.sx-results');
-    input.addEventListener('input', render);
-    el.querySelector('form').addEventListener('submit', function (e) {
-      e.preventDefault();
+    // Una sola línea: lo pegado con saltos se une con espacios
+    input.addEventListener('input', function () { if (/[\r\n]/.test(input.value)) input.value = input.value.replace(/[\r\n]+/g, ' '); render(); });
+    // Enter busca (como el <input> de antes) en vez de agregar un salto de línea
+    input.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); submit(); } });
+    el.querySelector('form').addEventListener('submit', function (e) { e.preventDefault(); submit(); });
+    function submit() {
       addRecent(input.value);
       // Una frase («Quiero viajar a Galápagos») se la preguntas a Uku, que la pasa por su orquestador;
       // una búsqueda corta («tarjeta») abre el primer resultado
       var frase = input.value.trim().split(/\s+/).length >= 3, ask = frase && results.querySelector('[data-sx-i="ask"]');
       var first = ask || results.querySelector('[data-sx-i]');
       if (first) first.click();
-    });
+    }
     el.addEventListener('click', function (e) {
       // Tocar el espacio vacío (debajo de los resultados) también cierra
       if (e.target === results || e.target.classList.contains('sx-back')) return close();

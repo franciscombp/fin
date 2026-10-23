@@ -31,7 +31,15 @@ html.sx-open #home-page { filter: none; }
 .sx-field > .material-symbols-rounded { color: var(--bp-theme-color-icon-secondary); font-size: var(--bp-semantic-size-icon-md); }
 .sx-field > .material-symbols-rounded:first-child { display: none; }
 .sx-field input::-webkit-search-cancel-button { display: none; }
-.sx-field input::placeholder { color: var(--bp-theme-color-text-helper); }
+.sx-field input::placeholder, .sx-field textarea::placeholder { color: var(--bp-theme-color-text-helper); }
+/* El textarea se ve y se comporta como un campo de una línea: texto centrado en la
+   altura del campo (el padding, no la altura, lo centra: toda la caja sigue tocable) */
+.sx .sx-field textarea {
+  --sx-lh: var(--bp-semantic-typography-brand-body-md-regular-line-height, 24px);
+  box-sizing: border-box; padding: calc((var(--bp-semantic-size-interactive-md) - var(--sx-lh)) / 2) 0; line-height: var(--sx-lh);
+  resize: none; white-space: pre; overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+}
+.sx-field textarea::-webkit-scrollbar { display: none; }
 .sx-mic { width: 44px; height: 44px; border: 0; border-radius: var(--bp-semantic-radius-sm); background: transparent; color: var(--bp-theme-color-icon-secondary); display: grid; place-items: center; cursor: pointer; }
 .sx.has-q .sx-mic { display: none; }
 .sx-cancel { width: var(--bp-semantic-size-interactive-md); height: var(--bp-semantic-size-interactive-md); padding: 0; border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-container-default); text-decoration: none; }
@@ -39,7 +47,7 @@ html.sx-open #home-page { filter: none; }
 
 /* Dictado: escuchando (anillo y pulso) → entendido (check) */
 .sx.is-listening .sx-field { box-shadow: 0 0 0 2px var(--bp-interaction-primary-bg) !important; }
-.sx.is-listening .sx-field input::placeholder { color: var(--bp-theme-color-text-primary); }
+.sx.is-listening .sx-field input::placeholder, .sx.is-listening .sx-field textarea::placeholder { color: var(--bp-theme-color-text-primary); }
 .sx.is-listening .sx-mic { background: var(--bp-interaction-primary-bg); color: var(--bp-interaction-primary-fg); animation: sxPulse 1.2s ease-in-out infinite; }
 @keyframes sxPulse { 50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--bp-interaction-primary-bg) 30%, transparent); } }
 .sx.is-heard .sx-mic { background: var(--bp-theme-color-status-success-bg); color: var(--bp-theme-color-text-on-solid); animation: sxPop .4s cubic-bezier(.3, 1.5, .5, 1); }
