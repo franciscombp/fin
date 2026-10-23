@@ -6,11 +6,11 @@
 .push-page.is-product { background: var(--cx-surface); }
 .pv { padding: 8px 0 48px; color: var(--cx-ink); }
 .pv p { margin: 0; }
-.pv-kind { font: var(--cx-caption); color: var(--cx-muted); margin-bottom: 24px !important; }
+
 .pv-bar { height: 6px; margin-top: 16px; border-radius: 99px; background: var(--cx-fill); overflow: hidden; }
 .pv-bar i { display: block; height: 100%; background: var(--cx-ink); border-radius: inherit; }
 .pv-acts { display: flex; gap: 12px; margin: 32px 0 8px; }
-.pv-sec { margin-top: 40px; }
+
 .pv-row > span { color: var(--cx-muted); }
 .pv-row > b { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
 .pv-row--mov > span { display: flex; flex-direction: column; color: var(--cx-ink); }
@@ -194,7 +194,7 @@
 .pv-estado__head small { font: var(--sol-body-md-regular); color: var(--bp-theme-color-text-secondary); }
 .pv-estado__head b { font: var(--sol-numeric-sm); font-variant-numeric: tabular-nums; }
 .pv-leyenda { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-secondary); text-align: right; }
-.pv-leyenda li { display: flex; align-items: center; justify-content: flex-end; gap: 6px; white-space: nowrap; }
+.pv-leyenda li { display: flex; align-items: center; justify-content: flex-end; gap: var(--bp-semantic-spacing-micro-md); white-space: nowrap; }
 .pv-leyenda i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 .pv-leyenda .is-azul { background: #2d6cdf; }
 .pv-leyenda .is-hueco { border: 2px dashed #9aa3b8; }
@@ -232,7 +232,7 @@
 
 /* Oferta de tarjetas */
 .pv-oferta { display: flex; align-items: center; justify-content: space-between; min-height: 120px; padding: var(--bp-semantic-spacing-macro-sm); border-radius: var(--bp-semantic-radius-md); background: linear-gradient(135deg, #1b1d22 0%, #3b3f48 100%); color: #fff; }
-.pv-oferta > div { display: flex; flex-direction: column; gap: 6px; }
+.pv-oferta > div { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md); }
 .pv-oferta > div > span { font: var(--sol-body-lg-medium, 500 17px/24px var(--sol-font)); }
 .pv-oferta .pv-enlace { justify-content: flex-start; padding: 0; color: #fff; }
 .pv-oferta > .material-symbols-rounded { font-size: 56px; opacity: .85; }

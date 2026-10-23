@@ -51,10 +51,13 @@
     page._uxId = page._uxId || 'pagina-' + (++uid);
     Overlay.push(page._uxId, function () {
       if (!isOpen(page)) return;
-      // Safari ya mostró su propia transición: se cierra sin repetirla
+      // Safari de iPhone ya mostró su propia transición: ahí se cierra sin repetirla. En Android
+      // (botón o gesto atrás del sistema) y en escritorio se cierra con la animación de siempre.
       var html = document.documentElement;
-      html.classList.add('ux-instant');
-      setTimeout(function () { html.classList.remove('ux-instant'); }, DUR + 120);
+      if (IOS_SAFARI) {
+        html.classList.add('ux-instant');
+        setTimeout(function () { html.classList.remove('ux-instant'); }, DUR + 120);
+      }
       var back = page.querySelector(BACKS);
       if (back) back.click();
       // Volver solo cambió de nivel dentro de la pantalla: sigue abierta y necesita su entrada

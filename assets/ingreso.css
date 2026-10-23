@@ -11,12 +11,6 @@
 }
 .ing.open { display: flex; }
 
-.ing__head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 56px;
-}
 .ing__titulo {
   margin: 0;
   font-size: 20px;
@@ -24,16 +18,7 @@
   color: var(--bp-theme-color-text-primary);
 }
 
-.ing__body {
-  flex: 1;
-  width: 100%;
-  max-width: 360px;
-  margin: 0 auto;
-  padding-top: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+.ing__body { max-width: 360px; padding-top: var(--bp-semantic-spacing-macro-md); } /* componente bp-flow__body */
 .ing__texto {
   margin: 0;
   font-size: 15px;
@@ -74,7 +59,7 @@
 .ing__puntos {
   display: flex;
   justify-content: center;
-  gap: 18px;
+  gap: var(--bp-semantic-spacing-macro-sm);
   padding: 16px 0;
   color: var(--bp-theme-color-text-primary);
 }

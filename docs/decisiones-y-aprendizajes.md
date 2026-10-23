@@ -321,6 +321,33 @@ grayscale(1) }` en `sistema.css`) para presentar la funcionalidad sin que el dis
 `pb_wireframe` y se aplica en el script del `<head>`, antes del primer pintado. El filtro va en `<html>`:
 en la raíz no cambia el contenedor de los elementos `position: fixed`.
 
+### 5.6 Ritmo de espacios, componentes compartidos y catálogo (23 de octubre)
+
+**Ritmo.** Todos los espacios salen de la escala del DS (nada de 10, 14 o 18 sueltos):
+32 entre secciones (`macro-lg`), 24 entre grupos (`macro-md`), 16 entre tarjetas (`gap-content`),
+12 entre ítems de una grilla (`gap-item`) y 8 entre un título y su contenido (`gap-title`/`gap-related`).
+Las fuentes van por rol (`--sol-title-*`, `--sol-body-*`, `--sol-label-*`, `--sol-numeric-*`), nunca
+tamaño y peso a mano.
+
+**Un patrón, una regla.** Lo que se repetía por pantalla ahora es un solo componente en
+`componentes.css` (o en `tarjetas.css` si es de tarjetas), con las clases viejas como alias:
+`bp-spinner`, `bp-avatar--tile` (ícono en recuadro), `bp-avatar__img` (cara de Uku), `bp-message__body`,
+`bp-flow__head`/`__body` (ingreso y flujos), `bp-search__input`, `bp-switch` (antes `.pref-switch` dentro de
+index.html) y la miniatura `card-thumb` (antes en index.html). Un alias nuevo se agrega a la regla del
+componente; si la pantalla necesita otro tamaño, va en la misma sección de `componentes.css`, porque esa
+hoja se carga al final y le gana a la de la pantalla.
+
+**Catálogo.** `sandbox/componentes.html` (en el sandbox: «Componentes») muestra cada componente con su
+marcado real, sus clases `bp-*` y sus alias, ordenado por las páginas del DS en Figma, con enlace a
+cada página. Carga la misma pila de estilos de la app (y la base de `index.html`), así que lo que se ve
+ahí es lo que se ve en la app. Tiene modo claro/oscuro, filtro por nombre o clase y una revisión
+automática que marca con un ícono rojo un componente que no se ve o un token de color sin valor.
+Al agregar un componente, se suma su entrada en el arreglo `S` del catálogo.
+
+**Margen de página.** La documentación de Layout en Figma dice 16 a 360 px y 24 desde 390 px, pero el
+`tokens.css` exportado del mismo archivo dice 16 para mobile-sm y mobile-md. Se dejan los tokens (16)
+como fuente de verdad hasta que el DS lo aclare.
+
 ## 6. Buscador
 
 - Sin título ni subtítulo: la hoja es el campo, el micrófono, la cámara y "Cancelar".
@@ -441,3 +468,4 @@ en la raíz no cambia el contenedor de los elementos `position: fixed`.
 - Mostrar mi QR se considera informativo. Si el equipo decide lo contrario, se agrega a la lista.
 - ~~Las pruebas headless viven fuera del repo~~: el barrido completo ya está en `tools/barrido.js`
   (ver §10).
+- Margen de página: ¿16 (tokens) o 24 desde 390 px (documentación de Layout en Figma)? Ver §5.6.
