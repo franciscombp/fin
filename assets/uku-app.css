@@ -324,7 +324,7 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 .uk-panel .pf-sec { margin-top: 0; padding-left: var(--uk-margin); padding-right: var(--uk-margin); }
 .uk-panel .pf-sec h2 { text-transform: none; }
 /* Acciones del PFM dentro del asistente: azul acento, nunca amarillo */
-html.app-uku .uk-panel .pf-cta, html.app-uku .pfm-game .pf-cta, html.app-uku .pfm-sheet .pf-cta, html.app-uku .as-sheet .pf-cta, html.app-uku .uk-onb__go { background: var(--bp-interaction-accent-bg) !important; color: var(--bp-interaction-accent-fg) !important; box-shadow: none !important; }
+html.app-uku .uk-panel .pf-cta, html.app-uku .pfm-game .pf-cta, html.app-uku .pfm-sheet .pf-cta, html.app-uku .as-sheet .pf-cta { background: var(--bp-interaction-accent-bg) !important; color: var(--bp-interaction-accent-fg) !important; box-shadow: none !important; }
 html.app-uku .uk-panel .pf-cta:disabled, html.app-uku .pfm-sheet .pf-cta:disabled, html.app-uku .as-sheet .pf-cta:disabled { background: var(--bp-theme-color-interaction-accent-bg-disabled, #cfd6e6) !important; }
 html.app-uku .pfm-choice.is-picked, html.app-uku .pfm-allcat:active, html.app-uku .pfm-allcat.is-picked, html.app-uku .pfm-game__big.is-ok { background: var(--bp-interaction-accent-bg) !important; color: var(--bp-interaction-accent-fg) !important; }
 /* El aviso del PFM («Lo dejo para después · Deshacer») en una línea, abajo en Mis finanzas y arriba en el chat */
@@ -389,12 +389,6 @@ html.uk-chatting:not(.uk-nonav) .pf-toast { top: auto !important; bottom: calc(v
 
 /* ---------- 9. Onboarding, teclado, movimiento ---------- */
 /* Onboarding de Uku: sus tres pasos se dicen en el globo de siempre */
-.uk-globo--onb .uk-globo__dots { display: flex; gap: var(--bp-semantic-spacing-micro-md); margin: 0 0 12px; }
-.uk-globo--onb .uk-globo__dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--uk-line); transition: width .2s ease, background .2s ease; }
-.uk-globo--onb .uk-globo__dots i.is-on { width: 18px; background: var(--uk-navy); }
-.uk-globo--onb .uk-globo__h { margin: 0 0 var(--bp-semantic-spacing-micro-md); font: var(--uk-title-md); letter-spacing: 0; }
-.uk-globo--onb .uk-onb__go { margin-top: 16px; width: 100%; }
-.uk-globo--onb .uk-onb__skip { display: block; margin: 8px auto 0; }
 /* Teclado: la pantalla se acorta hasta el borde del teclado y la barra sube con él */
 .uk.is-kb { padding-bottom: 12px; }
 .uk.is-kb.is-chat:not(.is-fin) .uk-scene { bottom: calc(var(--uk-bar-h) + 8px); }

@@ -405,6 +405,18 @@ Se quitaron el rayado de la proyección y la marca del día.
 Las filas de movimiento muestran el nombre como se lee (sin las MAYÚSCULAS del banco), en qué grupo va y con
 qué lo pagaste en una sola línea de ayuda; la etiqueta queda solo para «Por revisar».
 
+### 5.9 Uku se presenta en su chat y saluda a la persona elegida (23 de octubre)
+
+El onboarding de Uku ya no es una tarjeta aparte sobre su mundo: es la primera conversación de su chat, con el
+mismo modelo de siempre. Uku escribe («Hola, Andrés. Soy Uku…»), tus respuestas son chips que quedan como
+burbujas tuyas («¿Qué puedes hacer por mí?», «¿Y cómo te hablo?», «Ya te conozco, empecemos») y, al terminar,
+la conversación sigue en el mismo hilo con el saludo y sus acciones («Listo, Andrés. ¿Por dónde empezamos?»).
+
+El nombre siempre es el de la persona elegida en Perfil. Antes, el saludo quedaba guardado en memoria (`SAL`)
+y al cambiar de persona Uku seguía diciendo «Buenas tardes, Andrés» hasta recargar: ahora el asistente escucha
+`persona:change` y olvida el saludo y la conversación anterior. La última visita (para «Hola otra vez») se
+guarda por persona (`uk-visto:<persona>`).
+
 ## 6. Buscador
 
 - Sin título ni subtítulo: la hoja es el campo, el micrófono, la cámara y "Cancelar".
