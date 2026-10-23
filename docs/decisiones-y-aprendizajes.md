@@ -357,6 +357,31 @@ una fila (Ver más, Cambiar, Borrar, Deshacer). Alias del terciario grande: `log
 `tokens.css` exportado del mismo archivo dice 16 para mobile-sm y mobile-md. Se dejan los tokens (16)
 como fuente de verdad hasta que el DS lo aclare.
 
+### 5.7 Movimientos entre tus cuentas y ahorro en el presupuesto (23 de octubre)
+
+**Mover dinero entre tus cuentas no es ingreso ni gasto.** Mis finanzas mira todas tus cuentas juntas: el
+sueldo cuenta una vez, cuando llega, y el gasto cuando le pagas a alguien (una compra, un retiro de efectivo,
+una transferencia a otra persona). Si el día que cobras pasas todo a tu Ahorro flexible y cada semana sacas
+$200 para la semana, ninguno de esos traspasos suma: lo que gastas con esos $200 es lo que cuenta.
+`assets/pfm-analisis.js` reconoce un movimiento como tuyo si la contraparte es «tú», tu propio nombre (el banco
+a veces lo pone así; antes caía en «Por revisar» como transferencia a una persona) o el número de una de tus
+cuentas en la descripción («···8801»).
+
+**Lo que guardas.** Cada traspaso propio que entra o sale de un producto de ahorro (cuenta de ahorro, Ahorro
+flexible, metas, inversiones) deja `ah` (+ guardas, − sacas) en uno solo de sus dos lados: el de la cuenta de
+ahorro si sus movimientos se ven, o el de tu cuenta si no. La suma del mes es lo que guardaste de verdad
+(sueldo de 2.000 al ahorro y 4 retiros de 200: guardaste 1.200).
+
+**Tu ritmo.** Si el sueldo pasa al ahorro el mismo día (o al siguiente) se marca «Sueldo al ahorro»; si cada
+semana sacas un monto parecido (±15 %, cada 5 a 9 días, 4 o más veces), «Retiro semanal del ahorro». Con eso
+el asistente de presupuesto propone el plan «A tu ritmo»: lo fijo de siempre más ese monto semanal al mes.
+
+**El ahorro es parte del presupuesto.** Lo que recibes se reparte entre gastos y ahorro: el paso 2 del
+asistente tiene la sección «Tu ahorro» (subir el ahorro baja lo que planeas gastar) y el interruptor «Que se
+guarde solo», que programa el monto para el día que cobras, en tu Ahorro flexible o cuenta de ahorro. Si ya
+tienes un débito automático con el banco (Andrés: $100 el día 1), lo muestra y usa su día. Se guarda en
+`ST.presG[u].ahorro` y `ST.ahorroProg[u]`; deshacer el presupuesto deshace también el ahorro programado.
+
 ## 6. Buscador
 
 - Sin título ni subtítulo: la hoja es el campo, el micrófono, la cámara y "Cancelar".

@@ -53,6 +53,43 @@
   var EMPRESA = /\b(s\.?a\.?s?\.?|cia\.?|ltda|hnos\.?|distribuidora|universidad|cooperativa|banco|estudio|comercial|agencia|empresa|corporacion|fundacion)\b/;
   var esEmpresa = function (cp) { return EMPRESA.test(norm(cp)); };
   var esTu = function (cp) { return /^tu\b/.test(norm(cp)); };
+  /* ---------- Tus propias cuentas ----------
+     Mover dinero entre tus cuentas no es ingreso ni gasto: el sueldo cuenta una vez, cuando llega, y el gasto
+     cuando le pagas a alguien. Un movimiento es tuyo si la contraparte es «tú», tu propio nombre o el número
+     de una de tus cuentas (el banco a veces pone tu nombre en lugar de «tú»). */
+  var TIPO_AHORRO = { ahorro: 1, meta: 1, inversion: 1 };
+  function numero(t) { var m = String(t || '').match(/(\d{4})\s*\)?\s*$/); return m && m[1]; }
+  function cuentaDe(src, ctx) { var n = numero(src); return n ? (ctx && ctx.cuentas || []).filter(function (c) { return c.numero === n; })[0] : null; }
+  // La otra cuenta que nombra la descripción («Transferencia a Ahorro flexible ···8801»)
+  function cuentaNombrada(r, ctx) {
+    var d = norm(r.desc), propia = numero(r.src), C = ctx && ctx.cuentas || [];
+    return C.filter(function (c) { return c.numero && c.numero !== propia && new RegExp('(···|\\.\\.\\.|cuenta |cta\\.? ?)' + c.numero).test(d); })[0] ||
+      C.filter(function (c) { return !c.numero && c.nombre && d.indexOf(norm(c.nombre)) >= 0; })[0] || null;
+  }
+  function tuNombre(cp, ctx) {
+    var n = norm(ctx && ctx.nombre).split(/\s+/).filter(Boolean), w = norm(cp).replace(/\(.*\)/, '').split(/\s+/).filter(Boolean);
+    return n.length >= 2 && w.length >= 2 && w.every(function (x) { return n.indexOf(x) >= 0; });
+  }
+  function propio(r, ctx) { return esTu(r.cp) || tuNombre(r.cp, ctx) || !!cuentaNombrada(r, ctx); }
+  /* Si un movimiento propio entra a tu ahorro o sale de él (Ahorro flexible, metas, inversiones):
+     +v guardas, −v sacas. Cada traspaso tiene dos lados; cuenta uno solo: el de la cuenta de ahorro si sus
+     movimientos se ven, o el de tu cuenta si no (Ahorro flexible sin movimientos propios). */
+  function ahorroDe(r, ctx) {
+    var src = cuentaDe(r.src, ctx);
+    if (src && TIPO_AHORRO[src.tipo]) return { dir: r.m > 0 ? 'entra' : 'sale', ah: r.m };
+    var otra = cuentaNombrada(r, ctx), d = norm(r.desc);
+    var esAhorro = otra ? TIPO_AHORRO[otra.tipo] : /ahorro prog|hacia cuenta de ahorro|ahorro flexible|a tu meta|deposito a plazo/.test(d);
+    if (!esAhorro) return null;
+    var dir = r.m < 0 ? 'entra' : 'sale', fuentes = ctx && ctx.fuentes || {};
+    var seVe = otra ? !!(otra.fuente && fuentes[otra.fuente]) : (ctx && ctx.cuentas || []).some(function (c) { return TIPO_AHORRO[c.tipo] && c.fuente && fuentes[c.fuente]; });
+    return { dir: dir, ah: seVe ? 0 : -r.m };
+  }
+  function traspaso(r, ctx, o) {
+    var a = ahorroDe(r, ctx); if (!a) return o;
+    o.dir = a.dir; o.ah = Math.round(a.ah * 100) / 100;
+    if (!o.n) o.n = a.dir === 'entra' ? 'Guardas en tu ahorro: no es gasto' : 'Sacas de tu ahorro: no es ingreso';
+    return o;
+  }
   // Apellidos de la persona (todo menos el primer nombre) para reconocer a la familia
   function apellidos(nombre) { return norm(nombre).split(/\s+/).slice(1).filter(function (w) { return w.length > 2; }); }
   function familia(cp, ctx) {
@@ -74,7 +111,7 @@
     if (r.prod === 'Tarjeta de otro banco') return o('Fuera del MVP', comercio(d + ' ' + cp) || 'Compras personales', 'Es una tarjeta de otro banco: el PFM ve el consumo, pero no lo paga Pichibank');
     if (r.prod === 'Deuna') {
       if (/recarga de saldo/.test(d)) return o('Excluido', 'Recarga Deuna', 'Recarga desde tu cuenta: ya contó al salir de la cuenta', '', 'No suma: la recarga ya contó');
-      if (esTu(cp)) return o('Excluido', 'Entre cuentas propias', 'Pasa de tu Deuna a tu cuenta');
+      if (propio(r, ctx)) return o('Excluido', 'Entre cuentas propias', 'Pasa de tu Deuna a tu cuenta');
       if (/cobro qr/.test(d)) return o('Detalle Deuna', 'Ventas del negocio', 'Cobro con QR a un cliente', '', 'No suma: el ingreso cuenta al pasar a la cuenta');
       if (/pago a persona/.test(d)) return o('Detalle Deuna', 'Transferencia a persona', 'Pago con Deuna a una persona');
       if (/recibida/.test(d)) return o('Detalle Deuna', 'Ingreso de persona', 'Te enviaron por Deuna');
@@ -86,12 +123,12 @@
       return o('Gasto', comercio(d + ' ' + cp) || 'Compras personales', 'Consumo con tu tarjeta');
     }
     // Cuenta
-    if (esTu(cp)) {
+    if (propio(r, ctx)) {
       if (/tarjeta/.test(d) && /pago/.test(d)) return o('Excluido', 'Pago de tarjeta', 'Pago de tu tarjeta Pichibank: el gasto ya contó al consumir');
-      if (/ahorro prog|hacia cuenta|acreditacion por ahorro/.test(d)) return o('Excluido', 'Ahorro programado', 'Movimiento de tu ahorro programado');
+      if (/ahorro prog|hacia cuenta|acreditacion por ahorro/.test(d)) return traspaso(r, ctx, o('Excluido', 'Ahorro programado', 'Movimiento de tu ahorro programado'));
       if (/deuna a /.test(d) && !pos) return o('Gasto', 'Pagos con Deuna', 'Recarga a tu Deuna: aquí se cuenta el gasto', '', 'Recarga del mismo monto que el pago; el detalle está en Deuna');
       if (pos && (/deuna de /.test(d) || /deposito en efectivo/.test(d))) return o('Ingreso', 'Ingresos del negocio', 'Pasas a la cuenta lo que vendiste');
-      return o('Excluido', 'Entre cuentas propias', 'Entre tus cuentas');
+      return traspaso(r, ctx, o('Excluido', 'Entre cuentas propias', 'Entre tus cuentas: no es ingreso ni gasto'));
     }
     if (pos && /nomina|decimo|sueldo/.test(d)) return o('Ingreso', 'Sueldo', 'Pago de nómina');
     if (pos && /iess|pension|jubilacion/.test(d + ' ' + norm(cp))) return o('Ingreso', 'Pensión', 'Pensión del IESS');
@@ -118,6 +155,7 @@
   function analizar(rows, ctx) {
     ctx = ctx || {};
     ctx.apellidos = ctx.apellidos || apellidos(ctx.nombre);
+    ctx.fuentes = ctx.fuentes || rows.reduce(function (a, r) { a[r.src] = 1; return a; }, {});
     var out = rows.map(function (r) { return movimiento(r, ctx); });
     var idx = rows.map(function (_, i) { return i; }).sort(function (a, b) { return (rows[a].f + rows[a].h).localeCompare(rows[b].f + rows[b].h); });
     var X = function (i, t, c, e, n, por) { var o = out[i]; if (t) o.t = t; if (c) o.c = c; if (e != null) o.e = e; if (n != null) o.n = n; if (por) o.por = por; };
@@ -243,6 +281,20 @@
     var sueldos = {}; idx.forEach(function (i) { if (out[i].c === 'Sueldo' && !/decimo/.test(norm(rows[i].desc))) sueldos[mes(rows[i].f)] = (sueldos[mes(rows[i].f)] || 0) + 1; });
     var quincena = mediana(Object.keys(sueldos).map(function (k) { return sueldos[k]; })) >= 2;
     idx.forEach(function (i) { if (out[i].c === 'Sueldo') out[i].e = /decimo/.test(norm(rows[i].desc)) ? 'Décimos' : quincena ? 'Sueldo quincenal' : 'Sueldo mensual'; });
+    // Tu dinero vive en el ahorro: el sueldo pasa al ahorro el mismo día (o al siguiente) y cada semana sacas
+    // un monto parecido para el día a día. Ninguno de los dos es ingreso ni gasto; el retiro semanal es tu ritmo.
+    idx.forEach(function (i) {
+      var r = rows[i]; if (out[i].c !== 'Sueldo' || r.m <= 0) return;
+      idx.forEach(function (j) { var g = rows[j]; if (out[j].dir === 'entra' && g.m < 0 && dias(r.f, g.f) >= 0 && dias(r.f, g.f) <= 1 && -g.m >= r.m * .6) X(j, null, null, 'Sueldo al ahorro', null, 'Pasaste tu sueldo al ahorro: sigue siendo tuyo, no es gasto'); });
+    });
+    var sacas = idx.filter(function (i) { return out[i].dir === 'sale' && rows[i].m > 0; });
+    if (sacas.length < 4) sacas = idx.filter(function (i) { return out[i].dir === 'sale' && rows[i].m < 0; });
+    if (sacas.length >= 4) {
+      var medS = mediana(sacas.map(function (i) { return Math.abs(rows[i].m); }));
+      var par = sacas.filter(function (i) { return Math.abs(Math.abs(rows[i].m) - medS) <= medS * .15; });
+      var gaps = par.slice(1).map(function (i, k) { return dias(rows[par[k]].f, rows[i].f); });
+      if (par.length >= 4 && mediana(gaps) >= 5 && mediana(gaps) <= 9) par.forEach(function (i) { X(i, null, null, 'Retiro semanal del ahorro', null, 'Cada semana sacas ' + Math.round(medS) + ' de tu ahorro para el día a día: no es ingreso; el gasto cuenta cuando pagas'); });
+    }
     // Crédito directo en casas comerciales y deudas en otras entidades
     out.forEach(function (o, i) { var t = norm(rows[i].desc + ' ' + rows[i].cp); if (o.c === 'Servicios financieros y deudas' && /de prati|etafashion|creditos economicos|artefacta|la ganga|cuota diferid/.test(t)) o.e = 'Crédito directo en casa comercial'; else if (o.c === 'Servicios financieros y deudas' && /cooperativa|banco/.test(t) && !/comision/.test(t)) o.e = 'Deuda en otra entidad'; });
     // Cuenta conjunta: el banco sabe quién pagó
@@ -308,7 +360,12 @@
     return { n: n, tratamiento: pct(t, n), categoria: pct(c, n), porRevisar: pct(revOk, rev), minimo: pct(minOk, min), diferencias: dif };
   }
 
-  var api = { movimiento: movimiento, analizar: analizar, escenarios: escenarios, comparar: comparar, comercio: comercio, norm: norm };
+  // Lo que la persona saca de su ahorro cada semana, si lo hace (monto y cuántas semanas)
+  function ritmoSemanal(rows, out) {
+    var L = out.map(function (o, i) { return o.e === 'Retiro semanal del ahorro' ? Math.abs(rows[i].m) : null; }).filter(function (v) { return v != null; });
+    return L.length ? { monto: mediana(L), veces: L.length } : null;
+  }
+  var api = { movimiento: movimiento, analizar: analizar, escenarios: escenarios, comparar: comparar, comercio: comercio, norm: norm, propio: propio, ritmoSemanal: ritmoSemanal };
   if (typeof module === 'object' && module.exports) module.exports = api;
   root.PFMAnalisis = api;
 })(typeof window !== 'undefined' ? window : globalThis);
