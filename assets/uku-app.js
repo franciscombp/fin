@@ -653,7 +653,7 @@
   function uku(t, btns, extra, o) { o = o || {}; msgs.push({ uku: t, btns: btns || [], extra: extra || '', nuevo: true, title: o.title, rows: o.rows, flow: o.flow, num: o.num, meter: o.meter, stats: o.stats, bars: o.bars, pregunta: o.pregunta, voto: o.voto, links: o.links, ia: o.ia }); ultimo = Date.now(); if (b3d) b3d.play('talk'); }
   function b(k, t, icon, cls) { return { k: k, t: t, ic: icon, cls: cls }; }
   function mostrar() { input.value = ''; modo(); pintarChat(); pintarResultados(); }
-  // Lo que escribes: tu plata, la ayuda o una acción de la app
+  // Lo que escribes: tu dinero, la ayuda o una acción de la app
   /* Qué quieres, en el orden de los trabajos de la gente:
      1. saber cómo va mi dinero (mi salud, mis gastos, mi presupuesto),
      2. una respuesta simple (la ayuda), 3. un inconveniente con mi cuenta (guiado).

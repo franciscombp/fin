@@ -217,7 +217,7 @@
     // Preguntas de cada sección (tarjetas, préstamos, inversiones, seguros…)
     var cx = window.Contexto && Contexto.answer(s);
     if (cx) return cx;
-    if (/^(hola|buenas|buenos|hey|que tal)\b/.test(s)) return { t: T('Hola, ¿qué tal? Cuéntame qué quieres revisar. Te puedo decir en qué se te está yendo la plata, cómo vas con tus metas o en qué excediste tu presupuesto.'),
+    if (/^(hola|buenas|buenos|hey|que tal)\b/.test(s)) return { t: T('Hola, ¿qué tal? Cuéntame qué quieres revisar. Te puedo decir en qué se te está yendo el dinero, cómo vas con tus metas o en qué excediste tu presupuesto.'),
       s: ['¿En qué gasto más?', '¿Cómo voy con mis metas?', '¿En qué me pasé?'] };
     if (OLD.test(s)) return reports(s);
     if (/tarde|atras|recargo|vencid/.test(s)) {
