@@ -30,7 +30,7 @@
     .cat-head { position: sticky; top: 0; z-index: 10; background: var(--bp-theme-color-surface-container-fixed); -webkit-backdrop-filter: var(--sol-blur-fixed); backdrop-filter: var(--sol-blur-fixed); border-bottom: var(--bp-semantic-border-thin) solid var(--bp-theme-color-border-divider); }
     .cat-head .bp-filter { display: flex; gap: var(--bp-semantic-spacing-micro-md); overflow-x: auto; padding: 0 var(--bp-layout-grid-margin) var(--bp-semantic-spacing-micro-lg); scrollbar-width: none; }
     .cat-head .bp-filter::-webkit-scrollbar { display: none; }
-    .cat-head .bp-filter-item { flex: none; }
+    .cat-head .bp-filter-item { flex: none; text-decoration: none; }
     .cat-main { max-width: 760px; margin: 0 auto; padding: var(--bp-semantic-spacing-macro-sm) var(--bp-layout-grid-margin) var(--bp-semantic-spacing-macro-xl); }
     .cat-main > .bp-text-field { margin-bottom: var(--bp-semantic-spacing-macro-md); }
     .cat-sec { scroll-margin-top: 120px; }
@@ -128,7 +128,7 @@
           h: RADIOS.map(function (r) { return '<span class="cat-ra" style="border-radius:var(--bp-semantic-radius-' + r + ')">' + r + '</span>'; }).join('') }
       ] },
       { id: 'botones', t: 'Botones', fig: '6129-274', items: [
-        { n: 'Botón', d: 'Primary (amarillo, solo la acción del banco), secondary, tertiary, accent (Uku) y destructive. 56 de alto; lg 64.', c: 'bp-button bp-button--secondary bp-button--tertiary bp-button--accent bp-button--destructive', a: 'btn login-button sheet__cta pf-cta sx-btn gyro-modal__btn', col: 1,
+        { n: 'Botón', d: 'Primary (amarillo, solo la acción del banco), secondary, tertiary, accent (Uku) y destructive. 56 de alto; lg 64. El tertiary subrayado del DS no se usa en la app: las acciones de texto van con el botón de acción terciario.', c: 'bp-button bp-button--secondary bp-button--tertiary bp-button--accent bp-button--destructive', a: 'btn login-button sheet__cta pf-cta sx-btn gyro-modal__btn', col: 1,
           h: '<button class="bp-button">Continuar</button><button class="bp-button bp-button--secondary">Ahora no</button><button class="bp-button bp-button--tertiary">Ver detalle</button><button class="bp-button bp-button--accent">' + ms('auto_awesome') + 'Hablar con Uku</button><button class="bp-button bp-button--destructive">Eliminar</button><button class="bp-button" disabled>Deshabilitado</button><button class="bp-button" data-size="lg">Grande (lg)</button>' },
         { n: 'Botón de acción', d: 'Acción dentro de un componente: 40 de alto (sm 32, lg 48).', c: 'bp-action-button bp-action-button--tertiary [data-size]', a: 'dw-cta pf-link home-banner__cta hub-offer__cta hub-promo__cta sp-act',
           h: '<button class="bp-action-button" data-size="sm">Pequeño</button><button class="bp-action-button">Pagar' + ms('chevron_right') + '</button><button class="bp-action-button" data-size="lg">' + ms('add') + 'Grande</button><button class="bp-action-button bp-action-button--tertiary">Terciario</button><button class="bp-action-button" disabled>Deshabilitado</button>' },

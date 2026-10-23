@@ -209,13 +209,14 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
   transition: background-color .15s var(--sol-ease);
 }
 .bp-section-title__action .material-symbols-rounded, .section__link .material-symbols-rounded, .sx-link .material-symbols-rounded, .pf-back .material-symbols-rounded, .pv-more .material-symbols-rounded { font-size: var(--bp-action-button-icon-size); }
-.section__link:has(> .material-symbols-rounded:last-child), .pv-more:has(> .material-symbols-rounded:last-child) { padding-right: var(--bp-action-button-padding-x-icon); }
+.pv-more:has(> .material-symbols-rounded:last-child) { padding-right: var(--bp-action-button-padding-x-icon); }
 .sx-link:has(> .material-symbols-rounded:first-child), .pf-back:has(> .material-symbols-rounded:first-child) { padding-left: var(--bp-action-button-padding-x-icon); }
 .bp-section-title__action:hover, .section__link:hover, .sx-link:hover, .pf-back:hover, .uk-globo__go:hover, .btn--tertiary:hover, .login-button--tertiary:hover, .debit-card-disabled__link:hover, .pv-more:hover { background: var(--bp-interaction-tertiary-bg--hover); text-decoration: none; }
 .bp-section-title__action:active, .section__link:active, .sx-link:active, .pf-back:active, .uk-globo__go:active, .btn--tertiary:active, .login-button--tertiary:active, .debit-card-disabled__link:active, .pv-more:active { background: var(--bp-interaction-tertiary-bg--active); transform: none; }
-/* En el título de sección va en tamaño sm y se alinea al borde derecho de la grilla */
-.bp-section-title__action, .section__title .section__link { height: var(--bp-semantic-size-interactive-xxs); padding: 0 var(--bp-semantic-spacing-micro-lg); margin-right: calc(-1 * var(--bp-semantic-spacing-micro-lg)); }
-.section__title .section__link:has(> .material-symbols-rounded:last-child) { padding-right: var(--bp-semantic-spacing-micro-sm); margin-right: calc(-1 * var(--bp-semantic-spacing-micro-sm)); }
+/* La acción de un título de sección o del final de una fila va en tamaño sm y su texto se alinea al borde
+   derecho de la grilla (el relleno queda por fuera, se ve solo al tocar) */
+.bp-section-title__action, .section__link { height: var(--bp-semantic-size-interactive-xxs); padding: 0 var(--bp-semantic-spacing-micro-lg); margin-right: calc(-1 * var(--bp-semantic-spacing-micro-lg)); }
+.bp-section-title__action:has(> .material-symbols-rounded:last-child), .section__link:has(> .material-symbols-rounded:last-child) { padding-right: var(--bp-semantic-spacing-micro-sm); margin-right: calc(-1 * var(--bp-semantic-spacing-micro-sm)); }
 /* Los botones de texto del ingreso y de la ayuda ocupan su ancho y van centrados */
 .login-button--tertiary { align-self: center; width: fit-content; max-width: 100%; margin-inline: auto; height: auto; min-height: var(--bp-action-button-size); padding-block: var(--bp-semantic-spacing-micro-sm); white-space: normal; text-align: center; }
 /* «Ver más» al pie de una lista: centrado */

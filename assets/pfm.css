@@ -224,7 +224,7 @@
 .pfm-bar em { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--bp-theme-color-text-primary); opacity: .4; }
 .pfm-budget__t { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: var(--bp-semantic-spacing-micro-md, 8px) 0 0 !important; font: var(--cx-sub); color: var(--cx-muted); }
 .pfm-budget__t b { color: var(--bp-theme-color-text-primary); font-variant-numeric: tabular-nums; }
-.pfm-budget__t .section__link { flex: 0 0 auto; margin-right: -8px; }
+.pfm-budget__t .section__link { flex: 0 0 auto; }
 
 .pfm-dcard__cmp { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--bp-theme-color-border-divider, var(--cx-line)); }
 .pfm-dcard__row { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; align-items: baseline; }
