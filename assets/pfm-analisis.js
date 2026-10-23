@@ -70,6 +70,8 @@
     var n = norm(ctx && ctx.nombre).split(/\s+/).filter(Boolean), w = norm(cp).replace(/\(.*\)/, '').split(/\s+/).filter(Boolean);
     return n.length >= 2 && w.length >= 2 && w.every(function (x) { return n.indexOf(x) >= 0; });
   }
+  // Cuentas que solo envían a tus propias cuentas (el Ahorro flexible)
+  function soloPropias(c) { return !!(c && (c.solo_propias || /flexible/.test(norm(c.nombre)))); }
   function propio(r, ctx) { return esTu(r.cp) || tuNombre(r.cp, ctx) || !!cuentaNombrada(r, ctx); }
   /* Si un movimiento propio entra a tu ahorro o sale de él (Ahorro flexible, metas, inversiones):
      +v guardas, −v sacas. Cada traspaso tiene dos lados; cuenta uno solo: el de la cuenta de ahorro si sus
@@ -130,6 +132,9 @@
       return o('Excluido', 'Inversión', 'Abres o renuevas una póliza: es dinero que inviertes, no un gasto', 'Pólizas', /renovaci/.test(d) ? 'Renovó la póliza con capital e intereses' : 'Nueva póliza');
     }
     if (pos && /inter[eé]?s (diario|acreditado|ganado|del mes)/.test(d)) return o('Ingreso', 'Intereses', /diario/.test(d) ? 'Interés que paga tu cuenta cada día sobre el saldo del día' : 'Intereses que te paga el banco', /flexible/.test(d + ' ' + norm(r.src)) ? 'Ahorro flexible' : '');
+    // Desde el ahorro flexible solo se envía a tus cuentas, nunca a terceros: lo que sale de él es un traspaso
+    var cf = cuentaDe(r.src, ctx);
+    if (!pos && cf && soloPropias(cf)) return traspaso(r, ctx, o('Excluido', 'Entre cuentas propias', 'Desde tu ahorro flexible solo puedes enviar a tus cuentas', 'Ahorro flexible', 'Vuelve a la transaccional: ahí gana casi nada'));
     if (propio(r, ctx)) {
       if (/flexible/.test(d + ' ' + norm(r.src))) return traspaso(r, ctx, o('Excluido', 'Entre cuentas propias', 'Pasa dinero entre tu cuenta y tu ahorro flexible', 'Ahorro flexible', /a tu ahorro flexible/.test(d) ? 'Todo a la flexible: gana 4,75 % al año' : /desde tu ahorro flexible/.test(d) ? 'Vuelve a la transaccional: ahí gana casi nada' : ''));
       if (/tarjeta/.test(d) && /pago/.test(d)) return o('Excluido', 'Pago de tarjeta', 'Pago de tu tarjeta Pichibank: el gasto ya contó al consumir');
@@ -382,7 +387,7 @@
     var L = out.map(function (o, i) { return o.e === 'Retiro semanal del ahorro' ? Math.abs(rows[i].m) : null; }).filter(function (v) { return v != null; });
     return L.length ? { monto: mediana(L), veces: L.length } : null;
   }
-  var api = { movimiento: movimiento, analizar: analizar, escenarios: escenarios, comparar: comparar, comercio: comercio, norm: norm, propio: propio, ritmoSemanal: ritmoSemanal };
+  var api = { movimiento: movimiento, analizar: analizar, escenarios: escenarios, comparar: comparar, comercio: comercio, norm: norm, propio: propio, soloPropias: soloPropias, ritmoSemanal: ritmoSemanal };
   if (typeof module === 'object' && module.exports) module.exports = api;
   root.PFMAnalisis = api;
 })(typeof window !== 'undefined' ? window : globalThis);

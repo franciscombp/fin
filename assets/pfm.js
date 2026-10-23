@@ -404,7 +404,7 @@
       fuera: T('No lo veo en tu resumen: es de una tarjeta de otro banco. Solo veo cuando le pagas.'),
       pago_otro_banco: T('No lo cuento: ya conté lo que compraste con esa tarjeta, que conectaste.'),
       inversion: T('No lo cuento como gasto ni como ingreso: es dinero que inviertes en tu póliza. Solo sus intereses suman.'),
-      flexible: T('No lo cuento: pasa entre tu cuenta y tu ahorro flexible. Lo que sí suma son los intereses que te paga cada día.'),
+      flexible: T('No lo cuento: pasa entre tu cuenta y tu ahorro flexible. Desde el flexible solo puedes enviar a tus cuentas: para pagar, primero vuelve a tu transaccional. Lo que sí suma son los intereses que te paga cada día.'),
       negocio: T('Es de tu negocio: lo saco de tus gastos de la casa.')
     }[c.why] || T('No lo cuento en tu resumen.');
     if (c.k === 'rin' || c.k === 'rout') return T('No sé qué fue: es de una persona o empresa. Lo cuento marcado hasta que me digas.');
@@ -461,6 +461,7 @@
   function finanzas() {
     var C = DB.cuentas[ST.u] || [], suma = function (tipos) { return r2(C.filter(function (c) { return tipos.indexOf(c.tipo) >= 0; }).reduce(function (a, c) { return a + (+c.saldo || 0); }, 0)); };
     var ahorro = suma(['ahorro', 'meta']), inversion = suma(['inversion']);
+    var aPoliza = hecho('flex') && pisoFlex().poliza ? pisoFlex().monto : 0; ahorro = r2(ahorro - aPoliza); inversion = r2(inversion + aPoliza);
     var deu = DB.deudas.filter(function (x) { return x.usuario === ST.u && x.saldo > 0; }).map(function (x) { return { clase: x.clase, producto: x.producto, institucion: x.institucion, saldo: x.saldo }; });
     return { nuevo: !(DB.mov[ST.u] || []).length && !ahorro && !inversion && !deu.length, ahorro: ahorro, inversion: inversion, deudas: deu };
   }
@@ -760,29 +761,41 @@
   }
   /* ---------- Cómo rinde tu dinero ----------
      Con lo que el front reconoce en tus movimientos (assets/pfm-analisis.js):
-     · Ahorro flexible: lo que te pagó cada día y cuánto dejas de ganar con el dinero que espera en la transaccional
-       (0,01 % al año en vez de 4,75 %); propone pasar solo lo de la semana.
+     · Ahorro flexible: lo que te pagó cada día y la parte que nunca tocas (el saldo más bajo de los últimos 6 meses).
+       Esa parte rinde más en una póliza (6,5 % a 6 meses en vez de 4,75 %); si es menos que el mínimo de una póliza,
+       una meta de ahorro: gana lo mismo que el flexible y no se mezcla con el mes. A la persona siempre le conviene
+       y al banco también: es dinero que se queda. Desde el flexible solo se envía a tus cuentas, nunca a terceros.
      · Pólizas: cuánto tienes invertido, lo que te pagaron y la que vence pronto, para renovarla.
      · Sueldo en efectivo: cuánto de tu sueldo sale en efectivo apenas llega; propone pagar con QR. */
-  var TASA = { flex: .0475, trans: .0001 };
-  function saldoPromedio(src, desde) {
-    // el saldo de esa cuenta al final de cada día, desde una fecha hasta hoy
-    var L = rows().filter(function (r) { return r.src === src && r.s != null; }), i = 0, s = 0, tot = 0, n = 0;
-    for (var f = desde; f <= HOY; f = addDays(f, 1)) { while (i < L.length && L[i].f <= f) { s = L[i].s; i++; } tot += s; n++; }
-    return n ? tot / n : 0;
+  var TASA = { flex: .0475, trans: .0001, poliza: .065 }, POLIZA_MIN = 500;
+  function cuentaFlex() { return (DB.cuentas[ST.u] || []).filter(function (c) { return c.solo_propias || /flexible/i.test(c.nombre); })[0]; }
+  // Lo que nunca tocas del flexible: su saldo más bajo en 6 meses, con un margen de 10 % y redondeado a $100
+  function pisoFlex() {
+    var k = ST.u + '|' + HOY; if (pisoFlex.k === k) return pisoFlex.v;
+    var c = cuentaFlex(), L = c && c.fuente ? rows().filter(function (r) { return r.src === c.fuente && r.s != null; }) : [], v = { monto: 0, poliza: false };
+    if (L.length && L[0].f <= addDays(HOY, -90)) {
+      var i = 0, s = null, min = Infinity;
+      for (var f = addDays(HOY, -180); f <= HOY; f = addDays(f, 1)) { while (i < L.length && L[i].f <= f) { s = L[i].s; i++; } if (s != null) min = Math.min(min, s); }
+      var m = min === Infinity ? 0 : Math.floor(min * .9 / 100) * 100;
+      v = { monto: m, min: min, poliza: m >= POLIZA_MIN };
+    }
+    pisoFlex.k = k; pisoFlex.v = v; return v;
   }
   function rinde() {
     var R = rows(), C = DB.cuentas[ST.u] || [], m = curMes(), out = [], hace = addDays(HOY, -365), tri = addDays(HOY, -90);
     var suma = function (f) { return R.filter(f).reduce(function (a, r) { return a + r.m; }, 0); };
     if (R.some(function (r) { return r.e === 'Ahorro flexible'; })) {
       var gan = suma(function (r) { return r.e === 'Ahorro flexible' && r.c === 'Intereses' && r.mes === m; }), anio = suma(function (r) { return r.e === 'Ahorro flexible' && r.c === 'Intereses' && r.f >= hace; });
-      var tr = C.filter(function (c) { return c.tipo === 'transaccional'; })[0], prom = tr && tr.fuente ? saldoPromedio(tr.fuente, tri) : 0;
-      var pierde = prom * (TASA.flex - TASA.trans), semana = Math.max(50, Math.round(-suma(function (r) { return r.t === 'Gasto' && r.f >= tri; }) / 13 / 10) * 10);
-      out.push({ id: 'flex', p: 55, icon: 'savings', tag: T('Ahorro flexible'), kind: 'good', t: T('Tu ahorro flexible te pagó {g} este mes', { g: money(gan) }), sub: T('Gana 4,75 % al año, cada día'),
-        s: T('En un año te pagó {a}. En tu transaccional esperan en promedio {p}, que ahí gana casi nada: si pasas solo lo de la semana, ganarías unos {y} más al año.', { a: money0(anio), p: money0(prom), y: money0(pierde) }),
-        di: T('Tu ahorro flexible te pagó {g} este mes: gana cada día. Pero en tu transaccional esperan unos {p} que casi no ganan. Si cada lunes pasamos solo lo de la semana, ganarías unos {y} más al año.', { g: money(gan), p: money0(prom), y: money0(pierde) }),
-        act: 'flex', actl: T('Pasar {s} cada lunes', { s: money0(semana) }), ok: T('Listo: cada lunes pasan {s} de tu ahorro flexible a tu cuenta.', { s: money0(semana) }),
-        conf: { para: T('Tu cuenta transaccional'), monto: semana, cuando: T('Cada lunes, desde tu ahorro flexible') } });
+      var P = pisoFlex(), extra = Math.round(P.monto * (TASA.poliza - TASA.flex) * 180 / 365), paga = Math.round(P.monto * TASA.poliza * 180 / 365);
+      if (P.poliza) out.push({ id: 'flex', p: 55, icon: 'trending_up', tag: T('Ahorro flexible'), kind: 'good', t: T('Hay {m} en tu flexible que no tocas hace 6 meses', { m: money0(P.monto) }), sub: T('En una póliza ganan más'),
+        s: T('Tu flexible te pagó {g} este mes. Su saldo no bajó de {min} en 6 meses: si pasas {m} a una póliza a 6 meses, te paga unos {i}, {x} más que en el flexible. Lo demás sigue disponible para el mes.', { g: money(gan), min: money0(P.min), m: money0(P.monto), i: money0(paga), x: money0(extra) }),
+        di: T('Tu ahorro flexible te pagó {g} este mes. Y hay {m} que no tocas hace 6 meses: en una póliza a 6 meses te pagarían unos {i}, {x} más que en el flexible. ¿La abrimos? Lo demás sigue disponible.', { g: money(gan), m: money0(P.monto), i: money0(paga), x: money0(extra) }),
+        act: 'flex', actl: T('Abrir una póliza de {m}', { m: money0(P.monto) }), ok: T('Listo: tu póliza de {m} a 6 meses te paga unos {i} al vencer.', { m: money0(P.monto), i: money0(paga) }),
+        conf: { para: T('Póliza a 6 meses · 6,5 %'), monto: P.monto, cuando: T('Hoy'), desde: T('Tu ahorro flexible') + (cuentaFlex().numero ? ' ···' + cuentaFlex().numero : '') } });
+      else out.push({ id: 'meta', p: 50, icon: 'flag', tag: T('Ahorro flexible'), kind: 'good', t: T('Tu ahorro flexible te pagó {g} este mes', { g: money(gan) }), sub: T('Ponle nombre a lo que guardas'),
+        s: T('En un año te pagó {a}. Una meta de ahorro gana lo mismo que el flexible y lo separa de lo del mes: así lo que guardas se queda guardado.', { a: money0(anio) }),
+        di: T('Tu ahorro flexible te pagó {g} este mes. Si le pones nombre con una meta, gana lo mismo y no se mezcla con lo del mes. ¿Para qué estás guardando?', { g: money(gan) }),
+        act: 'app:Crear meta de ahorro', actl: T('Crear una meta') });
     }
     var pol = C.filter(function (c) { return c.tipo === 'inversion' && c.vence; }).sort(function (a, b) { return a.vence.localeCompare(b.vence); });
     if (pol.length) {
@@ -829,7 +842,7 @@
     showSheet('<h3>' + esc(x.actl) + '</h3><p>' + esc(x.s) + '</p><div class="pfm-confirm">' +
       (c.monto != null ? '<div><small>' + T('Monto') + '</small><b>' + money(c.monto) + '</b></div>' : '<div><small>' + T('Monto') + '</small><b>' + T('El total de tu estado de cuenta') + '</b></div>') +
       '<div><small>' + T('Para') + '</small><b>' + esc(c.para) + '</b></div><div><small>' + T('Cuándo') + '</small><b>' + esc(c.cuando) + '</b></div>' +
-      '<div><small>' + T('Desde') + '</small><b>' + esc((saldos()[0] || { n: 'tu cuenta' }).n.replace(/ Pichibank/, '')) + '</b></div></div>' +
+      '<div><small>' + T('Desde') + '</small><b>' + esc(c.desde || (saldos()[0] || { n: 'tu cuenta' }).n.replace(/ Pichibank/, '')) + '</b></div></div>' +
       '<p class="pf-note">' + T('Uku te avisa un día antes si no te alcanza. Lo puedes cancelar cuando quieras.') + '</p>' +
       '<button class="pf-cta" data-pfm="hecho:' + esc(x.id) + '">' + T('Confirmar') + '</button><button class="bp-button bp-button--tertiary bp-button--block" data-pfm="cerrar">' + T('Ahora no') + '</button>');
   }
