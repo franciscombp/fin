@@ -97,7 +97,7 @@
       '<div class="uk-pills"></div>' +
       '<div class="uk-results"></div>' +
       '<form class="uk-bar" role="search">' +
-        '<label class="uk-bar__f">' + ic('search') + '<input type="text" enterkeyhint="send" autocomplete="off" placeholder="Pregunta o pide algo" aria-label="Pregunta o pide algo"></label>' +
+        '<label class="uk-bar__f">' + ic('search') + '<input type="text" enterkeyhint="send" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Pregunta o pide algo" aria-label="Pregunta o pide algo"></label>' +
         // Foto (un QR, una factura o un estado de cuenta) y voz, siempre a la vista
         '<button type="button" class="uk-bar__mic uk-bar__add" data-k="escanear" aria-label="Tomar una foto de un QR o una factura">' + ic('photo_camera') + '</button>' +
         '<button type="button" class="uk-bar__mic" data-k="voz" aria-label="Hablar">' + ic('mic') + '</button>' +

@@ -67,7 +67,7 @@
         '<p class="ai-top__t">' + T('Análisis de {nombre}', { nombre: A().name() }) + '</p><span class="ai-badge">IA</span></header>' +
       '<div class="ai-body"></div>' +
       '<form class="ai-composer"><span class="ai-composer__spark material-symbols-rounded" aria-hidden="true">auto_awesome</span>' +
-        '<input type="text" enterkeyhint="send" autocomplete="off" aria-label="' + T('Pregúntale a tu Asistente sobre tus finanzas') + '" placeholder="' + T('Pregúntale a tu Asistente sobre tus finanzas') + '">' +
+        '<input type="text" enterkeyhint="send" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="' + T('Pregúntale a tu Asistente sobre tus finanzas') + '" placeholder="' + T('Pregúntale a tu Asistente sobre tus finanzas') + '">' +
         '<button class="ai-send" type="submit" aria-label="Enviar"><span class="material-symbols-rounded">arrow_upward</span></button></form>' +
         '<p class="uku-disc">' + T('Uku es una IA y puede cometer errores. Sus sugerencias no son recomendaciones financieras.') + '</p>';
     document.body.appendChild(page);

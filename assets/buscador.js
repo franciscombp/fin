@@ -219,7 +219,7 @@
       '<div class="sx-panel">' +
         '<div class="sx-head"><form class="sx-field" role="search">' +
           '<span class="material-symbols-rounded" aria-hidden="true">search</span>' +
-          '<input type="search" enterkeyhint="search" autocomplete="off" placeholder="Busca o pregunta" aria-label="Buscar o preguntar">' +
+          '<input type="search" name="q" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="off" placeholder="Busca o pregunta" aria-label="Buscar o preguntar">' +
           '<button type="button" class="sx-mic" data-sx="mic" aria-label="Dictar"><span class="material-symbols-rounded">mic</span></button>' +
           '<button type="button" class="sx-mic" data-sx="cam" aria-label="Escanear un QR con la cámara"><span class="material-symbols-rounded">photo_camera</span></button>' +
         '</form><button class="sx-cancel" data-sx="close" aria-label="Cerrar"><span class="material-symbols-rounded" aria-hidden="true">close</span></button></div>' +
@@ -408,7 +408,7 @@
       (isT ? '<p class="sx-rec__label">Para</p><div class="sx-chips">' + BENS.map(function (b) { return chip('rec-who:' + b, b, b === r.who); }).join('') + '</div>' : '') +
       (isS ? '<p class="sx-rec__label">Servicio</p><div class="sx-chips">' + BILLERS.map(function (b) { return chip('rec-who:' + b[1], b[1], b[1] === (r.biller || BILLERS[0][1])); }).join('') + '</div>' : '') +
       (!isS ? '<label class="sx-rec__field"><span>Monto (opcional)</span><input type="number" inputmode="decimal" min="0" step="0.01" placeholder="0,00" data-rec="amt" value="' + (r.amount || '') + '"></label>' : '') +
-      '<label class="sx-rec__field"><span>Nombre del atajo</span><input type="text" maxlength="40" placeholder="Ej. Mensualidad" data-rec="name" value="' + esc(r.name || '') + '"></label>' +
+      '<label class="sx-rec__field"><span>Nombre del atajo</span><input type="text" maxlength="40" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Ej. Mensualidad" data-rec="name" value="' + esc(r.name || '') + '"></label>' +
       '<div class="sx-rec__acts"><button class="sx-btn sx-btn--ghost" data-sx-i="rec-cancel">Cancelar</button><button class="sx-btn" data-sx-i="rec-save">Guardar atajo</button></div></section>';
   }
   function render() {
