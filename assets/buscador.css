@@ -34,15 +34,17 @@ html.sx-open, html.sx-open body { overscroll-behavior: none; }
 .sx-field > .material-symbols-rounded { color: var(--bp-theme-color-icon-secondary); font-size: var(--bp-semantic-size-icon-md); }
 .sx-field > .material-symbols-rounded:first-child { display: none; }
 .sx-field input::-webkit-search-cancel-button { display: none; }
-.sx-field input::placeholder, .sx-field textarea::placeholder { color: var(--bp-theme-color-text-helper); }
-/* El textarea se ve y se comporta como un campo de una línea: texto centrado en la
-   altura del campo (el padding, no la altura, lo centra: toda la caja sigue tocable) */
-.sx .sx-field textarea {
+.sx-field input::placeholder { color: var(--bp-theme-color-text-helper); }
+/* Campo editable de una línea (no es un <input>: así iOS no ofrece autorrellenar).
+   El padding, no la altura, centra el texto: toda la caja sigue tocable. */
+.sx .sx-field .sx-q {
   --sx-lh: var(--bp-semantic-typography-brand-body-md-regular-line-height, 24px);
-  box-sizing: border-box; padding: calc((var(--bp-semantic-size-interactive-md) - var(--sx-lh)) / 2) 0; line-height: var(--sx-lh);
-  resize: none; white-space: pre; overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+  display: block; box-sizing: border-box; padding: calc((var(--bp-semantic-size-interactive-md) - var(--sx-lh)) / 2) 0; line-height: var(--sx-lh);
+  white-space: pre; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; cursor: text;
+  -webkit-user-select: text; user-select: text;
 }
-.sx-field textarea::-webkit-scrollbar { display: none; }
+.sx-q::-webkit-scrollbar { display: none; }
+.sx-q:empty::before { content: attr(data-placeholder); color: var(--bp-theme-color-text-helper); pointer-events: none; }
 .sx-mic { width: 44px; height: 44px; border: 0; border-radius: var(--bp-semantic-radius-sm); background: transparent; color: var(--bp-theme-color-icon-secondary); display: grid; place-items: center; cursor: pointer; }
 .sx.has-q .sx-mic { display: none; }
 .sx-cancel { width: var(--bp-semantic-size-interactive-md); height: var(--bp-semantic-size-interactive-md); padding: 0; border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-container-default); text-decoration: none; }
@@ -50,14 +52,14 @@ html.sx-open, html.sx-open body { overscroll-behavior: none; }
 
 /* Dictado: escuchando (anillo y pulso) → entendido (check) */
 .sx.is-listening .sx-field { box-shadow: 0 0 0 2px var(--bp-interaction-primary-bg) !important; }
-.sx.is-listening .sx-field input::placeholder, .sx.is-listening .sx-field textarea::placeholder { color: var(--bp-theme-color-text-primary); }
+.sx.is-listening .sx-field input::placeholder, .sx.is-listening .sx-q:empty::before { color: var(--bp-theme-color-text-primary); }
 .sx.is-listening .sx-mic { background: var(--bp-interaction-primary-bg); color: var(--bp-interaction-primary-fg); animation: sxPulse 1.2s ease-in-out infinite; }
 @keyframes sxPulse { 50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--bp-interaction-primary-bg) 30%, transparent); } }
 .sx.is-heard .sx-mic { background: var(--bp-theme-color-status-success-bg); color: var(--bp-theme-color-text-on-solid); animation: sxPop .4s cubic-bezier(.3, 1.5, .5, 1); }
 @keyframes sxPop { from { transform: scale(.6); } }
 
 /* Resultados: secciones (etiqueta gris + tarjeta de filas) */
-.sx-results { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: var(--bp-semantic-spacing-micro-md) 0 calc(24px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; }
+.sx-results { flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; margin: 0 calc(-1 * var(--bp-layout-grid-margin)); padding: var(--bp-semantic-spacing-micro-md) var(--bp-layout-grid-margin) calc(24px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; }
 .sx-card { display: flex; flex-direction: column; padding: var(--bp-semantic-spacing-micro-md) 0 var(--bp-semantic-spacing-macro-sm); animation: sxIn .4s cubic-bezier(.32, .72, 0, 1) both; }
 .sx-card + .sx-card { animation-delay: .05s; }
 @keyframes sxIn { from { opacity: 0; transform: translateY(-8px); } }
