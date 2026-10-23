@@ -59,13 +59,13 @@ html.sx-open #home-page { filter: none; }
 .sx-card + .sx-card { animation-delay: .05s; }
 @keyframes sxIn { from { opacity: 0; transform: translateY(-8px); } }
 .sx-card > h3 { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--bp-semantic-spacing-micro-md); min-height: var(--bp-semantic-size-interactive-xs); padding: 0 0 var(--bp-semantic-spacing-micro-md); }
-.sx-card > h3 .sx-link { margin: 0; padding: 0; min-height: 0; }
+.sx-card > h3 .sx-link { height: var(--bp-semantic-size-interactive-xxs); margin: 0 calc(-1 * var(--bp-semantic-spacing-micro-lg)) 0 0; padding: 0 var(--bp-semantic-spacing-micro-lg); }
 /* Las filas forman la tarjeta: blancas, con el radio en la primera y la última */
 .sx-card > .sx-row, .sx-card > .sx-link, .sx-card > p { background: var(--bp-theme-color-surface-container-default); }
 .sx-card > .sx-row:first-child, .sx-card > h3 + .sx-row, .sx-card > p:first-child { border-radius: var(--bp-semantic-radius-md) var(--bp-semantic-radius-md) 0 0; }
 .sx-card > .sx-row:last-child, .sx-card > .sx-row:has(+ .sx-link) { border-radius: 0 0 var(--bp-semantic-radius-md) var(--bp-semantic-radius-md); border-bottom: 0; }
 .sx-card > h3 + .sx-row:last-child, .sx-card > .sx-row:only-child { border-radius: var(--bp-semantic-radius-md); }
-.sx-card > .sx-link { display: flex; width: 100%; min-height: var(--ui-row); padding: var(--bp-semantic-spacing-micro-lg) var(--bp-layout-card-padding); border-radius: 0 0 var(--bp-semantic-radius-md) var(--bp-semantic-radius-md); font: var(--sol-body-md-semibold); text-decoration: none; }
+.sx-card > .sx-link { display: flex; justify-content: flex-start; width: 100%; height: auto; min-height: var(--ui-row); padding: var(--bp-semantic-spacing-micro-lg) var(--bp-layout-card-padding); border-radius: 0 0 var(--bp-semantic-radius-md) var(--bp-semantic-radius-md); font: var(--sol-body-md-semibold); text-decoration: none; }
 .sx-row__main mark { background: none; color: inherit; font-weight: 700; }
 .sx-empty > p { margin: 0; padding: var(--bp-layout-card-padding) var(--bp-layout-card-padding) var(--bp-semantic-spacing-micro-xs); font: var(--sol-body-md-regular); color: var(--bp-theme-color-text-secondary); }
 .sx-empty > p + .sx-row { border-radius: 0; }

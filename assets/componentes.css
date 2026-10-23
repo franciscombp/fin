@@ -135,19 +135,19 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 .bp-button:active, .login-button--primary:active, .sheet__cta:active, .pf-cta:active, .gyro-modal__btn--primary:active, .btn--primary:active, .sx-btn:active { background: var(--bp-interaction-primary-bg--active); transform: none; }
 .bp-button[disabled], .login-button:disabled, .sheet__cta:disabled, .pf-cta:disabled, .btn:disabled { background: var(--bp-theme-color-interaction-primary-bg-disabled); color: var(--bp-theme-color-interaction-primary-fg-disabled); cursor: default; opacity: 1; }
 
-.bp-button--secondary, .login-button--secondary, .login-button:not(.login-button--primary):not(.login-button--tertiary), .gyro-modal__btn--secondary, .sx-btn--ghost {
+.bp-button--secondary, .login-button--secondary, .login-button:not(.login-button--primary):not(.login-button--tertiary):not(.btn--tertiary), .gyro-modal__btn--secondary, .sx-btn--ghost {
   background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg);
 }
 .bp-button--secondary:hover, .login-button--secondary:hover, .gyro-modal__btn--secondary:hover, .sx-btn--ghost:hover { background: var(--bp-interaction-secondary-bg--hover); }
 .bp-button--secondary:active, .login-button--secondary:active, .gyro-modal__btn--secondary:active, .sx-btn--ghost:active { background: var(--bp-interaction-secondary-bg--active); }
 .bp-button--secondary[disabled], .login-button--secondary:disabled { background: var(--bp-theme-color-interaction-secondary-bg-disabled); color: var(--bp-theme-color-interaction-secondary-fg-disabled); }
 
-.bp-button--tertiary, .login-button--tertiary, .btn--tertiary {
+.bp-button--tertiary {
   background: var(--bp-interaction-tertiary-bg); color: var(--bp-interaction-tertiary-fg);
   font: var(--sol-link-lg); text-decoration: underline; text-underline-offset: 4px;
 }
-.bp-button--tertiary:hover, .login-button--tertiary:hover, .btn--tertiary:hover { background: var(--bp-interaction-tertiary-bg--hover); }
-.bp-button--tertiary:active, .login-button--tertiary:active, .btn--tertiary:active { background: var(--bp-interaction-tertiary-bg--active); }
+.bp-button--tertiary:hover { background: var(--bp-interaction-tertiary-bg--hover); }
+.bp-button--tertiary:active { background: var(--bp-interaction-tertiary-bg--active); }
 .bp-button--tertiary[disabled] { background: var(--bp-theme-color-interaction-tertiary-bg-disabled); color: var(--bp-theme-color-interaction-tertiary-fg-disabled); }
 
 .bp-button--accent { background: var(--bp-interaction-accent-bg); color: var(--bp-interaction-accent-fg); }
@@ -184,18 +184,42 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 .bp-action-button--tertiary:hover { background: var(--bp-interaction-tertiary-bg--hover); }
 .bp-action-button--tertiary:active { background: var(--bp-interaction-tertiary-bg--active); }
 
-/* Enlace de acción (bp-action-button tertiary/link): link-md subrayado en
-   el azul de interacción, sin fondo. Es la acción de un título de sección. */
-.bp-link, .bp-action-button--link, .bp-section-title__action, .section__link, .sx-link, .pf-back, .pfm-undo, .uk-globo__go {
+/* bp-link · enlace subrayado (link-md). SOLO para abrir una página fuera de la app (sitio web, documento
+   externo). Dentro de la app, una acción es un bp-action-button; si va sin fondo, su variante tertiary. */
+.bp-link, .bp-action-button--link {
   display: inline-flex; align-items: center; gap: var(--bp-semantic-spacing-micro-xs);
   min-height: var(--bp-semantic-size-interactive-xxs); margin: 0; padding: 0 var(--bp-semantic-spacing-micro-xs);
   border: 0; border-radius: var(--bp-semantic-radius-sm); background: var(--bp-interaction-tertiary-bg);
   color: var(--bp-interaction-tertiary-fg); font: var(--sol-link-md);
   text-decoration: underline; text-underline-offset: 3px; cursor: pointer; white-space: nowrap;
 }
-.bp-link .material-symbols-rounded, .section__link .material-symbols-rounded, .sx-link .material-symbols-rounded, .pf-back .material-symbols-rounded { font-size: var(--bp-semantic-size-icon-sm); }
-.bp-link:hover, .section__link:hover, .sx-link:hover, .pf-back:hover { background: var(--bp-interaction-tertiary-bg--hover); }
-.bp-link:active, .section__link:active, .sx-link:active, .pf-back:active { background: var(--bp-interaction-tertiary-bg--active); }
+.bp-link .material-symbols-rounded { font-size: var(--bp-semantic-size-icon-sm); }
+.bp-link:hover { background: var(--bp-interaction-tertiary-bg--hover); }
+.bp-link:active { background: var(--bp-interaction-tertiary-bg--active); }
+
+/* bp-action-button tertiary sin fondo: las acciones de texto de la app (Ver más, Cambiar, Borrar, Volver a
+   ayuda, Deshacer…). Mismas medidas que el botón de acción (40; sm 32 en los títulos de sección), label-md,
+   sin subrayado; el fondo aparece solo al pasar o tocar. */
+.bp-section-title__action, .section__link, .sx-link, .pf-back, .pfm-undo, .uk-globo__go, .btn--tertiary, .login-button--tertiary, .debit-card-disabled__link, .pv-more {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--bp-semantic-spacing-micro-sm);
+  box-sizing: border-box; width: auto; height: var(--bp-action-button-size); min-height: 0; margin: 0; padding: 0 var(--bp-action-button-padding-x);
+  border: 0; border-radius: var(--bp-semantic-radius-sm); box-shadow: none;
+  background: var(--bp-interaction-tertiary-bg); color: var(--bp-interaction-tertiary-fg);
+  font: var(--sol-label-md); text-decoration: none; white-space: nowrap; cursor: pointer;
+  transition: background-color .15s var(--sol-ease);
+}
+.bp-section-title__action .material-symbols-rounded, .section__link .material-symbols-rounded, .sx-link .material-symbols-rounded, .pf-back .material-symbols-rounded, .pv-more .material-symbols-rounded { font-size: var(--bp-action-button-icon-size); }
+.section__link:has(> .material-symbols-rounded:last-child), .pv-more:has(> .material-symbols-rounded:last-child) { padding-right: var(--bp-action-button-padding-x-icon); }
+.sx-link:has(> .material-symbols-rounded:first-child), .pf-back:has(> .material-symbols-rounded:first-child) { padding-left: var(--bp-action-button-padding-x-icon); }
+.bp-section-title__action:hover, .section__link:hover, .sx-link:hover, .pf-back:hover, .uk-globo__go:hover, .btn--tertiary:hover, .login-button--tertiary:hover, .debit-card-disabled__link:hover, .pv-more:hover { background: var(--bp-interaction-tertiary-bg--hover); text-decoration: none; }
+.bp-section-title__action:active, .section__link:active, .sx-link:active, .pf-back:active, .uk-globo__go:active, .btn--tertiary:active, .login-button--tertiary:active, .debit-card-disabled__link:active, .pv-more:active { background: var(--bp-interaction-tertiary-bg--active); transform: none; }
+/* En el título de sección va en tamaño sm y se alinea al borde derecho de la grilla */
+.bp-section-title__action, .section__title .section__link { height: var(--bp-semantic-size-interactive-xxs); padding: 0 var(--bp-semantic-spacing-micro-lg); margin-right: calc(-1 * var(--bp-semantic-spacing-micro-lg)); }
+.section__title .section__link:has(> .material-symbols-rounded:last-child) { padding-right: var(--bp-semantic-spacing-micro-sm); margin-right: calc(-1 * var(--bp-semantic-spacing-micro-sm)); }
+/* Los botones de texto del ingreso y de la ayuda ocupan su ancho y van centrados */
+.login-button--tertiary { align-self: center; width: fit-content; max-width: 100%; margin-inline: auto; height: auto; min-height: var(--bp-action-button-size); padding-block: var(--bp-semantic-spacing-micro-sm); white-space: normal; text-align: center; }
+/* «Ver más» al pie de una lista: centrado */
+.pv-more { display: flex; margin: 0 auto var(--bp-semantic-spacing-micro-md); }
 
 /* bp-navigation-button · botón de ícono de barra: 48, radius sm, tertiary */
 .bp-navigation-button, .icon-button, .pf-round, .uk-chathead__x, .uk-head__x, .pf-step__btn, .sx-del, .sx-cancel, .dw-x {
@@ -369,7 +393,6 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
   flex: 1; min-width: 0; margin: 0; color: var(--bp-theme-color-text-helper); font: var(--sol-body-sm-medium);
   letter-spacing: 0; text-transform: none;
 }
-.bp-section-title__action { height: var(--bp-semantic-size-interactive-xxs); }
 /* Etiqueta de un bloque dentro de las páginas de acción (Favoritos, Contactos, Tus tarjetas…) */
 .push-label { display: block; margin: var(--bp-semantic-spacing-macro-sm) 0 var(--bp-semantic-spacing-micro-md); }
 
@@ -442,7 +465,6 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 .cta-dashed[hidden] { display: none; }
 /* Débito Digital sin activar (Destacado, al cambiar a una cuenta sin débito): una tarjeta gris, sin recuadro punteado */
 .debit-card-disabled { padding: var(--bp-layout-card-padding); border: 0; border-radius: var(--bp-semantic-radius-md); background: var(--bp-theme-color-surface-page-alt); }
-.debit-card-disabled__link { font: var(--sol-label-md); color: var(--bp-theme-color-text-interactive); text-decoration: underline; text-underline-offset: 4px; padding: 0; }
 .debit-card-disabled.is-hidden { display: none; }
 
 /* bp-list-item (también bp-product-item y bp-transaction-item) · fila de
@@ -516,7 +538,9 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
   -webkit-backdrop-filter: blur(var(--bp-semantic-effects-blur-overlay)); backdrop-filter: blur(var(--bp-semantic-effects-blur-overlay));
   font: var(--sol-body-md-semibold); white-space: normal; text-align: left;
 }
-.pfm-undo { color: inherit; font: inherit; font-weight: 700; margin-left: var(--bp-semantic-spacing-micro-md); }
+/* Deshacer dentro del toast: el texto del toast, no el azul */
+.pfm-undo { height: var(--bp-semantic-size-interactive-xxs); padding: 0 var(--bp-semantic-spacing-micro-md); margin-left: auto; color: inherit; }
+.pfm-undo:hover, .pfm-undo:active { background: color-mix(in srgb, currentColor 14%, transparent); }
 
 /* bp-alert · inline/banner: fondo status/*-bg-subtle, radius sm, ícono 24 relleno */
 .bp-alert { display: flex; align-items: flex-start; border-radius: var(--bp-semantic-radius-sm); overflow: hidden; background: var(--bp-theme-color-status-info-bg-subtle); color: var(--bp-theme-color-text-primary); }
