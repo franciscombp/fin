@@ -397,7 +397,7 @@
     if (c.k === 'no') return {
       recarga: T('Es una recarga a tu Deuna. No la cuento aquí: cuento cada pago que hiciste con Deuna, una sola vez.'),
       recarga_in: T('Es la recarga que llegó a tu Deuna. Ya la conté en lo que pagaste.'),
-      deuna_in: T('Te pagaron por Deuna. Lo veo en Deuna, pero cuento la plata cuando llega a tu cuenta.'),
+      deuna_in: T('Te pagaron por Deuna. Lo veo en Deuna, pero cuento el dinero cuando llega a tu cuenta.'),
       propias: T('No lo cuento: es entre tus cuentas.'),
       ahorro: T('No lo cuento como gasto: es tu ahorro programado.'),
       pago_tarjeta: T('No lo cuento: lo que compraste con la tarjeta ya contó.'),
@@ -410,7 +410,7 @@
     if (c.k === 'rin' || c.k === 'rout') return T('No sé qué fue: es de una persona o empresa. Lo cuento marcado hasta que me digas.');
     if (c.k === 'ingreso') return T('Cuenta como ingreso de {mes} ({cat}).', { mes: mes, cat: c.cat.toLowerCase() });
     if (c.k === 'reembolso') return T('Te devolvieron parte de un gasto: lo resto de {cat}. No es un ingreso.', { cat: c.cat });
-    if (r.c === 'Tarjetas de otros bancos (sin detalle)') return T('Es el pago de una tarjeta de otro banco. Lo cuento como gasto porque no veo en qué la usaste.');
+    if (r.c === 'Tarjetas de otros bancos (sin detalle)') return T('Es el pago de una tarjeta de otro banco. Lo cuento como gasto porque no sabemos en qué la usaste.');
     if (/Impuestos a consumos/.test(r.e)) return T('Es un impuesto de un consumo en el exterior. Lo sumo a la categoría de ese consumo: {cat}.', { cat: c.cat });
     if (c.via === 'deuna') return c.cat === 'Pagos con Deuna' ? T('Pagaste con Deuna, pero el reporte no dice dónde. Ponle una categoría y lo cuento ahí.') : T('Pagaste con Deuna. Lo cuento en {cat}.', { cat: c.cat });
     if (c.via === 'otro_banco') return T('Lo veo porque conectaste tu {t}. Lo cuento en {cat}.', { t: r.src.replace(/ ···\d+/, ''), cat: c.cat });
@@ -507,7 +507,7 @@
         Cada cifra es una puerta al detalle.
      2. Uku: lo que notó, en frases cortas, y el juego de ordenar gastos.
         En el to-be, Uku es el protagonista (oso 3D, anticipa, analiza).
-     3. En qué se va tu plata: gastos o ingresos, por grupo, en el periodo
+     3. En qué se va tu dinero: gastos o ingresos, por grupo, en el periodo
         que elijas, con el presupuesto donde aplica.
      Sin pestañas de meses: el periodo se elige dentro de la sección 3.
      ===================================================================== */
@@ -662,7 +662,7 @@
     return v.length ? v[Math.floor(v.length / 2)] : 1;
   }
   /* Dónde se guarda (con su artículo, para leerse en la frase): tu Ahorro flexible o tu cuenta de ahorro.
-     Si tu sueldo ya vive en el Ahorro flexible (lo pasas apenas cobras), el ahorro sale de ahí a una meta,
+     Si tu sueldo ya vive en el Ahorro flexible (lo pasas al cobrar), el ahorro sale de ahí a una meta,
      que no se mezcla con lo del mes. */
   function sueldoAlAhorro() { return rows().some(function (r) { return r.e === 'Sueldo al ahorro'; }); }
   function cuentaAhorro() {
@@ -742,12 +742,12 @@
     else if (hayPres() && pe.k === 'over') out.push({ id: 'pres:over', p: 72, icon: 'speed', tag: T('Presupuesto'), kind: 'warn', t: T('Vas por encima de tu presupuesto'), sub: T('Revisemos en qué grupo se fue'),
       s: T('Llevas {g} de {p} este mes. Revisa en qué grupo se fue o ajusta el plan.', { g: money0(month(curMes()).gast), p: money0(pr.general) }),
       di: T('Este mes vas un poco por encima de tu presupuesto. Revisemos juntos en qué grupo se fue y lo ajustamos.'), act: 'budgets', actl: T('Revisar presupuesto') });
-    // 5. Ahorro (con presupuesto): tu cuenta llega casi en cero; separar algo apenas cobras
+    // 5. Ahorro (con presupuesto): tu cuenta llega casi en cero; separar algo al cobrar
     if ((hayPres() && col < 1) || hecho('ahorro')) out.push({ id: 'ahorro', p: 60, icon: 'savings', tag: T('Ahorro'), kind: 'info', t: T('Tu cuenta llega casi a cero cada mes'), sub: T('Para tu primer colchón'),
       s: T('Si separas {q} cada mes, en 6 meses tendrás {t} para imprevistos.', { q: money0(q), t: money0(q * 6) }),
       di: por({ jubilado: 'Si separas {q} cada mes de tu pensión, en 6 meses tendrás {t} para imprevistos.' }, 'Tu cuenta queda casi en cero cada mes. Si separas {q} cada mes, en 6 meses tendrás {t} para imprevistos.', { q: money0(q), t: money0(q * 6) }),
-      act: 'ahorro', actl: T('Separar {q} al mes', { q: money0(q) }), ok: T('Listo: cada mes se separan {q} a tu ahorro, apenas cobras.', { q: money0(q) }),
-      conf: { para: T('Tu cuenta de ahorro'), monto: q, cuando: T('Cada mes, apenas cobras') } });
+      act: 'ahorro', actl: T('Separar {q} al mes', { q: money0(q) }), ok: T('Listo: cada mes se separan {q} a tu ahorro, al cobrar.', { q: money0(q) }),
+      conf: { para: T('Tu cuenta de ahorro'), monto: q, cuando: T('Cada mes, al cobrar') } });
     // 6. Mesadas y pagos repetidos
     agrupar().forEach(function (x) { out.push({ id: 'g:' + x.go, p: 50, icon: x.icon, tag: x.tag, kind: 'info', sub: x.s, t: x.t, s: x.s, cmp: x.cmp, di: x.t + '. ' + T('¿Lo hacemos juntos?'), act: x.go, actl: x.gol }); });
     // 7. Cómo rinde tu dinero: ahorro flexible, pólizas y sueldo en efectivo (lo detecta el front en tus movimientos)
@@ -816,15 +816,15 @@
       }
       out.push({ id: 'polizas', p: 32, icon: 'trending_up', tag: T('Inversiones'), kind: 'good', t: T(pol.length === 1 ? 'Tienes {t} en una póliza' : 'Tienes {t} en {n} pólizas', { t: money0(total), n: pol.length }), sub: T('Te pagaron {i} en un año', { i: money0(pagaron) }),
         s: T('En un año te pagaron {i} de intereses. Lo que mandas a tus pólizas no lo cuento como gasto: es tu inversión.', { i: money0(pagaron) }),
-        di: T('¡Buena noticia! Tienes {t} en pólizas y en un año te pagaron {i} de intereses. Lo que mandas ahí no lo cuento como gasto: es tu inversión.', { t: money0(total), i: money0(pagaron) }),
+        di: T('Buena noticia. Tienes {t} en pólizas y en un año te pagaron {i} de intereses. Lo que mandas ahí no lo cuento como gasto: es tu inversión.', { t: money0(total), i: money0(pagaron) }),
         act: 'app:Inversiones', actl: T('Ver mis inversiones') });
     }
     var ret = R.filter(function (r) { return r.e === 'Sueldo en efectivo' && r.f >= tri; });
     if (ret.length) {
       var sale = -ret.reduce(function (a, r) { return a + r.m; }, 0), cobra = suma(function (r) { return /Sueldo|Pensión/.test(r.c) && r.f >= tri; }), pct = cobra ? Math.round(sale / cobra * 100) : 0;
-      out.push({ id: 'efectivo', p: 70, icon: 'payments', tag: T('Efectivo'), kind: 'info', t: T('Sacas casi todo tu sueldo en efectivo'), sub: T('El {p} % apenas cobras', { p: pct }),
-        s: T('Así no veo en qué se va tu dinero y andas con todo encima. Si pagas con QR o Deuna, cada gasto queda ordenado aquí y tu plata está más segura.'),
-        di: T('Apenas cobras, retiras el {p} % de tu sueldo en efectivo. Así no veo en qué se va y andas con todo encima. Si pagas con QR desde tu celular, cada gasto queda ordenado aquí.', { p: pct }),
+      out.push({ id: 'efectivo', p: 70, icon: 'payments', tag: T('Efectivo'), kind: 'info', t: T('Sacas casi todo tu sueldo en efectivo'), sub: T('El {p} % de tu sueldo sale en efectivo', { p: pct }),
+        s: T('No sabemos en qué se gasta ese dinero. Si pagas con QR o Deuna, cada gasto queda registrado aquí y tu dinero está más seguro.'),
+        di: T('Al cobrar tu sueldo, retiras el {p} % en efectivo. No sabemos en qué se gasta ese dinero. Si pagas con QR desde tu celular, cada gasto queda registrado aquí.', { p: pct }),
         act: 'app:Pagar con QR', actl: T('Pagar con QR') });
     }
     return out;
@@ -1015,12 +1015,12 @@
     var who, sub = '', amt, cuando, por, av, pos = false, extra = '';
     if (it.t === 'm') {
       var x = it.m, mx = Math.max.apply(null, x.porMes.map(function (c) { return c.v; }).concat([1]));
-      who = corto(x.cp); sub = T('Le envías plata cada mes'); amt = x.monto; av = '<span class="pfm-card__av is-mes"><span class="material-symbols-rounded">event_repeat</span></span>';
+      who = corto(x.cp); sub = T('Le envías dinero cada mes'); amt = x.monto; av = '<span class="pfm-card__av is-mes"><span class="material-symbols-rounded">event_repeat</span></span>';
       cuando = T('{n} meses seguidos · casi siempre el día {d}', { n: x.n, d: x.dia }); por = x.src;
       extra = '<span class="pfm-card__months">' + x.porMes.map(function (c, i) { return '<span style="--h:' + Math.max(4, c.v / mx * 100).toFixed(0) + '%;--d:' + i * 60 + 'ms"><i></i><small>' + c.l.charAt(0) + '</small></span>'; }).join('') + '</span>';
     } else if (it.t === 'q') {
       var q = it.q; pos = q.sign === '+';
-      who = corto(q.cp); sub = pos ? T('Te envió plata') : T('Le enviaste plata'); amt = q.total; av = '<span class="pfm-card__av">' + iniciales(q.cp) + '</span>';
+      who = corto(q.cp); sub = pos ? T('Te envió dinero') : T('Le enviaste dinero'); amt = q.total; av = '<span class="pfm-card__av">' + iniciales(q.cp) + '</span>';
       cuando = q.rows.length > 1 ? T('{n} veces · la última el {f}', { n: q.rows.length, f: dshort(q.last.f) }) : cuandoDe(q.last.f, q.last.h);
       por = q.last.src.replace(/ Pichibank/, '');
     } else {
@@ -1269,7 +1269,7 @@
     }
   }
 
-  /* ---------- 3. En qué se va tu plata ---------- */
+  /* ---------- 3. En qué se va tu dinero ---------- */
   /* Como Salud de Apple: eliges el periodo, ves una cifra grande y la
      gráfica; tocas una barra y la cifra cambia a ese día o mes. Debajo, lo
      destacado (frases cortas con su comparación) y en qué grupos se fue. */
@@ -1654,7 +1654,7 @@
     // Ahorro: un renglón más del reparto, con la opción de que se guarde solo el día que cobras
     var ahorroHTML = function (editable) {
       var a = draft.ahorro || 0;
-      return '<section class="pfm-reparto pfm-reparto--ahorro"><h4>' + T('Tu ahorro') + '<small>' + T('Lo que separas apenas cobras, antes de gastar') + '</small></h4>' +
+      return '<section class="pfm-reparto pfm-reparto--ahorro"><h4>' + T('Tu ahorro') + '<small>' + T('Lo que separas al cobrar, antes de gastar') + '</small></h4>' +
         '<div class="pfm-reparto__row"><span class="pfm-reparto__ic material-symbols-rounded" aria-hidden="true">savings</span>' +
           '<span class="pfm-reparto__main"><b>' + T('Ahorro') + '</b><small>' + (a ? T('{a} al año', { a: money0(a * 12) }) : T('Súbelo para empezar')) + '</small></span>' +
           (editable ? stepper('ahorro', a, T('Ahorro')) : '<b class="pfm-reparto__v">' + money0(a) + '</b>') + '</div>' +
