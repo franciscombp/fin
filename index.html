@@ -1669,12 +1669,21 @@
             opacity: 0;
             pointer-events: none;
             overflow: hidden;
-            will-change: transform, opacity;
             z-index: 45;
         }
 
         .swipe-peek .content-loader {
             display: block;
+        }
+
+        /* Solo mientras se arrastra: con will-change y los esqueletos animados, la capa
+           queda compuesta y animando en segundo plano (oculta), y en Safari eso puede dejar
+           copias fantasma tras varias navegaciones. */
+        .swipe-peek.is-on {
+            will-change: transform, opacity;
+        }
+        .swipe-peek:not(.is-on) .skeleton {
+            animation: none;
         }
 
         .view[data-view="0"].is-loading .section {
@@ -5508,6 +5517,7 @@
             const w = home0.offsetWidth;
             peek.style.transition = 'none';
             peek.style.opacity = '1';
+            peek.classList.add('is-on');
             peek.style.transform = `translateX(${(dx < 0 ? w : -w) + dx}px)`;
         }
 
@@ -5517,7 +5527,7 @@
             peek.style.transition = EASE + ', opacity 0.2s ease';
             peek.style.opacity = '0';
             peek.style.transform = `translateX(${peek._sign < 0 ? home0.offsetWidth : -home0.offsetWidth}px)`;
-            setTimeout(() => { home0.style.transition = ''; }, 320);
+            setTimeout(() => { home0.style.transition = ''; peek.classList.remove('is-on'); }, 320);
         }
 
         home0.addEventListener('touchstart', e => {
@@ -5559,6 +5569,7 @@
                     home0.style.transition = 'none';
                     home0.style.transform = '';
                     peek.style.opacity = '0';
+                    peek.classList.remove('is-on');
                     void home0.offsetWidth;
                     home0.style.transition = '';
                     moveSection(dx < 0 ? 1 : -1); // cambia tab + carga skeleton→contenido
