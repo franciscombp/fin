@@ -360,8 +360,8 @@
   // En Mis finanzas sin nada pendiente, Uku te dice que vas bien (wireframe: «¡Vas muy bien!»)
   function globoFin() {
     var s = resumen(), pf = window.PFM && PFM.perfil ? PFM.perfil() : null;
-    var t = !s ? 'Estoy mirando tus movimientos…' : pf === 'nuevo' ? '¡Qué bueno tenerte aquí! Cuando tengas tus primeros movimientos, esto se llena de vida.'
-      : 'Todo en orden por ahora. Tu mundo florece contigo.';
+    var t = !s ? 'Estoy mirando tus movimientos…' : pf === 'nuevo' ? 'Bienvenido. Cuando tengas tus primeros movimientos, aquí verás tu información.'
+      : 'Todo está en orden por ahora.';
     globoEl.hidden = false; globoEl.classList.remove('is-off');
     recActual = null; llenarSlot();
     if (!ponerGlobo('<p class="uk-globo__t">' + esc(t) + '</p>')) return;
@@ -436,7 +436,7 @@
   // Al tocarlo: una pose y algo que decir (la siguiente propuesta o una frase corta que se va sola)
   var POSES = ['wave', 'happy', 'nod'];
   function frase() {
-    var s = resumen(), L = ['Aquí estoy. Pregúntame lo que quieras.', 'Si quieres, te cuento cómo va tu dinero.', 'Puedo ayudarte con una duda o con un inconveniente de tu cuenta.'];
+    var s = resumen(), L = ['Aquí estoy. Pregúntame lo que quieras.', 'Si quieres, te explico cómo va tu dinero.', 'Puedo ayudarte con una duda o con un inconveniente de tu cuenta.'];
     if (s) L.push('Llevas ' + money0(s.gast) + ' de gastos en ' + s.mes + '. ¿Vemos el detalle?');
     if (s && s.n) L.push('Tienes ' + s.n + ' consumos por ordenar. ¿Los vemos juntos?');
     return L[Math.floor(Math.random() * L.length)];
@@ -471,20 +471,20 @@
     var cx = function (cid) { return consejos().filter(function (x) { return x.id === cid; })[0]; };
     if (id === 'ahorro' && W[1]) {
       var tiene = F && (F.ahorro > 0);
-      return { t: tiene ? 'Tu ahorro · ' + W[1].v.replace(/^Te alcanza /, '').toLowerCase() : 'Aquí florece tu ahorro', cls: !tiene ? 'is-calm' : warn(W[1].cls) ? 'is-warn' : 'is-ok', play: 'plant',
-        d: tiene ? 'Estos canteros son tu ahorro. ' + W[1].d : 'Estos canteros están esperando tu ahorro: con lo primero que guardes salen flores amarillas, y con 3 meses de gastos guardados se llenan.',
-        go: cx('ahorro') ? { k: 'pfm:ahorro', l: 'Programar mi ahorro', icon: 'savings', sub: 'Y florece tu jardín' } : { k: 'ask:¿Cuánto más puedo ahorrar?', l: '¿Cuánto puedo ahorrar?', icon: 'savings', sub: 'Uku te lo calcula' } };
+      return { t: tiene ? 'Tu ahorro · ' + W[1].v.replace(/^Te alcanza /, '').toLowerCase() : 'Tu ahorro', cls: !tiene ? 'is-calm' : warn(W[1].cls) ? 'is-warn' : 'is-ok', play: 'plant',
+        d: tiene ? 'Este apartado muestra tu ahorro. ' + W[1].d : 'Aquí verás tu ahorro. Con tu primer ahorro empieza a mostrarse, y con 3 meses de gastos guardados llegas a la meta recomendada.',
+        go: cx('ahorro') ? { k: 'pfm:ahorro', l: 'Programar mi ahorro', icon: 'savings', sub: 'Y mejora tu ahorro' } : { k: 'ask:¿Cuánto más puedo ahorrar?', l: '¿Cuánto puedo ahorrar?', icon: 'savings', sub: 'Uku te lo calcula' } };
     }
     if (id === 'inversion') {
       var inv = F && F.inversion > 0;
       return { t: inv ? 'Tus inversiones · ' + money0(F.inversion) : 'Aquí crece tu inversión', cls: inv ? 'is-ok' : 'is-calm', play: 'happy',
-        d: inv ? 'Los guayacanes en flor son tus inversiones: ' + money0(F.inversion) + ' que te generan intereses. Cada depósito nuevo hace florecer otro.' : 'Este arbolito es un guayacán por crecer. Con un depósito a plazo tu dinero gana intereses y aquí florece.',
+        d: inv ? 'Tus inversiones: ' + money0(F.inversion) + ' que te generan intereses. Cada depósito nuevo suma a tus inversiones.' : 'Aquí verás tus inversiones. Con un depósito a plazo tu dinero gana intereses.',
         go: { k: 'act:Inversiones', l: inv ? 'Ver mis inversiones' : 'Conocer las inversiones', icon: 'trending_up', sub: 'Depósitos a plazo y pólizas' } };
     }
     if (id === 'bosque' && W[2]) {
       var sinPres = s && !s.pres;
-      return { t: 'Tu bosque · ' + (sinPres ? 'sin presupuesto' : W[2].v.toLowerCase()), cls: warn(W[2].cls) ? 'is-warn' : sinPres ? 'is-calm' : 'is-ok', play: 'nod',
-        d: sinPres ? 'El bosque de atrás es tu presupuesto: un árbol por mes, frondoso cuando cierras el mes con saldo a favor. Arma tu presupuesto y lo cuido contigo.' : W[2].d,
+      return { t: 'Tu presupuesto · ' + (sinPres ? 'sin presupuesto' : W[2].v.toLowerCase()), cls: warn(W[2].cls) ? 'is-warn' : sinPres ? 'is-calm' : 'is-ok', play: 'nod',
+        d: sinPres ? 'Tu presupuesto muestra cuánto puedes gastar cada mes. Cuando cierras el mes con saldo a favor, va bien. Arma tu presupuesto y lo revisamos juntos.' : W[2].d,
         go: sinPres ? { k: 'pfm:pres', l: 'Armar mi presupuesto', icon: 'speed', sub: 'En 3 pasos' } : { k: 'gastos:sem', l: 'Ver mis gastos', icon: 'account_balance_wallet', sub: 'De esta semana' } };
     }
     if (/^credito:/.test(id)) {
@@ -621,7 +621,7 @@
     RES.app = window.Buscador && Buscador.app ? Buscador.app(q).slice(0, 2) : [];
     var acts = acciones(q).slice(0, 2), H = ayuda(q, 4).filter(function (h) { return h.kind !== 'flow' && (ws.length > 1 || norm(h.t).indexOf(ws[0]) >= 0); }).slice(0, 2);
     // Uku, primero: con lo que encontró, dice qué puede hacer con eso
-    var dice = RES.tx.length && esMonto ? 'Encontré ' + RES.tx.length + ' movimiento' + (RES.tx.length > 1 ? 's' : '') + ' por ese monto' : RES.tx.length ? 'Te cuento lo que veo de «' + q + '»' : RES.per.length ? 'Te digo cómo vas con ' + RES.per[0].n.split(' ')[0] : '“' + q + '”';
+    var dice = RES.tx.length && esMonto ? 'Encontré ' + RES.tx.length + ' movimiento' + (RES.tx.length > 1 ? 's' : '') + ' por ese monto' : RES.tx.length ? 'Esto es lo que encuentro sobre «' + q + '»' : RES.per.length ? 'Te explico cómo vas con ' + RES.per[0].n.split(' ')[0] : '“' + q + '”';
     var html = fila('ask:' + q, null, 'Preguntarle a Uku', dice);
     if (RES.it) html += '<p class="uk-results__l">Hacer ahora</p>' + fila('res:it', RES.it.icon, RES.it.name, 'Con los datos ya puestos');
     if (dinero) html += '<p class="uk-results__l">Tu dinero</p>' + fila('dinero', null, 'Cómo va mi dinero', 'Disponible, gastos y presupuesto');
@@ -844,9 +844,9 @@
   /* Onboarding: la primera vez, Uku se presenta en tres pasos. Es una tarjeta arriba, sobre su mundo
      (sin conversación), con un botón principal claro; él, grande, te mira y saluda. */
   var ONB = 'uk-onboard', onbActivo = false, PASOS = [
-    { ic: 'waving_hand', t: 'Hola, soy Uku', s: 'Tu asistente en Pichibank. Te cuento cómo va tu dinero, respondo tus dudas y te ayudo a resolver inconvenientes sin salir de aquí.' },
-    { ic: 'park', t: 'Mi mundo eres tú', s: 'Las flores son tu ahorro, el bosque es tu presupuesto y mi ánimo depende de tus gastos ordenados. Tócame y te cuento cómo estoy.' },
-    { ic: 'forum', t: 'Háblame como quieras', s: 'Escribe, dicta o toma una foto de un QR o una factura. Si algo no lo sé, lo busco por ti y, solo si hace falta, te comunico con una persona.' }];
+    { ic: 'waving_hand', t: 'Hola, soy Uku', s: 'Tu asistente en Pichibank. Te explico cómo va tu dinero, respondo tus dudas y te ayudo a resolver inconvenientes sin salir de aquí.' },
+    { ic: 'park', t: 'Tu resumen financiero', s: 'Aquí ves tu ahorro, tu presupuesto y tus gastos ordenados. Toca a Uku para saber cómo estás.' },
+    { ic: 'forum', t: 'Escribe como prefieras', s: 'Escribe, dicta o toma una foto de un QR o una factura. Si algo no lo sé, lo busco por ti y, solo si hace falta, te comunico con una persona.' }];
   // Los tres pasos se dicen en el globo de siempre: Uku habla y el globo avanza con Siguiente
   function onboarding(i) {
     i = i || 0; var p = PASOS[i], fin = i === PASOS.length - 1;
@@ -1024,7 +1024,7 @@
     var sal = saludo(), P = propuestas(), s = resumen();
     var btns = [b(sal.k, sal.l, null)];
     P.slice(0, 2).forEach(function (x) { if (x.k !== sal.k) btns.push(b(x.k, x.l, null, 'is-ask')); });
-    btns.push(b('gastos', 'Mis gastos', 'account_balance_wallet'), b('ayuda', 'Ayuda', 'support_agent'), b('sol', 'Solicitudes', 'assignment'), b('libre', 'Ver mi mundo', 'park'));
+    btns.push(b('gastos', 'Mis gastos', 'account_balance_wallet'), b('ayuda', 'Ayuda', 'support_agent'), b('sol', 'Solicitudes', 'assignment'), b('libre', 'Ver mi resumen', 'park'));
     saludado = true;
     uku(esc(sal.t), btns, '', { title: 'Tu asistente' });
     mostrar();
@@ -1228,7 +1228,7 @@
   document.addEventListener('uku:pres', function () {
     if (!b3d) return; var s = resumen();
     b3d.play('plant'); setTimeout(function () { if (s) b3d.setScore(s.score); }, 1200);
-    nota = 'Listo. Con presupuesto, tu bosque crece frondoso.'; pintarGlobo(); setTimeout(function () { nota = null; pintarGlobo(); if (b3d) b3d.play('happy'); }, 5000);
+    nota = 'Listo. Tu presupuesto está guardado.'; pintarGlobo(); setTimeout(function () { nota = null; pintarGlobo(); if (b3d) b3d.play('happy'); }, 5000);
   });
   document.addEventListener('uku:clasificado', function (e) {
     if (!b3d) return; var s = resumen(), restan = e.detail && e.detail.restan;
@@ -1244,7 +1244,7 @@
   document.addEventListener('uku:ahorro', function () {
     if (!b3d) return; var s = resumen();
     b3d.play('plant'); setTimeout(function () { if (s) b3d.setBloom(Math.min(100, (s.bloom || 0) + 5)); }, 2000);
-    nota = 'Guardado. Cada mes, más flores en tus canteros.'; pintarGlobo(); acercar(1.15, 2400); setTimeout(function () { nota = null; pintarGlobo(); }, 5000);
+    nota = 'Guardado. Cada mes sumarás a tu ahorro.'; pintarGlobo(); acercar(1.15, 2400); setTimeout(function () { nota = null; pintarGlobo(); }, 5000);
   });
   // Las tres secciones de Asistente: Uku (su mundo y conversación), Mis finanzas y Ayuda
   var ayudaPage = false;
@@ -1430,7 +1430,7 @@
       case 'chau': return chau();
       case 'ok': return resuelto();
       case 'no': uku('Cuéntame qué necesitas con tus palabras o, si prefieres, te comunico con una persona.', [b('persona', 'Hablar con una persona', 'support_agent')]); pintarChat(); return setTimeout(function () { input.focus(); }, 300);
-      case 'consejo': { var A = consejos(); if (!A.length) return resuelto('Por ahora no tengo nada más. ¡Vas muy bien!'); var x = A[0]; uku(esc(x.di || x.t), x.act ? [b('pfm:' + x.act, x.actl, 'arrow_forward')] : []); return pintarChat(); }
+      case 'consejo': { var A = consejos(); if (!A.length) return resuelto('Por ahora no tengo nada más. Vas bien.'); var x = A[0]; uku(esc(x.di || x.t), x.act ? [b('pfm:' + x.act, x.actl, 'arrow_forward')] : []); return pintarChat(); }
       case 'cerrar': return cerrar();
       // La X de la ayuda completa vuelve a Soporte, su punto de entrada
       case 'ayudacerrar': fx('tap'); return seccion('soporte');
