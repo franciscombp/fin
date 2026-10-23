@@ -245,7 +245,7 @@
     globoOff = false; globoEl.hidden = false; globoEl.classList.remove('is-off');
     if (b3d && b3d.setFront) b3d.setFront(true); // con algo que decir, Uku te mira
     var tag = x ? '<p class="uk-globo__tag">' + esc(x.tag) + '</p>' : '', txt = '<p class="uk-globo__t">' + esc(t) + '</p>';
-    var goBtn = go && !nota ? '<button class="btn btn--tertiary uk-globo__go" data-k="' + esc(go.k) + '" data-l="' + esc(go.l) + '">' + esc(go.l) + '</button>' : '';
+    var goBtn = go && !nota ? '<button class="bp-action-button bp-action-button--tertiary uk-globo__go" data-k="' + esc(go.k) + '" data-l="' + esc(go.l) + '">' + esc(go.l) + '</button>' : '';
     var html;
     if (home) {
       // Inicio con una nota de Uku («Listo, ya quedó…»): solo la frase

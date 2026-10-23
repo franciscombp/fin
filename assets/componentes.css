@@ -135,19 +135,22 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 .bp-button:active, .login-button--primary:active, .sheet__cta:active, .pf-cta:active, .gyro-modal__btn--primary:active, .btn--primary:active, .sx-btn:active { background: var(--bp-interaction-primary-bg--active); transform: none; }
 .bp-button[disabled], .login-button:disabled, .sheet__cta:disabled, .pf-cta:disabled, .btn:disabled { background: var(--bp-theme-color-interaction-primary-bg-disabled); color: var(--bp-theme-color-interaction-primary-fg-disabled); cursor: default; opacity: 1; }
 
-.bp-button--secondary, .login-button--secondary, .login-button:not(.login-button--primary):not(.login-button--tertiary):not(.btn--tertiary), .gyro-modal__btn--secondary, .sx-btn--ghost {
+.bp-button--secondary, .login-button--secondary, .login-button:not(.login-button--primary):not(.login-button--tertiary), .gyro-modal__btn--secondary, .sx-btn--ghost {
   background: var(--bp-interaction-secondary-bg); color: var(--bp-interaction-secondary-fg);
 }
 .bp-button--secondary:hover, .login-button--secondary:hover, .gyro-modal__btn--secondary:hover, .sx-btn--ghost:hover { background: var(--bp-interaction-secondary-bg--hover); }
 .bp-button--secondary:active, .login-button--secondary:active, .gyro-modal__btn--secondary:active, .sx-btn--ghost:active { background: var(--bp-interaction-secondary-bg--active); }
 .bp-button--secondary[disabled], .login-button--secondary:disabled { background: var(--bp-theme-color-interaction-secondary-bg-disabled); color: var(--bp-theme-color-interaction-secondary-fg-disabled); }
 
-.bp-button--tertiary {
+/* bp-button tertiary · subrayado (link-lg), 56 de alto. Acompaña SOLO a botones grandes (Ingresar con PIN +
+   Otro método de ingreso). Las familias no se mezclan: junto a un bp-button va un bp-button; junto a un
+   bp-action-button, un bp-action-button. */
+.bp-button--tertiary, .login-button--tertiary, .btn--tertiary {
   background: var(--bp-interaction-tertiary-bg); color: var(--bp-interaction-tertiary-fg);
   font: var(--sol-link-lg); text-decoration: underline; text-underline-offset: 4px;
 }
-.bp-button--tertiary:hover { background: var(--bp-interaction-tertiary-bg--hover); }
-.bp-button--tertiary:active { background: var(--bp-interaction-tertiary-bg--active); }
+.bp-button--tertiary:hover, .login-button--tertiary:hover, .btn--tertiary:hover { background: var(--bp-interaction-tertiary-bg--hover); }
+.bp-button--tertiary:active, .login-button--tertiary:active, .btn--tertiary:active { background: var(--bp-interaction-tertiary-bg--active); }
 .bp-button--tertiary[disabled] { background: var(--bp-theme-color-interaction-tertiary-bg-disabled); color: var(--bp-theme-color-interaction-tertiary-fg-disabled); }
 
 .bp-button--accent { background: var(--bp-interaction-accent-bg); color: var(--bp-interaction-accent-fg); }
@@ -197,10 +200,10 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 .bp-link:hover { background: var(--bp-interaction-tertiary-bg--hover); }
 .bp-link:active { background: var(--bp-interaction-tertiary-bg--active); }
 
-/* bp-action-button tertiary sin fondo: las acciones de texto de la app (Ver más, Cambiar, Borrar, Volver a
-   ayuda, Deshacer…). Mismas medidas que el botón de acción (40; sm 32 en los títulos de sección), label-md,
+/* bp-action-button tertiary sin fondo: las acciones de texto dentro de un componente o de una fila (Ver más,
+   Cambiar, Borrar, Deshacer…). Junto a un botón grande no: ahí va bp-button--tertiary. Mismas medidas que el botón de acción (40; sm 32 en los títulos de sección), label-md,
    sin subrayado; el fondo aparece solo al pasar o tocar. */
-.bp-section-title__action, .section__link, .sx-link, .pf-back, .pfm-undo, .uk-globo__go, .btn--tertiary, .login-button--tertiary, .debit-card-disabled__link, .pv-more {
+.bp-section-title__action, .section__link, .sx-link, .pf-back, .pfm-undo, .uk-globo__go, .debit-card-disabled__link, .pv-more {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--bp-semantic-spacing-micro-sm);
   box-sizing: border-box; width: auto; height: var(--bp-action-button-size); min-height: 0; margin: 0; padding: 0 var(--bp-action-button-padding-x);
   border: 0; border-radius: var(--bp-semantic-radius-sm); box-shadow: none;
@@ -211,14 +214,12 @@ body { font-family: var(--sol-font); color: var(--bp-theme-color-text-primary); 
 .bp-section-title__action .material-symbols-rounded, .section__link .material-symbols-rounded, .sx-link .material-symbols-rounded, .pf-back .material-symbols-rounded, .pv-more .material-symbols-rounded { font-size: var(--bp-action-button-icon-size); }
 .pv-more:has(> .material-symbols-rounded:last-child) { padding-right: var(--bp-action-button-padding-x-icon); }
 .sx-link:has(> .material-symbols-rounded:first-child), .pf-back:has(> .material-symbols-rounded:first-child) { padding-left: var(--bp-action-button-padding-x-icon); }
-.bp-section-title__action:hover, .section__link:hover, .sx-link:hover, .pf-back:hover, .uk-globo__go:hover, .btn--tertiary:hover, .login-button--tertiary:hover, .debit-card-disabled__link:hover, .pv-more:hover { background: var(--bp-interaction-tertiary-bg--hover); text-decoration: none; }
-.bp-section-title__action:active, .section__link:active, .sx-link:active, .pf-back:active, .uk-globo__go:active, .btn--tertiary:active, .login-button--tertiary:active, .debit-card-disabled__link:active, .pv-more:active { background: var(--bp-interaction-tertiary-bg--active); transform: none; }
+.bp-section-title__action:hover, .section__link:hover, .sx-link:hover, .pf-back:hover, .uk-globo__go:hover, .debit-card-disabled__link:hover, .pv-more:hover { background: var(--bp-interaction-tertiary-bg--hover); text-decoration: none; }
+.bp-section-title__action:active, .section__link:active, .sx-link:active, .pf-back:active, .uk-globo__go:active, .debit-card-disabled__link:active, .pv-more:active { background: var(--bp-interaction-tertiary-bg--active); transform: none; }
 /* La acción de un título de sección o del final de una fila va en tamaño sm y su texto se alinea al borde
    derecho de la grilla (el relleno queda por fuera, se ve solo al tocar) */
 .bp-section-title__action, .section__link { height: var(--bp-semantic-size-interactive-xxs); padding: 0 var(--bp-semantic-spacing-micro-lg); margin-right: calc(-1 * var(--bp-semantic-spacing-micro-lg)); }
 .bp-section-title__action:has(> .material-symbols-rounded:last-child), .section__link:has(> .material-symbols-rounded:last-child) { padding-right: var(--bp-semantic-spacing-micro-sm); margin-right: calc(-1 * var(--bp-semantic-spacing-micro-sm)); }
-/* Los botones de texto del ingreso y de la ayuda ocupan su ancho y van centrados */
-.login-button--tertiary { align-self: center; width: fit-content; max-width: 100%; margin-inline: auto; height: auto; min-height: var(--bp-action-button-size); padding-block: var(--bp-semantic-spacing-micro-sm); white-space: normal; text-align: center; }
 /* «Ver más» al pie de una lista: centrado */
 .pv-more { display: flex; margin: 0 auto var(--bp-semantic-spacing-micro-md); }
 

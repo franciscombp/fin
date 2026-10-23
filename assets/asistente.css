@@ -40,7 +40,8 @@
 .pf-head { padding: var(--bp-semantic-spacing-micro-xs) var(--bp-layout-grid-margin) 0; }
 .pf-head h1 { margin-bottom: var(--bp-semantic-spacing-micro-lg); }
 .pf-note { margin: var(--bp-semantic-spacing-macro-sm) 0 0; font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-helper); }
-.pf-link--block { display: flex; align-items: center; justify-content: center; margin: var(--bp-semantic-spacing-macro-sm) 0 0; }
+/* Terciario grande al pie de una hoja (debajo del principal o solo) */
+.bp-button--tertiary.bp-button--block { display: flex; margin: var(--bp-semantic-spacing-macro-sm) 0 0; }
 .pf-linking { display: flex; flex-direction: column; align-items: center; text-align: center; padding: var(--bp-semantic-spacing-macro-sm) 0 var(--bp-semantic-spacing-micro-md); }
 .pf-linking h3 { margin-top: var(--bp-semantic-spacing-xl); }
 .pf-done { width: 56px; height: 56px; border-radius: var(--bp-semantic-radius-full); display: grid; place-items: center; background: var(--bp-theme-color-brand-main); color: var(--bp-theme-color-text-on-brand); font-size: 30px; }
