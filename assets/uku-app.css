@@ -315,11 +315,11 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 .uk-panel .pfm-tabs .tab { flex: 1 1 0; justify-content: center; }
 .uk-panel .pfm-flow__body { margin: 0 var(--uk-margin) !important; padding: var(--uk-pad) !important; border-radius: var(--uk-r); background: var(--uk-white); }
 .uk-panel .pfm-chart { margin-top: 0; }
-.uk-panel .pfm-groups { margin: 12px var(--uk-margin) 0 !important; padding: var(--uk-pad) !important; border-radius: var(--uk-r); background: var(--uk-white); }
-.uk-panel .pfm-groups .pf-sec__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
-.uk-panel .pfm-groups .pf-sec__head h2 { margin: 0 !important; font: var(--uk-title) !important; letter-spacing: 0 !important; color: var(--uk-text) !important; text-transform: none !important; }
-.uk-panel .pfm-groups .pf-sec__sub { margin: 0 0 8px !important; font: var(--uk-caption); color: var(--uk-muted); }
-.uk-panel .pfm-groups .pf-mcard { margin: 0; padding: 0; border: 0; box-shadow: none; background: none; }
+.uk-panel .pfm-groups, .uk-panel .pfm-dia { margin: 12px var(--uk-margin) 0 !important; padding: var(--uk-pad) !important; border-radius: var(--uk-r); background: var(--uk-white); }
+.uk-panel .pfm-groups .pf-sec__head, .uk-panel .pfm-dia .pf-sec__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+.uk-panel .pfm-groups .pf-sec__head h2, .uk-panel .pfm-dia .pf-sec__head h2 { margin: 0 !important; font: var(--uk-title) !important; letter-spacing: 0 !important; color: var(--uk-text) !important; text-transform: none !important; }
+.uk-panel .pfm-groups .pf-sec__sub, .uk-panel .pfm-dia .pf-sec__sub { margin: 0 0 8px !important; font: var(--uk-caption); color: var(--uk-muted); }
+.uk-panel .pfm-groups .pf-mcard, .uk-panel .pfm-dia .pf-mcard, .uk-panel .pfm-dia .pfm-txlist { margin: 0; padding: 0; border: 0; box-shadow: none; background: none; }
 .uk-panel .pfm-money { margin: 12px var(--uk-margin) 0 !important; padding: var(--uk-pad) !important; border-radius: var(--uk-r); background: var(--uk-white); }
 .uk-panel .pf-sec { margin-top: 0; padding-left: var(--uk-margin); padding-right: var(--uk-margin); }
 .uk-panel .pf-sec h2 { text-transform: none; }

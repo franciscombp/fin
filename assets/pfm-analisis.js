@@ -53,6 +53,45 @@
   var EMPRESA = /\b(s\.?a\.?s?\.?|cia\.?|ltda|hnos\.?|distribuidora|universidad|cooperativa|banco|estudio|comercial|agencia|empresa|corporacion|fundacion)\b/;
   var esEmpresa = function (cp) { return EMPRESA.test(norm(cp)); };
   var esTu = function (cp) { return /^tu\b/.test(norm(cp)); };
+  /* ---------- Tus propias cuentas ----------
+     Mover dinero entre tus cuentas no es ingreso ni gasto: el sueldo cuenta una vez, cuando llega, y el gasto
+     cuando le pagas a alguien. Un movimiento es tuyo si la contraparte es «tú», tu propio nombre o el número
+     de una de tus cuentas (el banco a veces pone tu nombre en lugar de «tú»). */
+  var TIPO_AHORRO = { ahorro: 1, meta: 1, inversion: 1 };
+  function numero(t) { var m = String(t || '').match(/(\d{4})\s*\)?\s*$/); return m && m[1]; }
+  function cuentaDe(src, ctx) { var n = numero(src); return n ? (ctx && ctx.cuentas || []).filter(function (c) { return c.numero === n; })[0] : null; }
+  // La otra cuenta que nombra la descripción («Transferencia a Ahorro flexible ···8801»)
+  function cuentaNombrada(r, ctx) {
+    var d = norm(r.desc), propia = numero(r.src), C = ctx && ctx.cuentas || [];
+    return C.filter(function (c) { return c.numero && c.numero !== propia && new RegExp('(···|\\.\\.\\.|cuenta |cta\\.? ?)' + c.numero).test(d); })[0] ||
+      C.filter(function (c) { return !c.numero && c.nombre && d.indexOf(norm(c.nombre)) >= 0; })[0] || null;
+  }
+  function tuNombre(cp, ctx) {
+    var n = norm(ctx && ctx.nombre).split(/\s+/).filter(Boolean), w = norm(cp).replace(/\(.*\)/, '').split(/\s+/).filter(Boolean);
+    return n.length >= 2 && w.length >= 2 && w.every(function (x) { return n.indexOf(x) >= 0; });
+  }
+  // Cuentas que solo envían a tus propias cuentas (el Ahorro flexible)
+  function soloPropias(c) { return !!(c && (c.solo_propias || /flexible/.test(norm(c.nombre)))); }
+  function propio(r, ctx) { return esTu(r.cp) || tuNombre(r.cp, ctx) || !!cuentaNombrada(r, ctx); }
+  /* Si un movimiento propio entra a tu ahorro o sale de él (Ahorro flexible, metas, inversiones):
+     +v guardas, −v sacas. Cada traspaso tiene dos lados; cuenta uno solo: el de la cuenta de ahorro si sus
+     movimientos se ven, o el de tu cuenta si no (Ahorro flexible sin movimientos propios). */
+  function ahorroDe(r, ctx) {
+    var src = cuentaDe(r.src, ctx);
+    if (src && TIPO_AHORRO[src.tipo]) return { dir: r.m > 0 ? 'entra' : 'sale', ah: r.m };
+    var otra = cuentaNombrada(r, ctx), d = norm(r.desc);
+    var esAhorro = otra ? TIPO_AHORRO[otra.tipo] : /ahorro prog|hacia cuenta de ahorro|ahorro flexible|a tu meta|deposito a plazo/.test(d);
+    if (!esAhorro) return null;
+    var dir = r.m < 0 ? 'entra' : 'sale', fuentes = ctx && ctx.fuentes || {};
+    var seVe = otra ? !!(otra.fuente && fuentes[otra.fuente]) : (ctx && ctx.cuentas || []).some(function (c) { return TIPO_AHORRO[c.tipo] && c.fuente && fuentes[c.fuente]; });
+    return { dir: dir, ah: seVe ? 0 : -r.m };
+  }
+  function traspaso(r, ctx, o) {
+    var a = ahorroDe(r, ctx); if (!a) return o;
+    o.dir = a.dir; o.ah = Math.round(a.ah * 100) / 100;
+    if (!o.n) o.n = a.dir === 'entra' ? 'Guardas en tu ahorro: no es gasto' : 'Sacas de tu ahorro: no es ingreso';
+    return o;
+  }
   // Apellidos de la persona (todo menos el primer nombre) para reconocer a la familia
   function apellidos(nombre) { return norm(nombre).split(/\s+/).slice(1).filter(function (w) { return w.length > 2; }); }
   function familia(cp, ctx) {
@@ -74,7 +113,7 @@
     if (r.prod === 'Tarjeta de otro banco') return o('Fuera del MVP', comercio(d + ' ' + cp) || 'Compras personales', 'Es una tarjeta de otro banco: el PFM ve el consumo, pero no lo paga Pichibank');
     if (r.prod === 'Deuna') {
       if (/recarga de saldo/.test(d)) return o('Excluido', 'Recarga Deuna', 'Recarga desde tu cuenta: ya contó al salir de la cuenta', '', 'No suma: la recarga ya contó');
-      if (esTu(cp)) return o('Excluido', 'Entre cuentas propias', 'Pasa de tu Deuna a tu cuenta');
+      if (propio(r, ctx)) return o('Excluido', 'Entre cuentas propias', 'Pasa de tu Deuna a tu cuenta');
       if (/cobro qr/.test(d)) return o('Detalle Deuna', 'Ventas del negocio', 'Cobro con QR a un cliente', '', 'No suma: el ingreso cuenta al pasar a la cuenta');
       if (/pago a persona/.test(d)) return o('Detalle Deuna', 'Transferencia a persona', 'Pago con Deuna a una persona');
       if (/recibida/.test(d)) return o('Detalle Deuna', 'Ingreso de persona', 'Te enviaron por Deuna');
@@ -86,16 +125,26 @@
       return o('Gasto', comercio(d + ' ' + cp) || 'Compras personales', 'Consumo con tu tarjeta');
     }
     // Cuenta
-    if (esTu(cp)) {
+    // Pólizas a plazo fijo: abrirlas o renovarlas es invertir (no es gasto); al vencer vuelve el capital y solo el interés es ingreso
+    if (/poliza|deposito a plazo|plazo fijo/.test(d)) {
+      if (/interes/.test(d)) return o('Ingreso', 'Intereses', 'Intereses que te pagó tu póliza', 'Pólizas', 'Lo que ganó la póliza: esto sí es ingreso');
+      if (pos) return o('Excluido', 'Inversión', 'Vuelve el capital de tu póliza: es tu dinero, no un ingreso', 'Pólizas', 'Capital de la póliza que venció');
+      return o('Excluido', 'Inversión', 'Abres o renuevas una póliza: es dinero que inviertes, no un gasto', 'Pólizas', /renovaci/.test(d) ? 'Renovó la póliza con capital e intereses' : 'Nueva póliza');
+    }
+    if (pos && /inter[eé]?s (diario|acreditado|ganado|del mes)/.test(d)) return o('Ingreso', 'Intereses', /diario/.test(d) ? 'Interés que paga tu cuenta cada día sobre el saldo del día' : 'Intereses que te paga el banco', /flexible/.test(d + ' ' + norm(r.src)) ? 'Ahorro flexible' : '');
+    // Desde el ahorro flexible solo se envía a tus cuentas, nunca a terceros: lo que sale de él es un traspaso
+    var cf = cuentaDe(r.src, ctx);
+    if (!pos && cf && soloPropias(cf)) return traspaso(r, ctx, o('Excluido', 'Entre cuentas propias', 'Desde tu ahorro flexible solo puedes enviar a tus cuentas', 'Ahorro flexible', 'Vuelve a la transaccional: ahí gana casi nada'));
+    if (propio(r, ctx)) {
+      if (/flexible/.test(d + ' ' + norm(r.src))) return traspaso(r, ctx, o('Excluido', 'Entre cuentas propias', 'Pasa dinero entre tu cuenta y tu ahorro flexible', 'Ahorro flexible', /a tu ahorro flexible/.test(d) ? 'Todo a la flexible: gana 4,75 % al año' : /desde tu ahorro flexible/.test(d) ? 'Vuelve a la transaccional: ahí gana casi nada' : ''));
       if (/tarjeta/.test(d) && /pago/.test(d)) return o('Excluido', 'Pago de tarjeta', 'Pago de tu tarjeta Pichibank: el gasto ya contó al consumir');
-      if (/ahorro prog|hacia cuenta|acreditacion por ahorro/.test(d)) return o('Excluido', 'Ahorro programado', 'Movimiento de tu ahorro programado');
+      if (/ahorro prog|hacia cuenta|acreditacion por ahorro/.test(d)) return traspaso(r, ctx, o('Excluido', 'Ahorro programado', 'Movimiento de tu ahorro programado'));
       if (/deuna a /.test(d) && !pos) return o('Gasto', 'Pagos con Deuna', 'Recarga a tu Deuna: aquí se cuenta el gasto', '', 'Recarga del mismo monto que el pago; el detalle está en Deuna');
       if (pos && (/deuna de /.test(d) || /deposito en efectivo/.test(d))) return o('Ingreso', 'Ingresos del negocio', 'Pasas a la cuenta lo que vendiste');
-      return o('Excluido', 'Entre cuentas propias', 'Entre tus cuentas');
+      return traspaso(r, ctx, o('Excluido', 'Entre cuentas propias', 'Entre tus cuentas: no es ingreso ni gasto'));
     }
     if (pos && /nomina|decimo|sueldo/.test(d)) return o('Ingreso', 'Sueldo', 'Pago de nómina');
     if (pos && /iess|pension|jubilacion/.test(d + ' ' + norm(cp))) return o('Ingreso', 'Pensión', 'Pensión del IESS');
-    if (pos && /interes acreditado/.test(d)) return o('Ingreso', 'Intereses', 'Intereses que te paga el banco');
     if (pos && /internacional/.test(d)) return o('Ingreso', 'Remesa', 'Llega del exterior', 'Remesa recibida');
     if (/^ret(iro|sintj)/.test(d)) return o('Gasto', 'Efectivo retirado', 'Retiro de efectivo');
     if (/comision/.test(d)) return o('Gasto', 'Servicios financieros y deudas', 'Comisión del banco');
@@ -118,6 +167,7 @@
   function analizar(rows, ctx) {
     ctx = ctx || {};
     ctx.apellidos = ctx.apellidos || apellidos(ctx.nombre);
+    ctx.fuentes = ctx.fuentes || rows.reduce(function (a, r) { a[r.src] = 1; return a; }, {});
     var out = rows.map(function (r) { return movimiento(r, ctx); });
     var idx = rows.map(function (_, i) { return i; }).sort(function (a, b) { return (rows[a].f + rows[a].h).localeCompare(rows[b].f + rows[b].h); });
     var X = function (i, t, c, e, n, por) { var o = out[i]; if (t) o.t = t; if (c) o.c = c; if (e != null) o.e = e; if (n != null) o.n = n; if (por) o.por = por; };
@@ -139,7 +189,8 @@
         if (fijo) L.forEach(function (i) { X(i, 'Gasto', 'Familia y dependientes', 'Apoyo a padres', 'Comparte apellido; cada mes, monto parecido', 'Comparte tu apellido y le envías cada mes un monto parecido: es apoyo a tu familia'); });
       } else if (!familia(rows[L[0]].cp, ctx) && n >= 3 && med >= 150 && L.every(function (i) { return +rows[i].f.slice(8) <= 6; })) {
         arriendo = { cp: k, monto: med };
-        L.forEach(function (i) { X(i, 'Gasto', 'Vivienda', 'Arriendo compartido', 'Paga el arriendo completo', 'Cada inicio de mes, el mismo monto grande a la misma persona: es tu arriendo'); });
+        L.forEach(function (i) { X(i, 'Gasto', 'Vivienda', 'Arriendo', 'Paga el arriendo', 'Cada inicio de mes, el mismo monto grande a la misma persona: es tu arriendo'); });
+        arriendo.filas = L;
       }
     });
     if (arriendo) {
@@ -150,6 +201,7 @@
         var L = A0.filter(function (i) { return Math.abs(rows[i].m - med) < med * .15; });
         var ms = {}; L.forEach(function (i) { ms[mes(rows[i].f)] = 1; });
         if (Object.keys(ms).length < 3 || med > arriendo.monto * .6) return;
+        arriendo.filas.forEach(function (i) { X(i, null, null, 'Arriendo compartido', 'Paga el arriendo completo del departamento'); }); // alguien te devuelve su parte: el arriendo es compartido
         L.forEach(function (i) { if (out[i].t === 'Detalle Deuna') X(i, null, null, 'Arriendo compartido', 'Le devuelven su parte del arriendo', 'Te devuelve su parte del arriendo');
           else X(i, 'Reembolso', 'Vivienda', 'Arriendo compartido', 'Reembolso: resta del gasto de Vivienda', 'Te devuelve su parte del arriendo: resta de tu gasto en Vivienda'); });
       });
@@ -238,11 +290,33 @@
     // Efectivo: si una buena parte de lo que gastas sale en efectivo, es «vida en efectivo»
     var gasto = 0, efectivo = 0;
     out.forEach(function (o, i) { if (o.t === 'Gasto') { gasto -= rows[i].m; if (o.c === 'Efectivo retirado') efectivo -= rows[i].m; } });
-    out.forEach(function (o) { if (o.c === 'Efectivo retirado') o.e = efectivo > gasto * .2 ? 'Vida en efectivo' : 'Efectivo'; });
+    out.forEach(function (o) { if (o.c === 'Efectivo retirado' && o.e !== 'Sueldo en efectivo') o.e = efectivo > gasto * .2 ? 'Vida en efectivo' : 'Efectivo'; });
+    // Sueldo en efectivo: al menos dos meses, casi todo el sueldo sale en retiros en los 3 días siguientes a cobrarlo
+    var cobros = idx.filter(function (i) { return /Sueldo|Pensión/.test(out[i].c); }), meses = 0, retiros = [];
+    cobros.forEach(function (i) {
+      var R = idx.filter(function (j) { return out[j].c === 'Efectivo retirado' && rows[j].f >= rows[i].f && dias(rows[i].f, rows[j].f) <= 3; });
+      var sale = R.reduce(function (a, j) { return a - rows[j].m; }, 0);
+      if (sale >= rows[i].m * .8) { meses++; retiros = retiros.concat(R); }
+    });
+    if (meses >= 2) retiros.forEach(function (j) { X(j, null, null, 'Sueldo en efectivo', 'Saca casi todo el sueldo apenas llega', 'Retiras casi todo tu sueldo en efectivo apenas cobras'); });
     // Sueldo: quincenal si llegan dos por mes; décimos aparte
     var sueldos = {}; idx.forEach(function (i) { if (out[i].c === 'Sueldo' && !/decimo/.test(norm(rows[i].desc))) sueldos[mes(rows[i].f)] = (sueldos[mes(rows[i].f)] || 0) + 1; });
     var quincena = mediana(Object.keys(sueldos).map(function (k) { return sueldos[k]; })) >= 2;
     idx.forEach(function (i) { if (out[i].c === 'Sueldo') out[i].e = /decimo/.test(norm(rows[i].desc)) ? 'Décimos' : quincena ? 'Sueldo quincenal' : 'Sueldo mensual'; });
+    // Tu dinero vive en el ahorro: el sueldo pasa al ahorro el mismo día (o al siguiente) y cada semana sacas
+    // un monto parecido para el día a día. Ninguno de los dos es ingreso ni gasto; el retiro semanal es tu ritmo.
+    idx.forEach(function (i) {
+      var r = rows[i]; if (out[i].c !== 'Sueldo' || r.m <= 0) return;
+      idx.forEach(function (j) { var g = rows[j]; if (out[j].dir === 'entra' && g.m < 0 && dias(r.f, g.f) >= 0 && dias(r.f, g.f) <= 1 && -g.m >= r.m * .6) X(j, null, null, 'Sueldo al ahorro', null, 'Pasaste tu sueldo al ahorro: sigue siendo tuyo, no es gasto'); });
+    });
+    var sacas = idx.filter(function (i) { return out[i].dir === 'sale' && rows[i].m > 0; });
+    if (sacas.length < 4) sacas = idx.filter(function (i) { return out[i].dir === 'sale' && rows[i].m < 0; });
+    if (sacas.length >= 4) {
+      var medS = mediana(sacas.map(function (i) { return Math.abs(rows[i].m); }));
+      var par = sacas.filter(function (i) { return Math.abs(Math.abs(rows[i].m) - medS) <= medS * .15; });
+      var gaps = par.slice(1).map(function (i, k) { return dias(rows[par[k]].f, rows[i].f); });
+      if (par.length >= 4 && mediana(gaps) >= 5 && mediana(gaps) <= 9) par.forEach(function (i) { X(i, null, null, 'Retiro semanal del ahorro', null, 'Cada semana sacas ' + Math.round(medS) + ' de tu ahorro para el día a día: no es ingreso; el gasto cuenta cuando pagas'); });
+    }
     // Crédito directo en casas comerciales y deudas en otras entidades
     out.forEach(function (o, i) { var t = norm(rows[i].desc + ' ' + rows[i].cp); if (o.c === 'Servicios financieros y deudas' && /de prati|etafashion|creditos economicos|artefacta|la ganga|cuota diferid/.test(t)) o.e = 'Crédito directo en casa comercial'; else if (o.c === 'Servicios financieros y deudas' && /cooperativa|banco/.test(t) && !/comision/.test(t)) o.e = 'Deuda en otra entidad'; });
     // Cuenta conjunta: el banco sabe quién pagó
@@ -308,7 +382,12 @@
     return { n: n, tratamiento: pct(t, n), categoria: pct(c, n), porRevisar: pct(revOk, rev), minimo: pct(minOk, min), diferencias: dif };
   }
 
-  var api = { movimiento: movimiento, analizar: analizar, escenarios: escenarios, comparar: comparar, comercio: comercio, norm: norm };
+  // Lo que la persona saca de su ahorro cada semana, si lo hace (monto y cuántas semanas)
+  function ritmoSemanal(rows, out) {
+    var L = out.map(function (o, i) { return o.e === 'Retiro semanal del ahorro' ? Math.abs(rows[i].m) : null; }).filter(function (v) { return v != null; });
+    return L.length ? { monto: mediana(L), veces: L.length } : null;
+  }
+  var api = { movimiento: movimiento, analizar: analizar, escenarios: escenarios, comparar: comparar, comercio: comercio, norm: norm, propio: propio, soloPropias: soloPropias, ritmoSemanal: ritmoSemanal };
   if (typeof module === 'object' && module.exports) module.exports = api;
   root.PFMAnalisis = api;
 })(typeof window !== 'undefined' ? window : globalThis);

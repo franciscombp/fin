@@ -116,13 +116,13 @@
      para comparar, pero la app usa lo que el front deduce del movimiento crudo (r.ia), así una persona nueva
      o un mes nuevo funcionan sin escribir nada. FUENTE = 'datos' vuelve a las etiquetas escritas (para comparar). */
   var FUENTE = 'front';
-  function ctxDe(u) { var us = DB.usuarios.filter(function (x) { return x.usuario === u; })[0] || {}; return { nombre: us.nombre, edad: us.edad, deudas: DB.deudas.filter(function (x) { return x.usuario === u; }) }; }
+  function ctxDe(u) { var us = DB.usuarios.filter(function (x) { return x.usuario === u; })[0] || {}; return { nombre: us.nombre, edad: us.edad, deudas: DB.deudas.filter(function (x) { return x.usuario === u; }), cuentas: DB.cuentas[u] || [] }; }
   function analizar(u) {
     var rows = DB.mov[u]; if (!rows) return;
     var ia = window.PFMAnalisis ? PFMAnalisis.analizar(rows.map(function (r) { return r.dato ? Object.assign({}, r, r.dato) : r; }), ctxDe(u)) : null;
     rows.forEach(function (r, i) { if (!r.dato) r.dato = { t: r.t, c: r.c, e: r.e, n: r.n }; r.ia = ia ? ia[i] : null; aplicar(r); });
   }
-  function aplicar(r) { var o = FUENTE === 'datos' && r.dato.t != null ? r.dato : r.ia || r.dato; r.t = o.t; r.c = o.c; r.e = o.e || ''; r.n = o.n || ''; }
+  function aplicar(r) { var o = FUENTE === 'datos' && r.dato.t != null ? r.dato : r.ia || r.dato; r.t = o.t; r.c = o.c; r.e = o.e || ''; r.n = o.n || ''; r.ah = r.ia && r.ia.ah || 0; r.dir = r.ia && r.ia.dir || ''; }
   function fuente(m) {
     if (m && m !== FUENTE && DB) { FUENTE = m === 'datos' ? 'datos' : 'front'; Object.keys(DB.mov).forEach(function (u) { DB.mov[u].forEach(aplicar); }); refresh(); }
     return FUENTE;
@@ -136,7 +136,7 @@
      los ánimos de Uku. Jorge está al día (contento), Rosa tiene solo lo de
      esta semana (tranquilo), Andrés dejó pasar 10 días y Daniela no clasifica
      hace un mes (pensativo). Se aplica una vez por persona. */
-  var AL_DIA = { jorge: '2026-10-16', rosa: '2026-10-12', andres: '2026-10-05', daniela: '2026-09-01', luis: '2026-09-28' };
+  var AL_DIA = { jorge: '2026-10-16', rosa: '2026-10-12', andres: '2026-10-05', daniela: '2026-09-01', luis: '2026-09-28', paula: '2026-10-12', esteban: '2026-10-14', segundo: '2026-10-14' };
   function sembrar(u) {
     var seed = ST.seed || (ST.seed = {}); if (seed[u] || !AL_DIA[u]) return;
     var prev = ST.u; ST.u = u;
@@ -222,7 +222,7 @@
       case 'Fuera del MVP': return tobe() ? { k: 'gasto', cat: ov || mapc(r.c), via: 'otro_banco' } : { k: 'no', why: 'fuera' };
       case 'Ingreso': return { k: 'ingreso', cat: r.c };
       case 'Reembolso': return { k: 'reembolso', cat: ov || mapc(r.c) };
-      default: return { k: 'no', why: r.c === 'Ahorro programado' ? 'ahorro' : r.c === 'Pago de tarjeta' ? 'pago_tarjeta' : r.c === 'Recarga Deuna' ? 'recarga_in' : 'propias' };
+      default: return { k: 'no', why: r.c === 'Ahorro programado' ? 'ahorro' : r.c === 'Pago de tarjeta' ? 'pago_tarjeta' : r.c === 'Recarga Deuna' ? 'recarga_in' : r.c === 'Inversión' ? 'inversion' : r.e === 'Ahorro flexible' ? 'flexible' : 'propias' };
     }
   }
 
@@ -289,7 +289,7 @@
     var s = sugerido(meses()[0]) || { general: 1000, cats: {} };
     return { general: s.general, cats: s.cats, auto: true };
   }
-  function setPres(p) { (ST.presG || (ST.presG = {}))[ST.u] = { general: p.general, cats: p.cats }; persist(); }
+  function setPres(p) { (ST.presG || (ST.presG = {}))[ST.u] = { general: p.general, cats: p.cats, ahorro: p.ahorro || 0 }; persist(); }
 
   /* ---------- Uku cuenta: hallazgos con reglas (MVP) ---------- */
   function hallazgos(m) {
@@ -403,6 +403,8 @@
       pago_tarjeta: T('No lo cuento: lo que compraste con la tarjeta ya contó.'),
       fuera: T('No lo veo en tu resumen: es de una tarjeta de otro banco. Solo veo cuando le pagas.'),
       pago_otro_banco: T('No lo cuento: ya conté lo que compraste con esa tarjeta, que conectaste.'),
+      inversion: T('No lo cuento como gasto ni como ingreso: es dinero que inviertes en tu póliza. Solo sus intereses suman.'),
+      flexible: T('No lo cuento: pasa entre tu cuenta y tu ahorro flexible. Desde el flexible solo puedes enviar a tus cuentas: para pagar, primero vuelve a tu transaccional. Lo que sí suma son los intereses que te paga cada día.'),
       negocio: T('Es de tu negocio: lo saco de tus gastos de la casa.')
     }[c.why] || T('No lo cuento en tu resumen.');
     if (c.k === 'rin' || c.k === 'rout') return T('No sé qué fue: es de una persona o empresa. Lo cuento marcado hasta que me digas.');
@@ -459,6 +461,7 @@
   function finanzas() {
     var C = DB.cuentas[ST.u] || [], suma = function (tipos) { return r2(C.filter(function (c) { return tipos.indexOf(c.tipo) >= 0; }).reduce(function (a, c) { return a + (+c.saldo || 0); }, 0)); };
     var ahorro = suma(['ahorro', 'meta']), inversion = suma(['inversion']);
+    var aPoliza = hecho('flex') && pisoFlex().poliza ? pisoFlex().monto : 0; ahorro = r2(ahorro - aPoliza); inversion = r2(inversion + aPoliza);
     var deu = DB.deudas.filter(function (x) { return x.usuario === ST.u && x.saldo > 0; }).map(function (x) { return { clase: x.clase, producto: x.producto, institucion: x.institucion, saldo: x.saldo }; });
     return { nuevo: !(DB.mov[ST.u] || []).length && !ahorro && !inversion && !deu.length, ahorro: ahorro, inversion: inversion, deudas: deu };
   }
@@ -490,7 +493,10 @@
   function flores() { var c = colchon(), f = c < 1 ? 0 : Math.round(Math.min(1, .3 + (c - 1) / 2 * .7) * 100); return hecho('ahorro') ? Math.max(f, 22) : f; } // con ahorro programado, salen las primeras flores
   // Presupuesto: cómo vas contra tu ritmo del mes
   function presEstado(m) {
-    m = m || curMes(); var s = month(m), p = pres().general, f = isCur(m) ? +HOY.slice(8, 10) / diasMes(m) : 1, u = s.gast / (p * f);
+    m = m || curMes(); var s = month(m), p = pres().general, f = isCur(m) ? +HOY.slice(8, 10) / diasMes(m) : 1;
+    // El sueldo que se saca de una vez en efectivo es para todo el mes: se mide contra el presupuesto completo
+    var cash = sumv(rows().filter(function (r) { return r.mes === m && r.e === 'Sueldo en efectivo' && r.m < 0; }), function (r) { return -r.m; });
+    var u = (s.gast - cash) / (p * f) + cash / p;
     return u <= 1 ? { k: 'ok', l: T('Vas bien'), v: 85 } : u <= 1.15 ? { k: 'warn', l: T('Con cuidado'), v: 55 } : { k: 'over', l: T('Por encima del plan'), v: 25 };
   }
   function salud(m) { return presEstado(m).v; }
@@ -645,6 +651,36 @@
   function cuandoTxt(f) { var d = diasA(f); return d <= 0 ? T('Hoy') : d === 1 ? T('Mañana') : d < 7 ? T('El {d}', { d: DIA1[wday(f)] }) : T('El {f}', { f: dshort(f) }); }
   function ingresoMes() { var ms = antes(curMes(), 3); return ms.length ? sumv(ms, function (m) { return month(m).ing; }) / ms.length : month(curMes()).ing; }
   // Lo que conviene separar cada mes: 5% de lo que entra, redondeado a $5
+  /* Ahorro. Mover dinero entre tus cuentas no es ingreso ni gasto; lo que guardas es lo que entra a tu
+     ahorro (Ahorro flexible, metas, inversiones) menos lo que sacas de él en el mes. */
+  function ahorroMes(m) { return sumv(rows().filter(function (r) { return r.mes === m; }), function (r) { return r.ah || 0; }); }
+  function ritmo() { var rs = rows(); return window.PFMAnalisis && PFMAnalisis.ritmoSemanal ? PFMAnalisis.ritmoSemanal(rs, rs.map(function (r) { return { e: r.e }; })) : null; }
+  // El día que cobras: el día más común del primer ingreso de cada mes (sueldo o pensión)
+  function diaCobro() {
+    var dias = {}; rows().forEach(function (r) { if (cls(r).k === 'ingreso' && /Sueldo|Pensión/.test(r.c) && !dias[r.mes]) dias[r.mes] = r.dia; });
+    var v = Object.keys(dias).map(function (k) { return dias[k]; }).sort(function (a, b) { return a - b; });
+    return v.length ? v[Math.floor(v.length / 2)] : 1;
+  }
+  /* Dónde se guarda (con su artículo, para leerse en la frase): tu Ahorro flexible o tu cuenta de ahorro.
+     Si tu sueldo ya vive en el Ahorro flexible (lo pasas apenas cobras), el ahorro sale de ahí a una meta,
+     que no se mezcla con lo del mes. */
+  function sueldoAlAhorro() { return rows().some(function (r) { return r.e === 'Sueldo al ahorro'; }); }
+  function cuentaAhorro() {
+    var C = DB.cuentas[ST.u] || [], meta = C.filter(function (x) { return x.tipo === 'meta'; })[0];
+    if (sueldoAlAhorro()) return meta ? T('tu meta {n}', { n: meta.nombre }) : T('una meta de ahorro nueva');
+    var c = C.filter(function (x) { return x.tipo === 'ahorro'; })[0] || meta;
+    return c ? T('tu {n}', { n: c.nombre }) : T('un Ahorro flexible nuevo');
+  }
+  function desdeAhorro() { var f = sueldoAlAhorro() && (DB.cuentas[ST.u] || []).filter(function (x) { return x.tipo === 'ahorro'; })[0]; return f ? T('de tu {n} ', { n: f.nombre }) : ''; }
+  // Lo que ya se guarda solo: el que programaste aquí o el débito automático que ya tienes con el banco
+  function ahorroProg() {
+    var A = ST.ahorroProg && ST.ahorroProg[ST.u]; if (A) return A;
+    var L = rows().filter(function (r) { return r.c === 'Ahorro programado' && r.dir === 'entra' && r.m < 0; });
+    if (!L.length) L = rows().filter(function (r) { return r.c === 'Ahorro programado' && r.dir === 'entra'; });
+    if (!L.length) return null;
+    var u = L[L.length - 1]; return { monto: Math.abs(u.m), dia: u.dia, para: cuentaAhorro(), banco: true };
+  }
+  function setAhorroProg(a) { var A = ST.ahorroProg || (ST.ahorroProg = {}); if (a) A[ST.u] = a; else delete A[ST.u]; persist(); }
   function ahorroSug() { return Math.max(5, Math.round(ingresoMes() * .05 / 5) * 5); }
   function minimoTarjeta() { return rows().filter(function (r) { return /mínimo/i.test(r.n) && r.c === 'Pago de tarjeta' && r.prod === 'Cuenta' && r.f >= addDays(HOY, -62); }).pop(); }
   /* ---------- Quién eres para Uku ----------
@@ -714,7 +750,9 @@
       conf: { para: T('Tu cuenta de ahorro'), monto: q, cuando: T('Cada mes, apenas cobras') } });
     // 6. Mesadas y pagos repetidos
     agrupar().forEach(function (x) { out.push({ id: 'g:' + x.go, p: 50, icon: x.icon, tag: x.tag, kind: 'info', sub: x.s, t: x.t, s: x.s, cmp: x.cmp, di: x.t + '. ' + T('¿Lo hacemos juntos?'), act: x.go, actl: x.gol }); });
-    // 7. Lo que descubrió: anticipa (to-be) y hallazgos; siempre en positivo y con una pregunta, nunca una alarma
+    // 7. Cómo rinde tu dinero: ahorro flexible, pólizas y sueldo en efectivo (lo detecta el front en tus movimientos)
+    out = out.concat(rinde());
+    // 7b. Lo que descubrió: anticipa (to-be) y hallazgos; siempre en positivo y con una pregunta, nunca una alarma
     (tobe() ? anticipa(curMes()).map(accion) : []).concat(hallazgos(curMes()).map(accion)).forEach(function (x) {
       if (x.icon === 'tune' || x.icon === 'credit_card' && min) return; // ya están como consejo con acción
       if (!hayPres() && (x.icon === 'speed' || x.icon === 'tune')) return; // sin presupuesto no hay con qué comparar
@@ -725,6 +763,71 @@
     });
     return out.filter(function (x) { return !oculto(x.id); }).map(function (x) { x.done = hecho(x.id) ? x.ok || T('Listo') : null; return x; })
       .sort(function (a, b) { return (a.done ? 1 : 0) - (b.done ? 1 : 0) || b.p - a.p; });
+  }
+  /* ---------- Cómo rinde tu dinero ----------
+     Con lo que el front reconoce en tus movimientos (assets/pfm-analisis.js):
+     · Ahorro flexible: lo que te pagó cada día y la parte que nunca tocas (el saldo más bajo de los últimos 6 meses).
+       Esa parte rinde más en una póliza (6,5 % a 6 meses en vez de 4,75 %); si es menos que el mínimo de una póliza,
+       una meta de ahorro: gana lo mismo que el flexible y no se mezcla con el mes. A la persona siempre le conviene
+       y al banco también: es dinero que se queda. Desde el flexible solo se envía a tus cuentas, nunca a terceros.
+     · Pólizas: cuánto tienes invertido, lo que te pagaron y la que vence pronto, para renovarla.
+     · Sueldo en efectivo: cuánto de tu sueldo sale en efectivo apenas llega; propone pagar con QR. */
+  var TASA = { flex: .0475, trans: .0001, poliza: .065 }, POLIZA_MIN = 500;
+  function cuentaFlex() { return (DB.cuentas[ST.u] || []).filter(function (c) { return c.solo_propias || /flexible/i.test(c.nombre); })[0]; }
+  // Lo que nunca tocas del flexible: su saldo más bajo en 6 meses, con un margen de 10 % y redondeado a $100
+  function pisoFlex() {
+    var k = ST.u + '|' + HOY; if (pisoFlex.k === k) return pisoFlex.v;
+    var c = cuentaFlex(), L = c && c.fuente ? rows().filter(function (r) { return r.src === c.fuente && r.s != null; }) : [], v = { monto: 0, poliza: false };
+    if (L.length && L[0].f <= addDays(HOY, -90)) {
+      var i = 0, s = null, min = Infinity;
+      for (var f = addDays(HOY, -180); f <= HOY; f = addDays(f, 1)) { while (i < L.length && L[i].f <= f) { s = L[i].s; i++; } if (s != null) min = Math.min(min, s); }
+      var m = min === Infinity ? 0 : Math.floor(min * .9 / 100) * 100;
+      v = { monto: m, min: min, poliza: m >= POLIZA_MIN };
+    }
+    pisoFlex.k = k; pisoFlex.v = v; return v;
+  }
+  function rinde() {
+    var R = rows(), C = DB.cuentas[ST.u] || [], m = curMes(), out = [], hace = addDays(HOY, -365), tri = addDays(HOY, -90);
+    var suma = function (f) { return R.filter(f).reduce(function (a, r) { return a + r.m; }, 0); };
+    if (R.some(function (r) { return r.e === 'Ahorro flexible'; })) {
+      var gan = suma(function (r) { return r.e === 'Ahorro flexible' && r.c === 'Intereses' && r.mes === m; }), anio = suma(function (r) { return r.e === 'Ahorro flexible' && r.c === 'Intereses' && r.f >= hace; });
+      var P = pisoFlex(), extra = Math.round(P.monto * (TASA.poliza - TASA.flex) * 180 / 365), paga = Math.round(P.monto * TASA.poliza * 180 / 365);
+      if (P.poliza) out.push({ id: 'flex', p: 55, icon: 'trending_up', tag: T('Ahorro flexible'), kind: 'good', t: T('Hay {m} en tu flexible que no tocas hace 6 meses', { m: money0(P.monto) }), sub: T('En una póliza ganan más'),
+        s: T('Tu flexible te pagó {g} este mes. Su saldo no bajó de {min} en 6 meses: si pasas {m} a una póliza a 6 meses, te paga unos {i}, {x} más que en el flexible. Lo demás sigue disponible para el mes.', { g: money(gan), min: money0(P.min), m: money0(P.monto), i: money0(paga), x: money0(extra) }),
+        di: T('Tu ahorro flexible te pagó {g} este mes. Y hay {m} que no tocas hace 6 meses: en una póliza a 6 meses te pagarían unos {i}, {x} más que en el flexible. ¿La abrimos? Lo demás sigue disponible.', { g: money(gan), m: money0(P.monto), i: money0(paga), x: money0(extra) }),
+        act: 'flex', actl: T('Abrir una póliza de {m}', { m: money0(P.monto) }), ok: T('Listo: tu póliza de {m} a 6 meses te paga unos {i} al vencer.', { m: money0(P.monto), i: money0(paga) }),
+        conf: { para: T('Póliza a 6 meses · 6,5 %'), monto: P.monto, cuando: T('Hoy'), desde: T('Tu ahorro flexible') + (cuentaFlex().numero ? ' ···' + cuentaFlex().numero : '') } });
+      else out.push({ id: 'meta', p: 50, icon: 'flag', tag: T('Ahorro flexible'), kind: 'good', t: T('Tu ahorro flexible te pagó {g} este mes', { g: money(gan) }), sub: T('Ponle nombre a lo que guardas'),
+        s: T('En un año te pagó {a}. Una meta de ahorro gana lo mismo que el flexible y lo separa de lo del mes: así lo que guardas se queda guardado.', { a: money0(anio) }),
+        di: T('Tu ahorro flexible te pagó {g} este mes. Si le pones nombre con una meta, gana lo mismo y no se mezcla con lo del mes. ¿Para qué estás guardando?', { g: money(gan) }),
+        act: 'app:Crear meta de ahorro', actl: T('Crear una meta') });
+    }
+    var pol = C.filter(function (c) { return c.tipo === 'inversion' && c.vence; }).sort(function (a, b) { return a.vence.localeCompare(b.vence); });
+    if (pol.length) {
+      var prox = pol.filter(function (c) { return diasA(c.vence) >= 0; })[0], total = pol.reduce(function (a, c) { return a + c.saldo; }, 0);
+      var pagaron = suma(function (r) { return r.e === 'Pólizas' && r.c === 'Intereses' && r.f >= hace; });
+      if (prox && diasA(prox.vence) <= 30) {
+        var gana = prox.saldo * (prox.tasa || 6) / 100 * 180 / 365;
+        out.push({ id: 'poliza', p: 78, icon: 'event', tag: T('Póliza'), kind: 'info', t: T('Tu póliza de {c} vence {cu}', { c: money0(prox.saldo), cu: cuandoTxt(prox.vence).toLowerCase() }), sub: T('Te paga unos {i}', { i: money0(gana) }),
+          s: T('Te va a pagar unos {i} de intereses. Si la renuevas al mismo plazo, sigue rindiendo sin que tengas que acordarte.', { i: money0(gana) }),
+          di: T('Tu póliza de {c} vence {cu} y te paga unos {i} de intereses. ¿La renovamos al mismo plazo para que siga rindiendo?', { c: money0(prox.saldo), cu: cuandoTxt(prox.vence).toLowerCase(), i: money0(gana) }),
+          act: 'poliza', actl: T('Renovar mi póliza'), ok: T('Listo: tu póliza se renueva sola el {f}.', { f: dshort(prox.vence) }),
+          conf: { para: T('Póliza ···{n}', { n: prox.numero }), monto: prox.saldo + gana, cuando: T('El {f}, al vencer', { f: dshort(prox.vence) }) } });
+      }
+      out.push({ id: 'polizas', p: 32, icon: 'trending_up', tag: T('Inversiones'), kind: 'good', t: T(pol.length === 1 ? 'Tienes {t} en una póliza' : 'Tienes {t} en {n} pólizas', { t: money0(total), n: pol.length }), sub: T('Te pagaron {i} en un año', { i: money0(pagaron) }),
+        s: T('En un año te pagaron {i} de intereses. Lo que mandas a tus pólizas no lo cuento como gasto: es tu inversión.', { i: money0(pagaron) }),
+        di: T('¡Buena noticia! Tienes {t} en pólizas y en un año te pagaron {i} de intereses. Lo que mandas ahí no lo cuento como gasto: es tu inversión.', { t: money0(total), i: money0(pagaron) }),
+        act: 'app:Inversiones', actl: T('Ver mis inversiones') });
+    }
+    var ret = R.filter(function (r) { return r.e === 'Sueldo en efectivo' && r.f >= tri; });
+    if (ret.length) {
+      var sale = -ret.reduce(function (a, r) { return a + r.m; }, 0), cobra = suma(function (r) { return /Sueldo|Pensión/.test(r.c) && r.f >= tri; }), pct = cobra ? Math.round(sale / cobra * 100) : 0;
+      out.push({ id: 'efectivo', p: 70, icon: 'payments', tag: T('Efectivo'), kind: 'info', t: T('Sacas casi todo tu sueldo en efectivo'), sub: T('El {p} % apenas cobras', { p: pct }),
+        s: T('Así no veo en qué se va tu dinero y andas con todo encima. Si pagas con QR o Deuna, cada gasto queda ordenado aquí y tu plata está más segura.'),
+        di: T('Apenas cobras, retiras el {p} % de tu sueldo en efectivo. Así no veo en qué se va y andas con todo encima. Si pagas con QR desde tu celular, cada gasto queda ordenado aquí.', { p: pct }),
+        act: 'app:Pagar con QR', actl: T('Pagar con QR') });
+    }
+    return out;
   }
   function consejoHTML(x) {
     var mx = x.cmp ? Math.max.apply(null, x.cmp.map(function (c) { return c.v; }).concat([1])) : 1;
@@ -744,7 +847,7 @@
     showSheet('<h3>' + esc(x.actl) + '</h3><p>' + esc(x.s) + '</p><div class="pfm-confirm">' +
       (c.monto != null ? '<div><small>' + T('Monto') + '</small><b>' + money(c.monto) + '</b></div>' : '<div><small>' + T('Monto') + '</small><b>' + T('El total de tu estado de cuenta') + '</b></div>') +
       '<div><small>' + T('Para') + '</small><b>' + esc(c.para) + '</b></div><div><small>' + T('Cuándo') + '</small><b>' + esc(c.cuando) + '</b></div>' +
-      '<div><small>' + T('Desde') + '</small><b>' + esc((saldos()[0] || { n: 'tu cuenta' }).n.replace(/ Pichibank/, '')) + '</b></div></div>' +
+      '<div><small>' + T('Desde') + '</small><b>' + esc(c.desde || (saldos()[0] || { n: 'tu cuenta' }).n.replace(/ Pichibank/, '')) + '</b></div></div>' +
       '<p class="pf-note">' + T('Uku te avisa un día antes si no te alcanza. Lo puedes cancelar cuando quieras.') + '</p>' +
       '<button class="pf-cta" data-pfm="hecho:' + esc(x.id) + '">' + T('Confirmar') + '</button><button class="bp-button bp-button--tertiary bp-button--block" data-pfm="cerrar">' + T('Ahora no') + '</button>');
   }
@@ -795,6 +898,8 @@
     rows().forEach(function (r) {
       if (r.f < ini || r.f > HOY) return;
       if (r.t === 'Por revisar') { qs[gkey(r)] = 1; return; }
+      // Quien saca todo su sueldo en efectivo no tiene que contar en qué lo gastó: se queda como efectivo
+      if (r.e === 'Sueldo en efectivo') return;
       var c = cls(r, true); if (c.k !== 'gasto' || !(SIN[c.cat] || c.cat === 'Efectivo retirado')) return;
       out.push({ t: 'r', r: r, f: r.f, cash: c.cat === 'Efectivo retirado', done: !!(catOv(r) || ruleOf(r)) });
     });
@@ -1186,22 +1291,26 @@
     var b = [], m = HOY.slice(0, 7);
     if (ST.per === 'sem') for (var i = 6; i >= 0; i--) { var f = addDays(HOY, -i); b.push({ f: f, v: range(f, f).gast, x: '<b>' + (i ? DIA[wday(f)].slice(0, 3) : T('Hoy')) + '</b><small>' + +f.slice(8, 10) + '</small>', t: (i ? DIA1[wday(f)] : T('Hoy')) + ' ' + dshort(f) }); }
     else if (ST.per === 'mes') for (var dd = 1; dd <= diasMes(m); dd++) { var g = m + '-' + pad(dd); b.push({ f: g, v: g > HOY ? null : range(g, g).gast, x: dd === 1 || dd % 7 === 1 ? String(dd) : '', t: DIA1[wday(g)] + ' ' + dshort(g) }); }
-    else mesesAtras(ST.per === '6m' ? 6 : 12).forEach(function (k) { b.push({ v: month(k).gast, x: Mes(k).charAt(0), t: Mes(k) + anio(k + '-01') + (isCur(k) ? ' · ' + T('hasta hoy') : ''), cur: isCur(k) }); });
+    else mesesAtras(ST.per === '6m' ? 6 : 12).forEach(function (k) { b.push({ k: k, v: month(k).gast, x: Mes(k).charAt(0), t: Mes(k) + anio(k + '-01') + (isCur(k) ? ' · ' + T('hasta hoy') : ''), cur: isCur(k) }); });
     return b;
   }
   function tope(v) { var p = Math.pow(10, Math.floor(Math.log10(v || 1))); return [1, 2, 2.5, 5, 10].map(function (f) { return f * p; }).filter(function (x) { return x >= v; })[0]; }
   var BAR = null;
+  // La barra elegida (un día o un mes): si hay una, toda la pantalla (cifra, categorías y movimientos) es de ese periodo
+  function elegida(b) { b = b || serie(); return BAR != null && b[BAR] && b[BAR].v != null ? b[BAR] : null; }
   function chartHTML(P) {
     var b = serie(), meses = ST.per === '6m' || ST.per === 'ano', plan = meses && hayPres() ? pres().general : 0;
     var top = tope(Math.max.apply(null, b.map(function (x) { return x.v || 0; }).concat([plan, 50])));
-    var sel = BAR != null && b[BAR] && b[BAR].v != null ? b[BAR] : null, head;
-    if (sel) head = [meses ? T('Gasto del mes') : T('Gasto del día'), money(sel.v), sel.t];
+    var sel = elegida(b), head;
+    if (sel) head = [meses ? T('Gasto del mes') : T('Gasto del día'), money(sel.v), sel.t.charAt(0).toUpperCase() + sel.t.slice(1)];
     else if (meses) {
       var llenos = b.filter(function (x) { return !x.cur; }), avg = llenos.length ? sumv(llenos, function (x) { return x.v; }) / llenos.length : 0;
       head = [T('Promedio mensual'), money(avg), mesesAtras(b.length).map(function (k, i, a) { return i === 0 || i === a.length - 1 ? mesName(k).slice(0, 3) + anio(k + '-01') : null; }).filter(Boolean).join(' – ') + ' ' + HOY.slice(0, 4)];
     } else head = [T('Total'), money(P.o.gast), (ST.per === 'sem' ? dshort(addDays(HOY, -6)) : '1 ' + mesName(HOY.slice(0, 7)).slice(0, 3)) + ' – ' + dshort(HOY) + ' ' + HOY.slice(0, 4)];
     var y = function (v) { return (v / top * 100).toFixed(1) + '%'; };
-    return '<div class="pfm-chart__head"><p class="pfm-chart__l">' + head[0] + '</p><p class="pfm-chart__v">' + head[1] + '</p><p class="pfm-chart__r">' + esc(head[2]) + '</p></div>' +
+    // Con un día elegido, la vuelta al periodo completo va junto a la cifra
+    var volver = sel ? '<button class="bp-action-button bp-action-button--tertiary pfm-chart__volver" data-size="sm" data-pfm="bar:off">' + (ST.per === 'mes' ? T('Ver todo el mes') : ST.per === 'sem' ? T('Ver toda la semana') : T('Ver todos')) + '</button>' : '';
+    return '<div class="pfm-chart__head"><p class="pfm-chart__l">' + head[0] + volver + '</p><p class="pfm-chart__v">' + head[1] + '</p><p class="pfm-chart__r">' + esc(head[2]) + '</p></div>' +
       '<div class="pfm-chart' + (sel ? ' has-sel' : '') + '" role="group" aria-label="' + T('Gráfica de gastos') + '"><div class="pfm-chart__plot">' +
         [0, .5, 1].map(function (f) { return '<span class="pfm-chart__g" style="bottom:' + f * 100 + '%"><em>' + money0(top * f).replace(/,\d+$/, '') + '</em></span>'; }).join('') +
         (plan ? '<span class="pfm-chart__plan" style="bottom:' + y(plan) + '"><em>' + T('Presupuesto') + '</em></span>' : '') +
@@ -1210,16 +1319,19 @@
           return x.v == null ? '<span class="pfm-chart__bar is-empty"></span>' : '<button class="pfm-chart__bar' + (sel === x ? ' is-on' : '') + '" data-pfm="bar:' + i + '" aria-label="' + esc(x.t + ': ' + money(x.v)) + '">' + (ST.per === 'sem' ? '<em style="bottom:' + y(x.v) + '">' + (x.v ? money0(x.v).replace(/,\d+$/, '').replace('$ ', '') : '0') + '</em>' : '') + '<i style="height:' + y(x.v) + '"></i></button>';
         }).join('') + '</div></div>' +
       '<div class="pfm-chart__x' + (ST.per === 'sem' ? ' is-days' : '') + '">' + b.map(function (x) { return '<span' + (sel === x ? ' class="is-on"' : '') + '>' + x.x + '</span>'; }).join('') + '</div></div>' +
-      (meses ? '' : sel && sel.f ? diaHTML(sel) : '<p class="pfm-chart__hint">' + T('Toca un día para ver en qué gastaste.') + '</p>');
+      (sel ? '' : '<p class="pfm-chart__hint">' + (meses ? T('Toca un mes para ver en qué gastaste.') : T('Toca un día para ver en qué gastaste.')) + '</p>');
   }
-  // Los gastos del día elegido, debajo de la gráfica
+  // Los gastos del día elegido: su propia sección, con la lista de siempre
   function diaHTML(d) {
     var L = rows().filter(function (r) { var c = cls(r); return r.f === d.f && (c.k === 'gasto' || c.k === 'reembolso'); }).reverse(); // los reembolsos restan del total
-    return '<div class="pf-mcard pfm-dia"><p class="pfm-dia__t">' + esc(d.t.charAt(0).toUpperCase() + d.t.slice(1)) + '<span>' + (L.length === 1 ? T('1 movimiento') : T('{n} movimientos', { n: L.length })) + '</span></p>' +
-      (L.length ? L.slice(0, 6).map(txHTML).join('') : '<p class="pf-note">' + T('Este día no gastaste nada.') + '</p>') + '</div>';
+    return '<section class="pf-sec pfm-dia"><div class="pf-sec__head"><h2>' + T('Movimientos') + '</h2></div><p class="pf-sec__sub">' + esc(d.t.charAt(0).toUpperCase() + d.t.slice(1)) + ' · ' + (L.length === 1 ? T('1 movimiento') : T('{n} movimientos', { n: L.length })) + '</p>' +
+      '<div class="pf-mcard pfm-txlist">' + (L.length ? L.map(function (r) { return txHTML(r, true); }).join('') : '<p class="pf-note">' + T('Este día no gastaste nada.') + '</p>') + '</div></section>';
   }
   function gastosHTML() {
-    var P = per(), s = P.o, pr = pres(), mb = P.m && hayPres() ? pr : null;
+    var P = per(), sel = elegida(), pr = pres(), mb = P.m && !sel && hayPres() ? pr : null;
+    // Un día o un mes elegido en la gráfica: categorías y movimientos son de ese periodo
+    if (sel) { P = { o: sel.f ? range(sel.f, sel.f) : month(sel.k), l: sel.f ? T('el {d}', { d: sel.t }) : T('en {mes}', { mes: mesLargo(sel.k) }), sel: sel, m: sel.k }; }
+    var s = P.o;
     // En el asistente, arriba va el hallazgo de Uku sobre el periodo (wireframe «Mis gastos»): una frase con lo que cambió
     var H = hallazgos(P.m || curMes()).filter(function (x) { return x.t && x.icon !== 'hourglass_top'; })[0];
     var insight = H ? '<div class="pfm-insight"><span class="pfm-insight__ic"><span class="material-symbols-rounded" aria-hidden="true">lightbulb</span></span><p><b>' + H.t + '.</b>' + (H.s ? ' ' + H.s : '') + '</p></div>' : '';
@@ -1229,14 +1341,15 @@
         return '<button class="tab' + (ST.per === x[0] ? ' active' : '') + '" role="tab" aria-selected="' + (ST.per === x[0]) + '" data-pfm="per:' + x[0] + '">' + T(x[1]) + '</button>'; }).join('') + '</div>' +
       '<section class="pf-sec pfm-flow__body">' + chartHTML(P);
     if (mb) {
-      var u = s.gast / mb.general, f = +HOY.slice(8, 10) / diasMes(P.m), left = mb.general - s.gast, pj = proyeccion(P.m), pu = pj / mb.general;
-      html += '<div class="pfm-budget"><div class="pfm-bar"><i class="is-gast' + (u > 1 ? ' is-over' : '') + '" style="width:' + Math.min(100, u * 100).toFixed(1) + '%"></i>' +
-        (pj > s.gast ? '<i class="is-proj' + (pu > 1 ? ' is-over' : '') + '" style="width:' + (Math.min(100, pu * 100) - Math.min(100, u * 100)).toFixed(1) + '%"></i>' : '') +
-        '<em style="left:' + (f * 100).toFixed(1) + '%"></em></div>' +
-        '<p class="pfm-budget__t"><span>' + (left >= 0 ? T('Te quedan <b>{m}</b> de {p}', { m: money0(left), p: money0(mb.general) }) : T('Llevas <b>{m}</b> más de {p}', { m: money0(-left), p: money0(mb.general) })) + '</span>' +
-        '<button class="section__link" data-pfm="budgets">' + T('Presupuesto') + '</button></p>' +
-        '<p class="pfm-budget__proj' + (pu > 1 ? ' is-over' : '') + '">' + T('A este ritmo cierras el mes en <b>{m}</b>', { m: money0(pj) }) + ' · ' +
-          (pu > 1 ? T('{m} más de tu presupuesto', { m: money0(pj - mb.general) }) : T('te sobrarían {m}', { m: money0(mb.general - pj) })) + '</p></div>';
+      // Presupuesto del mes: cuánto llevas de cuánto, cuánto te queda al día y, en una frase, cómo cerrarías
+      var u = s.gast / mb.general, f = +HOY.slice(8, 10) / diasMes(P.m), left = mb.general - s.gast, pj = proyeccion(P.m), quedan = diasMes(P.m) - +HOY.slice(8, 10) + 1;
+      var tono = u > 1 ? 'is-over' : u > f + .1 ? 'is-warn' : 'is-ok';
+      html += '<div class="pfm-budget"><p class="pfm-budget__top"><span>' + T('Presupuesto de {mes}', { mes: mesName(P.m) }) + '</span><button class="section__link" data-pfm="budgets">' + T('Ajustar') + '</button></p>' +
+        '<p class="pfm-budget__v">' + T('<b>{g}</b> de {p}', { g: money(s.gast), p: money0(mb.general) }) + '</p>' +
+        '<div class="pfm-bar" role="img" aria-label="' + T('Llevas {pc} de tu presupuesto', { pc: pct(u) }) + '"><i class="is-gast ' + tono + '" style="width:' + Math.min(100, u * 100).toFixed(1) + '%"></i></div>' +
+        '<p class="pfm-budget__t">' + (left >= 0 ? T('Te quedan <b>{m}</b>: unos <b>{d}</b> al día por {n} días', { m: money0(left), d: money0(left / quedan), n: quedan }) : T('Te pasaste por <b>{m}</b>', { m: money0(-left) })) + '</p>' +
+        (pj > mb.general ? '<p class="pfm-budget__proj is-over"><span class="material-symbols-rounded" aria-hidden="true">trending_up</span><span>' + T('A este ritmo cierras el mes en <b>{m}</b>: {d} más de tu presupuesto.', { m: money0(pj), d: money0(pj - mb.general) }) + '</span></p>'
+          : left >= 0 ? '<p class="pfm-budget__proj"><span class="material-symbols-rounded" aria-hidden="true">check_circle</span><span>' + T('A este ritmo cierras el mes en <b>{m}</b> y te sobran {d}.', { m: money0(pj), d: money0(mb.general - pj) }) + '</span></p>' : '') + '</div>';
     } else if (P.m && !hayPres() && rows().length) {
       // Sin presupuesto solo se ve lo gastado, sin comparar; Uku propone armarlo
       html += '<p class="pfm-budget__t pfm-budget__t--sin"><span>' + T('Sin presupuesto todavía') + '</span><button class="section__link" data-pfm="pres">' + T('Armar mi presupuesto') + '</button></p>';
@@ -1251,7 +1364,8 @@
         var sub = gris ? (nIt ? T('No sabemos en qué fue · Clasifícalo') : T('Efectivo y lo que no tiene categoría')) : b ? (v > b ? T('{m} más de {p}', { m: money0(v - b), p: money0(b) }) : T('Te quedan {m} de {p}', { m: money0(b - v), p: money0(b) }))
           : P.meses ? T('unos {m} al mes', { m: money0(v / P.meses) }) : T('{pct} de tu gasto', { pct: pct(v / (s.gast || 1)) });
         return meter(gris && nIt ? 'game' : 'grupo:' + g, GRUPOS[g].ic, T(g), money(v), b ? v / b : v / max, gris ? 'gris' : b ? (v > b ? 'over' : v / b > +HOY.slice(8, 10) / diasMes(P.m) + .1 ? 'warn' : 'ok') : 'cat', sub);
-      }).join('') + (!ks.length ? '<p class="pf-note">' + T('No hay gastos {cuando}.', { cuando: P.l }) + '</p>' : '') + '</div></section></div>';
+      }).join('') + (!ks.length ? '<p class="pf-note">' + T('No hay gastos {cuando}.', { cuando: P.l }) + '</p>' : '') + '</div></section>' +
+      (sel && sel.f ? diaHTML(sel) : '') + '</div>';
     return html;
   }
   // Ingresos: ya no es un filtro de la pantalla, se ven en su hoja
@@ -1282,16 +1396,21 @@
   }
 
   // Movimientos: cada uno con su tratamiento
-  var PILL = { gasto: 'Gasto', ingreso: 'Ingreso', reembolso: 'Reembolso', rin: 'Por revisar', rout: 'Por revisar', no: 'No suma' };
-  function txHTML(r) {
+  // Fila de movimiento: el nombre como se lee (sin MAYÚSCULAS del banco), en qué grupo va y con qué lo pagaste;
+  // la etiqueta solo cuando hay algo que hacer (por revisar). En la lista de un día no repite la fecha.
+  function txHTML(r, enDia) {
     var c = cls(r), inc = r.m > 0, ic = c.k === 'ingreso' ? (ING_IC[c.cat] || 'south_west') : c.k === 'rin' || c.k === 'rout' ? 'help' : c.cat ? CAT[c.cat] || 'receipt_long' : 'sync_alt';
+    var nombre = desc(r); if (nombre === nombre.toUpperCase()) nombre = titulo(nombre);
+    var que = c.k === 'no' ? T('No suma') : c.k === 'ingreso' ? T(c.cat) : c.cat ? (grupo(c.cat) === 'Sin clasificar' ? T(c.cat) : T(grupo(c.cat))) : '';
+    var sub = [enDia ? '' : dshort(r.f), que, r.src.replace(/ Pichibank/, '')].filter(Boolean).join(' · ');
+    var rev = c.k === 'rin' || c.k === 'rout' ? '<span class="bp-tag bp-tag--pending" data-size="sm">' + T('Por revisar') + '</span>' : '';
     return '<button class="pf-tx pfm-tx' + (c.k === 'no' ? ' is-no' : '') + '" data-pfm="tx:' + r.i + '"><span class="pf-tx__ic material-symbols-rounded" aria-hidden="true">' + ic + '</span>' +
-      '<span class="pf-tx__main"><b>' + esc(desc(r)) + '</b><small>' + dshort(r.f) + ' · ' + esc(r.src.replace(/ Pichibank/, '')) + '</small>' +
-      '<span class="pfm-pill is-' + c.k + '">' + T(PILL[c.k]) + (c.cat && c.k !== 'no' ? ' · ' + esc(grupo(c.cat) === 'Sin clasificar' ? c.cat : T(grupo(c.cat))) : '') + '</span></span>' +
+      '<span class="pf-tx__main"><b>' + esc(nombre) + '</b><small>' + esc(sub) + '</small>' + rev + '</span>' +
       '<span class="pf-tx__amt' + (inc ? ' is-in' : '') + '">' + (inc ? '+' : '−') + money(Math.abs(r.m)) + '</span></button>';
   }
 
-  function paint() {
+
+  function paint(quieto) {
     if (!pf) return;
     if (!DB) { scroll.innerHTML = '<header class="pf-head"><h1>Mis finanzas</h1></header><p class="pf-note" style="padding:0 24px">' + T('Cargando tus movimientos…') + '</p>'; load().then(paint); return; }
     var keep = window.scrollY;
@@ -1300,7 +1419,7 @@
       ? '<button class="pf-back" data-pfm="inicio"><span class="material-symbols-rounded" aria-hidden="true">chevron_left</span>' + T('Mis finanzas') + '</button>' + gastosHTML() + dineroHTML()
       : hubHTML();
     scroll.innerHTML = '<header class="pf-head"><h1>' + (vistaGastos === 'gastos' ? T('Mis gastos') : 'Mis finanzas') + '</h1></header>' + body;
-    window.scrollTo({ top: vistaGastos ? 0 : keep });
+    window.scrollTo({ top: vistaGastos && !quieto ? 0 : keep });
   }
   /* ---------- Hojas ---------- */
   var sheet, back;
@@ -1455,7 +1574,8 @@
     };
     showSheet('<h3>' + T('Tu presupuesto') + '</h3><p>' + T('Cuánto quieres gastar al mes. Uku te avisa cuando te acerques al límite.') + '</p>' +
       (tobe() && sg ? '<button class="pfm-sug" data-pfm="bud:sug"><span class="material-symbols-rounded">auto_awesome</span><span><b>' + T('Usar el sugerido: {monto}', { monto: money0(sg.general) }) + '</b><small>' + T('Tu promedio de los últimos tres meses, por grupo, con 5% de margen.') + '</small></span></button>' : '') +
-      '<div class="pf-steps">' + step('general', p.general, '<b>' + T('Al mes') + '</b>') + '</div>' +
+      '<div class="pf-steps">' + step('general', p.general, '<b>' + T('Al mes') + '</b>') + step('ahorro', p.ahorro || 0, '<b>' + T('Ahorro al mes') + '</b>') + '</div>' +
+      (ahorroProg() ? '<p class="pf-note">' + T('Se guardan solos {m} el día {d} en {c}.', { m: money0(ahorroProg().monto), d: ahorroProg().dia, c: esc(ahorroProg().para) }) + '</p>' : '') +
       '<p class="as-sheet__label">' + T('Por grupo') + '</p><div class="pf-steps">' + PRES_G.map(function (k) { return step(k, p.cats[k], esc(T(k))); }).join('') + '</div>' +
       '<button class="pf-cta" data-pfm="bud:save">' + T('Guardar') + '</button>');
   }
@@ -1468,10 +1588,16 @@
   function planes() {
     var ing = ingresoMes(), p = prom(curMes(), 3), hoy = p ? round(p.gast * 1.05, 10) : round(month(curMes()).gast * 1.05, 10);
     var L = [{ id: 'hoy', t: T('Como gastas hoy'), v: hoy }, { id: 'a10', t: T('Ahorrar el 10%'), v: round(ing * .9, 10) }, { id: 'a20', t: T('Ahorrar el 20%'), v: round(ing * .8, 10) }];
+    // Si cada semana sacas un monto parecido de tu ahorro para el día a día, ese es tu ritmo: lo fijo de siempre más eso
+    var rt = ritmo(), gr = p ? p.grupos : month(curMes()).grupos;
+    if (rt) {
+      var fijo = FIJO.reduce(function (a, k) { return a + (gr[k] || 0); }, 0);
+      L.unshift({ id: 'ritmo', t: T('A tu ritmo: {m} a la semana', { m: money0(rt.monto) }), v: round(fijo + rt.monto * 52 / 12, 10), sub: T('Lo fijo de siempre más lo que sacas cada semana de tu ahorro') });
+    }
     // Recomienda lo más cercano a tus hábitos que igual te deje ahorrar algo
-    var rec = hoy <= ing * .9 ? 'hoy' : 'a10';
+    var rec = rt && L[0].v <= ing ? 'ritmo' : hoy <= ing * .9 ? 'hoy' : 'a10';
     L.forEach(function (x) { x.rec = x.id === rec; x.libre = r2(ing - x.v); });
-    return { ing: ing, prom: p ? p.gast : month(curMes()).gast, grupos: p ? p.grupos : month(curMes()).grupos, L: L };
+    return { ing: ing, ingR: Math.round(ing), prom: p ? p.gast : month(curMes()).gast, grupos: gr, L: L };
   }
   function repartir(total, grupos) {
     // Lo sin clasificar (efectivo, Deuna, transferencias) suele ser gasto que se puede mover: se ajusta con lo flexible
@@ -1516,45 +1642,70 @@
           var on = x.id === wiz.plan;
           return '<button class="pfm-plan" role="radio" aria-checked="' + on + '" aria-pressed="' + on + '" data-pfm="presw:plan:' + x.id + '">' +
             '<span class="pfm-plan__top"><b class="pfm-plan__t">' + esc(x.t) + '</b>' + (x.rec ? '<span class="bp-tag bp-tag--success">' + T('Recomendado') + '</span>' : '') + '<span class="as-radio"></span></span>' +
+            (x.sub ? '<small class="pfm-plan__sub">' + esc(x.sub) + '</small>' : '') +
             '<span class="pfm-plan__m">' + money0(x.v) + '<small>' + T('al mes') + '</small></span>' + planBar(x.v, P.ing) +
-            '<small class="pfm-plan__s' + (x.libre < 0 ? ' is-over' : '') + '">' + (x.libre >= 0 ? T('Ahorras {m} al mes · {a} al año', { m: money0(Math.round(x.libre)), a: money0(Math.round(x.libre * 12)) }) : T('Gastarías {m} más de lo que recibes', { m: money0(Math.round(-x.libre)) })) + '</small></button>'; }).join('') + '</div>',
+            '<small class="pfm-plan__s' + (x.libre < 5 ? ' is-over' : '') + '">' + (Math.abs(x.libre) < 5 ? T('Gastarías todo lo que recibes: no te queda para ahorrar') : x.libre >= 0 ? T('Ahorras {m} al mes · {a} al año', { m: money0(Math.round(x.libre)), a: money0(Math.round(x.libre * 12)) }) : T('Gastarías {m} más de lo que recibes', { m: money0(Math.round(-x.libre)) })) + '</small></button>'; }).join('') + '</div>',
         wizBtn('cerrar', T('Ahora no'), 1), wizBtn('presw:2', T('Siguiente')));
     }
-    if (!draft) draft = { general: plan.v, cats: repartir(plan.v, P.grupos) };
+    var ya = ahorroProg();
+    if (!draft) draft = { general: plan.v, cats: repartir(plan.v, P.grupos), ahorro: Math.max(0, P.ingR - plan.v), prog: !!ya };
+    if (draft.ahorro == null) draft.ahorro = Math.max(0, P.ingR - draft.general);
+    var dia = ya ? ya.dia : diaCobro(), para = ya ? ya.para : cuentaAhorro();
+    // Ahorro: un renglón más del reparto, con la opción de que se guarde solo el día que cobras
+    var ahorroHTML = function (editable) {
+      var a = draft.ahorro || 0;
+      return '<section class="pfm-reparto pfm-reparto--ahorro"><h4>' + T('Tu ahorro') + '<small>' + T('Lo que separas apenas cobras, antes de gastar') + '</small></h4>' +
+        '<div class="pfm-reparto__row"><span class="pfm-reparto__ic material-symbols-rounded" aria-hidden="true">savings</span>' +
+          '<span class="pfm-reparto__main"><b>' + T('Ahorro') + '</b><small>' + (a ? T('{a} al año', { a: money0(a * 12) }) : T('Súbelo para empezar')) + '</small></span>' +
+          (editable ? stepper('ahorro', a, T('Ahorro')) : '<b class="pfm-reparto__v">' + money0(a) + '</b>') + '</div>' +
+        '<button class="bp-list-item pfm-prog" data-pfm="presw:prog" aria-pressed="' + !!draft.prog + '"' + (a ? '' : ' disabled') + '>' +
+          '<span class="bp-list-item__main"><span class="bp-list-item__title">' + T('Que se guarde solo') + '</span>' +
+          '<span class="bp-list-item__sub">' + (ya && Math.abs(ya.monto - a) >= 1 ? T('Hoy se guardan {y} el día {d} en {c}. Lo cambiamos a {m}', { y: money0(ya.monto), d: dia, m: money0(a), c: esc(para) })
+            : T('El día {d} de cada mes pasamos {m} {desde}a {c}', { d: dia, m: money0(a), desde: esc(desdeAhorro()), c: esc(para) })) + '</span></span>' +
+          '<span class="bp-switch"><span class="bp-switch__knob"></span></span></button></section>';
+    };
+    var stepper = function (id, v, nombre) {
+      return '<span class="pfm-stepper"><button data-pfm="bud:' + esc(id) + ':-10" aria-label="' + T('Bajar {g}', { g: nombre }) + '"' + (v ? '' : ' disabled') + '><span class="material-symbols-rounded" aria-hidden="true">remove</span></button>' +
+        '<b>' + (v ? money0(v) : '—') + '</b><button data-pfm="bud:' + esc(id) + ':10" aria-label="' + T('Subir {g}', { g: nombre }) + '"><span class="material-symbols-rounded" aria-hidden="true">add</span></button></span>';
+    };
     if (wiz.paso === 2) {
       var vis = PRES_G.filter(function (k) { return draft.cats[k] || P.grupos[k] >= 20; });
       var suma = sumv(Object.keys(draft.cats), function (k) { return draft.cats[k]; }), libre = draft.general - suma;
-      var fijo = sumv(vis.filter(function (k) { return FIJO.indexOf(k) >= 0; }), function (k) { return draft.cats[k] || 0; }), mover = suma - fijo, tot = Math.max(draft.general, suma, 1);
+      var fijo = sumv(vis.filter(function (k) { return FIJO.indexOf(k) >= 0; }), function (k) { return draft.cats[k] || 0; }), mover = suma - fijo;
+      var tot = Math.max(P.ingR, suma + (draft.ahorro || 0), draft.general + (draft.ahorro || 0), 1);
       var fila = function (k) {
         var v = draft.cats[k] || 0, avg = Math.round(P.grupos[k] || 0), d = v - avg;
         return '<div class="pfm-reparto__row"><span class="pfm-reparto__ic material-symbols-rounded" aria-hidden="true">' + GRUPOS[k].ic + '</span>' +
           '<span class="pfm-reparto__main"><b>' + esc(T(k)) + '</b><small>' + T('Promedio {m}', { m: money0(avg) }) + (Math.abs(d) >= 10 ? ' · <em class="' + (d < 0 ? 'is-down' : 'is-up') + '">' + (d < 0 ? '−' : '+') + money0(Math.abs(d)) + '</em>' : '') + '</small></span>' +
-          '<span class="pfm-stepper"><button data-pfm="bud:' + esc(k) + ':-10" aria-label="' + T('Bajar {g}', { g: T(k) }) + '"' + (v ? '' : ' disabled') + '><span class="material-symbols-rounded" aria-hidden="true">remove</span></button>' +
-          '<b>' + (v ? money0(v) : '—') + '</b><button data-pfm="bud:' + esc(k) + ':10" aria-label="' + T('Subir {g}', { g: T(k) }) + '"><span class="material-symbols-rounded" aria-hidden="true">add</span></button></span></div>';
+          stepper(k, v, T(k)) + '</div>';
       };
       var grupo2 = function (t, s, ks) { return ks.length ? '<section class="pfm-reparto"><h4>' + t + '<small>' + s + '</small></h4>' + ks.map(fila).join('') + '</section>' : ''; };
       var seg = function (v, c) { return v > 0 ? '<i class="' + c + '" style="width:' + (v / tot * 100).toFixed(1) + '%"></i>' : ''; };
-      return wizShell(2, T('Así lo repartiría'), T('Lo fijo queda como está. Lo que puedes mover se ajusta a tu total.'),
-        '<div class="pfm-wiz__sum"><div class="pfm-wiz__sumtop"><small>' + T('Tu presupuesto') + '</small><b>' + money0(draft.general) + '<small>' + T('al mes') + '</small></b></div>' +
-          '<span class="pfm-wiz__stack" aria-hidden="true">' + seg(fijo, 'is-fijo') + seg(mover, 'is-mover') + seg(Math.max(0, libre), 'is-libre') + '</span>' +
-          '<span class="pfm-wiz__legend"><span><i class="is-fijo"></i>' + T('Fijo') + ' ' + money0(fijo) + '</span><span><i class="is-mover"></i>' + T('Para mover') + ' ' + money0(mover) + '</span>' + (libre > 0 ? '<span><i class="is-libre"></i>' + T('Libre') + ' ' + money0(libre) + '</span>' : '') + '</span></div>' +
+      var ley = function (c, l, v) { return v > 0 ? '<span><i class="' + c + '"></i>' + l + '<b>' + money0(v) + '</b></span>' : ''; };
+      return wizShell(2, T('Así lo repartiría'), T('Lo que recibes se reparte entre tus gastos y tu ahorro. Lo fijo queda como está; lo demás lo puedes mover.'),
+        '<div class="pfm-wiz__sum"><div class="pfm-wiz__sumtop"><small>' + T('Recibes al mes') + '</small><b>' + money0(P.ingR) + '</b></div>' +
+          '<span class="pfm-wiz__stack" aria-hidden="true">' + seg(fijo, 'is-fijo') + seg(mover, 'is-mover') + seg(Math.max(0, libre), 'is-libre') + seg(draft.ahorro, 'is-ahorro') + '</span>' +
+          '<span class="pfm-wiz__legend">' + ley('is-fijo', T('Fijo'), fijo) + ley('is-mover', T('Para mover'), mover) + ley('is-libre', T('Sin repartir'), libre) + ley('is-ahorro', T('Ahorro'), draft.ahorro) + '</span></div>' +
         grupo2(T('Lo fijo'), T('Tu casa, tus deudas y lo que no cambia'), vis.filter(function (k) { return FIJO.indexOf(k) >= 0; })) +
         grupo2(T('Lo que puedes mover'), T('Aquí está tu margen para ahorrar'), vis.filter(function (k) { return FIJO.indexOf(k) < 0; })) +
-        '<p class="pfm-wiz__callout' + (libre < 0 ? ' is-over' : '') + '"><span class="material-symbols-rounded" aria-hidden="true">' + (libre < 0 ? 'error' : 'info') + '</span><span>' +
-          (libre < 0 ? T('Los grupos suman {d} más que tu total. Baja alguno para que cuadre.', { d: money0(-libre) }) : libre > 0 ? T('Quedan {r} para lo que aún no está clasificado.', { r: money0(libre) }) : T('Todo tu presupuesto está repartido.')) + '</span></p>' +
+        ahorroHTML(true) +
+        (libre < 0 || draft.general + (draft.ahorro || 0) > P.ingR + 5 ? '<p class="pfm-wiz__callout is-over"><span class="material-symbols-rounded" aria-hidden="true">error</span><span>' +
+          (libre < 0 ? T('Los grupos suman {d} más que lo que planeas gastar. Baja alguno para que cuadre.', { d: money0(-libre) }) : T('Entre gastos y ahorro planeas {d} más de lo que recibes.', { d: money0(draft.general + draft.ahorro - P.ingR) })) + '</span></p>'
+          : libre > 0 ? '<p class="pfm-wiz__callout"><span class="material-symbols-rounded" aria-hidden="true">info</span><span>' + T('Quedan {r} para lo que aún no está clasificado.', { r: money0(libre) }) + '</span></p>' : '') +
         (animo().n ? '<button class="pf-link pfm-wiz__more" data-pfm="game"><span class="material-symbols-rounded" aria-hidden="true">category</span>' + T('Clasificar mis gastos para repartir mejor') + '</button>' : ''),
         wizBtn('presw:1', T('Atrás'), 1), wizBtn('presw:3', T('Siguiente')));
     }
-    var m = curMes(), g = month(m).gast, hoy = +HOY.slice(8, 10), dias = diasMes(m) - hoy + 1, queda = draft.general - g, aho = Math.round(P.ing - draft.general);
+    var m = curMes(), g = month(m).gast, hoy = +HOY.slice(8, 10), dias = diasMes(m) - hoy + 1, queda = draft.general - g, aho = draft.ahorro || 0, lleva = ahorroMes(m);
     var u = Math.min(100, g / Math.max(1, draft.general) * 100), f = hoy / diasMes(m) * 100;
     var acomp = [['notifications_active', T('Te aviso cuando llegues al 80% de un grupo')], ['calendar_month', T('Cada lunes te enviamos tu avance')], ['tune', T('Lo puedes cambiar cuando quieras')]];
+    if (draft.prog && aho) acomp.unshift(['event_repeat', T('El día {d} se guardan {m} en {c}, sin que tengas que acordarte', { d: dia, m: money0(aho), c: esc(para) })]);
     return wizShell(3, T('Tu presupuesto está listo'), '',
       '<div class="pfm-wiz__hero"><small>' + T('Gastarás hasta') + '</small><b>' + money0(draft.general) + '<small>' + T('al mes') + '</small></b>' +
-        '<span class="pfm-wiz__prog' + (queda <= 0 ? ' is-over' : '') + '" aria-hidden="true"><i style="width:' + u.toFixed(1) + '%"></i><em style="left:' + f.toFixed(1) + '%"></em></span>' +
+        '<span class="pfm-wiz__prog' + (queda <= 0 ? ' is-over' : u > f + 10 ? ' is-warn' : '') + '" aria-hidden="true"><i style="width:' + u.toFixed(1) + '%"></i></span>' +
         '<span class="pfm-wiz__progl"><span>' + T('En {mes} llevas {m}', { mes: mesName(m), m: '<b>' + money0(Math.round(g)) + '</b>' }) + '</span><span>' + (queda > 0 ? T('Te quedan {m}', { m: '<b>' + money0(Math.round(queda)) + '</b>' }) : T('Te pasaste por {m}', { m: '<b>' + money0(Math.round(-queda)) + '</b>' })) + '</span></span></div>' +
       '<div class="pfm-wiz__tiles">' +
         (queda > 0 ? '<div><small>' + T('Para gastar al día') + '</small><b>' + money0(queda / dias) + '</b><span>' + T('durante {d} días', { d: dias }) + '</span></div>' : '') +
-        (aho > 0 ? '<div class="is-save"><small>' + T('Ahorrarías') + '</small><b>' + money0(aho) + '</b><span>' + T('al mes · {a} al año', { a: money0(aho * 12) }) + '</span></div>' : '') + '</div>' +
+        (aho > 0 ? '<div class="is-save"><small>' + T('Ahorras') + '</small><b>' + money0(aho) + '</b><span>' + (lleva > 0 ? T('al mes · este mes ya guardaste {g}', { g: money0(lleva) }) : T('al mes · {a} al año', { a: money0(aho * 12) })) + '</span></div>' : '') + '</div>' +
       '<section class="pfm-wiz__acomp"><h4>' + T('Uku te acompaña') + '</h4>' + acomp.map(function (x) { return '<p><span class="material-symbols-rounded" aria-hidden="true">' + x[0] + '</span>' + x[1] + '</p>'; }).join('') + '</section>',
       wizBtn('presw:2', T('Atrás'), 1), wizBtn('presw:save', T('Guardar presupuesto')));
   }
@@ -1601,9 +1752,9 @@
       case 'u': if (ST.u !== p[1]) { ST.u = p[1]; persist(); fx('toggle'); refresh(); } closeSheet(); return;
       case 'reset': ST.resp[ST.u] = {}; ST.cats[ST.u] = {}; if (ST.hecho) delete ST.hecho[ST.u]; if (ST.oculto) delete ST.oculto[ST.u]; if (ST.rules) delete ST.rules[ST.u]; if (ST.mesadas) delete ST.mesadas[ST.u]; if (ST.presG) delete ST.presG[ST.u]; if (ST.seed) delete ST.seed[ST.u]; sembrar(ST.u); persist(); refresh(); closeSheet(); toast(T('Listo, volviste al inicio.')); return;
       case 'per': ST.per = p[1]; BAR = null; persist(); fx('select'); paint(); return;
-      case 'gastos': vistaGastos = 'gastos'; BAR = null; fx('tap'); paint(); return;
+      case 'gastos': vistaGastos = 'gastos'; ST.per = 'mes'; BAR = null; fx('tap'); paint(); return;
       case 'inicio': vistaGastos = null; fx('tap'); paint(); return;
-      case 'bar': BAR = BAR === +p[1] ? null : +p[1]; fx('tap'); paint(); return;
+      case 'bar': BAR = p[1] === 'off' || BAR === +p[1] ? null : +p[1]; fx('tap'); paint(true); return;
       case 'ing': return ingSheet();
       case 'debt': return deudasSheet();
       case 'net': return netSheet();
@@ -1615,15 +1766,24 @@
       case 'ins': return insightsSheet();
       case 'cerrar': return closeSheet();
       // Consejos del asesor: programar (con confirmación), aplicar, deshacer o dejar para después
-      case 'pagar': case 'tarjeta': case 'ahorro': { var cx = consejo(k === 'tarjeta' || k === 'ahorro' ? k : 'pago:' + p.slice(1).join(':')); if (cx) confirmar(cx); return; }
+      case 'pagar': case 'tarjeta': case 'ahorro': case 'flex': case 'poliza': { var cx = consejo(/^(tarjeta|ahorro|flex|poliza)$/.test(k) ? k : 'pago:' + p.slice(1).join(':')); if (cx) confirmar(cx); return; }
       case 'pres': wiz = null; draft = null; fx('open'); return presWizard(1);
       case 'presw': {
         if (p[1] === 'plan') { wiz.plan = p[2]; draft = null; fx('select'); return presWizard(1); }
-        if (p[1] === 'save') { setPres(draft); setHecho('pres', HOY); var gen = draft.general; draft = null; wiz = null; closeSheet(); fx('success'); refresh(); document.dispatchEvent(new CustomEvent('uku:pres')); return toast(T('Listo: tu presupuesto es {m} al mes.', { m: money0(gen) }), 'deshacer:pres'); }
+        if (p[1] === 'prog') { if (draft && draft.ahorro) { draft.prog = !draft.prog; fx('select'); } var sp = sheet.scrollTop; presWizard(); sheet.scrollTop = sp; return; }
+        if (p[1] === 'save') {
+          setPres(draft); setHecho('pres', HOY); var gen = draft.general, ah = draft.ahorro || 0;
+          // El ahorro que se guarda solo: el día que cobras, a tu ahorro
+          var ya2 = ahorroProg();
+          if (draft.prog && ah) { setAhorroProg({ monto: ah, dia: ya2 ? ya2.dia : diaCobro(), para: ya2 ? ya2.para : cuentaAhorro() }); setHecho('ahorro', HOY); document.dispatchEvent(new CustomEvent('uku:ahorro')); }
+          else if (!draft.prog) setAhorroProg(null);
+          var prog = draft.prog && ah; draft = null; wiz = null; closeSheet(); fx('success'); refresh(); document.dispatchEvent(new CustomEvent('uku:pres'));
+          return toast(prog ? T('Listo: gastas hasta {m} y se guardan {a} cada mes.', { m: money0(gen), a: money0(ah) }) : T('Listo: tu presupuesto es {m} al mes.', { m: money0(gen) }), 'deshacer:pres');
+        }
         fx('tap'); return presWizard(+p[1]);
       }
       case 'hecho': { if (/^ahorro/.test(p.slice(1).join(':'))) document.dispatchEvent(new CustomEvent('uku:ahorro')); var hid = p.slice(1).join(':'), hx = consejo(hid); setHecho(hid, HOY); closeSheet(); fx('success'); refresh(); return toast(hx && hx.ok ? hx.ok : T('Listo.'), 'deshacer:' + hid); }
-      case 'deshacer': { var did = p.slice(1).join(':'); setHecho(did, null); if (did === 'pres' && ST.presG) { delete ST.presG[ST.u]; persist(); } fx('tap'); refresh(); if (sheetOpen()) insightsSheet(); return; }
+      case 'deshacer': { var did = p.slice(1).join(':'); setHecho(did, null); if (did === 'pres' && ST.presG) { delete ST.presG[ST.u]; if (ST.ahorroProg && ST.ahorroProg[ST.u]) { setAhorroProg(null); setHecho('ahorro', null); } persist(); } fx('tap'); refresh(); if (sheetOpen()) insightsSheet(); return; }
       case 'luego': { var lid = p.slice(1).join(':'); ((ST.oculto || (ST.oculto = {}))[ST.u] = ST.oculto[ST.u] || {})[lid] = HOY; persist(); fx('tap'); refresh(); if (sheetOpen()) insightsSheet(); return toast(T('Lo dejo para después.'), 'verluego'); }
       // Desde el globo de Uku: ocultar una sugerencia sin abrir hojas, con «Deshacer» en el aviso
       case 'ocultar': { var oid = p.slice(1).join(':'); ((ST.oculto || (ST.oculto = {}))[ST.u] = ST.oculto[ST.u] || {})[oid] = HOY; persist(); fx('tap'); refresh(); return toast(T('Listo, ya no te la muestro.'), 'desocultar:' + oid); }
@@ -1669,7 +1829,11 @@
         if (p[1] === 'sug') { var sg = sugerido(curMes()); draft = { general: sg.general, cats: sg.cats }; fx('select'); return budgetSheet(); }
         var d = +p[2], id2 = p[1];
         if (id2 === 'general') draft.general = Math.max(50, draft.general + d);
-        else { var v = Math.max(0, (draft.cats[id2] || 0) + d); if (v) draft.cats[id2] = v; else delete draft.cats[id2]; }
+        else if (id2 === 'ahorro') {
+          var antes0 = draft.ahorro || 0; draft.ahorro = Math.max(0, (draft.ahorro || 0) + d); if (!draft.ahorro) draft.prog = false;
+          // En el asistente, lo que sube el ahorro baja del gasto (lo que recibes se reparte entre los dos)
+          if (wiz) draft.general = Math.max(50, draft.general - (draft.ahorro - antes0));
+        } else { var v = Math.max(0, (draft.cats[id2] || 0) + d); if (v) draft.cats[id2] = v; else delete draft.cats[id2]; }
         fx('tick'); var st = sheet.scrollTop; if (wiz) presWizard(); else budgetSheet(); sheet.scrollTop = st; return;
       }
       case 'analyze': return analyze();

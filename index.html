@@ -4339,6 +4339,17 @@
             { name: 'Cuenta Corriente', acct: '1234', balance: 1440.35 },
             { name: 'Cuenta Ahorro transaccional', acct: '7980', balance: 100.00 },
         ];
+        // Son las cuentas de la persona activa. El Ahorro flexible no aparece: desde él solo se envía a tus cuentas
+        const ORIGIN_DEMO = ORIGIN_ACCOUNTS.slice();
+        function cuentasOrigen() {
+            if (!window.Persona) return;
+            Persona.cuentas(Persona.get()).then(cs => {
+                const L = cs.filter(c => (c.tipo === 'transaccional' || c.tipo === 'ahorro') && !c.solo_propias).map(c => ({ name: c.nombre, acct: c.numero, balance: c.saldo }));
+                ORIGIN_ACCOUNTS.splice(0, ORIGIN_ACCOUNTS.length, ...(L.length ? L : ORIGIN_DEMO));
+            }).catch(() => {});
+        }
+        window.addEventListener('load', cuentasOrigen);
+        document.addEventListener('persona:change', cuentasOrigen);
         const CARRIERS = ['Claro', 'Movistar', 'CNT'];
 
         // Algunas acciones rápidas en la banca real abren un micrositio de
