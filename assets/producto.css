@@ -194,7 +194,7 @@
 .pv-estado__head small { font: var(--sol-body-md-regular); color: var(--bp-theme-color-text-secondary); }
 .pv-estado__head b { font: var(--sol-numeric-sm); font-variant-numeric: tabular-nums; }
 .pv-leyenda { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font: var(--sol-body-sm-medium); color: var(--bp-theme-color-text-secondary); text-align: right; }
-.pv-leyenda li { display: flex; align-items: center; justify-content: flex-end; gap: 6px; white-space: nowrap; }
+.pv-leyenda li { display: flex; align-items: center; justify-content: flex-end; gap: var(--bp-semantic-spacing-micro-md); white-space: nowrap; }
 .pv-leyenda i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 .pv-leyenda .is-azul { background: #2d6cdf; }
 .pv-leyenda .is-hueco { border: 2px dashed #9aa3b8; }
@@ -232,7 +232,7 @@
 
 /* Oferta de tarjetas */
 .pv-oferta { display: flex; align-items: center; justify-content: space-between; min-height: 120px; padding: var(--bp-semantic-spacing-macro-sm); border-radius: var(--bp-semantic-radius-md); background: linear-gradient(135deg, #1b1d22 0%, #3b3f48 100%); color: #fff; }
-.pv-oferta > div { display: flex; flex-direction: column; gap: 6px; }
+.pv-oferta > div { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md); }
 .pv-oferta > div > span { font: var(--sol-body-lg-medium, 500 17px/24px var(--sol-font)); }
 .pv-oferta .pv-enlace { justify-content: flex-start; padding: 0; color: #fff; }
 .pv-oferta > .material-symbols-rounded { font-size: 56px; opacity: .85; }

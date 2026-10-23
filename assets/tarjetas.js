@@ -20,7 +20,8 @@
   var esc = function (t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
   var money = function (v) { return '$ ' + Number(Math.abs(v || 0)).toLocaleString('es-EC', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
   var ms = function (i) { return '<span class="material-symbols-rounded" aria-hidden="true">' + i + '</span>'; };
-  var A = './assets/tarjetas/';
+  // Ruta de las imágenes: relativa a la página (el catálogo del sandbox define window.PB_BASE = '../')
+  var A = (window.PB_BASE || './') + 'assets/tarjetas/';
 
   var TIPOS = {
     debito: {

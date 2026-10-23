@@ -120,7 +120,7 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 .uk-globo::before { content: ''; position: absolute; right: 8px; bottom: -28px; width: 7px; height: 7px; border-radius: 50%; background: var(--uk-white); box-shadow: var(--uk-elev-low); }
 .uk-globo.is-new { animation: ukIn .35s cubic-bezier(.2, 1.2, .4, 1) both; }
 /* Tres chips apilados a la izquierda, sobre Uku */
-.uk-chips { position: relative; z-index: 3; order: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 28px; max-width: 72%; }
+.uk-chips { position: relative; z-index: 3; order: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: var(--bp-semantic-spacing-macro-md); max-width: 72%; }
 /* Barra «Busca o pregunta» y micrófono aparte */
 .uk-bar { position: relative; z-index: 5; order: 5; display: flex; align-items: center; gap: 12px; margin: auto 0 0; }
 .uk-bar__f { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; min-height: var(--uk-bar-h); padding: 0 var(--uk-pad); border-radius: var(--uk-r); background: var(--uk-white); box-shadow: var(--uk-elev-low); }
@@ -133,7 +133,7 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 .uk-bar__send { display: none; }
 /* Dos accesos: icono y nombre en una línea, debajo para qué sirve */
 .uk-pills { position: relative; z-index: 3; order: 6; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
-.uk-pill { position: relative; display: grid; grid-template-columns: 24px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 8px; row-gap: 6px; align-items: center; padding: var(--uk-pad); border: 0; border-radius: var(--uk-r); background: var(--uk-white); color: var(--uk-text); text-align: left; box-shadow: var(--uk-elev-low); cursor: pointer; }
+.uk-pill { position: relative; display: grid; grid-template-columns: 24px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 8px; row-gap: var(--bp-semantic-spacing-micro-md); align-items: center; padding: var(--uk-pad); border: 0; border-radius: var(--uk-r); background: var(--uk-white); color: var(--uk-text); text-align: left; box-shadow: var(--uk-elev-low); cursor: pointer; }
 .uk-pill > .material-symbols-rounded { grid-row: 1; grid-column: 1; font-size: 24px; color: var(--uk-navy); }
 .uk-pill b { grid-row: 1; grid-column: 2; font: var(--uk-body-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .uk-pill small { grid-row: 2; grid-column: 1 / 3; font: var(--uk-sm); color: var(--uk-muted); }
@@ -168,7 +168,6 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 /* La respuesta de Uku: burbuja blanca; debajo, sus acciones como tarjeta con filas */
 .uk-msg { display: flex; align-items: flex-start; max-width: 100%; }
 .uk-msg:not(.is-seen) { animation: ukIn .35s cubic-bezier(.2, 1.2, .4, 1) both; }
-.uk-msg__body { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
 .uk-msg__who { display: block; margin: 0 0 -6px 4px; font: var(--uk-caption); color: var(--uk-muted); }
 .uk-msg__b { display: flex; flex-direction: column; gap: var(--uk-gap-item); max-width: 92%; padding: 20px var(--bp-semantic-spacing-macro-md, 24px); border-radius: 24px; background: var(--uk-white); color: var(--uk-text); }
 .uk-msg__b > p { font: var(--uk-body); }
@@ -183,7 +182,7 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 .uk-card__data dt { font: var(--uk-sm); color: var(--uk-muted); }
 .uk-card__data dd { margin: 0; font: var(--uk-body-semibold); color: var(--uk-text); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .uk-barras { display: flex; flex-direction: column; gap: 12px; }
-.uk-barra { display: grid; grid-template-columns: 1fr auto; row-gap: 6px; align-items: baseline; }
+.uk-barra { display: grid; grid-template-columns: 1fr auto; row-gap: var(--bp-semantic-spacing-micro-md); align-items: baseline; }
 .uk-barra span { font: var(--uk-sm); color: var(--uk-text); }
 .uk-barra b { font: var(--uk-sm-semibold); font-variant-numeric: tabular-nums; }
 .uk-barra i { grid-column: 1 / -1; display: block; height: 6px; border-radius: 3px; background: var(--uk-navy); }
@@ -191,7 +190,7 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 .uk-av { display: grid; place-items: center; width: 100%; height: 100%; font: var(--uk-caption); font-weight: 700; color: var(--uk-text); }
 /* Lista de medidores (respuestas del orquestador): cada parte con lo usado de su total y su tono */
 .uk-medidores { display: flex; flex-direction: column; gap: 12px; }
-.uk-medidor { display: grid; grid-template-columns: 1fr auto; row-gap: 6px; align-items: baseline; }
+.uk-medidor { display: grid; grid-template-columns: 1fr auto; row-gap: var(--bp-semantic-spacing-micro-md); align-items: baseline; }
 .uk-medidor span { font: var(--uk-sm); color: var(--uk-text); }
 .uk-medidor b { font: var(--uk-sm-semibold); color: var(--uk-muted); font-variant-numeric: tabular-nums; }
 .uk-medidor i { grid-column: 1 / -1; display: block; height: 6px; border-radius: 3px; background: var(--bp-theme-color-data-chart-track, var(--uk-grey)); overflow: hidden; }
@@ -232,8 +231,8 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 .uk-meter.is-over i { background: var(--bp-theme-color-status-error-text); }
 .uk-meter__l { margin-top: -4px; font: var(--uk-caption); color: var(--uk-muted); }
 .uk-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--uk-gap-item); }
-.uk-stat { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 16px 14px 14px; border-radius: var(--uk-r); background: var(--uk-grey); }
-.uk-stat:first-child:nth-last-child(3) { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 14px; padding: 14px 16px; }
+.uk-stat { display: flex; flex-direction: column; gap: var(--bp-semantic-spacing-micro-md); min-width: 0; padding: 16px 14px 14px; border-radius: var(--uk-r); background: var(--uk-grey); }
+.uk-stat:first-child:nth-last-child(3) { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: var(--bp-semantic-spacing-macro-sm); padding: 14px 16px; }
 .uk-stat .material-symbols-rounded { font-size: 22px; color: var(--uk-navy); }
 .uk-stat.is-ok .material-symbols-rounded { color: var(--bp-theme-color-status-success-text); }
 .uk-stat.is-warn .material-symbols-rounded { color: var(--bp-theme-color-status-warning-text); }
@@ -241,7 +240,7 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 .uk-stat:first-child:nth-last-child(3) b { margin-right: auto; }
 .uk-stat small { font: var(--uk-caption); color: var(--uk-muted); line-height: 1.3; }
 .uk-steps { margin: 0; padding: 0 0 0 20px; font: var(--uk-sm); }
-.uk-steps li + li { margin-top: 6px; }
+.uk-steps li + li { margin-top: var(--bp-semantic-spacing-micro-md); }
 .uk-case { display: flex; flex-direction: column; gap: 2px; padding: 12px 16px; border-radius: var(--uk-r); background: var(--uk-grey); font: var(--uk-sm); }
 .uk-case b { font: var(--uk-body-semibold); }
 .uk-links { display: flex; flex-direction: column; gap: 8px; }
@@ -258,7 +257,7 @@ html.uk-nonav .uk { --uk-safeb: env(safe-area-inset-bottom, 0px); bottom: var(--
 /* Leyenda al tocar a Uku: chips efímeros junto a su cabeza */
 .uk-leyenda { position: absolute; inset: 0; z-index: 4; pointer-events: none; transition: opacity .2s ease; }
 .uk-leyenda.is-off { opacity: 0; }
-.uk-leyenda__chip { position: absolute; display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px 0 8px; border: 0; border-radius: var(--bp-semantic-radius-full, 999px); background: var(--uk-white); color: var(--uk-text); font: var(--uk-caption); box-shadow: var(--uk-elev-low); pointer-events: auto; cursor: pointer; animation: ukLeyenda .3s cubic-bezier(.2, 1.2, .4, 1) both; animation-delay: var(--d, 0ms); }
+.uk-leyenda__chip { position: absolute; display: inline-flex; align-items: center; gap: var(--bp-semantic-spacing-micro-md); height: 28px; padding: 0 10px 0 8px; border: 0; border-radius: var(--bp-semantic-radius-full, 999px); background: var(--uk-white); color: var(--uk-text); font: var(--uk-caption); box-shadow: var(--uk-elev-low); pointer-events: auto; cursor: pointer; animation: ukLeyenda .3s cubic-bezier(.2, 1.2, .4, 1) both; animation-delay: var(--d, 0ms); }
 .uk-leyenda__chip i { width: 6px; height: 6px; border-radius: 50%; background: var(--bp-theme-color-status-success-bg, #2e8b57); }
 .uk-leyenda__chip.is-warn i { background: var(--bp-theme-color-status-warning-bg, #e8a33d); }
 .uk-leyenda__chip.is-calm i { background: var(--uk-navy); }
@@ -390,10 +389,10 @@ html.uk-chatting:not(.uk-nonav) .pf-toast { top: auto !important; bottom: calc(v
 
 /* ---------- 9. Onboarding, teclado, movimiento ---------- */
 /* Onboarding de Uku: sus tres pasos se dicen en el globo de siempre */
-.uk-globo--onb .uk-globo__dots { display: flex; gap: 6px; margin: 0 0 12px; }
+.uk-globo--onb .uk-globo__dots { display: flex; gap: var(--bp-semantic-spacing-micro-md); margin: 0 0 12px; }
 .uk-globo--onb .uk-globo__dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--uk-line); transition: width .2s ease, background .2s ease; }
 .uk-globo--onb .uk-globo__dots i.is-on { width: 18px; background: var(--uk-navy); }
-.uk-globo--onb .uk-globo__h { margin: 0 0 6px; font: var(--uk-title-md); letter-spacing: 0; }
+.uk-globo--onb .uk-globo__h { margin: 0 0 var(--bp-semantic-spacing-micro-md); font: var(--uk-title-md); letter-spacing: 0; }
 .uk-globo--onb .uk-onb__go { margin-top: 16px; width: 100%; }
 .uk-globo--onb .uk-onb__skip { display: block; margin: 8px auto 0; }
 /* Teclado: la pantalla se acorta hasta el borde del teclado y la barra sube con él */
