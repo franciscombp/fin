@@ -86,7 +86,15 @@
       return o('Gasto', comercio(d + ' ' + cp) || 'Compras personales', 'Consumo con tu tarjeta');
     }
     // Cuenta
+    // Pólizas a plazo fijo: abrirlas o renovarlas es invertir (no es gasto); al vencer vuelve el capital y solo el interés es ingreso
+    if (/poliza|deposito a plazo|plazo fijo/.test(d)) {
+      if (/interes/.test(d)) return o('Ingreso', 'Intereses', 'Intereses que te pagó tu póliza', 'Pólizas', 'Lo que ganó la póliza: esto sí es ingreso');
+      if (pos) return o('Excluido', 'Inversión', 'Vuelve el capital de tu póliza: es tu dinero, no un ingreso', 'Pólizas', 'Capital de la póliza que venció');
+      return o('Excluido', 'Inversión', 'Abres o renuevas una póliza: es dinero que inviertes, no un gasto', 'Pólizas', /renovaci/.test(d) ? 'Renovó la póliza con capital e intereses' : 'Nueva póliza');
+    }
+    if (pos && /inter[eé]?s (diario|acreditado|ganado|del mes)/.test(d)) return o('Ingreso', 'Intereses', /diario/.test(d) ? 'Interés que paga tu cuenta cada día sobre el saldo del día' : 'Intereses que te paga el banco', /flexible/.test(d + ' ' + norm(r.src)) ? 'Ahorro flexible' : '');
     if (esTu(cp)) {
+      if (/flexible/.test(d + ' ' + norm(r.src))) return o('Excluido', 'Entre cuentas propias', pos ? 'Pasa dinero entre tu cuenta y tu ahorro flexible' : 'Pasa dinero entre tu cuenta y tu ahorro flexible', 'Ahorro flexible', /a tu ahorro flexible/.test(d) ? 'Todo a la flexible: gana 4,75 % al año' : /desde tu ahorro flexible/.test(d) ? 'Vuelve a la transaccional: ahí gana casi nada' : '');
       if (/tarjeta/.test(d) && /pago/.test(d)) return o('Excluido', 'Pago de tarjeta', 'Pago de tu tarjeta Pichibank: el gasto ya contó al consumir');
       if (/ahorro prog|hacia cuenta|acreditacion por ahorro/.test(d)) return o('Excluido', 'Ahorro programado', 'Movimiento de tu ahorro programado');
       if (/deuna a /.test(d) && !pos) return o('Gasto', 'Pagos con Deuna', 'Recarga a tu Deuna: aquí se cuenta el gasto', '', 'Recarga del mismo monto que el pago; el detalle está en Deuna');
@@ -95,7 +103,6 @@
     }
     if (pos && /nomina|decimo|sueldo/.test(d)) return o('Ingreso', 'Sueldo', 'Pago de nómina');
     if (pos && /iess|pension|jubilacion/.test(d + ' ' + norm(cp))) return o('Ingreso', 'Pensión', 'Pensión del IESS');
-    if (pos && /interes acreditado/.test(d)) return o('Ingreso', 'Intereses', 'Intereses que te paga el banco');
     if (pos && /internacional/.test(d)) return o('Ingreso', 'Remesa', 'Llega del exterior', 'Remesa recibida');
     if (/^ret(iro|sintj)/.test(d)) return o('Gasto', 'Efectivo retirado', 'Retiro de efectivo');
     if (/comision/.test(d)) return o('Gasto', 'Servicios financieros y deudas', 'Comisión del banco');
@@ -139,7 +146,8 @@
         if (fijo) L.forEach(function (i) { X(i, 'Gasto', 'Familia y dependientes', 'Apoyo a padres', 'Comparte apellido; cada mes, monto parecido', 'Comparte tu apellido y le envías cada mes un monto parecido: es apoyo a tu familia'); });
       } else if (!familia(rows[L[0]].cp, ctx) && n >= 3 && med >= 150 && L.every(function (i) { return +rows[i].f.slice(8) <= 6; })) {
         arriendo = { cp: k, monto: med };
-        L.forEach(function (i) { X(i, 'Gasto', 'Vivienda', 'Arriendo compartido', 'Paga el arriendo completo', 'Cada inicio de mes, el mismo monto grande a la misma persona: es tu arriendo'); });
+        L.forEach(function (i) { X(i, 'Gasto', 'Vivienda', 'Arriendo', 'Paga el arriendo', 'Cada inicio de mes, el mismo monto grande a la misma persona: es tu arriendo'); });
+        arriendo.filas = L;
       }
     });
     if (arriendo) {
@@ -150,6 +158,7 @@
         var L = A0.filter(function (i) { return Math.abs(rows[i].m - med) < med * .15; });
         var ms = {}; L.forEach(function (i) { ms[mes(rows[i].f)] = 1; });
         if (Object.keys(ms).length < 3 || med > arriendo.monto * .6) return;
+        arriendo.filas.forEach(function (i) { X(i, null, null, 'Arriendo compartido', 'Paga el arriendo completo del departamento'); }); // alguien te devuelve su parte: el arriendo es compartido
         L.forEach(function (i) { if (out[i].t === 'Detalle Deuna') X(i, null, null, 'Arriendo compartido', 'Le devuelven su parte del arriendo', 'Te devuelve su parte del arriendo');
           else X(i, 'Reembolso', 'Vivienda', 'Arriendo compartido', 'Reembolso: resta del gasto de Vivienda', 'Te devuelve su parte del arriendo: resta de tu gasto en Vivienda'); });
       });
@@ -238,7 +247,15 @@
     // Efectivo: si una buena parte de lo que gastas sale en efectivo, es «vida en efectivo»
     var gasto = 0, efectivo = 0;
     out.forEach(function (o, i) { if (o.t === 'Gasto') { gasto -= rows[i].m; if (o.c === 'Efectivo retirado') efectivo -= rows[i].m; } });
-    out.forEach(function (o) { if (o.c === 'Efectivo retirado') o.e = efectivo > gasto * .2 ? 'Vida en efectivo' : 'Efectivo'; });
+    out.forEach(function (o) { if (o.c === 'Efectivo retirado' && o.e !== 'Sueldo en efectivo') o.e = efectivo > gasto * .2 ? 'Vida en efectivo' : 'Efectivo'; });
+    // Sueldo en efectivo: al menos dos meses, casi todo el sueldo sale en retiros en los 3 días siguientes a cobrarlo
+    var cobros = idx.filter(function (i) { return /Sueldo|Pensión/.test(out[i].c); }), meses = 0, retiros = [];
+    cobros.forEach(function (i) {
+      var R = idx.filter(function (j) { return out[j].c === 'Efectivo retirado' && rows[j].f >= rows[i].f && dias(rows[i].f, rows[j].f) <= 3; });
+      var sale = R.reduce(function (a, j) { return a - rows[j].m; }, 0);
+      if (sale >= rows[i].m * .8) { meses++; retiros = retiros.concat(R); }
+    });
+    if (meses >= 2) retiros.forEach(function (j) { X(j, null, null, 'Sueldo en efectivo', 'Saca casi todo el sueldo apenas llega', 'Retiras casi todo tu sueldo en efectivo apenas cobras'); });
     // Sueldo: quincenal si llegan dos por mes; décimos aparte
     var sueldos = {}; idx.forEach(function (i) { if (out[i].c === 'Sueldo' && !/decimo/.test(norm(rows[i].desc))) sueldos[mes(rows[i].f)] = (sueldos[mes(rows[i].f)] || 0) + 1; });
     var quincena = mediana(Object.keys(sueldos).map(function (k) { return sueldos[k]; })) >= 2;

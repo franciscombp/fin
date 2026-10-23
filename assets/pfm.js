@@ -136,7 +136,7 @@
      los ánimos de Uku. Jorge está al día (contento), Rosa tiene solo lo de
      esta semana (tranquilo), Andrés dejó pasar 10 días y Daniela no clasifica
      hace un mes (pensativo). Se aplica una vez por persona. */
-  var AL_DIA = { jorge: '2026-10-16', rosa: '2026-10-12', andres: '2026-10-05', daniela: '2026-09-01', luis: '2026-09-28' };
+  var AL_DIA = { jorge: '2026-10-16', rosa: '2026-10-12', andres: '2026-10-05', daniela: '2026-09-01', luis: '2026-09-28', paula: '2026-10-12', esteban: '2026-10-14', segundo: '2026-10-14' };
   function sembrar(u) {
     var seed = ST.seed || (ST.seed = {}); if (seed[u] || !AL_DIA[u]) return;
     var prev = ST.u; ST.u = u;
@@ -222,7 +222,7 @@
       case 'Fuera del MVP': return tobe() ? { k: 'gasto', cat: ov || mapc(r.c), via: 'otro_banco' } : { k: 'no', why: 'fuera' };
       case 'Ingreso': return { k: 'ingreso', cat: r.c };
       case 'Reembolso': return { k: 'reembolso', cat: ov || mapc(r.c) };
-      default: return { k: 'no', why: r.c === 'Ahorro programado' ? 'ahorro' : r.c === 'Pago de tarjeta' ? 'pago_tarjeta' : r.c === 'Recarga Deuna' ? 'recarga_in' : 'propias' };
+      default: return { k: 'no', why: r.c === 'Ahorro programado' ? 'ahorro' : r.c === 'Pago de tarjeta' ? 'pago_tarjeta' : r.c === 'Recarga Deuna' ? 'recarga_in' : r.c === 'Inversión' ? 'inversion' : r.e === 'Ahorro flexible' ? 'flexible' : 'propias' };
     }
   }
 
@@ -403,6 +403,8 @@
       pago_tarjeta: T('No lo cuento: lo que compraste con la tarjeta ya contó.'),
       fuera: T('No lo veo en tu resumen: es de una tarjeta de otro banco. Solo veo cuando le pagas.'),
       pago_otro_banco: T('No lo cuento: ya conté lo que compraste con esa tarjeta, que conectaste.'),
+      inversion: T('No lo cuento como gasto ni como ingreso: es dinero que inviertes en tu póliza. Solo sus intereses suman.'),
+      flexible: T('No lo cuento: pasa entre tu cuenta y tu ahorro flexible. Lo que sí suma son los intereses que te paga cada día.'),
       negocio: T('Es de tu negocio: lo saco de tus gastos de la casa.')
     }[c.why] || T('No lo cuento en tu resumen.');
     if (c.k === 'rin' || c.k === 'rout') return T('No sé qué fue: es de una persona o empresa. Lo cuento marcado hasta que me digas.');
@@ -490,7 +492,10 @@
   function flores() { var c = colchon(), f = c < 1 ? 0 : Math.round(Math.min(1, .3 + (c - 1) / 2 * .7) * 100); return hecho('ahorro') ? Math.max(f, 22) : f; } // con ahorro programado, salen las primeras flores
   // Presupuesto: cómo vas contra tu ritmo del mes
   function presEstado(m) {
-    m = m || curMes(); var s = month(m), p = pres().general, f = isCur(m) ? +HOY.slice(8, 10) / diasMes(m) : 1, u = s.gast / (p * f);
+    m = m || curMes(); var s = month(m), p = pres().general, f = isCur(m) ? +HOY.slice(8, 10) / diasMes(m) : 1;
+    // El sueldo que se saca de una vez en efectivo es para todo el mes: se mide contra el presupuesto completo
+    var cash = sumv(rows().filter(function (r) { return r.mes === m && r.e === 'Sueldo en efectivo' && r.m < 0; }), function (r) { return -r.m; });
+    var u = (s.gast - cash) / (p * f) + cash / p;
     return u <= 1 ? { k: 'ok', l: T('Vas bien'), v: 85 } : u <= 1.15 ? { k: 'warn', l: T('Con cuidado'), v: 55 } : { k: 'over', l: T('Por encima del plan'), v: 25 };
   }
   function salud(m) { return presEstado(m).v; }
@@ -714,7 +719,9 @@
       conf: { para: T('Tu cuenta de ahorro'), monto: q, cuando: T('Cada mes, apenas cobras') } });
     // 6. Mesadas y pagos repetidos
     agrupar().forEach(function (x) { out.push({ id: 'g:' + x.go, p: 50, icon: x.icon, tag: x.tag, kind: 'info', sub: x.s, t: x.t, s: x.s, cmp: x.cmp, di: x.t + '. ' + T('¿Lo hacemos juntos?'), act: x.go, actl: x.gol }); });
-    // 7. Lo que descubrió: anticipa (to-be) y hallazgos; siempre en positivo y con una pregunta, nunca una alarma
+    // 7. Cómo rinde tu dinero: ahorro flexible, pólizas y sueldo en efectivo (lo detecta el front en tus movimientos)
+    out = out.concat(rinde());
+    // 7b. Lo que descubrió: anticipa (to-be) y hallazgos; siempre en positivo y con una pregunta, nunca una alarma
     (tobe() ? anticipa(curMes()).map(accion) : []).concat(hallazgos(curMes()).map(accion)).forEach(function (x) {
       if (x.icon === 'tune' || x.icon === 'credit_card' && min) return; // ya están como consejo con acción
       if (!hayPres() && (x.icon === 'speed' || x.icon === 'tune')) return; // sin presupuesto no hay con qué comparar
@@ -725,6 +732,59 @@
     });
     return out.filter(function (x) { return !oculto(x.id); }).map(function (x) { x.done = hecho(x.id) ? x.ok || T('Listo') : null; return x; })
       .sort(function (a, b) { return (a.done ? 1 : 0) - (b.done ? 1 : 0) || b.p - a.p; });
+  }
+  /* ---------- Cómo rinde tu dinero ----------
+     Con lo que el front reconoce en tus movimientos (assets/pfm-analisis.js):
+     · Ahorro flexible: lo que te pagó cada día y cuánto dejas de ganar con el dinero que espera en la transaccional
+       (0,01 % al año en vez de 4,75 %); propone pasar solo lo de la semana.
+     · Pólizas: cuánto tienes invertido, lo que te pagaron y la que vence pronto, para renovarla.
+     · Sueldo en efectivo: cuánto de tu sueldo sale en efectivo apenas llega; propone pagar con QR. */
+  var TASA = { flex: .0475, trans: .0001 };
+  function saldoPromedio(src, desde) {
+    // el saldo de esa cuenta al final de cada día, desde una fecha hasta hoy
+    var L = rows().filter(function (r) { return r.src === src && r.s != null; }), i = 0, s = 0, tot = 0, n = 0;
+    for (var f = desde; f <= HOY; f = addDays(f, 1)) { while (i < L.length && L[i].f <= f) { s = L[i].s; i++; } tot += s; n++; }
+    return n ? tot / n : 0;
+  }
+  function rinde() {
+    var R = rows(), C = DB.cuentas[ST.u] || [], m = curMes(), out = [], hace = addDays(HOY, -365), tri = addDays(HOY, -90);
+    var suma = function (f) { return R.filter(f).reduce(function (a, r) { return a + r.m; }, 0); };
+    if (R.some(function (r) { return r.e === 'Ahorro flexible'; })) {
+      var gan = suma(function (r) { return r.e === 'Ahorro flexible' && r.c === 'Intereses' && r.mes === m; }), anio = suma(function (r) { return r.e === 'Ahorro flexible' && r.c === 'Intereses' && r.f >= hace; });
+      var tr = C.filter(function (c) { return c.tipo === 'transaccional'; })[0], prom = tr && tr.fuente ? saldoPromedio(tr.fuente, tri) : 0;
+      var pierde = prom * (TASA.flex - TASA.trans), semana = Math.max(50, Math.round(-suma(function (r) { return r.t === 'Gasto' && r.f >= tri; }) / 13 / 10) * 10);
+      out.push({ id: 'flex', p: 55, icon: 'savings', tag: T('Ahorro flexible'), kind: 'good', t: T('Tu ahorro flexible te pagó {g} este mes', { g: money(gan) }), sub: T('Gana 4,75 % al año, cada día'),
+        s: T('En un año te pagó {a}. En tu transaccional esperan en promedio {p}, que ahí gana casi nada: si pasas solo lo de la semana, ganarías unos {y} más al año.', { a: money0(anio), p: money0(prom), y: money0(pierde) }),
+        di: T('Tu ahorro flexible te pagó {g} este mes: gana cada día. Pero en tu transaccional esperan unos {p} que casi no ganan. Si cada lunes pasamos solo lo de la semana, ganarías unos {y} más al año.', { g: money(gan), p: money0(prom), y: money0(pierde) }),
+        act: 'flex', actl: T('Pasar {s} cada lunes', { s: money0(semana) }), ok: T('Listo: cada lunes pasan {s} de tu ahorro flexible a tu cuenta.', { s: money0(semana) }),
+        conf: { para: T('Tu cuenta transaccional'), monto: semana, cuando: T('Cada lunes, desde tu ahorro flexible') } });
+    }
+    var pol = C.filter(function (c) { return c.tipo === 'inversion' && c.vence; }).sort(function (a, b) { return a.vence.localeCompare(b.vence); });
+    if (pol.length) {
+      var prox = pol.filter(function (c) { return diasA(c.vence) >= 0; })[0], total = pol.reduce(function (a, c) { return a + c.saldo; }, 0);
+      var pagaron = suma(function (r) { return r.e === 'Pólizas' && r.c === 'Intereses' && r.f >= hace; });
+      if (prox && diasA(prox.vence) <= 30) {
+        var gana = prox.saldo * (prox.tasa || 6) / 100 * 180 / 365;
+        out.push({ id: 'poliza', p: 78, icon: 'event', tag: T('Póliza'), kind: 'info', t: T('Tu póliza de {c} vence {cu}', { c: money0(prox.saldo), cu: cuandoTxt(prox.vence).toLowerCase() }), sub: T('Te paga unos {i}', { i: money0(gana) }),
+          s: T('Te va a pagar unos {i} de intereses. Si la renuevas al mismo plazo, sigue rindiendo sin que tengas que acordarte.', { i: money0(gana) }),
+          di: T('Tu póliza de {c} vence {cu} y te paga unos {i} de intereses. ¿La renovamos al mismo plazo para que siga rindiendo?', { c: money0(prox.saldo), cu: cuandoTxt(prox.vence).toLowerCase(), i: money0(gana) }),
+          act: 'poliza', actl: T('Renovar mi póliza'), ok: T('Listo: tu póliza se renueva sola el {f}.', { f: dshort(prox.vence) }),
+          conf: { para: T('Póliza ···{n}', { n: prox.numero }), monto: prox.saldo + gana, cuando: T('El {f}, al vencer', { f: dshort(prox.vence) }) } });
+      }
+      out.push({ id: 'polizas', p: 32, icon: 'trending_up', tag: T('Inversiones'), kind: 'good', t: T(pol.length === 1 ? 'Tienes {t} en una póliza' : 'Tienes {t} en {n} pólizas', { t: money0(total), n: pol.length }), sub: T('Te pagaron {i} en un año', { i: money0(pagaron) }),
+        s: T('En un año te pagaron {i} de intereses. Lo que mandas a tus pólizas no lo cuento como gasto: es tu inversión.', { i: money0(pagaron) }),
+        di: T('¡Buena noticia! Tienes {t} en pólizas y en un año te pagaron {i} de intereses. Lo que mandas ahí no lo cuento como gasto: es tu inversión.', { t: money0(total), i: money0(pagaron) }),
+        act: 'app:Inversiones', actl: T('Ver mis inversiones') });
+    }
+    var ret = R.filter(function (r) { return r.e === 'Sueldo en efectivo' && r.f >= tri; });
+    if (ret.length) {
+      var sale = -ret.reduce(function (a, r) { return a + r.m; }, 0), cobra = suma(function (r) { return /Sueldo|Pensión/.test(r.c) && r.f >= tri; }), pct = cobra ? Math.round(sale / cobra * 100) : 0;
+      out.push({ id: 'efectivo', p: 70, icon: 'payments', tag: T('Efectivo'), kind: 'info', t: T('Sacas casi todo tu sueldo en efectivo'), sub: T('El {p} % apenas cobras', { p: pct }),
+        s: T('Así no veo en qué se va tu dinero y andas con todo encima. Si pagas con QR o Deuna, cada gasto queda ordenado aquí y tu plata está más segura.'),
+        di: T('Apenas cobras, retiras el {p} % de tu sueldo en efectivo. Así no veo en qué se va y andas con todo encima. Si pagas con QR desde tu celular, cada gasto queda ordenado aquí.', { p: pct }),
+        act: 'app:Pagar con QR', actl: T('Pagar con QR') });
+    }
+    return out;
   }
   function consejoHTML(x) {
     var mx = x.cmp ? Math.max.apply(null, x.cmp.map(function (c) { return c.v; }).concat([1])) : 1;
@@ -795,6 +855,8 @@
     rows().forEach(function (r) {
       if (r.f < ini || r.f > HOY) return;
       if (r.t === 'Por revisar') { qs[gkey(r)] = 1; return; }
+      // Quien saca todo su sueldo en efectivo no tiene que contar en qué lo gastó: se queda como efectivo
+      if (r.e === 'Sueldo en efectivo') return;
       var c = cls(r, true); if (c.k !== 'gasto' || !(SIN[c.cat] || c.cat === 'Efectivo retirado')) return;
       out.push({ t: 'r', r: r, f: r.f, cash: c.cat === 'Efectivo retirado', done: !!(catOv(r) || ruleOf(r)) });
     });
@@ -1615,7 +1677,7 @@
       case 'ins': return insightsSheet();
       case 'cerrar': return closeSheet();
       // Consejos del asesor: programar (con confirmación), aplicar, deshacer o dejar para después
-      case 'pagar': case 'tarjeta': case 'ahorro': { var cx = consejo(k === 'tarjeta' || k === 'ahorro' ? k : 'pago:' + p.slice(1).join(':')); if (cx) confirmar(cx); return; }
+      case 'pagar': case 'tarjeta': case 'ahorro': case 'flex': case 'poliza': { var cx = consejo(/^(tarjeta|ahorro|flex|poliza)$/.test(k) ? k : 'pago:' + p.slice(1).join(':')); if (cx) confirmar(cx); return; }
       case 'pres': wiz = null; draft = null; fx('open'); return presWizard(1);
       case 'presw': {
         if (p[1] === 'plan') { wiz.plan = p[2]; draft = null; fx('select'); return presWizard(1); }
