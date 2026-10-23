@@ -85,7 +85,8 @@ def paula():
         if d == fin_de_mes(d): L.mov(d, '23:58', T, 'Cuenta', 'Interés acreditado en su cuenta', 'Pichibank', max(.01, L.saldo[T] * TASA_TRANS / 12))
     L.rows = [x for x in L.rows if abs(x[6]) >= .005]
     cuentas = [{'tipo': 'transaccional', 'nombre': 'Cuenta transaccional', 'numero': '4120', 'saldo': L.saldo[T], 'fuente': T, 'tasa': .01},
-               {'tipo': 'ahorro', 'nombre': 'Ahorro flexible', 'numero': '7310', 'saldo': L.saldo[F], 'fuente': F, 'tasa': 4.75}]
+               {'tipo': 'ahorro', 'nombre': 'Ahorro flexible', 'numero': '7310', 'saldo': L.saldo[F], 'fuente': F, 'tasa': 4.75,
+                'solo_propias': True}]
     return L.rows, cuentas
 
 
@@ -169,7 +170,7 @@ USUARIOS = [
 ESCENARIOS = [
     {'escenario': 'Ahorro flexible', 'usuarios': 'Paula', 'banco_ve': 'El sueldo pasa entero a la cuenta flexible y vuelve a la transaccional por partes cuando se acaba',
      'riesgo': 'Si los traspasos cuentan como ingresos o gastos, todo se duplica; el dinero que vuelve a la transaccional deja de ganar intereses',
-     'pfm_deberia': 'Contar los traspasos como movimientos entre cuentas propias, mostrar los intereses que gana cada día y cuánto deja de ganar en la transaccional, y sugerir pasar solo lo de la semana', 'fase': 'MVP'},
+     'pfm_deberia': 'Contar los traspasos como movimientos entre cuentas propias (desde el flexible solo se envía a tus cuentas), mostrar los intereses que gana cada día y proponer pasar a una póliza lo que nunca toca (gana más y el dinero se queda); si es poco para una póliza, una meta de ahorro (gana lo mismo y no se mezcla con el mes)', 'fase': 'MVP'},
     {'escenario': 'Pólizas', 'usuarios': 'Esteban', 'banco_ve': 'Transferencias para abrir pólizas y, al vencer, el capital y los intereses',
      'riesgo': 'Si la póliza cuenta como gasto, el mes parece malo; si el capital que vuelve cuenta como ingreso, el ingreso se infla',
      'pfm_deberia': 'Contar la póliza como inversión (no gasto), separar los intereses del capital al vencer y avisar antes del vencimiento para renovarla', 'fase': 'MVP'},
@@ -202,6 +203,10 @@ def main():
                                for f, h, s, p, de, cp, m, sal in rows]
         d['cuentas'][u] = cuentas
         print(u, len(rows), 'movimientos', [(c['nombre'], c['saldo']) for c in cuentas][:4])
+    # Regla del Ahorro flexible: solo envía dinero a tus propias cuentas, nunca a terceros
+    for cs in d['cuentas'].values():
+        for c in cs:
+            if 'flexible' in c.get('nombre', '').lower(): c['solo_propias'] = True
     d['usuarios'] += USUARIOS
     d['escenarios'] += ESCENARIOS
     d['agenda']['paula'] = agenda('0987310412'); d['agenda']['esteban'] = agenda('0994552290'); d['agenda']['segundo'] = agenda('0976650318')

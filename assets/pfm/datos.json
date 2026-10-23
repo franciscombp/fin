@@ -1096,7 +1096,7 @@
    "usuarios": "Paula",
    "banco_ve": "El sueldo pasa entero a la cuenta flexible y vuelve a la transaccional por partes cuando se acaba",
    "riesgo": "Si los traspasos cuentan como ingresos o gastos, todo se duplica; el dinero que vuelve a la transaccional deja de ganar intereses",
-   "pfm_deberia": "Contar los traspasos como movimientos entre cuentas propias, mostrar los intereses que gana cada día y cuánto deja de ganar en la transaccional, y sugerir pasar solo lo de la semana",
+   "pfm_deberia": "Contar los traspasos como movimientos entre cuentas propias (desde el flexible solo se envía a tus cuentas), mostrar los intereses que gana cada día y proponer pasar a una póliza lo que nunca toca (gana más y el dinero se queda); si es poco para una póliza, una meta de ahorro (gana lo mismo y no se mezcla con el mes)",
    "fase": "MVP"
   },
   {
@@ -71368,7 +71368,8 @@
     "tipo": "ahorro",
     "nombre": "Ahorro flexible",
     "numero": "8801",
-    "saldo": 1400.0
+    "saldo": 1400.0,
+    "solo_propias": true
    },
    {
     "tipo": "meta",
@@ -71435,7 +71436,8 @@
     "tipo": "ahorro",
     "nombre": "Ahorro flexible",
     "numero": "8802",
-    "saldo": 310.0
+    "saldo": 310.0,
+    "solo_propias": true
    },
    {
     "tipo": "meta",
@@ -71469,7 +71471,8 @@
     "numero": "7310",
     "saldo": 4913.59,
     "fuente": "Ahorro flexible Pichibank ···7310",
-    "tasa": 4.75
+    "tasa": 4.75,
+    "solo_propias": true
    }
   ],
   "esteban": [
