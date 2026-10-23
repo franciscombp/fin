@@ -385,3 +385,9 @@
         .card-detail.theme-dark .sub-item:active {
             background: rgba(255, 255, 255, 0.08);
         }
+
+/* ---- Revisión del 22 de octubre: clases que ya no aparecen en ningún HTML ni JS (tras retirar la versión clásica y Modo finanzas) ---- */
+@layer base .mc-dots { display: inline-flex; align-items: center; }
+@layer base .mc-dots i { width: 13px; height: 13px; border-radius: 50%; display: block; }
+@layer base .mc-dots i:first-child { background: #eb001b; }
+@layer base .mc-dots i:last-child { background: #f79e1b; margin-left: -6px; opacity: 0.9; }

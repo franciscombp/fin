@@ -411,7 +411,6 @@ html.uk-chatting:not(.uk-nonav) .pf-toast { top: auto !important; bottom: calc(v
 @keyframes ukMe { from { opacity: 0; transform: translateX(16px) scale(.96); } }
 @keyframes ukChatIn { from { opacity: 0; transform: translateY(12px); } }
 @keyframes ukDot { 0%, 60%, 100% { transform: translateY(0); opacity: .4; } 30% { transform: translateY(-4px); opacity: 1; } }
-@keyframes ukCard { from { opacity: 0; transform: translateY(18px) scale(.98); } }
 @keyframes ukCardOut { to { opacity: 0; transform: translateY(28px) scale(.98); } }
 @keyframes ukSheet { from { opacity: .6; transform: translateY(100%); } }
 @keyframes ukBar { from { transform: scaleX(0); } }

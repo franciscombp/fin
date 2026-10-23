@@ -39,7 +39,6 @@
 .pfm-sheet .pfm-saldo, .pfm-sheet .pfm-tile { background: var(--bp-theme-color-surface-page-alt); }
 
 /* ---------- 2. Uku: su mundo y lo que notó ---------- */
-@keyframes pfmGlobo { from { opacity: 0; transform: scale(.6) translateY(8px); } }
 
 /* Las tres señales de su mundo: texto sobre la página, sin cajas */
 /* Las señales de Uku no alarman: un solo tono, el estado lo dice el texto */

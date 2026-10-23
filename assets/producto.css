@@ -6,11 +6,11 @@
 .push-page.is-product { background: var(--cx-surface); }
 .pv { padding: 8px 0 48px; color: var(--cx-ink); }
 .pv p { margin: 0; }
-.pv-kind { font: var(--cx-caption); color: var(--cx-muted); margin-bottom: 24px !important; }
+
 .pv-bar { height: 6px; margin-top: 16px; border-radius: 99px; background: var(--cx-fill); overflow: hidden; }
 .pv-bar i { display: block; height: 100%; background: var(--cx-ink); border-radius: inherit; }
 .pv-acts { display: flex; gap: 12px; margin: 32px 0 8px; }
-.pv-sec { margin-top: 40px; }
+
 .pv-row > span { color: var(--cx-muted); }
 .pv-row > b { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
 .pv-row--mov > span { display: flex; flex-direction: column; color: var(--cx-ink); }

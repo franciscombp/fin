@@ -8,9 +8,9 @@
 .dw { transition: transform .15s ease; }
 
 /* ---------- Encabezados de sección (iguales en todas las pantallas) ---------- */
-.pf-sec h2, .pv-sec h2, .dw-section .section__title h2 { font: var(--ui-label-sm); font-size: 14px; letter-spacing: 0; margin: 0; color: var(--bp-theme-color-text-helper); }
+.pf-sec h2, .dw-section .section__title h2 { font: var(--ui-label-sm); font-size: 14px; letter-spacing: 0; margin: 0; color: var(--bp-theme-color-text-helper); }
 .pf-sec h2 { margin-bottom: 4px; }
-.pv-sec h2 { margin-bottom: 8px; }
+
 .pf-sec { padding-top: 0; margin-top: 40px; }
 .pf-sec { padding-left: var(--bp-layout-grid-margin, 24px); padding-right: var(--bp-layout-grid-margin, 24px); }
 
@@ -311,7 +311,6 @@ html.ux-instant .card-detail.closing { animation-duration: 1ms !important; }
 .is-editing .dw-x:active, .is-editing .dw-size:active { background: var(--bp-interaction-secondary-bg--active) !important; }
 .is-editing .dw-size { font: var(--ui-label-sm, 600 12px/1 var(--sol-font, Roboto, sans-serif)) !important; }
 .dw.is-new { animation: dwNew 1.1s ease; }
-@keyframes dwNew { 0%, 100% { outline: 2px solid transparent; outline-offset: 2px; } 40% { outline: 2px solid var(--bp-interaction-focus-ring-color, var(--bp-interaction-selectable-selected-bg)); outline-offset: 2px; } }
 .as-sheet.dw-gallery { background: var(--bp-surface-page, var(--bp-theme-color-surface-page-alt)) !important; }
 .dw-gal { padding: var(--bp-semantic-spacing-micro-lg, 16px) !important; border-radius: var(--ui-r-card) !important; background: var(--bp-theme-color-surface-container-default) !important; }
 .dw-gal__ic { border-radius: var(--ui-r-btn) !important; background: var(--bp-interaction-secondary-bg) !important; color: var(--bp-interaction-secondary-fg) !important; }
