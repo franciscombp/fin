@@ -344,12 +344,14 @@ ahí es lo que se ve en la app. Tiene modo claro/oscuro, filtro por nombre o cla
 automática que marca con un ícono rojo un componente que no se ve o un token de color sin valor.
 Al agregar un componente, se suma su entrada en el arreglo `S` del catálogo.
 
-**Enlace o botón de acción (23 de octubre).** El enlace subrayado (`bp-link`) es solo para abrir una página
-fuera de la app. Toda acción de texto dentro de la app (Ver más, Cambiar, Borrar, Volver a ayuda, Deshacer,
-Recuperar usuario…) es un `bp-action-button`; si va sin fondo, `bp-action-button--tertiary`: label-md, sin
-subrayado y con fondo solo al pasar o tocar. En un título de sección va en tamaño sm, alineado al borde.
-Las clases viejas (`section__link`, `sx-link`, `pf-back`, `login-button--tertiary`, `btn--tertiary`…) son
-alias de ese terciario en `componentes.css`.
+**Enlace, botón y botón de acción (23 de octubre).** El enlace subrayado (`bp-link`) es solo para abrir una
+página fuera de la app. Los botones vienen en dos familias que nunca se mezclan: los grandes (`bp-button`:
+primary, secondary, tertiary subrayado; 56 de alto) van solo con otros grandes, como Ingresar con PIN + Otro
+método de ingreso o Confirmar + Ahora no al pie de una hoja; los de acción (`bp-action-button` y su
+`--tertiary` sin fondo ni subrayado; 40, sm 32) van solo con otros de acción, dentro de un componente o de
+una fila (Ver más, Cambiar, Borrar, Deshacer). Alias del terciario grande: `login-button--tertiary`,
+`btn--tertiary`. Alias del terciario de acción: `section__link`, `sx-link`, `pf-back`, `pfm-undo`,
+`uk-globo__go`, `debit-card-disabled__link`, `pv-more`.
 
 **Margen de página.** La documentación de Layout en Figma dice 16 a 360 px y 24 desde 390 px, pero el
 `tokens.css` exportado del mismo archivo dice 16 para mobile-sm y mobile-md. Se dejan los tokens (16)

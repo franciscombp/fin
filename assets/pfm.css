@@ -154,7 +154,7 @@
 .pfm-game__result .pf-note { margin: var(--bp-semantic-spacing-micro-lg, 16px) 0 0; }
 .pfm-game__foot { display: flex; flex-direction: column; align-items: center; gap: var(--bp-semantic-spacing-micro-md, 8px); width: 100%; margin-top: auto; padding-top: var(--bp-semantic-spacing-macro-sm, 24px); }
 .pfm-game__foot .pf-cta { width: 100%; margin: 0; }
-.pfm-game__foot .section__link { min-height: var(--bp-semantic-size-interactive-sm, 48px); }
+.pfm-game__foot .bp-button--tertiary { width: 100%; margin: 0; }
 .pfm-game__mood { display: flex; align-items: center; justify-content: center; gap: var(--bp-semantic-spacing-micro-md); margin: 0 0 var(--bp-semantic-spacing-micro-md, 8px) !important; font: var(--ui-body-md-semibold) !important; color: var(--bp-theme-color-text-primary) !important; }
 .pfm-game__mood .material-symbols-rounded { font-size: 24px; font-variation-settings: 'FILL' 1; color: var(--bp-interaction-tertiary-fg); }
 .pfm-game__burst { width: 120px; height: 120px; margin-top: var(--bp-semantic-spacing-macro-md, 40px); border-radius: 50%; overflow: hidden; background: var(--bp-theme-color-surface-container-default); animation: pfmPop .6s cubic-bezier(.2, 1.5, .4, 1) both, pfmHop .7s ease .6s 2; }
